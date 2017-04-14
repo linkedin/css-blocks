@@ -27,6 +27,9 @@ A CSS Block has 5 key concepts:
    construct that can have dependent styles with other element types
    through CSS combinators. States can be dynamic or static in nature.
    You can think of a state as a CSS class applied to the root element.
+3. State Set - A state set is a group of mutually exclusive states.
+   This makes it easier to switch between states in the set and allows
+   the block compiler to check for inconsistent and invalid selectors.
 4. Element - An element within the block are styles that are specific to
    that block but that must be applied to one or more HTML element contained in
    the document subtree. You can think of this as a CSS class that is
@@ -36,6 +39,344 @@ A CSS Block has 5 key concepts:
    CSS class that is also applied in conjunction with the element when the
    substate is set.
 
+Syntax
+------
+
+The convention is to name a file according to the block: `form.block.scss`
+
+
+```css
+:block(form) {
+  margin: 2em 0;
+  padding: 1em 0.5em;
+  &:state-set(theme) {
+    &:state(red) {
+      color: #c00;
+    }
+    &:state(blue) {
+      color: #006;
+    }
+  }
+
+  &:state(compact) {
+    margin: 0.5em 0;
+    padding: 0.5em 0.5em;
+  }
+}
+
+
+:element(input-area) {
+  display: flex;
+  margin: 1em 0;
+  font-size: 1.5rem;
+  :state(compact) & {
+    margin: 0.25em 0;
+  }
+}
+
+:element(label) {
+  flex: 1fr;
+}
+
+:element(input) {
+  flex: 3fr;
+  :state(theme red) & {
+    border-color: #c00;
+  }
+  :state(theme blue) & {
+    border-color: #006;
+  }
+}
+
+:element(submit) {
+  width: 200px;
+  &:substate(disabled) {
+    color: gray;
+  }
+}
+```
+
+Which would flatten to:
+
+```css
+:block(form) { margin: 2em 0; padding: 1em 0.5em; }
+:block(form):state-set(theme):state(red) { color: #c00; }
+:block(form):state-set(theme):state(blue) { color: #006; }
+:block(form):state(compact) { margin: 0.5em 0; padding: 0.5em 0.5em; }
+
+:element(input-area) { display: flex; margin: 1em 0; font-size: 1.5rem; }
+:state(compact) :element(input-area) { margin: 0.25em 0; }
+
+:element(label) { flex: 1fr; }
+
+:element(input) { flex: 3fr; }
+:state(theme red) :element(input) { border-color: #c00; }
+:state(theme blue) :element(input) { border-color: #006; }
+
+:element(submit) { width: 200px; }
+:element(submit):substate(disabled) { color: gray; }
+```
+
+Forward Declaration Syntax
+--------------------------
+
+There's an alternate syntax concept requiring forward declarations:
+
+```css
+@block .form;
+@exclusive-states .theme: .red, .blue;
+@state .compact;
+@element .input-area;
+@element .input;
+@element .label;
+@element .submit;
+@substate .submit: .disabled;
+
+.form {
+  margin: 2em 0;
+  padding: 1em 0.5em;
+  &.theme {
+    &.red {
+      color: #c00;
+    }
+    &.blue {
+      color: #006;
+    }
+  }
+
+  &.compact {
+    margin: 0.5em 0;
+    padding: 0.5em 0.5em;
+  }
+}
+
+.input-area {
+  display: flex;
+  margin: 1em 0;
+  font-size: 1.5rem;
+  .compact & {
+    margin: 0.25em 0;
+  }
+}
+
+.label {
+  flex: 1fr;
+}
+
+.input {
+  flex: 3fr;
+  .theme.red & {
+    border-color: #c00;
+  }
+  .theme.blue & {
+    border-color: #006;
+  }
+}
+
+.submit {
+  width: 200px;
+  &.disabled {
+    color: gray;
+  }
+}
+```
+
+Template Syntax
+---------------
+
+### Plain HTML
+
+```html
+<form class="form form--compact form--theme-red">
+  <div class="form-input-area">
+    <label class="form__label">Username</label>
+    <input class="form__innput">
+  </div> 
+  <submit class="form__submit form__submit--disabled">
+</form>
+```
+
+### JSX
+
+Help
+
+### Handlebars
+
+Help
+
+Global (application) States
+---------------------------
+
+We need a way to declare application states so they can be used within a
+block.
+
+Block Inheritance
+-----------------
+
+TBD
+
+Block composition
+-----------------
+
+When composing blocks, any property conflicts will result in a build
+error unless a resolution is provided by one of the blocks:
+
+```scss
+@reference "../components/accordian.block" as accordian;
+@block .section;
+@element .box;
+.box {
+  width: resolve(accordian.container); // override accordian.container
+  width: 100%;
+  border: 5px solid black;
+  border: resolve(accordian.container); // yield to accordian.container
+}
+```
+
+Composing blocks by the consuming app
+-------------------------------------
+
+If a third-party library failed to consider a composition, or if two
+third-party libraries don't compose well, the app can provide it's own
+composition of the necessary styles as it's own element.
+
+File: `navigation.block.scss`
+
+```scss
+@reference "super-grid-system.block";
+@reference "drop-downs.block";
+@block .navigation;
+@element .profile;
+
+.profile {
+  composes: super-grid-system.span and drop-down.hoverable;
+  float: resolve(super-grid-system.span);
+  width: resolve(super-grid-system.span);
+  margin: resolve(drop-down.hoverable);
+}
+```
+
+
+TBD template example
+
+Using pseudoclasses and pseudoelements
+--------------------------------------
+
+TBD example
+
+Using tagnames in selectors
+---------------------------
+
+TBD
+
+Violating Block Syntax
+----------------------
+
+Sometime a class comes from an external library or content comes from a
+database and the only thing you can do is use them as is. For these
+situations there are a number of strategies for violating the
+recommended block syntax.
+
+1. Declaring an external class. Details tbd.
+2. Using scoped tagnames. Details tbd.
+
+Detecting and Managing Block Collisions
+---------------------------------------
+
+It's possible for styles from multiple blocks to be applied
+to the same element. In this situation, if the same property is declared
+in both blocks (or if a short-hand is set in one and a long-hand is set
+in another), a build error will result. The resolution
+on a per property basis must be provided declaritively in the blocks.
+if it cannot, then a new composed element in a higher-order block should
+be defined that resolves the composition issue.
+
+class=CSSBlock.compose(Block1.element1, Block2.element2);
+
+Output
+------
+
+There can be BEM compatibilty output option where the above example would
+produce the following CSS output:
+
+```css
+.form { margin: 2em 0; padding: 1em 0.5em; }
+.form--theme-red { color: #c00; }
+.form--theme-blue { color: #006; }
+.form--compact { margin: 0.5em 0; padding: 0.5em 0.5em; }
+
+.form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
+.form--compact .form__input-area { margin: 0.25em 0; }
+
+.form__label { flex: 1fr; }
+
+.form__input { flex: 3fr; }
+.form--theme-red .form__input { border-color: #c00; }
+.form--theme-blue .form__input { border-color: #006; }
+
+.form__submit { width: 200px; }
+.form__submit--disabled { color: gray; }
+```
+
+By default, the classes would be generated and compact:
+
+```css
+.As5gVwYfYM { margin: 2em 0; padding: 1em 0.5em; }
+.oL7NItprs9 { color: #c00; }
+.kUQVcwUmGO { color: #006; }
+.FC5WIu2Zis { margin: 0.5em 0; padding: 0.5em 0.5em; }
+
+.CZv8iaixJY { display: flex; margin: 1em 0; font-size: 1.5rem; }
+.FC5WIu2Zis .CZv8iaixJY { margin: 0.25em 0; }
+
+.HuPJzBD60S { flex: 1fr; }
+
+.az2IP9WB4p { flex: 3fr; }
+.oL7NItprs9 .az2IP9WB4p { border-color: #c00; }
+.kUQVcwUmGO .az2IP9WB4p { border-color: #006; }
+
+.EPK1W2aAse { width: 200px; }
+.gpctrpxsAv { color: gray; }
+```
+
+Compressing Classes
+-------------------
+
+There are few techniques being considered to compress our classes:
+
+0. *No compression*. Outputs standard BEM classes. This is good for when
+   porting an existing code base from BEM to CSS Blocks until all
+   templates can be updated.
+1. *Truncated hashing* (with hash collision detection) - Hashing the BEM
+   name is predictable and stable over time. The algorithm used above
+   is a base64 encoding with `+` and `/` removed, then selecting 10
+   bytes staring with the first non-numeric character. We then need
+   to ensure no hash collisions occur across blocks. Hash collisions
+   will be rare, but we would pre-allocate a few hundred hashes to be
+   used to resolve any any hash collisions we encounter. The collision
+   resolution must be stable across builds that do not introduce new
+   collisions.
+2. *Counter hashing*. Every time we need a new identifier we increment a
+   counter. This strategy works fine for within a single block. We don't
+   need to ensure cache consistency once a block changes. But we
+   must ensure uniqueness across all blocks. To this end, we would need to
+   set a maximum number of identifers in a block so that we can reserve
+   higher order bits for counting files themselves in a stable way.
+   Addition of new files over time would cause larger than expected cache
+   invalidations unless we have a hand maintained file number for each
+   block file and even if files are added or removed we would keep the same
+   file number for blocks. This process can be automated by a script that
+   detects added or removed block files and updates the counters file
+   accordingly. In theory, this technique generates smaller output but
+   for additional developer complexity.
+3. *Localized*. This stragey would keep the local names for a block but
+   scope them with a unique identifier to avoid users being able to
+   predict the classnames while still preserving some developer
+   familiarity when reading the output. This might be best for
+   development mode.
+
+Ultimately, the project should support all of these compression
+strategies and allow one to be selected via configuration.
 
 
 
