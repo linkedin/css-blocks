@@ -16,7 +16,7 @@ to make strong guarantees about the CSS produced for optimizations.
 Terminology
 -----------
 
-A CSS Block has 4 key concepts:
+A CSS Block has 5 key concepts:
 
 1. Block - A block is a set of interdependent styles. There is no way to
    write selectors that address elements from different blocks except in
