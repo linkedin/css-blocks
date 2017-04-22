@@ -90,7 +90,8 @@ this sanity-check optimizer.
 
 We saw an 85% reduction of uncompressed CSS output and a 70% reduction
 of brotli compressed files. I suspect that a full conversion of
-LinkedIn.com's website to this approach may net 75% and 60% corr
+LinkedIn.com's website to this approach may net 75% uncompressed and 60%
+compressed savings.
 
 ## Learnings:
 
