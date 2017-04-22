@@ -34,7 +34,7 @@ A CSS Block has 5 key concepts:
    that block but that must be applied to one or more HTML element contained in
    the document subtree. You can think of this as a CSS class that is
    local to the block.
-5. Substate - A Substate belong to an Element and can only be applied to
+5. Substate - A Substate belongs to an Element and can only be applied to
    an Element for which the state belongs. You can think of this as a
    CSS class that is also applied in conjunction with the element when the
    substate is set.
@@ -42,20 +42,27 @@ A CSS Block has 5 key concepts:
 Syntax
 ------
 
+By default, every class in a block is local to that block and represents
+an Element.
+
+State sets are inferred by finding all the states with a shared first
+identifier.
+
+
 The convention is to name a file according to the block: `form.block.scss`
+
+Example:
 
 
 ```css
-:block(form) {
+:block {
   margin: 2em 0;
   padding: 1em 0.5em;
-  &:state-set(theme) {
-    &:state(red) {
-      color: #c00;
-    }
-    &:state(blue) {
-      color: #006;
-    }
+  &:state(theme red) {
+    color: #c00;
+  }
+  &:state(theme blue) {
+    color: #006;
   }
 
   &:state(compact) {
@@ -65,7 +72,7 @@ The convention is to name a file according to the block: `form.block.scss`
 }
 
 
-:element(input-area) {
+.input-area {
   display: flex;
   margin: 1em 0;
   font-size: 1.5rem;
@@ -74,11 +81,11 @@ The convention is to name a file according to the block: `form.block.scss`
   }
 }
 
-:element(label) {
+.label {
   flex: 1fr;
 }
 
-:element(input) {
+.input {
   flex: 3fr;
   :state(theme red) & {
     border-color: #c00;
@@ -88,7 +95,7 @@ The convention is to name a file according to the block: `form.block.scss`
   }
 }
 
-:element(submit) {
+.submit {
   width: 200px;
   &:substate(disabled) {
     color: gray;
@@ -99,22 +106,22 @@ The convention is to name a file according to the block: `form.block.scss`
 Which would flatten to:
 
 ```css
-:block(form) { margin: 2em 0; padding: 1em 0.5em; }
-:block(form):state-set(theme):state(red) { color: #c00; }
-:block(form):state-set(theme):state(blue) { color: #006; }
-:block(form):state(compact) { margin: 0.5em 0; padding: 0.5em 0.5em; }
+:block { margin: 2em 0; padding: 1em 0.5em; }
+:block:state(theme red) { color: #c00; }
+:block:state(theme blue) { color: #006; }
+:block:state(compact) { margin: 0.5em 0; padding: 0.5em 0.5em; }
 
-:element(input-area) { display: flex; margin: 1em 0; font-size: 1.5rem; }
-:state(compact) :element(input-area) { margin: 0.25em 0; }
+.input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
+:state(compact) .input-area { margin: 0.25em 0; }
 
-:element(label) { flex: 1fr; }
+.label { flex: 1fr; }
 
-:element(input) { flex: 3fr; }
-:state(theme red) :element(input) { border-color: #c00; }
-:state(theme blue) :element(input) { border-color: #006; }
+.input { flex: 3fr; }
+:state(theme red) .input { border-color: #c00; }
+:state(theme blue) .input { border-color: #006; }
 
-:element(submit) { width: 200px; }
-:element(submit):substate(disabled) { color: gray; }
+.submit { width: 200px; }
+.submit:substate(disabled) { color: gray; }
 ```
 
 Forward Declaration Syntax
@@ -293,6 +300,11 @@ be defined that resolves the composition issue.
 
 class=CSSBlock.compose(Block1.element1, Block2.element2);
 
+Media Queries
+-------------
+
+TBD how media queries are handled.
+
 Output
 ------
 
@@ -339,10 +351,25 @@ By default, the classes would be generated and compact:
 .gpctrpxsAv { color: gray; }
 ```
 
+Interopating with `css-modules`
+-----------------------------
+
+There's a convention for importing and exporting values across different
+css module systems. We should consider how we want to use and support
+this.
+
+https://github.com/css-modules/icss
+
+Detecting Unused Styles
+-----------------------
+
+TBD: It should be possible to detect unused styles and prune
+from the final build.
+
 Compressing Classes
 -------------------
 
-There are few techniques being considered to compress our classes:
+There are few techniques being considered to compress classes:
 
 0. *No compression*. Outputs standard BEM classes. This is good for when
    porting an existing code base from BEM to CSS Blocks until all
@@ -374,6 +401,13 @@ There are few techniques being considered to compress our classes:
    predict the classnames while still preserving some developer
    familiarity when reading the output. This might be best for
    development mode.
+4. *Content hashing*. This strategy produces predictable classnames which
+   means that developers **could** abuse them if they wanted to.
+   However, this approach also means that class names can be deduplicated
+   across files built separately in downstream processing and exracted to
+   a shared file. It also means that a custom brotli dictionary could be
+   produced that would allow the most common class names to be efficiently
+   compressed across templates and css files.
 
 Ultimately, the project should support all of these compression
 strategies and allow one to be selected via configuration.
