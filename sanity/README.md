@@ -129,6 +129,12 @@ more than it hurts and perform it accordingly.
   In some cases it will simply result in re-assembling the original
   rulesets in other cases it will result in finding shared "Base"
   selectors.
+* There is a big win to keeping CSS bundled together with this approach.
+  There is a strong dependency graph that can be constructed of styles
+  to their templates when using css-blocks and so it's possible to do
+  route-based splitting before optimizations are applied. However, It's
+  not yet clear how much of a win we will get from aggressive route-based
+  splitting. Further testing is needed. 
 
 Concerns:
 
