@@ -183,10 +183,10 @@ function extractPseudos(rule) {
 }
 
 function shouldSkipDecl(node) {
-  return node.important || (
-           node.parent && node.parent.parent &&
-           node.parent.parent.type == "atrule" && node.parent.parent.name.match(/keyframes/)
-         );
+  return node.important || 
+           (node.parent && (node.parent.type == "atrule" && node.parent.name.match(/font-face/))) ||
+           (node.parent && node.parent.parent &&
+            node.parent.parent.type == "atrule" && node.parent.parent.name.match(/keyframes/));
 }
 
 function isBlockModifier(aClassSelector) {
@@ -210,49 +210,54 @@ var compactor = postcss.plugin('compactor', function myplugin(options) {
     });
 
     return function (css) {
-      var decls = {};
-      options = options || {};
-      if (options.useBrotliDictionary) {
-        loadBrotliDict();
-      }
-      css.walkRules(function(rule) {
-        selectorScopeExtractor.process(rule.selector);
-      });
+      try {
+        var decls = {};
+        options = options || {};
+        if (options.useBrotliDictionary) {
+          loadBrotliDict();
+        }
+        css.walkRules(function(rule) {
+          selectorScopeExtractor.process(rule.selector);
+        });
 
-      css.walkDecls(function(node, idx) {
-        if (shouldSkipDecl(node)) {
-          //console.warn("not optimizing: " + node.toString());
-        } else {
-          var rule = node.parent;
-          var pseudos = extractPseudos(rule);
-          var atrule;
-          if (node.parent.parent.type == "atrule") {
-            atrule = node.parent.parent;
-            addAtRuleDecl(decls, blockModifiers, pseudos, node, atrule);
+        css.walkDecls(function(node, idx) {
+          if (shouldSkipDecl(node)) {
+            //console.warn("not optimizing: " + node.toString());
           } else {
-            addBaseDecl(decls, blockModifiers, pseudos, node);
+            var rule = node.parent;
+            var pseudos = extractPseudos(rule);
+            var atrule;
+            if (node.parent.parent.type == "atrule") {
+              atrule = node.parent.parent;
+              addAtRuleDecl(decls, blockModifiers, pseudos, node, atrule);
+            } else {
+              addBaseDecl(decls, blockModifiers, pseudos, node);
+            }
+            node.remove();
+            if (!rule.first) {
+              rule.remove();
+            }
+            if (atrule && !atrule.first) {
+              atrule.remove();
+            }
           }
-          node.remove();
-          if (!rule.first) {
-            rule.remove();
+        });
+        var anchor = insertOptimizedDecls(classGenerator, css, decls, "base");
+        Object.keys(decls).forEach(function(scope) {
+          if (scope != "base") {
+            var atrule = postcss.parse(scope).first;
+            insertOptimizedDecls(classGenerator, atrule, decls, scope);
+            //console.log("<<<<<");
+            //console.log(atrule.toString());
+            //console.log(">>>>>");
+            atrule.moveAfter(anchor);
+            anchor = atrule;
           }
-          if (atrule && !atrule.first) {
-            atrule.remove();
-          }
-        }
-      });
-      var anchor = insertOptimizedDecls(classGenerator, css, decls, "base");
-      Object.keys(decls).forEach(function(scope) {
-        if (scope != "base") {
-          var atrule = postcss.parse(scope).first;
-          insertOptimizedDecls(classGenerator, atrule, decls, scope);
-          //console.log("<<<<<");
-          //console.log(atrule.toString());
-          //console.log(">>>>>");
-          atrule.moveAfter(anchor);
-          anchor = atrule;
-        }
-      });
+        });
+      } catch (e) {
+        console.error(e);
+        throw e;
+      }
     };
 });
 
