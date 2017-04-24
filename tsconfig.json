@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    // Compilation Configuration
+    "target": "es2015",
+    "inlineSources": true,
+    "inlineSourceMap": true,
+    "declaration": true,
+
+    // Environment Configuration
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "preserveConstEnums": true,
+
+    "newLine": "LF",
+    "noEmit": true
+  },
+  "exclude": [
+    "sanity",
+    "dist",
+    "tsbuild",
+    "node_modules",
+    "test"
+  ]
+}

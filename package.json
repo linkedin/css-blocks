@@ -1,0 +1,32 @@
+{
+  "name": "css-blocks",
+  "version": "0.9.0",
+  "description": "Fast, maintainable, optimal, component-oriented CSS.",
+  "main": "dist/index.js",
+  "scripts": {
+    "prepublish": "rollup -c --f es -o dist/index.js",
+    "pretest": "tsc -p test/tsconfig.json",
+    "test": "mocha tsbuild/test/test.js --opts test/mocha.opts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sailfishers/css-blocks.git"
+  },
+  "keywords": [
+    "css"
+  ],
+  "author": "Chris Eppstein",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/sailfishers/css-blocks/issues"
+  },
+  "homepage": "https://github.com/sailfishers/css-blocks#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.3.0",
+    "mocha-typescript": "^1.0.23",
+    "rollup": "^0.41.6",
+    "rollup-plugin-typescript": "^0.8.1",
+    "typescript": "^2.2.2"
+  }
+}
