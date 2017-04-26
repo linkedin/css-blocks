@@ -69,6 +69,17 @@ class BEMOutputMode {
     });
   }
 
+  @test "a state can be combined with itself"() {
+    let filename = "foo/bar/self-combinator.scss";
+    let inputCSS = `:state(big) + :state(big)::after { content: "" }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ".self-combinator--big + .self-combinator--big::after { content: \"\"; }\n"
+      );
+    });
+  }
+
   @test "handles invalid :states"() {
     let filename = "foo/bar/test-state.scss";
     let inputCSS = `:block {color: #111;}
@@ -76,7 +87,17 @@ class BEMOutputMode {
     return this.process(filename, inputCSS).then(() => {
       assert(false, "Error was not raised.");
     }).catch((reason) => {
-      assert.equal(reason.message, "Invalid :state declaration: :state() (foo/bar/test-state.scss:2:21)");
+      assert.equal(reason.message, "Invalid state declaration: :state() (foo/bar/test-state.scss:2:21)");
+    });
+  }
+
+  @test "cannot combine two different :states"() {
+    let filename = "foo/bar/illegal-state-combinator.scss";
+    let inputCSS = `:state(a) :state(b) { float: left; }`;
+    return this.process(filename, inputCSS).then(() => {
+      assert(false, "Error was not raised.");
+    }).catch((reason) => {
+      assert.equal(reason.message, "Distinct states cannot be combined: :state(a) :state(b) (foo/bar/illegal-state-combinator.scss:1:1)");
     });
   }
 }

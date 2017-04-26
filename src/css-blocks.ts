@@ -123,14 +123,14 @@ class Block {
     this._exclusiveStateGroups[group.name] = group;
   }
 
-  ensureState(name: string, groupName?: string): State {
+  ensureState(info: StateInfo): State {
     let state: State;
     let group: ExclusiveStateGroup;
-    if (groupName) {
-      group = this._exclusiveStateGroups[groupName] || new ExclusiveStateGroup(groupName, this);
-      state = new State(name, group);
+    if (info.group) {
+      group = this._exclusiveStateGroups[info.group] || new ExclusiveStateGroup(info.group, this);
+      state = new State(info.name, group);
     } else {
-      state = this._states[name] || new State(name, this);
+      state = this._states[info.name] || new State(info.name, this);
     }
     return state;
   }
@@ -157,6 +157,11 @@ class ExclusiveStateGroup {
   addState(state: State): void {
     this._states[state.name] = state;
   }
+}
+
+interface StateInfo {
+  group?: string;
+  name: string;
 }
 
 class State {
@@ -223,6 +228,57 @@ function selectorSourceLocation(rule, selector): api.SourceLocation | void {
   }
 }
 
+function stateParser(rule, pseudo): StateInfo {
+  if (pseudo.nodes.length === 0) {
+    // Empty state name or missing parens
+    throw new api.InvalidBlockSyntax(`:state name is missing`,
+                                     selectorSourceLocation(rule, pseudo));
+  }
+  if (pseudo.nodes.length !== 1) {
+    // I think this is if they have a comma in their :state like :state(foo, bar)
+    throw new api.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
+                                     selectorSourceLocation(rule, pseudo));
+  }
+
+  switch(pseudo.nodes[0].nodes.length) {
+    case 3:
+      return {
+        group: pseudo.nodes[0].nodes[0].value.trim(),
+        name: pseudo.nodes[0].nodes[2].value.trim()
+      };
+    case 1:
+      return {
+        name: pseudo.nodes[0].nodes[0].value.trim()
+      };
+    default:
+      // too many state names
+      throw new api.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
+                                       selectorSourceLocation(rule, pseudo));
+  }
+}
+
+function assertValidCombinators(rule, selector) {
+  let states = new Set<string>();
+  let combinators = new Set<string>();
+  selector.each((s) => {
+    if (s.type === "pseudo" && s.value === ":state") {
+      let info = stateParser(rule, s);
+      if (info.group) {
+        states.add(`${info.group} ${info.name}`);
+      } else {
+        states.add(info.name);
+      }
+    } else if (s.type === "combinator") {
+      combinators.add(s.value);
+    }
+    return true;
+  });
+  if (combinators.size > 0 && states.size > 1) {
+    throw new api.InvalidBlockSyntax(`Distinct states cannot be combined: ${rule.selector}`,
+                                       selectorSourceLocation(rule, selector.nodes[0]));
+  }
+}
+
 export default function initializer(postcssImpl: typeof postcss) {
   return postcssImpl.plugin("css-blocks", (pluginOptions: api.PluginOptions) => {
     let opts = new OptionsReader(pluginOptions);
@@ -237,21 +293,22 @@ export default function initializer(postcssImpl: typeof postcss) {
         let block = new Block(path.parse(sourceFile).name);
         root.walkRules((rule) => {
           let selector =  selectorParser().process(rule.selector).res;
+          selector.nodes.forEach((sel) => { assertValidCombinators(rule, sel); });
+          let replacements: any[] = [];
           selector.walkPseudos((pseudo) => {
             if (pseudo.value === ":block") {
-              pseudo.replaceWith(selectorParser.className({value: block.cssClass(opts)}));
+              replacements.push([pseudo, selectorParser.className({value: block.cssClass(opts)})]);
             }
             else if (pseudo.value === ":state") {
-              let stateName
-              try {
-                stateName = pseudo.nodes[0].nodes[0].value;
-              } catch (e) {
-                let errorLocation = selectorSourceLocation(rule, pseudo);
-                throw new api.InvalidBlockSyntax(`Invalid :state declaration: ${pseudo}`, errorLocation);
-              }
-              let state = block.ensureState(stateName);
-              pseudo.replaceWith(selectorParser.className({value: state.cssClass(opts)}));
+              // mutation can't be done inside the walk despite what the docs say
+              let state = block.ensureState(stateParser(rule, pseudo));
+              replacements.push([pseudo, selectorParser.className({value: state.cssClass(opts)})]);
             }
+          });
+          replacements.forEach((pair) => {
+            let existing = pair[0];
+            let replacement = pair[1];
+            existing.replaceWith(replacement);
           });
           rule.selector = selector.toString();
         });
