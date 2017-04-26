@@ -1,17 +1,17 @@
 //import { suite, test, slow, timeout, skip, only } from "mocha-typescript";
-declare function require(name:string):any;
+//declare function require(name:string):any;
 import { suite, test } from "mocha-typescript";
-import { default as cssBlocksInitializer, api as cssBlocks } from "../src/css-blocks";
+import cssBlocks = require("../src/css-blocks");
 import { assert } from "chai";
 
 import * as postcss from "postcss";
 import * as perfectionist from "perfectionist";
  
 @suite("In BEM output mode")
-class BEMOutputMode {
+export class BEMOutputMode {
   process(filename: string, contents: string) {
     let processOpts = { from: filename };
-    let cssBlocksProcessor = cssBlocksInitializer(postcss)
+    let cssBlocksProcessor = cssBlocks(postcss)
     let cssBlocksOpts: cssBlocks.PluginOptions = {
       outputMode: cssBlocks.OutputMode.BEM,
     };

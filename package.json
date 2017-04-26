@@ -2,11 +2,11 @@
   "name": "css-blocks",
   "version": "0.9.0",
   "description": "Fast, maintainable, optimal, component-oriented CSS.",
-  "main": "dist/index.js",
+  "main": "dist/src/css-blocks.js",
   "scripts": {
-    "prepublish": "rollup -c --f es -o dist/index.js",
+    "prepublish": "tsc -p test/tsconfig.json",
     "pretest": "tsc -p test/tsconfig.json",
-    "test": "mocha tsbuild/test/test.js --opts test/mocha.opts"
+    "test": "mocha dist/test/test.js --opts test/mocha.opts"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,11 @@
   "bugs": {
     "url": "https://github.com/sailfishers/css-blocks/issues"
   },
+  "files": [
+    "dist",
+    "*.md",
+    "test/mocha.opts"
+  ],
   "homepage": "https://github.com/sailfishers/css-blocks#readme",
   "devDependencies": {
     "@types/node": "^7.0.13",
@@ -28,8 +33,6 @@
     "mocha-typescript": "^1.0.23",
     "perfectionist": "^2.4.0",
     "postcss": "^5.2.17",
-    "rollup": "^0.41.6",
-    "rollup-plugin-typescript": "^0.8.1",
     "typescript": "^2.2.2"
   },
   "dependencies": {

@@ -5,13 +5,14 @@
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
+    "allowSyntheticDefaultImports": true,
 
     // Environment Configuration
     "experimentalDecorators": true,
     "moduleResolution": "node",
 
     // Enhance Strictness
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -21,9 +22,15 @@
     "noImplicitThis": true,
     "preserveConstEnums": true,
 
+    // output options
     "newLine": "LF",
-    "noEmit": true
+    "outDir": "dist",
+    "module": "commonjs"
   },
+  "include": [
+    "src",
+    "test"
+  ],
   "exclude": [
     "sanity",
     "dist",

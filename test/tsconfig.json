@@ -1,17 +1,8 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
     "removeComments": false,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "inlineSourceMap": false,
-    "experimentalDecorators": true,
-    "declaration": true,
-    "noEmit": false,
-    "outDir": "../tsbuild",
-    "noUnusedLocals": false,
-    "noImplicitAny": false
+    "outDir": "../dist"
   },
   "include": [
     "../src",
@@ -20,7 +11,6 @@
   "exclude": [
     "../sanity",
     "../dist",
-    "../tsbuild",
     "../node_modules",
     "mocha.opts"
   ]

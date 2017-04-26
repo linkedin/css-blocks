@@ -2,8 +2,55 @@ import * as postcss from "postcss";
 import * as path from "path";
 import * as selectorParser from "postcss-selector-parser";
 
-export namespace api {
+// This fixes an annoying interop issue because of how postcss-selector-parser exports.
+const selectorParserFn = require("postcss-selector-parser");
 
+function cssBlocks(postcssImpl: typeof postcss) {
+  return postcssImpl.plugin("css-blocks", (pluginOptions: cssBlocks.PluginOptions) => {
+    let opts = new OptionsReader(pluginOptions);
+    return (root, result) => {
+      let sourceFile;
+      if (result && result.opts && result.opts.from) {
+        sourceFile = result.opts.from;
+      } else {
+        throw new cssBlocks.MissingSourcePath();
+      }
+      try {
+        let block = new Block(path.parse(sourceFile).name);
+        root.walkRules((rule) => {
+          let selector =  selectorParserFn().process(rule.selector).res;
+          selector.nodes.forEach((sel) => { assertValidCombinators(rule, sel); });
+          let replacements: any[] = [];
+          selector.walkPseudos((pseudo) => {
+            if (pseudo.value === ":block") {
+              replacements.push([pseudo, selectorParser.className({value: block.cssClass(opts)})]);
+            }
+            else if (pseudo.value === ":state") {
+              // mutation can't be done inside the walk despite what the docs say
+              let state = block.ensureState(stateParser(rule, pseudo));
+              replacements.push([pseudo, selectorParser.className({value: state.cssClass(opts)})]);
+            }
+          });
+          replacements.forEach((pair) => {
+            let existing = pair[0];
+            let replacement = pair[1];
+            existing.replaceWith(replacement);
+          });
+          rule.selector = selector.toString();
+        });
+      } catch (e) {
+        if (e instanceof cssBlocks.CssBlockError && e.location && sourceFile) {
+          let loc: cssBlocks.SourceLocation = e.location;
+          loc.filename = sourceFile;
+          e.location = loc;
+        }
+        throw e;
+      }
+    }
+  });
+}
+
+namespace cssBlocks {
   export enum OutputMode {
     BEM = 1
   }
@@ -55,7 +102,7 @@ export namespace api {
   export class MissingSourcePath extends CssBlockError {
     constructor() {
       super("PostCSS `from` option is missing." +
-            " The source filename is required for CSS Blocks to work correctly.");
+        " The source filename is required for CSS Blocks to work correctly.");
     }
   }
 
@@ -66,18 +113,18 @@ export namespace api {
   }
 }
 
-class OptionsReader implements api.PluginOptions {
-  private _outputMode: api.OutputMode;
+class OptionsReader implements cssBlocks.PluginOptions {
+  private _outputMode: cssBlocks.OutputMode;
 
-  constructor(opts: api.PluginOptions) {
-    this._outputMode = opts.outputMode || api.OutputMode.BEM;
+  constructor(opts: cssBlocks.PluginOptions) {
+    this._outputMode = opts.outputMode || cssBlocks.OutputMode.BEM;
   }
 
   get outputMode() {
     return this._outputMode;
   }
   get outputModeName(): string {
-    return api.OutputMode[this.outputMode];
+    return cssBlocks.OutputMode[this.outputMode];
   }
 }
 
@@ -108,7 +155,7 @@ class Block {
 
   cssClass(opts: OptionsReader) {
     switch(opts.outputMode) {
-      case api.OutputMode.BEM:
+      case cssBlocks.OutputMode.BEM:
         return this.name;
       default:
         throw "this never happens";
@@ -196,7 +243,7 @@ class State {
 
   cssClass(opts: OptionsReader) {
     switch(opts.outputMode) {
-      case api.OutputMode.BEM:
+      case cssBlocks.OutputMode.BEM:
         return `${this.block.cssClass(opts)}--${this.name}`;
       default:
         throw "this never happens";
@@ -206,7 +253,7 @@ class State {
 }
 
 
-function addSourceLocations(...locations: api.SourceLocation[]) {
+function addSourceLocations(...locations: cssBlocks.SourceLocation[]) {
   return locations.reduce((l, o) => {
     if (o.line === 1) {
       return {
@@ -222,7 +269,7 @@ function addSourceLocations(...locations: api.SourceLocation[]) {
   });
 }
 
-function selectorSourceLocation(rule, selector): api.SourceLocation | void {
+function selectorSourceLocation(rule, selector): cssBlocks.SourceLocation | void {
   if (rule.source && rule.source.start && selector.source && selector.source.start) {
     return addSourceLocations(rule.source.start, selector.source.start);
   }
@@ -231,12 +278,12 @@ function selectorSourceLocation(rule, selector): api.SourceLocation | void {
 function stateParser(rule, pseudo): StateInfo {
   if (pseudo.nodes.length === 0) {
     // Empty state name or missing parens
-    throw new api.InvalidBlockSyntax(`:state name is missing`,
+    throw new cssBlocks.InvalidBlockSyntax(`:state name is missing`,
                                      selectorSourceLocation(rule, pseudo));
   }
   if (pseudo.nodes.length !== 1) {
     // I think this is if they have a comma in their :state like :state(foo, bar)
-    throw new api.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
+    throw new cssBlocks.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
                                      selectorSourceLocation(rule, pseudo));
   }
 
@@ -252,7 +299,7 @@ function stateParser(rule, pseudo): StateInfo {
       };
     default:
       // too many state names
-      throw new api.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
+      throw new cssBlocks.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
                                        selectorSourceLocation(rule, pseudo));
   }
 }
@@ -261,65 +308,22 @@ function assertValidCombinators(rule, selector) {
   let states = new Set<string>();
   let combinators = new Set<string>();
   selector.each((s) => {
-    if (s.type === "pseudo" && s.value === ":state") {
+    if (s.type === selectorParser.PSEUDO && s.value === ":state") {
       let info = stateParser(rule, s);
       if (info.group) {
         states.add(`${info.group} ${info.name}`);
       } else {
         states.add(info.name);
       }
-    } else if (s.type === "combinator") {
+    } else if (s.type === selectorParser.COMBINATOR) {
       combinators.add(s.value);
     }
     return true;
   });
   if (combinators.size > 0 && states.size > 1) {
-    throw new api.InvalidBlockSyntax(`Distinct states cannot be combined: ${rule.selector}`,
+    throw new cssBlocks.InvalidBlockSyntax(`Distinct states cannot be combined: ${rule.selector}`,
                                        selectorSourceLocation(rule, selector.nodes[0]));
   }
 }
 
-export default function initializer(postcssImpl: typeof postcss) {
-  return postcssImpl.plugin("css-blocks", (pluginOptions: api.PluginOptions) => {
-    let opts = new OptionsReader(pluginOptions);
-    return (root, result) => {
-      let sourceFile;
-      if (result && result.opts && result.opts.from) {
-        sourceFile = result.opts.from;
-      } else {
-        throw new api.MissingSourcePath();
-      }
-      try {
-        let block = new Block(path.parse(sourceFile).name);
-        root.walkRules((rule) => {
-          let selector =  selectorParser().process(rule.selector).res;
-          selector.nodes.forEach((sel) => { assertValidCombinators(rule, sel); });
-          let replacements: any[] = [];
-          selector.walkPseudos((pseudo) => {
-            if (pseudo.value === ":block") {
-              replacements.push([pseudo, selectorParser.className({value: block.cssClass(opts)})]);
-            }
-            else if (pseudo.value === ":state") {
-              // mutation can't be done inside the walk despite what the docs say
-              let state = block.ensureState(stateParser(rule, pseudo));
-              replacements.push([pseudo, selectorParser.className({value: state.cssClass(opts)})]);
-            }
-          });
-          replacements.forEach((pair) => {
-            let existing = pair[0];
-            let replacement = pair[1];
-            existing.replaceWith(replacement);
-          });
-          rule.selector = selector.toString();
-        });
-      } catch (e) {
-        if (e instanceof api.CssBlockError && e.location && sourceFile) {
-          let loc: api.SourceLocation = e.location;
-          loc.filename = sourceFile;
-          e.location = loc;
-        }
-        throw e;
-      }
-    }
-  });
-}
+export = cssBlocks
