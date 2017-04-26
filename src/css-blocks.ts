@@ -21,6 +21,12 @@ export namespace api {
             " The source filename is required for CSS Blocks to work correctly.");
     }
   }
+
+  export class InvalidBlockSyntax extends CssBlockError {
+    constructor(message) {
+      super(message);
+    }
+  }
 }
 
 class OptionsReader implements api.PluginOptions {
@@ -38,8 +44,18 @@ class OptionsReader implements api.PluginOptions {
   }
 }
 
+interface StateMap {
+  [stateName: string]: State;
+}
+
+interface ExclusiveStateGroupMap {
+  [groupName: string]: ExclusiveStateGroup;
+}
+
 class Block {
   private _name: string;
+  private _exclusiveStateGroups: ExclusiveStateGroupMap = {};
+  private _states: StateMap = {};
 
   constructor(name: string) {
     this._name = name;
@@ -48,9 +64,103 @@ class Block {
   get name(): string {
     return this._name;
   }
+
   set name(name: string) {
     this._name = name;
   }
+
+  cssClass(opts: OptionsReader) {
+    switch(opts.outputMode) {
+      case api.OutputMode.BEM:
+        return this.name;
+      default:
+        throw "this never happens";
+    }
+  }
+
+  addState(state: State): void {
+    this._states[state.name] = state;
+  }
+
+  addExclusiveStateGroup(group: ExclusiveStateGroup): void {
+    this._exclusiveStateGroups[group.name] = group;
+  }
+
+  ensureState(name: string, groupName?: string): State {
+    let state: State;
+    let group: ExclusiveStateGroup;
+    if (groupName) {
+      group = this._exclusiveStateGroups[groupName] || new ExclusiveStateGroup(groupName, this);
+      state = new State(name, group);
+    } else {
+      state = this._states[name] || new State(name, this);
+    }
+    return state;
+  }
+}
+
+class ExclusiveStateGroup {
+  private _name: string;
+  private _block: Block;
+  private _states: StateMap = {};
+
+  constructor(name: string, block: Block) {
+    this._block = block;
+    this._name = name;
+  }
+
+  get block() {
+    return this._block;
+  }
+
+  get name() {
+    return this.name;
+  }
+
+  addState(state: State): void {
+    this._states[state.name] = state;
+  }
+}
+
+class State {
+  private _block: Block;
+  private _group: ExclusiveStateGroup | void;
+  private _name: string;
+
+  constructor(name: string, blockOrGroup: Block | ExclusiveStateGroup) {
+    if (blockOrGroup instanceof Block) {
+      this._block = blockOrGroup;
+      this._name = name;
+      this._block.addState(this);
+    } else {
+      this._group = blockOrGroup;
+      this._block = blockOrGroup.block;
+      this._name = name;
+      this._group.addState(this);
+    }
+  }
+
+  get block() {
+    return this._block;
+  }
+
+  get group() {
+    return this._group;
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  cssClass(opts: OptionsReader) {
+    switch(opts.outputMode) {
+      case api.OutputMode.BEM:
+        return `${this.block.cssClass(opts)}--${this.name}`;
+      default:
+        throw "this never happens";
+    }
+  }
+
 }
 
 export default function initializer(postcssImpl: typeof postcss) {
@@ -68,7 +178,22 @@ export default function initializer(postcssImpl: typeof postcss) {
         let selector =  selectorParser().process(rule.selector).res;
         selector.walkPseudos((pseudo) => {
           if (pseudo.value === ":block") {
-            pseudo.replaceWith(selectorParser.className({value: block.name}));
+            pseudo.replaceWith(selectorParser.className({value: block.cssClass(opts)}));
+          }
+          else if (pseudo.value === ":state") {
+            let stateName
+            try {
+              stateName = pseudo.nodes[0].nodes[0].value;
+            } catch (e) {
+              let line, column;
+              if (rule.source && rule.source.start && pseudo.source && pseudo.source.start) {
+                line = rule.source.start.line + pseudo.source.start.line - 1;
+                column = rule.source.start.column + pseudo.source.start.column - 1;
+              }
+              throw new api.InvalidBlockSyntax(`Invalid :state declaration: ${pseudo} (${sourceFile}:${line}:${column})`);
+            }
+            let state = block.ensureState(stateName);
+            pseudo.replaceWith(selectorParser.className({value: state.cssClass(opts)}));
           }
         });
         rule.selector = selector.toString();

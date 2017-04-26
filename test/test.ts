@@ -22,26 +22,50 @@ class BEMOutputMode {
   }
 
   @test "replaces block withe the blockname from the file"() {
-    let filename = "foo/bar/test-1.scss";
+    let filename = "foo/bar/test-block.scss";
     let inputCSS = `:block {color: red;}`;
     return this.process(filename, inputCSS).then((result) => {
       assert.equal(
         result.css.toString(),
-        ".test-1 { color: red; }\n"
+        ".test-block { color: red; }\n"
       );
     });
   }
 
   @test "handles pseudoclasses on the :block"() {
-    let filename = "foo/bar/test-2.scss";
+    let filename = "foo/bar/test-block-pseudos.scss";
     let inputCSS = `:block {color: #111;}
                     :block:hover { font-weight: bold; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.equal(
         result.css.toString(),
-        ".test-2 { color: #111; }\n" +
-        ".test-2:hover { font-weight: bold; }\n"
+        ".test-block-pseudos { color: #111; }\n" +
+        ".test-block-pseudos:hover { font-weight: bold; }\n"
       );
+    });
+  }
+
+  @test "handles :states"() {
+    let filename = "foo/bar/test-state.scss";
+    let inputCSS = `:block {color: #111;}
+                    :state(big) { transform: scale(2); }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ".test-state { color: #111; }\n" +
+        ".test-state--big { transform: scale( 2 ); }\n"
+      );
+    });
+  }
+
+  @test "handles invalid :states"() {
+    let filename = "foo/bar/test-state.scss";
+    let inputCSS = `:block {color: #111;}
+                    :state() { transform: scale(2); }`;
+    return this.process(filename, inputCSS).then(() => {
+      assert(false, "This should not have been called.");
+    }).catch((reason) => {
+      assert.equal(reason.message, "Invalid :state declaration: :state() (foo/bar/test-state.scss:2:21)");
     });
   }
 }
