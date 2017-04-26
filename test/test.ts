@@ -58,12 +58,23 @@ class BEMOutputMode {
     });
   }
 
+  @test "handles comma-delimited :states"() {
+    let filename = "foo/bar/test-state.scss";
+    let inputCSS = `:state(big), :state(really-big) { transform: scale(2); }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ".test-state--big, .test-state--really-big { transform: scale( 2 ); }\n"
+      );
+    });
+  }
+
   @test "handles invalid :states"() {
     let filename = "foo/bar/test-state.scss";
     let inputCSS = `:block {color: #111;}
                     :state() { transform: scale(2); }`;
     return this.process(filename, inputCSS).then(() => {
-      assert(false, "This should not have been called.");
+      assert(false, "Error was not raised.");
     }).catch((reason) => {
       assert.equal(reason.message, "Invalid :state declaration: :state() (foo/bar/test-state.scss:2:21)");
     });
