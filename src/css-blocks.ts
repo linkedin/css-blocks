@@ -46,7 +46,7 @@ function cssBlocks(postcssImpl: typeof postcss) {
         }
         throw e;
       }
-    }
+    };
   });
 }
 
@@ -252,7 +252,6 @@ class State {
 
 }
 
-
 function addSourceLocations(...locations: cssBlocks.SourceLocation[]) {
   return locations.reduce((l, o) => {
     if (o.line === 1) {
@@ -326,4 +325,4 @@ function assertValidCombinators(rule, selector) {
   }
 }
 
-export = cssBlocks
+export = cssBlocks;
