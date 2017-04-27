@@ -1,18 +1,33 @@
 //import { suite, test, slow, timeout, skip, only } from "mocha-typescript";
 //declare function require(name:string):any;
 import { suite, test } from "mocha-typescript";
-import cssBlocks = require("../src/css-blocks");
+import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
+import { PluginOptions, OptionsReader } from "../src/Options";
 
 import * as postcss from "postcss";
 import * as perfectionist from "perfectionist";
+
+@suite("Setting up")
+export class SetupTests {
+  @test "options are optional"() {
+    let cssBlocksPlugin = cssBlocks(postcss);
+    let processor = cssBlocksPlugin();
+    assert(processor);
+  }
+  @test "default options"() {
+    const reader = new OptionsReader({});
+    assert.equal(reader.outputMode, cssBlocks.OutputMode.BEM);
+    assert.equal(reader.outputModeName, "BEM");
+  }
+}
  
 @suite("In BEM output mode")
 export class BEMOutputMode {
   process(filename: string, contents: string) {
     let processOpts = { from: filename };
     let cssBlocksProcessor = cssBlocks(postcss)
-    let cssBlocksOpts: cssBlocks.PluginOptions = {
+    let cssBlocksOpts: PluginOptions = {
       outputMode: cssBlocks.OutputMode.BEM,
     };
     return postcss([
