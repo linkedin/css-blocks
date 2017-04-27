@@ -20,6 +20,21 @@ export class SetupTests {
     assert.equal(reader.outputMode, cssBlocks.OutputMode.BEM);
     assert.equal(reader.outputModeName, "BEM");
   }
+  @test "a filename is required"() {
+    let cssBlocksPlugin = cssBlocks(postcss);
+    let processor = cssBlocksPlugin();
+    let inputCSS = `:block {color: red;}`;
+    return postcss([
+      processor
+    ]).process(inputCSS, {}).then(() => {
+      assert(false, "Error was not raised.");
+    }).catch((reason) => {
+      assert(reason instanceof cssBlocks.CssBlockError);
+      assert(reason instanceof cssBlocks.MissingSourcePath);
+      assert.equal(reason.message, "PostCSS `from` option is missing. The source filename is required for CSS Blocks to work correctly.");
+    });
+
+  }
 }
  
 @suite("In BEM output mode")
@@ -102,6 +117,8 @@ export class BEMOutputMode {
     return this.process(filename, inputCSS).then(() => {
       assert(false, "Error was not raised.");
     }).catch((reason) => {
+      assert(reason instanceof cssBlocks.CssBlockError);
+      assert(reason instanceof cssBlocks.InvalidBlockSyntax);
       assert.equal(reason.message, "Invalid state declaration: :state() (foo/bar/test-state.scss:2:21)");
     });
   }
@@ -112,6 +129,8 @@ export class BEMOutputMode {
     return this.process(filename, inputCSS).then(() => {
       assert(false, "Error was not raised.");
     }).catch((reason) => {
+      assert(reason instanceof cssBlocks.CssBlockError);
+      assert(reason instanceof cssBlocks.InvalidBlockSyntax);
       assert.equal(reason.message, "Distinct states cannot be combined: :state(a) :state(b) (foo/bar/illegal-state-combinator.scss:1:1)");
     });
   }
