@@ -174,6 +174,21 @@ export class BEMOutputMode extends BEMProcessor {
       );
     });
   }
+
+  @test "handles elements with substates"() {
+    let filename = "foo/bar/stateful-element.css";
+    let inputCSS = `:block {color: #111;}
+                    .my-element { display: none; }
+                    .my-element:substate(visible) { display: block; }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ".stateful-element { color: #111; }\n" +
+        ".stateful-element__my-element { display: none; }\n" +
+        ".stateful-element__my-element--visible { display: block; }\n"
+      );
+    });
+  }
 }
 
 

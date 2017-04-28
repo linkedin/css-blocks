@@ -2,7 +2,7 @@ import * as postcss from "postcss";
 import * as path from "path";
 import * as selectorParser from "postcss-selector-parser";
 import { PluginOptions, OptionsReader } from "./options";
-import { Block, StateInfo } from "./Block";
+import { Block, StateInfo, State, BlockElement } from "./Block";
 export { PluginOptions } from "./options";
 import * as errors from "./errors";
 
@@ -12,8 +12,11 @@ const selectorParserFn = require("postcss-selector-parser");
 enum BlockTypes {
   block = 1,
   state,
-  element
+  element,
+  substate
 }
+
+type BlockObject = Block | State | BlockElement;
 
 export class Plugin {
 
@@ -46,23 +49,74 @@ export class Plugin {
         selector.nodes.forEach((sel) => { this.assertValidCombinators(rule, sel); });
         // mutation can't be done inside the walk despite what the docs say
         let replacements: any[] = [];
-        selector.walk((s) => {
-          if (s.type === selectorParser.PSEUDO && s.value === ":block") {
-            replacements.push([s, selectorParser.className({value: block.cssClass(this.opts)})]);
-          }
-          else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
-            let state = block.ensureState(this.stateParser(rule, s));
-            replacements.push([s, selectorParser.className({value: state.cssClass(this.opts)})]);
-          }
-          else if (s.type === selectorParser.CLASS) {
-            let element = block.ensureElement(s.value);
-            replacements.push([s, selectorParser.className({value: element.cssClass(this.opts)})]);
-          }
+        let lastSel: any;
+        let thisSel: any;
+        let lastNode: BlockObject | null = null;
+        let thisNode: BlockObject | null = null;
+        selector.each((individualSelector) => {
+          individualSelector.walk((s) => {
+            if (s.type === selectorParser.PSEUDO && s.value === ":block") {
+              if (s.parent === individualSelector) {
+                thisNode = block;
+                thisSel = s;
+              }
+              replacements.push([s, selectorParser.className({value: block.cssClass(this.opts)})]);
+            }
+            else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
+              let state = block.ensureState(this.stateParser(rule, s));
+              let newClass = selectorParser.className({value: state.cssClass(this.opts)});
+              if (s.parent === individualSelector) {
+                thisNode = state;
+                thisSel = newClass;
+              }
+              replacements.push([s, newClass]);
+            }
+            else if (s.type === selectorParser.CLASS) {
+              let element = block.ensureElement(s.value);
+              let newClass = selectorParser.className({value: element.cssClass(this.opts)});
+              if (s.parent === individualSelector) {
+                thisNode = element;
+                thisSel = newClass;
+              }
+              replacements.push([s, newClass]);
+            }
+            else if (s.type === selectorParser.PSEUDO && s.value === ":substate") {
+              if (s.parent !== individualSelector) {
+                throw new errors.InvalidBlockSyntax(
+                  `Illegal use of :substate() in \`${rule.selector}\``,
+                  this.selectorSourceLocation(rule, s));
+              }
+              if (lastNode instanceof BlockElement) {
+                let element: BlockElement = lastNode;
+                let substate: State = element.ensureState(this.stateParser(rule, s));
+                thisNode = substate;
+                thisSel = selectorParser.className({value: substate.cssClass(this.opts)});
+                replacements.push([lastSel, null]);
+                replacements.push([s, thisSel]);
+              } else {
+                throw new errors.InvalidBlockSyntax(
+                  `:substate() must immediately follow a block element in \`${rule.selector}\``,
+                  this.selectorSourceLocation(rule, s));
+              }
+            } else if (s.parent === individualSelector) {
+              thisNode = null;
+              thisSel = null;
+            }
+
+            if (s.parent === individualSelector) {
+              lastNode = thisNode;
+              lastSel = thisSel;
+            }
+          });
         });
         replacements.forEach((pair) => {
           let existing = pair[0];
           let replacement = pair[1];
-          existing.replaceWith(replacement);
+          if (replacement) {
+            existing.replaceWith(replacement);
+          } else {
+            existing.remove();
+          }
         });
         rule.selector = selector.toString();
       });
