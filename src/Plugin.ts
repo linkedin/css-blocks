@@ -9,6 +9,12 @@ import * as errors from "./errors";
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 const selectorParserFn = require("postcss-selector-parser");
 
+enum BlockTypes {
+  block = 1,
+  state,
+  element
+}
+
 export class Plugin {
 
   private opts: OptionsReader;
@@ -31,15 +37,19 @@ export class Plugin {
       root.walkRules((rule) => {
         let selector =  selectorParserFn().process(rule.selector).res;
         selector.nodes.forEach((sel) => { this.assertValidCombinators(rule, sel); });
+        // mutation can't be done inside the walk despite what the docs say
         let replacements: any[] = [];
-        selector.walkPseudos((pseudo) => {
-          if (pseudo.value === ":block") {
-            replacements.push([pseudo, selectorParser.className({value: block.cssClass(this.opts)})]);
+        selector.walk((s) => {
+          if (s.type === selectorParser.PSEUDO && s.value === ":block") {
+            replacements.push([s, selectorParser.className({value: block.cssClass(this.opts)})]);
           }
-          else if (pseudo.value === ":state") {
-            // mutation can't be done inside the walk despite what the docs say
-            let state = block.ensureState(this.stateParser(rule, pseudo));
-            replacements.push([pseudo, selectorParser.className({value: state.cssClass(this.opts)})]);
+          else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
+            let state = block.ensureState(this.stateParser(rule, s));
+            replacements.push([s, selectorParser.className({value: state.cssClass(this.opts)})]);
+          }
+          else if (s.type === selectorParser.CLASS) {
+            let element = block.ensureElement(s.value);
+            replacements.push([s, selectorParser.className({value: element.cssClass(this.opts)})]);
           }
         });
         replacements.forEach((pair) => {
@@ -112,22 +122,47 @@ export class Plugin {
 
   assertValidCombinators(rule, selector) {
     let states = new Set<string>();
+    let classes = new Set<string>();
     let combinators = new Set<string>();
+    let lastType: BlockTypes | null = null;
+    let thisType: BlockTypes | null = null;
     selector.each((s) => {
-      if (s.type === selectorParser.PSEUDO && s.value === ":state") {
+      if (s.type === selectorParser.PSEUDO && s.value === ":block") {
+        thisType = BlockTypes.block;
+      } else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
+        thisType = BlockTypes.state;
         let info = this.stateParser(rule, s);
         if (info.group) {
           states.add(`${info.group} ${info.name}`);
         } else {
           states.add(info.name);
         }
+      } else if (s.type === selectorParser.CLASS) {
+        thisType = BlockTypes.element;
+        classes.add(s.value);
       } else if (s.type === selectorParser.COMBINATOR) {
+        thisType = null;
         combinators.add(s.value);
       }
-      return true;
+      if (thisType && lastType && lastType !== thisType) {
+        if ((lastType === BlockTypes.block && thisType === BlockTypes.state) ||
+            (thisType === BlockTypes.block && lastType === BlockTypes.state)) {
+          throw new errors.InvalidBlockSyntax(
+            `It's redundant to specify state with block: ${rule.selector}`,
+            this.selectorSourceLocation(rule, selector.nodes[0]));
+        }
+        throw new errors.InvalidBlockSyntax(
+          `Cannot have ${BlockTypes[lastType]} and ${BlockTypes[thisType]} on the same DOM element: ${rule.selector}`,
+          this.selectorSourceLocation(rule, selector.nodes[0]));
+      }
+      lastType = thisType;
     });
     if (combinators.size > 0 && states.size > 1) {
       throw new errors.InvalidBlockSyntax(`Distinct states cannot be combined: ${rule.selector}`,
+                                         this.selectorSourceLocation(rule, selector.nodes[0]));
+    }
+    if (classes.size > 1) {
+      throw new errors.InvalidBlockSyntax(`Distinct elements cannot be combined: ${rule.selector}`,
                                          this.selectorSourceLocation(rule, selector.nodes[0]));
     }
   }

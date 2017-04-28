@@ -9,12 +9,36 @@ interface ExclusiveStateGroupMap {
   [groupName: string]: ExclusiveStateGroup;
 }
 
-export class Block {
-  private _name: string;
-  private _exclusiveStateGroups: ExclusiveStateGroupMap = {};
+interface BlockElementMap {
+  [elementName: string]: BlockElement;
+}
+
+export class StateContainer {
   private _states: StateMap = {};
 
+  addState(state: State): void {
+    this._states[state.name] = state;
+  }
+
+  ensureState(info: StateInfo) {
+    // Could assert that the stateinfo group name matched but yolo.
+    if (this._states[info.name]) {
+      return this._states[info.name];
+    } else {
+      let state = new State(info.name, this);
+      this.addState(state);
+      return state;
+    }
+  }
+}
+
+export class Block extends StateContainer {
+  private _name: string;
+  private _exclusiveStateGroups: ExclusiveStateGroupMap = {};
+  private _elements: BlockElementMap = {};
+
   constructor(name: string) {
+    super();
     this._name = name;
   }
 
@@ -35,33 +59,49 @@ export class Block {
     }
   }
 
-  addState(state: State): void {
-    this._states[state.name] = state;
-  }
-
   addExclusiveStateGroup(group: ExclusiveStateGroup): void {
     this._exclusiveStateGroups[group.name] = group;
   }
 
+  addElement(element: BlockElement) {
+    this._elements[element.name] = element;
+  }
+
   ensureState(info: StateInfo): State {
     let state: State;
-    let group: ExclusiveStateGroup;
     if (info.group) {
-      group = this._exclusiveStateGroups[info.group] || new ExclusiveStateGroup(info.group, this);
-      state = new State(info.name, group);
+      let group: ExclusiveStateGroup;
+      if (this._exclusiveStateGroups[info.group]) {
+        group = this._exclusiveStateGroups[info.group];
+      } else {
+        group = new ExclusiveStateGroup(info.group, this);
+        this.addExclusiveStateGroup(group);
+      }
+      state = group.ensureState(info);
     } else {
-      state = this._states[info.name] || new State(info.name, this);
+      state = super.ensureState(info);
     }
     return state;
   }
+
+  ensureElement(name: string): BlockElement {
+    let element;
+    if (this._elements[name]) {
+      element = this._elements[name];
+    } else {
+      element = new BlockElement(name, this);
+      this.addElement(element);
+    }
+    return element;
+  }
 }
 
-export class ExclusiveStateGroup {
+export class ExclusiveStateGroup extends StateContainer {
   private _name: string;
   private _block: Block;
-  private _states: StateMap = {};
 
   constructor(name: string, block: Block) {
+    super();
     this._block = block;
     this._name = name;
   }
@@ -71,11 +111,7 @@ export class ExclusiveStateGroup {
   }
 
   get name() {
-    return this.name;
-  }
-
-  addState(state: State): void {
-    this._states[state.name] = state;
+    return this._name;
   }
 }
 
@@ -89,16 +125,16 @@ export class State {
   private _group: ExclusiveStateGroup | void;
   private _name: string;
 
-  constructor(name: string, blockOrGroup: Block | ExclusiveStateGroup) {
-    if (blockOrGroup instanceof Block) {
-      this._block = blockOrGroup;
+  constructor(name: string, container: StateContainer) {
+    if (container instanceof Block) {
+      this._block = container;
       this._name = name;
-      this._block.addState(this);
+    } else if (container instanceof ExclusiveStateGroup) {
+      this._group = container;
+      this._block = container.block;
+      this._name = name;
     } else {
-      this._group = blockOrGroup;
-      this._block = blockOrGroup.block;
-      this._name = name;
-      this._group.addState(this);
+      throw "what is ${container}";
     }
   }
 
@@ -117,10 +153,34 @@ export class State {
   cssClass(opts: OptionsReader) {
     switch(opts.outputMode) {
       case OutputMode.BEM:
-        return `${this.block.cssClass(opts)}--${this.name}`;
+        if (this.group) {
+          return `${this.block.cssClass(opts)}--${this.group.name}-${this.name}`;
+        } else {
+          return `${this.block.cssClass(opts)}--${this.name}`;
+        }
       default:
         throw "this never happens";
     }
   }
+}
 
+export class BlockElement {
+  private _block: Block;
+  private _name: string;
+  constructor(name: string, block: Block) {
+    this._name = name;
+    this._block = block;
+  }
+
+  get block() { return this._block; }
+  get name()  { return this._name;  }
+
+  cssClass(opts: OptionsReader) {
+    switch(opts.outputMode) {
+      case OutputMode.BEM:
+        return `${this.block.name}__${this.name}`;
+      default:
+        throw "this never happens";
+    }
+  }
 }

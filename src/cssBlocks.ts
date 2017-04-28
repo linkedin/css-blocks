@@ -5,6 +5,9 @@ import { Plugin } from "./Plugin";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError, InvalidBlockSyntax, MissingSourcePath } from "./errors";
 
+// This is ugly but it's the only thing I have been able to make work.
+// I welcome a patch that cleans this up.
+
 function makeApi(): {
   (postcssImpl: typeof postcss): (opts?: PluginOptions) => any;
   OutputMode: typeof OutputMode;
