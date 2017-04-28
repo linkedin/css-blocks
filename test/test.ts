@@ -272,4 +272,12 @@ export class StraightJacket extends BEMProcessor {
         " (foo/bar/illegal-element-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
+  @test "disallows !important"() {
+    let filename = "foo/bar/no-important.css";
+    let inputCSS = `:block {color: #111 !important;}`;
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "!important is not allowed for `color` in `:block` (foo/bar/no-important.css:1:9)",
+      this.process(filename, inputCSS));
+  }
 }

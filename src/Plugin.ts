@@ -35,6 +35,13 @@ export class Plugin {
     try {
       let block = new Block(path.parse(sourceFile).name);
       root.walkRules((rule) => {
+        rule.walkDecls((decl) => {
+          if (decl.important) {
+            throw new errors.InvalidBlockSyntax(
+              `!important is not allowed for \`${decl.prop}\` in \`${rule.selector}\``,
+              this.selectorSourceLocation(rule, decl));
+          }
+        });
         let selector =  selectorParserFn().process(rule.selector).res;
         selector.nodes.forEach((sel) => { this.assertValidCombinators(rule, sel); });
         // mutation can't be done inside the walk despite what the docs say
