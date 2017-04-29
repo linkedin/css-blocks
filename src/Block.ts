@@ -1,6 +1,11 @@
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 
+export interface Export {
+  identifier: string;
+  value: string;
+}
+
 interface StateMap {
   [stateName: string]: State;
 }
@@ -32,6 +37,14 @@ export abstract class StateContainer {
       return state;
     }
   }
+
+  get states(): State[] {
+    let states: State[] = [];
+    Object.keys(this._states).forEach((s) => {
+      states.push(this._states[s]);
+    });
+    return states;
+  }
 }
 
 export abstract class ExclusiveStateGroupContainer extends StateContainer {
@@ -45,6 +58,14 @@ export abstract class ExclusiveStateGroupContainer extends StateContainer {
 
   addExclusiveStateGroup(group: ExclusiveStateGroup): void {
     this._exclusiveStateGroups[group.name] = group;
+  }
+
+  get groups(): ExclusiveStateGroup[] {
+    let groups: ExclusiveStateGroup[] = [];
+    Object.keys(this._exclusiveStateGroups).forEach((g) => {
+      groups.push(this._exclusiveStateGroups[g]);
+    });
+    return groups;
   }
 
   ensureState(info: StateInfo): State {
@@ -65,7 +86,11 @@ export abstract class ExclusiveStateGroupContainer extends StateContainer {
   }
 }
 
-export class Block extends ExclusiveStateGroupContainer {
+export interface Exportable {
+  localName(): string;
+}
+
+export class Block extends ExclusiveStateGroupContainer implements Exportable {
   private _name: string;
   private _elements: BlockElementMap = {};
 
@@ -90,6 +115,14 @@ export class Block extends ExclusiveStateGroupContainer {
     this._name = name;
   }
 
+  get elements(): BlockElement[] {
+    let elements: BlockElement[] = [];
+    Object.keys(this._elements).forEach((e) => {
+      elements.push(this._elements[e]);
+    });
+    return elements;
+  }
+
   cssClass(opts: OptionsReader) {
     switch(opts.outputMode) {
       case OutputMode.BEM:
@@ -97,6 +130,10 @@ export class Block extends ExclusiveStateGroupContainer {
       default:
         throw "this never happens";
     }
+  }
+
+  localName(): string {
+    return "block";
   }
 
   addElement(element: BlockElement) {
@@ -112,6 +149,49 @@ export class Block extends ExclusiveStateGroupContainer {
       this.addElement(element);
     }
     return element;
+  }
+
+  exports(opts: OptionsReader): Export[] {
+    let e: Export[] = [];
+    e.push({
+      identifier: this.localName(),
+      value: this.cssClass(opts)
+    });
+    this.groups.forEach((group) => {
+      group.states.forEach((state) => {
+        e.push({
+          identifier: state.localName(),
+          value: state.cssClass(opts)
+        });
+      });
+    });
+    this.states.forEach((state) => {
+      e.push({
+        identifier: state.localName(),
+        value: state.cssClass(opts)
+      });
+    });
+    this.elements.forEach((element) => {
+      e.push({
+        identifier: element.localName(),
+        value: element.cssClass(opts)
+      });
+      element.groups.forEach((group) => {
+        group.states.forEach((state) => {
+          e.push({
+            identifier: state.localName(),
+            value: state.cssClass(opts)
+          });
+        });
+      });
+      element.states.forEach((state) => {
+        e.push({
+          identifier: state.localName(),
+          value: state.cssClass(opts)
+        });
+      });
+    });
+    return e;
   }
 }
 
@@ -155,7 +235,7 @@ export interface StateInfo {
   name: string;
 }
 
-export class State {
+export class State implements Exportable {
   private _container: Block | BlockElement | ExclusiveStateGroup;
   private _name: string;
 
@@ -199,6 +279,19 @@ export class State {
     return this._name;
   }
 
+  localName(): string {
+    let localNames: string[] = [];
+    if (this.element) {
+      localNames.push(this.element.localName());
+    }
+    if (this.group) {
+      localNames.push(`${this.group.name}-${this.name}`);
+    } else {
+      localNames.push(this.name);
+    }
+    return localNames.join("--");
+  }
+
   cssClass(opts: OptionsReader) {
     switch(opts.outputMode) {
       case OutputMode.BEM:
@@ -219,7 +312,7 @@ export class State {
   }
 }
 
-export class BlockElement extends ExclusiveStateGroupContainer {
+export class BlockElement extends ExclusiveStateGroupContainer implements Exportable {
   private _block: Block;
   private _name: string;
   constructor(name: string, block: Block) {
@@ -237,6 +330,10 @@ export class BlockElement extends ExclusiveStateGroupContainer {
 
   get stateContainer(): Block | BlockElement | ExclusiveStateGroup {
     return this;
+  }
+
+  localName(): string {
+    return this.name;
   }
 
   cssClass(opts: OptionsReader) {

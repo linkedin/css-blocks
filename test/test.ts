@@ -38,12 +38,9 @@ export class SetupTests {
 }
 
 export class BEMProcessor {
-  process(filename: string, contents: string) {
+  process(filename: string, contents: string, cssBlocksOpts?: PluginOptions) {
     let processOpts = { from: filename };
     let cssBlocksProcessor = cssBlocks(postcss)
-    let cssBlocksOpts: PluginOptions = {
-      outputMode: cssBlocks.OutputMode.BEM,
-    };
     return postcss([
       cssBlocksProcessor(cssBlocksOpts),
       perfectionist({format: "compact", indentSize: 2})
@@ -53,7 +50,7 @@ export class BEMProcessor {
  
 @suite("In BEM output mode")
 export class BEMOutputMode extends BEMProcessor {
-  @test "replaces block withe the blockname from the file"() {
+  @test "replaces block with the blockname from the file"() {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `:block {color: red;}`;
     return this.process(filename, inputCSS).then((result) => {
@@ -294,5 +291,59 @@ export class StraightJacket extends BEMProcessor {
       cssBlocks.InvalidBlockSyntax,
       "!important is not allowed for `color` in `:block` (foo/bar/no-important.css:1:9)",
       this.process(filename, inputCSS));
+  }
+}
+
+@suite("Interoperable CSS")
+export class InteroperableCSSOutput extends BEMProcessor {
+  @test "exports block name"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `:block {color: red;}`;
+    return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ":exports { block: test-block; }\n" +
+        ".test-block { color: red; }\n"
+      );
+    });
+  }
+  @test "exports state names"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `:state(red) {color: red;}
+                    :state(theme blue) {color: blue;}`;
+    return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ":exports { block: test-block; theme-blue: test-block--theme-blue; red: test-block--red; }\n" +
+        ".test-block--red { color: red; }\n" +
+        ".test-block--theme-blue { color: blue; }\n"
+      );
+    });
+  }
+  @test "exports element names"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `.a {color: red;}
+                    .b {color: blue;}`;
+    return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ":exports { block: test-block; a: test-block__a; b: test-block__b; }\n" +
+        ".test-block__a { color: red; }\n" +
+        ".test-block__b { color: blue; }\n"
+      );
+    });
+  }
+  @test "exports element states"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `.a:substate(big) {color: red;}
+                    .b:substate(big) {color: blue;}`;
+    return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ":exports { block: test-block; a: test-block__a; a--big: test-block__a--big; b: test-block__b; b--big: test-block__b--big; }\n" +
+        ".test-block__a--big { color: red; }\n" +
+        ".test-block__b--big { color: blue; }\n"
+      );
+    });
   }
 }

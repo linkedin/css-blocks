@@ -120,6 +120,14 @@ export class Plugin {
         });
         rule.selector = selector.toString();
       });
+
+      if (this.opts.interoperableCSS) {
+        let exportsRule = this.postcss.rule({selector: ":exports"});
+        root.prepend(exportsRule);
+        block.exports(this.opts).forEach((e) => {
+          exportsRule.append(this.postcss.decl({prop: e.identifier, value: e.value}));
+        });
+      }
     } catch (e) {
       if (e instanceof errors.CssBlockError && e.location && sourceFile) {
         let loc: errors.SourceLocation = e.location;
