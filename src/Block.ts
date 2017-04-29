@@ -1,11 +1,6 @@
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 
-export interface Export {
-  identifier: string;
-  value: string;
-}
-
 interface StateMap {
   [stateName: string]: State;
 }
@@ -18,7 +13,21 @@ interface BlockElementMap {
   [elementName: string]: BlockElement;
 }
 
-export abstract class StateContainer {
+export interface Export {
+  identifier: string;
+  value: string;
+}
+
+export interface HasExports {
+  exports(opts: OptionsReader): Export[];
+}
+
+export interface Exportable {
+  localName(): string;
+  asExport(opts: OptionsReader): Export;
+}
+
+export abstract class StateContainer implements HasExports {
   private _states: StateMap = {};
 
   addState(state: State): void {
@@ -45,9 +54,17 @@ export abstract class StateContainer {
     });
     return states;
   }
+
+  exports(opts: OptionsReader): Export[] {
+    let result: Export[] = [];
+    this.states.forEach((state) => {
+      result.push(state.asExport(opts));
+    });
+    return result;
+  }
 }
 
-export abstract class ExclusiveStateGroupContainer extends StateContainer {
+export abstract class ExclusiveStateGroupContainer extends StateContainer implements HasExports {
   private _exclusiveStateGroups: ExclusiveStateGroupMap = {};
 
   constructor() {
@@ -84,13 +101,18 @@ export abstract class ExclusiveStateGroupContainer extends StateContainer {
     }
     return state;
   }
+
+  exports(opts: OptionsReader): Export[] {
+    let result: Export[] = [];
+    this.groups.forEach((group) => {
+      result = result.concat(group.exports(opts));
+    });
+    result = result.concat(super.exports(opts));
+    return result;
+  }
 }
 
-export interface Exportable {
-  localName(): string;
-}
-
-export class Block extends ExclusiveStateGroupContainer implements Exportable {
+export class Block extends ExclusiveStateGroupContainer implements Exportable, HasExports {
   private _name: string;
   private _elements: BlockElementMap = {};
 
@@ -136,6 +158,13 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable {
     return "block";
   }
 
+  asExport(opts: OptionsReader): Export {
+    return {
+      identifier: this.localName(),
+      value: this.cssClass(opts)
+    };
+  }
+
   addElement(element: BlockElement) {
     this._elements[element.name] = element;
   }
@@ -152,46 +181,13 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable {
   }
 
   exports(opts: OptionsReader): Export[] {
-    let e: Export[] = [];
-    e.push({
-      identifier: this.localName(),
-      value: this.cssClass(opts)
-    });
-    this.groups.forEach((group) => {
-      group.states.forEach((state) => {
-        e.push({
-          identifier: state.localName(),
-          value: state.cssClass(opts)
-        });
-      });
-    });
-    this.states.forEach((state) => {
-      e.push({
-        identifier: state.localName(),
-        value: state.cssClass(opts)
-      });
-    });
+    let result: Export[] = [this.asExport(opts)];
+    result = result.concat(super.exports(opts));
     this.elements.forEach((element) => {
-      e.push({
-        identifier: element.localName(),
-        value: element.cssClass(opts)
-      });
-      element.groups.forEach((group) => {
-        group.states.forEach((state) => {
-          e.push({
-            identifier: state.localName(),
-            value: state.cssClass(opts)
-          });
-        });
-      });
-      element.states.forEach((state) => {
-        e.push({
-          identifier: state.localName(),
-          value: state.cssClass(opts)
-        });
-      });
+      result.push(element.asExport(opts));
+      result = result.concat(element.exports(opts));
     });
-    return e;
+    return result;
   }
 }
 
@@ -292,6 +288,13 @@ export class State implements Exportable {
     return localNames.join("--");
   }
 
+  asExport(opts: OptionsReader): Export {
+    return {
+      identifier: this.localName(),
+      value: this.cssClass(opts)
+    };
+  }
+
   cssClass(opts: OptionsReader) {
     switch(opts.outputMode) {
       case OutputMode.BEM:
@@ -334,6 +337,13 @@ export class BlockElement extends ExclusiveStateGroupContainer implements Export
 
   localName(): string {
     return this.name;
+  }
+
+  asExport(opts: OptionsReader): Export {
+    return {
+      identifier: this.localName(),
+      value: this.cssClass(opts)
+    };
   }
 
   cssClass(opts: OptionsReader) {
