@@ -28,6 +28,87 @@ export class Plugin {
     this.postcss = postcssImpl;
   }
 
+  public extractBlockDefinition(root, sourceFile: string): Block {
+    let block = new Block(path.parse(sourceFile).name);
+    root.walkRules((rule) => {
+      let selector =  selectorParserFn().process(rule.selector).res;
+      selector.nodes.forEach((sel) => { this.assertValidCombinators(rule, sel); });
+      // mutation can't be done inside the walk despite what the docs say
+      let replacements: any[] = [];
+      let lastSel: any;
+      let thisSel: any;
+      let lastNode: BlockObject | null = null;
+      let thisNode: BlockObject | null = null;
+      selector.each((individualSelector) => {
+        individualSelector.walk((s) => {
+          if (s.type === selectorParser.PSEUDO && s.value === ":block") {
+            if (s.parent === individualSelector) {
+              thisNode = block;
+              thisSel = s;
+            }
+            replacements.push([s, selectorParser.className({value: block.cssClass(this.opts)})]);
+          }
+          else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
+            let state = block.ensureState(this.stateParser(rule, s));
+            let newClass = selectorParser.className({value: state.cssClass(this.opts)});
+            if (s.parent === individualSelector) {
+              thisNode = state;
+              thisSel = newClass;
+            }
+            replacements.push([s, newClass]);
+          }
+          else if (s.type === selectorParser.CLASS) {
+            let element = block.ensureElement(s.value);
+            let newClass = selectorParser.className({value: element.cssClass(this.opts)});
+            if (s.parent === individualSelector) {
+              thisNode = element;
+              thisSel = newClass;
+            }
+            replacements.push([s, newClass]);
+          }
+          else if (s.type === selectorParser.PSEUDO && s.value === ":substate") {
+            if (s.parent !== individualSelector) {
+              throw new errors.InvalidBlockSyntax(
+                `Illegal use of :substate() in \`${rule.selector}\``,
+                this.selectorSourceLocation(rule, s));
+            }
+            if (lastNode instanceof BlockElement) {
+              let element: BlockElement = lastNode;
+              let substate: State = element.ensureState(this.stateParser(rule, s));
+              thisNode = substate;
+              thisSel = selectorParser.className({value: substate.cssClass(this.opts)});
+              replacements.push([lastSel, null]);
+              replacements.push([s, thisSel]);
+            } else {
+              throw new errors.InvalidBlockSyntax(
+                `:substate() must immediately follow a block element in \`${rule.selector}\``,
+                this.selectorSourceLocation(rule, s));
+            }
+          } else if (s.parent === individualSelector) {
+            thisNode = null;
+            thisSel = null;
+          }
+
+          if (s.parent === individualSelector) {
+            lastNode = thisNode;
+            lastSel = thisSel;
+          }
+        });
+      });
+      replacements.forEach((pair) => {
+        let existing = pair[0];
+        let replacement = pair[1];
+        if (replacement) {
+          existing.replaceWith(replacement);
+        } else {
+          existing.remove();
+        }
+      });
+      rule.selector = selector.toString();
+    });
+    return block;
+  }
+
   public process(root, result) {
     let sourceFile;
     if (result && result.opts && result.opts.from) {
@@ -36,91 +117,14 @@ export class Plugin {
       throw new errors.MissingSourcePath();
     }
     try {
-      let block = new Block(path.parse(sourceFile).name);
-      root.walkRules((rule) => {
-        rule.walkDecls((decl) => {
-          if (decl.important) {
-            throw new errors.InvalidBlockSyntax(
-              `!important is not allowed for \`${decl.prop}\` in \`${rule.selector}\``,
-              this.selectorSourceLocation(rule, decl));
-          }
-        });
-        let selector =  selectorParserFn().process(rule.selector).res;
-        selector.nodes.forEach((sel) => { this.assertValidCombinators(rule, sel); });
-        // mutation can't be done inside the walk despite what the docs say
-        let replacements: any[] = [];
-        let lastSel: any;
-        let thisSel: any;
-        let lastNode: BlockObject | null = null;
-        let thisNode: BlockObject | null = null;
-        selector.each((individualSelector) => {
-          individualSelector.walk((s) => {
-            if (s.type === selectorParser.PSEUDO && s.value === ":block") {
-              if (s.parent === individualSelector) {
-                thisNode = block;
-                thisSel = s;
-              }
-              replacements.push([s, selectorParser.className({value: block.cssClass(this.opts)})]);
-            }
-            else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
-              let state = block.ensureState(this.stateParser(rule, s));
-              let newClass = selectorParser.className({value: state.cssClass(this.opts)});
-              if (s.parent === individualSelector) {
-                thisNode = state;
-                thisSel = newClass;
-              }
-              replacements.push([s, newClass]);
-            }
-            else if (s.type === selectorParser.CLASS) {
-              let element = block.ensureElement(s.value);
-              let newClass = selectorParser.className({value: element.cssClass(this.opts)});
-              if (s.parent === individualSelector) {
-                thisNode = element;
-                thisSel = newClass;
-              }
-              replacements.push([s, newClass]);
-            }
-            else if (s.type === selectorParser.PSEUDO && s.value === ":substate") {
-              if (s.parent !== individualSelector) {
-                throw new errors.InvalidBlockSyntax(
-                  `Illegal use of :substate() in \`${rule.selector}\``,
-                  this.selectorSourceLocation(rule, s));
-              }
-              if (lastNode instanceof BlockElement) {
-                let element: BlockElement = lastNode;
-                let substate: State = element.ensureState(this.stateParser(rule, s));
-                thisNode = substate;
-                thisSel = selectorParser.className({value: substate.cssClass(this.opts)});
-                replacements.push([lastSel, null]);
-                replacements.push([s, thisSel]);
-              } else {
-                throw new errors.InvalidBlockSyntax(
-                  `:substate() must immediately follow a block element in \`${rule.selector}\``,
-                  this.selectorSourceLocation(rule, s));
-              }
-            } else if (s.parent === individualSelector) {
-              thisNode = null;
-              thisSel = null;
-            }
-
-            if (s.parent === individualSelector) {
-              lastNode = thisNode;
-              lastSel = thisSel;
-            }
-          });
-        });
-        replacements.forEach((pair) => {
-          let existing = pair[0];
-          let replacement = pair[1];
-          if (replacement) {
-            existing.replaceWith(replacement);
-          } else {
-            existing.remove();
-          }
-        });
-        rule.selector = selector.toString();
+      root.walkDecls((decl) => {
+        if (decl.important) {
+          throw new errors.InvalidBlockSyntax(
+            `!important is not allowed for \`${decl.prop}\` in \`${decl.parent.selector}\``,
+            this.sourceLocation(decl));
+        }
       });
-
+      let block = this.extractBlockDefinition(root, sourceFile);
       if (this.opts.interoperableCSS) {
         let exportsRule = this.postcss.rule({selector: ":exports"});
         root.prepend(exportsRule);
@@ -152,6 +156,10 @@ export class Plugin {
         };
       }
     });
+  }
+
+  sourceLocation(node): errors.SourceLocation | void {
+    return node.source && node.source.start;
   }
 
   selectorSourceLocation(rule, selector): errors.SourceLocation | void {
