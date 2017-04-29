@@ -58,17 +58,16 @@ Example:
 :block {
   margin: 2em 0;
   padding: 1em 0.5em;
-  &:state(theme red) {
-    color: #c00;
-  }
-  &:state(theme blue) {
-    color: #006;
-  }
-
-  &:state(compact) {
-    margin: 0.5em 0;
-    padding: 0.5em 0.5em;
-  }
+}
+:state(theme red) {
+  color: #c00;
+}
+:state(theme blue) {
+  color: #006;
+}
+:state(compact) {
+  margin: 0.5em 0;
+  padding: 0.5em 0.5em;
 }
 
 
@@ -103,89 +102,38 @@ Example:
 }
 ```
 
-Which would flatten to:
+Which would compile from Sass to CSS to:
 
 ```css
 :block { margin: 2em 0; padding: 1em 0.5em; }
-:block:state(theme red) { color: #c00; }
-:block:state(theme blue) { color: #006; }
-:block:state(compact) { margin: 0.5em 0; padding: 0.5em 0.5em; }
-
+:state(theme red) { color: #c00; }
+:state(theme blue) { color: #006; }
+:state(compact) { margin: 0.5em 0; padding: 0.5em 0.5em; }
 .input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
 :state(compact) .input-area { margin: 0.25em 0; }
-
 .label { flex: 1fr; }
-
 .input { flex: 3fr; }
 :state(theme red) .input { border-color: #c00; }
 :state(theme blue) .input { border-color: #006; }
-
 .submit { width: 200px; }
 .submit:substate(disabled) { color: gray; }
 ```
 
-Forward Declaration Syntax
---------------------------
-
-There's an alternate syntax concept requiring forward declarations:
+In BEM compatibility mode this would compile to:
 
 ```css
-@block .form;
-@exclusive-states .theme: .red, .blue;
-@state .compact;
-@element .input-area;
-@element .input;
-@element .label;
-@element .submit;
-@substate .submit: .disabled;
-
-.form {
-  margin: 2em 0;
-  padding: 1em 0.5em;
-  &.theme {
-    &.red {
-      color: #c00;
-    }
-    &.blue {
-      color: #006;
-    }
-  }
-
-  &.compact {
-    margin: 0.5em 0;
-    padding: 0.5em 0.5em;
-  }
-}
-
-.input-area {
-  display: flex;
-  margin: 1em 0;
-  font-size: 1.5rem;
-  .compact & {
-    margin: 0.25em 0;
-  }
-}
-
-.label {
-  flex: 1fr;
-}
-
-.input {
-  flex: 3fr;
-  .theme.red & {
-    border-color: #c00;
-  }
-  .theme.blue & {
-    border-color: #006;
-  }
-}
-
-.submit {
-  width: 200px;
-  &.disabled {
-    color: gray;
-  }
-}
+.form { margin: 2em 0; padding: 1em 0.5em; }
+.form--theme-red { color: #c00; }
+.form--theme-blue { color: #006; }
+.form--compact { margin: 0.5em 0; padding: 0.5em 0.5em; }
+.form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
+.form--compact .form__input-area { margin: 0.25em 0; }
+.form__label { flex: 1fr; }
+.form__input { flex: 3fr; }
+.form--theme-red .form__input { border-color: #c00; }
+.form--theme-blue .form__input { border-color: #006; }
+.form__submit { width: 200px; }
+.form__submit--disabled { color: gray; }
 ```
 
 Template Syntax
@@ -231,7 +179,6 @@ error unless a resolution is provided by one of the blocks:
 ```scss
 @reference "../components/accordian.block" as accordian;
 @block .section;
-@element .box;
 .box {
   width: resolve(accordian.container); // override accordian.container
   width: 100%;
@@ -253,7 +200,6 @@ File: `navigation.block.scss`
 @reference "super-grid-system.block";
 @reference "drop-downs.block";
 @block .navigation;
-@element .profile;
 
 .profile {
   composes: super-grid-system.span and drop-down.hoverable;
@@ -316,16 +262,12 @@ produce the following CSS output:
 .form--theme-red { color: #c00; }
 .form--theme-blue { color: #006; }
 .form--compact { margin: 0.5em 0; padding: 0.5em 0.5em; }
-
 .form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
 .form--compact .form__input-area { margin: 0.25em 0; }
-
 .form__label { flex: 1fr; }
-
 .form__input { flex: 3fr; }
 .form--theme-red .form__input { border-color: #c00; }
 .form--theme-blue .form__input { border-color: #006; }
-
 .form__submit { width: 200px; }
 .form__submit--disabled { color: gray; }
 ```
