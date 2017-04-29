@@ -24,6 +24,7 @@ export interface HasExports {
 
 export interface Exportable {
   localName(): string;
+  cssClass(opts: OptionsReader): string;
   asExport(opts: OptionsReader): Export;
 }
 

@@ -28,7 +28,7 @@ export class Plugin {
     this.postcss = postcssImpl;
   }
 
-  public extractBlockDefinition(root, sourceFile: string): Block {
+  public extractBlockDefinition(root, sourceFile: string, mutate: boolean): Block {
     let block = new Block(path.parse(sourceFile).name);
     root.walkRules((rule) => {
       let selector =  selectorParserFn().process(rule.selector).res;
@@ -44,27 +44,40 @@ export class Plugin {
           if (s.type === selectorParser.PSEUDO && s.value === ":block") {
             if (s.parent === individualSelector) {
               thisNode = block;
-              thisSel = s;
             }
-            replacements.push([s, selectorParser.className({value: block.cssClass(this.opts)})]);
+            if (mutate) {
+              let newClass = selectorParser.className({value: block.cssClass(this.opts)});
+              if (s.parent === individualSelector) {
+                thisSel = newClass;
+              }
+              replacements.push([s, newClass]);
+            }
           }
           else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
             let state = block.ensureState(this.stateParser(rule, s));
-            let newClass = selectorParser.className({value: state.cssClass(this.opts)});
             if (s.parent === individualSelector) {
               thisNode = state;
-              thisSel = newClass;
             }
-            replacements.push([s, newClass]);
+            if (mutate) {
+              let newClass = selectorParser.className({value: state.cssClass(this.opts)});
+              if (s.parent === individualSelector) {
+                thisSel = newClass;
+              }
+              replacements.push([s, newClass]);
+            }
           }
           else if (s.type === selectorParser.CLASS) {
             let element = block.ensureElement(s.value);
-            let newClass = selectorParser.className({value: element.cssClass(this.opts)});
             if (s.parent === individualSelector) {
               thisNode = element;
-              thisSel = newClass;
             }
-            replacements.push([s, newClass]);
+            if (mutate) {
+              let newClass = selectorParser.className({value: element.cssClass(this.opts)});
+              if (s.parent === individualSelector) {
+                thisSel = newClass;
+              }
+              replacements.push([s, newClass]);
+            }
           }
           else if (s.type === selectorParser.PSEUDO && s.value === ":substate") {
             if (s.parent !== individualSelector) {
@@ -76,9 +89,11 @@ export class Plugin {
               let element: BlockElement = lastNode;
               let substate: State = element.ensureState(this.stateParser(rule, s));
               thisNode = substate;
-              thisSel = selectorParser.className({value: substate.cssClass(this.opts)});
-              replacements.push([lastSel, null]);
-              replacements.push([s, thisSel]);
+              if (mutate) {
+                thisSel = selectorParser.className({value: substate.cssClass(this.opts)});
+                replacements.push([lastSel, null]);
+                replacements.push([s, thisSel]);
+              }
             } else {
               throw new errors.InvalidBlockSyntax(
                 `:substate() must immediately follow a block element in \`${rule.selector}\``,
@@ -95,15 +110,17 @@ export class Plugin {
           }
         });
       });
-      replacements.forEach((pair) => {
-        let existing = pair[0];
-        let replacement = pair[1];
-        if (replacement) {
-          existing.replaceWith(replacement);
-        } else {
-          existing.remove();
-        }
-      });
+      if (mutate) {
+        replacements.forEach((pair) => {
+          let existing = pair[0];
+          let replacement = pair[1];
+          if (replacement) {
+            existing.replaceWith(replacement);
+          } else {
+            existing.remove();
+          }
+        });
+      }
       rule.selector = selector.toString();
     });
     return block;
@@ -124,7 +141,7 @@ export class Plugin {
             this.sourceLocation(decl));
         }
       });
-      let block = this.extractBlockDefinition(root, sourceFile);
+      let block = this.extractBlockDefinition(root, sourceFile, true);
       if (this.opts.interoperableCSS) {
         let exportsRule = this.postcss.rule({selector: ":exports"});
         root.prepend(exportsRule);
