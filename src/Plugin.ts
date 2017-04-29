@@ -2,7 +2,7 @@ import * as postcss from "postcss";
 import * as path from "path";
 import * as selectorParser from "postcss-selector-parser";
 import { PluginOptions, OptionsReader } from "./options";
-import { Block, StateInfo, State, BlockElement } from "./Block";
+import { Exportable, Block, StateInfo, State, BlockElement } from "./Block";
 export { PluginOptions } from "./options";
 import * as errors from "./errors";
 
@@ -28,6 +28,12 @@ export class Plugin {
     this.postcss = postcssImpl;
   }
 
+  mutate(e: Exportable, selComponent, selector, contextCB: (newClass:any) => void) {
+    let newClass = selectorParser.className({value: e.cssClass(this.opts)});
+    if (selComponent.parent === selector) { contextCB(newClass); }
+    return [selComponent, newClass];
+  }
+
   public extractBlockDefinition(root, sourceFile: string, mutate: boolean): Block {
     let block = new Block(path.parse(sourceFile).name);
     root.walkRules((rule) => {
@@ -46,11 +52,9 @@ export class Plugin {
               thisNode = block;
             }
             if (mutate) {
-              let newClass = selectorParser.className({value: block.cssClass(this.opts)});
-              if (s.parent === individualSelector) {
+              replacements.push(this.mutate(block, s, individualSelector, (newClass) => {
                 thisSel = newClass;
-              }
-              replacements.push([s, newClass]);
+              }));
             }
           }
           else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
@@ -59,11 +63,9 @@ export class Plugin {
               thisNode = state;
             }
             if (mutate) {
-              let newClass = selectorParser.className({value: state.cssClass(this.opts)});
-              if (s.parent === individualSelector) {
+              replacements.push(this.mutate(state, s, individualSelector, (newClass) => {
                 thisSel = newClass;
-              }
-              replacements.push([s, newClass]);
+              }));
             }
           }
           else if (s.type === selectorParser.CLASS) {
@@ -72,11 +74,9 @@ export class Plugin {
               thisNode = element;
             }
             if (mutate) {
-              let newClass = selectorParser.className({value: element.cssClass(this.opts)});
-              if (s.parent === individualSelector) {
+              replacements.push(this.mutate(element, s, individualSelector, (newClass) => {
                 thisSel = newClass;
-              }
-              replacements.push([s, newClass]);
+              }));
             }
           }
           else if (s.type === selectorParser.PSEUDO && s.value === ":substate") {
@@ -90,9 +90,10 @@ export class Plugin {
               let substate: State = element.ensureState(this.stateParser(rule, s));
               thisNode = substate;
               if (mutate) {
-                thisSel = selectorParser.className({value: substate.cssClass(this.opts)});
+                replacements.push(this.mutate(substate, s, individualSelector, (newClass) => {
+                  thisSel = newClass;
+                }));
                 replacements.push([lastSel, null]);
-                replacements.push([s, thisSel]);
               }
             } else {
               throw new errors.InvalidBlockSyntax(
