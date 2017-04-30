@@ -22,8 +22,14 @@ export interface Export {
   value: string;
 }
 
-export interface HasExports {
-  exports(opts: OptionsReader): Export[];
+export type BlockObject = Block | BlockElement | State;
+
+export interface MergedObjectMap {
+  [sourceName: string]: BlockObject[];
+}
+
+export interface HasBlockObjects {
+  all(): BlockObject[];
 }
 
 export interface Exportable {
@@ -32,7 +38,7 @@ export interface Exportable {
   asExport(opts: OptionsReader): Export;
 }
 
-export abstract class StateContainer implements HasExports {
+export abstract class StateContainer implements HasBlockObjects {
   private _states: StateMap = {};
 
   addState(state: State): void {
@@ -60,14 +66,6 @@ export abstract class StateContainer implements HasExports {
     return states;
   }
 
-  exports(opts: OptionsReader): Export[] {
-    let result: Export[] = [];
-    this.states.forEach((state) => {
-      result.push(state.asExport(opts));
-    });
-    return result;
-  }
-
   debug(opts: OptionsReader): string[] {
     let result: string[] = [];
     this.states.forEach((state) => {
@@ -75,9 +73,13 @@ export abstract class StateContainer implements HasExports {
     });
     return result;
   }
+
+  all(): BlockObject[] {
+    return this.states;
+  }
 }
 
-export abstract class ExclusiveStateGroupContainer extends StateContainer implements HasExports {
+export abstract class ExclusiveStateGroupContainer extends StateContainer implements HasBlockObjects {
   private _exclusiveStateGroups: ExclusiveStateGroupMap = {};
 
   constructor() {
@@ -115,15 +117,6 @@ export abstract class ExclusiveStateGroupContainer extends StateContainer implem
     return state;
   }
 
-  exports(opts: OptionsReader): Export[] {
-    let result: Export[] = [];
-    this.groups.forEach((group) => {
-      result = result.concat(group.exports(opts));
-    });
-    result = result.concat(super.exports(opts));
-    return result;
-  }
-
   debug(opts: OptionsReader): string[] {
     let result: string[] = [];
     this.groups.forEach((group) => {
@@ -132,16 +125,28 @@ export abstract class ExclusiveStateGroupContainer extends StateContainer implem
     result = result.concat(super.debug(opts));
     return result;
   }
+
+  all(): BlockObject[] {
+    let result: BlockObject[] = [];
+    this.groups.forEach((group) => {
+      result = result.concat(group.all());
+    });
+    result = result.concat(super.all());
+    return result;
+  }
 }
 
-export class Block extends ExclusiveStateGroupContainer implements Exportable, HasExports {
+export class Block extends ExclusiveStateGroupContainer implements Exportable, HasBlockObjects {
   private _name: string;
   private _elements: BlockElementMap = {};
   private _blockReferences: BlockReferenceMap = {};
+  private _source: string;
+  private _base: Block;
 
-  constructor(name: string) {
+  constructor(name: string, source: string) {
     super();
     this._name = name;
+    this._source = source;
   }
 
   get groupContainer(): Block | BlockElement {
@@ -158,6 +163,18 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
 
   set name(name: string) {
     this._name = name;
+  }
+
+  get base(): Block {
+    return this._base;
+  }
+
+  set base(base: Block) {
+    this._base = base;
+  }
+
+  get source() {
+    return this._source;
   }
 
   get elements(): BlockElement[] {
@@ -211,14 +228,29 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     return this._blockReferences[localName] || null;
   }
 
-  exports(opts: OptionsReader): Export[] {
-    let result: Export[] = [this.asExport(opts)];
-    result = result.concat(super.exports(opts));
+  all(shallow?: boolean): BlockObject[] {
+    let result: BlockObject[] = [this];
+    result = result.concat(super.all());
     this.elements.forEach((element) => {
-      result.push(element.asExport(opts));
-      result = result.concat(element.exports(opts));
+      result.push(element);
+      result = result.concat(element.all());
     });
+    if (!shallow && this.base) {
+      result = result.concat(this.base.all(shallow));
+    }
     return result;
+  }
+
+  merged(): MergedObjectMap {
+    let map: MergedObjectMap = {};
+    this.all().forEach((obj: BlockObject) => {
+      let sourceName = obj.asSource();
+      if (!map[sourceName]) {
+        map[sourceName] = [];
+      }
+      map[sourceName].push(obj);
+    });
+    return map;
   }
 
   asSource():string {
@@ -230,7 +262,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   }
 
   debug(opts: OptionsReader): string[] {
-    let result: string[] = [this.asDebug(opts)];
+    let result: string[] = [`Source: ${this.source}`, this.asDebug(opts)];
     result = result.concat(super.debug(opts));
     this.elements.forEach((element) => {
       result.push(element.asDebug(opts));

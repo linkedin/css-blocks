@@ -10,6 +10,8 @@ import * as postcss from "postcss";
 import * as perfectionist from "perfectionist";
 import * as path from "path";
 
+const PROJECT_DIR = path.resolve(__dirname, "../..");
+
 @suite("Setting up")
 export class SetupTests {
   @test "options are optional"() {
@@ -377,7 +379,8 @@ export class BlockReferences extends BEMProcessor {
     return this.process(filename, inputCSS, {importer: importer}).then((result) => {
       assert.equal(
         result.css.toString(),
-        "/* :block => .imported\n" +
+        `/* Source: ${PROJECT_DIR}/foo/bar/test-block.css/imported.css\n` +
+        "   :block => .imported\n" +
         "   :state(theme red) => .imported--theme-red\n" +
         "   :state(large) => .imported--large\n" +
         "   .foo => .imported__foo\n" +
@@ -385,6 +388,47 @@ export class BlockReferences extends BEMProcessor {
         "   .foo:substate(small) => .imported__foo--small */\n" +
         ".test-block { color: red; }\n" +
         ".test-block__b--big { color: blue; }\n"
+      );
+    });
+  }
+}
+
+@suite("Block Inheritance")
+export class BlockInheritance extends BEMProcessor {
+  @test "can import another block"() {
+    let filename = "foo/bar/inherits.css";
+    let inputCSS = `@block-reference "./base.css";
+                    :block { extends: base; color: red; }
+                    .foo { clear: both; }
+                    .b:substate(small) {color: blue;}`;
+
+    let importer: Importer = (fromFile: string, importPath: string) => {
+      return new Promise<ImportedFile>((resolve) => {
+        assert.equal(fromFile, filename);
+        assert.equal(importPath, "./base.css");
+        resolve({
+          path: path.resolve(fromFile, importPath),
+          contents: `:block { color: purple; }
+                     :state(large) { font-size: 20px; }
+                     .foo   { float: left;   }
+                     .foo:substate(small) { font-size: 5px; }`
+        });
+      });
+    };
+    return this.process(filename, inputCSS, {interoperableCSS: true, importer: importer}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ":exports {" +
+        " block: inherits base;" +
+        " foo: inherits__foo base__foo;" +
+        " b: inherits__b;" +
+        " b--small: inherits__b--small;" +
+        " large: base--large;" +
+        " foo--small: base__foo--small; " +
+        "}\n" +
+        ".inherits { color: red; }\n" +
+        ".inherits__foo { clear: both; }\n" +
+        ".inherits__b--small { color: blue; }\n"
       );
     });
   }

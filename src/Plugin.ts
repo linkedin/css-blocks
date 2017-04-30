@@ -2,7 +2,7 @@ import * as postcss from "postcss";
 import * as path from "path";
 import * as selectorParser from "postcss-selector-parser";
 import { PluginOptions, OptionsReader } from "./options";
-import { Exportable, Block, StateInfo, State, BlockElement } from "./Block";
+import { MergedObjectMap, Exportable, Block, StateInfo, State, BlockElement } from "./Block";
 export { PluginOptions } from "./options";
 import * as errors from "./errors";
 import { ImportedFile } from "./importing";
@@ -100,8 +100,25 @@ export class Plugin {
     });
   }
 
+  private extendBlock(block: Block, sourceFile: string, rule, mutate: boolean) {
+    rule.walkDecls("extends", (decl) => {
+      if (block.base) {
+        throw new errors.InvalidBlockSyntax(`A block can only be extended once.`,
+                                            this.sourceLocation(sourceFile, decl));
+      }
+      let baseName = decl.value;
+      let baseBlock = block.getReferencedBlock(baseName);
+      if (!baseBlock) {
+        throw new errors.InvalidBlockSyntax(`No block named ${baseName} found`,
+                                            this.sourceLocation(sourceFile, decl));
+      }
+      block.base = baseBlock;
+      if (mutate) { decl.remove(); }
+    });
+  }
+
   public extractBlockDefinition(root, sourceFile: string, mutate: boolean): Promise<Block> {
-    let block = new Block(path.parse(sourceFile).name);
+    let block = new Block(path.parse(sourceFile).name, sourceFile);
     return this.resolveReferences(block, root, sourceFile, mutate).then((block) => {
       root.walkRules((rule) => {
         let selector =  selectorParserFn().process(rule.selector).res;
@@ -115,6 +132,7 @@ export class Plugin {
         selector.each((individualSelector) => {
           individualSelector.walk((s) => {
             if (s.type === selectorParser.PSEUDO && s.value === ":block") {
+              this.extendBlock(block, sourceFile, rule, mutate);
               if (s.parent === individualSelector) {
                 thisNode = block;
               }
@@ -213,8 +231,13 @@ export class Plugin {
       if (this.opts.interoperableCSS) {
         let exportsRule = this.postcss.rule({selector: ":exports"});
         root.prepend(exportsRule);
-        block.exports(this.opts).forEach((e) => {
-          exportsRule.append(this.postcss.decl({prop: e.identifier, value: e.value}));
+        let objsMap: MergedObjectMap = block.merged();
+        Object.keys(objsMap).forEach((name) => {
+          let objs = objsMap[name];
+          exportsRule.append(this.postcss.decl({
+            prop: objs[0].localName(),
+            value: objs.map(obj => obj.cssClass(this.opts)).join(" ")
+          }));
         });
       }
     });
