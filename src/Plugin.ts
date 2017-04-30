@@ -5,6 +5,7 @@ import { PluginOptions, OptionsReader } from "./options";
 import { Exportable, Block, StateInfo, State, BlockElement } from "./Block";
 export { PluginOptions } from "./options";
 import * as errors from "./errors";
+import { ImportedFile } from "./importing";
 
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 const selectorParserFn = require("postcss-selector-parser");
@@ -34,97 +35,164 @@ export class Plugin {
     return [selComponent, newClass];
   }
 
-  public extractBlockDefinition(root, sourceFile: string, mutate: boolean): Block {
-    let block = new Block(path.parse(sourceFile).name);
-    root.walkRules((rule) => {
-      let selector =  selectorParserFn().process(rule.selector).res;
-      selector.nodes.forEach((sel) => { this.assertValidCombinators(rule, sel); });
-      // mutation can't be done inside the walk despite what the docs say
-      let replacements: any[] = [];
-      let lastSel: any;
-      let thisSel: any;
-      let lastNode: BlockObject | null = null;
-      let thisNode: BlockObject | null = null;
-      selector.each((individualSelector) => {
-        individualSelector.walk((s) => {
-          if (s.type === selectorParser.PSEUDO && s.value === ":block") {
-            if (s.parent === individualSelector) {
-              thisNode = block;
-            }
-            if (mutate) {
-              replacements.push(this.mutate(block, s, individualSelector, (newClass) => {
-                thisSel = newClass;
-              }));
-            }
+  public resolveReferences(block: Block, root, sourceFile: string, mutate: boolean): Promise<Block> {
+    let namedBlockReferences: Promise<[string, Block]>[] = [];
+    root.walkAtRules("block-reference", (atRule) => {
+      let md = atRule.params.match(/\s*((\w+)\s+from\s+)?\s*("|')([^\3]+)\3/);
+      if (!md) {
+        throw new errors.InvalidBlockSyntax(
+          `Malformed block reference: \`@block-reference ${atRule.params}\``,
+          this.sourceLocation(sourceFile, atRule));
+      }
+      let importPath = md[4];
+      let localName = md[2];
+      let result: Promise<ImportedFile> = this.opts.importer(sourceFile, importPath);
+      let extractedResult: Promise<Block> = result.then((importedFile: ImportedFile) => {
+        let otherRoot = this.postcss.parse(importedFile.contents, {from: importedFile.path});
+        return this.extractBlockDefinition(otherRoot, importedFile.path, false);
+      });
+      let namedResult: Promise<[string, Block]> = extractedResult.then((referencedBlock) => {
+        return [localName, referencedBlock];
+      });
+      namedBlockReferences.push(namedResult);
+    });
+    let extraction = Promise.all(namedBlockReferences).then((results) => {
+      results.forEach(([localName, otherBlock]) => {
+        block.addBlockReference(localName || otherBlock.name, otherBlock);
+      });
+    });
+    if (mutate) {
+      extraction.then(() => {
+        root.walkAtRules("block-reference", (atRule) => {
+          atRule.remove();
+        });
+        root.walkAtRules("block-debug", (atRule) => {
+          let md = atRule.params.match(/([^\s]+) to (comment|stderr|stdout)/);
+          if (!md) {
+            throw new errors.InvalidBlockSyntax(
+              `Malformed block debug: \`@block-debug ${atRule.params}\``,
+              this.sourceLocation(sourceFile, atRule));
           }
-          else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
-            let state = block.ensureState(this.stateParser(rule, s));
-            if (s.parent === individualSelector) {
-              thisNode = state;
-            }
-            if (mutate) {
-              replacements.push(this.mutate(state, s, individualSelector, (newClass) => {
-                thisSel = newClass;
-              }));
-            }
+          let localName = md[1];
+          let outputTo = md[2];
+          let ref: Block | null = block.getReferencedBlock(localName);
+          if (!ref) {
+            throw new errors.InvalidBlockSyntax(
+              `No block named ${localName} exists in this context.`,
+              this.sourceLocation(sourceFile, atRule));
           }
-          else if (s.type === selectorParser.CLASS) {
-            let element = block.ensureElement(s.value);
-            if (s.parent === individualSelector) {
-              thisNode = element;
-            }
-            if (mutate) {
-              replacements.push(this.mutate(element, s, individualSelector, (newClass) => {
-                thisSel = newClass;
-              }));
-            }
-          }
-          else if (s.type === selectorParser.PSEUDO && s.value === ":substate") {
-            if (s.parent !== individualSelector) {
-              throw new errors.InvalidBlockSyntax(
-                `Illegal use of :substate() in \`${rule.selector}\``,
-                this.selectorSourceLocation(rule, s));
-            }
-            if (lastNode instanceof BlockElement) {
-              let element: BlockElement = lastNode;
-              let substate: State = element.ensureState(this.stateParser(rule, s));
-              thisNode = substate;
-              if (mutate) {
-                replacements.push(this.mutate(substate, s, individualSelector, (newClass) => {
-                  thisSel = newClass;
-                }));
-                replacements.push([lastSel, null]);
-              }
+          let debugStr = ref.debug(this.opts);
+          if (outputTo === "comment") {
+            atRule.replaceWith(this.postcss.comment({text: debugStr.join("\n   ")}));
+          } else {
+            if (outputTo === "stderr") {
+              console.warn(debugStr.join("\n"));
             } else {
-              throw new errors.InvalidBlockSyntax(
-                `:substate() must immediately follow a block element in \`${rule.selector}\``,
-                this.selectorSourceLocation(rule, s));
+              console.log(debugStr.join("\n"));
             }
-          } else if (s.parent === individualSelector) {
-            thisNode = null;
-            thisSel = null;
-          }
-
-          if (s.parent === individualSelector) {
-            lastNode = thisNode;
-            lastSel = thisSel;
+            atRule.remove();
           }
         });
       });
-      if (mutate) {
-        replacements.forEach((pair) => {
-          let existing = pair[0];
-          let replacement = pair[1];
-          if (replacement) {
-            existing.replaceWith(replacement);
-          } else {
-            existing.remove();
-          }
-        });
-      }
-      rule.selector = selector.toString();
+    }
+    return extraction.then(() => {
+      return block;
     });
-    return block;
+  }
+
+  public extractBlockDefinition(root, sourceFile: string, mutate: boolean): Promise<Block> {
+    let block = new Block(path.parse(sourceFile).name);
+    return this.resolveReferences(block, root, sourceFile, mutate).then((block) => {
+      root.walkRules((rule) => {
+        let selector =  selectorParserFn().process(rule.selector).res;
+        selector.nodes.forEach((sel) => { this.assertValidCombinators(sourceFile, rule, sel); });
+        // mutation can't be done inside the walk despite what the docs say
+        let replacements: any[] = [];
+        let lastSel: any;
+        let thisSel: any;
+        let lastNode: BlockObject | null = null;
+        let thisNode: BlockObject | null = null;
+        selector.each((individualSelector) => {
+          individualSelector.walk((s) => {
+            if (s.type === selectorParser.PSEUDO && s.value === ":block") {
+              if (s.parent === individualSelector) {
+                thisNode = block;
+              }
+              if (mutate) {
+                replacements.push(this.mutate(block, s, individualSelector, (newClass) => {
+                  thisSel = newClass;
+                }));
+              }
+            }
+            else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
+              let state = block.ensureState(this.stateParser(sourceFile, rule, s));
+              if (s.parent === individualSelector) {
+                thisNode = state;
+              }
+              if (mutate) {
+                replacements.push(this.mutate(state, s, individualSelector, (newClass) => {
+                  thisSel = newClass;
+                }));
+              }
+            }
+            else if (s.type === selectorParser.CLASS) {
+              let element = block.ensureElement(s.value);
+              if (s.parent === individualSelector) {
+                thisNode = element;
+              }
+              if (mutate) {
+                replacements.push(this.mutate(element, s, individualSelector, (newClass) => {
+                  thisSel = newClass;
+                }));
+              }
+            }
+            else if (s.type === selectorParser.PSEUDO && s.value === ":substate") {
+              if (s.parent !== individualSelector) {
+                throw new errors.InvalidBlockSyntax(
+                  `Illegal use of :substate() in \`${rule.selector}\``,
+                  this.selectorSourceLocation(sourceFile, rule, s));
+              }
+              if (lastNode instanceof BlockElement) {
+                let element: BlockElement = lastNode;
+                let substate: State = element.ensureState(this.stateParser(sourceFile, rule, s));
+                thisNode = substate;
+                if (mutate) {
+                  replacements.push(this.mutate(substate, s, individualSelector, (newClass) => {
+                    thisSel = newClass;
+                  }));
+                  replacements.push([lastSel, null]);
+                }
+              } else {
+                throw new errors.InvalidBlockSyntax(
+                  `:substate() must immediately follow a block element in \`${rule.selector}\``,
+                  this.selectorSourceLocation(sourceFile, rule, s));
+              }
+            } else if (s.parent === individualSelector) {
+              thisNode = null;
+              thisSel = null;
+            }
+
+            if (s.parent === individualSelector) {
+              lastNode = thisNode;
+              lastSel = thisSel;
+            }
+          });
+        });
+        if (mutate) {
+          replacements.forEach((pair) => {
+            let existing = pair[0];
+            let replacement = pair[1];
+            if (replacement) {
+              existing.replaceWith(replacement);
+            } else {
+              existing.remove();
+            }
+          });
+        }
+        rule.selector = selector.toString();
+      });
+      return block;
+    });
   }
 
   public process(root, result) {
@@ -134,15 +202,14 @@ export class Plugin {
     } else {
       throw new errors.MissingSourcePath();
     }
-    try {
-      root.walkDecls((decl) => {
-        if (decl.important) {
-          throw new errors.InvalidBlockSyntax(
-            `!important is not allowed for \`${decl.prop}\` in \`${decl.parent.selector}\``,
-            this.sourceLocation(decl));
-        }
-      });
-      let block = this.extractBlockDefinition(root, sourceFile, true);
+    root.walkDecls((decl) => {
+      if (decl.important) {
+        throw new errors.InvalidBlockSyntax(
+          `!important is not allowed for \`${decl.prop}\` in \`${decl.parent.selector}\``,
+          this.sourceLocation(sourceFile, decl));
+      }
+    });
+    return this.extractBlockDefinition(root, sourceFile, true).then((block) => {
       if (this.opts.interoperableCSS) {
         let exportsRule = this.postcss.rule({selector: ":exports"});
         root.prepend(exportsRule);
@@ -150,14 +217,7 @@ export class Plugin {
           exportsRule.append(this.postcss.decl({prop: e.identifier, value: e.value}));
         });
       }
-    } catch (e) {
-      if (e instanceof errors.CssBlockError && e.location && sourceFile) {
-        let loc: errors.SourceLocation = e.location;
-        loc.filename = sourceFile;
-        e.location = loc;
-      }
-      throw e;
-    }
+    });
   }
 
   addSourceLocations(...locations: errors.SourceLocation[]) {
@@ -176,26 +236,38 @@ export class Plugin {
     });
   }
 
-  sourceLocation(node): errors.SourceLocation | void {
-    return node.source && node.source.start;
-  }
-
-  selectorSourceLocation(rule, selector): errors.SourceLocation | void {
-    if (rule.source && rule.source.start && selector.source && selector.source.start) {
-      return this.addSourceLocations(rule.source.start, selector.source.start);
+  sourceLocation(sourceFile, node): errors.SourceLocation | void {
+    if (node.source) {
+      let loc = node.source.start;
+      return {
+        filename: sourceFile,
+        line: loc.line,
+        column: loc.column
+      };
     }
   }
 
-  private stateParser(rule, pseudo): StateInfo {
+  selectorSourceLocation(sourceFile: string, rule, selector): errors.SourceLocation | void {
+    if (rule.source && rule.source.start && selector.source && selector.source.start) {
+      let loc = this.addSourceLocations(rule.source.start, selector.source.start);
+      return {
+        filename: sourceFile,
+        line: loc.line,
+        column: loc.column
+      };
+    }
+  }
+
+  private stateParser(sourceFile: string, rule, pseudo): StateInfo {
     if (pseudo.nodes.length === 0) {
       // Empty state name or missing parens
       throw new errors.InvalidBlockSyntax(`:state name is missing`,
-                                       this.selectorSourceLocation(rule, pseudo));
+                                       this.selectorSourceLocation(sourceFile, rule, pseudo));
     }
     if (pseudo.nodes.length !== 1) {
       // I think this is if they have a comma in their :state like :state(foo, bar)
       throw new errors.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
-                                       this.selectorSourceLocation(rule, pseudo));
+                                       this.selectorSourceLocation(sourceFile, rule, pseudo));
     }
 
     switch(pseudo.nodes[0].nodes.length) {
@@ -211,11 +283,11 @@ export class Plugin {
       default:
         // too many state names
         throw new errors.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
-                                         this.selectorSourceLocation(rule, pseudo));
+                                         this.selectorSourceLocation(sourceFile, rule, pseudo));
     }
   }
 
-  assertValidCombinators(rule, selector) {
+  assertValidCombinators(sourceFile: string, rule, selector) {
     let states = new Set<string>();
     let classes = new Set<string>();
     let combinators = new Set<string>();
@@ -226,7 +298,7 @@ export class Plugin {
         thisType = BlockTypes.block;
       } else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
         thisType = BlockTypes.state;
-        let info = this.stateParser(rule, s);
+        let info = this.stateParser(sourceFile, rule, s);
         if (info.group) {
           states.add(`${info.group} ${info.name}`);
         } else {
@@ -244,21 +316,21 @@ export class Plugin {
             (thisType === BlockTypes.block && lastType === BlockTypes.state)) {
           throw new errors.InvalidBlockSyntax(
             `It's redundant to specify state with block: ${rule.selector}`,
-            this.selectorSourceLocation(rule, selector.nodes[0]));
+            this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
         }
         throw new errors.InvalidBlockSyntax(
           `Cannot have ${BlockTypes[lastType]} and ${BlockTypes[thisType]} on the same DOM element: ${rule.selector}`,
-          this.selectorSourceLocation(rule, selector.nodes[0]));
+          this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
       }
       lastType = thisType;
     });
     if (combinators.size > 0 && states.size > 1) {
       throw new errors.InvalidBlockSyntax(`Distinct states cannot be combined: ${rule.selector}`,
-                                         this.selectorSourceLocation(rule, selector.nodes[0]));
+                                         this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
     }
     if (classes.size > 1) {
       throw new errors.InvalidBlockSyntax(`Distinct elements cannot be combined: ${rule.selector}`,
-                                         this.selectorSourceLocation(rule, selector.nodes[0]));
+                                         this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
     }
   }
 }

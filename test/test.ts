@@ -4,9 +4,11 @@ import { suite, test } from "mocha-typescript";
 import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
 import { PluginOptions, OptionsReader } from "../src/Options";
+import { ImportedFile, Importer } from "../src/importing";
 
 import * as postcss from "postcss";
 import * as perfectionist from "perfectionist";
+import * as path from "path";
 
 @suite("Setting up")
 export class SetupTests {
@@ -342,6 +344,46 @@ export class InteroperableCSSOutput extends BEMProcessor {
         result.css.toString(),
         ":exports { block: test-block; a: test-block__a; a--big: test-block__a--big; b: test-block__b; b--big: test-block__b--big; }\n" +
         ".test-block__a--big { color: red; }\n" +
+        ".test-block__b--big { color: blue; }\n"
+      );
+    });
+  }
+}
+
+@suite("Block References")
+export class BlockReferences extends BEMProcessor {
+  @test "can import another block"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference "./imported.css";
+                    @block-debug imported to comment;
+                    :block { color: red; }
+                    .b:substate(big) {color: blue;}`;
+
+    let importer: Importer = (fromFile: string, importPath: string) => {
+      return new Promise<ImportedFile>((resolve) => {
+        assert.equal(fromFile, filename);
+        assert.equal(importPath, "./imported.css");
+        resolve({
+          path: path.resolve(fromFile, importPath),
+          contents: `:block { color: purple; }
+                     :state(large) { font-size: 20px; }
+                     :state(theme red) { color: red; }
+                     .foo   { float: left;   }
+                     .foo:substate(small) { font-size: 5px; }
+                     .foo:substate(font fancy) { font-family: fancy; }`
+        });
+      });
+    };
+    return this.process(filename, inputCSS, {importer: importer}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        "/* :block => .imported\n" +
+        "   :state(theme red) => .imported--theme-red\n" +
+        "   :state(large) => .imported--large\n" +
+        "   .foo => .imported__foo\n" +
+        "   .foo:substate(font fancy) => .imported__foo--font-fancy\n" +
+        "   .foo:substate(small) => .imported__foo--small */\n" +
+        ".test-block { color: red; }\n" +
         ".test-block__b--big { color: blue; }\n"
       );
     });

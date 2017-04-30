@@ -13,6 +13,10 @@ interface BlockElementMap {
   [elementName: string]: BlockElement;
 }
 
+interface BlockReferenceMap {
+  [blockName: string]: Block;
+}
+
 export interface Export {
   identifier: string;
   value: string;
@@ -60,6 +64,14 @@ export abstract class StateContainer implements HasExports {
     let result: Export[] = [];
     this.states.forEach((state) => {
       result.push(state.asExport(opts));
+    });
+    return result;
+  }
+
+  debug(opts: OptionsReader): string[] {
+    let result: string[] = [];
+    this.states.forEach((state) => {
+      result.push(state.asDebug(opts));
     });
     return result;
   }
@@ -111,11 +123,21 @@ export abstract class ExclusiveStateGroupContainer extends StateContainer implem
     result = result.concat(super.exports(opts));
     return result;
   }
+
+  debug(opts: OptionsReader): string[] {
+    let result: string[] = [];
+    this.groups.forEach((group) => {
+      result = result.concat(group.debug(opts));
+    });
+    result = result.concat(super.debug(opts));
+    return result;
+  }
 }
 
 export class Block extends ExclusiveStateGroupContainer implements Exportable, HasExports {
   private _name: string;
   private _elements: BlockElementMap = {};
+  private _blockReferences: BlockReferenceMap = {};
 
   constructor(name: string) {
     super();
@@ -181,12 +203,38 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     return element;
   }
 
+  addBlockReference(localName: string, other: Block) {
+    this._blockReferences[localName] = other;
+  }
+
+  getReferencedBlock(localName: string): Block | null {
+    return this._blockReferences[localName] || null;
+  }
+
   exports(opts: OptionsReader): Export[] {
     let result: Export[] = [this.asExport(opts)];
     result = result.concat(super.exports(opts));
     this.elements.forEach((element) => {
       result.push(element.asExport(opts));
       result = result.concat(element.exports(opts));
+    });
+    return result;
+  }
+
+  asSource():string {
+    return `:block`;
+  }
+
+  asDebug(opts: OptionsReader) {
+    return `${this.asSource()} => .${this.cssClass(opts)}`;
+  }
+
+  debug(opts: OptionsReader): string[] {
+    let result: string[] = [this.asDebug(opts)];
+    result = result.concat(super.debug(opts));
+    this.elements.forEach((element) => {
+      result.push(element.asDebug(opts));
+      result = result.concat(element.debug(opts));
     });
     return result;
   }
@@ -276,6 +324,20 @@ export class State implements Exportable {
     return this._name;
   }
 
+  asSource(): string {
+    let source: string;
+    if (this.element) {
+      source = this.element.asSource() + ":substate(";
+    } else {
+      source = ":state(";
+    }
+    if (this.group) {
+      source = source + `${this.group.name} `;
+    }
+    source = source + this.name + ")";
+    return source;
+  }
+
   localName(): string {
     let localNames: string[] = [];
     if (this.element) {
@@ -294,6 +356,10 @@ export class State implements Exportable {
       identifier: this.localName(),
       value: this.cssClass(opts)
     };
+  }
+
+  asDebug(opts: OptionsReader): string {
+    return `${this.asSource()} => .${this.cssClass(opts)}`;
   }
 
   cssClass(opts: OptionsReader) {
@@ -338,6 +404,14 @@ export class BlockElement extends ExclusiveStateGroupContainer implements Export
 
   localName(): string {
     return this.name;
+  }
+
+  asSource(): string {
+    return `.${this.name}`;
+  }
+
+  asDebug(opts: OptionsReader): string {
+    return `${this.asSource()} => .${this.cssClass(opts)}`;
   }
 
   asExport(opts: OptionsReader): Export {
