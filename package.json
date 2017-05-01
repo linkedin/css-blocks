@@ -7,7 +7,7 @@
     "prepublish": "tsc -p test/tsconfig.json",
     "pretest": "tsc -p test/tsconfig.json && tslint --project tsconfig.json",
     "tslint": "tslint --project tsconfig.json",
-    "test": "mocha dist/test/test.js --opts test/mocha.opts"
+    "test": "mocha dist/test --opts test/mocha.opts"
   },
   "repository": {
     "type": "git",
