@@ -2,6 +2,10 @@
 
 :block {
   extends: hello;
-  font-style: underline;
+  text-decoration: underline;
   background-color: blue;
+}
+
+.greeting-target {
+  font-style: italic;
 }
