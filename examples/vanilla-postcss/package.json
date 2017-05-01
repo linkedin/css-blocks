@@ -3,7 +3,7 @@
     "build": "grunt"
   },
   "devDependencies": {
-    "css-blocks": "file:../",
+    "css-blocks": "file:../../",
     "grunt": "^1.0.1",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-postcss": "^0.8.0",
