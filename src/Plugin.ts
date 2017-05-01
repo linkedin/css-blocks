@@ -229,7 +229,7 @@ export class Plugin {
     });
     return this.extractBlockDefinition(root, sourceFile, true).then((block) => {
       if (this.opts.interoperableCSS) {
-        let exportsRule = this.postcss.rule({selector: ":exports"});
+        let exportsRule = this.postcss.rule({selector: ":export"});
         root.prepend(exportsRule);
         let objsMap: MergedObjectMap = block.merged();
         Object.keys(objsMap).forEach((name) => {

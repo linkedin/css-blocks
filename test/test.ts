@@ -306,7 +306,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.equal(
         result.css.toString(),
-        ":exports { block: test-block; }\n" +
+        ":export { block: test-block; }\n" +
         ".test-block { color: red; }\n"
       );
     });
@@ -318,7 +318,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.equal(
         result.css.toString(),
-        ":exports { block: test-block; theme-blue: test-block--theme-blue; red: test-block--red; }\n" +
+        ":export { block: test-block; theme-blue: test-block--theme-blue; red: test-block--red; }\n" +
         ".test-block--red { color: red; }\n" +
         ".test-block--theme-blue { color: blue; }\n"
       );
@@ -331,7 +331,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.equal(
         result.css.toString(),
-        ":exports { block: test-block; a: test-block__a; b: test-block__b; }\n" +
+        ":export { block: test-block; a: test-block__a; b: test-block__b; }\n" +
         ".test-block__a { color: red; }\n" +
         ".test-block__b { color: blue; }\n"
       );
@@ -344,7 +344,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.equal(
         result.css.toString(),
-        ":exports { block: test-block; a: test-block__a; a--big: test-block__a--big; b: test-block__b; b--big: test-block__b--big; }\n" +
+        ":export { block: test-block; a: test-block__a; a--big: test-block__a--big; b: test-block__b; b--big: test-block__b--big; }\n" +
         ".test-block__a--big { color: red; }\n" +
         ".test-block__b--big { color: blue; }\n"
       );
@@ -418,7 +418,7 @@ export class BlockInheritance extends BEMProcessor {
     return this.process(filename, inputCSS, {interoperableCSS: true, importer: importer}).then((result) => {
       assert.equal(
         result.css.toString(),
-        ":exports {" +
+        ":export {" +
         " block: inherits base;" +
         " foo: inherits__foo base__foo;" +
         " b: inherits__b;" +
