@@ -9,7 +9,7 @@ export interface ImportedFile {
 export type Importer = (fromFile: string, path: string) => Promise<ImportedFile>;
 
 export function filesystemImporter(fromFile: string, importPath: string): Promise<ImportedFile> {
-  let resolvedPath = path.resolve(fromFile, importPath);
+  let resolvedPath = path.resolve(path.dirname(fromFile), importPath);
   return new Promise((resolve, reject) => {
     fs.readFile(resolvedPath, 'utf-8', (err: any, data: string) => {
       if (err) {
