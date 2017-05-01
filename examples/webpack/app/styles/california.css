@@ -1,0 +1,7 @@
+@block-reference "./hello.css";
+
+:block {
+  extends: hello;
+  font-style: underline;
+  background-color: blue;
+}
