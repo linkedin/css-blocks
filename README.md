@@ -16,11 +16,9 @@ to make strong guarantees about the CSS produced for optimizations.
 Terminology
 -----------
 
-A CSS Block has 5 key concepts:
+A CSS Block has 6 key concepts:
 
-1. Block - A block is a set of interdependent styles. There is no way to
-   write selectors that address elements from different blocks except in
-   well defined ways.
+1. Block - A block is a set of isolated and interdependent styles.
 2. Root - The root element of the block. All other element types must be
    contained in the html subtree of elements of this element.
 3. State - This is a state that the block can be in. A state is the only
@@ -49,7 +47,7 @@ State sets are inferred by finding all the states with a shared first
 identifier.
 
 
-The convention is to name a file according to the block: `form.block.scss`
+The convention is to name a file according to the block: `my-form.block.scss`
 
 Example:
 
@@ -122,18 +120,18 @@ Which would compile from Sass to CSS to:
 In BEM compatibility mode this would compile to:
 
 ```css
-.form { margin: 2em 0; padding: 1em 0.5em; }
-.form--theme-red { color: #c00; }
-.form--theme-blue { color: #006; }
-.form--compact { margin: 0.5em 0; padding: 0.5em 0.5em; }
-.form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
-.form--compact .form__input-area { margin: 0.25em 0; }
-.form__label { flex: 1fr; }
-.form__input { flex: 3fr; }
-.form--theme-red .form__input { border-color: #c00; }
-.form--theme-blue .form__input { border-color: #006; }
-.form__submit { width: 200px; }
-.form__submit--disabled { color: gray; }
+.my-form { margin: 2em 0; padding: 1em 0.5em; }
+.my-form--theme-red { color: #c00; }
+.my-form--theme-blue { color: #006; }
+.my-form--compact { margin: 0.5em 0; padding: 0.5em 0.5em; }
+.my-form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
+.my-form--compact .my-form__input-area { margin: 0.25em 0; }
+.my-form__label { flex: 1fr; }
+.my-form__input { flex: 3fr; }
+.my-form--theme-red .my-form__input { border-color: #c00; }
+.my-form--theme-blue .my-form__input { border-color: #006; }
+.my-form__submit { width: 200px; }
+.my-form__submit--disabled { color: gray; }
 ```
 
 Template Syntax
@@ -142,12 +140,12 @@ Template Syntax
 ### Plain HTML
 
 ```html
-<form class="form form--compact form--theme-red">
-  <div class="form-input-area">
-    <label class="form__label">Username</label>
-    <input class="form__innput">
+<form class="my-form my-form--compact my-form--theme-red">
+  <div class="my-form-input-area">
+    <label class="my-form__label">Username</label>
+    <input class="my-form__innput">
   </div> 
-  <submit class="form__submit form__submit--disabled">
+  <submit class="my-form__submit my-form__submit--disabled">
 </form>
 ```
 
@@ -282,18 +280,18 @@ There can be BEM compatibilty output option where the above example would
 produce the following CSS output:
 
 ```css
-.form { margin: 2em 0; padding: 1em 0.5em; }
-.form--theme-red { color: #c00; }
-.form--theme-blue { color: #006; }
-.form--compact { margin: 0.5em 0; padding: 0.5em 0.5em; }
-.form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
-.form--compact .form__input-area { margin: 0.25em 0; }
-.form__label { flex: 1fr; }
-.form__input { flex: 3fr; }
-.form--theme-red .form__input { border-color: #c00; }
-.form--theme-blue .form__input { border-color: #006; }
-.form__submit { width: 200px; }
-.form__submit--disabled { color: gray; }
+.my-form { margin: 2em 0; padding: 1em 0.5em; }
+.my-form--theme-red { color: #c00; }
+.my-form--theme-blue { color: #006; }
+.my-form--compact { margin: 0.5em 0; padding: 0.5em 0.5em; }
+.my-form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
+.my-form--compact .my-form__input-area { margin: 0.25em 0; }
+.my-form__label { flex: 1fr; }
+.my-form__input { flex: 3fr; }
+.my-form--theme-red .my-form__input { border-color: #c00; }
+.my-form--theme-blue .my-form__input { border-color: #006; }
+.my-form__submit { width: 200px; }
+.my-form__submit--disabled { color: gray; }
 ```
 
 By default, the classes would be generated and compact:
