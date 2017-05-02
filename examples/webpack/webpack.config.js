@@ -27,5 +27,8 @@ module.exports = {
   },
   plugins: [
     extractCSS,
-  ]
+  ],
+  node: {
+    fs: 'empty'
+  }
 };
