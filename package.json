@@ -2,7 +2,7 @@
   "name": "css-blocks",
   "version": "0.9.0",
   "description": "Fast, maintainable, optimal, component-oriented CSS.",
-  "main": "dist/src/cssBlocks.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "prepublish": "tsc -p test/tsconfig.json",
     "pretest": "tsc -p test/tsconfig.json && tslint --project tsconfig.json",
