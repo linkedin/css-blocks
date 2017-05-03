@@ -1,5 +1,6 @@
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
+import { CssBlockError } from "./errors";
 
 interface StateMap {
   [stateName: string]: State;
@@ -142,6 +143,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   private _blockReferences: BlockReferenceMap = {};
   private _source: string;
   private _base: Block;
+  private _implements: Block[] = [];
 
   constructor(name: string, source: string) {
     super();
@@ -171,6 +173,42 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
 
   set base(base: Block) {
     this._base = base;
+  }
+
+  get implementsBlocks(): Block[] {
+    return this._implements.concat([]);
+  }
+
+  addImplementation(b: Block) {
+    return this._implements.push(b);
+  }
+
+  // @returns the objects from b that are missing in thie block.
+  checkImplementation(b: Block): BlockObject[] {
+    let missing: BlockObject[] = [];
+    b.all().forEach((o: BlockObject) => {
+      if (!this.find(o.asSource())) {
+        missing.push(o);
+      }
+    });
+    return missing;
+  }
+
+  checkImplementations(): void {
+    this.implementsBlocks.forEach((b: Block) => {
+      let missingObjs: BlockObject[] = this.checkImplementation(b);
+      let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
+      if (missingObjs.length > 0) {
+        let s = missingObjs.length > 1 ? 's' : '';
+        throw new CssBlockError(
+          `Missing implementation${s} for: ${missingObjsStr} from ${b.source}`);
+      }
+    });
+  }
+
+  // This is a really dumb impl
+  find(sourceName): BlockObject | undefined {
+    return this.all().find(e => e.asSource() === sourceName);
   }
 
   get source() {

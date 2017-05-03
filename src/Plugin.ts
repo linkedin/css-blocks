@@ -117,6 +117,21 @@ export class Plugin {
     });
   }
 
+  private implementsBlock(block: Block, sourceFile: string, rule, mutate: boolean) {
+    rule.walkDecls("implements", (decl) => {
+      let refNames = decl.value.split(/,\s*/);
+      refNames.forEach((refName) => {
+        let refBlock = block.getReferencedBlock(refName);
+        if (!refBlock) {
+          throw new errors.InvalidBlockSyntax(`No block named ${refName} found`,
+                                              this.sourceLocation(sourceFile, decl));
+        }
+        block.addImplementation(refBlock);
+      });
+      if (mutate) { decl.remove(); }
+    });
+  }
+
   public extractBlockDefinition(root, sourceFile: string, mutate: boolean): Promise<Block> {
     let block = new Block(path.parse(sourceFile).name, sourceFile);
     return this.resolveReferences(block, root, sourceFile, mutate).then((block) => {
@@ -132,7 +147,10 @@ export class Plugin {
         selector.each((individualSelector) => {
           individualSelector.walk((s) => {
             if (s.type === selectorParser.PSEUDO && s.value === ":block") {
-              this.extendBlock(block, sourceFile, rule, mutate);
+              if (s.next() === undefined && s.prev() === undefined) {
+                this.extendBlock(block, sourceFile, rule, mutate);
+                this.implementsBlock(block, sourceFile, rule, mutate);
+              }
               if (s.parent === individualSelector) {
                 thisNode = block;
               }
@@ -209,6 +227,7 @@ export class Plugin {
         }
         rule.selector = selector.toString();
       });
+      block.checkImplementations();
       return block;
     });
   }

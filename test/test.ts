@@ -407,7 +407,7 @@ export class BlockInheritance extends BEMProcessor {
         assert.equal(fromFile, filename);
         assert.equal(importPath, "./base.css");
         resolve({
-          path: path.resolve(fromFile, importPath),
+          path: path.resolve(path.dirname(fromFile), importPath),
           contents: `:block { color: purple; }
                      :state(large) { font-size: 20px; }
                      .foo   { float: left;   }
@@ -431,5 +431,84 @@ export class BlockInheritance extends BEMProcessor {
         ".inherits__b--small { color: blue; }\n"
       );
     });
+  }
+}
+
+@suite("Block Interfaces")
+export class BlockInterfaceTests extends BEMProcessor {
+  assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
+    return promise.then(
+      () => {
+        assert(false, `Error ${errorType.name} was not raised.`);
+      },
+      (reason) => {
+        assert(reason instanceof errorType, reason.toString());
+        assert.equal(reason.message, message);
+      });
+  }
+
+  @test "can detect missing surface area"() {
+    let filename = "foo/bar/implements.css";
+    let inputCSS = `@block-reference "./base.css";
+                    :block { implements: base; color: red; }
+                    .foo { clear: both; }
+                    .b:substate(small) {color: blue;}`;
+
+    let importer: Importer = (fromFile: string, importPath: string) => {
+      return new Promise<ImportedFile>((resolve) => {
+        assert.equal(fromFile, filename);
+        assert.equal(importPath, "./base.css");
+        resolve({
+          path: path.resolve(path.dirname(fromFile), importPath),
+          contents: `:block { color: purple; }
+                     :state(large) { font-size: 20px; }
+                     .foo   { float: left;   }
+                     .foo:substate(small) { font-size: 5px; }`
+        });
+      });
+    };
+    return this.assertError(
+      cssBlocks.CssBlockError,
+      `Missing implementations for: :state(large), .foo:substate(small) ` +
+        `from ${PROJECT_DIR}/foo/bar/base.css`,
+      this.process(filename, inputCSS, {importer: importer}));
+  }
+
+  @test "can import another block"() {
+    let filename = "foo/bar/implements.css";
+    let inputCSS = `@block-reference "./base.css";
+                    @block-reference "./other.css";
+                    :block { implements: base, other; color: red; }
+                    .foo { clear: both; }
+                    .b:substate(small) {color: blue;}
+                    :state(large) { }
+                    .foo:substate(small) { }`;
+
+    let importer: Importer = (fromFile: string, importPath: string) => {
+      return new Promise<ImportedFile>((resolve) => {
+        if (importPath === "./base.css") {
+          resolve({
+            path: path.resolve(path.dirname(fromFile), importPath),
+            contents: `:block { color: purple; }
+                       :state(large) { font-size: 20px; }
+                       .foo   { float: left;   }
+                       .foo:substate(small) { font-size: 5px; }`
+          });
+        } else {
+          resolve({
+            path: path.resolve(path.dirname(fromFile), importPath),
+            contents: `:block { color: purple; }
+                       :state(medium) { font-size: 20px; }
+                       .foo   { float: left;   }
+                       .foo:substate(medium) { font-size: 5px; }`
+          });
+        }
+      });
+    };
+    return this.assertError(
+      cssBlocks.CssBlockError,
+      `Missing implementations for: :state(medium), .foo:substate(medium) ` +
+        `from ${PROJECT_DIR}/foo/bar/other.css`,
+      this.process(filename, inputCSS, {importer: importer}));
   }
 }

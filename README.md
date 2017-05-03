@@ -167,7 +167,67 @@ block.
 Block Inheritance
 -----------------
 
-TBD
+To inherit from another block you must first define a reference to the
+other block:
+
+```css
+@block-reference "./another-block.css";
+```
+
+By default the block can be referenced by it's natural name which would
+be `another-block` in this case based on the filename. However you can
+assign a local alias for the block:
+
+```css
+@block-refererence another from "./another-block.css";
+```
+
+And now that block can be referenced within this file by the name
+`another`.
+
+To inherit, you must set the property `extends` inside a `:block`
+selector to the name of the block you wish to inherit.
+
+```css
+@block-refererence another from "./another-block.css";
+
+:block {
+  extends: another;
+}
+```
+
+Note that block inheritance does not change the css output for a block.
+instead, it changes exported identifiers associated with the block's
+different objects. That is, the class(es) that are generated from
+`another-block`'s `.foo` element are now assocated with this blocks
+`.foo` element and all of the classes will be returned to the template.
+Additionally, even if an object from the base class isn't mentioned in
+the subclass, you can still set the classnames assocated with it as if
+it had them.
+
+Block Implementation
+--------------------
+
+In some cases it may be necessary for a block to conform to the API
+of one or more blocks but that you want to provide a distinct
+implementation of that interface. To accomplish this, you can declare
+a block `implements` one or more blocks.
+
+```css
+@block-reference "./base.css";
+@block-reference "./other.css";
+:block { implements: base, other; color: red; }
+```
+
+Now if there are any states, elements or substates in those other blocks
+that aren't mentioned in this block you will get an error:
+
+```
+Missing implementations for: :state(large), .foo:substate(small) from ./base.css
+```
+
+Note that this doesn't require a selector-level correspondance, merely
+that the different types of states and elements have *some* styling.
 
 Block composition
 -----------------
