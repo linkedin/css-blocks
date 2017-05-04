@@ -5,6 +5,7 @@ import { assert } from "chai";
 import { Block, BlockObject } from "../src/Block";
 import { OptionsReader } from "../src/options";
 import iCssAdapter, { ExportDictionary }  from "../src/iCssAdapter";
+import BEMProcessor from "./util/BEMProcessor";
 
 @suite("Interoperable CSS Adapter")
 export class ICssAdapterTest {
@@ -54,3 +55,58 @@ export class ICssAdapterTest {
     assert.equal(styles(".label:substate(font small)"), "foo__label--font-small");
   }
 }
+
+@suite("Interoperable CSS")
+export class InteroperableCSSOutput extends BEMProcessor {
+  @test "exports block name"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `:block {color: red;}`;
+    return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ":export { block: test-block; }\n" +
+        ".test-block { color: red; }\n"
+      );
+    });
+  }
+  @test "exports state names"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `:state(red) {color: red;}
+                    :state(theme blue) {color: blue;}`;
+    return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ":export { block: test-block; theme-blue: test-block--theme-blue; red: test-block--red; }\n" +
+        ".test-block--red { color: red; }\n" +
+        ".test-block--theme-blue { color: blue; }\n"
+      );
+    });
+  }
+  @test "exports element names"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `.a {color: red;}
+                    .b {color: blue;}`;
+    return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ":export { block: test-block; a: test-block__a; b: test-block__b; }\n" +
+        ".test-block__a { color: red; }\n" +
+        ".test-block__b { color: blue; }\n"
+      );
+    });
+  }
+  @test "exports element states"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `.a:substate(big) {color: red;}
+                    .b:substate(big) {color: blue;}`;
+    return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
+      assert.equal(
+        result.css.toString(),
+        ":export { block: test-block; a: test-block__a; a--big: test-block__a--big; b: test-block__b; b--big: test-block__b--big; }\n" +
+        ".test-block__a--big { color: red; }\n" +
+        ".test-block__b--big { color: blue; }\n"
+      );
+    });
+  }
+}
+
