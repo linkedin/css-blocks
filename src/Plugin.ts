@@ -1,5 +1,4 @@
 import * as postcss from "postcss";
-import * as path from "path";
 import * as selectorParser from "postcss-selector-parser";
 import { PluginOptions, OptionsReader } from "./options";
 import { MergedObjectMap, Exportable, Block, StateInfo, State, BlockElement } from "./Block";
@@ -49,7 +48,7 @@ export class Plugin {
       let result: Promise<ImportedFile> = this.opts.importer(sourceFile, importPath);
       let extractedResult: Promise<Block> = result.then((importedFile: ImportedFile) => {
         let otherRoot = this.postcss.parse(importedFile.contents, {from: importedFile.path});
-        return this.extractBlockDefinition(otherRoot, importedFile.path, false);
+        return this.extractBlockDefinition(otherRoot, importedFile.path, importedFile.defaultName, false);
       });
       let namedResult: Promise<[string, Block]> = extractedResult.then((referencedBlock) => {
         return [localName, referencedBlock];
@@ -132,8 +131,8 @@ export class Plugin {
     });
   }
 
-  public extractBlockDefinition(root, sourceFile: string, mutate: boolean): Promise<Block> {
-    let block = new Block(path.parse(sourceFile).name, sourceFile);
+  public extractBlockDefinition(root, sourceFile: string, defaultName: string, mutate: boolean): Promise<Block> {
+    let block = new Block(defaultName, sourceFile);
     return this.resolveReferences(block, root, sourceFile, mutate).then((block) => {
       root.walkRules((rule) => {
         let selector =  selectorParserFn().process(rule.selector).res;
@@ -246,7 +245,8 @@ export class Plugin {
           this.sourceLocation(sourceFile, decl));
       }
     });
-    return this.extractBlockDefinition(root, sourceFile, true).then((block) => {
+    let defaultName: string = this.opts.importer.getDefaultName(sourceFile);
+    return this.extractBlockDefinition(root, sourceFile, defaultName, true).then((block) => {
       if (this.opts.interoperableCSS) {
         let exportsRule = this.postcss.rule({selector: ":export"});
         root.prepend(exportsRule);

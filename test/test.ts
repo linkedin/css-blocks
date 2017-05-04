@@ -12,6 +12,77 @@ import * as path from "path";
 
 const PROJECT_DIR = path.resolve(__dirname, "../..");
 
+interface SourceRegistry {
+  [sourcePath: string]: string;
+}
+
+interface ImportedFiles {
+  [sourcePath: string]: boolean;
+}
+
+
+class MockImportRegistry {
+  sources: SourceRegistry = {};
+  imported: ImportedFiles = {};
+
+
+  registerSource(sourcePath: string, contents: string) {
+    sourcePath = this.relativize(sourcePath);
+    this.sources[sourcePath] = contents;
+  }
+
+  markImported(sourcePath) {
+    sourcePath = this.relativize(sourcePath);
+    this.imported[sourcePath] = true
+  }
+
+  assertImported(sourcePath) {
+    sourcePath = this.relativize(sourcePath);
+    if (!this.imported[sourcePath]) {
+      let importedFiles = Object.keys(this.imported).join(", ");
+      assert(false,
+             `${sourcePath} was not imported as expected. These were imported: ${importedFiles}`);
+    }
+  }
+
+  relativize(absolutePath) {
+    if (absolutePath.startsWith(PROJECT_DIR)) {
+      return absolutePath.slice(PROJECT_DIR.length + 1);
+    } else {
+      return absolutePath;
+    }
+  }
+
+  importer(): Importer {
+    let registry = this;
+    let importer: Importer = <Importer>function(fromFile: string, importPath: string): Promise<ImportedFile> {
+      let sourceDir: string = path.dirname(fromFile);
+      let resolvedPath = registry.relativize(path.resolve(sourceDir, importPath));
+      return new Promise<ImportedFile>((resolve, reject) => {
+        let contents = registry.sources[resolvedPath];
+        if (contents) {
+          registry.imported[resolvedPath] = true;
+          resolve({
+            path: resolvedPath,
+            defaultName: importer.getDefaultName(resolvedPath),
+            contents: contents
+          });
+        } else {
+          let importedFiles = Object.keys(registry.sources).join(", ");
+          reject(new Error(`Mock file ${resolvedPath} not found. Available: ${importedFiles}`));
+        }
+      });
+    }
+    importer.getDefaultName = this.getDefaultName;
+    return importer;
+  }
+
+  getDefaultName(sourcePath: string): string {
+    return path.parse(sourcePath).name
+  }
+}
+
+
 @suite("Setting up")
 export class SetupTests {
   @test "options are optional"() {
@@ -355,31 +426,27 @@ export class InteroperableCSSOutput extends BEMProcessor {
 @suite("Block References")
 export class BlockReferences extends BEMProcessor {
   @test "can import another block"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `:block { color: purple; }
+       :state(large) { font-size: 20px; }
+       :state(theme red) { color: red; }
+       .foo   { float: left;   }
+       .foo:substate(small) { font-size: 5px; }
+       .foo:substate(font fancy) { font-family: fancy; }`
+    );
+
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block-reference "./imported.css";
                     @block-debug imported to comment;
                     :block { color: red; }
                     .b:substate(big) {color: blue;}`;
 
-    let importer: Importer = (fromFile: string, importPath: string) => {
-      return new Promise<ImportedFile>((resolve) => {
-        assert.equal(fromFile, filename);
-        assert.equal(importPath, "./imported.css");
-        resolve({
-          path: path.resolve(fromFile, importPath),
-          contents: `:block { color: purple; }
-                     :state(large) { font-size: 20px; }
-                     :state(theme red) { color: red; }
-                     .foo   { float: left;   }
-                     .foo:substate(small) { font-size: 5px; }
-                     .foo:substate(font fancy) { font-family: fancy; }`
-        });
-      });
-    };
-    return this.process(filename, inputCSS, {importer: importer}).then((result) => {
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("foo/bar/imported.css");
       assert.equal(
         result.css.toString(),
-        `/* Source: ${PROJECT_DIR}/foo/bar/test-block.css/imported.css\n` +
+        `/* Source: foo/bar/imported.css\n` +
         "   :block => .imported\n" +
         "   :state(theme red) => .imported--theme-red\n" +
         "   :state(large) => .imported--large\n" +
@@ -396,26 +463,22 @@ export class BlockReferences extends BEMProcessor {
 @suite("Block Inheritance")
 export class BlockInheritance extends BEMProcessor {
   @test "can import another block"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/base.css",
+      `:block { color: purple; }
+       :state(large) { font-size: 20px; }
+       .foo   { float: left;   }
+       .foo:substate(small) { font-size: 5px; }`
+    );
+
     let filename = "foo/bar/inherits.css";
     let inputCSS = `@block-reference "./base.css";
                     :block { extends: base; color: red; }
                     .foo { clear: both; }
                     .b:substate(small) {color: blue;}`;
 
-    let importer: Importer = (fromFile: string, importPath: string) => {
-      return new Promise<ImportedFile>((resolve) => {
-        assert.equal(fromFile, filename);
-        assert.equal(importPath, "./base.css");
-        resolve({
-          path: path.resolve(path.dirname(fromFile), importPath),
-          contents: `:block { color: purple; }
-                     :state(large) { font-size: 20px; }
-                     .foo   { float: left;   }
-                     .foo:substate(small) { font-size: 5px; }`
-        });
-      });
-    };
-    return this.process(filename, inputCSS, {interoperableCSS: true, importer: importer}).then((result) => {
+    return this.process(filename, inputCSS, {interoperableCSS: true, importer: imports.importer()}).then((result) => {
+      imports.assertImported("foo/bar/base.css");
       assert.equal(
         result.css.toString(),
         ":export {" +
@@ -448,33 +511,44 @@ export class BlockInterfaceTests extends BEMProcessor {
   }
 
   @test "can detect missing surface area"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/base.css",
+      `:block { color: purple; }
+       :state(large) { font-size: 20px; }
+       .foo   { float: left;   }
+       .foo:substate(small) { font-size: 5px; }`
+    );
+
     let filename = "foo/bar/implements.css";
     let inputCSS = `@block-reference "./base.css";
                     :block { implements: base; color: red; }
                     .foo { clear: both; }
                     .b:substate(small) {color: blue;}`;
 
-    let importer: Importer = (fromFile: string, importPath: string) => {
-      return new Promise<ImportedFile>((resolve) => {
-        assert.equal(fromFile, filename);
-        assert.equal(importPath, "./base.css");
-        resolve({
-          path: path.resolve(path.dirname(fromFile), importPath),
-          contents: `:block { color: purple; }
-                     :state(large) { font-size: 20px; }
-                     .foo   { float: left;   }
-                     .foo:substate(small) { font-size: 5px; }`
-        });
-      });
-    };
     return this.assertError(
       cssBlocks.CssBlockError,
       `Missing implementations for: :state(large), .foo:substate(small) ` +
-        `from ${PROJECT_DIR}/foo/bar/base.css`,
-      this.process(filename, inputCSS, {importer: importer}));
+        `from foo/bar/base.css`,
+      this.process(filename, inputCSS, {importer: imports.importer()}).then(() => {
+        imports.assertImported("foo/bar/base.css")
+      }));
   }
 
   @test "can import another block"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/base.css",
+      `:block { color: purple; }
+       :state(large) { font-size: 20px; }
+       .foo   { float: left;   }
+       .foo:substate(small) { font-size: 5px; }`
+    );
+    imports.registerSource("foo/bar/other.css",
+      `:block { color: purple; }
+      :state(medium) { font-size: 20px; }
+      .foo   { float: left;   }
+      .foo:substate(medium) { font-size: 5px; }`
+    );
+
     let filename = "foo/bar/implements.css";
     let inputCSS = `@block-reference "./base.css";
                     @block-reference "./other.css";
@@ -484,31 +558,13 @@ export class BlockInterfaceTests extends BEMProcessor {
                     :state(large) { }
                     .foo:substate(small) { }`;
 
-    let importer: Importer = (fromFile: string, importPath: string) => {
-      return new Promise<ImportedFile>((resolve) => {
-        if (importPath === "./base.css") {
-          resolve({
-            path: path.resolve(path.dirname(fromFile), importPath),
-            contents: `:block { color: purple; }
-                       :state(large) { font-size: 20px; }
-                       .foo   { float: left;   }
-                       .foo:substate(small) { font-size: 5px; }`
-          });
-        } else {
-          resolve({
-            path: path.resolve(path.dirname(fromFile), importPath),
-            contents: `:block { color: purple; }
-                       :state(medium) { font-size: 20px; }
-                       .foo   { float: left;   }
-                       .foo:substate(medium) { font-size: 5px; }`
-          });
-        }
-      });
-    };
     return this.assertError(
       cssBlocks.CssBlockError,
       `Missing implementations for: :state(medium), .foo:substate(medium) ` +
-        `from ${PROJECT_DIR}/foo/bar/other.css`,
-      this.process(filename, inputCSS, {importer: importer}));
+        `from foo/bar/other.css`,
+      this.process(filename, inputCSS, {importer: imports.importer()}).then(() => {
+        imports.assertImported("foo/bar/base.css")
+        imports.assertImported("foo/bar/other.css")
+      }));
   }
 }
