@@ -16,41 +16,27 @@ to make strong guarantees about the CSS produced for optimizations.
 Terminology
 -----------
 
-A CSS Block has 6 key concepts:
-
-1. Block - A block is a set of isolated and interdependent styles.
-2. Root - The root element of the block. All other element types must be
-   contained in the html subtree of elements of this element.
-3. State - This is a state that the block can be in. A state is the only
-   construct that can have dependent styles with other element types
-   through CSS combinators. States can be dynamic or static in nature.
-   You can think of a state as a CSS class applied to the root element.
-3. State Set - A state set is a group of mutually exclusive states.
-   This makes it easier to switch between states in the set and allows
-   the block compiler to check for inconsistent and invalid selectors.
-4. Element - An element within the block are styles that are specific to
-   that block but that must be applied to one or more HTML element contained in
-   the document subtree. You can think of this as a CSS class that is
-   local to the block.
-5. Substate - A Substate belongs to an Element and can only be applied to
-   an Element for which the state belongs. You can think of this as a
-   CSS class that is also applied in conjunction with the element when the
-   substate is set.
+1. Block - A block is a set of interdependent styles that exist in isolation
+   from styles in other Blocks. A block has a name.
+2. Root - The root element of the block. All other HTML elements assigned styles
+   from a Block must be contained in the HTML subtree of elements of the
+   block's root.
+3. State - Blocks can be in different states. A state can be a simple toggle
+   (on/off) or it can have an enumerated set of values. State names and values
+   must be legal CSS identifiers.
+4. Class - All CSS classes within the block are styles that are specific to
+   that block and must only be applied to HTML elements contained in the
+   document subtree.
+5. Substate - A Substate is like a state except that it belongs to a single Class
+   within the Block. Substates can have the same name as other states and substates
+   but they are distinct from each other except by convention.
 
 Syntax
 ------
 
-By default, every class in a block is local to that block and represents
-an Element.
-
-State sets are inferred by finding all the states with a shared first
-identifier.
-
-
 The convention is to name a file according to the block: `my-form.block.scss`
 
 Example:
-
 
 ```css
 :block {
@@ -219,7 +205,7 @@ a block `implements` one or more blocks.
 :block { implements: base, other; color: red; }
 ```
 
-Now if there are any states, elements or substates in those other blocks
+Now if there are any states, classes or substates in those other blocks
 that aren't mentioned in this block you will get an error:
 
 ```
@@ -227,7 +213,7 @@ Missing implementations for: :state(large), .foo:substate(small) from ./base.css
 ```
 
 Note that this doesn't require a selector-level correspondance, merely
-that the different types of states and elements have *some* styling.
+that the different types of states and classes have *some* styling.
 
 Block composition
 -----------------
@@ -236,8 +222,7 @@ When composing blocks, any property conflicts will result in a build
 error unless a resolution is provided by one of the blocks:
 
 ```scss
-@reference "../components/accordian.block" as accordian;
-@block .section;
+@block-reference accordian from "../components/accordian.block";
 .box {
   width: resolve(accordian.container); // override accordian.container
   width: 100%;
@@ -251,13 +236,13 @@ Composing blocks by the consuming app
 
 If a third-party library failed to consider a composition, or if two
 third-party libraries don't compose well, the app can provide it's own
-composition of the necessary styles as it's own element.
+composition of the necessary styles as it's own class.
 
 File: `navigation.block.scss`
 
 ```scss
-@reference "super-grid-system.block";
-@reference "drop-downs.block";
+@block-reference "super-grid-system.block";
+@block-reference "drop-down.block";
 @block .navigation;
 
 .profile {
@@ -326,10 +311,10 @@ Options
   * Exclusive State names: the name of the state group is prefixed to
     the state name with a dash. E.g. `:state(theme red)` is exported as
     `theme-red`.
-  * Element names: The name of the element. E.g. `.foo` is exported as
+  * Class names: The name of the classes. E.g. `.foo` is exported as
     `foo`. Note that these can conflict with state names, it is left to
     the developer to avoid collisions if using interoperable CSS.
-  * Element substates: The name of the element is prefixed to the state
+  * Class substates: The name of the class is prefixed to the state
     name separated by a double dash. E.g. `.foo:substate(visible)` is
     exported as `foo--visible`.
 

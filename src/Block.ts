@@ -10,8 +10,8 @@ interface ExclusiveStateGroupMap {
   [groupName: string]: ExclusiveStateGroup;
 }
 
-interface BlockElementMap {
-  [elementName: string]: BlockElement;
+interface BlockClassMap {
+  [className: string]: BlockClass;
 }
 
 interface BlockReferenceMap {
@@ -23,7 +23,7 @@ export interface Export {
   value: string;
 }
 
-export type BlockObject = Block | BlockElement | State;
+export type BlockObject = Block | BlockClass | State;
 
 export interface MergedObjectMap {
   [sourceName: string]: BlockObject[];
@@ -46,7 +46,7 @@ export abstract class StateContainer implements HasBlockObjects {
     this._states[state.name] = state;
   }
 
-  abstract get stateContainer(): Block | BlockElement | ExclusiveStateGroup;
+  abstract get stateContainer(): Block | BlockClass | ExclusiveStateGroup;
 
   ensureState(info: StateInfo) {
     // Could assert that the stateinfo group name matched but yolo.
@@ -87,7 +87,7 @@ export abstract class ExclusiveStateGroupContainer extends StateContainer implem
     super();
   }
 
-  abstract get groupContainer(): Block | BlockElement;
+  abstract get groupContainer(): Block | BlockClass;
 
   addExclusiveStateGroup(group: ExclusiveStateGroup): void {
     this._exclusiveStateGroups[group.name] = group;
@@ -139,7 +139,7 @@ export abstract class ExclusiveStateGroupContainer extends StateContainer implem
 
 export class Block extends ExclusiveStateGroupContainer implements Exportable, HasBlockObjects {
   private _name: string;
-  private _elements: BlockElementMap = {};
+  private _classes: BlockClassMap = {};
   private _blockReferences: BlockReferenceMap = {};
   private _source: string;
   private _base: Block;
@@ -151,11 +151,11 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     this._source = source;
   }
 
-  get groupContainer(): Block | BlockElement {
+  get groupContainer(): Block | BlockClass {
     return this;
   }
 
-  get stateContainer(): Block | BlockElement | ExclusiveStateGroup {
+  get stateContainer(): Block | BlockClass | ExclusiveStateGroup {
     return this;
   }
 
@@ -215,12 +215,12 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     return this._source;
   }
 
-  get elements(): BlockElement[] {
-    let elements: BlockElement[] = [];
-    Object.keys(this._elements).forEach((e) => {
-      elements.push(this._elements[e]);
+  get classes(): BlockClass[] {
+    let classes: BlockClass[] = [];
+    Object.keys(this._classes).forEach((e) => {
+      classes.push(this._classes[e]);
     });
-    return elements;
+    return classes;
   }
 
   cssClass(opts: OptionsReader) {
@@ -243,19 +243,19 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     };
   }
 
-  addElement(element: BlockElement) {
-    this._elements[element.name] = element;
+  addClass(blockClass: BlockClass) {
+    this._classes[blockClass.name] = blockClass;
   }
 
-  ensureElement(name: string): BlockElement {
-    let element;
-    if (this._elements[name]) {
-      element = this._elements[name];
+  ensureClass(name: string): BlockClass {
+    let blockClass;
+    if (this._classes[name]) {
+      blockClass = this._classes[name];
     } else {
-      element = new BlockElement(name, this);
-      this.addElement(element);
+      blockClass = new BlockClass(name, this);
+      this.addClass(blockClass);
     }
-    return element;
+    return blockClass;
   }
 
   addBlockReference(localName: string, other: Block) {
@@ -269,9 +269,9 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   all(shallow?: boolean): BlockObject[] {
     let result: BlockObject[] = [this];
     result = result.concat(super.all());
-    this.elements.forEach((element) => {
-      result.push(element);
-      result = result.concat(element.all());
+    this.classes.forEach((blockClass) => {
+      result.push(blockClass);
+      result = result.concat(blockClass.all());
     });
     if (!shallow && this.base) {
       result = result.concat(this.base.all(shallow));
@@ -302,9 +302,9 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   debug(opts: OptionsReader): string[] {
     let result: string[] = [`Source: ${this.source}`, this.asDebug(opts)];
     result = result.concat(super.debug(opts));
-    this.elements.forEach((element) => {
-      result.push(element.asDebug(opts));
-      result = result.concat(element.debug(opts));
+    this.classes.forEach((blockClass) => {
+      result.push(blockClass.asDebug(opts));
+      result = result.concat(blockClass.debug(opts));
     });
     return result;
   }
@@ -312,15 +312,15 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
 
 export class ExclusiveStateGroup extends StateContainer {
   private _name: string;
-  private _parent: Block | BlockElement;
+  private _parent: Block | BlockClass;
 
-  constructor(name: string, parent: Block | BlockElement) {
+  constructor(name: string, parent: Block | BlockClass) {
     super();
     this._parent = parent;
     this._name = name;
   }
 
-  get stateContainer(): Block | BlockElement | ExclusiveStateGroup {
+  get stateContainer(): Block | BlockClass | ExclusiveStateGroup {
     return this;
   }
 
@@ -332,8 +332,8 @@ export class ExclusiveStateGroup extends StateContainer {
     }
   }
 
-  get element(): BlockElement | null {
-    if (this._parent instanceof BlockElement) {
+  get blockClass(): BlockClass | null {
+    if (this._parent instanceof BlockClass) {
       return this._parent;
     } else {
       return null;
@@ -351,10 +351,10 @@ export interface StateInfo {
 }
 
 export class State implements Exportable {
-  private _container: Block | BlockElement | ExclusiveStateGroup;
+  private _container: Block | BlockClass | ExclusiveStateGroup;
   private _name: string;
 
-  constructor(name: string, container: Block | BlockElement | ExclusiveStateGroup) {
+  constructor(name: string, container: Block | BlockClass | ExclusiveStateGroup) {
     this._container = container;
     this._name = name;
   }
@@ -363,7 +363,7 @@ export class State implements Exportable {
     if (this._container instanceof Block) {
       return this._container;
     }
-    else if (this._container instanceof BlockElement) {
+    else if (this._container instanceof BlockClass) {
       return this._container.block;
     }
     else {
@@ -371,12 +371,12 @@ export class State implements Exportable {
     }
   }
 
-  get element(): BlockElement | null {
-    if (this._container instanceof BlockElement) {
+  get blockClass(): BlockClass | null {
+    if (this._container instanceof BlockClass) {
       return this._container;
     }
     else if (this._container instanceof ExclusiveStateGroup) {
-      return this._container.element;
+      return this._container.blockClass;
     } else {
       return null;
     }
@@ -396,8 +396,8 @@ export class State implements Exportable {
 
   asSource(): string {
     let source: string;
-    if (this.element) {
-      source = this.element.asSource() + ":substate(";
+    if (this.blockClass) {
+      source = this.blockClass.asSource() + ":substate(";
     } else {
       source = ":state(";
     }
@@ -410,8 +410,8 @@ export class State implements Exportable {
 
   localName(): string {
     let localNames: string[] = [];
-    if (this.element) {
-      localNames.push(this.element.localName());
+    if (this.blockClass) {
+      localNames.push(this.blockClass.localName());
     }
     if (this.group) {
       localNames.push(`${this.group.name}-${this.name}`);
@@ -436,8 +436,8 @@ export class State implements Exportable {
     switch(opts.outputMode) {
       case OutputMode.BEM:
         let cssClassName: string;
-        if (this.element) {
-          cssClassName = this.element.cssClass(opts);
+        if (this.blockClass) {
+          cssClassName = this.blockClass.cssClass(opts);
         } else {
           cssClassName = this.block.cssClass(opts);
         }
@@ -452,7 +452,7 @@ export class State implements Exportable {
   }
 }
 
-export class BlockElement extends ExclusiveStateGroupContainer implements Exportable {
+export class BlockClass extends ExclusiveStateGroupContainer implements Exportable {
   private _block: Block;
   private _name: string;
   constructor(name: string, block: Block) {
@@ -464,11 +464,11 @@ export class BlockElement extends ExclusiveStateGroupContainer implements Export
   get block() { return this._block; }
   get name()  { return this._name;  }
 
-  get groupContainer(): Block | BlockElement {
+  get groupContainer(): Block | BlockClass {
     return this;
   }
 
-  get stateContainer(): Block | BlockElement | ExclusiveStateGroup {
+  get stateContainer(): Block | BlockClass | ExclusiveStateGroup {
     return this;
   }
 

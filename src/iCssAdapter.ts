@@ -22,23 +22,23 @@ export default function iCssAdapter(mappings: ExportDictionary): (name: string) 
     } else if (name.startsWith(".")) {
       let md = name.match(/^\.([^:]+)(?::substate\((?:([^ ]+) )?([^ ]+)\))?$/);
       if (md) {
-        let elementName = md[1];
+        let className = md[1];
         let group = md[2];
         let state = md[3];
         if (state) {
           if (group) {
-            return mappings[`${elementName}--${group}-${state}`];
+            return mappings[`${className}--${group}-${state}`];
           } else {
-            return mappings[`${elementName}--${state}`];
+            return mappings[`${className}--${state}`];
           }
         } else {
-          return mappings[elementName];
+          return mappings[className];
         }
       } else {
         if (name.match(/:substate/)) {
           throw new Error(`Illegal substate: ${name}`);
         } else {
-          throw new Error(`Illegal element: ${name}`);
+          throw new Error(`Illegal class: ${name}`);
         }
       }
     }

@@ -24,33 +24,33 @@ export class ICssAdapterTest {
   }
   @test "adapts simple :state"() {
     let block = new Block("foo", "foo.css");
-    block.ensureState({name: "asdf"})
+    block.ensureState({name: "asdf"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles(":state(asdf)"), "foo--asdf");
   }
   @test "adapts exclusive :state"() {
     let block = new Block("foo", "foo.css");
-    block.ensureState({group: "theme", name: "fancy"})
+    block.ensureState({group: "theme", name: "fancy"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles(":state(theme fancy)"), "foo--theme-fancy");
   }
-  @test "adapts element"() {
+  @test "adapts class"() {
     let block = new Block("foo", "foo.css");
-    block.ensureElement("label")
+    block.ensureClass("label");
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles(".label"), "foo__label");
   }
   @test "adapts substate"() {
     let block = new Block("foo", "foo.css");
-    let element = block.ensureElement("label")
-    element.ensureState({name: "small"});
+    let blockClass = block.ensureClass("label");
+    blockClass.ensureState({name: "small"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles(".label:substate(small)"), "foo__label--small");
   }
   @test "adapts exclusive substate"() {
     let block = new Block("foo", "foo.css");
-    let element = block.ensureElement("label")
-    element.ensureState({group: "font", name: "small"});
+    let blockClass = block.ensureClass("label");
+    blockClass.ensureState({group: "font", name: "small"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles(".label:substate(font small)"), "foo__label--font-small");
   }
@@ -82,7 +82,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
       );
     });
   }
-  @test "exports element names"() {
+  @test "exports class names"() {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `.a {color: red;}
                     .b {color: blue;}`;
@@ -95,7 +95,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
       );
     });
   }
-  @test "exports element states"() {
+  @test "exports class states"() {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `.a:substate(big) {color: red;}
                     .b:substate(big) {color: blue;}`;
@@ -109,4 +109,3 @@ export class InteroperableCSSOutput extends BEMProcessor {
     });
   }
 }
-

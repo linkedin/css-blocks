@@ -13,11 +13,9 @@ export interface ImportedFiles {
   [sourcePath: string]: boolean;
 }
 
-
 export class MockImportRegistry {
   sources: SourceRegistry = {};
   imported: ImportedFiles = {};
-
 
   registerSource(sourcePath: string, contents: string) {
     sourcePath = this.relativize(sourcePath);
@@ -26,7 +24,7 @@ export class MockImportRegistry {
 
   markImported(sourcePath) {
     sourcePath = this.relativize(sourcePath);
-    this.imported[sourcePath] = true
+    this.imported[sourcePath] = true;
   }
 
   assertImported(sourcePath) {
@@ -65,12 +63,12 @@ export class MockImportRegistry {
           reject(new Error(`Mock file ${resolvedPath} not found. Available: ${importedFiles}`));
         }
       });
-    }
+    };
     importer.getDefaultName = this.getDefaultName;
     return importer;
   }
 
   getDefaultName(sourcePath: string): string {
-    return path.parse(sourcePath).name
+    return path.parse(sourcePath).name;
   }
 }

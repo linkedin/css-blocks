@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { PluginOptions, OptionsReader } from "./options";
-import { MergedObjectMap, Exportable, Block, StateInfo, State, BlockElement } from "./Block";
+import { MergedObjectMap, Exportable, Block, StateInfo, State, BlockClass } from "./Block";
 export { PluginOptions } from "./options";
 import * as errors from "./errors";
 import { ImportedFile } from "./importing";
@@ -12,11 +12,11 @@ const selectorParserFn = require("postcss-selector-parser");
 enum BlockTypes {
   block = 1,
   state,
-  element,
+  class,
   substate
 }
 
-type BlockObject = Block | State | BlockElement;
+type BlockObject = Block | State | BlockClass;
 
 export class Plugin {
 
@@ -171,12 +171,12 @@ export class Plugin {
               }
             }
             else if (s.type === selectorParser.CLASS) {
-              let element = block.ensureElement(s.value);
+              let blockClass = block.ensureClass(s.value);
               if (s.parent === individualSelector) {
-                thisNode = element;
+                thisNode = blockClass;
               }
               if (mutate) {
-                replacements.push(this.mutate(element, s, individualSelector, (newClass) => {
+                replacements.push(this.mutate(blockClass, s, individualSelector, (newClass) => {
                   thisSel = newClass;
                 }));
               }
@@ -187,9 +187,9 @@ export class Plugin {
                   `Illegal use of :substate() in \`${rule.selector}\``,
                   this.selectorSourceLocation(sourceFile, rule, s));
               }
-              if (lastNode instanceof BlockElement) {
-                let element: BlockElement = lastNode;
-                let substate: State = element.ensureState(this.stateParser(sourceFile, rule, s));
+              if (lastNode instanceof BlockClass) {
+                let blockClass: BlockClass = lastNode;
+                let substate: State = blockClass.ensureState(this.stateParser(sourceFile, rule, s));
                 thisNode = substate;
                 if (mutate) {
                   replacements.push(this.mutate(substate, s, individualSelector, (newClass) => {
@@ -199,7 +199,7 @@ export class Plugin {
                 }
               } else {
                 throw new errors.InvalidBlockSyntax(
-                  `:substate() must immediately follow a block element in \`${rule.selector}\``,
+                  `:substate() must immediately follow a block class in \`${rule.selector}\``,
                   this.selectorSourceLocation(sourceFile, rule, s));
               }
             } else if (s.parent === individualSelector) {
@@ -347,7 +347,7 @@ export class Plugin {
           states.add(info.name);
         }
       } else if (s.type === selectorParser.CLASS) {
-        thisType = BlockTypes.element;
+        thisType = BlockTypes.class;
         classes.add(s.value);
       } else if (s.type === selectorParser.COMBINATOR) {
         thisType = null;
@@ -371,7 +371,7 @@ export class Plugin {
                                          this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
     }
     if (classes.size > 1) {
-      throw new errors.InvalidBlockSyntax(`Distinct elements cannot be combined: ${rule.selector}`,
+      throw new errors.InvalidBlockSyntax(`Distinct classes cannot be combined: ${rule.selector}`,
                                          this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
     }
   }

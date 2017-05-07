@@ -105,50 +105,49 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
-  @test "handles elements"() {
-    let filename = "foo/bar/test-element.css";
+  @test "handles classes"() {
+    let filename = "foo/bar/test-class.css";
     let inputCSS = `:block {color: #111;}
-                    .my-element { display: block; }`;
+                    .my-class { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.equal(
         result.css.toString(),
-        ".test-element { color: #111; }\n" +
-        ".test-element__my-element { display: block; }\n"
+        ".test-class { color: #111; }\n" +
+        ".test-class__my-class { display: block; }\n"
       );
     });
   }
 
-  @test "handles elements with states"() {
-    let filename = "foo/bar/stateful-element.css";
+  @test "handles classes with states"() {
+    let filename = "foo/bar/stateful-class.css";
     let inputCSS = `:block {color: #111;}
-                    .my-element { display: none; }
-                    :state(visible) .my-element { display: block; }`;
+                    .my-class { display: none; }
+                    :state(visible) .my-class { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.equal(
         result.css.toString(),
-        ".stateful-element { color: #111; }\n" +
-        ".stateful-element__my-element { display: none; }\n" +
-        ".stateful-element--visible .stateful-element__my-element { display: block; }\n"
+        ".stateful-class { color: #111; }\n" +
+        ".stateful-class__my-class { display: none; }\n" +
+        ".stateful-class--visible .stateful-class__my-class { display: block; }\n"
       );
     });
   }
 
-  @test "handles elements with substates"() {
-    let filename = "foo/bar/stateful-element.css";
+  @test "handles classes with substates"() {
+    let filename = "foo/bar/stateful-class.css";
     let inputCSS = `:block {color: #111;}
-                    .my-element { display: none; }
-                    .my-element:substate(visible) { display: block; }`;
+                    .my-class { display: none; }
+                    .my-class:substate(visible) { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.equal(
         result.css.toString(),
-        ".stateful-element { color: #111; }\n" +
-        ".stateful-element__my-element { display: none; }\n" +
-        ".stateful-element__my-element--visible { display: block; }\n"
+        ".stateful-class { color: #111; }\n" +
+        ".stateful-class__my-class { display: none; }\n" +
+        ".stateful-class__my-class--visible { display: block; }\n"
       );
     });
   }
 }
-
 
 @suite("Block Syntax")
 export class StraightJacket extends BEMProcessor {
@@ -180,7 +179,7 @@ export class StraightJacket extends BEMProcessor {
       cssBlocks.InvalidBlockSyntax,
       "Distinct states cannot be combined: :state(a) :state(b)" +
         " (foo/bar/illegal-state-combinator.css:1:1)",
-      this.process(filename, inputCSS))
+      this.process(filename, inputCSS));
   }
 
   @test "cannot combine two different exclusive :states"() {
@@ -193,56 +192,56 @@ export class StraightJacket extends BEMProcessor {
       this.process(filename, inputCSS));
   }
 
-  @test "disallows combining elements"() {
-    let filename = "foo/bar/illegal-element-combinator.css";
+  @test "disallows combining classes"() {
+    let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:block {color: #111;}
-                    .my-element .another-element { display: block; }`;
+                    .my-class .another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Distinct elements cannot be combined: .my-element .another-element" +
-        " (foo/bar/illegal-element-combinator.css:2:21)",
+      "Distinct classes cannot be combined: .my-class .another-class" +
+        " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
 
-  @test "disallows combining elements without a combinator"() {
-    let filename = "foo/bar/illegal-element-combinator.css";
+  @test "disallows combining classes without a combinator"() {
+    let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:block {color: #111;}
-                    .my-element.another-element { display: block; }`;
+                    .my-class.another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Distinct elements cannot be combined: .my-element.another-element" +
-        " (foo/bar/illegal-element-combinator.css:2:21)",
+      "Distinct classes cannot be combined: .my-class.another-class" +
+        " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
 
-  @test "disallows combining states and elements without a combinator"() {
-    let filename = "foo/bar/illegal-element-combinator.css";
+  @test "disallows combining states and classes without a combinator"() {
+    let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:block {color: #111;}
-                    :state(foo).another-element { display: block; }`;
+                    :state(foo).another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Cannot have state and element on the same DOM element: :state(foo).another-element" +
-        " (foo/bar/illegal-element-combinator.css:2:21)",
+      "Cannot have state and class on the same DOM element: :state(foo).another-class" +
+        " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
-  @test "disallows combining blocks and elements without a combinator"() {
-    let filename = "foo/bar/illegal-element-combinator.css";
+  @test "disallows combining blocks and classes without a combinator"() {
+    let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:block {color: #111;}
-                    :block.another-element { display: block; }`;
+                    :block.another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Cannot have block and element on the same DOM element: :block.another-element" +
-        " (foo/bar/illegal-element-combinator.css:2:21)",
+      "Cannot have block and class on the same DOM element: :block.another-class" +
+        " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
   @test "disallows combining states and block without a combinator"() {
-    let filename = "foo/bar/illegal-element-combinator.css";
+    let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:block {color: #111;}
                     :block:state(foo) { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
       "It's redundant to specify state with block: :block:state(foo)" +
-        " (foo/bar/illegal-element-combinator.css:2:21)",
+        " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
   @test "disallows !important"() {
@@ -291,4 +290,3 @@ export class BlockReferences extends BEMProcessor {
     });
   }
 }
-
