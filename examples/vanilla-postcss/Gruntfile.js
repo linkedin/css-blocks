@@ -1,4 +1,4 @@
-var cssBlocks = require("css-blocks");
+var cssBlocks = require("css-blocks").default;
 var postcss = require("postcss");
 
 console.log(cssBlocks);
@@ -14,7 +14,7 @@ module.exports = function(grunt) {
     postcss: {
       options: {
         processors: [
-          cssBlocks(postcss)({})
+          cssBlocks(postcss)({interoperableCSS: true})
         ]
       },
       dist: {

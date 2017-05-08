@@ -10,3 +10,4 @@
 :state(theme blue) .input { border-color: #006; }
 .submit { width: 200px; }
 .submit:substate(disabled) { color: gray; }
+.hi-mahir { color: purple; }
