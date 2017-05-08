@@ -14,7 +14,7 @@ function hello(name, styles) {
 
   var world = document.createElement('span');
   world.innerHTML = name;
-  world.className = styles(":state(greeting-target)");
+  world.className = styles(".greeting-target");
   element.appendChild(world);
 
   return element;
