@@ -26,10 +26,10 @@ Terminology
    must be legal CSS identifiers.
 4. Class - All CSS classes within the block are styles that are specific to
    that block and must only be applied to HTML elements contained in the
-   document subtree.
-5. Substate - A Substate is like a state except that it belongs to a single Class
-   within the Block. Substates can have the same name as other states and substates
-   but they are distinct from each other except by convention.
+   block's root element's subtree.
+5. Substate - A Substate is like a state except that it belongs to a single class
+   within the block. Substates can have the same name as other states and substates
+   but they are distinct from each other except by developer convention.
 
 Syntax
 ------
@@ -39,17 +39,24 @@ The convention is to name a file according to the block: `my-form.block.scss`
 Example:
 
 ```css
-:block {
+@namespace state url(http://css-blocks.com/state);
+@namespace substate url(http://css-blocks.com/substate);
+
+// If you omit the name of the root here it is inferred according to the filename.
+[state|root="my-form"] {
   margin: 2em 0;
   padding: 1em 0.5em;
 }
-:state(theme red) {
+
+[state|theme=red] {
   color: #c00;
 }
-:state(theme blue) {
+
+[state|theme=blue] {
   color: #006;
 }
-:state(compact) {
+
+[state|compact] {
   margin: 0.5em 0;
   padding: 0.5em 0.5em;
 }
@@ -59,7 +66,7 @@ Example:
   display: flex;
   margin: 1em 0;
   font-size: 1.5rem;
-  :state(compact) & {
+  [state|compact] & {
     margin: 0.25em 0;
   }
 }
@@ -70,17 +77,17 @@ Example:
 
 .input {
   flex: 3fr;
-  :state(theme red) & {
+  [state|theme=red] & {
     border-color: #c00;
   }
-  :state(theme blue) & {
+  [state|theme=blue] & {
     border-color: #006;
   }
 }
 
 .submit {
   width: 200px;
-  &:substate(disabled) {
+  &[substate|disabled] {
     color: gray;
   }
 }
@@ -89,18 +96,18 @@ Example:
 Which would compile from Sass to CSS to:
 
 ```css
-:block { margin: 2em 0; padding: 1em 0.5em; }
-:state(theme red) { color: #c00; }
-:state(theme blue) { color: #006; }
-:state(compact) { margin: 0.5em 0; padding: 0.5em 0.5em; }
+[state|root="my-form"] { margin: 2em 0; padding: 1em 0.5em; }
+[state|theme=red] { color: #c00; }
+[state|theme=blue] { color: #006; }
+[state|compact] { margin: 0.5em 0; padding: 0.5em 0.5em; }
 .input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
-:state(compact) .input-area { margin: 0.25em 0; }
+[state|compact] .input-area { margin: 0.25em 0; }
 .label { flex: 1fr; }
 .input { flex: 3fr; }
-:state(theme red) .input { border-color: #c00; }
-:state(theme blue) .input { border-color: #006; }
+[state|theme=red] .input { border-color: #c00; }
+[state|theme=blue] .input { border-color: #006; }
 .submit { width: 200px; }
-.submit:substate(disabled) { color: gray; }
+.submit[substate|disabled] { color: gray; }
 ```
 
 In BEM compatibility mode this would compile to:
@@ -126,13 +133,16 @@ Template Syntax
 ### Plain HTML
 
 ```html
-<form class="my-form my-form--compact my-form--theme-red">
-  <div class="my-form-input-area">
-    <label class="my-form__label">Username</label>
-    <input class="my-form__innput">
+<html xmlns:state="http://css-blocks.com/state"
+      xmlns:substate="http://css-blocks.com/substate">
+<form state:root="my-form" state:compact state:theme="red">
+  <div class="input-area">
+    <label class="label">Username</label>
+    <input class="input">
   </div> 
-  <submit class="my-form__submit my-form__submit--disabled">
+  <submit class="submit" substate:disabled>
 </form>
+</html>
 ```
 
 
@@ -140,15 +150,237 @@ Template Syntax
 
 Help
 
-### Handlebars
+### Ember/Glimmer (Handlebars)
 
-Help
+Each component has an assocated `styles.block.css` file.
+
+The template root element is automatically the block root.
+
+```hbs
+<form state:compact state:theme="red">
+  <div class="input-area">
+    <label class="label">Username</label>
+    <input class="input">
+  </div> 
+  <submit class="submit" substate:disabled>
+</form>
+```
+
+Because the output of CSS Blocks is always classnames, templates are
+rewritten during the build. Setting `state` attributes at runtime will
+have no effect. If in BEM output mode, the above template is re-written to:
+
+```hbs
+<form class="my-form--compact my-form--theme-red">
+  <div class="my-form__input-area">
+    <label class="my-form__label">Username</label>
+    <input class="my-form__input">
+  </div> 
+  <submit class="my-form__submit my-form__submit--disabled">
+</form>
+```
+
+#### Using styles from several blocks
+
+To use styles from other blocks you must create a block reference in
+the current component's styles:
+
+`my-component/styles.block.css`
+
+```css
+@block-reference icons from "../../shared/styles/icons";
+
+[state|root] {
+  border: 1px solid black;
+  overflow: auto;
+}
+
+.icon {
+  float: left;
+  width: 26px;
+  height: 26px;
+}
+```
+
+`my-component/template.hbs`
+
+```hbs
+<div state:root="icons" state:icons.hoverable>
+  <div class="icon icons.new" >New File</div>
+  <div class="icon icons.save">Save File</div>
+  <div class="icon icons.undo">Undo</div>
+  <div class="icon icons.print">Print</div>
+</div>
+```
+
+In BEM output mode this would compile to:
+
+```hbs
+<div class="my-component icons icons--hoverable">
+  <div class="my-component__icon icons__new" >New File</div>
+  <div class="my-component__icon icons__save">Save File</div>
+  <div class="my-component__icon icons__undo">Undo</div>
+  <div class="my-component__icon icons__print">Print</div>
+</div>
+```
+
+In addition for the elements that reference styles across blocks,
+this would generate a `css-optimization-hints.json` file:
+
+```json
+{
+  "template": "my-component/template.hbs",
+  "classIntersections": [
+    ["my-component", "icons", "icons--hoverable"],
+    ["my-component__icon", "icons__new"],
+    ["my-component__icon", "icons__save"],
+    ["my-component__icon", "icons__undo"],
+    ["my-component__icon", "icons__print"],
+  ]
+}
+```
+
+#### Dynamic styles
+
+In order to return class names dynamically to the template that
+reference the styles in the stylesheet, you can import the styles
+directly and use the imported component. 
+
+Properties that return style references from the stylesheet must
+also provide metadata that enumerates all the possible styles that might
+be returned. the static `styleMetaData` property on the component class
+is invoked during template rewriting to understand how dynamic styles
+might interact with the stylesheets and to validate that they are used
+correctly.
+
+* `styles.root()` - retuns a reference to a root styles for a block.
+* `styles.state(name: string, value?: string)` - returns a reference to a
+  state for the given name and optional value.
+* `styles.className(name: string)` - retuns a reference to a class name.
+* `styles.substate(className: string, name: string, value?: string)` - retuns a reference to a class name.
+* `styles.ref(blockName: string)` -- returns another block's style's
+  which has all of these same methods on it. The name is either the
+  local name specified for the block or the natural name of the block if
+  no local name was specified.
+
+To return the styles of several elements together use the
+`cssBlocks.union(...styles)` method. This ensures that the
+classes returned are correct, deduplicated, legal to be used
+together, and can still provide hints correctly to the css optimizer.
+
+
+```ts
+import Component from "@glimmer/component";
+import { cssBlocks } from "css-blocks";
+import styles from "./styles.block.css";
+
+export default class MyForm extends Component {
+  static get styleMetaData() {
+    return {
+      themeColor: [
+        styles.state("theme", "red"),
+        styles.state("theme", "blue")
+      ],
+      submitButton: [
+        styles.className('submit'),
+        cssBlocks.union(styles.className('submit'), styles.substate('submit', 'disabled'))
+      ]
+    }
+  }
+
+  get isDisabled()
+    return true;
+  }
+
+  get themeColor() {
+    // raises an error if @currentTheme isn't a state value for theme from the css file.
+    return styles.state("theme").value(this.args.currentTheme);
+  }
+
+  get submitButtonClass() {
+    if (this.isDisabled) {
+      return cssBlocks.union(styles.className('submit'),
+                             styles.substate('submit', 'disabled'));
+    } else {
+      return styles.className('submit');
+    } 
+  }
+}
+
+```
+
+
+```hbs
+<form state:compact state:theme={{themeColor}}>
+  <div class="input-area">
+    <label class="label">Username</label>
+    <input class="input">
+  </div> 
+  <submit class="submit" substate:disabled={{isDisabled}}>
+  <!-- same as above but done differently -->
+  <submit class={{submitButtonClass}}>
+</form>
+```
+
+which gets rewritten in BEM output mode to:
+
+```hbs
+<form class="my-form my-form--compact {{themeColor}}">
+  <div class="my-form__input-area">
+    <label class="my-form__label">Username</label>
+    <input class="my-form__input">
+  </div> 
+  <submit class="my-form__submit {{if isDisabled 'my-form__submit--disabled'}}">
+  <!-- same as above but done differently -->
+  <submit class={{submitButtonClass}}>
+</form>
+```
+
+As noted in the section "External Selectors" below, any classnames that
+should be left alone in the template and not considered part of the
+current block, must be declared `@external`.
+
 
 Global (application) States
 ---------------------------
 
-We need a way to declare application states so they can be used within a
-block.
+A block can declare that a state is global. These states are special
+in that they can be used in combinators in other blocks like any state
+from that block.
+
+This is most useful for global application states like during initial
+application boot.
+
+Performance note: when you apply classes and other attributes to
+elements like `<html>` or `<body>` it invalidates a lot of internal
+caches in the browser. It is still often a performance win compared to
+querying the document in javascript and applying classes on many
+elements.
+
+`application.block.css`
+
+```css
+[state|is-loading] {
+  global: true;
+  /* other styles can be here too but often this state is applied
+directly to the html element. */
+}
+
+[state|is-saving] {
+  global: true;
+}
+```
+
+`navigation.block.css`
+```css
+@block-reference app from "application.block.css";
+
+app[state|is-saving] .signout,
+.signout[substate|disabled] {
+  color: gray;
+  pointer-events: none;
+}
+```
 
 Block Inheritance
 -----------------
@@ -157,7 +389,7 @@ To inherit from another block you must first define a reference to the
 other block:
 
 ```css
-@block-reference "./another-block.css";
+@block-reference "./another-block.block.css";
 ```
 
 By default the block can be referenced by it's natural name which would
@@ -165,7 +397,7 @@ be `another-block` in this case based on the filename. However you can
 assign a local alias for the block:
 
 ```css
-@block-refererence another from "./another-block.css";
+@block-refererence another from "./another-block.block.css";
 ```
 
 And now that block can be referenced within this file by the name
@@ -175,7 +407,7 @@ To inherit, you must set the property `extends` inside a `:block`
 selector to the name of the block you wish to inherit.
 
 ```css
-@block-refererence another from "./another-block.css";
+@block-refererence another from "./another-block.block.css";
 
 :block {
   extends: another;
@@ -200,8 +432,8 @@ implementation of that interface. To accomplish this, you can declare
 a block `implements` one or more blocks.
 
 ```css
-@block-reference "./base.css";
-@block-reference "./other.css";
+@block-reference "./base.block.css";
+@block-reference "./other.block.css";
 :block { implements: base, other; color: red; }
 ```
 
@@ -209,7 +441,8 @@ Now if there are any states, classes or substates in those other blocks
 that aren't mentioned in this block you will get an error:
 
 ```
-Missing implementations for: :state(large), .foo:substate(small) from ./base.css
+Missing implementations for: :state(large), .foo:substate(small) from
+./base.block.css
 ```
 
 Note that this doesn't require a selector-level correspondance, merely
@@ -266,16 +499,23 @@ Using tagnames in selectors
 
 TBD
 
-Violating Block Syntax
-----------------------
+External Selectors
+------------------
 
-Sometime a class comes from an external library or content comes from a
+Sometime a class, identifier, or tagname comes from an external library or content comes from a
 database and the only thing you can do is use them as is. For these
-situations there are a number of strategies for violating the
-recommended block syntax.
+situations The block must declare the simple selectors that are
+external to the block. These simple selectors can then be used as key
+selectors that are scoped by state, class and substate as long as the
+scoping selector would be valid otherwise.
 
-1. Declaring an external class. Details tbd.
-2. Using scoped tagnames. Details tbd.
+```css
+@external #my-ident, .some-rando-class, p, em, h1, h2;
+
+.foo h2.some-rando-class {
+  font-size: 32px;
+}
+```
 
 Detecting and Managing Block Collisions
 ---------------------------------------
@@ -306,16 +546,16 @@ Options
   or in other CSS files that are [InteroperableCSS](https://github.com/css-modules/icss) compatible.
   The following names are exported:
   * `block` is exported with the name of the block.
-  * State names: the name of the state. E.g. `:state(foo)` is exported
+  * State names: the name of the state. E.g. `[state|foo]` is exported
     as `foo`.
   * Exclusive State names: the name of the state group is prefixed to
-    the state name with a dash. E.g. `:state(theme red)` is exported as
+    the state name with a dash. E.g. `[state|theme=red]` is exported as
     `theme-red`.
   * Class names: The name of the classes. E.g. `.foo` is exported as
     `foo`. Note that these can conflict with state names, it is left to
     the developer to avoid collisions if using interoperable CSS.
   * Class substates: The name of the class is prefixed to the state
-    name separated by a double dash. E.g. `.foo:substate(visible)` is
+    name separated by a double dash. E.g. `.foo[substate|visible]` is
     exported as `foo--visible`.
 
 Output
