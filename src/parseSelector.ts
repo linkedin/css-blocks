@@ -10,6 +10,15 @@ export interface ParsedSelector {
   pseudoelement?: SelectorNode;
 }
 
+function isPseudoelement(node: any) {
+  return node.type === selectorParser.PSEUDO &&
+    (
+      node.value.startsWith("::") ||
+      node.value === ":before" ||
+      node.value === ":after"
+    );
+}
+
 export default function parseSelector(selector: string): ParsedSelector[] {
   let parsedSelectors: ParsedSelector[] = [];
   let selectors =  selectorParserFn().process(selector).res;
@@ -18,7 +27,7 @@ export default function parseSelector(selector: string): ParsedSelector[] {
     let compoundSel: any[] = [];
     let nodes = sel.nodes.slice().reverse();
     nodes.forEach((node) => {
-      if (node.type === selectorParser.PSEUDO && node.value.startsWith("::")) {
+      if (isPseudoelement(node)) {
         parsedSel.pseudoelement = node;
       } else if (node.type === selectorParser.COMBINATOR && parsedSel.combinator === undefined) {
         parsedSel.combinator = node;
