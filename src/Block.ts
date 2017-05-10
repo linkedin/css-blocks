@@ -1,6 +1,7 @@
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
+import { SelectorNode } from "./parseSelector";
 
 interface StateMap {
   [stateName: string]: State;
@@ -295,6 +296,11 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     return `:block`;
   }
 
+  matches(compoundSel: SelectorNode[]): boolean {
+    let srcVal = this.asSource();
+    return compoundSel.some(node => node.value === srcVal);
+  }
+
   asDebug(opts: OptionsReader) {
     return `${this.asSource()} => .${this.cssClass(opts)}`;
   }
@@ -394,10 +400,10 @@ export class State implements Exportable {
     return this._name;
   }
 
-  asSource(): string {
+  unqualifiedSource(): string {
     let source: string;
     if (this.blockClass) {
-      source = this.blockClass.asSource() + ":substate(";
+      source = ":substate(";
     } else {
       source = ":state(";
     }
@@ -406,6 +412,14 @@ export class State implements Exportable {
     }
     source = source + this.name + ")";
     return source;
+  }
+
+  asSource(): string {
+    if (this.blockClass === null) {
+      return this.unqualifiedSource();
+    } else {
+      return this.blockClass.asSource() + this.unqualifiedSource();
+    }
   }
 
   localName(): string {
@@ -449,6 +463,20 @@ export class State implements Exportable {
       default:
         throw "this never happens";
     }
+  }
+
+  matches(compoundSel: SelectorNode[]): boolean {
+    let classVal: null | string = null;
+    if (this.blockClass) {
+      classVal = this.blockClass.name;
+    }
+    let pseudoVal = this.unqualifiedSource();
+    if (classVal !== null) {
+      if (!compoundSel.some(node => node.type === "class" && node.value === classVal)) {
+        return false;
+      }
+    }
+    return compoundSel.some(node => node.type === "pseudo" && node.toString() === pseudoVal);
   }
 }
 
@@ -498,5 +526,12 @@ export class BlockClass extends ExclusiveStateGroupContainer implements Exportab
       default:
         throw "this never happens";
     }
+  }
+
+  matches(compoundSel: SelectorNode[]): boolean {
+    let srcVal = this.name;
+    let found = compoundSel.some(node => node.value === srcVal);
+    if (!found) return false;
+    return !compoundSel.some(node => node.type === "pseudo" && node.value === ":substate");
   }
 }
