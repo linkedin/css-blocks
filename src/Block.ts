@@ -1,3 +1,4 @@
+import * as postcss from "postcss";
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
@@ -145,6 +146,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   private _source: string;
   private _base: Block;
   private _implements: Block[] = [];
+  root: postcss.Root | undefined;
 
   constructor(name: string, source: string) {
     super();
@@ -216,6 +218,10 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     return this._source;
   }
 
+  get block() {
+    return this;
+  }
+
   get classes(): BlockClass[] {
     let classes: BlockClass[] = [];
     Object.keys(this._classes).forEach((e) => {
@@ -278,6 +284,24 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
       result = result.concat(this.base.all(shallow));
     }
     return result;
+  }
+
+  lookup(reference: string): BlockObject | undefined {
+    let refMatch = reference.match(/^(\w+)(\W.*)?$/);
+    if (refMatch) {
+      let refName = refMatch[1];
+      let subObjRef = refMatch[2];
+      let refBlock = this._blockReferences[refName];
+      if (refBlock === undefined) {
+        return undefined;
+      }
+      if (subObjRef !== undefined) {
+        return refBlock.lookup(subObjRef);
+      } else {
+        return refBlock;
+      }
+    }
+    return this.all(false).find((o) => o.asSource() === reference); // <-- Super ineffecient algorithm. Better to parse the string and traverse directly.
   }
 
   merged(): MergedObjectMap {

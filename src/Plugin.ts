@@ -5,6 +5,8 @@ import { MergedObjectMap, Exportable, Block, StateInfo, State, BlockClass } from
 export { PluginOptions } from "./options";
 import * as errors from "./errors";
 import { ImportedFile } from "./importing";
+import { QueryKeySelector } from "./query";
+import parseSelector, { ParsedSelector, SelectorNode } from "./parseSelector";
 
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 const selectorParserFn = require("postcss-selector-parser");
@@ -18,7 +20,100 @@ enum BlockTypes {
 
 type BlockObject = Block | State | BlockClass;
 
+function ensureBlockObject(obj: BlockObject | undefined, key: string, source: errors.SourceLocation | undefined): BlockObject {
+  if (obj === undefined) {
+    // TODO: Better value source location for the bad block object reference.
+    throw new errors.InvalidBlockSyntax(`Cannot find ${key}`, source);
+  } else {
+    return obj;
+  }
+}
+
+const RESOLVE_RE = /resolve\(("|')([^\1]*)\1\)/;
+
 export class Plugin {
+  resolveConflicts(root: postcss.Container, block: Block) {
+    root.walkDecls((decl) => {
+      let resolveDeclarationMatch = decl.value.match(RESOLVE_RE);
+      if (resolveDeclarationMatch !== null) {
+        let otherDecls: postcss.Declaration[] = [];
+        let isOverride = false;
+        let foundOtherValue: number | null = null;
+        let foundResolve: number | null = null;
+        decl.parent.walkDecls(decl.prop, (otherDecl, idx) => {
+          if (otherDecl.value.match(RESOLVE_RE)) {
+            // Ignore other resolutions.
+            if (otherDecl.value === decl.value) {
+              foundResolve = idx;
+              if (foundOtherValue !== null) {
+                isOverride = true;
+              }
+            }
+          } else {
+            if (foundOtherValue !== null && foundResolve !== null && foundOtherValue < foundResolve) {
+              throw new errors.InvalidBlockSyntax(`Resolving ${decl.prop} must happen either before or after all other values for ${decl.prop}.`,
+                                                  this.sourceLocation(block.source, decl));
+            }
+            foundOtherValue = idx;
+            otherDecls.push(otherDecl);
+          }
+        });
+        if (foundOtherValue === null) {
+          throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, this.sourceLocation(block.source, decl));
+        }
+        let curSel = parseSelector((<postcss.Rule>decl.parent).selector);
+        let prop = decl.prop;
+        let referenceStr = resolveDeclarationMatch[2];
+        let other = ensureBlockObject(block.lookup(referenceStr), referenceStr, decl.source.start);
+        if (other === undefined) {
+        }
+        let root = other.block.root;
+        if (root === undefined) {
+          // This should never happen, but it satisfies the compiler.
+          throw new TypeError(`Cannot resolve. The block for ${referenceStr} is missing a stylesheet root`);
+        }
+        let query = new QueryKeySelector(other);
+        let result = query.execute(root);
+        curSel.forEach((cs) => {
+          result.key.forEach((s) => {
+            let newSel = this.addToKey(s.parsedSelector, cs.key);
+            let newRule = postcss.rule({ selector: newSel });
+            if (isOverride) {
+              s.rule.walkDecls(decl.prop, (overrideDecl) => {
+                if (!overrideDecl.value.match(RESOLVE_RE)) {
+                  newRule.append(postcss.decl({ prop: prop, value: overrideDecl.value }));
+                }
+              });
+            } else {
+              otherDecls.forEach((otherDecl) => {
+                newRule.append(postcss.decl({ prop: prop, value: otherDecl.value }));
+              });
+            }
+            decl.parent.parent.insertAfter(decl.parent, newRule);
+          });
+        });
+        decl.remove();
+      }
+    });
+  }
+
+  private addToKey(s: ParsedSelector, obj: BlockObject | SelectorNode[]): string {
+    let aSel: (SelectorNode | string)[] = s.context !== undefined ? s.context : [];
+    if (s.combinator !== undefined) {
+      aSel.push(s.combinator);
+    }
+    if (Array.isArray(obj)) {
+      aSel = aSel.concat(s.key);
+      aSel.push(obj.join('')); // TODO need to filter all pseudos to the end.
+    } else {
+      aSel.push(`.${obj.cssClass(this.opts)}`);
+      aSel = aSel.concat(s.key);
+    }
+    if (s.pseudoelement !== undefined) {
+      aSel.push(s.pseudoelement);
+    }
+    return aSel.join('');
+  }
 
   private opts: OptionsReader;
   private postcss: typeof postcss;
@@ -133,6 +228,7 @@ export class Plugin {
 
   public extractBlockDefinition(root, sourceFile: string, defaultName: string, mutate: boolean): Promise<Block> {
     let block = new Block(defaultName, sourceFile);
+    block.root = root;
     return this.resolveReferences(block, root, sourceFile, mutate).then((block) => {
       root.walkRules((rule) => {
         let selector =  selectorParserFn().process(rule.selector).res;
@@ -247,6 +343,7 @@ export class Plugin {
     });
     let defaultName: string = this.opts.importer.getDefaultName(sourceFile);
     return this.extractBlockDefinition(root, sourceFile, defaultName, true).then((block) => {
+      this.resolveConflicts(root, block);
       if (this.opts.interoperableCSS) {
         let exportsRule = this.postcss.rule({selector: ":export"});
         root.prepend(exportsRule);
