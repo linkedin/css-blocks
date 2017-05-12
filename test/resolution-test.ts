@@ -62,7 +62,6 @@ export class BlockInheritance extends BEMProcessor {
     );
   }
 
-  @skip
   @test "with an underride"() {
     let imports = new MockImportRegistry();
     imports.registerSource("other.css",
@@ -81,12 +80,11 @@ export class BlockInheritance extends BEMProcessor {
       assert.equal(
         result.css.toString(),
         ".conflicts__header { border: none; }\n" +
-        ".conflicts__header.other__nav { border: 1px solid black; }\n"
+        ".other__nav.conflicts__header { border: 1px solid black; }\n"
       );
     });
   }
 
-  @skip
   @test "with an override"() {
     let imports = new MockImportRegistry();
     imports.registerSource("other.css",
@@ -106,13 +104,12 @@ export class BlockInheritance extends BEMProcessor {
       assert.equal(
         result.css.toString(),
         ".conflicts__header { width: 100%; border: none; }\n" +
-        ".conflicts__header.other__nav { border: none; }\n"
+        ".other__nav.conflicts__header { border: none; }\n"
       );
     });
   }
 
-  @skip
-  @test "for states with combinators"() {
+  @test "for states combined with the resolution target"() {
     let imports = new MockImportRegistry();
     imports.registerSource("grid.css",
       `:block {
@@ -139,10 +136,35 @@ export class BlockInheritance extends BEMProcessor {
       assert.equal(
         result.css.toString(),
         ".conflicts__article { font-size: 18px; }\n" +
-        ".conflicts__article.grid__main { font-size: 16px; }\n" +
-        ".grid--big .conflicts__article.grid__main { font-size: 30px; }\n" +
-        ".grid--big > .conflicts__article.grid__main { font-size: 40px; }\n" +
-        ".grid--big > .conflicts__article.grid__main .conflicts__article.grid__main { font-size: 20px; }\n"
+        ".grid__main.conflicts__article { font-size: 16px; }\n" +
+        ".grid--big .grid__main.conflicts__article { font-size: 30px; }\n" +
+        ".grid--big > .grid__main.conflicts__article { font-size: 40px; }\n" +
+        ".grid--big > .grid__main + .grid__main.conflicts__article { font-size: 20px; }\n"
+      );
+    });
+  }
+
+  @test "for states combined with the resolution source"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("target.css",
+      `.main    { color: blue; }
+       :state(hidden) .main { color: transparent; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./target.css";
+                    :state(happy) .article {
+                      color: green;
+                      color: resolve("target.main");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("target.css");
+      assert.equal(
+        result.css.toString(),
+        ".conflicts--happy .conflicts__article { color: green; }\n" +
+        ".conflicts--happy .target__main.conflicts__article { color: blue; }\n" +
+        ".conflicts--happy.target--hidden .target__main.conflicts__article { color: transparent; }\n"
       );
     });
   }
@@ -192,51 +214,153 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
-  @skip
   @test "when the property is repeated all values are copied."() {
     let imports = new MockImportRegistry();
-    imports.registerSource("grid.css",
-      `:block {
-         display: grid;
-         grid-template-areas: "nav     nav  nav  nav"
-                              "sidebar main main main"; }
-       .main    { grid-area: main;    font-size: 16px;         }
-       .nav     { grid-area: nav;     border: 1px solid black; }
-       .sidebar { grid-area: sidebar; background-color: #ccc;  }
-       :state(big) .main { font-size: 30px; }
-       :state(big) > .main { font-size: 40px; }
-       :state(big) > .main + .main { font-size: 20px; }`
+    imports.registerSource("other.css",
+      `.foo { font-size: 10px; font-size: 0.5rem; }
+       .bar { font-size: 99px; font-size: 10rem; }`
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference "./grid.css";
+    let inputCSS = `@block-reference "./other.css";
                     .article {
-                      font-size: resolve("grid.main");
+                      font-size: resolve("other.foo");
                       font-size: 18px;
                       font-size: 2rem;
+                      font-size: resolve("other.bar");
                     }`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
-      imports.assertImported("grid.css");
+      imports.assertImported("other.css");
       assert.equal(
         result.css.toString(),
-        ".conflicts__header { border: none; }\n" +
-        ".conflicts__header.grid__nav { border: none; }\n" +
-        ".conflicts__article { font-size: 18px; font-size: 2rem;}\n" +
-        ".conflicts__article.grid__main { font-size: 18px; font-size: 2rem;}\n"
+        ".conflicts__article { font-size: 18px; font-size: 2rem; }\n" +
+        ".other__bar.conflicts__article { font-size: 99px; font-size: 10rem; }\n" +
+        ".other__foo.conflicts__article { font-size: 18px; font-size: 2rem; }\n"
+      );
+    });
+  }
+
+  @test "doesn't concern selectors that don't conflict."() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("other.css",
+      `.foo { font-size: 10px; }
+       :state(dark) .foo { color: black; }
+       .bar { font-size: 99px; }
+       :state(dark) .bar { color: dark-gray; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./other.css";
+                    .article {
+                      font-size: resolve("other.foo");
+                      font-size: 18px;
+                      font-size: resolve("other.bar");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("other.css");
+      assert.equal(
+        result.css.toString(),
+        ".conflicts__article { font-size: 18px; }\n" +
+        ".other__bar.conflicts__article { font-size: 99px; }\n" +
+        ".other__foo.conflicts__article { font-size: 18px; }\n"
+      );
+    });
+  }
+
+  @test "errors when no selectors conflict."() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("other.css",
+      `.foo { font-size: 10px; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./other.css";
+                    .article {
+                      border: resolve("other.foo");
+                      border: 1px solid green;
+                    }`;
+
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "There are no conflicting values for border found in any selectors targeting other.foo." +
+        " (conflicts.css:3:23)",
+      this.process(filename, inputCSS, {importer: imports.importer()})
+    );
+  }
+
+  @test "doesn't create a resolution if the values are the same but it also doesn't error."() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("other.css",
+      `.nav { border: 1px solid black; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./other.css";
+                    .header {
+                      border: 1px solid black;
+                      border: resolve("other.nav");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("other.css");
+      assert.equal(
+        result.css.toString(),
+        ".conflicts__header { border: 1px solid black; }\n"
+      );
+    });
+  }
+
+  @test "resolves conflicts against a subblock"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("base.css",
+      `.nav { border: 1px solid black; width: 100%; }
+       .sidebar { color: blue; }`
+    );
+    imports.registerSource("other.css",
+      `@block-reference "base.css";
+       :block { extends: base; }
+       .nav { border: 1px solid black; color: red; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./other.css";
+                    .header {
+                      width: 80%;
+                      width: resolve("other.nav");
+                      border: none;
+                      border: resolve("other.nav");
+                      color: green;
+                      color: resolve("other.sidebar");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("other.css");
+      imports.assertImported("base.css");
+      assert.equal(
+        result.css.toString(),
+        ".conflicts__header { width: 80%; border: none; color: green; }\n" +
+        ".base__sidebar.conflicts__header { color: blue; }\n" +
+        ".other__nav.conflicts__header { border: 1px solid black; }\n" +
+        ".base__nav.conflicts__header { width: 100%; }\n"
       );
     });
   }
 
   @skip
-  @test "when resolved property isn't set locally generates error"() {
+  @test "inheritance conflicts automatically resolve to the base class"() {
   }
 
   @skip
-  @test "when resolved property isn't set on the referenced object generates error"() {
+  @test "compatible but different combinators"() {
   }
 
   @skip
-  @test "inheritance conflicts automatically resolve to the sub class"() {
+  @test "incompatible combinators"() {
+  }
+
+  @skip
+  @test "handles dual state contexts when not sharing a block root"() {
   }
 }

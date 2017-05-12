@@ -1,12 +1,57 @@
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { PluginOptions, OptionsReader } from "./options";
-import { MergedObjectMap, Exportable, Block, StateInfo, State, BlockClass } from "./Block";
+import { MergedObjectMap, Exportable, Block, State, BlockClass } from "./Block";
 export { PluginOptions } from "./options";
 import * as errors from "./errors";
 import { ImportedFile } from "./importing";
 import { QueryKeySelector } from "./query";
-import parseSelector, { ParsedSelector, SelectorNode } from "./parseSelector";
+import parseSelector, { ParsedSelector, SelectorNode, stateParser } from "./parseSelector";
+import { SourceLocation, sourceLocation, selectorSourceLocation } from "./SourceLocation";
+
+type stringMap = {[combinator: string]: string};
+type combinatorMap = {[combinator: string]: stringMap};
+
+enum ConflictType {
+  conflict,
+  noconflict,
+  samevalues
+}
+
+function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
+  switch (t1) {
+    case ConflictType.conflict:
+      return ConflictType.conflict;
+    case ConflictType.noconflict:
+      return t2;
+    case ConflictType.samevalues:
+      switch (t2) {
+        case ConflictType.conflict:
+          return ConflictType.conflict;
+        default:
+          return ConflictType.samevalues;
+      }
+  }
+}
+
+const combinatorResolution: combinatorMap = {
+  " ": {
+    " ": " ",
+    ">": ">"
+  },
+  ">": {
+    " ": ">",
+    ">": ">"
+  },
+  "~": {
+    "+": "+",
+    "~": "~"
+  },
+  "+": {
+    "+": "+",
+    "~": "+"
+  }
+};
 
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 const selectorParserFn = require("postcss-selector-parser");
@@ -20,101 +65,16 @@ enum BlockTypes {
 
 type BlockObject = Block | State | BlockClass;
 
-function ensureBlockObject(obj: BlockObject | undefined, key: string, source: errors.SourceLocation | undefined): BlockObject {
+function assertBlockObject(obj: BlockObject | undefined, key: string, source: SourceLocation | undefined): void {
   if (obj === undefined) {
     // TODO: Better value source location for the bad block object reference.
     throw new errors.InvalidBlockSyntax(`Cannot find ${key}`, source);
-  } else {
-    return obj;
   }
 }
 
 const RESOLVE_RE = /resolve\(("|')([^\1]*)\1\)/;
 
 export class Plugin {
-  resolveConflicts(root: postcss.Container, block: Block) {
-    root.walkDecls((decl) => {
-      let resolveDeclarationMatch = decl.value.match(RESOLVE_RE);
-      if (resolveDeclarationMatch !== null) {
-        let otherDecls: postcss.Declaration[] = [];
-        let isOverride = false;
-        let foundOtherValue: number | null = null;
-        let foundResolve: number | null = null;
-        decl.parent.walkDecls(decl.prop, (otherDecl, idx) => {
-          if (otherDecl.value.match(RESOLVE_RE)) {
-            // Ignore other resolutions.
-            if (otherDecl.value === decl.value) {
-              foundResolve = idx;
-              if (foundOtherValue !== null) {
-                isOverride = true;
-              }
-            }
-          } else {
-            if (foundOtherValue !== null && foundResolve !== null && foundOtherValue < foundResolve) {
-              throw new errors.InvalidBlockSyntax(`Resolving ${decl.prop} must happen either before or after all other values for ${decl.prop}.`,
-                                                  this.sourceLocation(block.source, decl));
-            }
-            foundOtherValue = idx;
-            otherDecls.push(otherDecl);
-          }
-        });
-        if (foundOtherValue === null) {
-          throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, this.sourceLocation(block.source, decl));
-        }
-        let curSel = parseSelector((<postcss.Rule>decl.parent).selector);
-        let prop = decl.prop;
-        let referenceStr = resolveDeclarationMatch[2];
-        let other = ensureBlockObject(block.lookup(referenceStr), referenceStr, decl.source.start);
-        if (other === undefined) {
-        }
-        let root = other.block.root;
-        if (root === undefined) {
-          // This should never happen, but it satisfies the compiler.
-          throw new TypeError(`Cannot resolve. The block for ${referenceStr} is missing a stylesheet root`);
-        }
-        let query = new QueryKeySelector(other);
-        let result = query.execute(root);
-        curSel.forEach((cs) => {
-          result.key.forEach((s) => {
-            let newSel = this.addToKey(s.parsedSelector, cs.key);
-            let newRule = postcss.rule({ selector: newSel });
-            if (isOverride) {
-              s.rule.walkDecls(decl.prop, (overrideDecl) => {
-                if (!overrideDecl.value.match(RESOLVE_RE)) {
-                  newRule.append(postcss.decl({ prop: prop, value: overrideDecl.value }));
-                }
-              });
-            } else {
-              otherDecls.forEach((otherDecl) => {
-                newRule.append(postcss.decl({ prop: prop, value: otherDecl.value }));
-              });
-            }
-            decl.parent.parent.insertAfter(decl.parent, newRule);
-          });
-        });
-        decl.remove();
-      }
-    });
-  }
-
-  private addToKey(s: ParsedSelector, obj: BlockObject | SelectorNode[]): string {
-    let aSel: (SelectorNode | string)[] = s.context !== undefined ? s.context : [];
-    if (s.combinator !== undefined) {
-      aSel.push(s.combinator);
-    }
-    if (Array.isArray(obj)) {
-      aSel = aSel.concat(s.key);
-      aSel.push(obj.join('')); // TODO need to filter all pseudos to the end.
-    } else {
-      aSel.push(`.${obj.cssClass(this.opts)}`);
-      aSel = aSel.concat(s.key);
-    }
-    if (s.pseudoelement !== undefined) {
-      aSel.push(s.pseudoelement);
-    }
-    return aSel.join('');
-  }
-
   private opts: OptionsReader;
   private postcss: typeof postcss;
 
@@ -136,7 +96,7 @@ export class Plugin {
       if (!md) {
         throw new errors.InvalidBlockSyntax(
           `Malformed block reference: \`@block-reference ${atRule.params}\``,
-          this.sourceLocation(sourceFile, atRule));
+          sourceLocation(sourceFile, atRule));
       }
       let importPath = md[4];
       let localName = md[2];
@@ -165,7 +125,7 @@ export class Plugin {
           if (!md) {
             throw new errors.InvalidBlockSyntax(
               `Malformed block debug: \`@block-debug ${atRule.params}\``,
-              this.sourceLocation(sourceFile, atRule));
+              sourceLocation(sourceFile, atRule));
           }
           let localName = md[1];
           let outputTo = md[2];
@@ -173,7 +133,7 @@ export class Plugin {
           if (!ref) {
             throw new errors.InvalidBlockSyntax(
               `No block named ${localName} exists in this context.`,
-              this.sourceLocation(sourceFile, atRule));
+              sourceLocation(sourceFile, atRule));
           }
           let debugStr = ref.debug(this.opts);
           if (outputTo === "comment") {
@@ -198,13 +158,13 @@ export class Plugin {
     rule.walkDecls("extends", (decl) => {
       if (block.base) {
         throw new errors.InvalidBlockSyntax(`A block can only be extended once.`,
-                                            this.sourceLocation(sourceFile, decl));
+                                            sourceLocation(sourceFile, decl));
       }
       let baseName = decl.value;
       let baseBlock = block.getReferencedBlock(baseName);
       if (!baseBlock) {
         throw new errors.InvalidBlockSyntax(`No block named ${baseName} found`,
-                                            this.sourceLocation(sourceFile, decl));
+                                            sourceLocation(sourceFile, decl));
       }
       block.base = baseBlock;
       if (mutate) { decl.remove(); }
@@ -218,7 +178,7 @@ export class Plugin {
         let refBlock = block.getReferencedBlock(refName);
         if (!refBlock) {
           throw new errors.InvalidBlockSyntax(`No block named ${refName} found`,
-                                              this.sourceLocation(sourceFile, decl));
+                                              sourceLocation(sourceFile, decl));
         }
         block.addImplementation(refBlock);
       });
@@ -256,7 +216,7 @@ export class Plugin {
               }
             }
             else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
-              let state = block.ensureState(this.stateParser(sourceFile, rule, s));
+              let state = block.ensureState(stateParser(sourceFile, rule, s));
               if (s.parent === individualSelector) {
                 thisNode = state;
               }
@@ -281,11 +241,11 @@ export class Plugin {
               if (s.parent !== individualSelector) {
                 throw new errors.InvalidBlockSyntax(
                   `Illegal use of :substate() in \`${rule.selector}\``,
-                  this.selectorSourceLocation(sourceFile, rule, s));
+                  selectorSourceLocation(sourceFile, rule, s));
               }
               if (lastNode instanceof BlockClass) {
                 let blockClass: BlockClass = lastNode;
-                let substate: State = blockClass.ensureState(this.stateParser(sourceFile, rule, s));
+                let substate: State = blockClass.ensureState(stateParser(sourceFile, rule, s));
                 thisNode = substate;
                 if (mutate) {
                   replacements.push(this.mutate(substate, s, individualSelector, (newClass) => {
@@ -296,7 +256,7 @@ export class Plugin {
               } else {
                 throw new errors.InvalidBlockSyntax(
                   `:substate() must immediately follow a block class in \`${rule.selector}\``,
-                  this.selectorSourceLocation(sourceFile, rule, s));
+                  selectorSourceLocation(sourceFile, rule, s));
               }
             } else if (s.parent === individualSelector) {
               thisNode = null;
@@ -338,7 +298,7 @@ export class Plugin {
       if (decl.important) {
         throw new errors.InvalidBlockSyntax(
           `!important is not allowed for \`${decl.prop}\` in \`${decl.parent.selector}\``,
-          this.sourceLocation(sourceFile, decl));
+          sourceLocation(sourceFile, decl));
       }
     });
     let defaultName: string = this.opts.importer.getDefaultName(sourceFile);
@@ -359,73 +319,6 @@ export class Plugin {
     });
   }
 
-  addSourceLocations(...locations: errors.SourceLocation[]) {
-    return locations.reduce((l, o) => {
-      if (o.line === 1) {
-        return {
-          line: l.line,
-          column: l.column + o.column - 1
-        };
-      } else {
-        return {
-          line: l.line + o.line - 1,
-          column: o.column
-        };
-      }
-    });
-  }
-
-  sourceLocation(sourceFile, node): errors.SourceLocation | void {
-    if (node.source) {
-      let loc = node.source.start;
-      return {
-        filename: sourceFile,
-        line: loc.line,
-        column: loc.column
-      };
-    }
-  }
-
-  selectorSourceLocation(sourceFile: string, rule, selector): errors.SourceLocation | void {
-    if (rule.source && rule.source.start && selector.source && selector.source.start) {
-      let loc = this.addSourceLocations(rule.source.start, selector.source.start);
-      return {
-        filename: sourceFile,
-        line: loc.line,
-        column: loc.column
-      };
-    }
-  }
-
-  private stateParser(sourceFile: string, rule, pseudo): StateInfo {
-    if (pseudo.nodes.length === 0) {
-      // Empty state name or missing parens
-      throw new errors.InvalidBlockSyntax(`:state name is missing`,
-                                       this.selectorSourceLocation(sourceFile, rule, pseudo));
-    }
-    if (pseudo.nodes.length !== 1) {
-      // I think this is if they have a comma in their :state like :state(foo, bar)
-      throw new errors.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
-                                       this.selectorSourceLocation(sourceFile, rule, pseudo));
-    }
-
-    switch(pseudo.nodes[0].nodes.length) {
-      case 3:
-        return {
-          group: pseudo.nodes[0].nodes[0].value.trim(),
-          name: pseudo.nodes[0].nodes[2].value.trim()
-        };
-      case 1:
-        return {
-          name: pseudo.nodes[0].nodes[0].value.trim()
-        };
-      default:
-        // too many state names
-        throw new errors.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
-                                         this.selectorSourceLocation(sourceFile, rule, pseudo));
-    }
-  }
-
   assertValidCombinators(sourceFile: string, rule, selector) {
     let states = new Set<string>();
     let classes = new Set<string>();
@@ -437,7 +330,7 @@ export class Plugin {
         thisType = BlockTypes.block;
       } else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
         thisType = BlockTypes.state;
-        let info = this.stateParser(sourceFile, rule, s);
+        let info = stateParser(sourceFile, rule, s);
         if (info.group) {
           states.add(`${info.group} ${info.name}`);
         } else {
@@ -455,21 +348,191 @@ export class Plugin {
             (thisType === BlockTypes.block && lastType === BlockTypes.state)) {
           throw new errors.InvalidBlockSyntax(
             `It's redundant to specify state with block: ${rule.selector}`,
-            this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
         }
         throw new errors.InvalidBlockSyntax(
           `Cannot have ${BlockTypes[lastType]} and ${BlockTypes[thisType]} on the same DOM element: ${rule.selector}`,
-          this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+          selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
       }
       lastType = thisType;
     });
     if (combinators.size > 0 && states.size > 1) {
       throw new errors.InvalidBlockSyntax(`Distinct states cannot be combined: ${rule.selector}`,
-                                         this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+                                         selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
     }
     if (classes.size > 1) {
       throw new errors.InvalidBlockSyntax(`Distinct classes cannot be combined: ${rule.selector}`,
-                                         this.selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+                                         selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
     }
+  }
+
+  private resolveConflictWith(
+    referenceStr: string,
+    other: BlockObject,
+    isOverride: boolean,
+    decl: postcss.Declaration,
+    otherDecls: postcss.Declaration[]
+  ): ConflictType {
+    let curSel = parseSelector((<postcss.Rule>decl.parent).selector);
+    let prop = decl.prop;
+    let root = other.block.root;
+    if (root === undefined) {
+      // This should never happen, but it satisfies the compiler.
+      throw new TypeError(`Cannot resolve. The block for ${referenceStr} is missing a stylesheet root`);
+    }
+    // Something to consider: when resolving against a subblock that has overridden a property, do we need
+    // to include the base object selector(s) in the key selector as well?
+    let query = new QueryKeySelector(other);
+    let result = query.execute(root);
+    let foundConflict: ConflictType = ConflictType.noconflict;
+    curSel.forEach((cs) => {
+      // we reverse the selectors because otherwise the insertion order causes them to be backwards from the
+      // source order of the target selector
+      result.key.reverse().forEach((s) => {
+        let newSel = this.mergeSelectors(other.block.rewriteSelector(s.parsedSelector, this.opts), cs);
+        if (newSel === null) return;
+        let newRule = postcss.rule({ selector: newSel });
+        // check if the values are the same, skip resolution for this selector if they are.
+        let d = 0;
+        let sameValues = true;
+        s.rule.walkDecls(decl.prop, (overrideDecl) => {
+          if (!overrideDecl.value.match(RESOLVE_RE)) {
+            if (otherDecls.length === d || overrideDecl.value !== otherDecls[d++].value) {
+              sameValues = false;
+              return false;
+            }
+          }
+          return true;
+        });
+        if (sameValues && otherDecls.length === d) { // check length in case there was an extra otherDecl
+          foundConflict = updateConflict(foundConflict, ConflictType.samevalues);
+          return;
+        }
+        // If it's an override we copy the declaration values from the target into the selector
+        if (isOverride) {
+          s.rule.walkDecls(decl.prop, (overrideDecl) => {
+            if (!overrideDecl.value.match(RESOLVE_RE)) {
+              foundConflict = updateConflict(foundConflict, ConflictType.conflict);
+              newRule.append(postcss.decl({ prop: prop, value: overrideDecl.value }));
+            }
+          });
+        } else {
+          // if it's an underride then we copy the declaration values from the source selector
+          // TODO combine this iteration with the same value check above.
+          let foundSelConflict = false;
+          s.rule.walkDecls(decl.prop, (overrideDecl) => {
+            if (!overrideDecl.value.match(RESOLVE_RE)) {
+              foundConflict = updateConflict(foundConflict, ConflictType.conflict);
+              foundSelConflict = true;
+            }
+          });
+          // if the conflicting properties are set copy
+          if (foundSelConflict) {
+            otherDecls.forEach((otherDecl) => {
+              newRule.append(postcss.decl({ prop: prop, value: otherDecl.value }));
+            });
+          }
+        }
+        // don't create an empty ruleset.
+        if (newRule.nodes && newRule.nodes.length > 0) {
+          decl.parent.parent.insertAfter(decl.parent, newRule);
+        }
+      });
+    });
+    return foundConflict;
+  }
+
+  resolveConflicts(root: postcss.Container, block: Block) {
+    root.walkDecls((decl) => {
+      let resolveDeclarationMatch = decl.value.match(RESOLVE_RE);
+      if (resolveDeclarationMatch !== null) {
+        let otherDecls: postcss.Declaration[] = [];
+        let isOverride = false;
+        let foundOtherValue: number | null = null;
+        let foundResolve: number | null = null;
+        decl.parent.walkDecls(decl.prop, (otherDecl, idx) => {
+          if (otherDecl.value.match(RESOLVE_RE)) {
+            // Ignore other resolutions.
+            if (otherDecl.value === decl.value) {
+              foundResolve = idx;
+              if (foundOtherValue !== null) {
+                isOverride = true;
+              }
+            }
+          } else {
+            if (foundOtherValue !== null && foundResolve !== null && foundOtherValue < foundResolve) {
+              throw new errors.InvalidBlockSyntax(`Resolving ${decl.prop} must happen either before or after all other values for ${decl.prop}.`,
+                                                  sourceLocation(block.source, decl));
+            }
+            foundOtherValue = idx;
+            otherDecls.push(otherDecl);
+          }
+        });
+        if (foundOtherValue === null) {
+          throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, sourceLocation(block.source, decl));
+        }
+        let referenceStr = resolveDeclarationMatch[2];
+        let other: BlockObject | undefined = block.lookup(referenceStr);
+        assertBlockObject(other, referenceStr, decl.source.start);
+        let foundConflict = ConflictType.noconflict;
+        while (other && foundConflict === ConflictType.noconflict) {
+          foundConflict = this.resolveConflictWith(referenceStr, other, isOverride, decl, otherDecls);
+          if (foundConflict === ConflictType.noconflict) {
+            other = other.base;
+          }
+        }
+
+        if (foundConflict === ConflictType.noconflict) {
+          throw new errors.InvalidBlockSyntax(
+            `There are no conflicting values for ${decl.prop} found in any selectors targeting ${referenceStr}.`,
+            sourceLocation(block.source, decl));
+        }
+        decl.remove();
+      }
+    });
+  }
+
+  private mergeCombinators(c1: SelectorNode| undefined, c2: SelectorNode | undefined): SelectorNode | null | undefined {
+    if (c1 === undefined && c2 === undefined) return undefined;
+    if (c2 === undefined) return c1;
+    if (c1 === undefined) return c2;
+    let resultMap = combinatorResolution[c1.value];
+    if (resultMap) {
+      let result = resultMap[c2.value];
+      if (result) {
+        return selectorParser.combinator({value: result});
+      }
+    }
+    return null;
+  }
+
+  private mergeSelectors(s: ParsedSelector, s2: ParsedSelector): string | null {
+    if ((s.context && s.context.some(n => n.type === selectorParser.COMBINATOR) && s2.context) ||
+        (s2.context && s2.context.some(n => n.type === selectorParser.COMBINATOR) && s.context)) {
+          throw new errors.InvalidBlockSyntax(
+            `Cannot resolve selectors with more than 1 combinator at this time [FIXME].`);
+    }
+    let aSel: (SelectorNode | string)[] = [];
+    if (s2.context !== undefined) {
+      aSel = aSel.concat(s2.context);
+    }
+    if (s.context !== undefined) {
+      aSel = aSel.concat(s.context); // TODO need to filter all pseudos to the end.
+    }
+    let c = this.mergeCombinators(s.combinator, s2.combinator);
+    if (c === null) {
+      // If combinators can't be merged, the merged selector can't exist, we skip it.
+      return null;
+    } else {
+      if (c !== undefined) {
+        aSel.push(c);
+      }
+    }
+    aSel = aSel.concat(s.key);
+    aSel.push(s2.key.join('')); // TODO need to filter all pseudos to the end.
+    if (s.pseudoelement !== undefined) {
+      aSel.push(s.pseudoelement);
+    }
+    return aSel.join('');
   }
 }

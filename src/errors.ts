@@ -1,8 +1,4 @@
-export interface SourceLocation {
-  filename?: string;
-  line: number;
-  column: number;
-}
+import { SourceLocation } from "./SourceLocation";
 
 export class CssBlockError extends Error {
   origMessage: string;
@@ -46,7 +42,7 @@ export class MissingSourcePath extends CssBlockError {
 }
 
 export class InvalidBlockSyntax extends CssBlockError {
-  constructor(message, location: SourceLocation | void) {
+  constructor(message, location?: SourceLocation) {
     super(message, location);
   }
 }
