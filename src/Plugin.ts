@@ -6,7 +6,7 @@ export { PluginOptions } from "./options";
 import * as errors from "./errors";
 import { ImportedFile } from "./importing";
 import { QueryKeySelector } from "./query";
-import parseSelector, { ParsedSelector, SelectorNode, stateParser } from "./parseSelector";
+import parseSelector, { ParsedSelector, SelectorNode, stateParser, isState, isSubstate } from "./parseSelector";
 import { SourceLocation, sourceLocation, selectorSourceLocation } from "./SourceLocation";
 
 type stringMap = {[combinator: string]: string};
@@ -215,7 +215,7 @@ export class Plugin {
                 }));
               }
             }
-            else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
+            else if (isState(s)) {
               let state = block.ensureState(stateParser(sourceFile, rule, s));
               if (s.parent === individualSelector) {
                 thisNode = state;
@@ -237,7 +237,7 @@ export class Plugin {
                 }));
               }
             }
-            else if (s.type === selectorParser.PSEUDO && s.value === ":substate") {
+            else if (isSubstate(s)) {
               if (s.parent !== individualSelector) {
                 throw new errors.InvalidBlockSyntax(
                   `Illegal use of :substate() in \`${rule.selector}\``,
@@ -328,7 +328,7 @@ export class Plugin {
     selector.each((s) => {
       if (s.type === selectorParser.PSEUDO && s.value === ":block") {
         thisType = BlockTypes.block;
-      } else if (s.type === selectorParser.PSEUDO && s.value === ":state") {
+      } else if (isState(s)) {
         thisType = BlockTypes.state;
         let info = stateParser(sourceFile, rule, s);
         if (info.group) {

@@ -16,7 +16,7 @@ export class BlockInheritance extends BEMProcessor {
       },
       (reason) => {
         assert(reason instanceof errorType, reason.toString());
-        assert.equal(reason.message, message);
+        assert.deepEqual(reason.message, message);
       });
   }
 
@@ -77,7 +77,7 @@ export class BlockInheritance extends BEMProcessor {
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("other.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { border: none; }\n" +
         ".other__nav.conflicts__header { border: 1px solid black; }\n"
@@ -101,7 +101,7 @@ export class BlockInheritance extends BEMProcessor {
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("other.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { width: 100%; border: none; }\n" +
         ".other__nav.conflicts__header { border: none; }\n"
@@ -119,9 +119,9 @@ export class BlockInheritance extends BEMProcessor {
        .main    { grid-area: main;    font-size: 16px;         }
        .nav     { grid-area: nav;     border: 1px solid black; }
        .sidebar { grid-area: sidebar; background-color: #ccc;  }
-       :state(big) .main { font-size: 30px; }
-       :state(big) > .main { font-size: 40px; }
-       :state(big) > .main + .main { font-size: 20px; }`
+       [state-big] .main { font-size: 30px; }
+       [state-big] > .main { font-size: 40px; }
+       [state-big] > .main + .main { font-size: 20px; }`
     );
 
     let filename = "conflicts.css";
@@ -133,7 +133,7 @@ export class BlockInheritance extends BEMProcessor {
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("grid.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ".conflicts__article { font-size: 18px; }\n" +
         ".grid__main.conflicts__article { font-size: 16px; }\n" +
@@ -148,19 +148,19 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource("target.css",
       `.main    { color: blue; }
-       :state(hidden) .main { color: transparent; }`
+       [state-hidden] .main { color: transparent; }`
     );
 
     let filename = "conflicts.css";
     let inputCSS = `@block-reference "./target.css";
-                    :state(happy) .article {
+                    [state-happy] .article {
                       color: green;
                       color: resolve("target.main");
                     }`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("target.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ".conflicts--happy .conflicts__article { color: green; }\n" +
         ".conflicts--happy .target__main.conflicts__article { color: blue; }\n" +
@@ -180,9 +180,9 @@ export class BlockInheritance extends BEMProcessor {
        .main    { grid-area: main;    font-size: 16px;         }
        .nav     { grid-area: nav;     border: 1px solid black; }
        .sidebar { grid-area: sidebar; background-color: #ccc;  }
-       :state(big) .main { font-size: 30px; }
-       :state(big) > .main { font-size: 40px; }
-       :state(big) > .main + .main { font-size: 20px; }`
+       [state-big] .main { font-size: 30px; }
+       [state-big] > .main { font-size: 40px; }
+       [state-big] > .main + .main { font-size: 20px; }`
     );
 
     let filename = "conflicts.css";
@@ -202,7 +202,7 @@ export class BlockInheritance extends BEMProcessor {
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("grid.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { border-bottom: 2px; }\n" +
         ".conflicts__header.grid__nav { border-bottom: 1px solid black }\n" +
@@ -232,7 +232,7 @@ export class BlockInheritance extends BEMProcessor {
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("other.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ".conflicts__article { font-size: 18px; font-size: 2rem; }\n" +
         ".other__bar.conflicts__article { font-size: 99px; font-size: 10rem; }\n" +
@@ -245,9 +245,9 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource("other.css",
       `.foo { font-size: 10px; }
-       :state(dark) .foo { color: black; }
+       [state-dark] .foo { color: black; }
        .bar { font-size: 99px; }
-       :state(dark) .bar { color: dark-gray; }`
+       [state-dark] .bar { color: dark-gray; }`
     );
 
     let filename = "conflicts.css";
@@ -260,7 +260,7 @@ export class BlockInheritance extends BEMProcessor {
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("other.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ".conflicts__article { font-size: 18px; }\n" +
         ".other__bar.conflicts__article { font-size: 99px; }\n" +
@@ -305,7 +305,7 @@ export class BlockInheritance extends BEMProcessor {
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("other.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { border: 1px solid black; }\n"
       );
@@ -338,7 +338,7 @@ export class BlockInheritance extends BEMProcessor {
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("other.css");
       imports.assertImported("base.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { width: 80%; border: none; color: green; }\n" +
         ".base__sidebar.conflicts__header { color: blue; }\n" +

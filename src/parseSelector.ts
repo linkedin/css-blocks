@@ -4,6 +4,8 @@ const selectorParserFn = require("postcss-selector-parser");
 import { selectorSourceLocation } from "./SourceLocation";
 import * as errors from "./errors";
 
+export const STATE_PATTERN = /^((?:sub)?state)-(.*)$/;
+
 export interface SelectorNode {
   parent?: SelectorNode;
   type: string;
@@ -27,6 +29,18 @@ export interface ParsedSelector {
   pseudoelement?: SelectorNode;
 }
 
+export function isState(node) {
+  return node.type === selectorParser.ATTRIBUTE &&
+         STATE_PATTERN.test(node.attribute) &&
+         RegExp.$1 === "state";
+}
+
+export function isSubstate(node) {
+  return node.type === selectorParser.ATTRIBUTE &&
+         STATE_PATTERN.test(node.attribute) &&
+         RegExp.$1 === "substate";
+}
+
 function isPseudoelement(node: any) {
   return node.type === selectorParser.PSEUDO &&
     (
@@ -41,33 +55,25 @@ export interface StateInfo {
   name: string;
 }
 
-export function stateParser(sourceFile: string, rule, pseudo): StateInfo {
-  if (pseudo.nodes.length === 0) {
-    // Empty state name or missing parens
-    throw new errors.InvalidBlockSyntax(`:state name is missing`,
-                                        selectorSourceLocation(sourceFile, rule, pseudo));
+export function stateParser(sourceFile: string, rule, attr): StateInfo {
+  let md = attr.attribute.match(STATE_PATTERN);
+  let stateType = md[1];
+  let info: StateInfo = {
+    name: md[2]
+  };
+  if (attr.ns) {
+    throw new errors.InvalidBlockSyntax(`Cannot set a namespace on a ${stateType} attribute.`,
+                                        selectorSourceLocation(sourceFile, rule, attr));
   }
-  if (pseudo.nodes.length !== 1) {
-    // I think this is if they have a comma in their :state like :state(foo, bar)
-    throw new errors.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
-                                        selectorSourceLocation(sourceFile, rule, pseudo));
+  if (attr.value) {
+    if (attr.operator !== "=") {
+      throw new errors.InvalidBlockSyntax(`A ${stateType} with a value must use the = operator (found ${attr.operator} instead).`,
+                                          selectorSourceLocation(sourceFile, rule, attr));
+    }
+    info.group = info.name;
+    info.name = attr.value;
   }
-
-  switch(pseudo.nodes[0].nodes.length) {
-    case 3:
-      return {
-        group: pseudo.nodes[0].nodes[0].value.trim(),
-        name: pseudo.nodes[0].nodes[2].value.trim()
-      };
-    case 1:
-      return {
-        name: pseudo.nodes[0].nodes[0].value.trim()
-      };
-    default:
-      // too many state names
-      throw new errors.InvalidBlockSyntax(`Invalid state declaration: ${pseudo}`,
-                                          selectorSourceLocation(sourceFile, rule, pseudo));
-  }
+  return info;
 }
 
 export default function parseSelector(selector: string): ParsedSelector[] {

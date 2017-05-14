@@ -22,17 +22,17 @@ export class ICssAdapterTest {
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles(":block"), "foo");
   }
-  @test "adapts simple :state"() {
+  @test "adapts simple state"() {
     let block = new Block("foo", "foo.css");
     block.ensureState({name: "asdf"});
     let styles = iCssAdapter(this.asExportDictionary(block));
-    assert.equal(styles(":state(asdf)"), "foo--asdf");
+    assert.equal(styles("[state-asdf]"), "foo--asdf");
   }
-  @test "adapts exclusive :state"() {
+  @test "adapts exclusive state"() {
     let block = new Block("foo", "foo.css");
     block.ensureState({group: "theme", name: "fancy"});
     let styles = iCssAdapter(this.asExportDictionary(block));
-    assert.equal(styles(":state(theme fancy)"), "foo--theme-fancy");
+    assert.equal(styles("[state-theme=fancy]"), "foo--theme-fancy");
   }
   @test "adapts class"() {
     let block = new Block("foo", "foo.css");
@@ -45,14 +45,14 @@ export class ICssAdapterTest {
     let blockClass = block.ensureClass("label");
     blockClass.ensureState({name: "small"});
     let styles = iCssAdapter(this.asExportDictionary(block));
-    assert.equal(styles(".label:substate(small)"), "foo__label--small");
+    assert.equal(styles(".label[substate-small]"), "foo__label--small");
   }
   @test "adapts exclusive substate"() {
     let block = new Block("foo", "foo.css");
     let blockClass = block.ensureClass("label");
     blockClass.ensureState({group: "font", name: "small"});
     let styles = iCssAdapter(this.asExportDictionary(block));
-    assert.equal(styles(".label:substate(font small)"), "foo__label--font-small");
+    assert.equal(styles(".label[substate-font=small]"), "foo__label--font-small");
   }
 }
 
@@ -62,7 +62,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `:block {color: red;}`;
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ":export { block: test-block; }\n" +
         ".test-block { color: red; }\n"
@@ -71,10 +71,10 @@ export class InteroperableCSSOutput extends BEMProcessor {
   }
   @test "exports state names"() {
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `:state(red) {color: red;}
-                    :state(theme blue) {color: blue;}`;
+    let inputCSS = `[state-red] {color: red;}
+                    [state-theme=blue] {color: blue;}`;
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ":export { block: test-block; theme-blue: test-block--theme-blue; red: test-block--red; }\n" +
         ".test-block--red { color: red; }\n" +
@@ -87,7 +87,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     let inputCSS = `.a {color: red;}
                     .b {color: blue;}`;
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ":export { block: test-block; a: test-block__a; b: test-block__b; }\n" +
         ".test-block__a { color: red; }\n" +
@@ -97,10 +97,10 @@ export class InteroperableCSSOutput extends BEMProcessor {
   }
   @test "exports class states"() {
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `.a:substate(big) {color: red;}
-                    .b:substate(big) {color: blue;}`;
+    let inputCSS = `.a[substate-big] {color: red;}
+                    .b[substate-big] {color: blue;}`;
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ":export { block: test-block; a: test-block__a; a--big: test-block__a--big; b: test-block__b; b--big: test-block__b--big; }\n" +
         ".test-block__a--big { color: red; }\n" +

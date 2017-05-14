@@ -4,7 +4,7 @@ import * as selectorParser from "postcss-selector-parser";
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
-import parseSelector, { ParsedSelector, SelectorNode, StateInfo, stateParser } from "./parseSelector";
+import parseSelector, { ParsedSelector, SelectorNode, StateInfo, stateParser, isState, isSubstate } from "./parseSelector";
 
 interface StateMap {
   [stateName: string]: State;
@@ -349,7 +349,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
       }
 
       let next = node.next();
-      if (next === selectorParser.PSEUDO && next.value === ":substate") {
+      if (next && isSubstate(next)) {
         let info = stateParser(this.source, node.parent, node);
         let state = klass.getState(info);
         if (state === undefined) {
@@ -360,7 +360,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
       } else {
         return [klass, 0];
       }
-    } else if (node.type === selectorParser.PSEUDO && node.value === ":state") {
+    } else if (isState(node)) {
       let info = stateParser(this.source, node.parent, node);
       let state = this.ensureState(info);
       if (state) {
@@ -406,7 +406,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
 
   matches(compoundSel: SelectorNode[]): boolean {
     let srcVal = this.asSource();
-    return compoundSel.some(node => node.value === srcVal);
+    return compoundSel.some(node => node.type === selectorParser.PSEUDO && node.value === srcVal);
   }
 
   asDebug(opts: OptionsReader) {
@@ -506,14 +506,14 @@ export class State implements Exportable {
   unqualifiedSource(): string {
     let source: string;
     if (this.blockClass) {
-      source = ":substate(";
+      source = "[substate-";
     } else {
-      source = ":state(";
+      source = "[state-";
     }
     if (this.group) {
-      source = source + `${this.group.name} `;
+      source = source + `${this.group.name}=`;
     }
-    source = source + this.name + ")";
+    source = source + this.name + "]";
     return source;
   }
 
@@ -568,18 +568,32 @@ export class State implements Exportable {
     }
   }
 
+  private sameNameAndGroup(info: StateInfo): boolean {
+    if (info.name === this.name) {
+      if (this.group && info.group) {
+        return this.group.name === info.group;
+      } else {
+        return !(this.group || this.group);
+      }
+    } else {
+      return false;
+    }
+  }
+
   matches(compoundSel: SelectorNode[]): boolean {
+    console.log(compoundSel.join(''));
     let classVal: null | string = null;
     if (this.blockClass) {
       classVal = this.blockClass.name;
-    }
-    let pseudoVal = this.unqualifiedSource();
-    if (classVal !== null) {
       if (!compoundSel.some(node => node.type === "class" && node.value === classVal)) {
         return false;
       }
+      return compoundSel.some(node => isSubstate(node) &&
+        this.sameNameAndGroup(stateParser(this.block.source, node.parent, node)));
+    } else {
+      return compoundSel.some(node => isState(node) &&
+        this.sameNameAndGroup(stateParser(this.block.source, node.parent, node)));
     }
-    return compoundSel.some(node => node.type === "pseudo" && node.toString() === pseudoVal);
   }
 
   get base() {
@@ -669,8 +683,8 @@ export class BlockClass extends ExclusiveStateGroupContainer implements Exportab
 
   matches(compoundSel: SelectorNode[]): boolean {
     let srcVal = this.name;
-    let found = compoundSel.some(node => node.value === srcVal);
+    let found = compoundSel.some(node => node.type === selectorParser.CLASS && node.value === srcVal);
     if (!found) return false;
-    return !compoundSel.some(node => node.type === "pseudo" && node.value === ":substate");
+    return !compoundSel.some(node => isSubstate(node));
   }
 }

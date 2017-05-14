@@ -10,20 +10,20 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/base.css",
       `:block { color: purple; }
-       :state(large) { font-size: 20px; }
+       [state-large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo:substate(small) { font-size: 5px; }`
+       .foo[substate-small] { font-size: 5px; }`
     );
 
     let filename = "foo/bar/inherits.css";
     let inputCSS = `@block-reference "./base.css";
                     :block { extends: base; color: red; }
                     .foo { clear: both; }
-                    .b:substate(small) {color: blue;}`;
+                    .b[substate-small] {color: blue;}`;
 
     return this.process(filename, inputCSS, {interoperableCSS: true, importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/base.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ":export {" +
         " block: inherits base;" +
@@ -57,7 +57,7 @@ export class BlockInheritance extends BEMProcessor {
 
     return this.process(filename, inputCSS, {interoperableCSS: true, importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/base.css");
-      assert.equal(
+      assert.deepEqual(
         result.css.toString(),
         ":export {" +
         " block: inherits base;" +

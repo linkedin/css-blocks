@@ -39,8 +39,8 @@ export class KeyQueryTests {
     });
   }
   @test "finds states as key selector"() {
-    let css = `:state(foo) { color: red; }
-               :state(foo) .a { width: 100%; }`;
+    let css = `[state-foo] { color: red; }
+               [state-foo] .a { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.states[0]);
@@ -49,8 +49,8 @@ export class KeyQueryTests {
     });
   }
   @test "finds classes as key selector"() {
-    let css = `:state(foo) { color: red; }
-               :state(foo) .a { width: 100%; }`;
+    let css = `[state-foo] { color: red; }
+               [state-foo] .a { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[0]);
@@ -60,7 +60,7 @@ export class KeyQueryTests {
   }
   @test "finds classes as key selector with substates"() {
     let css = `.a { color: red; }
-               .a:substate(foo) { width: 100%; }`;
+               .a[substate-foo] { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[0]);
@@ -68,14 +68,15 @@ export class KeyQueryTests {
         assert.equal(result.key.length, 1);
     });
   }
+
   @test "finds substates as key selector"() {
-    let css = `.b:substate(foo) { color: red; }
-               .a:substate(foo) { width: 100%; }`;
+    let css = `.b[substate-foo] { color: red; }
+               .a[substate-foo] { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[0].states[0]);
         let result = q.execute(root);
-        assert.equal(result.key.length, 1);
+        assert.deepEqual(result.key.length, 1);
     });
   }
 }
