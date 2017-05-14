@@ -89,7 +89,10 @@ it also completely natural and expected for several blocks to be composed
 together in an HTML template.
 
 The name "Block" finds it's origin in the BEM approach to CSS architecture.
-They share some key concepts.
+They share some key concepts. In fact, it is possible to compile a CSS Block
+into BEM syntax and so for many of the code examples used here that is the
+output mode used because it is familiar and more human readable than other
+output modes.
 
 Terminology
 -----------
@@ -102,7 +105,7 @@ more arcane terminology that is most often found only in W3C specifications. Don
 this scare you, the system is actually very simple to use, it's just the rules are
 hard to describe clearly without these terms.
 
-![CSS Terms Example](https://raw.githubusercontent.com/sailfishers/css-blocks/master/docs/images/css-terms.svg?token=AAAHL4SaZa0OLhtn4s8IazI1RAXDYX0cks5ZIdbhwA%3D%3D)
+![CSS Terms Example](https://rawgit.com/chriseppstein/af2939a908582ba7c61c2bdf88d5a46e/raw/43f70c11670df2b2ff4cc7c34b6c9303cc2767e6/css-terms.svg)
 
 1. `selector` - An expression that selects elements from an HTML document.
 2. `ruleset` - A set of styles applied to the elemements selected.
