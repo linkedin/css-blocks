@@ -94,6 +94,127 @@ into BEM syntax and so for many of the code examples used here that is the
 output mode used because it is familiar and more human readable than other
 output modes.
 
+How a css block becomes available to markup in a template is specific to the
+individual template syntax and framework conventions. See Template
+Integrations below for more details on specifically supported frameworks.
+
+For our first example we will wave our hands and say that *somehow* these
+plain HTML markup examples are specific to the corresponding block files.
+
+### An example of a simple form
+
+Consider the following markup:
+
+```html
+<form state:theme=blue state:compact>
+  <div class="input-area">
+    <label for="username" class="label">Username:</label>
+    <input id="username" class="input" type="text">
+  </div>
+  <div class="input-area">
+    <label for="password" class="label">Password:</label>
+    <input id="password" class="input" type="password">
+  </div>
+  <button type="submit" class="submit" state:disabled disabled>
+</form>
+```
+
+In conjunction with the following block stylesheet:
+
+```css
+/* my-form.block.css */
+.root                   { block-name: my-form; margin: 2em 0; padding: 1em 0.5em; }
+[state|theme=red]       { color: #c00; }
+[state|theme=blue]      { color: #006; }
+[state|compact]         { margin: 0.5em 0; padding: 0.5em; }
+.input-area             { display: flex; margin: 1em 0; font-size: 1.5rem; }
+[state|compact]
+  .input-area           { margin: 0.25em 0; }
+.label                  { flex: 1fr; }
+.input                  { flex: 3fr; }
+[state|theme=red]
+  .input                { border-color: #c00; }
+[state|theme=blue]
+  .input                { border-color: #006; }
+.submit                 { width: 200px; }
+.submit[state|disabled] { color: gray; }
+```
+
+In BEM compatibility mode these would compile to:
+
+```html
+<form class="my-form my-form--theme-blue my-form--compact">
+  <div class="my-form__input-area">
+    <label for="username" class="my-form__label">Username:</label>
+    <input id="username" class="my-form__input" type="text">
+  </div>
+  <div class="my-form__input-area">
+    <label for="password" class="my-form__label">Password:</label>
+    <input id="password" class="my-form__input" type="password">
+  </div>
+  <button type="submit" class="my-form__submit my-form__submit--disabled">
+</form>
+```
+
+and
+
+```css
+.my-form { margin: 2em 0; padding: 1em 0.5em; }
+.my-form--theme-red { color: #c00; }
+.my-form--theme-blue { color: #006; }
+.my-form--compact { margin: 0.5em 0; padding: 0.5em; }
+.my-form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
+.my-form--compact .my-form__input-area { margin: 0.25em 0; }
+.my-form__label { flex: 1fr; }
+.my-form__input { flex: 3fr; }
+.my-form--theme-red .my-form__input { border-color: #c00; }
+.my-form--theme-blue .my-form__input { border-color: #006; }
+.my-form__submit { width: 200px; }
+.my-form__submit--disabled { color: gray; }
+```
+
+After optimization it may look more like:
+
+```css
+.c4 { margin: 2em 0 }
+.c5 { margin: 0.5em 0 }
+.c6 { margin: 1em 0 }
+.c7 { padding: 1em 0.5em }
+.c8 { padding: 0.5em }
+.c9 { color: #c00 }
+.ca { color: #006 }
+.cb { color: gray }
+.cc { display: flex }
+.cd { font-size: 1.5rem }
+.ce { flex: 1fr }
+.cf { flex: 3fr }
+.cg { width: 200px }
+.c3 .ch { margin: 0.25em 0 }
+.c1 .ci { border-color: #c00 }
+.c2 .cj { border-color: #006 }
+```
+
+and the template would become:
+
+```html
+<form class="c4 c7 c3 c2">
+  <div class="cc c6 cd ch">
+    <label for="username" class="ce">Username:</label>
+    <input id="username" class="cf" type="text">
+  </div>
+  <div class="cc c6 cd ch">
+    <label for="password" class="ce">Password:</label>
+    <input id="password" class="cf" type="password">
+  </div>
+  <button type="submit" class="cg cb">
+</form>
+```
+
+There's not a lot of benefit to optimizing a single block -- remember the goal
+is to remove duplication across components. At scale, CSS Blocks works wonders.
+
+Now that we've seen what it looks like, let's dig in.
+
 Terminology
 -----------
 
@@ -105,7 +226,7 @@ more arcane terminology that is most often found only in W3C specifications. Don
 this scare you, the system is actually very simple to use, it's just the rules are
 hard to describe clearly without these terms.
 
-![CSS Terms Example](https://rawgit.com/chriseppstein/af2939a908582ba7c61c2bdf88d5a46e/raw/43f70c11670df2b2ff4cc7c34b6c9303cc2767e6/css-terms.svg)
+![CSS Terms Example](https://rawgit.com/chriseppstein/af2939a908582ba7c61c2bdf88d5a46e/raw/1c2dbdb19288f26f2f2369aef82caa2c551ab71b/css-terms.svg)
 
 1. `selector` - An expression that selects elements from an HTML document.
 2. `ruleset` - A set of styles applied to the elemements selected.
@@ -156,10 +277,11 @@ Rules & Constraints
    context and key selectors.
 4. Pseudoelements can be used in conjunction with the key selector.
 5. Media queries and other @-rules are allowed.
-6. At most, 1 state attached to the block root can be used in the context
-   selector when the key selector is targeting another block class or class
-   state.
-7. You may not use a block class outside of the root element's HTML subtree.
+6. The context selector cannot contain classes or external selectors.
+7. The context selector cannot contain states, except for at most one state
+   if it belongs to the root class of the same block or is a global state of
+   another block's root. See "Global (application) States" below.
+8. You may not use a block class outside of the root element's HTML subtree.
 9. `!important` is forbidden.
 10. Element, Attribute, ID selectors are discouraged. See "External Selectors" below.
 11. All classes are local by default. See "External Selectors" below.
@@ -346,6 +468,10 @@ if they are used in the context selector. Styles targeting an external selector
 are not rewritten and their declarations cannot be optimized. Style collisions
 on an external selector are not detected or resolved. As a result, it is allowed
 to use `!important` on declarations targeting an external selector.
+
+Warning: If external selectors and css block objects both target the same
+HTML element in their key selectors you will get unpredictable results. It's
+best to avoid this.
 
 ```css
 @external h2 .some-rando-class;
@@ -630,18 +756,18 @@ File: `navigation.block.scss`
 @block-reference "drop-down.block.css";
 
 .profile {
-  float: null;
-  float: resolve(super-grid-system.span);
+  float: --unset;
+  float: resolve("super-grid-system.span");
 
-  width: null;
-  width: resolve(super-grid-system.span, drop-down.hoverable);
+  width: --unset;
+  width: resolve("super-grid-system.span", "drop-down.hoverable");
 
-  margin: null;
-  margin: resolve(drop-down.hoverable, super-grid-system.span);
+  margin: --unset;
+  margin: resolve("drop-down.hoverable", "super-grid-system.span");
 }
 ```
 
-The `null` value means that the property won't be set in the output for that ruleset,
+The `--unset` value means that the property won't be set in the output for that ruleset,
 but it allows a resolution to be provided. When multiple resolution targets are specified
 to the resolve function, the first one wins, but the generated selectors will be created to
 resolve all three classes on the same element. This satisfies the optimizer and the silences
@@ -710,86 +836,11 @@ Writing Optimizer-friendly CSS
 4. It's better to inherit a block to introduce a new static interface option for a
    a block than it is to add a state to it. States are best for runtime behaviors.
 
-Examples
---------
-
-How a css block becomes available to markup in a template is specific to the individual
-template syntax and framework conventions. See Template Integrations below for more details
-on specifically supported frameworks.
-
-For now we will wave our hands and say that *somehow* these plain html markup examples are specific to the 
-corresponding block files.
-
-### A simple form
-
-Consider the following markup:
-
-```html
-<form state:theme=blue state:compact>
-  <div class="input-area">
-    <label for="username" class="label">Username:</label>
-    <input id="username" class="input" type="text">
-  </div>
-  <div class="input-area">
-    <label for="password" class="label">Password:</label>
-    <input id="password" class="input" type="password">
-  </div>
-  <button type="submit" class="submit" state:disabled disabled>
-</form>
-```
-
-In conjunction with the following block stylesheet:
-
-```css
-.root { block-name: my-form; margin: 2em 0; padding: 1em 0.5em; }
-[state|theme=red] { color: #c00; }
-[state|theme=blue] { color: #006; }
-[state|compact] { margin: 0.5em 0; padding: 0.5em; }
-.input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
-[state|compact] .input-area { margin: 0.25em 0; }
-.label { flex: 1fr; }
-.input { flex: 3fr; }
-[state|theme=red] .input { border-color: #c00; }
-[state|theme=blue] .input { border-color: #006; }
-.submit { width: 200px; }
-.submit[state|disabled] { color: gray; }
-```
-
-In BEM compatibility mode these would compile to:
-
-```html
-<form class="my-form my-form--theme-blue my-form--compact">
-  <div class="my-form__input-area">
-    <label for="username" class="my-form__label">Username:</label>
-    <input id="username" class="my-form__input" type="text">
-  </div>
-  <div class="my-form__input-area">
-    <label for="password" class="my-form__label">Password:</label>
-    <input id="password" class="my-form__input" type="password">
-  </div>
-  <button type="submit" class="my-form__submit my-form__submit--disabled">
-</form>
-```
-
-and
-
-```css
-.my-form { margin: 2em 0; padding: 1em 0.5em; }
-.my-form--theme-red { color: #c00; }
-.my-form--theme-blue { color: #006; }
-.my-form--compact { margin: 0.5em 0; padding: 0.5em; }
-.my-form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
-.my-form--compact .my-form__input-area { margin: 0.25em 0; }
-.my-form__label { flex: 1fr; }
-.my-form__input { flex: 3fr; }
-.my-form--theme-red .my-form__input { border-color: #c00; }
-.my-form--theme-blue .my-form__input { border-color: #006; }
-.my-form__submit { width: 200px; }
-.my-form__submit--disabled { color: gray; }
-```
+Using With Preprocessors
+------------------------
 
 Note that people who prefer to use Sass can utilize it's features (or that of other css processors) to
-change the source authoring. For example:
+change the source authoring. Here's our form example from above written with Sass:
 
 ```scss
 $base-size: 1em;
@@ -1021,20 +1072,24 @@ because it does its work in three stages:
 **Stage 1: Block Compilation.** Each block is compiled down to
  component-oriented css classes. Each component's styles are kept in their
  own CSS file.
+
 **Stage 2: Template analysis and rewriting.** Block specific markup is
  rewritten within the templates so that the CSS classes from stage 1 are used
  instead. Analysis is done to understand what CSS classes are used and what
  CSS classes happen to be applied to the same elements. Because there is no
  total ordering of the component CSS files, Errors are generated for style
  conflicts across different block files and must be resolved explicitly.
+
 **Stage 3: Optimization.** The constriants on the authoring of blocks, together with
  the template analysis and explicit resolution scheme, provides a highly
  optimizable framework for combining declarations safely. Unused classes are
  optimized out. A single class from a stylesheet may end up represented by
- as many classes as there are declarations in a ruleset. These final class
- mappings are then rewritten back into the templates one last time.
+ as many classes as there are declarations in a ruleset.
 
- TODO: How to wire this into a build system.
+**Stage 4: Template Optimization.** 
+ These final class mappings are then rewritten back into the templates one last time.
+
+ TODO: How to wire each stage into a build system.
 
 
 Options
