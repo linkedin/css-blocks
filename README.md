@@ -102,7 +102,7 @@ more arcane terminology that is most often found only in W3C specifications. Don
 this scare you, the system is actually very simple to use, it's just the rules are
 hard to describe clearly without these terms.
 
-![CSS Terms Example](docs/images/css-terms.svg)
+![CSS Terms Example](https://raw.githubusercontent.com/sailfishers/css-blocks/master/docs/images/css-terms.svg?token=AAAHL4SaZa0OLhtn4s8IazI1RAXDYX0cks5ZIdbhwA%3D%3D)
 
 1. `selector` - An expression that selects elements from an HTML document.
 2. `ruleset` - A set of styles applied to the elemements selected.
