@@ -228,20 +228,23 @@ hard to describe clearly without these terms.
 
 ![CSS Terms Example](https://rawgit.com/chriseppstein/af2939a908582ba7c61c2bdf88d5a46e/raw/1c2dbdb19288f26f2f2369aef82caa2c551ab71b/css-terms.svg)
 
-1. `selector` - An expression that selects elements from an HTML document.
-2. `ruleset` - A set of styles applied to the elemements selected.
+1. `selector` - A general term for an expression that selects elements from an HTML document.
+   There are several subtypes:
+
+    1. `simple selector` - selects one aspect of an html element. E.g. element name,
+       class, attribute, identifier, `*`, pseudoclass, pseudoelement,
+    2. `compound selector` - a sequence of `simple selectors` applied to the same element.
+    3. `combinator` - a symbol that describes the document relationship
+       between two selectors. The most common `combinator` is the space which
+       implies a descendant relationship.
+    4. `key selector` - The `simple` or `compound` selector that applies to
+       the element that receives the `declarations` in the `ruleset`.
+    5. `context selector` - Describes the other elements on the page that must be present
+       in order for the `key selector` to match.
+2. `ruleset` - A selector and a set of styles applied to the elemements selected.
 3. `property` - A style attribute.
 4. `value` - What a `property` is set to.
 5. `declaration` - A `property`/`value` pair.
-6. `simple selector` - selects one aspect of an html element. E.g. element name,
-   class, attribute, identifier, `*`, pseudoclass, pseudoelement,
-7. `compound selector` - a sequence of `simple selectors` applied to the same element.
-8. `combinator` - a symbol that describes the document relationship between two selectors.
-   The most common `combinator` is the space which implies a descendant relationship.
-9. `key selector` - The `compound selector` that applies to the element that receives
-   the `declarations` in the `ruleset`.
-10. `context selector` - Describes the other elements on the page that must be present
-    in order for the `key selector` to match.
 
 ### CSS Block Terminology
 
