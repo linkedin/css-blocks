@@ -506,9 +506,9 @@ export class State implements Exportable {
   unqualifiedSource(): string {
     let source: string;
     if (this.blockClass) {
-      source = "[substate-";
+      source = "[substate|";
     } else {
-      source = "[state-";
+      source = "[state|";
     }
     if (this.group) {
       source = source + `${this.group.name}=`;

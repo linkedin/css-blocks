@@ -13,13 +13,13 @@ export class LookupTests {
   @test "finds a state"() {
     let block = new Block("test", "test.block.css");
     let state = block.ensureState({name: "foo"});
-    let found = block.lookup("[state-foo]");
+    let found = block.lookup("[state|foo]");
     assert.deepEqual(state, found);
   }
   @test "finds an exclusive state"() {
     let block = new Block("test", "test.block.css");
     let state = block.ensureState({name: "bar", group: "foo"});
-    let found = block.lookup("[state-foo=bar]");
+    let found = block.lookup("[state|foo=bar]");
     assert.deepEqual(state, found);
   }
   @test "finds a class"() {
@@ -32,14 +32,14 @@ export class LookupTests {
     let block = new Block("test", "test.block.css");
     let klass = block.ensureClass("foo");
     let substate = klass.ensureState({name: "a"});
-    let found = block.lookup(".foo[substate-a]");
+    let found = block.lookup(".foo[substate|a]");
     assert.deepEqual(substate, found);
   }
   @test "finds an exclusive substate"() {
     let block = new Block("test", "test.block.css");
     let klass = block.ensureClass("foo");
     let substate = klass.ensureState({name: "a", group: "b"});
-    let found = block.lookup(".foo[substate-b=a]");
+    let found = block.lookup(".foo[substate|b=a]");
     assert.deepEqual(substate, found);
   }
   @test "finds referenced blocks"() {

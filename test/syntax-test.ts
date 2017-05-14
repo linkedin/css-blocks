@@ -1,4 +1,4 @@
-import { suite, test, only} from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
 
@@ -36,7 +36,7 @@ export class BEMOutputMode extends BEMProcessor {
   @test "handles states"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:block {color: #111;}
-                    [state-big] { transform: scale(2); }`;
+                    [state|big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -46,10 +46,9 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
-@only
   @test "handles comma-delimited states"() {
     let filename = "foo/bar/test-state.css";
-    let inputCSS = `[state:big], [state-really-big] { transform: scale(2); }`;
+    let inputCSS = `[state|big], [state|really-big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -60,7 +59,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "a state can be combined with itself"() {
     let filename = "foo/bar/self-combinator.css";
-    let inputCSS = `[state-big] + [state-big]::after { content: "" }`;
+    let inputCSS = `[state|big] + [state|big]::after { content: "" }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -72,7 +71,7 @@ export class BEMOutputMode extends BEMProcessor {
   @test "handles exclusive states"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:block {color: #111;}
-                    [state-font=big] { transform: scale(2); }`;
+                    [state|font=big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -84,7 +83,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "handles comma-delimited exclusive states"() {
     let filename = "foo/bar/test-state.css";
-    let inputCSS = `[state-font=big], [state-font=really-big] { transform: scale(2); }`;
+    let inputCSS = `[state|font=big], [state|font=really-big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -95,7 +94,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "a exclusive state can be combined with itself"() {
     let filename = "foo/bar/self-combinator.css";
-    let inputCSS = `[state-font=big] + [state-font=big]::after { content: "" }`;
+    let inputCSS = `[state|font=big] + [state|font=big]::after { content: "" }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -121,7 +120,7 @@ export class BEMOutputMode extends BEMProcessor {
     let filename = "foo/bar/stateful-class.css";
     let inputCSS = `:block {color: #111;}
                     .my-class { display: none; }
-                    [state-visible] .my-class { display: block; }`;
+                    [state|visible] .my-class { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -136,7 +135,7 @@ export class BEMOutputMode extends BEMProcessor {
     let filename = "foo/bar/stateful-class.css";
     let inputCSS = `:block {color: #111;}
                     .my-class { display: none; }
-                    .my-class[substate-visible] { display: block; }`;
+                    .my-class[substate|visible] { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -164,7 +163,7 @@ export class StraightJacket extends BEMProcessor {
   @test "catches invalid states"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:block {color: #111;}
-                    [state-asdf^=foo] { transform: scale(2); }`;
+                    [state|asdf^=foo] { transform: scale(2); }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
       "A state with a value must use the = operator (found ^= instead). (foo/bar/test-state.css:2:21)",
@@ -173,20 +172,20 @@ export class StraightJacket extends BEMProcessor {
 
   @test "cannot combine two different states"() {
     let filename = "foo/bar/illegal-state-combinator.css";
-    let inputCSS = `[state-a] [state-b] { float: left; }`;
+    let inputCSS = `[state|a] [state|b] { float: left; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Distinct states cannot be combined: [state-a] [state-b]" +
+      "Distinct states cannot be combined: [state|a] [state|b]" +
         " (foo/bar/illegal-state-combinator.css:1:1)",
       this.process(filename, inputCSS));
   }
 
   @test "cannot combine two different exclusive states"() {
     let filename = "foo/bar/illegal-state-combinator.css";
-    let inputCSS = `[state-a] [state-exclusive=b] { float: left; }`;
+    let inputCSS = `[state|a] [state|exclusive=b] { float: left; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Distinct states cannot be combined: [state-a] [state-exclusive=b]" +
+      "Distinct states cannot be combined: [state|a] [state|exclusive=b]" +
         " (foo/bar/illegal-state-combinator.css:1:1)",
       this.process(filename, inputCSS));
   }
@@ -216,10 +215,10 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows combining states and classes without a combinator"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:block {color: #111;}
-                    [state-foo].another-class { display: block; }`;
+                    [state|foo].another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Cannot have state and class on the same DOM element: [state-foo].another-class" +
+      "Cannot have state and class on the same DOM element: [state|foo].another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
@@ -236,10 +235,10 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows combining states and block without a combinator"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:block {color: #111;}
-                    :block[state-foo] { display: block; }`;
+                    :block[state|foo] { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "It's redundant to specify state with block: :block[state-foo]" +
+      "It's redundant to specify state with block: :block[state|foo]" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
@@ -259,18 +258,18 @@ export class BlockReferences extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/imported.css",
       `:block { color: purple; }
-       [state-large] { font-size: 20px; }
-       [state-theme=red] { color: red; }
+       [state|large] { font-size: 20px; }
+       [state|theme=red] { color: red; }
        .foo   { float: left;   }
-       .foo[substate-small] { font-size: 5px; }
-       .foo[substate-font=fancy] { font-family: fancy; }`
+       .foo[substate|small] { font-size: 5px; }
+       .foo[substate|font=fancy] { font-family: fancy; }`
     );
 
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block-reference "./imported.css";
                     @block-debug imported to comment;
                     :block { color: red; }
-                    .b[substate-big] {color: blue;}`;
+                    .b[substate|big] {color: blue;}`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/imported.css");
@@ -278,11 +277,11 @@ export class BlockReferences extends BEMProcessor {
         result.css.toString(),
         `/* Source: foo/bar/imported.css\n` +
         "   :block => .imported\n" +
-        "   [state-theme=red] => .imported--theme-red\n" +
-        "   [state-large] => .imported--large\n" +
+        "   [state|theme=red] => .imported--theme-red\n" +
+        "   [state|large] => .imported--large\n" +
         "   .foo => .imported__foo\n" +
-        "   .foo[substate-font=fancy] => .imported__foo--font-fancy\n" +
-        "   .foo[substate-small] => .imported__foo--small */\n" +
+        "   .foo[substate|font=fancy] => .imported__foo--font-fancy\n" +
+        "   .foo[substate|small] => .imported__foo--small */\n" +
         ".test-block { color: red; }\n" +
         ".test-block__b--big { color: blue; }\n"
       );

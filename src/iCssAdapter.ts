@@ -7,8 +7,8 @@ export default function iCssAdapter(mappings: ExportDictionary): (name: string) 
     console.log("iCssAdapter", name);
     if (name === ":block") {
       return mappings["block"];
-    } else if (name.startsWith("[state-")) {
-      let md = name.match(/^\[state-(?:([^=]+)=)?([^)]+)\]$/);
+    } else if (name.startsWith("[state|")) {
+      let md = name.match(/^\[state\|(?:([^=]+)=)?([^)]+)\]$/);
       if (md) {
         let group = md[1];
         let state = md[2];
@@ -21,7 +21,7 @@ export default function iCssAdapter(mappings: ExportDictionary): (name: string) 
         throw new Error(`Illegal state: ${name}`);
       }
     } else if (name.startsWith(".")) {
-      let md = name.match(/^\.([^\]]+)(?:\[substate-(?:([^=]+)=)?([^\]]+)\])?$/);
+      let md = name.match(/^\.([^\]]+)(?:\[substate\|(?:([^=]+)=)?([^\]]+)\])?$/);
       if (md) {
         let className = md[1];
         let group = md[2];
@@ -36,7 +36,7 @@ export default function iCssAdapter(mappings: ExportDictionary): (name: string) 
           return mappings[className];
         }
       } else {
-        if (name.match(/\[substate-/)) {
+        if (name.match(/\[substate\|/)) {
           throw new Error(`Illegal substate: ${name}`);
         } else {
           throw new Error(`Illegal class: ${name}`);

@@ -4,8 +4,6 @@ const selectorParserFn = require("postcss-selector-parser");
 import { selectorSourceLocation } from "./SourceLocation";
 import * as errors from "./errors";
 
-export const STATE_PATTERN = /^((?:sub)?state)-(.*)$/;
-
 export interface SelectorNode {
   parent?: SelectorNode;
   type: string;
@@ -31,14 +29,12 @@ export interface ParsedSelector {
 
 export function isState(node) {
   return node.type === selectorParser.ATTRIBUTE &&
-         STATE_PATTERN.test(node.attribute) &&
-         RegExp.$1 === "state";
+         node.namespace === "state";
 }
 
 export function isSubstate(node) {
   return node.type === selectorParser.ATTRIBUTE &&
-         STATE_PATTERN.test(node.attribute) &&
-         RegExp.$1 === "substate";
+         node.namespace === "substate";
 }
 
 function isPseudoelement(node: any) {
@@ -56,15 +52,10 @@ export interface StateInfo {
 }
 
 export function stateParser(sourceFile: string, rule, attr): StateInfo {
-  let md = attr.attribute.match(STATE_PATTERN);
-  let stateType = md[1];
+  let stateType = attr.namespace;
   let info: StateInfo = {
-    name: md[2]
+    name: attr.attribute
   };
-  if (attr.ns) {
-    throw new errors.InvalidBlockSyntax(`Cannot set a namespace on a ${stateType} attribute.`,
-                                        selectorSourceLocation(sourceFile, rule, attr));
-  }
   if (attr.value) {
     if (attr.operator !== "=") {
       throw new errors.InvalidBlockSyntax(`A ${stateType} with a value must use the = operator (found ${attr.operator} instead).`,

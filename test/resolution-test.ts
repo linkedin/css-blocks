@@ -119,9 +119,9 @@ export class BlockInheritance extends BEMProcessor {
        .main    { grid-area: main;    font-size: 16px;         }
        .nav     { grid-area: nav;     border: 1px solid black; }
        .sidebar { grid-area: sidebar; background-color: #ccc;  }
-       [state-big] .main { font-size: 30px; }
-       [state-big] > .main { font-size: 40px; }
-       [state-big] > .main + .main { font-size: 20px; }`
+       [state|big] .main { font-size: 30px; }
+       [state|big] > .main { font-size: 40px; }
+       [state|big] > .main + .main { font-size: 20px; }`
     );
 
     let filename = "conflicts.css";
@@ -148,12 +148,12 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource("target.css",
       `.main    { color: blue; }
-       [state-hidden] .main { color: transparent; }`
+       [state|hidden] .main { color: transparent; }`
     );
 
     let filename = "conflicts.css";
     let inputCSS = `@block-reference "./target.css";
-                    [state-happy] .article {
+                    [state|happy] .article {
                       color: green;
                       color: resolve("target.main");
                     }`;
@@ -180,9 +180,9 @@ export class BlockInheritance extends BEMProcessor {
        .main    { grid-area: main;    font-size: 16px;         }
        .nav     { grid-area: nav;     border: 1px solid black; }
        .sidebar { grid-area: sidebar; background-color: #ccc;  }
-       [state-big] .main { font-size: 30px; }
-       [state-big] > .main { font-size: 40px; }
-       [state-big] > .main + .main { font-size: 20px; }`
+       [state|big] .main { font-size: 30px; }
+       [state|big] > .main { font-size: 40px; }
+       [state|big] > .main + .main { font-size: 20px; }`
     );
 
     let filename = "conflicts.css";
@@ -245,9 +245,9 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource("other.css",
       `.foo { font-size: 10px; }
-       [state-dark] .foo { color: black; }
+       [state|dark] .foo { color: black; }
        .bar { font-size: 99px; }
-       [state-dark] .bar { color: dark-gray; }`
+       [state|dark] .bar { color: dark-gray; }`
     );
 
     let filename = "conflicts.css";

@@ -24,20 +24,20 @@ export class BlockInterfaceTests extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/base.css",
       `:block { color: purple; }
-       [state-large] { font-size: 20px; }
+       [state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[substate-small] { font-size: 5px; }`
+       .foo[substate|small] { font-size: 5px; }`
     );
 
     let filename = "foo/bar/implements.css";
     let inputCSS = `@block-reference "./base.css";
                     :block { implements: base; color: red; }
                     .foo { clear: both; }
-                    .b[substate-small] {color: blue;}`;
+                    .b[substate|small] {color: blue;}`;
 
     return this.assertError(
       cssBlocks.CssBlockError,
-      `Missing implementations for: [state-large], .foo[substate-small] ` +
+      `Missing implementations for: [state|large], .foo[substate|small] ` +
         `from foo/bar/base.css`,
       this.process(filename, inputCSS, {importer: imports.importer()}).then(() => {
         imports.assertImported("foo/bar/base.css");
@@ -48,15 +48,15 @@ export class BlockInterfaceTests extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/base.css",
       `:block { color: purple; }
-       [state-large] { font-size: 20px; }
+       [state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[substate-small] { font-size: 5px; }`
+       .foo[substate|small] { font-size: 5px; }`
     );
     imports.registerSource("foo/bar/other.css",
       `:block { color: purple; }
-      [state-medium] { font-size: 20px; }
+      [state|medium] { font-size: 20px; }
       .foo   { float: left;   }
-      .foo[substate-medium] { font-size: 5px; }`
+      .foo[substate|medium] { font-size: 5px; }`
     );
 
     let filename = "foo/bar/implements.css";
@@ -64,13 +64,13 @@ export class BlockInterfaceTests extends BEMProcessor {
                     @block-reference "./other.css";
                     :block { implements: base, other; color: red; }
                     .foo { clear: both; }
-                    .b[substate-small] {color: blue;}
-                    [state-large] { }
-                    .foo[substate-small] { }`;
+                    .b[substate|small] {color: blue;}
+                    [state|large] { }
+                    .foo[substate|small] { }`;
 
     return this.assertError(
       cssBlocks.CssBlockError,
-      `Missing implementations for: [state-medium], .foo[substate-medium] ` +
+      `Missing implementations for: [state|medium], .foo[substate|medium] ` +
         `from foo/bar/other.css`,
       this.process(filename, inputCSS, {importer: imports.importer()}).then(() => {
         imports.assertImported("foo/bar/base.css");
