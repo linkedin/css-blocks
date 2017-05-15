@@ -799,10 +799,10 @@ This might produce something like the following (when in BEM-compatible output m
 /* Source: shared/styles/icons/dark.block.css
    Extends: shared/styles/icons/base.block.css
    .root => .dark .base
-   [state-hoverable] => .base--hoverable
-   [state-shade="gray"] => .dark--shade-gray
-   [state-shade="red"] => .dark--shade-red
-   [state-shade="blue"] => .dark--shade-blue
+   [state|hoverable] => .base--hoverable
+   [state|shade="gray"] => .dark--shade-gray
+   [state|shade="red"] => .dark--shade-red
+   [state|shade="blue"] => .dark--shade-blue
    .icon => .dark__icon .base__icon
    .new-file => .dark__new-file .base__new-file
    .save-file => .dark__save-file .base__save-file
