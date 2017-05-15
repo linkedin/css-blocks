@@ -64,13 +64,13 @@ CSS Blocks is built on standard CSS syntax so it can be used in conjunction
 with CSS best-in-class processing tools like Sass, PostCSS, CSS Nano,
 Autoprefixer, etc.
 
-When using css blocks with syntactic sugars like Sass, Less, or Stylus, you
+When using CSS blocks with syntactic sugars like Sass, Less, or Stylus, you
 must first compile all of the blocks with that processor and provide the
 outputs of that file to this one. (Alternatively, the Importer API
 documented below can be leveraged to do just-in-time compilation.)
 
-Note that when post processing your css files with other compressors and
-fixups, it is recommended that you do so only after using the css blocks
+Note that when post processing your CSS files with other compressors and
+fixups, it is recommended that you do so only after using the CSS blocks
 optimizer. If any tools change the selectors that have been output from the
 compressor, you are likely to encounter problems especially with dynamic
 interactions.
@@ -94,7 +94,7 @@ into BEM syntax and so for many of the code examples used here that is the
 output mode used because it is familiar and more human readable than other
 output modes.
 
-How a css block becomes available to markup in a template is specific to the
+How a CSS block becomes available to markup in a template is specific to the
 individual template syntax and framework conventions. See Template
 Integrations below for more details on specifically supported frameworks.
 
@@ -119,7 +119,8 @@ Consider the following markup:
 </form>
 ```
 
-In conjunction with the following block stylesheet:
+In conjunction with the following block stylesheet that styles classes and attributes
+in the `state` namespace:
 
 ```css
 /* my-form.block.css */
@@ -306,7 +307,7 @@ Root specific declarations:
 * `block-name`: Optional. This is the preferred name of the block. The value
   must be a legal css identifier. When omitted, the path of the file is used
   to derive a name. This property is required when the natural name based on
-  the file's path is not a legal css identifier. Note: the way a path becomes
+  the file's path is not a legal CSS identifier. Note: the way a path becomes
   a name is configurable on a per-application or framework integration basis.
 * `implements`: a space separated list of block names that have already been
   declared with `@block-reference` (See below).
@@ -472,7 +473,7 @@ are not rewritten and their declarations cannot be optimized. Style collisions
 on an external selector are not detected or resolved. As a result, it is allowed
 to use `!important` on declarations targeting an external selector.
 
-Warning: If external selectors and css block objects both target the same
+Warning: If external selectors and CSS block objects both target the same
 HTML element in their key selectors you will get unpredictable results. It's
 best to avoid this.
 
@@ -515,7 +516,7 @@ class to the name of the block you wish to inherit.
 }
 ```
 
-Note that block inheritance does not change the css output for a block.
+Note that block inheritance does not change the CSS output for a block.
 instead, it changes exported identifiers associated with the block's
 different objects. That is, the class(es) that are generated from
 `another-block`'s `.foo` element are now assocated with this blocks
@@ -552,7 +553,7 @@ that the different types of states and classes have *some* styling.
 
 One of the key features of CSS blocks is its unique resolution system that
 together with knowledge of what classes are used together on the same
-elements in all templates using css blocks provides hints to the optimizer
+elements in all templates using CSS blocks provides hints to the optimizer
 so that it can provable rewrite declarations across what would normally be
 unsafe to do with a normal cascade aware optimizer which must assume that
 key selectors *may* target the same html element.
@@ -741,7 +742,7 @@ takes precendence over the base-block in any conflict. Since inheritance is
 implemented as a multiple class abstraction in the template these look like
 conflicts to the template analyzer, which doesn't have any knowledge of what
 a block is or what inheritance is. Also, since we can't guarantee the
-concatentation order of these two blocks when the css is ultimately
+concatentation order of these two blocks when the CSS is ultimately
 delivered, the block compiler detects all style conflicts between the base
 and sub blocks and generates an override resolution in the sub-block for
 them.
@@ -812,12 +813,12 @@ This might produce something like the following (when in BEM-compatible output m
 ### File Naming
 
 It's convention to name files with a dual extension of `.block.css` (or with
-the preprocessor extension of your choosing). This helps identify which css
+the preprocessor extension of your choosing). This helps identify which CSS
 files are blocks and should be processed accordingly. CSS files that are not
-processed as blocks should not be optimized with the css block optimizer as
+processed as blocks should not be optimized with the CSS block optimizer as
 it is likely to introduce cascade resolution problems.
 
-It is also convention to use legal css identifiers for all aspects of the
+It is also convention to use legal CSS identifiers for all aspects of the
 file path that may be part of the natural name of the block in your specific
 application or framework.
 
@@ -842,7 +843,7 @@ Writing Optimizer-friendly CSS
 Using With Preprocessors
 ------------------------
 
-Note that people who prefer to use Sass can utilize it's features (or that of other css processors) to
+Note that people who prefer to use Sass can utilize it's features (or that of other CSS processors) to
 change the source authoring. Here's our form example from above written with Sass:
 
 ```scss
@@ -992,14 +993,14 @@ It takes a helper expression and a list of block object expressions that might b
 from the helper. The helper should pass calls through one of the following methods:
 
 * `styles.classes(expression: string): BlockObject` - Depending on the expression,
-  returns the css classes for a given state, class, or block. The
+  returns the CSS classes for a given state, class, or block. The
   expression takes the form of a block object expression as defined in
   the Syntax section above.
 
 To return the styles of several elements together use the
 `cssBlocks.union(...expresions: (string | BlockObject)[]): BlockObject[]` method. This ensures that the
 classes returned are correct, deduplicated, resolved and legal to be used
-together, and can still provide hints correctly to the css optimizer.
+together, and can still provide hints correctly to the CSS optimizer.
 
 
 ```ts
@@ -1073,7 +1074,7 @@ The highly optimized output of CSS Blocks is only possible
 because it does its work in three stages:
 
 **Stage 1: Block Compilation.** Each block is compiled down to
- component-oriented css classes. Each component's styles are kept in their
+ component-oriented CSS classes. Each component's styles are kept in their
  own CSS file.
 
 **Stage 2: Template analysis and rewriting.** Block specific markup is
@@ -1165,7 +1166,7 @@ There are few techniques being considered to compress classes:
    across files built separately in downstream processing and exracted to
    a shared file. It also means that a custom brotli dictionary could be
    produced that would allow the most common class names to be efficiently
-   compressed across templates and css files.
+   compressed across templates and CSS files.
 
 Ultimately, the project should support all of these compression
 strategies and allow one to be selected via configuration.
