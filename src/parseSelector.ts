@@ -32,11 +32,6 @@ export function isState(node) {
          node.namespace === "state";
 }
 
-export function isSubstate(node) {
-  return node.type === selectorParser.ATTRIBUTE &&
-         node.namespace === "substate";
-}
-
 function isPseudoelement(node: any) {
   return node.type === selectorParser.PSEUDO &&
     (

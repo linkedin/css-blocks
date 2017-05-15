@@ -40,19 +40,19 @@ export class ICssAdapterTest {
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles(".label"), "foo__label");
   }
-  @test "adapts substate"() {
+  @test "adapts class state"() {
     let block = new Block("foo", "foo.css");
     let blockClass = block.ensureClass("label");
     blockClass.ensureState({name: "small"});
     let styles = iCssAdapter(this.asExportDictionary(block));
-    assert.equal(styles(".label[substate|small]"), "foo__label--small");
+    assert.equal(styles(".label[state|small]"), "foo__label--small");
   }
-  @test "adapts exclusive substate"() {
+  @test "adapts exclusive class state"() {
     let block = new Block("foo", "foo.css");
     let blockClass = block.ensureClass("label");
     blockClass.ensureState({group: "font", name: "small"});
     let styles = iCssAdapter(this.asExportDictionary(block));
-    assert.equal(styles(".label[substate|font=small]"), "foo__label--font-small");
+    assert.equal(styles(".label[state|font=small]"), "foo__label--font-small");
   }
 }
 
@@ -97,8 +97,8 @@ export class InteroperableCSSOutput extends BEMProcessor {
   }
   @test "exports class states"() {
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `.a[substate|big] {color: red;}
-                    .b[substate|big] {color: blue;}`;
+    let inputCSS = `.a[state|big] {color: red;}
+                    .b[state|big] {color: blue;}`;
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.deepEqual(
         result.css.toString(),

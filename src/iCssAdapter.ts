@@ -21,7 +21,7 @@ export default function iCssAdapter(mappings: ExportDictionary): (name: string) 
         throw new Error(`Illegal state: ${name}`);
       }
     } else if (name.startsWith(".")) {
-      let md = name.match(/^\.([^\]]+)(?:\[substate\|(?:([^=]+)=)?([^\]]+)\])?$/);
+      let md = name.match(/^\.([^\]]+)(?:\[state\|(?:([^=]+)=)?([^\]]+)\])?$/);
       if (md) {
         let className = md[1];
         let group = md[2];
@@ -36,8 +36,8 @@ export default function iCssAdapter(mappings: ExportDictionary): (name: string) 
           return mappings[className];
         }
       } else {
-        if (name.match(/\[substate\|/)) {
-          throw new Error(`Illegal substate: ${name}`);
+        if (name.match(/\[state\|/)) {
+          throw new Error(`Illegal state: ${name}`);
         } else {
           throw new Error(`Illegal class: ${name}`);
         }

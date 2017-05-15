@@ -6,7 +6,7 @@ export { PluginOptions } from "./options";
 import * as errors from "./errors";
 import { ImportedFile } from "./importing";
 import { QueryKeySelector } from "./query";
-import parseSelector, { ParsedSelector, SelectorNode, stateParser, isState, isSubstate } from "./parseSelector";
+import parseSelector, { ParsedSelector, SelectorNode, stateParser, isState } from "./parseSelector";
 import { SourceLocation, sourceLocation, selectorSourceLocation } from "./SourceLocation";
 
 type stringMap = {[combinator: string]: string};
@@ -59,8 +59,7 @@ const selectorParserFn = require("postcss-selector-parser");
 enum BlockTypes {
   block = 1,
   state,
-  class,
-  substate
+  class
 }
 
 type BlockObject = Block | State | BlockClass;
@@ -216,14 +215,26 @@ export class Plugin {
               }
             }
             else if (isState(s)) {
-              let state = block.ensureState(stateParser(sourceFile, rule, s));
-              if (s.parent === individualSelector) {
+              if (lastNode instanceof BlockClass) {
+                let blockClass: BlockClass = lastNode;
+                let state: State = blockClass.ensureState(stateParser(sourceFile, rule, s));
                 thisNode = state;
-              }
-              if (mutate) {
-                replacements.push(this.mutate(state, s, individualSelector, (newClass) => {
-                  thisSel = newClass;
-                }));
+                if (mutate) {
+                  replacements.push(this.mutate(state, s, individualSelector, (newClass) => {
+                    thisSel = newClass;
+                  }));
+                  replacements.push([lastSel, null]);
+                }
+              } else {
+                let state = block.ensureState(stateParser(sourceFile, rule, s));
+                if (s.parent === individualSelector) {
+                  thisNode = state;
+                }
+                if (mutate) {
+                  replacements.push(this.mutate(state, s, individualSelector, (newClass) => {
+                    thisSel = newClass;
+                  }));
+                }
               }
             }
             else if (s.type === selectorParser.CLASS) {
@@ -235,28 +246,6 @@ export class Plugin {
                 replacements.push(this.mutate(blockClass, s, individualSelector, (newClass) => {
                   thisSel = newClass;
                 }));
-              }
-            }
-            else if (isSubstate(s)) {
-              if (s.parent !== individualSelector) {
-                throw new errors.InvalidBlockSyntax(
-                  `Illegal use of :substate() in \`${rule.selector}\``,
-                  selectorSourceLocation(sourceFile, rule, s));
-              }
-              if (lastNode instanceof BlockClass) {
-                let blockClass: BlockClass = lastNode;
-                let substate: State = blockClass.ensureState(stateParser(sourceFile, rule, s));
-                thisNode = substate;
-                if (mutate) {
-                  replacements.push(this.mutate(substate, s, individualSelector, (newClass) => {
-                    thisSel = newClass;
-                  }));
-                  replacements.push([lastSel, null]);
-                }
-              } else {
-                throw new errors.InvalidBlockSyntax(
-                  `:substate() must immediately follow a block class in \`${rule.selector}\``,
-                  selectorSourceLocation(sourceFile, rule, s));
               }
             } else if (s.parent === individualSelector) {
               thisNode = null;
@@ -350,9 +339,16 @@ export class Plugin {
             `It's redundant to specify state with block: ${rule.selector}`,
             selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
         }
-        throw new errors.InvalidBlockSyntax(
-          `Cannot have ${BlockTypes[lastType]} and ${BlockTypes[thisType]} on the same DOM element: ${rule.selector}`,
-          selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+        if (!((lastType === BlockTypes.class && thisType === BlockTypes.state) ||
+             (thisType === BlockTypes.class && lastType === BlockTypes.state))) {
+          throw new errors.InvalidBlockSyntax(
+            `Cannot have ${BlockTypes[lastType]} and ${BlockTypes[thisType]} on the same DOM element: ${rule.selector}`,
+            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+        } else if (lastType === BlockTypes.state && thisType === BlockTypes.class) {
+          throw new errors.InvalidBlockSyntax(
+            `The class must precede the state: ${rule.selector}`,
+            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+        }
       }
       lastType = thisType;
     });

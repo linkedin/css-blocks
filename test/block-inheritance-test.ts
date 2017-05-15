@@ -12,14 +12,14 @@ export class BlockInheritance extends BEMProcessor {
       `:block { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[substate|small] { font-size: 5px; }`
+       .foo[state|small] { font-size: 5px; }`
     );
 
     let filename = "foo/bar/inherits.css";
     let inputCSS = `@block-reference "./base.css";
                     :block { extends: base; color: red; }
                     .foo { clear: both; }
-                    .b[substate|small] {color: blue;}`;
+                    .b[state|small] {color: blue;}`;
 
     return this.process(filename, inputCSS, {interoperableCSS: true, importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/base.css");

@@ -4,7 +4,7 @@ import * as selectorParser from "postcss-selector-parser";
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
-import parseSelector, { ParsedSelector, SelectorNode, StateInfo, stateParser, isState, isSubstate } from "./parseSelector";
+import parseSelector, { ParsedSelector, SelectorNode, StateInfo, stateParser, isState } from "./parseSelector";
 
 interface StateMap {
   [stateName: string]: State;
@@ -349,7 +349,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
       }
 
       let next = node.next();
-      if (next && isSubstate(next)) {
+      if (next && isState(next)) {
         let info = stateParser(this.source, node.parent, node);
         let state = klass.getState(info);
         if (state === undefined) {
@@ -504,12 +504,7 @@ export class State implements Exportable {
   }
 
   unqualifiedSource(): string {
-    let source: string;
-    if (this.blockClass) {
-      source = "[substate|";
-    } else {
-      source = "[state|";
-    }
+    let source = "[state|";
     if (this.group) {
       source = source + `${this.group.name}=`;
     }
@@ -588,7 +583,7 @@ export class State implements Exportable {
       if (!compoundSel.some(node => node.type === "class" && node.value === classVal)) {
         return false;
       }
-      return compoundSel.some(node => isSubstate(node) &&
+      return compoundSel.some(node => isState(node) &&
         this.sameNameAndGroup(stateParser(this.block.source, node.parent, node)));
     } else {
       return compoundSel.some(node => isState(node) &&
@@ -685,6 +680,6 @@ export class BlockClass extends ExclusiveStateGroupContainer implements Exportab
     let srcVal = this.name;
     let found = compoundSel.some(node => node.type === selectorParser.CLASS && node.value === srcVal);
     if (!found) return false;
-    return !compoundSel.some(node => isSubstate(node));
+    return !compoundSel.some(node => isState(node));
   }
 }

@@ -131,11 +131,11 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
-  @test "handles classes with substates"() {
+  @test "handles classes with class states"() {
     let filename = "foo/bar/stateful-class.css";
     let inputCSS = `:block {color: #111;}
                     .my-class { display: none; }
-                    .my-class[substate|visible] { display: block; }`;
+                    .my-class[state|visible] { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -212,13 +212,13 @@ export class StraightJacket extends BEMProcessor {
       this.process(filename, inputCSS));
   }
 
-  @test "disallows combining states and classes without a combinator"() {
+  @test "disallows a state before a class for the same element."() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:block {color: #111;}
                     [state|foo].another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Cannot have state and class on the same DOM element: [state|foo].another-class" +
+      "The class must precede the state: [state|foo].another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
@@ -261,15 +261,15 @@ export class BlockReferences extends BEMProcessor {
        [state|large] { font-size: 20px; }
        [state|theme=red] { color: red; }
        .foo   { float: left;   }
-       .foo[substate|small] { font-size: 5px; }
-       .foo[substate|font=fancy] { font-family: fancy; }`
+       .foo[state|small] { font-size: 5px; }
+       .foo[state|font=fancy] { font-family: fancy; }`
     );
 
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block-reference "./imported.css";
                     @block-debug imported to comment;
                     :block { color: red; }
-                    .b[substate|big] {color: blue;}`;
+                    .b[state|big] {color: blue;}`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/imported.css");
@@ -280,8 +280,8 @@ export class BlockReferences extends BEMProcessor {
         "   [state|theme=red] => .imported--theme-red\n" +
         "   [state|large] => .imported--large\n" +
         "   .foo => .imported__foo\n" +
-        "   .foo[substate|font=fancy] => .imported__foo--font-fancy\n" +
-        "   .foo[substate|small] => .imported__foo--small */\n" +
+        "   .foo[state|font=fancy] => .imported__foo--font-fancy\n" +
+        "   .foo[state|small] => .imported__foo--small */\n" +
         ".test-block { color: red; }\n" +
         ".test-block__b--big { color: blue; }\n"
       );
