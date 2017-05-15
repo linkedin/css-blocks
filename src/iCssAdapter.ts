@@ -4,7 +4,6 @@ export interface ExportDictionary {
 
 export default function iCssAdapter(mappings: ExportDictionary): (name: string) => string | null {
   return (name: string) => {
-    console.log("iCssAdapter", name);
     if (name === ".root") {
       return mappings["root"];
     } else if (name.startsWith("[state|")) {

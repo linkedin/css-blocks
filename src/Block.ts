@@ -575,7 +575,6 @@ export class State implements Exportable {
   }
 
   matches(compoundSel: SelectorNode[]): boolean {
-    console.log(compoundSel.join(''));
     let classVal: null | string = null;
     if (this.blockClass) {
       classVal = this.blockClass.name;
