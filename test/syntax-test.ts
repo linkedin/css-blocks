@@ -11,7 +11,7 @@ import * as postcss from "postcss";
 export class BEMOutputMode extends BEMProcessor {
   @test "replaces block with the blockname from the file"() {
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `:block {color: red;}`;
+    let inputCSS = `.root {color: red;}`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -20,10 +20,10 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
-  @test "handles pseudoclasses on the :block"() {
+  @test "handles pseudoclasses on the .root"() {
     let filename = "foo/bar/test-block-pseudos.css";
-    let inputCSS = `:block {color: #111;}
-                    :block:hover { font-weight: bold; }`;
+    let inputCSS = `.root {color: #111;}
+                    .root:hover { font-weight: bold; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -35,7 +35,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "handles states"() {
     let filename = "foo/bar/test-state.css";
-    let inputCSS = `:block {color: #111;}
+    let inputCSS = `.root {color: #111;}
                     [state|big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
@@ -70,7 +70,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "handles exclusive states"() {
     let filename = "foo/bar/test-state.css";
-    let inputCSS = `:block {color: #111;}
+    let inputCSS = `.root {color: #111;}
                     [state|font=big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
@@ -105,7 +105,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "handles classes"() {
     let filename = "foo/bar/test-class.css";
-    let inputCSS = `:block {color: #111;}
+    let inputCSS = `.root {color: #111;}
                     .my-class { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
@@ -118,7 +118,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "handles classes with states"() {
     let filename = "foo/bar/stateful-class.css";
-    let inputCSS = `:block {color: #111;}
+    let inputCSS = `.root {color: #111;}
                     .my-class { display: none; }
                     [state|visible] .my-class { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
@@ -133,7 +133,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "handles classes with class states"() {
     let filename = "foo/bar/stateful-class.css";
-    let inputCSS = `:block {color: #111;}
+    let inputCSS = `.root {color: #111;}
                     .my-class { display: none; }
                     .my-class[state|visible] { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
@@ -162,7 +162,7 @@ export class StraightJacket extends BEMProcessor {
 
   @test "catches invalid states"() {
     let filename = "foo/bar/test-state.css";
-    let inputCSS = `:block {color: #111;}
+    let inputCSS = `.root {color: #111;}
                     [state|asdf^=foo] { transform: scale(2); }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
@@ -192,7 +192,7 @@ export class StraightJacket extends BEMProcessor {
 
   @test "disallows combining classes"() {
     let filename = "foo/bar/illegal-class-combinator.css";
-    let inputCSS = `:block {color: #111;}
+    let inputCSS = `.root {color: #111;}
                     .my-class .another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
@@ -203,7 +203,7 @@ export class StraightJacket extends BEMProcessor {
 
   @test "disallows combining classes without a combinator"() {
     let filename = "foo/bar/illegal-class-combinator.css";
-    let inputCSS = `:block {color: #111;}
+    let inputCSS = `.root {color: #111;}
                     .my-class.another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
@@ -214,7 +214,7 @@ export class StraightJacket extends BEMProcessor {
 
   @test "disallows a state before a class for the same element."() {
     let filename = "foo/bar/illegal-class-combinator.css";
-    let inputCSS = `:block {color: #111;}
+    let inputCSS = `.root {color: #111;}
                     [state|foo].another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
@@ -224,30 +224,30 @@ export class StraightJacket extends BEMProcessor {
   }
   @test "disallows combining blocks and classes without a combinator"() {
     let filename = "foo/bar/illegal-class-combinator.css";
-    let inputCSS = `:block {color: #111;}
-                    :block.another-class { display: block; }`;
+    let inputCSS = `.root {color: #111;}
+                    .root.another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Cannot have block and class on the same DOM element: :block.another-class" +
+      "Cannot have block and class on the same DOM element: .root.another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
   @test "disallows combining states and block without a combinator"() {
     let filename = "foo/bar/illegal-class-combinator.css";
-    let inputCSS = `:block {color: #111;}
-                    :block[state|foo] { display: block; }`;
+    let inputCSS = `.root {color: #111;}
+                    .root[state|foo] { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "It's redundant to specify state with block: :block[state|foo]" +
+      "It's redundant to specify state with block: .root[state|foo]" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
   @test "disallows !important"() {
     let filename = "foo/bar/no-important.css";
-    let inputCSS = `:block {color: #111 !important;}`;
+    let inputCSS = `.root {color: #111 !important;}`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "!important is not allowed for `color` in `:block` (foo/bar/no-important.css:1:9)",
+      "!important is not allowed for `color` in `.root` (foo/bar/no-important.css:1:8)",
       this.process(filename, inputCSS));
   }
 }
@@ -257,7 +257,7 @@ export class BlockReferences extends BEMProcessor {
   @test "can import another block"() {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/imported.css",
-      `:block { color: purple; }
+      `.root { color: purple; }
        [state|large] { font-size: 20px; }
        [state|theme=red] { color: red; }
        .foo   { float: left;   }
@@ -268,7 +268,7 @@ export class BlockReferences extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block-reference "./imported.css";
                     @block-debug imported to comment;
-                    :block { color: red; }
+                    .root { color: red; }
                     .b[state|big] {color: blue;}`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
@@ -276,7 +276,7 @@ export class BlockReferences extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         `/* Source: foo/bar/imported.css\n` +
-        "   :block => .imported\n" +
+        "   .root => .imported\n" +
         "   [state|theme=red] => .imported--theme-red\n" +
         "   [state|large] => .imported--large\n" +
         "   .foo => .imported__foo\n" +

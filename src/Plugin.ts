@@ -6,7 +6,7 @@ export { PluginOptions } from "./options";
 import * as errors from "./errors";
 import { ImportedFile } from "./importing";
 import { QueryKeySelector } from "./query";
-import parseSelector, { ParsedSelector, SelectorNode, stateParser, isState } from "./parseSelector";
+import parseSelector, { ParsedSelector, SelectorNode, stateParser, isBlock, isState } from "./parseSelector";
 import { SourceLocation, sourceLocation, selectorSourceLocation } from "./SourceLocation";
 
 type stringMap = {[combinator: string]: string};
@@ -200,7 +200,7 @@ export class Plugin {
         let thisNode: BlockObject | null = null;
         selector.each((individualSelector) => {
           individualSelector.walk((s) => {
-            if (s.type === selectorParser.PSEUDO && s.value === ":block") {
+            if (isBlock(s)) {
               if (s.next() === undefined && s.prev() === undefined) {
                 this.extendBlock(block, sourceFile, rule, mutate);
                 this.implementsBlock(block, sourceFile, rule, mutate);
@@ -315,7 +315,7 @@ export class Plugin {
     let lastType: BlockTypes | null = null;
     let thisType: BlockTypes | null = null;
     selector.each((s) => {
-      if (s.type === selectorParser.PSEUDO && s.value === ":block") {
+      if (isBlock(s)) {
         thisType = BlockTypes.block;
       } else if (isState(s)) {
         thisType = BlockTypes.state;

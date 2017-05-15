@@ -112,7 +112,7 @@ export class BlockInheritance extends BEMProcessor {
   @test "for states combined with the resolution target"() {
     let imports = new MockImportRegistry();
     imports.registerSource("grid.css",
-      `:block {
+      `.root {
          display: grid;
          grid-template-areas: "nav     nav  nav  nav"
                               "sidebar main main main"; }
@@ -173,7 +173,7 @@ export class BlockInheritance extends BEMProcessor {
   @test "of short-hand properties conflicting with long-hand properties"() {
     let imports = new MockImportRegistry();
     imports.registerSource("grid.css",
-      `:block {
+      `.root {
          display: grid;
          grid-template-areas: "nav     nav  nav  nav"
                               "sidebar main main main"; }
@@ -320,7 +320,7 @@ export class BlockInheritance extends BEMProcessor {
     );
     imports.registerSource("other.css",
       `@block-reference "base.css";
-       :block { extends: base; }
+       .root { extends: base; }
        .nav { border: 1px solid black; color: red; }`
     );
 

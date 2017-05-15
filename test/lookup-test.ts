@@ -7,7 +7,7 @@ import { Block } from "../src/Block";
 export class LookupTests {
   @test "finds the block"() {
     let block = new Block("test", "test.block.css");
-    let found = block.lookup(":block");
+    let found = block.lookup(".root");
     assert.deepEqual(block, found);
   }
   @test "finds a state"() {
@@ -48,7 +48,7 @@ export class LookupTests {
     block.addBlockReference("asdf", otherBlock);
     let found = block.lookup("asdf");
     assert.deepEqual(otherBlock, found);
-    found = block.lookup("asdf:block");
+    found = block.lookup("asdf.root");
     assert.deepEqual(otherBlock, found);
   }
   @test "finds referenced block class"() {

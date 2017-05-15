@@ -27,6 +27,11 @@ export interface ParsedSelector {
   pseudoelement?: SelectorNode;
 }
 
+export function isBlock(node) {
+  return node.type === selectorParser.CLASS &&
+         node.value === "root";
+}
+
 export function isState(node) {
   return node.type === selectorParser.ATTRIBUTE &&
          node.namespace === "state";

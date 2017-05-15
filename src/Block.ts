@@ -4,7 +4,7 @@ import * as selectorParser from "postcss-selector-parser";
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
-import parseSelector, { ParsedSelector, SelectorNode, StateInfo, stateParser, isState } from "./parseSelector";
+import parseSelector, { ParsedSelector, SelectorNode, StateInfo, stateParser, isState, isBlock } from "./parseSelector";
 
 interface StateMap {
   [stateName: string]: State;
@@ -259,7 +259,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   }
 
   localName(): string {
-    return "block";
+    return "root";
   }
 
   asExport(opts: OptionsReader): Export {
@@ -336,11 +336,11 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   }
 
   asSource():string {
-    return `:block`;
+    return `.root`;
   }
 
   nodeAsBlockObject(node: SelectorNode): [BlockObject, number] | null {
-    if (node.type === selectorParser.PSEUDO && node.value === ":block") {
+    if (node.type === selectorParser.CLASS && node.value === "root") {
       return [this, 0];
     } else if (node.type === selectorParser.CLASS) {
       let klass = this._classes[node.value];
@@ -405,8 +405,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   }
 
   matches(compoundSel: SelectorNode[]): boolean {
-    let srcVal = this.asSource();
-    return compoundSel.some(node => node.type === selectorParser.PSEUDO && node.value === srcVal);
+    return compoundSel.some(node => isBlock(node));
   }
 
   asDebug(opts: OptionsReader) {

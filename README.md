@@ -504,13 +504,13 @@ assign a local alias for the block:
 And now that block can be referenced within this file by the name
 `another`.
 
-To inherit, you must set the property `extends` inside a `:block`
-selector to the name of the block you wish to inherit.
+To inherit, you must set the property `extends` inside the block's `.root`
+class to the name of the block you wish to inherit.
 
 ```css
 @block-refererence another from "./another-block.block.css";
 
-:block {
+.root {
   extends: another;
 }
 ```
@@ -534,7 +534,7 @@ a block `implements` one or more blocks.
 ```css
 @block-reference "./base.block.css";
 @block-reference "./other.block.css";
-:block { implements: base, other; color: red; }
+.root { implements: base, other; color: red; }
 ```
 
 Now if there are any states, classes or substates in those other blocks

@@ -20,7 +20,7 @@ export class SetupTests {
   @test "a filename is required"() {
     let cssBlocksPlugin = cssBlocks(postcss);
     let processor = cssBlocksPlugin();
-    let inputCSS = `:block {color: red;}`;
+    let inputCSS = `.root {color: red;}`;
     return postcss([
       processor
     ]).process(inputCSS, {}).then(() => {

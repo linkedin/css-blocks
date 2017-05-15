@@ -9,7 +9,7 @@ export class BlockInheritance extends BEMProcessor {
   @test "can import another block"() {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/base.css",
-      `:block { color: purple; }
+      `.root { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`
@@ -17,7 +17,7 @@ export class BlockInheritance extends BEMProcessor {
 
     let filename = "foo/bar/inherits.css";
     let inputCSS = `@block-reference "./base.css";
-                    :block { extends: base; color: red; }
+                    .root { extends: base; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}`;
 
@@ -26,7 +26,7 @@ export class BlockInheritance extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ":export {" +
-        " block: inherits base;" +
+        " root: inherits base;" +
         " foo: inherits__foo base__foo;" +
         " b: inherits__b;" +
         " b--small: inherits__b--small;" +
@@ -46,13 +46,13 @@ export class BlockInheritance extends BEMProcessor {
     // or the base block would need to discover all subblocks somehow.
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/base.css",
-      `:block { color: purple; }
+      `.root { color: purple; }
        .foo   { float: left; width: 500px; }`
     );
 
     let filename = "foo/bar/inherits.css";
     let inputCSS = `@block-reference "./base.css";
-                    :block { extends: base; color: red; }
+                    .root { extends: base; color: red; }
                     .foo { clear: both; width: unset(); }`;
 
     return this.process(filename, inputCSS, {interoperableCSS: true, importer: imports.importer()}).then((result) => {

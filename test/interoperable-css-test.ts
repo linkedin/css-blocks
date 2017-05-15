@@ -17,10 +17,10 @@ export class ICssAdapterTest {
     });
     return dictionary;
   }
-  @test "adapts :block"() {
+  @test "adapts .root"() {
     let block = new Block("foo", "foo.css");
     let styles = iCssAdapter(this.asExportDictionary(block));
-    assert.equal(styles(":block"), "foo");
+    assert.equal(styles(".root"), "foo");
   }
   @test "adapts simple state"() {
     let block = new Block("foo", "foo.css");
@@ -60,11 +60,11 @@ export class ICssAdapterTest {
 export class InteroperableCSSOutput extends BEMProcessor {
   @test "exports block name"() {
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `:block {color: red;}`;
+    let inputCSS = `.root {color: red;}`;
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ":export { block: test-block; }\n" +
+        ":export { root: test-block; }\n" +
         ".test-block { color: red; }\n"
       );
     });
@@ -76,7 +76,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ":export { block: test-block; theme-blue: test-block--theme-blue; red: test-block--red; }\n" +
+        ":export { root: test-block; theme-blue: test-block--theme-blue; red: test-block--red; }\n" +
         ".test-block--red { color: red; }\n" +
         ".test-block--theme-blue { color: blue; }\n"
       );
@@ -89,7 +89,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ":export { block: test-block; a: test-block__a; b: test-block__b; }\n" +
+        ":export { root: test-block; a: test-block__a; b: test-block__b; }\n" +
         ".test-block__a { color: red; }\n" +
         ".test-block__b { color: blue; }\n"
       );
@@ -102,7 +102,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ":export { block: test-block; a: test-block__a; a--big: test-block__a--big; b: test-block__b; b--big: test-block__b--big; }\n" +
+        ":export { root: test-block; a: test-block__a; a--big: test-block__a--big; b: test-block__b; b--big: test-block__b--big; }\n" +
         ".test-block__a--big { color: red; }\n" +
         ".test-block__b--big { color: blue; }\n"
       );

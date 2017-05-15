@@ -23,7 +23,7 @@ export class BlockInterfaceTests extends BEMProcessor {
   @test "can detect missing surface area"() {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/base.css",
-      `:block { color: purple; }
+      `.root { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`
@@ -31,7 +31,7 @@ export class BlockInterfaceTests extends BEMProcessor {
 
     let filename = "foo/bar/implements.css";
     let inputCSS = `@block-reference "./base.css";
-                    :block { implements: base; color: red; }
+                    .root { implements: base; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}`;
 
@@ -47,13 +47,13 @@ export class BlockInterfaceTests extends BEMProcessor {
   @test "can import another block"() {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/base.css",
-      `:block { color: purple; }
+      `.root { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`
     );
     imports.registerSource("foo/bar/other.css",
-      `:block { color: purple; }
+      `.root { color: purple; }
       [state|medium] { font-size: 20px; }
       .foo   { float: left;   }
       .foo[state|medium] { font-size: 5px; }`
@@ -62,7 +62,7 @@ export class BlockInterfaceTests extends BEMProcessor {
     let filename = "foo/bar/implements.css";
     let inputCSS = `@block-reference "./base.css";
                     @block-reference "./other.css";
-                    :block { implements: base, other; color: red; }
+                    .root { implements: base, other; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}
                     [state|large] { }
