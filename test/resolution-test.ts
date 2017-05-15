@@ -164,7 +164,9 @@ export class BlockInheritance extends BEMProcessor {
         result.css.toString(),
         ".conflicts--happy .conflicts__article { color: green; }\n" +
         ".conflicts--happy .target__main.conflicts__article { color: blue; }\n" +
-        ".conflicts--happy.target--hidden .target__main.conflicts__article { color: transparent; }\n"
+        ".target--hidden.conflicts--happy .target__main.conflicts__article,\n" +
+        ".target--hidden .conflicts--happy .target__main.conflicts__article,\n" +
+        ".conflicts--happy .target--hidden .target__main.conflicts__article { color: transparent; }\n"
       );
     });
   }

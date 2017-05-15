@@ -385,9 +385,9 @@ export class Plugin {
       // we reverse the selectors because otherwise the insertion order causes them to be backwards from the
       // source order of the target selector
       result.key.reverse().forEach((s) => {
-        let newSel = this.mergeSelectors(other.block.rewriteSelector(s.parsedSelector, this.opts), cs);
-        if (newSel === null) return;
-        let newRule = postcss.rule({ selector: newSel });
+        let newSels = this.mergeSelectors(other.block.rewriteSelector(s.parsedSelector, this.opts), cs);
+        if (newSels === null) return;
+        let newRule = postcss.rule({ selector: newSels.join(",\n") });
         // check if the values are the same, skip resolution for this selector if they are.
         let d = 0;
         let sameValues = true;
@@ -502,18 +502,21 @@ export class Plugin {
     return null;
   }
 
-  private mergeSelectors(s: ParsedSelector, s2: ParsedSelector): string | null {
+  private mergeSelectors(s: ParsedSelector, s2: ParsedSelector): string[] | null {
     if ((s.context && s.context.some(n => n.type === selectorParser.COMBINATOR) && s2.context) ||
         (s2.context && s2.context.some(n => n.type === selectorParser.COMBINATOR) && s.context)) {
           throw new errors.InvalidBlockSyntax(
             `Cannot resolve selectors with more than 1 combinator at this time [FIXME].`);
     }
-    let aSel: (SelectorNode | string)[] = [];
-    if (s2.context !== undefined) {
-      aSel = aSel.concat(s2.context);
-    }
-    if (s.context !== undefined) {
-      aSel = aSel.concat(s.context); // TODO need to filter all pseudos to the end.
+    let aSels: (SelectorNode | string)[][] = [];
+    if (s.context && s2.context) {
+      aSels.push(s.context.concat(s2.context));
+      aSels.push(s.context.concat([selectorParser.combinator({value: " "})], s2.context));
+      aSels.push(s2.context.concat([selectorParser.combinator({value: " "})], s.context));
+    } else if (s.context) {
+      aSels.push(s.context);
+    } else if (s2.context) {
+      aSels.push(s2.context);
     }
     let c = this.mergeCombinators(s.combinator, s2.combinator);
     if (c === null) {
@@ -521,14 +524,19 @@ export class Plugin {
       return null;
     } else {
       if (c !== undefined) {
-        aSel.push(c);
+        let c2: SelectorNode = c;
+        aSels.map(aSel => aSel.push(c2));
       }
     }
-    aSel = aSel.concat(s.key);
-    aSel.push(s2.key.join('')); // TODO need to filter all pseudos to the end.
-    if (s.pseudoelement !== undefined) {
-      aSel.push(s.pseudoelement);
+    if (aSels.length < 1) {
+      aSels.push([]);
     }
-    return aSel.join('');
+    aSels = aSels.map(aSel => aSel.concat(s.key));
+    aSels = aSels.map(aSel => aSel.concat(s2.key)); // TODO need to filter all pseudos to the end.
+    if (s.pseudoelement !== undefined) {
+      let pseudoelement: SelectorNode = s.pseudoelement;
+      aSels.forEach(aSel => aSel.push(pseudoelement));
+    }
+    return aSels.map(aSel => aSel.join(''));
   }
 }
