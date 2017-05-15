@@ -62,7 +62,7 @@ export class BlockInheritance extends BEMProcessor {
     );
   }
 
-  @test "with an underride"() {
+  @test "with a yield"() {
     let imports = new MockImportRegistry();
     imports.registerSource("other.css",
       `.nav { border: 1px solid black; }`
@@ -312,7 +312,7 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
-  @test "resolves conflicts against a subblock"() {
+  @test "resolves conflicts against a sub-block"() {
     let imports = new MockImportRegistry();
     imports.registerSource("base.css",
       `.nav { border: 1px solid black; width: 100%; }
@@ -344,6 +344,78 @@ export class BlockInheritance extends BEMProcessor {
         ".base__sidebar.conflicts__header { color: blue; }\n" +
         ".other__nav.conflicts__header { border: 1px solid black; }\n" +
         ".base__nav.conflicts__header { width: 100%; }\n"
+      );
+    });
+  }
+
+  @test "resolves block roots"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("other.css",
+      `.root { border: 1px solid black; width: 100%; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./other.css";
+                    .header {
+                      border: none;
+                      border: resolve("other");
+                      width: 100px;
+                      width: resolve("other.root");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("other.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".conflicts__header { border: none; width: 100px; }\n" +
+        ".other.conflicts__header { width: 100%; }\n" +
+        ".other.conflicts__header { border: 1px solid black; }\n"
+      );
+    });
+  }
+
+  @test "resolves root states"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("other.css",
+      `[state|foo] { width: 100%; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./other.css";
+                    .header {
+                      width: 100px;
+                      width: resolve("other[state|foo]");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("other.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".conflicts__header { width: 100px; }\n" +
+        ".other--foo.conflicts__header { width: 100%; }\n"
+      );
+    });
+  }
+
+  @test "resolves class states"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("other.css",
+      `.asdf[state|foo] { width: 100%; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./other.css";
+                    .header {
+                      width: 100px;
+                      width: resolve("other.asdf[state|foo]");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("other.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".conflicts__header { width: 100px; }\n" +
+        ".other__asdf--foo.conflicts__header { width: 100%; }\n"
       );
     });
   }

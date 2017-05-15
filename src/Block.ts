@@ -350,7 +350,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
 
       let next = node.next();
       if (next && isState(next)) {
-        let info = stateParser(this.source, node.parent, node);
+        let info = stateParser(this.source, node.parent, next);
         let state = klass.getState(info);
         if (state === undefined) {
           return null;
