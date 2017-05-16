@@ -106,7 +106,7 @@ plain HTML markup examples are specific to the corresponding block files.
 Consider the following markup:
 
 ```html
-<form state:theme=blue state:compact>
+<form state:theme=dark state:compact>
   <div class="input-area">
     <label for="username" class="label">Username:</label>
     <input id="username" class="input" type="text">
@@ -125,18 +125,18 @@ in the `state` namespace:
 ```css
 /* my-form.block.css */
 .root                   { block-name: my-form; margin: 2em 0; padding: 1em 0.5em; }
-[state|theme=red]       { color: #c00; }
-[state|theme=blue]      { color: #006; }
+[state|theme=light]     { color: #333; }
+[state|theme=dark]      { color: #ccc; }
 [state|compact]         { margin: 0.5em 0; padding: 0.5em; }
 .input-area             { display: flex; margin: 1em 0; font-size: 1.5rem; }
 [state|compact]
   .input-area           { margin: 0.25em 0; }
 .label                  { flex: 1fr; }
 .input                  { flex: 3fr; }
-[state|theme=red]
-  .input                { border-color: #c00; }
-[state|theme=blue]
-  .input                { border-color: #006; }
+[state|theme=light]
+  .input                { border-color: #333; }
+[state|theme=dark]
+  .input                { border-color: #ccc; }
 .submit                 { width: 200px; }
 .submit[state|disabled] { color: gray; }
 ```
@@ -144,7 +144,7 @@ in the `state` namespace:
 In BEM compatibility mode these would compile to:
 
 ```html
-<form class="my-form my-form--theme-blue my-form--compact">
+<form class="my-form my-form--theme-dark my-form--compact">
   <div class="my-form__input-area">
     <label for="username" class="my-form__label">Username:</label>
     <input id="username" class="my-form__input" type="text">
@@ -161,15 +161,15 @@ and
 
 ```css
 .my-form { margin: 2em 0; padding: 1em 0.5em; }
-.my-form--theme-red { color: #c00; }
-.my-form--theme-blue { color: #006; }
+.my-form--theme-light { color: #333; }
+.my-form--theme-dark { color: #ccc; }
 .my-form--compact { margin: 0.5em 0; padding: 0.5em; }
 .my-form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
 .my-form--compact .my-form__input-area { margin: 0.25em 0; }
 .my-form__label { flex: 1fr; }
 .my-form__input { flex: 3fr; }
-.my-form--theme-red .my-form__input { border-color: #c00; }
-.my-form--theme-blue .my-form__input { border-color: #006; }
+.my-form--theme-light .my-form__input { border-color: #333; }
+.my-form--theme-dark .my-form__input { border-color: #ccc; }
 .my-form__submit { width: 200px; }
 .my-form__submit--disabled { color: gray; }
 ```
@@ -182,8 +182,8 @@ After optimization it may look more like:
 .c6 { margin: 1em 0 }
 .c7 { padding: 1em 0.5em }
 .c8 { padding: 0.5em }
-.c9 { color: #c00 }
-.ca { color: #006 }
+.c9 { color: #333 }
+.ca { color: #ccc }
 .cb { color: gray }
 .cc { display: flex }
 .cd { font-size: 1.5rem }
@@ -191,8 +191,8 @@ After optimization it may look more like:
 .cf { flex: 3fr }
 .cg { width: 200px }
 .c3 .ch { margin: 0.25em 0 }
-.c1 .ci { border-color: #c00 }
-.c2 .cj { border-color: #006 }
+.c1 .ci { border-color: #333 }
+.c2 .cj { border-color: #ccc }
 ```
 
 and the template would become:
@@ -215,6 +215,79 @@ There's not a lot of benefit to optimizing a single block -- remember the goal
 is to remove duplication across components. At scale, CSS Blocks works wonders.
 
 Now that we've seen what it looks like, let's dig in.
+
+What's a State?
+---------------
+
+You probably noticed the attributes prefixed with `state:` in the example
+above. States are a core concept in CSS Blocks and form the basis for
+constraints on the selectors that we write. These constraints are important
+for keeping runtime state of the browser to a minimum and at well defined
+places which allows the optimizer to work better. States also force us
+to write selectors with a minimal amount of coupling between elements.
+At first it may feel restrictive, especially if you're used to using context
+as a way of describing differences in the way a shared component looks.
+
+You'll remember that a block is a way of isolating the styles contained
+within it. That means we can't use context as a proxy for understanding
+design differences because it's not possible (for example) for the sidebar
+to create a selector that changes how a button that is styled by another
+block will look by targeting the classes and states of that other block.
+
+States come in two flavors. Most states are a boolean state that is either
+on or off. This is represented in markup as a state attribute without a
+value. Some states are mutually exclusive from one another. For instance, if
+a block provides a light and dark theme you can't apply both at the same
+time. In this case, the state can be assigned substates that are exclusive
+from each other. Such states are represented in markup by a state attribute
+that is assigned a value. For instance `<div state:theme="light">`.
+
+A state is attached to a single class in the block and describes how that
+class changes when the element is in that state. The names of states are
+scoped to their class and the styles they provide can target only elements
+assigned to that classname. The exception to this is for states that belong
+to the block `.root` class. In general, CSS Blocks restricts the use of
+combinators in selectors with a preference for unscoped selectors that are
+fast and optimization friendly (See Rules & Constraints below). One of the
+primary exceptions to this is that root states can be used in selectors as a
+scope for classes and other states within the block. So when you find
+yourself thinking that you absolutely need to use a descendant or child
+combinator then you should imagine that use case as a state for the the
+a block's `.root` class.
+
+It is important to think of States as part of the public API that describe
+how a block and the classes within it can vary. By keeping all the
+differences local, it's easier to maintain a block and to understand how
+changes to the block will affect an entire application. When we remove
+outside context from selectors it becomes possible to re-use those styles
+safely. It also forces developers to think of naming their design
+differences explicitly which has long term benefits for maintaining the
+styles -- you can certainly create a state `state:in-sidebar` for a block,
+but it's much better to imagine *why* the sidebar is different and to name
+it accordingly. In this way, other developers will understand the intent
+better.
+
+Occasionally, some states are best managed for an entire application and
+many blocks will need to react to those state changes. Traditionally, this
+done by applying a class to the `html` or `body` elements. To deal with this
+CSS Blocks allow some states to be declared global and used as if it
+belonged to the block. As with all things global, this increases the testing
+costs and adds coupling, however, it is actually quite friendly to the
+optimizer. See "Global (application) States" below for more information.
+
+It is worth noting that with CSS Blocks it is possible for one block to
+apply it's own classes that override styles from other classes and states
+for a given element by applying them together at the template level. CSS
+Blocks also provides a powerful resolution system to handle this use case.
+But this exists to support the situation where the classes are targeting
+very different styling concerns. It is strongly discouraged to use classes
+as overrides across blocks.
+
+A much better solution when you can't make the change to pre-existing block
+for some reason is to use Block Inheritance to add new classes and states to
+an existing block. Inheritance is another way that a block can present
+different styling options. For more information, see "Block Inheritance"
+below.
 
 Terminology
 -----------
@@ -289,6 +362,7 @@ Rules & Constraints
 9. `!important` is forbidden.
 10. Element, Attribute, ID selectors are discouraged. See "External Selectors" below.
 11. All classes are local by default. See "External Selectors" below.
+12. Two classes from the same block may not be applied to the same HTML element.
 
 Syntax
 ------
@@ -525,6 +599,10 @@ Additionally, even if an object from the base class isn't mentioned in
 the subclass, you can still set the classnames assocated with it as if
 it had them.
 
+Inheritance is generally prefered over root states when a design difference affects
+many classes within the block because it optimizes better -- but it is not
+friendly for composing with other sub-blocks on the same element.
+
 ### Block Interfaces
 
 In some cases it may be necessary for a block to conform to the public API
@@ -660,6 +738,43 @@ resolved selector has the value from the local selector.
 ```
 
 Let's consider some more complex cases and see how the resolver handles those.
+
+### Resolution Constraints
+
+Some properties are critical to proper functioning of the block. For
+instance, if a block is using CSS grid to do layout, you'd expect the design
+to break if the block element's display property was resolved to a different
+value. Or perhaps there's a minimum width below which the design breaks.
+
+In these situations, a block's selectors can provide constraints for a
+property that limit the legal overrides to ensure compatibility.
+
+ ```css
+ .icons {
+   display: grid;
+   display: constrain-resolution(--self);
+ }
+ ```
+
+The `--self` identifier says that the property may only be resolved with one
+or more values that are set locally for that same property.
+
+You can also list legal values that it can be resolved to, separated by a comma.
+
+ ```css
+ .icons {
+   border: 1px solid black;
+   border-style: constrain-resolution(--self, dashed, dotted);
+ }
+ ```
+
+ As you can see from above, you can provide constraints on a long hand
+ property to set a constraint on just one of the values in a short hand
+ property that is specifed. This would allow the border to be resolved
+ arbitrarily for the `border-width` and `border-color` as long as the
+ `border-style` is matches the constraint.
+
+ TBD: syntax for range constraints and other possible constraint types.
 
 #### Progressive Enhancement
 
@@ -854,12 +969,12 @@ $base-size: 1em;
   padding: $base-size $base-size / 2;
 }
 
-[state|theme=red] {
-  color: #c00;
+[state|theme=light] {
+  color: #333;
 }
 
-[state|theme=blue] {
-  color: #006;
+[state|theme=dark] {
+  color: #ccc;
 }
 
 [state|compact] {
@@ -883,11 +998,11 @@ $base-size: 1em;
 
 .input {
   flex: 3fr;
-  [state|theme=red] & {
-    border-color: #c00;
+  [state|theme=light] & {
+    border-color: #333;
   }
-  [state|theme=blue] & {
-    border-color: #006;
+  [state|theme=dark] & {
+    border-color: #ccc;
   }
 }
 
@@ -913,7 +1028,7 @@ Each component has an assocated `styles.block.css` file.
 The template root element is automatically the block root.
 
 ```hbs
-<form state:compact state:theme="red">
+<form state:compact state:theme="light">
   <div class="input-area">
     <label class="label">Username</label>
     <input class="input">
@@ -927,7 +1042,7 @@ rewritten during the build. Setting `state` attributes at runtime will
 have no effect. If in BEM output mode, the above template is re-written to:
 
 ```hbs
-<form class="my-form--compact my-form--theme-red">
+<form class="my-form--compact my-form--theme-light">
   <div class="my-form__input-area">
     <label class="my-form__label">Username</label>
     <input class="my-form__input">
@@ -1110,8 +1225,8 @@ Options
   * State names: the name of the state. E.g. `[state|foo]` is exported
     as `foo`.
   * Exclusive State names: the name of the state group is prefixed to
-    the state name with a dash. E.g. `[state|theme=red]` is exported as
-    `theme-red`.
+    the state name with a dash. E.g. `[state|theme=light]` is exported as
+    `theme-light`.
   * Class names: The name of the classes. E.g. `.foo` is exported as
     `foo`. Note that these can conflict with state names, it is left to
     the developer to avoid collisions if using interoperable CSS.
