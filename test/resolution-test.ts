@@ -171,6 +171,7 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
+  @skip
   @test "for states combined with the resolution source involving child combinators"() {
     let imports = new MockImportRegistry();
     imports.registerSource("target.css",
@@ -197,6 +198,7 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
+  @skip
   @test "for states combined with the resolution source both involving child combinators"() {
     let imports = new MockImportRegistry();
     imports.registerSource("target.css",
@@ -481,6 +483,7 @@ export class BlockInheritance extends BEMProcessor {
   @test "compatible but different combinators"() {
   }
 
+  @skip
   @test "for states combined with the resolution source has adjacent selectors"() {
     let imports = new MockImportRegistry();
     imports.registerSource("target.css",

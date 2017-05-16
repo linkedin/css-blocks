@@ -219,10 +219,21 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows sibling combinators with root states"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
-                    [state:foo] ~ .another-class { display: block; }`;
+                    [state|foo] ~ .another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Distinct classes cannot be combined: .my-class .another-class" +
+      "A class is never a sibling of a state: [state|foo] ~ .another-class" +
+        " (foo/bar/illegal-class-combinator.css:2:21)",
+      this.process(filename, inputCSS));
+  }
+
+  @test "disallows sibling combinators with root states after adjacent root"() {
+    let filename = "foo/bar/illegal-class-combinator.css";
+    let inputCSS = `.root {color: #111;}
+                    [state|foo] + [state|foo] ~ .another-class { display: block; }`;
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "A class is never a sibling of a state: [state|foo] + [state|foo] ~ .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
@@ -230,10 +241,10 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows adjacent sibling combinators with root states"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
-                    [state:foo] + .another-class { display: block; }`;
+                    [state|foo] + .another-class { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Distinct classes cannot be combined: .my-class .another-class" +
+      "A class is never a sibling of a state: [state|foo] + .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }

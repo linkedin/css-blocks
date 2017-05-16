@@ -53,13 +53,16 @@ const combinatorResolution: combinatorMap = {
   }
 };
 
+const siblingCombinators = new Set(["~", "+"]);
+
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 const selectorParserFn = require("postcss-selector-parser");
 
 enum BlockTypes {
   block = 1,
   state,
-  class
+  class,
+  classState
 }
 
 type BlockObject = Block | State | BlockClass;
@@ -311,42 +314,66 @@ export class Plugin {
   assertValidCombinators(sourceFile: string, rule, selector) {
     let states = new Set<string>();
     let classes = new Set<string>();
+    let classStates = new Set<string>();
     let combinators = new Set<string>();
+    let thisElementIsRoot = false;
+    let lastElementIsRoot = false;
     let lastType: BlockTypes | null = null;
     let thisType: BlockTypes | null = null;
+    let lastCombinator: string | null;
     selector.each((s) => {
-      if (isBlock(s)) {
+     if (isBlock(s)) {
         thisType = BlockTypes.block;
+        thisElementIsRoot = true;
       } else if (isState(s)) {
-        thisType = BlockTypes.state;
         let info = stateParser(sourceFile, rule, s);
+        let stateStr: string;
         if (info.group) {
-          states.add(`${info.group} ${info.name}`);
+          stateStr = `${info.group} ${info.name}`;
         } else {
-          states.add(info.name);
+          stateStr = info.name;
+        }
+        if (lastType === BlockTypes.class) {
+          thisElementIsRoot = false;
+          thisType = BlockTypes.classState;
+          classStates.add(stateStr);
+        } else {
+          thisElementIsRoot = true;
+          thisType = BlockTypes.state;
+          states.add(stateStr);
         }
       } else if (s.type === selectorParser.CLASS) {
+        if (thisElementIsRoot && lastCombinator !== null && siblingCombinators.has(lastCombinator)) {
+          throw new errors.InvalidBlockSyntax(
+            `A class is never a sibling of a state: ${rule.selector}`,
+            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+        }
+        thisElementIsRoot = false;
         thisType = BlockTypes.class;
         classes.add(s.value);
       } else if (s.type === selectorParser.COMBINATOR) {
         thisType = null;
         combinators.add(s.value);
+        lastCombinator = s.value;
+        if (!siblingCombinators.has(s.value)) {
+          lastElementIsRoot = thisElementIsRoot;
+          thisElementIsRoot = false;
+        }
       }
       if (thisType && lastType && lastType !== thisType) {
         if ((lastType === BlockTypes.block && thisType === BlockTypes.state) ||
             (thisType === BlockTypes.block && lastType === BlockTypes.state)) {
           throw new errors.InvalidBlockSyntax(
-            `It's redundant to specify state with block: ${rule.selector}`,
+            `It's redundant to specify state with the block root: ${rule.selector}`,
             selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
         }
-        if (!((lastType === BlockTypes.class && thisType === BlockTypes.state) ||
-             (thisType === BlockTypes.class && lastType === BlockTypes.state))) {
-          throw new errors.InvalidBlockSyntax(
-            `Cannot have ${BlockTypes[lastType]} and ${BlockTypes[thisType]} on the same DOM element: ${rule.selector}`,
-            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
-        } else if (lastType === BlockTypes.state && thisType === BlockTypes.class) {
+        if (lastType === BlockTypes.state && thisType === BlockTypes.class) {
           throw new errors.InvalidBlockSyntax(
             `The class must precede the state: ${rule.selector}`,
+            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+        } else if (!(lastType === BlockTypes.class && thisType === BlockTypes.classState)) {
+          throw new errors.InvalidBlockSyntax(
+            `Cannot have ${BlockTypes[lastType]} and ${BlockTypes[thisType]} on the same DOM element: ${rule.selector}`,
             selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
         }
       }
