@@ -1,4 +1,4 @@
-import { suite, test } from "mocha-typescript";
+import { suite, test, skip } from "mocha-typescript";
 import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
 
@@ -258,6 +258,14 @@ export class StraightJacket extends BEMProcessor {
       "Distinct classes cannot be combined: .my-class.another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
+  }
+
+  @skip
+  @test "disallows pseudos not attached to a block object."() {
+  }
+
+  @skip
+  @test "disallows attribute selectors except for states."() {
   }
 
   @test "disallows a state before a class for the same element."() {
