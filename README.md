@@ -252,8 +252,8 @@ fast and optimization friendly (See Rules & Constraints below). One of the
 primary exceptions to this is that root states can be used in selectors as a
 scope for classes and other states within the block. So when you find
 yourself thinking that you absolutely need to use a descendant or child
-combinator then you should imagine that use case as a state for the the
-a block's `.root` class.
+combinator then you should imagine that use case as a state for a block's
+ `.root` class.
 
 It is important to think of States as part of the public API that describe
 how a block and the classes within it can vary. By keeping all the
@@ -798,7 +798,7 @@ local values to take precedence.
 .header {
   font-size: 16px;
   font-size: 1rem;
-  border: resolve("other.nav");
+  font-size: resolve("other.nav");
 }
 ```
 
