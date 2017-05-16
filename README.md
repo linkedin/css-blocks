@@ -131,8 +131,8 @@ in the `state` namespace:
 .input-area             { display: flex; margin: 1em 0; font-size: 1.5rem; }
 [state|compact]
   .input-area           { margin: 0.25em 0; }
-.label                  { flex: 1fr; }
-.input                  { flex: 3fr; }
+.label                  { flex-basis: 1; }
+.input                  { flex-basis: 3; }
 [state|theme=light]
   .input                { border-color: #333; }
 [state|theme=dark]
@@ -166,8 +166,8 @@ and
 .my-form--compact { margin: 0.5em 0; padding: 0.5em; }
 .my-form__input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
 .my-form--compact .my-form__input-area { margin: 0.25em 0; }
-.my-form__label { flex: 1fr; }
-.my-form__input { flex: 3fr; }
+.my-form__label { flex-basis: 1; }
+.my-form__input { flex-basis: 3; }
 .my-form--theme-light .my-form__input { border-color: #333; }
 .my-form--theme-dark .my-form__input { border-color: #ccc; }
 .my-form__submit { width: 200px; }
@@ -187,8 +187,8 @@ After optimization it may look more like:
 .cb { color: gray }
 .cc { display: flex }
 .cd { font-size: 1.5rem }
-.ce { flex: 1fr }
-.cf { flex: 3fr }
+.ce { flex-basis: 1 }
+.cf { flex-basis: 3 }
 .cg { width: 200px }
 .c3 .ch { margin: 0.25em 0 }
 .c1 .ci { border-color: #333 }
@@ -993,11 +993,11 @@ $base-size: 1em;
 }
 
 .label {
-  flex: 1fr;
+  flex-basis: 1;
 }
 
 .input {
-  flex: 3fr;
+  flex-basis: 3;
   [state|theme=light] & {
     border-color: #333;
   }
