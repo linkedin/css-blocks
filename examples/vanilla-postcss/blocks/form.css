@@ -1,13 +1,15 @@
-:block { margin: 2em 0; padding: 1em 0.5em; }
-:state(theme red) { color: #c00; }
-:state(theme blue) { color: #006; }
-:state(compact) { margin: 0.5em 0; padding: 0.5em 0.5em; }
-.input-area { display: flex; margin: 1em 0; font-size: 1.5rem; }
-:state(compact) .input-area { margin: 0.25em 0; }
-.label { flex: 1fr; }
-.input { flex: 3fr; }
-:state(theme red) .input { border-color: #c00; }
-:state(theme blue) .input { border-color: #006; }
-.submit { width: 200px; }
-.submit:substate(disabled) { color: gray; }
-.hi-mahir { color: purple; }
+.root                   { block-name: my-form; margin: 2em 0; padding: 1em 0.5em; }
+[state|theme=light]     { color: #333; }
+[state|theme=dark]      { color: #ccc; }
+[state|compact]         { margin: 0.5em 0; padding: 0.5em; }
+.input-area             { display: flex; margin: 1em 0; font-size: 1.5rem; }
+[state|compact]
+  .input-area           { margin: 0.25em 0; }
+.label                  { flex-basis: 1; }
+.input                  { flex-basis: 3; }
+[state|theme=light]
+  .input                { border-color: #333; }
+[state|theme=dark]
+  .input                { border-color: #ccc; }
+.submit                 { width: 200px; }
+.submit[state|disabled] { color: gray; }

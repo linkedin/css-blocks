@@ -1,11 +1,13 @@
 @block-reference "./hello.css";
+@block-reference "./outlines.css";
 
-:block {
+.root {
   extends: hello;
-  text-decoration: underline;
-  background-color: blue;
+  background-color: #ccc;
 }
 
 .greeting-target {
+  text-decoration: underline;
+  /*text-decoration: resolve("outlines.outlined");*/
   font-style: italic;
 }

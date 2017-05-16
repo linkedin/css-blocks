@@ -1,6 +1,14 @@
-:block {
+@block-reference "./outlines.css";
+
+.root {
   font-size: 80px;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-bottom: 0.25em;
 }
 .greeting-target {
-  background-color: red;
+  font-weight: bold;
+}
+.greeting-target:hover {
+  /*text-decoration: resolve("outlines.outlined");*/
+  text-decoration: underline #9cf;
 }
