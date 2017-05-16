@@ -31,6 +31,7 @@ export class Plugin {
       if (this.opts.interoperableCSS) {
         this.injectExports(root, block);
       }
+      blockParser.processDebugStatements(sourceFile, root, block);
     });
   }
 

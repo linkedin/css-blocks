@@ -59,11 +59,11 @@ export default class BlockParser {
     this.postcss = postcssImpl;
   }
 
-  public parse(root, sourceFile: string, defaultName: string, mutate: boolean): Promise<Block> {
+  public parse(root: postcss.Root, sourceFile: string, defaultName: string, mutate: boolean): Promise<Block> {
     root.walkDecls((decl) => {
       if (decl.important) {
         throw new errors.InvalidBlockSyntax(
-          `!important is not allowed for \`${decl.prop}\` in \`${decl.parent.selector}\``,
+          `!important is not allowed for \`${decl.prop}\` in \`${(<postcss.Rule>decl.parent).selector}\``,
           sourceLocation(sourceFile, decl));
       }
     });
@@ -158,7 +158,7 @@ export default class BlockParser {
     });
   }
 
-  private implementsBlock(block: Block, sourceFile: string, rule, mutate: boolean) {
+  private implementsBlock(block: Block, sourceFile: string, rule: postcss.Rule, mutate: boolean) {
     rule.walkDecls("implements", (decl) => {
       let refNames = decl.value.split(/,\s*/);
       refNames.forEach((refName) => {
@@ -173,7 +173,7 @@ export default class BlockParser {
     });
   }
 
-  private extendBlock(block: Block, sourceFile: string, rule, mutate: boolean) {
+  private extendBlock(block: Block, sourceFile: string, rule: postcss.Rule, mutate: boolean) {
     rule.walkDecls("extends", (decl) => {
       if (block.base) {
         throw new errors.InvalidBlockSyntax(`A block can only be extended once.`,
@@ -190,7 +190,7 @@ export default class BlockParser {
     });
   }
 
-  public resolveReferences(block: Block, root, sourceFile: string, mutate: boolean): Promise<Block> {
+  public resolveReferences(block: Block, root: postcss.Root, sourceFile: string, mutate: boolean): Promise<Block> {
     let namedBlockReferences: Promise<[string, Block]>[] = [];
     root.walkAtRules("block-reference", (atRule) => {
       let md = atRule.params.match(/\s*((\w+)\s+from\s+)?\s*("|')([^\3]+)\3/);
@@ -221,37 +221,40 @@ export default class BlockParser {
         root.walkAtRules("block-reference", (atRule) => {
           atRule.remove();
         });
-        root.walkAtRules("block-debug", (atRule) => {
-          let md = atRule.params.match(/([^\s]+) to (comment|stderr|stdout)/);
-          if (!md) {
-            throw new errors.InvalidBlockSyntax(
-              `Malformed block debug: \`@block-debug ${atRule.params}\``,
-              sourceLocation(sourceFile, atRule));
-          }
-          let localName = md[1];
-          let outputTo = md[2];
-          let ref: Block | null = block.getReferencedBlock(localName);
-          if (!ref) {
-            throw new errors.InvalidBlockSyntax(
-              `No block named ${localName} exists in this context.`,
-              sourceLocation(sourceFile, atRule));
-          }
-          let debugStr = ref.debug(this.opts);
-          if (outputTo === "comment") {
-            atRule.replaceWith(this.postcss.comment({text: debugStr.join("\n   ")}));
-          } else {
-            if (outputTo === "stderr") {
-              console.warn(debugStr.join("\n"));
-            } else {
-              console.log(debugStr.join("\n"));
-            }
-            atRule.remove();
-          }
-        });
       });
     }
     return extraction.then(() => {
       return block;
+    });
+  }
+
+  processDebugStatements(sourceFile: string, root: postcss.Root, block: Block) {
+    root.walkAtRules("block-debug", (atRule) => {
+      let md = atRule.params.match(/([^\s]+) to (comment|stderr|stdout)/);
+      if (!md) {
+        throw new errors.InvalidBlockSyntax(
+          `Malformed block debug: \`@block-debug ${atRule.params}\``,
+          sourceLocation(sourceFile, atRule));
+      }
+      let localName = md[1];
+      let outputTo = md[2];
+      let ref: Block | null = block.getReferencedBlock(localName);
+      if (!ref) {
+        throw new errors.InvalidBlockSyntax(
+          `No block named ${localName} exists in this context.`,
+          sourceLocation(sourceFile, atRule));
+      }
+      let debugStr = ref.debug(this.opts);
+      if (outputTo === "comment") {
+        atRule.replaceWith(this.postcss.comment({text: debugStr.join("\n   ")}));
+      } else {
+        if (outputTo === "stderr") {
+          console.warn(debugStr.join("\n"));
+        } else {
+          console.log(debugStr.join("\n"));
+        }
+        atRule.remove();
+      }
     });
   }
 
@@ -338,5 +341,4 @@ export default class BlockParser {
     if (selComponent.parent === selector) { contextCB(newClass); }
     return [selComponent, newClass];
   }
-
 }
