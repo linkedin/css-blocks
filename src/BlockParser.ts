@@ -255,7 +255,7 @@ export default class BlockParser {
     });
   }
 
-  assertValidCombinators(sourceFile: string, rule, selector) {
+  private assertValidCombinators(sourceFile: string, rule, selector) {
     let states = new Set<string>();
     let classes = new Set<string>();
     let classStates = new Set<string>();

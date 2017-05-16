@@ -1,8 +1,6 @@
 var cssBlocks = require("css-blocks").default;
 var postcss = require("postcss");
 
-console.log(cssBlocks);
-
 module.exports = function(grunt) {
   grunt.initConfig({
     copy: {
