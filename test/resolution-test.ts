@@ -171,6 +171,57 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
+  @test "for states combined with the resolution source involving child combinators"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("target.css",
+      `.main    { color: blue; }
+       [state|hidden] > .main { color: transparent; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./target.css";
+                    [state|happy] .article {
+                      color: green;
+                      color: resolve("target.main");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("target.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".conflicts--happy .conflicts__article { color: green; }\n" +
+        ".conflicts--happy .target__main.conflicts__article { color: blue; }\n" +
+        ".target--hidden.conflicts--happy > .target__main.conflicts__article,\n" +
+        ".conflicts--happy .target--hidden > .target__main.conflicts__article { color: transparent; }\n"
+      );
+    });
+  }
+
+  @test "for states combined with the resolution source both involving child combinators"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("target.css",
+      `.main    { color: blue; }
+       [state|hidden] > .main { color: transparent; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./target.css";
+                    [state|happy] > .article {
+                      color: green;
+                      color: resolve("target.main");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("target.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".conflicts--happy .conflicts__article { color: green; }\n" +
+        ".conflicts--happy .target__main.conflicts__article { color: blue; }\n" +
+        ".target--hidden.conflicts--happy > .target__main.conflicts__article { color: transparent; }\n"
+      );
+    });
+  }
+
   @skip
   @test "of short-hand properties conflicting with long-hand properties"() {
     let imports = new MockImportRegistry();
@@ -430,8 +481,29 @@ export class BlockInheritance extends BEMProcessor {
   @test "compatible but different combinators"() {
   }
 
-  @skip
-  @test "incompatible combinators"() {
+  @test "for states combined with the resolution source has adjacent selectors"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("target.css",
+      `.main    { color: blue; }
+       .main + .main { color: transparent; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./target.css";
+                    [state|happy] > .article {
+                      color: green;
+                      color: resolve("target.main");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("target.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".conflicts--happy .conflicts__article { color: green; }\n" +
+        ".conflicts--happy .target__main.conflicts__article { color: blue; }\n" +
+        ".conflicts--happy > .main + .target__main.conflicts__article { color: transparent; }\n"
+      );
+    });
   }
 
   @skip

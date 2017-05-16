@@ -145,6 +145,21 @@ export class BEMOutputMode extends BEMProcessor {
       );
     });
   }
+
+  @test "handles root states with class states"() {
+    let filename = "foo/bar/stateful.css";
+    let inputCSS = `.root {color: #111;}
+                    .my-class { display: none; }
+                    [state|translucent] .my-class[state|visible] { display: block; opacity: 0.75; }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        ".stateful { color: #111; }\n" +
+        ".stateful__my-class { display: none; }\n" +
+        ".stateful--translucent .stateful__my-class--visible { display: block; opacity: .75; }\n"
+      );
+    });
+  }
 }
 
 @suite("Block Syntax")
@@ -201,6 +216,28 @@ export class StraightJacket extends BEMProcessor {
       this.process(filename, inputCSS));
   }
 
+  @test "disallows sibling combinators with root states"() {
+    let filename = "foo/bar/illegal-class-combinator.css";
+    let inputCSS = `.root {color: #111;}
+                    [state:foo] ~ .another-class { display: block; }`;
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Distinct classes cannot be combined: .my-class .another-class" +
+        " (foo/bar/illegal-class-combinator.css:2:21)",
+      this.process(filename, inputCSS));
+  }
+
+  @test "disallows adjacent sibling combinators with root states"() {
+    let filename = "foo/bar/illegal-class-combinator.css";
+    let inputCSS = `.root {color: #111;}
+                    [state:foo] + .another-class { display: block; }`;
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Distinct classes cannot be combined: .my-class .another-class" +
+        " (foo/bar/illegal-class-combinator.css:2:21)",
+      this.process(filename, inputCSS));
+  }
+
   @test "disallows combining classes without a combinator"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
@@ -238,7 +275,7 @@ export class StraightJacket extends BEMProcessor {
                     .root[state|foo] { display: block; }`;
     return this.assertError(
       cssBlocks.InvalidBlockSyntax,
-      "It's redundant to specify state with block: .root[state|foo]" +
+      "It's redundant to specify state with the block root: .root[state|foo]" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
