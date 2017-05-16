@@ -5,7 +5,6 @@ import { Exportable, Block, State, BlockClass, BlockObject } from "./Block";
 import * as errors from "./errors";
 import { ImportedFile } from "./importing";
 export { PluginOptions } from "./options";
-import { stateParser, isBlock, isState } from "./parseSelector";
 import { sourceLocation, selectorSourceLocation } from "./SourceLocation";
 
 const siblingCombinators = new Set(["~", "+"]);
@@ -18,6 +17,37 @@ enum BlockTypes {
   state,
   class,
   classState
+}
+
+export function isBlock(node) {
+  return node.type === selectorParser.CLASS &&
+         node.value === "root";
+}
+
+export function isState(node) {
+  return node.type === selectorParser.ATTRIBUTE &&
+         node.namespace === "state";
+}
+
+export interface StateInfo {
+  group?: string;
+  name: string;
+}
+
+export function stateParser(sourceFile: string, rule, attr): StateInfo {
+  let stateType = attr.namespace;
+  let info: StateInfo = {
+    name: attr.attribute
+  };
+  if (attr.value) {
+    if (attr.operator !== "=") {
+      throw new errors.InvalidBlockSyntax(`A ${stateType} with a value must use the = operator (found ${attr.operator} instead).`,
+                                          selectorSourceLocation(sourceFile, rule, attr));
+    }
+    info.group = info.name;
+    info.name = attr.value;
+  }
+  return info;
 }
 
 export default class BlockParser {

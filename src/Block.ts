@@ -4,7 +4,8 @@ import * as selectorParser from "postcss-selector-parser";
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
-import parseSelector, { ParsedSelector, SelectorNode, StateInfo, stateParser, isState, isBlock } from "./parseSelector";
+import parseSelector, { ParsedSelector, SelectorNode } from "./parseSelector";
+import { StateInfo, stateParser, isState, isBlock } from "./BlockParser";
 
 interface StateMap {
   [stateName: string]: State;
