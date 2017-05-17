@@ -9,6 +9,6 @@
   font-weight: bold;
 }
 .greeting-target:hover {
-  /*text-decoration: resolve("outlines.outlined");*/
+  text-decoration: resolve("outlines.outlined");
   text-decoration: underline #9cf;
 }

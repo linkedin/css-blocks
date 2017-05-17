@@ -2,7 +2,7 @@ import helloCSS from "./styles/hello.css";
 import californiaCSS from "./styles/california.css";
 import outlinesCSS from "./styles/outlines.css";
 
-import { iCssAdapter as cssBlockAdapter, union as stylesUnion } from "css-blocks";
+import { iCssAdapter as cssBlockAdapter } from "css-blocks";
 let helloStyles = cssBlockAdapter(helloCSS);
 let californiaStyles = cssBlockAdapter(californiaCSS);
 let outlinesStyles = cssBlockAdapter(outlinesCSS);
@@ -16,7 +16,7 @@ function hello(name, styles) {
 
   var world = document.createElement('span');
   world.innerHTML = name;
-  world.className = stylesUnion(styles.block(".greeting-target"), styles.outlines(".outlined"));
+  world.className = styles.block(".greeting-target") + " " + styles.outlines(".outlined");
   element.appendChild(world);
 
   return element;

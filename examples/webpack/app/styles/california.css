@@ -7,7 +7,7 @@
 }
 
 .greeting-target {
+  text-decoration: resolve("outlines.outlined");
   text-decoration: underline;
-  /*text-decoration: resolve("outlines.outlined");*/
   font-style: italic;
 }
