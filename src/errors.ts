@@ -4,7 +4,7 @@ export class CssBlockError extends Error {
   origMessage: string;
   _location?: SourceLocation | void;
 
-  constructor(message, location?: SourceLocation | void) {
+  constructor(message: string, location?: SourceLocation | void) {
     super(message);
     this.origMessage = message;
     this.location = location;
@@ -42,7 +42,7 @@ export class MissingSourcePath extends CssBlockError {
 }
 
 export class InvalidBlockSyntax extends CssBlockError {
-  constructor(message, location?: SourceLocation) {
+  constructor(message: string, location?: SourceLocation) {
     super(message, location);
   }
 }

@@ -28,6 +28,7 @@
   ],
   "homepage": "https://github.com/sailfishers/css-blocks#readme",
   "devDependencies": {
+    "@types/chai": "^3.5.2",
     "@types/node": "^7.0.13",
     "chai": "^3.5.0",
     "mocha": "^3.3.0",

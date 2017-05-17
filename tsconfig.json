@@ -12,7 +12,7 @@
     "moduleResolution": "node",
 
     // Enhance Strictness
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -25,7 +25,14 @@
     // output options
     "newLine": "LF",
     "outDir": "dist",
-    "module": "commonjs"
+    "module": "commonjs",
+    "traceResolution": false,
+    "baseUrl": ".",
+    "paths": {
+      "perfectionist": [
+        "types-local/perfectionist"
+      ]
+    }
   },
   "include": [
     "src",

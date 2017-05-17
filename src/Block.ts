@@ -1,10 +1,10 @@
 import * as postcss from "postcss";
-import * as selectorParser from "postcss-selector-parser";
+import selectorParser = require("postcss-selector-parser");
 
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
-import parseSelector, { ParsedSelector, SelectorNode } from "./parseSelector";
+import parseSelector, { ParsedSelector } from "./parseSelector";
 import { StateInfo, stateParser, isState, isBlock } from "./BlockParser";
 
 interface StateMap {
@@ -230,7 +230,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   }
 
   // This is a really dumb impl
-  find(sourceName): BlockObject | undefined {
+  find(sourceName: string): BlockObject | undefined {
     return this.all().find(e => e.asSource() === sourceName);
   }
 
@@ -340,7 +340,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     return `.root`;
   }
 
-  nodeAsBlockObject(node: SelectorNode): [BlockObject, number] | null {
+  nodeAsBlockObject(node: selectorParser.Node): [BlockObject, number] | null {
     if (node.type === selectorParser.CLASS && node.value === "root") {
       return [this, 0];
     } else if (node.type === selectorParser.CLASS) {
@@ -351,7 +351,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
 
       let next = node.next();
       if (next && isState(next)) {
-        let info = stateParser(this.source, node.parent, next);
+        let info = stateParser(<selectorParser.Attribute>next);
         let state = klass.getState(info);
         if (state === undefined) {
           return null;
@@ -362,7 +362,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
         return [klass, 0];
       }
     } else if (isState(node)) {
-      let info = stateParser(this.source, node.parent, node);
+      let info = stateParser(<selectorParser.Attribute>node);
       let state = this.ensureState(info);
       if (state) {
         return [state, 0];
@@ -373,8 +373,8 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     return null;
   }
 
-  rewriteSelectorNodes(nodes: SelectorNode[], opts: OptionsReader): SelectorNode[] {
-    let newNodes: SelectorNode[] = [];
+  rewriteSelectorNodes(nodes: selectorParser.Node[], opts: OptionsReader): selectorParser.Node[] {
+    let newNodes: selectorParser.Node[] = [];
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
       let result = this.nodeAsBlockObject(node);
@@ -389,7 +389,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   }
 
   rewriteSelector(selector: ParsedSelector, opts: OptionsReader): ParsedSelector {
-    let newNodes: SelectorNode[] = [];
+    let newNodes: selectorParser.Node[] = [];
     if (selector.context !== undefined) {
       newNodes = newNodes.concat(this.rewriteSelectorNodes(selector.context, opts));
     }
@@ -405,7 +405,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     return parseSelector(newNodes.join(""))[0];
   }
 
-  matches(compoundSel: SelectorNode[]): boolean {
+  matches(compoundSel: selectorParser.Node[]): boolean {
     return compoundSel.some(node => isBlock(node));
   }
 
@@ -575,7 +575,7 @@ export class State implements Exportable {
     }
   }
 
-  matches(compoundSel: SelectorNode[]): boolean {
+  matches(compoundSel: selectorParser.Node[]): boolean {
     let classVal: null | string = null;
     if (this.blockClass) {
       classVal = this.blockClass.name;
@@ -583,10 +583,10 @@ export class State implements Exportable {
         return false;
       }
       return compoundSel.some(node => isState(node) &&
-        this.sameNameAndGroup(stateParser(this.block.source, node.parent, node)));
+        this.sameNameAndGroup(stateParser(<selectorParser.Attribute>node)));
     } else {
       return compoundSel.some(node => isState(node) &&
-        this.sameNameAndGroup(stateParser(this.block.source, node.parent, node)));
+        this.sameNameAndGroup(stateParser(<selectorParser.Attribute>node)));
     }
   }
 
@@ -675,7 +675,7 @@ export class BlockClass extends ExclusiveStateGroupContainer implements Exportab
     }
   }
 
-  matches(compoundSel: SelectorNode[]): boolean {
+  matches(compoundSel: selectorParser.Node[]): boolean {
     let srcVal = this.name;
     let found = compoundSel.some(node => node.type === selectorParser.CLASS && node.value === srcVal);
     if (!found) return false;

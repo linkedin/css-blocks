@@ -1,5 +1,5 @@
 import * as postcss from "postcss";
-import * as selectorParser from "postcss-selector-parser";
+import selectorParser = require("postcss-selector-parser");
 import { PluginOptions, OptionsReader } from "./options";
 import { Exportable, Block, State, BlockClass, BlockObject } from "./Block";
 import * as errors from "./errors";
@@ -10,7 +10,7 @@ import { sourceLocation, selectorSourceLocation } from "./SourceLocation";
 const siblingCombinators = new Set(["~", "+"]);
 
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
-const selectorParserFn = require("postcss-selector-parser");
+// const selectorParserFn = require("postcss-selector-parser");
 
 enum BlockTypes {
   block = 1,
@@ -19,14 +19,14 @@ enum BlockTypes {
   classState
 }
 
-export function isBlock(node) {
+export function isBlock(node: selectorParser.Node) {
   return node.type === selectorParser.CLASS &&
          node.value === "root";
 }
 
-export function isState(node) {
+export function isState(node: selectorParser.Node) {
   return node.type === selectorParser.ATTRIBUTE &&
-         node.namespace === "state";
+         (<selectorParser.Attribute>node).namespace === "state";
 }
 
 export interface StateInfo {
@@ -34,16 +34,11 @@ export interface StateInfo {
   name: string;
 }
 
-export function stateParser(sourceFile: string, rule, attr): StateInfo {
-  let stateType = attr.namespace;
+export function stateParser(attr: selectorParser.Attribute): StateInfo {
   let info: StateInfo = {
     name: attr.attribute
   };
   if (attr.value) {
-    if (attr.operator !== "=") {
-      throw new errors.InvalidBlockSyntax(`A ${stateType} with a value must use the = operator (found ${attr.operator} instead).`,
-                                          selectorSourceLocation(sourceFile, rule, attr));
-    }
     info.group = info.name;
     info.name = attr.value;
   }
@@ -72,15 +67,16 @@ export default class BlockParser {
     block.root = root;
     return this.resolveReferences(block, root, sourceFile, mutate).then((block) => {
       root.walkRules((rule) => {
-        let selector =  selectorParserFn().process(rule.selector).res;
-        selector.nodes.forEach((sel) => { this.assertValidCombinators(sourceFile, rule, sel); });
+        let selector =  selectorParser().process(rule.selector).res;
+        selector.each((sel) => { this.assertValidCombinators(sourceFile, rule, <selectorParser.Selector>sel); });
         // mutation can't be done inside the walk despite what the docs say
         let replacements: any[] = [];
         let lastSel: any;
         let thisSel: any;
         let lastNode: BlockObject | null = null;
         let thisNode: BlockObject | null = null;
-        selector.each((individualSelector) => {
+        selector.each((iSel) => {
+          let individualSelector = <selectorParser.Selector>iSel;
           individualSelector.walk((s) => {
             if (isBlock(s)) {
               if (s.next() === undefined && s.prev() === undefined) {
@@ -98,8 +94,10 @@ export default class BlockParser {
             }
             else if (isState(s)) {
               if (lastNode instanceof BlockClass) {
+                let attr = <selectorParser.Attribute>s;
                 let blockClass: BlockClass = lastNode;
-                let state: State = blockClass.ensureState(stateParser(sourceFile, rule, s));
+                this.assertValidState(sourceFile, rule, attr);
+                let state: State = blockClass.ensureState(stateParser(attr));
                 thisNode = state;
                 if (mutate) {
                   replacements.push(this.mutate(state, s, individualSelector, (newClass) => {
@@ -108,7 +106,8 @@ export default class BlockParser {
                   replacements.push([lastSel, null]);
                 }
               } else {
-                let state = block.ensureState(stateParser(sourceFile, rule, s));
+                let attr = <selectorParser.Attribute>s;
+                let state = block.ensureState(stateParser(attr));
                 if (s.parent === individualSelector) {
                   thisNode = state;
                 }
@@ -258,7 +257,14 @@ export default class BlockParser {
     });
   }
 
-  private assertValidCombinators(sourceFile: string, rule, selector) {
+  private assertValidState(sourceFile: string, rule: postcss.Rule, attr: selectorParser.Attribute) {
+    if (attr.value && attr.operator !== "=") {
+      throw new errors.InvalidBlockSyntax(`A state with a value must use the = operator (found ${attr.operator} instead).`,
+                                          selectorSourceLocation(sourceFile, rule, attr));
+    }
+  }
+
+  private assertValidCombinators(sourceFile: string, rule: postcss.Rule, selector: selectorParser.Selector) {
     let states = new Set<string>();
     let classes = new Set<string>();
     let classStates = new Set<string>();
@@ -273,7 +279,9 @@ export default class BlockParser {
         thisType = BlockTypes.block;
         thisElementIsRoot = true;
       } else if (isState(s)) {
-        let info = stateParser(sourceFile, rule, s);
+        let attr = <selectorParser.Attribute>s;
+        this.assertValidState(sourceFile, rule, attr);
+        let info = stateParser(attr);
         let stateStr: string;
         if (info.group) {
           stateStr = `${info.group} ${info.name}`;
@@ -336,7 +344,7 @@ export default class BlockParser {
     }
   }
 
-  private mutate(e: Exportable, selComponent, selector, contextCB: (newClass:any) => void) {
+  private mutate(e: Exportable, selComponent: selectorParser.Node, selector: selectorParser.Selector, contextCB: (newClass:any) => void) {
     let newClass = selectorParser.className({value: e.cssClass(this.opts)});
     if (selComponent.parent === selector) { contextCB(newClass); }
     return [selComponent, newClass];

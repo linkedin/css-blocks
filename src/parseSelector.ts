@@ -1,27 +1,11 @@
-import * as selectorParser from "postcss-selector-parser";
-const selectorParserFn = require("postcss-selector-parser");
 
-export interface SelectorNode {
-  parent?: SelectorNode;
-  type: string;
-  value: string;
-  spaces: {
-    before: string,
-    after: string
-  };
-  remove: () => SelectorNode;
-  replaceWith: () => SelectorNode;
-  next: () => SelectorNode;
-  prev: () => SelectorNode;
-  clone: (overrides: {[prop: string]: any}) => SelectorNode;
-  toString: () => string;
-}
+import selectorParser = require("postcss-selector-parser");
 
 export interface ParsedSelector {
-  context?: SelectorNode[];
-  combinator?: SelectorNode;
-  key: SelectorNode[];
-  pseudoelement?: SelectorNode;
+  context?: selectorParser.Node[];
+  combinator?: selectorParser.Node;
+  key: selectorParser.Node[];
+  pseudoelement?: selectorParser.Node;
 }
 
 function isPseudoelement(node: any) {
@@ -35,8 +19,9 @@ function isPseudoelement(node: any) {
 
 export default function parseSelector(selector: string): ParsedSelector[] {
   let parsedSelectors: ParsedSelector[] = [];
-  let selectors =  selectorParserFn().process(selector).res;
-  selectors.nodes.forEach((sel) => {
+  let selectors =  selectorParser().process(selector).res;
+  selectors.nodes.forEach((selNode) => {
+    let sel = <selectorParser.Selector>selNode;
     let parsedSel: ParsedSelector = <ParsedSelector>{};
     let compoundSel: any[] = [];
     let nodes = sel.nodes.slice().reverse();

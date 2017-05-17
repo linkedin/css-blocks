@@ -1,9 +1,9 @@
 import * as postcss from "postcss";
-import * as selectorParser from "postcss-selector-parser";
+import selectorParser = require("postcss-selector-parser");
 import { Block, BlockObject } from "./Block";
 import * as errors from "./errors";
 import { OptionsReader } from "./Options";
-import parseSelector, { ParsedSelector, SelectorNode } from "./parseSelector";
+import parseSelector, { ParsedSelector } from "./parseSelector";
 import { QueryKeySelector } from "./query";
 import { SourceLocation, sourceLocation } from "./SourceLocation";
 
@@ -193,7 +193,7 @@ export default class ConflictResolver {
     return foundConflict;
   }
 
-  private mergeCombinators(c1: SelectorNode| undefined, c2: SelectorNode | undefined): SelectorNode | null | undefined {
+  private mergeCombinators(c1: selectorParser.Node | undefined, c2: selectorParser.Node  | undefined): selectorParser.Node | null | undefined {
     if (c1 === undefined && c2 === undefined) return undefined;
     if (c2 === undefined) return c1;
     if (c1 === undefined) return c2;
@@ -213,7 +213,7 @@ export default class ConflictResolver {
           throw new errors.InvalidBlockSyntax(
             `Cannot resolve selectors with more than 1 combinator at this time [FIXME].`);
     }
-    let aSels: (SelectorNode | string)[][] = [];
+    let aSels: (selectorParser.Node | string)[][] = [];
     if (s.context && s2.context) {
       aSels.push(s.context.concat(s2.context));
       aSels.push(s.context.concat([selectorParser.combinator({value: " "})], s2.context));
@@ -229,7 +229,7 @@ export default class ConflictResolver {
       return null;
     } else {
       if (c !== undefined) {
-        let c2: SelectorNode = c;
+        let c2: selectorParser.Node = c;
         aSels.map(aSel => aSel.push(c2));
       }
     }
@@ -239,7 +239,7 @@ export default class ConflictResolver {
     aSels = aSels.map(aSel => aSel.concat(s.key));
     aSels = aSels.map(aSel => aSel.concat(s2.key)); // TODO need to filter all pseudos to the end.
     if (s.pseudoelement !== undefined) {
-      let pseudoelement: SelectorNode = s.pseudoelement;
+      let pseudoelement: selectorParser.Node = s.pseudoelement;
       aSels.forEach(aSel => aSel.push(pseudoelement));
     }
     return aSels.map(aSel => aSel.join(''));

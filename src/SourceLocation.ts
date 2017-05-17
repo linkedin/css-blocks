@@ -1,3 +1,6 @@
+import * as postcss from "postcss";
+import * as selectorParser from "postcss-selector-parser";
+
 export interface SourceLocation {
   filename?: string;
   line: number;
@@ -20,8 +23,8 @@ export function addSourceLocations(...locations: SourceLocation[]) {
   });
 }
 
-export function sourceLocation(sourceFile, node): SourceLocation | undefined {
-  if (node.source) {
+export function sourceLocation(sourceFile: string, node: postcss.Node): SourceLocation | undefined {
+  if (node.source && node.source.start) {
     let loc = node.source.start;
     return {
       filename: sourceFile,
@@ -32,7 +35,7 @@ export function sourceLocation(sourceFile, node): SourceLocation | undefined {
   return;
 }
 
-export function selectorSourceLocation(sourceFile: string, rule, selector): SourceLocation | undefined {
+export function selectorSourceLocation(sourceFile: string, rule: postcss.Rule, selector: selectorParser.Node): SourceLocation | undefined {
   if (rule.source && rule.source.start && selector.source && selector.source.start) {
     let loc = addSourceLocations(rule.source.start, selector.source.start);
     return {

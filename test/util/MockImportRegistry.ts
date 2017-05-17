@@ -22,12 +22,12 @@ export class MockImportRegistry {
     this.sources[sourcePath] = contents;
   }
 
-  markImported(sourcePath) {
+  markImported(sourcePath: string) {
     sourcePath = this.relativize(sourcePath);
     this.imported[sourcePath] = true;
   }
 
-  assertImported(sourcePath) {
+  assertImported(sourcePath: string) {
     sourcePath = this.relativize(sourcePath);
     if (!this.imported[sourcePath]) {
       let importedFiles = Object.keys(this.imported).join(", ");
@@ -36,7 +36,7 @@ export class MockImportRegistry {
     }
   }
 
-  relativize(absolutePath) {
+  relativize(absolutePath: string) {
     if (absolutePath.startsWith(PROJECT_DIR)) {
       return absolutePath.slice(PROJECT_DIR.length + 1);
     } else {

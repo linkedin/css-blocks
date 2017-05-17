@@ -1,6 +1,6 @@
 import * as postcss from "postcss";
 import { PluginOptions, OptionsReader } from "./options";
-import { MergedObjectMap } from "./Block";
+import { MergedObjectMap, Block } from "./Block";
 import BlockParser from "./BlockParser";
 import ConflictResolver from "./ConflictResolver";
 import * as errors from "./errors";
@@ -15,8 +15,8 @@ export class Plugin {
     this.postcss = postcssImpl;
   }
 
-  public process(root, result) {
-    let sourceFile;
+  public process(root: postcss.Root, result: postcss.Result) {
+    let sourceFile: string;
     if (result && result.opts && result.opts.from) {
       sourceFile = result.opts.from;
     } else {
@@ -35,7 +35,7 @@ export class Plugin {
     });
   }
 
-  private injectExports(root, block) {
+  private injectExports(root: postcss.Root, block: Block) {
     let exportsRule = this.postcss.rule({selector: ":export"});
     root.prepend(exportsRule);
     let objsMap: MergedObjectMap = block.merged();
