@@ -4,7 +4,7 @@ import selectorParser = require("postcss-selector-parser");
 import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
-import parseSelector, { ParsedSelector } from "./parseSelector";
+import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
 import { StateInfo, stateParser, isState, isBlock } from "./BlockParser";
 
 interface StateMap {
@@ -389,24 +389,30 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   }
 
   rewriteSelector(selector: ParsedSelector, opts: OptionsReader): ParsedSelector {
-    let newNodes: selectorParser.Node[] = [];
-    if (selector.context !== undefined) {
-      newNodes = newNodes.concat(this.rewriteSelectorNodes(selector.context, opts));
-    }
-    if (selector.combinator) {
-      newNodes.push(selector.combinator);
-    }
-    newNodes = newNodes.concat(this.rewriteSelectorNodes(selector.key, opts));
-    if (selector.pseudoelement) {
-      newNodes.push(selector.pseudoelement);
-    }
+    let firstNewSelector = new CompoundSelector();
+    let newSelector = firstNewSelector;
+    let newCurrentSelector = newSelector;
+    let currentSelector: CompoundSelector | undefined = selector.selector;
+    do {
+      newCurrentSelector.nodes = this.rewriteSelectorNodes(currentSelector.nodes, opts);
+      newCurrentSelector.pseudoelement = currentSelector.pseudoelement;
+      if (currentSelector.next !== undefined) {
+        let tempSel = newCurrentSelector;
+        newCurrentSelector = new CompoundSelector();
+        tempSel.setNext(currentSelector.next.combinator, newCurrentSelector);
+        currentSelector = currentSelector.next.selector;
+      } else {
+        currentSelector = undefined;
+      }
+    } while (currentSelector !== undefined);
+
     // generating a string and reparsing ensures the internal structure is consistent
     // otherwise the parent/next/prev relationships will be wonky with the new nodes.
-    return parseSelector(newNodes.join(""))[0];
+    return parseSelector(firstNewSelector.toString())[0];
   }
 
-  matches(compoundSel: selectorParser.Node[]): boolean {
-    return compoundSel.some(node => isBlock(node));
+  matches(compoundSel: CompoundSelector): boolean {
+    return compoundSel.nodes.some(node => isBlock(node));
   }
 
   asDebug(opts: OptionsReader) {
@@ -575,17 +581,17 @@ export class State implements Exportable {
     }
   }
 
-  matches(compoundSel: selectorParser.Node[]): boolean {
+  matches(compoundSel: CompoundSelector): boolean {
     let classVal: null | string = null;
     if (this.blockClass) {
       classVal = this.blockClass.name;
-      if (!compoundSel.some(node => node.type === "class" && node.value === classVal)) {
+      if (!compoundSel.nodes.some(node => node.type === "class" && node.value === classVal)) {
         return false;
       }
-      return compoundSel.some(node => isState(node) &&
+      return compoundSel.nodes.some(node => isState(node) &&
         this.sameNameAndGroup(stateParser(<selectorParser.Attribute>node)));
     } else {
-      return compoundSel.some(node => isState(node) &&
+      return compoundSel.nodes.some(node => isState(node) &&
         this.sameNameAndGroup(stateParser(<selectorParser.Attribute>node)));
     }
   }
@@ -675,10 +681,10 @@ export class BlockClass extends ExclusiveStateGroupContainer implements Exportab
     }
   }
 
-  matches(compoundSel: selectorParser.Node[]): boolean {
+  matches(compoundSel: CompoundSelector): boolean {
     let srcVal = this.name;
-    let found = compoundSel.some(node => node.type === selectorParser.CLASS && node.value === srcVal);
+    let found = compoundSel.nodes.some(node => node.type === selectorParser.CLASS && node.value === srcVal);
     if (!found) return false;
-    return !compoundSel.some(node => isState(node));
+    return !compoundSel.nodes.some(node => isState(node));
   }
 }

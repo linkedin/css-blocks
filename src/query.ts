@@ -12,11 +12,10 @@ export interface ParsedSelectorAndRule {
 }
 
 export interface ClassifiedParsedSelectors {
-  [classification: string]: ParsedSelectorAndRule[];
-}
-
-export interface KeySelectorWithPsuedoelements extends ClassifiedParsedSelectors {
-  key: ParsedSelectorAndRule[];
+  main: ParsedSelectorAndRule[];
+  other: {
+    [classification: string]: ParsedSelectorAndRule[];
+  };
 }
 
 export class QueryKeySelector implements Query {
@@ -25,22 +24,24 @@ export class QueryKeySelector implements Query {
     this.target = obj;
   }
 
-  execute(container: postcss.Container): KeySelectorWithPsuedoelements {
-    let matchedSelectors: KeySelectorWithPsuedoelements = {
-      key: []
+  execute(container: postcss.Container): ClassifiedParsedSelectors {
+    let matchedSelectors: ClassifiedParsedSelectors = {
+      main: [],
+      other: {}
     };
     container.walkRules((node) => {
       let parsedSelectors = parseSelector(node.selector);
       let found = parsedSelectors.filter((value: ParsedSelector) =>
         this.target.matches(value.key));
       found.forEach((sel) => {
-        if (sel.pseudoelement !== undefined) {
-          if (matchedSelectors[sel.pseudoelement.value] === undefined) {
-            matchedSelectors[sel.pseudoelement.value] = [];
+        let key = sel.key;
+        if (key.pseudoelement !== undefined) {
+          if (matchedSelectors.other[key.pseudoelement.value] === undefined) {
+            matchedSelectors.other[key.pseudoelement.value] = [];
           }
-          matchedSelectors[sel.pseudoelement.value].push({parsedSelector: sel, rule: node});
+          matchedSelectors.other[key.pseudoelement.value].push({parsedSelector: sel, rule: node});
         } else {
-          matchedSelectors.key.push({parsedSelector: sel, rule: node});
+          matchedSelectors.main.push({parsedSelector: sel, rule: node});
         }
       });
     });

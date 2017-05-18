@@ -72,8 +72,8 @@ declare namespace parser {
     interface NodeOptions {
         value: string;
         spaces?: {
-            before: string[];
-            after: string[];
+            before: string;
+            after: string;
         }
         source?: NodeSource;
     }
@@ -91,8 +91,8 @@ declare namespace parser {
         type: string;
         value: string;
         spaces?: {
-            before: string[];
-            after: string[];
+            before: string;
+            after: string;
         }
         source?: NodeSource;
         constructor(opts?: NodeOptions)
@@ -170,13 +170,17 @@ declare namespace parser {
         constructor(opts?: AttributeOptions);
         toString(): string;
     }
+    interface PseudoOptions extends NodeOptions {
+    }
+    class Pseudo extends Container implements PseudoOptions {
+    }
     function attribute(opts: AttributeOptions): Attribute;
     function className(opts: ClassOptions): ClassName;
     function combinator(opts: CombinatorOptions): Combinator;
+    function pseudo(opts: PseudoOptions): Pseudo;
     function comment(opts: any): any;
     function id(opts: any): any;
     function nesting(opts: any): any;
-    function pseudo(opts: any): any;
     function root(opts: any): any;
     function selector(opts: any): any;
     function string(opts: any): any;

@@ -24,7 +24,7 @@ export class KeyQueryTests {
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block);
         let result = q.execute(root);
-        assert.equal(result.key.length, 1);
+        assert.equal(result.main.length, 1);
     });
   }
   @test "handles psuedoelements"() {
@@ -34,8 +34,8 @@ export class KeyQueryTests {
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block);
         let result = q.execute(root);
-        assert.equal(result.key.length, 1);
-        assert.equal(result["::before"].length, 1);
+        assert.equal(result.main.length, 1);
+        assert.equal(result.other["::before"].length, 1);
     });
   }
   @test "finds states as key selector"() {
@@ -45,7 +45,7 @@ export class KeyQueryTests {
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.states[0]);
         let result = q.execute(root);
-        assert.equal(result.key.length, 1);
+        assert.equal(result.main.length, 1);
     });
   }
   @test "finds classes as key selector"() {
@@ -55,7 +55,7 @@ export class KeyQueryTests {
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[0]);
         let result = q.execute(root);
-        assert.equal(result.key.length, 1);
+        assert.equal(result.main.length, 1);
     });
   }
   @test "finds classes as key selector with class states"() {
@@ -65,7 +65,7 @@ export class KeyQueryTests {
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[0]);
         let result = q.execute(root);
-        assert.equal(result.key.length, 1);
+        assert.equal(result.main.length, 1);
     });
   }
 
@@ -76,7 +76,7 @@ export class KeyQueryTests {
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[0].states[0]);
         let result = q.execute(root);
-        assert.deepEqual(result.key.length, 1);
+        assert.deepEqual(result.main.length, 1);
     });
   }
 }

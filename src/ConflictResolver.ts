@@ -3,7 +3,7 @@ import selectorParser = require("postcss-selector-parser");
 import { Block, BlockObject } from "./Block";
 import * as errors from "./errors";
 import { OptionsReader } from "./Options";
-import parseSelector, { ParsedSelector } from "./parseSelector";
+import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
 import { QueryKeySelector } from "./query";
 import { SourceLocation, sourceLocation } from "./SourceLocation";
 
@@ -13,6 +13,10 @@ enum ConflictType {
   samevalues
 }
 
+const SIBLING_COMBINATORS = new Set(["+", "~"]);
+const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
+const CONTIGUOUS_COMBINATORS = new Set(["+", ">"]);
+const NONCONTIGUOUS_COMBINATORS = new Set(["~", " "]);
 const RESOLVE_RE = /resolve\(("|')([^\1]*)\1\)/;
 
 function assertBlockObject(obj: BlockObject | undefined, key: string, source: SourceLocation | undefined): void {
@@ -37,28 +41,6 @@ function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
       }
   }
 }
-
-type stringMap = {[combinator: string]: string};
-type combinatorMap = {[combinator: string]: stringMap};
-
-const combinatorResolution: combinatorMap = {
-  " ": {
-    " ": " ",
-    ">": ">"
-  },
-  ">": {
-    " ": ">",
-    ">": ">"
-  },
-  "~": {
-    "+": "+",
-    "~": "~"
-  },
-  "+": {
-    "+": "+",
-    "~": "+"
-  }
-};
 
 export default class ConflictResolver {
   readonly opts: OptionsReader;
@@ -139,8 +121,9 @@ export default class ConflictResolver {
     curSel.forEach((cs) => {
       // we reverse the selectors because otherwise the insertion order causes them to be backwards from the
       // source order of the target selector
-      result.key.reverse().forEach((s) => {
-        let newSels = this.mergeSelectors(other.block.rewriteSelector(s.parsedSelector, this.opts), cs);
+      // TODO: handle pseudoelements
+      result.main.reverse().forEach((s) => {
+        let newSels = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.opts), cs);
         if (newSels === null) return;
         let newRule = postcss.rule({ selector: newSels.join(",\n") });
         // check if the values are the same, skip resolution for this selector if they are.
@@ -193,55 +176,49 @@ export default class ConflictResolver {
     return foundConflict;
   }
 
-  private mergeCombinators(c1: selectorParser.Node | undefined, c2: selectorParser.Node  | undefined): selectorParser.Node | null | undefined {
-    if (c1 === undefined && c2 === undefined) return undefined;
-    if (c2 === undefined) return c1;
-    if (c1 === undefined) return c2;
-    let resultMap = combinatorResolution[c1.value];
-    if (resultMap) {
-      let result = resultMap[c2.value];
-      if (result) {
-        return selectorParser.combinator({value: result});
-      }
+  private splitSelector(s: CompoundSelector): [CompoundSelector | undefined, selectorParser.Combinator | undefined, CompoundSelector] {
+    s = s.clone();
+    let last = s.removeLast();
+    if (last) {
+      return [s, last.combinator, last.selector];
+    } else {
+      return [undefined, undefined, s];
     }
-    return null;
   }
 
-  private mergeSelectors(s: ParsedSelector, s2: ParsedSelector): string[] | null {
-    if ((s.context && s.context.some(n => n.type === selectorParser.COMBINATOR) && s2.context) ||
-        (s2.context && s2.context.some(n => n.type === selectorParser.COMBINATOR) && s.context)) {
-          throw new errors.InvalidBlockSyntax(
-            `Cannot resolve selectors with more than 1 combinator at this time [FIXME].`);
+  private mergeKeySelectors(s1: ParsedSelector, s2: ParsedSelector): ParsedSelector[] {
+   if (s1.length > 2 && s2.length > 2) {
+      throw new errors.InvalidBlockSyntax(
+        `Cannot resolve selectors with more than 1 combinator at this time [FIXME].`);
     }
-    let aSels: (selectorParser.Node | string)[][] = [];
-    if (s.context && s2.context) {
-      aSels.push(s.context.concat(s2.context));
-      aSels.push(s.context.concat([selectorParser.combinator({value: " "})], s2.context));
-      aSels.push(s2.context.concat([selectorParser.combinator({value: " "})], s.context));
-    } else if (s.context) {
-      aSels.push(s.context);
-    } else if (s2.context) {
-      aSels.push(s2.context);
-    }
-    let c = this.mergeCombinators(s.combinator, s2.combinator);
-    if (c === null) {
-      // If combinators can't be merged, the merged selector can't exist, we skip it.
-      return null;
-    } else {
-      if (c !== undefined) {
-        let c2: selectorParser.Node = c;
-        aSels.map(aSel => aSel.push(c2));
+    let [context1, combinator1, key1] = this.splitSelector(s1.selector);
+    let [context2, combinator2, key2] = this.splitSelector(s2.selector);
+
+    let mergedKey = key1.clone().mergeNodes(key2);
+
+    let mergedSels: CompoundSelector[] = [];
+    if (context1 && context2 && combinator1 && combinator2) {
+      if (CONTIGUOUS_COMBINATORS.has(combinator1.value) && combinator1.value === combinator2.value) { // >, >; +, +
+        mergedSels.push(context1.clone().mergeNodes(context2).append(combinator1, mergedKey));
+      } else if (SIBLING_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value)) { // +,>; ~,>; +," "; ~," "
+        mergedSels.push(context2.clone().append(combinator2, context1).append(combinator1, mergedKey));
+      } else if (HIERARCHICAL_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value)) { // >,+; " ",+; >,~; " ",~
+        mergedSels.push(context1.clone().append(combinator1, context2).append(combinator2, mergedKey));
+      } else if (NONCONTIGUOUS_COMBINATORS.has(combinator1.value) && NONCONTIGUOUS_COMBINATORS.has(combinator2.value)) { // " "," "; ~,~
+        mergedSels.push(context1.clone().mergeNodes(context2).append(combinator2, mergedKey));
+        mergedSels.push(context1.clone().append(combinator1, context2.clone()).append(combinator2, mergedKey.clone()));
+        mergedSels.push(context2.clone().append(combinator1, context1.clone()).append(combinator2, mergedKey.clone()));
+      } else {
+        throw new errors.InvalidBlockSyntax(
+          `Cannot merge selectors with combinators: ${combinator1.value} and ${combinator2.value} [FIXME?].`);
       }
+    } else if (context1 && combinator1) {
+      mergedSels.push(context1.clone().append(combinator1, mergedKey));
+    } else if (context2 && combinator2) {
+      mergedSels.push(context2.clone().append(combinator2, mergedKey));
+    } else {
+      mergedSels.push(mergedKey);
     }
-    if (aSels.length < 1) {
-      aSels.push([]);
-    }
-    aSels = aSels.map(aSel => aSel.concat(s.key));
-    aSels = aSels.map(aSel => aSel.concat(s2.key)); // TODO need to filter all pseudos to the end.
-    if (s.pseudoelement !== undefined) {
-      let pseudoelement: selectorParser.Node = s.pseudoelement;
-      aSels.forEach(aSel => aSel.push(pseudoelement));
-    }
-    return aSels.map(aSel => aSel.join(''));
+    return mergedSels.map(sel => new ParsedSelector(sel));
   }
 }
