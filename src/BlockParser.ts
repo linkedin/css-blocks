@@ -6,8 +6,11 @@ import * as errors from "./errors";
 import { ImportedFile } from "./importing";
 export { PluginOptions } from "./options";
 import { sourceLocation, selectorSourceLocation } from "./SourceLocation";
+import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
 
-const siblingCombinators = new Set(["~", "+"]);
+const SIBLING_COMBINATORS = new Set(["+", "~"]);
+const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
+const LEGAL_COMBINATORS = new Set(["+", "~", " ", ">"]);
 
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 // const selectorParserFn = require("postcss-selector-parser");
@@ -19,6 +22,11 @@ enum BlockTypes {
   classState
 }
 
+interface NodeAndType {
+  blockType: BlockTypes;
+  node: selectorParser.Node;
+}
+
 export function isBlock(node: selectorParser.Node) {
   return node.type === selectorParser.CLASS &&
          node.value === "root";
@@ -27,6 +35,10 @@ export function isBlock(node: selectorParser.Node) {
 export function isState(node: selectorParser.Node) {
   return node.type === selectorParser.ATTRIBUTE &&
          (<selectorParser.Attribute>node).namespace === "state";
+}
+
+export function isClass(node: selectorParser.Node) {
+  return node.type === selectorParser.CLASS;
 }
 
 export interface StateInfo {
@@ -44,6 +56,25 @@ export function stateParser(attr: selectorParser.Attribute): StateInfo {
   }
   return info;
 }
+
+// function getBlockType(sel: CompoundSelector): BlockTypes | null {
+//   if (sel.nodes.some(n => isBlock(n))) {
+//     return BlockTypes.block;
+//   }
+//   else if (sel.nodes.some(n => isClass(n))) {
+//     if (sel.nodes.some(n => isState(n))) {
+//       return BlockTypes.classState;
+//     } else {
+//       return BlockTypes.class;
+//     }
+//   }
+//   else if (sel.nodes.some(n => isState(n))) {
+//     return BlockTypes.state;
+//   }
+//   else {
+//     return null;
+//   }
+// }
 
 export default class BlockParser {
   private opts: OptionsReader;
@@ -68,7 +99,8 @@ export default class BlockParser {
     return this.resolveReferences(block, root, sourceFile, mutate).then((block) => {
       root.walkRules((rule) => {
         let selector =  selectorParser().process(rule.selector).res;
-        selector.each((sel) => { this.assertValidCombinators(sourceFile, rule, <selectorParser.Selector>sel); });
+        let parsedSels = parseSelector(selector);
+        parsedSels.forEach((sel) => { this.assertValidCombinators(sourceFile, rule, sel); });
         // mutation can't be done inside the walk despite what the docs say
         let replacements: any[] = [];
         let lastSel: any;
@@ -96,7 +128,6 @@ export default class BlockParser {
               if (lastNode instanceof BlockClass) {
                 let attr = <selectorParser.Attribute>s;
                 let blockClass: BlockClass = lastNode;
-                this.assertValidState(sourceFile, rule, attr);
                 let state: State = blockClass.ensureState(stateParser(attr));
                 thisNode = state;
                 if (mutate) {
@@ -264,83 +295,182 @@ export default class BlockParser {
     }
   }
 
-  private assertValidCombinators(sourceFile: string, rule: postcss.Rule, selector: selectorParser.Selector) {
-    let states = new Set<string>();
-    let classes = new Set<string>();
-    let classStates = new Set<string>();
-    let combinators = new Set<string>();
-    let thisElementIsRoot = false;
-    let lastElementIsRoot = false;
-    let lastType: BlockTypes | null = null;
-    let thisType: BlockTypes | null = null;
-    let lastCombinator: string | null;
-    selector.each((s) => {
-     if (isBlock(s)) {
-        thisType = BlockTypes.block;
-        thisElementIsRoot = true;
-      } else if (isState(s)) {
-        let attr = <selectorParser.Attribute>s;
-        this.assertValidState(sourceFile, rule, attr);
-        let info = stateParser(attr);
-        let stateStr: string;
-        if (info.group) {
-          stateStr = `${info.group} ${info.name}`;
+  // TODO Add support for external selectors
+  private assertBlockObject(sel: CompoundSelector, sourceFile: string, rule: postcss.Rule): NodeAndType {
+    let result = sel.nodes.reduce<NodeAndType|null>((found, n) => {
+      if (isBlock(n)) {
+        if (found === null) {
+          found = {
+            blockType: BlockTypes.block,
+            node: n
+          };
         } else {
-          stateStr = info.name;
+          if (found.blockType === BlockTypes.class || found.blockType === BlockTypes.classState) {
+            throw new errors.InvalidBlockSyntax(
+              `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
+              selectorSourceLocation(sourceFile, rule, sel.nodes[0]));
+          } else if (found.blockType === BlockTypes.state) {
+            throw new errors.InvalidBlockSyntax(
+              `It's redundant to specify a state with the an explicit .root: ${rule.selector}`,
+              selectorSourceLocation(sourceFile, rule, n));
+          }
         }
-        if (lastType === BlockTypes.class) {
-          thisElementIsRoot = false;
-          thisType = BlockTypes.classState;
-          classStates.add(stateStr);
+      } else if (isState(n)) {
+        this.assertValidState(sourceFile, rule, <selectorParser.Attribute>n);
+        if (!found) {
+          found = {
+            node: n,
+            blockType: BlockTypes.state
+          };
+        } else if (found.blockType === BlockTypes.class) {
+          found = {
+            node: n,
+            blockType: BlockTypes.classState
+          };
+        } else if (found.blockType === BlockTypes.state || found.blockType === BlockTypes.classState) {
+          if (n.toString() !== found.node.toString()) {
+            throw new errors.InvalidBlockSyntax(
+              `Two distinct states cannot be selected on the same element: ${rule.selector}`,
+              selectorSourceLocation(sourceFile, rule, n));
+          }
+        } else if (found.blockType === BlockTypes.block) {
+            throw new errors.InvalidBlockSyntax(
+              `It's redundant to specify a state with an explicit .root: ${rule.selector}`,
+              selectorSourceLocation(sourceFile, rule, found.node));
+        }
+      } else if (isClass(n)) {
+        if (!found) {
+          found = {
+            node: n,
+            blockType: BlockTypes.class
+          };
         } else {
-          thisElementIsRoot = true;
-          thisType = BlockTypes.state;
-          states.add(stateStr);
-        }
-      } else if (s.type === selectorParser.CLASS) {
-        if (thisElementIsRoot && lastCombinator !== null && siblingCombinators.has(lastCombinator)) {
-          throw new errors.InvalidBlockSyntax(
-            `A class is never a sibling of a state: ${rule.selector}`,
-            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
-        }
-        thisElementIsRoot = false;
-        thisType = BlockTypes.class;
-        classes.add(s.value);
-      } else if (s.type === selectorParser.COMBINATOR) {
-        thisType = null;
-        combinators.add(s.value);
-        lastCombinator = s.value;
-        if (!siblingCombinators.has(s.value)) {
-          lastElementIsRoot = thisElementIsRoot;
-          thisElementIsRoot = false;
+          if (found.blockType === BlockTypes.block) {
+            throw new errors.InvalidBlockSyntax(
+              `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
+              selectorSourceLocation(sourceFile, rule, sel.nodes[0]));
+          } else if (found.blockType === BlockTypes.class) {
+            if (n.toString() !== found.node.toString()) {
+              throw new errors.InvalidBlockSyntax(
+                `Two distinct classes cannot be selected on the same element: ${rule.selector}`,
+                selectorSourceLocation(sourceFile, rule, n));
+            }
+          } else if (found.blockType === BlockTypes.classState || found.blockType === BlockTypes.state) {
+            throw new errors.InvalidBlockSyntax(
+              `The class must precede the state: ${rule.selector}`,
+              selectorSourceLocation(sourceFile, rule, sel.nodes[0]));
+          }
         }
       }
-      if (thisType && lastType && lastType !== thisType) {
-        if ((lastType === BlockTypes.block && thisType === BlockTypes.state) ||
-            (thisType === BlockTypes.block && lastType === BlockTypes.state)) {
-          throw new errors.InvalidBlockSyntax(
-            `It's redundant to specify state with the block root: ${rule.selector}`,
-            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
-        }
-        if (lastType === BlockTypes.state && thisType === BlockTypes.class) {
-          throw new errors.InvalidBlockSyntax(
-            `The class must precede the state: ${rule.selector}`,
-            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
-        } else if (!(lastType === BlockTypes.class && thisType === BlockTypes.classState)) {
-          throw new errors.InvalidBlockSyntax(
-            `Cannot have ${BlockTypes[lastType]} and ${BlockTypes[thisType]} on the same DOM element: ${rule.selector}`,
-            selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
-        }
-      }
-      lastType = thisType;
-    });
-    if (combinators.size > 0 && states.size > 1) {
-      throw new errors.InvalidBlockSyntax(`Distinct states cannot be combined: ${rule.selector}`,
-                                         selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+      return found;
+    }, null);
+    if (!result) {
+      throw new errors.InvalidBlockSyntax(
+        `Missing block object in selector component '${sel.nodes.join('')}': ${rule.selector}`,
+        selectorSourceLocation(sourceFile, rule, sel.nodes[0]));
+    } else {
+      return result;
     }
-    if (classes.size > 1) {
-      throw new errors.InvalidBlockSyntax(`Distinct classes cannot be combined: ${rule.selector}`,
-                                         selectorSourceLocation(sourceFile, rule, selector.nodes[0]));
+  }
+
+  private objectTypeName(t: BlockTypes, options?: {plural: boolean}): string {
+    if (options && options.plural) {
+      switch(t) {
+        case BlockTypes.block: return "block roots";
+        case BlockTypes.state: return "root-level states";
+        case BlockTypes.class: return "classes";
+        case BlockTypes.classState: return "class states";
+        default: return "¯\_(ツ)_/¯";
+      }
+    } else {
+      switch(t) {
+        case BlockTypes.block: return "block root";
+        case BlockTypes.state: return "root-level state";
+        case BlockTypes.class: return "class";
+        case BlockTypes.classState: return "class state";
+        default: return "¯\_(ツ)_/¯";
+      }
+    }
+  }
+
+  private isRootLevelObject(object: NodeAndType): boolean {
+    return object.blockType === BlockTypes.block || object.blockType === BlockTypes.state;
+  }
+  private isClassLevelObject(object: NodeAndType): boolean {
+    return object.blockType === BlockTypes.class || object.blockType === BlockTypes.classState;
+  }
+
+  private assertValidCombinators(sourceFile: string, rule: postcss.Rule, selector: ParsedSelector) {
+    let currentCompoundSel: CompoundSelector = selector.selector;
+    let currentObject = this.assertBlockObject(currentCompoundSel, sourceFile, rule);
+    let foundRootLevel = this.isRootLevelObject(currentObject);
+    let foundClassLevel = this.isClassLevelObject(currentObject);
+    let foundObjects: NodeAndType[] = [currentObject];
+    let foundCombinators: string[] = [];
+
+    while (currentCompoundSel.next) {
+      let combinator = currentCompoundSel.next.combinator.value;
+      foundCombinators.push(combinator);
+      let nextCompoundSel = currentCompoundSel.next.selector;
+      let nextObject = this.assertBlockObject(nextCompoundSel, sourceFile, rule);
+      let nextLevelIsRoot = this.isRootLevelObject(nextObject);
+      let nextLevelIsClass = this.isClassLevelObject(nextObject);
+      // Don't allow weird combinators like the column combinator (`||`)
+      // or the attribute target selector (e.g. `/for/`)
+      if (!LEGAL_COMBINATORS.has(combinator)) {
+        throw new errors.InvalidBlockSyntax(
+          `Illegal Combinator '${combinator}': ${rule.selector}`,
+          selectorSourceLocation(sourceFile, rule, currentCompoundSel.next.combinator));
+      }
+      // class level objects cannot be ancestors of root level objects
+      if (this.isClassLevelObject(currentObject) && this.isRootLevelObject(nextObject) && SIBLING_COMBINATORS.has(combinator))
+      {
+          throw new errors.InvalidBlockSyntax(
+            `A class is never a sibling of a ${this.objectTypeName(nextObject.blockType)}: ${rule.selector}`,
+            selectorSourceLocation(sourceFile, rule, selector.selector.nodes[0]));
+      }
+      // once you go to the class level there's no combinator that gets you back to the root level
+      if (foundClassLevel && nextLevelIsRoot) {
+        throw new errors.InvalidBlockSyntax(
+          `Illegal scoping of a ${this.objectTypeName(currentObject.blockType)}: ${rule.selector}`,
+          selectorSourceLocation(sourceFile, rule, currentCompoundSel.next.combinator));
+      }
+      // You can't reference a new root level object once you introduce descend the hierarchy
+      if (foundRootLevel && nextLevelIsRoot && foundCombinators.some(c => HIERARCHICAL_COMBINATORS.has(c))) {
+        // unless it's only referencing the same object.
+        if (!foundObjects.every(f => f.node.toString() === nextObject.node.toString())) {
+          throw new errors.InvalidBlockSyntax(
+            `Illegal scoping of a ${this.objectTypeName(currentObject.blockType)}: ${rule.selector}`,
+            selectorSourceLocation(sourceFile, rule, currentCompoundSel.next.combinator));
+        }
+      }
+      // class-level and root-level objects cannot be siblings.
+      if (nextLevelIsClass && this.isRootLevelObject(currentObject) && SIBLING_COMBINATORS.has(combinator)) {
+        throw new errors.InvalidBlockSyntax(
+          `A ${this.objectTypeName(nextObject.blockType)} cannot be a sibling with a ${this.objectTypeName(currentObject.blockType)}: ${rule.selector}`,
+          selectorSourceLocation(sourceFile, rule, currentCompoundSel.next.combinator));
+      }
+      if (this.isClassLevelObject(nextObject)) {
+        // class-level objects cannot be combined with each other. only with themselves.
+        let conflictObj = foundObjects.find(obj => this.isClassLevelObject(obj) && obj.node.toString() !== nextObject.node.toString());
+        if (conflictObj) {
+          // slightly better error verbage for objects of the same type.
+          if (conflictObj.blockType === nextObject.blockType) {
+            throw new errors.InvalidBlockSyntax(
+              `Distinct ${this.objectTypeName(conflictObj.blockType, {plural: true})} cannot be combined: ${rule.selector}`,
+              selectorSourceLocation(sourceFile, rule, nextObject.node));
+          } else {
+            throw new errors.InvalidBlockSyntax(
+              `Cannot combine a ${this.objectTypeName(conflictObj.blockType)} with a ${this.objectTypeName(nextObject.blockType)}}: ${rule.selector}`,
+              selectorSourceLocation(sourceFile, rule, nextObject.node));
+          }
+        }
+      }
+      foundObjects.push(nextObject);
+      foundRootLevel = foundRootLevel || nextLevelIsRoot;
+      foundClassLevel = foundClassLevel || nextLevelIsClass;
+      currentObject = nextObject;
+      currentCompoundSel = nextCompoundSel;
     }
   }
 

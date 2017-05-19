@@ -224,7 +224,7 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
   return compoundSels;
 }
 
-export default function parseSelector(selector: string): ParsedSelector[] {
+export default function parseSelector(selector: Selectorish): ParsedSelector[] {
   let compoundSels = parseCompoundSelectors(selector);
   return compoundSels.map(cs => new ParsedSelector(cs));
 }
