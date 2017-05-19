@@ -66,7 +66,7 @@ export default class BlockParser {
     this.postcss = postcssImpl;
   }
 
-  public parse(root: postcss.Root, sourceFile: string, defaultName: string, mutate: boolean): Promise<Block> {
+  public parse(root: postcss.Root, sourceFile: string, defaultName: string): Promise<Block> {
     root.walkDecls((decl) => {
       if (decl.important) {
         throw new errors.InvalidBlockSyntax(
@@ -77,7 +77,7 @@ export default class BlockParser {
 
     let block = new Block(defaultName, sourceFile);
     block.root = root;
-    return this.resolveReferences(block, root, sourceFile, mutate).then((block) => {
+    return this.resolveReferences(block, root, sourceFile).then((block) => {
       root.walkRules((rule) => {
         let selector =  selectorParser().process(rule.selector).res;
         let parsedSelectors = parseSelector(selector);
@@ -91,8 +91,8 @@ export default class BlockParser {
               switch (obj.blockType) {
                 case BlockTypes.block:
                   if (obj.node.next() === undefined && obj.node.prev() === undefined) {
-                    this.extendBlock(block, sourceFile, rule, mutate);
-                    this.implementsBlock(block, sourceFile, rule, mutate);
+                    this.extendBlock(block, sourceFile, rule);
+                    this.implementsBlock(block, sourceFile, rule);
                   }
                   break;
                 case BlockTypes.state:
@@ -114,23 +114,11 @@ export default class BlockParser {
       });
 
       block.checkImplementations();
-
-      if (mutate) {
-        root.walkRules((rule) => {
-          let parsedSelectors = block.parsedRuleSelectors.get(rule);
-          if (!parsedSelectors) {
-            parsedSelectors = parseSelector(rule.selector);
-            block.parsedRuleSelectors.set(rule, parsedSelectors);
-          }
-          rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.opts)).join(",\n");
-        });
-      }
-
       return block;
     });
   }
 
-  private implementsBlock(block: Block, sourceFile: string, rule: postcss.Rule, mutate: boolean) {
+  private implementsBlock(block: Block, sourceFile: string, rule: postcss.Rule) {
     rule.walkDecls("implements", (decl) => {
       let refNames = decl.value.split(/,\s*/);
       refNames.forEach((refName) => {
@@ -141,11 +129,10 @@ export default class BlockParser {
         }
         block.addImplementation(refBlock);
       });
-      if (mutate) { decl.remove(); }
     });
   }
 
-  private extendBlock(block: Block, sourceFile: string, rule: postcss.Rule, mutate: boolean) {
+  private extendBlock(block: Block, sourceFile: string, rule: postcss.Rule) {
     rule.walkDecls("extends", (decl) => {
       if (block.base) {
         throw new errors.InvalidBlockSyntax(`A block can only be extended once.`,
@@ -158,11 +145,10 @@ export default class BlockParser {
                                             sourceLocation(sourceFile, decl));
       }
       block.base = baseBlock;
-      if (mutate) { decl.remove(); }
     });
   }
 
-  public resolveReferences(block: Block, root: postcss.Root, sourceFile: string, mutate: boolean): Promise<Block> {
+  public resolveReferences(block: Block, root: postcss.Root, sourceFile: string): Promise<Block> {
     let namedBlockReferences: Promise<[string, Block]>[] = [];
     root.walkAtRules("block-reference", (atRule) => {
       let md = atRule.params.match(/\s*((\w+)\s+from\s+)?\s*("|')([^\3]+)\3/);
@@ -176,26 +162,18 @@ export default class BlockParser {
       let result: Promise<ImportedFile> = this.opts.importer(sourceFile, importPath);
       let extractedResult: Promise<Block> = result.then((importedFile: ImportedFile) => {
         let otherRoot = this.postcss.parse(importedFile.contents, {from: importedFile.path});
-        return this.parse(otherRoot, importedFile.path, importedFile.defaultName, false);
+        return this.parse(otherRoot, importedFile.path, importedFile.defaultName);
       });
       let namedResult: Promise<[string, Block]> = extractedResult.then((referencedBlock) => {
         return [localName, referencedBlock];
       });
       namedBlockReferences.push(namedResult);
     });
-    let extraction = Promise.all(namedBlockReferences).then((results) => {
+    return Promise.all(namedBlockReferences).then((results) => {
       results.forEach(([localName, otherBlock]) => {
         block.addBlockReference(localName || otherBlock.name, otherBlock);
       });
-    });
-    if (mutate) {
-      extraction.then(() => {
-        root.walkAtRules("block-reference", (atRule) => {
-          atRule.remove();
-        });
-      });
-    }
-    return extraction.then(() => {
+    }).then(() => {
       return block;
     });
   }

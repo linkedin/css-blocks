@@ -1,5 +1,6 @@
 import * as postcss from "postcss";
 import { PluginOptions, OptionsReader } from "./options";
+import parseSelector from "./parseSelector";
 import { MergedObjectMap, Block } from "./Block";
 import BlockParser from "./BlockParser";
 import ConflictResolver from "./ConflictResolver";
@@ -26,7 +27,24 @@ export class Plugin {
     let resolver = new ConflictResolver(this.opts);
     let blockParser = new BlockParser(this.postcss, this.opts);
 
-    return blockParser.parse(root, sourceFile, defaultName, true).then((block) => {
+    return blockParser.parse(root, sourceFile, defaultName).then((block) => {
+      root.walkAtRules("block-reference", (atRule) => {
+        atRule.remove();
+      });
+      root.walkRules(/\.root/, (rule) => {
+        rule.walkDecls(/^(extends|implements)$/, (decl) => {
+          decl.remove();
+        });
+      });
+      root.walkRules((rule) => {
+        let parsedSelectors = block.parsedRuleSelectors.get(rule);
+        if (!parsedSelectors) {
+          parsedSelectors = parseSelector(rule.selector);
+          block.parsedRuleSelectors.set(rule, parsedSelectors);
+        }
+        rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.opts)).join(",\n");
+      });
+
       resolver.resolve(root, block);
       if (this.opts.interoperableCSS) {
         this.injectExports(root, block);

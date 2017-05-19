@@ -14,7 +14,7 @@ export class KeyQueryTests {
   private parseBlock(css: string, filename: string, opts?: PluginOptions): Promise<BlockAndRoot> {
     let blockParser = new BlockParser(postcss, opts);
     let root = postcss.parse(css, {from: filename});
-    return blockParser.parse(root, filename, "query-test", false).then((block) => {
+    return blockParser.parse(root, filename, "query-test").then((block) => {
       return <BlockAndRoot>[block, root];
     });
   }
