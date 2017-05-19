@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { PluginOptions, OptionsReader } from "./options";
-import { Exportable, Block, State, BlockClass, BlockObject } from "./Block";
+import { Block } from "./Block";
 import * as errors from "./errors";
 import { ImportedFile } from "./importing";
 export { PluginOptions } from "./options";
@@ -57,25 +57,6 @@ export function stateParser(attr: selectorParser.Attribute): StateInfo {
   return info;
 }
 
-// function getBlockType(sel: CompoundSelector): BlockTypes | null {
-//   if (sel.nodes.some(n => isBlock(n))) {
-//     return BlockTypes.block;
-//   }
-//   else if (sel.nodes.some(n => isClass(n))) {
-//     if (sel.nodes.some(n => isState(n))) {
-//       return BlockTypes.classState;
-//     } else {
-//       return BlockTypes.class;
-//     }
-//   }
-//   else if (sel.nodes.some(n => isState(n))) {
-//     return BlockTypes.state;
-//   }
-//   else {
-//     return null;
-//   }
-// }
-
 export default class BlockParser {
   private opts: OptionsReader;
   private postcss: typeof postcss;
@@ -99,91 +80,52 @@ export default class BlockParser {
     return this.resolveReferences(block, root, sourceFile, mutate).then((block) => {
       root.walkRules((rule) => {
         let selector =  selectorParser().process(rule.selector).res;
-        let parsedSels = parseSelector(selector);
-        parsedSels.forEach((sel) => { this.assertValidCombinators(sourceFile, rule, sel); });
-        // mutation can't be done inside the walk despite what the docs say
-        let replacements: any[] = [];
-        let lastSel: any;
-        let thisSel: any;
-        let lastNode: BlockObject | null = null;
-        let thisNode: BlockObject | null = null;
-        selector.each((iSel) => {
-          let individualSelector = <selectorParser.Selector>iSel;
-          individualSelector.walk((s) => {
-            if (isBlock(s)) {
-              if (s.next() === undefined && s.prev() === undefined) {
-                this.extendBlock(block, sourceFile, rule, mutate);
-                this.implementsBlock(block, sourceFile, rule, mutate);
-              }
-              if (s.parent === individualSelector) {
-                thisNode = block;
-              }
-              if (mutate) {
-                replacements.push(this.mutate(block, s, individualSelector, (newClass) => {
-                  thisSel = newClass;
-                }));
-              }
-            }
-            else if (isState(s)) {
-              if (lastNode instanceof BlockClass) {
-                let attr = <selectorParser.Attribute>s;
-                let blockClass: BlockClass = lastNode;
-                let state: State = blockClass.ensureState(stateParser(attr));
-                thisNode = state;
-                if (mutate) {
-                  replacements.push(this.mutate(state, s, individualSelector, (newClass) => {
-                    thisSel = newClass;
-                  }));
-                  replacements.push([lastSel, null]);
-                }
-              } else {
-                let attr = <selectorParser.Attribute>s;
-                let state = block.ensureState(stateParser(attr));
-                if (s.parent === individualSelector) {
-                  thisNode = state;
-                }
-                if (mutate) {
-                  replacements.push(this.mutate(state, s, individualSelector, (newClass) => {
-                    thisSel = newClass;
-                  }));
-                }
+        let parsedSelectors = parseSelector(selector);
+        block.parsedRuleSelectors.set(rule, parsedSelectors);
+        parsedSelectors.forEach((iSel) => {
+          this.assertValidCombinators(sourceFile, rule, iSel);
+          let currentCompoundSel: CompoundSelector | undefined = iSel.selector;
+          while (currentCompoundSel) {
+            let obj = this.getBlockObject(currentCompoundSel);
+            if (obj) {
+              switch (obj.blockType) {
+                case BlockTypes.block:
+                  if (obj.node.next() === undefined && obj.node.prev() === undefined) {
+                    this.extendBlock(block, sourceFile, rule, mutate);
+                    this.implementsBlock(block, sourceFile, rule, mutate);
+                  }
+                  break;
+                case BlockTypes.state:
+                  block.ensureState(stateParser(<selectorParser.Attribute>obj.node));
+                  break;
+                case BlockTypes.class:
+                  block.ensureClass(obj.node.value);
+                  break;
+                case BlockTypes.classState:
+                  let classNode = obj.node.prev();
+                  let classObj = block.ensureClass(classNode.value);
+                  classObj.ensureState(stateParser(<selectorParser.Attribute>obj.node));
+                  break;
               }
             }
-            else if (s.type === selectorParser.CLASS) {
-              let blockClass = block.ensureClass(s.value);
-              if (s.parent === individualSelector) {
-                thisNode = blockClass;
-              }
-              if (mutate) {
-                replacements.push(this.mutate(blockClass, s, individualSelector, (newClass) => {
-                  thisSel = newClass;
-                }));
-              }
-            } else if (s.parent === individualSelector) {
-              thisNode = null;
-              thisSel = null;
-            }
-
-            if (s.parent === individualSelector) {
-              lastNode = thisNode;
-              lastSel = thisSel;
-            }
-          });
+            currentCompoundSel = currentCompoundSel.next && currentCompoundSel.next.selector;
+          }
         });
-        if (mutate) {
-          replacements.forEach((pair) => {
-            let existing = pair[0];
-            let replacement = pair[1];
-            if (replacement) {
-              existing.replaceWith(replacement);
-            } else {
-              existing.remove();
-            }
-          });
-        }
-        rule.selector = selector.toString();
       });
+
       block.checkImplementations();
+
+      if (mutate) {
+        root.walkRules((rule) => {
+          let parsedSelectors = block.parsedRuleSelectors.get(rule);
+          if (!parsedSelectors) {
+            parsedSelectors = parseSelector(rule.selector);
+            block.parsedRuleSelectors.set(rule, parsedSelectors);
+          }
+          rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.opts)).join(",\n");
+        });
+      }
+
       return block;
     });
   }
@@ -292,6 +234,42 @@ export default class BlockParser {
     if (attr.value && attr.operator !== "=") {
       throw new errors.InvalidBlockSyntax(`A state with a value must use the = operator (found ${attr.operator} instead).`,
                                           selectorSourceLocation(sourceFile, rule, attr));
+    }
+  }
+
+  // Similar to assertBlockObject except it doesn't check for well-formedness
+  // and doesn't ensure that you get a block object when not a legal selector.
+  private getBlockObject(sel: CompoundSelector): NodeAndType | null {
+    let n = sel.nodes.find(n => isBlock(n));
+    if (n) {
+      return {
+        blockType: BlockTypes.block,
+        node: n
+      };
+    }
+    n = sel.nodes.find(n => isState(n));
+    if (n) {
+      let prev = n.prev();
+      if (prev && isClass(prev)) {
+        return {
+          blockType: BlockTypes.classState,
+          node: n
+        };
+      } else {
+        return {
+          blockType: BlockTypes.state,
+          node: n
+        };
+      }
+    }
+    n = sel.nodes.find(n => isClass(n));
+    if (n) {
+      return {
+        blockType: BlockTypes.class,
+        node: n
+      };
+    } else {
+      return null;
     }
   }
 
@@ -478,11 +456,5 @@ export default class BlockParser {
       currentObject = nextObject;
       currentCompoundSel = nextCompoundSel;
     }
-  }
-
-  private mutate(e: Exportable, selComponent: selectorParser.Node, selector: selectorParser.Selector, contextCB: (newClass:any) => void) {
-    let newClass = selectorParser.className({value: e.cssClass(this.opts)});
-    if (selComponent.parent === selector) { contextCB(newClass); }
-    return [selComponent, newClass];
   }
 }

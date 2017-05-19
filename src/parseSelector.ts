@@ -168,10 +168,9 @@ export class ParsedSelector {
   }
 }
 
-export type Selectorish = string | selectorParser.Root | selectorParser.Selector | selectorParser.Node[] | selectorParser.Node[][];
+export type Selectorish = string | selectorParser.Root | selectorParser.Selector | selectorParser.Selector[] | selectorParser.Node[] | selectorParser.Node[][];
 
 function toNodes(selector: Selectorish): selectorParser.Node[][] {
-  let selNode: selectorParser.Selector | null = null;
   if (Array.isArray(selector)) {
     if (Array.isArray(selector[0])) {
       return <selectorParser.Node[][]>selector;
@@ -179,25 +178,19 @@ function toNodes(selector: Selectorish): selectorParser.Node[][] {
       return [<selectorParser.Node[]>selector];
     }
   }
+  let coerceRoot = function(root: selectorParser.Root): selectorParser.Node[][] {
+    return root.nodes.map<selectorParser.Node[]>(n => (<selectorParser.Container>n).nodes);
+  };
   if (typeof selector === "string") {
-    selNode = <selectorParser.Selector>selectorParser().process(selector).res.nodes[0];
+    let res: selectorParser.Root =  selectorParser().process(selector).res;
+    return coerceRoot(res);
   } else {
     if ((<selectorParser.Node>selector).type === selectorParser.ROOT) {
-      selNode = <selectorParser.Selector>(<selectorParser.Root>selector).nodes[0];
+      return coerceRoot(selector);
     } else {
-      selNode = <selectorParser.Selector>selector;
+      return [selector.nodes];
     }
   }
-  if (selNode.nodes[0] && selNode.nodes[0].type === selectorParser.SELECTOR) {
-    let nodes: selectorParser.Node[][] = [];
-    selNode.each((n) => {
-      nodes.push((<selectorParser.Selector>n).nodes);
-    });
-    return nodes;
-  } else {
-    return [selNode.nodes];
-  }
-
 }
 
 export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[] {

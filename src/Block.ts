@@ -162,12 +162,14 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   private _source: string;
   private _base: Block;
   private _implements: Block[] = [];
-  root: postcss.Root | undefined;
+  root?: postcss.Root;
+  parsedRuleSelectors: WeakMap<postcss.Rule,ParsedSelector[]>;
 
   constructor(name: string, source: string) {
     super();
     this._name = name;
     this._source = source;
+    this.parsedRuleSelectors = new WeakMap();
   }
 
   get groupContainer(): Block | BlockClass {
@@ -388,7 +390,7 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     return newNodes;
   }
 
-  rewriteSelector(selector: ParsedSelector, opts: OptionsReader): ParsedSelector {
+  rewriteSelectorToString(selector: ParsedSelector, opts: OptionsReader): string {
     let firstNewSelector = new CompoundSelector();
     let newSelector = firstNewSelector;
     let newCurrentSelector = newSelector;
@@ -405,10 +407,13 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
         currentSelector = undefined;
       }
     } while (currentSelector !== undefined);
+    return firstNewSelector.toString();
+  }
 
+  rewriteSelector(selector: ParsedSelector, opts: OptionsReader): ParsedSelector {
     // generating a string and reparsing ensures the internal structure is consistent
     // otherwise the parent/next/prev relationships will be wonky with the new nodes.
-    return parseSelector(firstNewSelector.toString())[0];
+    return parseSelector(this.rewriteSelectorToString(selector, opts))[0];
   }
 
   matches(compoundSel: CompoundSelector): boolean {
