@@ -1,13 +1,18 @@
 import Resolver from '@glimmer/resolver';
 import { AST, preprocess, traverse } from '@glimmer/syntax';
-import { Template } from "./project";
+import Project, { Template} from "./project";
+import { pathFromSpecifier } from "./utils";
 
 export interface TemplateDependencies {
+  path: string;
   hasComponentHelper: boolean;
   components: string[];
 }
 
-export function discoverTemplateDependencies(template: Template, resolver: Resolver): TemplateDependencies {
+export function discoverTemplateDependencies(templateName: string, project: Project): TemplateDependencies {
+  let resolver = project.resolver;
+  let template = project.templateFor(templateName);
+
   let ast = preprocess(template.string);
   let usedComponents = new Set<string>();
   let hasComponentHelper = false;
@@ -29,9 +34,11 @@ export function discoverTemplateDependencies(template: Template, resolver: Resol
     }
   });
 
+  let path = pathFromSpecifier(template.specifier);
   let components = Array.from(usedComponents);
 
   return {
+    path,
     hasComponentHelper,
     components
   };
@@ -43,6 +50,34 @@ function isComponentHelper({ path }: AST.MustacheStatement) {
     && path.parts[0] === 'component';
 }
 
-function pathFromSpecifier(specifier: string) {
-  return specifier.split(':')[1];
+export function discoverRecursiveTemplateDependencies(templateName: string, project: Project): TemplateDependencies {
+  let resolver = project.resolver;
+  let entryPoint = project.templateFor(templateName);
+  let entryPointPath = pathFromSpecifier(entryPoint.specifier);
+
+  let seen = new Set([entryPointPath]);
+  let queue = [entryPointPath];
+  let hasComponentHelper = false;
+
+  let current;
+  while (current = queue.pop()) {
+    let dependencies = discoverTemplateDependencies(current, project);
+    hasComponentHelper = hasComponentHelper || dependencies.hasComponentHelper;
+
+    for (let component of dependencies.components) {
+      if (!seen.has(component)) {
+        seen.add(component);
+        queue.push(component);
+      }
+    }
+  }
+
+  seen.delete(entryPointPath);
+
+  let components = Array.from(seen);
+  return {
+    path: entryPointPath,
+    hasComponentHelper,
+    components
+  };
 }

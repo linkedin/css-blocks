@@ -6,7 +6,7 @@ import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
 
 import DEFAULT_MODULE_CONFIG from './module-config';
 
-interface ResolutionMap {
+export interface ResolutionMap {
   [specifier: string]: string;
 }
 
@@ -22,6 +22,7 @@ export class Template {
 
 export default class Project {
   projectDir: string;
+  map: ResolutionMap;
   resolver: Resolver;
   registry: BasicModuleRegistry;
 
@@ -38,7 +39,7 @@ export default class Project {
       }
     };
 
-    let map = buildResolutionMap({
+    let map = this.map = buildResolutionMap({
       projectDir,
       moduleConfig: config,
       modulePrefix: name
