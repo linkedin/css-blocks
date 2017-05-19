@@ -1,0 +1,40 @@
+{
+  "name": "glimmer-analyzer",
+  "version": "0.1.0",
+  "description": "Statically analyzes Handlebars templates and components for dependency trees and other information.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomdale/glimmer-analyzer.git"
+  },
+  "keywords": [
+    "glimmer",
+    "static",
+    "analysis",
+    "handlebars"
+  ],
+  "author": "Tom Dale <tom@tomdale.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tomdale/glimmer-analyzer/issues"
+  },
+  "homepage": "https://github.com/tomdale/glimmer-analyzer#readme",
+  "devDependencies": {
+    "@glimmer/compiler": "^0.22.1",
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.18",
+    "chai": "^3.5.0",
+    "mocha": "^3.4.1",
+    "ts-node": "^3.0.4",
+    "typescript": "^2.3.2"
+  },
+  "dependencies": {
+    "@glimmer/resolver": "^0.3.0",
+    "@glimmer/syntax": "0.23.0-alpha.17"
+  }
+}
