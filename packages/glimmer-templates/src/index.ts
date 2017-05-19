@@ -14,19 +14,19 @@ class Analyzer {
     this.project = new Project(projectDir);
   }
 
-  dependenciesForTemplate(templateName: string) {
-    return discoverTemplateDependencies(templateName, this.project);
+  dependenciesForTemplate(componentName: string) {
+    return discoverTemplateDependencies(componentName, this.project);
   }
 
-  recursiveDependenciesForTemplate(templateName: string) {
-    return discoverRecursiveTemplateDependencies(templateName, this.project);
+  recursiveDependenciesForTemplate(componentName: string) {
+    return discoverRecursiveTemplateDependencies(componentName, this.project);
   }
 
-  resolutionMapForEntryPoint(templateName: string) {
+  resolutionMapForEntryPoint(templateName: string, map?: ResolutionMap) {
     let dependencies = discoverRecursiveTemplateDependencies(templateName, this.project);
     let components = new Set([dependencies.path, ...dependencies.components]);
     
-    return filterResolutionMap(this.project.map, specifier => {
+    return filterResolutionMap(map || this.project.map, specifier => {
       let [type, path] = specifier.split(':');
       return (type === 'component' || type === 'template') && components.has(path);
     });
