@@ -1,4 +1,4 @@
-import { suite, test, skip } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
 
@@ -260,12 +260,37 @@ export class StraightJacket extends BEMProcessor {
       this.process(filename, inputCSS));
   }
 
-  @skip
   @test "disallows pseudos not attached to a block object."() {
+    let filename = "foo/bar/illegal-class-combinator.css";
+    let inputCSS = `.root :hover { display: block; }`;
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Missing block object in selector component ':hover': .root :hover" +
+        " (foo/bar/illegal-class-combinator.css:1:7)",
+      this.process(filename, inputCSS));
   }
 
-  @skip
+  @test "disallows stand-alone attribute selectors except for states."() {
+    let filename = "foo/bar/illegal-class-combinator.css";
+    let inputCSS = `.root [href] { display: block; }`;
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Cannot select attributes other than states: .root [href]" +
+        " (foo/bar/illegal-class-combinator.css:1:7)",
+      this.process(filename, inputCSS));
+  }
+
+  // It's possible we can relax this constraint, but I want to see
+  // concrete use cases to understand why it's necessary -- states are more optimizable.
+  // and I think this forces styling concerns to be kept more decoupled.
   @test "disallows attribute selectors except for states."() {
+    let filename = "foo/bar/illegal-class-combinator.css";
+    let inputCSS = `.root[href] { display: block; }`;
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Cannot select attributes other than states: .root[href]" +
+        " (foo/bar/illegal-class-combinator.css:1:6)",
+      this.process(filename, inputCSS));
   }
 
   @test "disallows a state before a class for the same element."() {

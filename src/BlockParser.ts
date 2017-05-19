@@ -297,6 +297,12 @@ export default class BlockParser {
 
   // TODO Add support for external selectors
   private assertBlockObject(sel: CompoundSelector, sourceFile: string, rule: postcss.Rule): NodeAndType {
+    let nonStateAttribute = sel.nodes.find(n => n.type === selectorParser.ATTRIBUTE && !isState(n));
+    if (nonStateAttribute) {
+        throw new errors.InvalidBlockSyntax(
+          `Cannot select attributes other than states: ${rule.selector}`,
+          selectorSourceLocation(sourceFile, rule, nonStateAttribute));
+    }
     let result = sel.nodes.reduce<NodeAndType|null>((found, n) => {
       if (isBlock(n)) {
         if (found === null) {
