@@ -471,6 +471,8 @@ caches in the browser. It is still often a performance win compared to
 querying the document in javascript and applying classes on many
 elements.
 
+ISSUE: Should `global: true` be changed to an at-rule?
+
 `application.block.css`
 
 ```css
