@@ -433,6 +433,22 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     });
     return result;
   }
+
+  equal(other: Block | undefined | null) {
+    return other && this.source === other.source;
+  }
+
+  isAncestor(other: Block | undefined | null): boolean {
+    let base: Block | undefined | null = other && other.base;
+    while (base) {
+      if (this.equal(base)) {
+        return true;
+      } else {
+        base = base.base;
+      }
+    }
+    return false;
+  }
 }
 
 export class ExclusiveStateGroup extends StateContainer {

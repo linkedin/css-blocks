@@ -19,10 +19,12 @@ const CONTIGUOUS_COMBINATORS = new Set(["+", ">"]);
 const NONCONTIGUOUS_COMBINATORS = new Set(["~", " "]);
 const RESOLVE_RE = /resolve\(("|')([^\1]*)\1\)/;
 
-function assertBlockObject(obj: BlockObject | undefined, key: string, source: SourceLocation | undefined): void {
+function assertBlockObject(obj: BlockObject | undefined, key: string, source: SourceLocation | undefined): BlockObject {
   if (obj === undefined) {
     // TODO: Better value source location for the bad block object reference.
     throw new errors.InvalidBlockSyntax(`Cannot find ${key}`, source);
+  } else {
+    return obj;
   }
 }
 
@@ -81,6 +83,15 @@ export default class ConflictResolver {
         let referenceStr = resolveDeclarationMatch[2];
         let other: BlockObject | undefined = block.lookup(referenceStr);
         assertBlockObject(other, referenceStr, decl.source.start);
+        if (block.equal(other && other.block)) {
+          throw new errors.InvalidBlockSyntax(
+            `Cannot resolve conflicts with your own block.`,
+            sourceLocation(block.source, decl));
+        } else if (other && other.block.isAncestor(block)) {
+          throw new errors.InvalidBlockSyntax(
+            `Cannot resolve conflicts with ancestors of your own block.`,
+            sourceLocation(block.source, decl));
+        }
         let foundConflict = ConflictType.noconflict;
         while (other && foundConflict === ConflictType.noconflict) {
           foundConflict = this.resolveConflictWith(referenceStr, other, isOverride, decl, otherDecls);
@@ -208,9 +219,19 @@ export default class ConflictResolver {
         mergedSels.push(context1.clone().mergeNodes(context2).append(combinator2, mergedKey));
         mergedSels.push(context1.clone().append(combinator1, context2.clone()).append(combinator2, mergedKey.clone()));
         mergedSels.push(context2.clone().append(combinator1, context1.clone()).append(combinator2, mergedKey.clone()));
+      } else if (NONCONTIGUOUS_COMBINATORS.has(combinator1.value) && CONTIGUOUS_COMBINATORS.has(combinator2.value) &&
+                 ((HIERARCHICAL_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value)) ||
+                  (SIBLING_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value)))) { // " ", >; ~,+
+        mergedSels.push(context1.clone().mergeNodes(context2).append(combinator2, mergedKey));
+        mergedSels.push(context1.clone().append(combinator1, context2.clone()).append(combinator2, mergedKey.clone()));
+      } else if (NONCONTIGUOUS_COMBINATORS.has(combinator2.value) && CONTIGUOUS_COMBINATORS.has(combinator1.value) &&
+                 ((HIERARCHICAL_COMBINATORS.has(combinator2.value) && HIERARCHICAL_COMBINATORS.has(combinator1.value)) ||
+                  (SIBLING_COMBINATORS.has(combinator2.value) && SIBLING_COMBINATORS.has(combinator1.value)))) { // >, " "; +,~
+        mergedSels.push(context1.clone().mergeNodes(context2).append(combinator1, mergedKey));
+        mergedSels.push(context2.clone().append(combinator2, context1.clone()).append(combinator1, mergedKey.clone()));
       } else {
         throw new errors.InvalidBlockSyntax(
-          `Cannot merge selectors with combinators: ${combinator1.value} and ${combinator2.value} [FIXME?].`);
+          `Cannot merge selectors with combinators: '${combinator1.value}' and '${combinator2.value}' [FIXME?].`);
       }
     } else if (context1 && combinator1) {
       mergedSels.push(context1.clone().append(combinator1, mergedKey));

@@ -171,7 +171,6 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
-  @skip
   @test "for states combined with the resolution source involving child combinators"() {
     let imports = new MockImportRegistry();
     imports.registerSource("target.css",
@@ -198,7 +197,6 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
-  @skip
   @test "for states combined with the resolution source both involving child combinators"() {
     let imports = new MockImportRegistry();
     imports.registerSource("target.css",
@@ -217,8 +215,8 @@ export class BlockInheritance extends BEMProcessor {
       imports.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
-        ".conflicts--happy .conflicts__article { color: green; }\n" +
-        ".conflicts--happy .target__main.conflicts__article { color: blue; }\n" +
+        ".conflicts--happy > .conflicts__article { color: green; }\n" +
+        ".conflicts--happy > .target__main.conflicts__article { color: blue; }\n" +
         ".target--hidden.conflicts--happy > .target__main.conflicts__article { color: transparent; }\n"
       );
     });
@@ -479,11 +477,49 @@ export class BlockInheritance extends BEMProcessor {
   @test "inheritance conflicts automatically resolve to the base class"() {
   }
 
-  @skip
   @test "compatible but different combinators"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("target.css",
+      `.adjacent + .adjacent { border: 1px; }
+       .sibling ~ .sibling   { color: blue; }
+       [state|ancestor] .descendant { float: left; }
+       [state|parent] > .child { position: relative; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./target.css";
+                    .adjacent + .adjacent { color: green; color: resolve("target.sibling"); }
+                    .sibling ~ .sibling   { border: 2px; border: resolve("target.adjacent"); }
+                    [state|ancestor] .descendant { position: absolute; position: resolve("target.child"); }
+                    [state|parent] > .child { float: right; float: resolve("target.descendant"); }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("target.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".conflicts__adjacent + .conflicts__adjacent { color: green; }\n" +
+        ".target__sibling.conflicts__adjacent + .target__sibling.conflicts__adjacent,\n" +
+        ".target__sibling ~ .conflicts__adjacent + .target__sibling.conflicts__adjacent { color: blue; }\n" +
+
+        ".conflicts__sibling ~ .conflicts__sibling { border: 2px; }\n" +
+        ".target__adjacent.conflicts__sibling + .target__adjacent.conflicts__sibling,\n" +
+        ".conflicts__sibling ~ .target__adjacent + .target__adjacent.conflicts__sibling { border: 1px; }\n" +
+
+        ".conflicts--ancestor .conflicts__descendant { position: absolute; }\n" +
+        ".target--parent.conflicts--ancestor > .target__child.conflicts__descendant,\n" +
+        ".conflicts--ancestor .target--parent > .target__child.conflicts__descendant { position: relative; }\n" +
+
+        ".conflicts--parent > .conflicts__child { float: right; }\n" +
+        ".target--ancestor.conflicts--parent > .target__descendant.conflicts__child,\n" +
+        ".target--ancestor .conflicts--parent > .target__descendant.conflicts__child { float: left; }\n"
+      );
+    });
   }
 
   @skip
+  @test "handles custom properties and shorthand/longhand conflict resolution somehow"() {
+  }
+
   @test "for states combined with the resolution source has adjacent selectors"() {
     let imports = new MockImportRegistry();
     imports.registerSource("target.css",
@@ -502,14 +538,52 @@ export class BlockInheritance extends BEMProcessor {
       imports.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
-        ".conflicts--happy .conflicts__article { color: green; }\n" +
-        ".conflicts--happy .target__main.conflicts__article { color: blue; }\n" +
-        ".conflicts--happy > .main + .target__main.conflicts__article { color: transparent; }\n"
+        ".conflicts--happy > .conflicts__article { color: green; }\n" +
+        ".conflicts--happy > .target__main.conflicts__article { color: blue; }\n" +
+        ".conflicts--happy > .target__main + .target__main.conflicts__article { color: transparent; }\n"
       );
     });
   }
 
   @skip
   @test "handles dual state contexts when not sharing a block root"() {
+  }
+  @test "resolving to your own block is illegal"() {
+    let filename = "conflicts.css";
+    let inputCSS = `[state|happy] > .article {
+                      color: green;
+                      color: resolve(".bio");
+                    }
+                    [state|sad] > .bio {
+                      color: blue;
+                    }`;
+
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Cannot resolve conflicts with your own block." +
+        " (conflicts.css:3:23)",
+      this.process(filename, inputCSS)
+    );
+  }
+  @test "resolving to your super block is illegal"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("super.css",
+      `.main    { color: blue; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "super.css";
+                    .root { extends: super; }
+                    .article {
+                      color: green;
+                      color: resolve(".main");
+                    }`;
+
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Cannot resolve conflicts with ancestors of your own block." +
+        " (conflicts.css:5:23)",
+      this.process(filename, inputCSS, {importer: imports.importer()})
+    );
   }
 }

@@ -255,9 +255,15 @@ export default class BlockParser {
   private assertBlockObject(sel: CompoundSelector, sourceFile: string, rule: postcss.Rule): NodeAndType {
     let nonStateAttribute = sel.nodes.find(n => n.type === selectorParser.ATTRIBUTE && !isState(n));
     if (nonStateAttribute) {
+      if ((<selectorParser.Attribute>nonStateAttribute).attribute.match(/state:/)) {
+        throw new errors.InvalidBlockSyntax(
+          `State attribute selctors use a \`|\`, not a \`:\` which is illegal CSS syntax and won't work in other parsers: ${rule.selector}`,
+          selectorSourceLocation(sourceFile, rule, nonStateAttribute));
+      } else {
         throw new errors.InvalidBlockSyntax(
           `Cannot select attributes other than states: ${rule.selector}`,
           selectorSourceLocation(sourceFile, rule, nonStateAttribute));
+      }
     }
     let result = sel.nodes.reduce<NodeAndType|null>((found, n) => {
       if (isBlock(n)) {

@@ -185,6 +185,17 @@ export class StraightJacket extends BEMProcessor {
       this.process(filename, inputCSS));
   }
 
+  @test "catches states with colon instead of bar"() {
+    let filename = "foo/bar/test-state.css";
+    let inputCSS = `.root {color: #111;}
+                    [state:asdf=foo] { transform: scale(2); }`;
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "State attribute selctors use a `|`, not a `:` which is illegal CSS syntax and won't work in other parsers: [state:asdf=foo]" +
+      " (foo/bar/test-state.css:2:21)",
+      this.process(filename, inputCSS));
+  }
+
   @test "cannot combine two different states"() {
     let filename = "foo/bar/illegal-state-combinator.css";
     let inputCSS = `[state|a] [state|b] { float: left; }`;
