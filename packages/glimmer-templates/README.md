@@ -2,6 +2,12 @@
 
 A library for doing some static analysis of Glimmer apps.
 
+## Installation
+
+```
+yarn add glimmer-analyzer
+```
+
 ## Creating an Analyzer
 
 ```ts
