@@ -1,4 +1,4 @@
-import { BlockObject } from "./Block";
+import { Block, BlockObject } from "./Block";
 import postcss = require("postcss");
 import parseSelector, { ParsedSelector } from "./parseSelector";
 
@@ -24,13 +24,13 @@ export class QueryKeySelector implements Query {
     this.target = obj;
   }
 
-  execute(container: postcss.Container): ClassifiedParsedSelectors {
+  execute(container: postcss.Container, block?: Block): ClassifiedParsedSelectors {
     let matchedSelectors: ClassifiedParsedSelectors = {
       main: [],
       other: {}
     };
     container.walkRules((node) => {
-      let parsedSelectors = parseSelector(node.selector);
+      let parsedSelectors = block && block.getParsedSelectors(node) || parseSelector(node.selector);
       let found = parsedSelectors.filter((value: ParsedSelector) =>
         this.target.matches(value.key));
       found.forEach((sel) => {

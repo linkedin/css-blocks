@@ -449,6 +449,15 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     }
     return false;
   }
+
+  getParsedSelectors(rule: postcss.Rule): ParsedSelector[] {
+    let sels = this.parsedRuleSelectors.get(rule);
+    if (!sels) {
+      sels = parseSelector(rule.selector);
+      this.parsedRuleSelectors.set(rule, sels);
+    }
+    return sels;
+  }
 }
 
 export class ExclusiveStateGroup extends StateContainer {

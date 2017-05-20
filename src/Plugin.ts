@@ -1,6 +1,5 @@
 import * as postcss from "postcss";
 import { PluginOptions, OptionsReader } from "./options";
-import parseSelector from "./parseSelector";
 import { MergedObjectMap, Block } from "./Block";
 import BlockParser from "./BlockParser";
 import ConflictResolver from "./ConflictResolver";
@@ -37,11 +36,7 @@ export class Plugin {
         });
       });
       root.walkRules((rule) => {
-        let parsedSelectors = block.parsedRuleSelectors.get(rule);
-        if (!parsedSelectors) {
-          parsedSelectors = parseSelector(rule.selector);
-          block.parsedRuleSelectors.set(rule, parsedSelectors);
-        }
+        let parsedSelectors = block.getParsedSelectors(rule);
         rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.opts)).join(",\n");
       });
 

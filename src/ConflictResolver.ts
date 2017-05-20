@@ -117,7 +117,7 @@ export default class ConflictResolver {
     decl: postcss.Declaration,
     otherDecls: postcss.Declaration[]
   ): ConflictType {
-    let curSel = parseSelector((<postcss.Rule>decl.parent).selector);
+    let curSel = parseSelector((<postcss.Rule>decl.parent).selector); // can't use the cache, it's already been rewritten.
     let prop = decl.prop;
     let root = other.block.root;
     if (root === undefined) {
@@ -127,7 +127,7 @@ export default class ConflictResolver {
     // Something to consider: when resolving against a subblock that has overridden a property, do we need
     // to include the base object selector(s) in the key selector as well?
     let query = new QueryKeySelector(other);
-    let result = query.execute(root);
+    let result = query.execute(root, other.block);
     let foundConflict: ConflictType = ConflictType.noconflict;
     curSel.forEach((cs) => {
       // we reverse the selectors because otherwise the insertion order causes them to be backwards from the

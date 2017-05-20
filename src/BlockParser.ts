@@ -6,7 +6,7 @@ import * as errors from "./errors";
 import { ImportedFile } from "./importing";
 export { PluginOptions } from "./options";
 import { sourceLocation, selectorSourceLocation } from "./SourceLocation";
-import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
+import { ParsedSelector, CompoundSelector } from "./parseSelector";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
@@ -79,9 +79,7 @@ export default class BlockParser {
     block.root = root;
     return this.resolveReferences(block, root, sourceFile).then((block) => {
       root.walkRules((rule) => {
-        let selector =  selectorParser().process(rule.selector).res;
-        let parsedSelectors = parseSelector(selector);
-        block.parsedRuleSelectors.set(rule, parsedSelectors);
+        let parsedSelectors = block.getParsedSelectors(rule);
         parsedSelectors.forEach((iSel) => {
           this.assertValidCombinators(sourceFile, rule, iSel);
           let currentCompoundSel: CompoundSelector | undefined = iSel.selector;
