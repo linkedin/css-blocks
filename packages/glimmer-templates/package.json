@@ -4,8 +4,12 @@
   "description": "Statically analyzes Handlebars templates and components for dependency trees and other information.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "build": "tsc -p tsconfig.build.json"
   },
   "repository": {
     "type": "git",
