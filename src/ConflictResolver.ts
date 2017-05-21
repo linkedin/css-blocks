@@ -53,36 +53,45 @@ export default class ConflictResolver {
     this.opts = opts;
   }
 
+  private resolveInheritedConflict(rule: postcss.Rule, conflictingProps: Set<[string,string]> | undefined, expression: string, handledResolutions: Set<string>) {
+    if (conflictingProps && conflictingProps.size > 0) {
+      let ruleProps = new Set<string>();
+      rule.walkDecls((decl) => {
+        ruleProps.add(decl.prop);
+      });
+      conflictingProps.forEach(([thisProp, _]) => {
+        if (ruleProps.has(thisProp) && !handledResolutions.has(thisProp)) {
+          handledResolutions.add(thisProp);
+          rule.prepend(postcss.decl({prop: thisProp, value: `resolve-inherited("${expression}")`}));
+        }
+      });
+    }
+  }
+
   resolveInheritance(root: postcss.Root, block: Block) {
     let blockBase = block.base;
     let blockBaseName = block.baseName;
     if (blockBase && blockBaseName) {
       root.walkRules((rule) => {
         let parsedSelectors = block.getParsedSelectors(rule);
+        let handledConflicts = new conflictDetection.Conflicts<string>();
+        let handledObjects = new conflictDetection.Conflicts<BlockObject>();
         parsedSelectors.forEach((sel) => {
           let key = sel.key;
           let blockNode = BlockParser.getBlockNode(key);
           if (blockNode) {
             let obj = block.nodeAndTypeToBlockObject(blockNode);
             if (obj) {
-              let base = obj.base;
-              if (base) {
-                let baseSource = base.asSource();
-                let conflicts = conflictDetection.detectConflicts(obj, base);
-                if (key.pseudoelement) {
-                  let conflictingProps = conflicts.pseudoConflicts.get(key.pseudoelement.value);
-                  if (conflictingProps && conflictingProps.size > 0) {
-                    conflictingProps.forEach(([_, otherProp]) => {
-                      rule.prepend(postcss.decl({prop: otherProp, value: `resolve-inherited("${blockBaseName}${baseSource}")`}));
-                    });
-                  }
-                } else {
-                  let conflictingProps = conflicts.conflictingProps;
-                  if (conflictingProps && conflictingProps.size > 0) {
-                    conflictingProps.forEach(([_, otherProp]) => {
-                      rule.prepend(postcss.decl({prop: otherProp, value: `resolve-inherited("${blockBaseName}${baseSource}")`}));
-                    });
-                  }
+              let objectConflicts = handledObjects.getConflictSet(key.pseudoelement && key.pseudoelement.value);
+              if (!objectConflicts.has(obj)) {
+                objectConflicts.add(obj);
+                let base = obj.base;
+                if (base) {
+                  let baseSource = base.asSource();
+                  let conflicts = conflictDetection.detectConflicts(obj, base);
+                  let handledConflictSet = handledConflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
+                  let conflictingProps = conflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
+                  this.resolveInheritedConflict(rule, conflictingProps, `${blockBaseName}${baseSource}`, handledConflictSet);
                 }
               }
             }
@@ -171,6 +180,7 @@ export default class ConflictResolver {
     let query = new QueryKeySelector(other);
     let result = query.execute(root, other.block);
     let foundConflict: ConflictType = ConflictType.noconflict;
+    let resolvedSelectors = new Set<string>();
     curSel.forEach((cs) => {
       // we reverse the selectors because otherwise the insertion order causes them to be backwards from the
       // source order of the target selector
@@ -178,7 +188,11 @@ export default class ConflictResolver {
       result.main.reverse().forEach((s) => {
         let newSels = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.opts), cs);
         if (newSels === null) return;
-        let newRule = postcss.rule({ selector: newSels.join(",\n") });
+        let newSelStr = newSels.join(",\n");
+        // avoid duplicate selector via permutation
+        if (resolvedSelectors.has(newSelStr)) return;
+        resolvedSelectors.add(newSelStr);
+        let newRule = postcss.rule({ selector: newSelStr });
         // check if the values are the same, skip resolution for this selector if they are.
         let d = 0;
         let sameValues = true;

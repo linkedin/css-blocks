@@ -82,9 +82,10 @@ export default class BlockParser {
         let parsedSelectors = block.getParsedSelectors(rule);
         parsedSelectors.forEach((iSel) => {
           this.assertValidCombinators(sourceFile, rule, iSel);
+          let keySel = iSel.key;
           let currentCompoundSel: CompoundSelector | undefined = iSel.selector;
-          let isKey = (iSel.key === currentCompoundSel);
           while (currentCompoundSel) {
+            let isKey = (keySel === currentCompoundSel);
             let obj = BlockParser.getBlockNode(currentCompoundSel);
             if (obj) {
               switch (obj.blockType) {
@@ -94,7 +95,7 @@ export default class BlockParser {
                     this.implementsBlock(block, sourceFile, rule);
                   }
                   if (isKey) {
-                    block.propertyConcerns.addProperties(rule, block);
+                    block.propertyConcerns.addProperties(rule, block, (prop) => !/(extends|implements)/.test(prop));
                   }
                   break;
                 case BlockTypes.state:

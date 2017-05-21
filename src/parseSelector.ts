@@ -73,17 +73,23 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
     return this;
   }
   mergeNodes(other: CompoundSelector): CompoundSelector {
+    let foundNodes = new Set<string>();
     let pseudos: selectorParser.Node[] = [];
     let nodes: selectorParser.Node[] = [];
     let filterNodes = function(node: selectorParser.Node) {
-      if (node.type === selectorParser.PSEUDO) {
-        pseudos.push(node);
-      } else {
-        nodes.push(node);
+      let nodeStr = node.toString();
+      if (!foundNodes.has(nodeStr)) {
+        foundNodes.add(nodeStr);
+        if (node.type === selectorParser.PSEUDO) {
+          pseudos.push(node);
+        } else {
+          nodes.push(node);
+        }
       }
     };
     this.nodes.forEach(filterNodes);
     other.nodes.forEach(filterNodes);
+    pseudos.sort((a,b) => a.value.localeCompare(b.value));
     this.nodes = nodes.concat(pseudos);
     if (this.pseudoelement && other.pseudoelement && this.pseudoelement.value !== other.pseudoelement.value) {
       throw new Error("Cannot merge two compound selectors with different pseudoelements");
@@ -123,7 +129,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
     return firstCopy;
   }
   toString(): string {
-    let s = this.nodes.join('');
+    let s = this.nodes.map(n => n.clone({spaces: {before: '', after: ''}})).join('');
    if (this.pseudoelement) {
       s += this.pseudoelement.toString();
     }

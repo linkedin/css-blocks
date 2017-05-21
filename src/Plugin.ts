@@ -34,6 +34,9 @@ export class Plugin {
         rule.walkDecls(/^(extends|implements)$/, (decl) => {
           decl.remove();
         });
+        if (rule.nodes === undefined || rule.nodes.length === 0) {
+          rule.remove();
+        }
       });
       resolver.resolveInheritance(root, block);
       root.walkRules((rule) => {

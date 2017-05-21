@@ -100,7 +100,7 @@ declare namespace parser {
         replaceWith(...nodes: Node[]): Node;
         next(): Node;
         prev(): Node;
-        clone(opts: Node): Node;
+        clone(opts: {[override: string]:any}): Node;
         toString(): string;
 
     }

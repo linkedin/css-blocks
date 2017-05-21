@@ -69,4 +69,100 @@ export class BlockInheritance extends BEMProcessor {
       );
     });
   }
+
+  @test "inheritance conflicts automatically resolve to the base class"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("base.css",
+      `.root { width: 100%; }`
+    );
+
+    let filename = "sub.css";
+    let inputCSS = `@block-reference "./base.css";
+                    .root {
+                      extends: base;
+                      width: 80%;
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("base.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".sub { width: 80%; }\n" +
+        ".base.sub { width: 80%; }\n"
+      );
+    });
+  }
+
+  @test "multiple rulesets for the same target object get resolved"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("base.css",
+      `.nav { margin: 10px; }
+       .nav + .nav { margin-bottom: 0px; }`
+    );
+
+    let filename = "sub.css";
+    let inputCSS = `@block-reference "./base.css";
+                    .root { extends: base; }
+                    .nav { margin: 15px; }
+                    .nav + .nav { margin-bottom: 5px; }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("base.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".sub__nav { margin: 15px; }\n" +
+        ".base__nav.sub__nav { margin: 15px; }\n" +
+        ".sub__nav + .sub__nav { margin-bottom: 5px; }\n" +
+        ".base__nav.sub__nav + .base__nav.sub__nav { margin-bottom: 5px; }\n"
+      );
+    });
+  }
+
+  @test "multiple selectors in ruleset for object get resolved"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("base.css",
+      `.nav:active, .nav:hover { color: red; }`
+    );
+
+    let filename = "sub.css";
+    let inputCSS = `@block-reference "./base.css";
+                    .root { extends: base; }
+                    .nav:active, .nav:hover { color: blue; }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("base.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".sub__nav:active, .sub__nav:hover { color: blue; }\n" +
+        ".base__nav.sub__nav:hover { color: blue; }\n" +
+        ".base__nav.sub__nav:active { color: blue; }\n" +
+        ".base__nav.sub__nav:active:hover { color: blue; }\n"
+      );
+    });
+  }
+
+  @skip
+  @test "longhand inheritance conflicts automatically resolve to the base class"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("base.css",
+      `.root { border: 1px solid black; }`
+    );
+
+    let filename = "sub.css";
+    let inputCSS = `@block-reference "./base.css";
+                    .root {
+                      extends: base;
+                      border-color: green;
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("base.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".sub { border-color: green; }\n" +
+        ".base.sub { border-color: green; }\n"
+      );
+    });
+  }
+
 }

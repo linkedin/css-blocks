@@ -58,7 +58,7 @@ export class PropertyConcerns {
     }
     props.add(property);
   }
-  addProperties(rule: postcss.Rule, block: Block) {
+  addProperties(rule: postcss.Rule, block: Block, filter?: (prop: string) => boolean) {
     let selectors = block.getParsedSelectors(rule);
     selectors.forEach((selector) => {
       let key = selector.key;
@@ -67,7 +67,9 @@ export class PropertyConcerns {
         pseudo = key.pseudoelement.toString();
       }
       rule.walkDecls((decl) => {
-        this.addProperty(decl.prop, pseudo);
+        if (!filter || filter && filter(decl.prop)) {
+          this.addProperty(decl.prop, pseudo);
+        }
       });
     });
   }

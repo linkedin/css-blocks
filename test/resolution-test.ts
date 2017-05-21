@@ -497,30 +497,6 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
-  // @only
-  @test "inheritance conflicts automatically resolve to the base class"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource("base.css",
-      `.root { width: 100%; }`
-    );
-
-    let filename = "sub.css";
-    let inputCSS = `@block-reference "./base.css";
-                    .root {
-                      extends: base;
-                      width: 80%;
-                    }`;
-
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
-      imports.assertImported("base.css");
-      assert.deepEqual(
-        result.css.toString(),
-        ".sub { width: 80%; }\n" +
-        ".base.sub { width: 80%; }\n"
-      );
-    });
-  }
-
   @test "compatible but different combinators"() {
     let imports = new MockImportRegistry();
     imports.registerSource("target.css",
