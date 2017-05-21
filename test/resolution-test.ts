@@ -474,6 +474,30 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @skip
+  @test "resolves pseduoelements"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("other.css",
+      `.asdf::before { width: 100%; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./other.css";
+                    .header::before {
+                      width: 100px;
+                      width: resolve("other.asdf");
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("other.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".conflicts__header::before { width: 100px; }\n" +
+        ".other__asdf.conflicts__header::before { width: 100%; }\n"
+      );
+    });
+  }
+
+  // @only
   @test "inheritance conflicts automatically resolve to the base class"() {
     let imports = new MockImportRegistry();
     imports.registerSource("base.css",

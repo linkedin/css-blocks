@@ -1,11 +1,13 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { Block, BlockObject } from "./Block";
+import BlockParser from "./BlockParser";
 import * as errors from "./errors";
 import { OptionsReader } from "./Options";
 import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
 import { QueryKeySelector } from "./query";
 import { SourceLocation, sourceLocation } from "./SourceLocation";
+import * as conflictDetection from "./conflictDetection";
 
 enum ConflictType {
   conflict,
@@ -17,7 +19,7 @@ const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
 const CONTIGUOUS_COMBINATORS = new Set(["+", ">"]);
 const NONCONTIGUOUS_COMBINATORS = new Set(["~", " "]);
-const RESOLVE_RE = /resolve\(("|')([^\1]*)\1\)/;
+const RESOLVE_RE = /resolve(-inherited)?\(("|')([^\2]*)\2\)/;
 
 function assertBlockObject(obj: BlockObject | undefined, key: string, source: SourceLocation | undefined): BlockObject {
   if (obj === undefined) {
@@ -51,10 +53,50 @@ export default class ConflictResolver {
     this.opts = opts;
   }
 
-  resolve(root: postcss.Container, block: Block) {
+  resolveInheritance(root: postcss.Root, block: Block) {
+    let blockBase = block.base;
+    let blockBaseName = block.baseName;
+    if (blockBase && blockBaseName) {
+      root.walkRules((rule) => {
+        let parsedSelectors = block.getParsedSelectors(rule);
+        parsedSelectors.forEach((sel) => {
+          let key = sel.key;
+          let blockNode = BlockParser.getBlockNode(key);
+          if (blockNode) {
+            let obj = block.nodeAndTypeToBlockObject(blockNode);
+            if (obj) {
+              let base = obj.base;
+              if (base) {
+                let baseSource = base.asSource();
+                let conflicts = conflictDetection.detectConflicts(obj, base);
+                if (key.pseudoelement) {
+                  let conflictingProps = conflicts.pseudoConflicts.get(key.pseudoelement.value);
+                  if (conflictingProps && conflictingProps.size > 0) {
+                    conflictingProps.forEach(([_, otherProp]) => {
+                      rule.prepend(postcss.decl({prop: otherProp, value: `resolve-inherited("${blockBaseName}${baseSource}")`}));
+                    });
+                  }
+                } else {
+                  let conflictingProps = conflicts.conflictingProps;
+                  if (conflictingProps && conflictingProps.size > 0) {
+                    conflictingProps.forEach(([_, otherProp]) => {
+                      rule.prepend(postcss.decl({prop: otherProp, value: `resolve-inherited("${blockBaseName}${baseSource}")`}));
+                    });
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
+    }
+  }
+
+  resolve(root: postcss.Root, block: Block) {
     root.walkDecls((decl) => {
       let resolveDeclarationMatch = decl.value.match(RESOLVE_RE);
       if (resolveDeclarationMatch !== null) {
+        let resolveInherited = !!resolveDeclarationMatch[1];
         let otherDecls: postcss.Declaration[] = [];
         let isOverride = false;
         let foundOtherValue: number | null = null;
@@ -80,14 +122,14 @@ export default class ConflictResolver {
         if (foundOtherValue === null) {
           throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, sourceLocation(block.source, decl));
         }
-        let referenceStr = resolveDeclarationMatch[2];
+        let referenceStr = resolveDeclarationMatch[3];
         let other: BlockObject | undefined = block.lookup(referenceStr);
-        assertBlockObject(other, referenceStr, decl.source.start);
+        assertBlockObject(other, referenceStr, decl.source && decl.source.start);
         if (block.equal(other && other.block)) {
           throw new errors.InvalidBlockSyntax(
             `Cannot resolve conflicts with your own block.`,
             sourceLocation(block.source, decl));
-        } else if (other && other.block.isAncestor(block)) {
+        } else if (!resolveInherited && other && other.block.isAncestor(block)) {
           throw new errors.InvalidBlockSyntax(
             `Cannot resolve conflicts with ancestors of your own block.`,
             sourceLocation(block.source, decl));

@@ -34,6 +34,7 @@ export class BlockInheritance extends BEMProcessor {
         " foo--small: base__foo--small; " +
         "}\n" +
         ".inherits { color: red; }\n" +
+        ".base.inherits { color: red; }\n" +
         ".inherits__foo { clear: both; }\n" +
         ".inherits__b--small { color: blue; }\n"
       );

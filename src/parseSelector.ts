@@ -30,7 +30,7 @@ export class CombinedSelector<T> {
 
 export class CompoundSelector extends CombinedSelector<CompoundSelector> {
   nodes: selectorParser.Node[];
-  pseudoelement: selectorParser.Pseudo;
+  pseudoelement?: selectorParser.Pseudo;
   next?: CombinatorAndCompoundSelector;
 
   constructor() {
@@ -206,6 +206,10 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
         lastCompoundSel.setNext(<selectorParser.Combinator>n, compoundSel);
       } else if (isPseudoelement(n)) {
         compoundSel.pseudoelement = <selectorParser.Pseudo>n;
+        // normalize :before and :after
+        if (!compoundSel.pseudoelement.value.startsWith("::")) {
+          compoundSel.pseudoelement.value = ":" + compoundSel.pseudoelement.value;
+        }
       } else {
         compoundSel.addNode(n);
       }

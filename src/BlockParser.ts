@@ -15,14 +15,14 @@ const LEGAL_COMBINATORS = new Set(["+", "~", " ", ">"]);
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 // const selectorParserFn = require("postcss-selector-parser");
 
-enum BlockTypes {
+export enum BlockTypes {
   block = 1,
   state,
   class,
   classState
 }
 
-interface NodeAndType {
+export interface NodeAndType {
   blockType: BlockTypes;
   node: selectorParser.Node;
 }
@@ -83,8 +83,9 @@ export default class BlockParser {
         parsedSelectors.forEach((iSel) => {
           this.assertValidCombinators(sourceFile, rule, iSel);
           let currentCompoundSel: CompoundSelector | undefined = iSel.selector;
+          let isKey = (iSel.key === currentCompoundSel);
           while (currentCompoundSel) {
-            let obj = this.getBlockObject(currentCompoundSel);
+            let obj = BlockParser.getBlockNode(currentCompoundSel);
             if (obj) {
               switch (obj.blockType) {
                 case BlockTypes.block:
@@ -92,17 +93,29 @@ export default class BlockParser {
                     this.extendBlock(block, sourceFile, rule);
                     this.implementsBlock(block, sourceFile, rule);
                   }
+                  if (isKey) {
+                    block.propertyConcerns.addProperties(rule, block);
+                  }
                   break;
                 case BlockTypes.state:
-                  block.ensureState(stateParser(<selectorParser.Attribute>obj.node));
+                  let state = block.ensureState(stateParser(<selectorParser.Attribute>obj.node));
+                  if (isKey) {
+                    state.propertyConcerns.addProperties(rule, block);
+                  }
                   break;
                 case BlockTypes.class:
-                  block.ensureClass(obj.node.value);
+                  let blockClass = block.ensureClass(obj.node.value);
+                  if (isKey) {
+                    blockClass.propertyConcerns.addProperties(rule, block);
+                  }
                   break;
                 case BlockTypes.classState:
                   let classNode = obj.node.prev();
                   let classObj = block.ensureClass(classNode.value);
-                  classObj.ensureState(stateParser(<selectorParser.Attribute>obj.node));
+                  let classState = classObj.ensureState(stateParser(<selectorParser.Attribute>obj.node));
+                  if (isKey) {
+                    classState.propertyConcerns.addProperties(rule, block);
+                  }
                   break;
               }
             }
@@ -142,7 +155,7 @@ export default class BlockParser {
         throw new errors.InvalidBlockSyntax(`No block named ${baseName} found`,
                                             sourceLocation(sourceFile, decl));
       }
-      block.base = baseBlock;
+      block.setBase(baseName, baseBlock);
     });
   }
 
@@ -215,7 +228,7 @@ export default class BlockParser {
 
   // Similar to assertBlockObject except it doesn't check for well-formedness
   // and doesn't ensure that you get a block object when not a legal selector.
-  private getBlockObject(sel: CompoundSelector): NodeAndType | null {
+  static getBlockNode(sel: CompoundSelector): NodeAndType | null {
     let n = sel.nodes.find(n => isBlock(n));
     if (n) {
       return {

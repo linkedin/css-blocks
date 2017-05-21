@@ -5,7 +5,7 @@ import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
 import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
-import { StateInfo, stateParser, isState, isBlock } from "./BlockParser";
+import { StateInfo, stateParser, isState, isBlock, NodeAndType, BlockTypes } from "./BlockParser";
 
 interface StateMap {
   [stateName: string]: State;
@@ -42,6 +42,48 @@ export interface Exportable {
   localName(): string;
   cssClass(opts: OptionsReader): string;
   asExport(opts: OptionsReader): Export;
+}
+
+type Properties = Set<string>;
+export class PropertyConcerns {
+  private concerns: Properties = new Set();
+  private pseudoConcerns = new Map<string,Properties>();
+  addProperty(property: string, pseudo?: string) {
+    let props: Properties;
+    if (pseudo) {
+      props = this.pseudoConcerns.get(pseudo) || new Set();
+      this.pseudoConcerns.set(pseudo, props);
+    } else {
+      props = this.concerns;
+    }
+    props.add(property);
+  }
+  addProperties(rule: postcss.Rule, block: Block) {
+    let selectors = block.getParsedSelectors(rule);
+    selectors.forEach((selector) => {
+      let key = selector.key;
+      let pseudo: string | undefined;
+      if (key.pseudoelement) {
+        pseudo = key.pseudoelement.toString();
+      }
+      rule.walkDecls((decl) => {
+        this.addProperty(decl.prop, pseudo);
+      });
+    });
+  }
+  getProperties(pseudo?: string): Set<string> {
+    let props: Properties;
+    if (pseudo) {
+      props = this.pseudoConcerns.get(pseudo) || new Set();
+      this.pseudoConcerns.set(pseudo, props);
+      return props;
+    } else {
+      return this.concerns;
+    }
+  }
+  getPseudos(): Set<string> {
+    return new Set(this.pseudoConcerns.keys());
+  }
 }
 
 export abstract class StateContainer implements HasBlockObjects {
@@ -160,8 +202,10 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   private _classes: BlockClassMap = {};
   private _blockReferences: BlockReferenceMap = {};
   private _source: string;
-  private _base: Block;
+  private _base?: Block;
+  private _baseName?: string;
   private _implements: Block[] = [];
+  propertyConcerns = new PropertyConcerns();
   root?: postcss.Root;
   parsedRuleSelectors: WeakMap<postcss.Rule,ParsedSelector[]>;
 
@@ -188,15 +232,20 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
     this._name = name;
   }
 
-  get base(): Block {
+  get base(): Block | undefined {
     return this._base;
   }
 
-  set base(base: Block) {
+  get baseName(): string | undefined {
+    return this._baseName;
+  }
+
+  setBase(baseName: string, base: Block) {
+    this._baseName = baseName;
     this._base = base;
   }
 
-  getClass(name: string) {
+  getClass(name: string): BlockClass | undefined {
     return this._classes[name];
   }
 
@@ -340,6 +389,24 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
 
   asSource():string {
     return `.root`;
+  }
+
+  nodeAndTypeToBlockObject(obj: NodeAndType): BlockObject | undefined {
+    switch (obj.blockType) {
+      case BlockTypes.block:
+        return this;
+      case BlockTypes.state:
+        return this.getState(stateParser(<selectorParser.Attribute>obj.node));
+      case BlockTypes.class:
+        return this.getClass(obj.node.value);
+      case BlockTypes.classState:
+        let classNode = obj.node.prev();
+        let classObj = this.getClass(classNode.value);
+        if (classObj) {
+          return classObj.getState(stateParser(<selectorParser.Attribute>obj.node));
+        }
+    }
+    return undefined;
   }
 
   nodeAsBlockObject(node: selectorParser.Node): [BlockObject, number] | null {
@@ -498,6 +565,7 @@ export class ExclusiveStateGroup extends StateContainer {
 export class State implements Exportable {
   private _container: Block | BlockClass | ExclusiveStateGroup;
   private _name: string;
+  propertyConcerns = new PropertyConcerns();
 
   constructor(name: string, container: Block | BlockClass | ExclusiveStateGroup) {
     this._container = container;
@@ -656,6 +724,8 @@ export class State implements Exportable {
 export class BlockClass extends ExclusiveStateGroupContainer implements Exportable {
   private _block: Block;
   private _name: string;
+  propertyConcerns = new PropertyConcerns();
+
   constructor(name: string, block: Block) {
     super();
     this._name = name;

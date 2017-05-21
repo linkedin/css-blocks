@@ -35,12 +35,13 @@ export class Plugin {
           decl.remove();
         });
       });
+      resolver.resolveInheritance(root, block);
       root.walkRules((rule) => {
         let parsedSelectors = block.getParsedSelectors(rule);
         rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.opts)).join(",\n");
       });
-
       resolver.resolve(root, block);
+
       if (this.opts.interoperableCSS) {
         this.injectExports(root, block);
       }
