@@ -27,6 +27,7 @@ export class Plugin {
     let blockParser = new BlockParser(this.postcss, this.opts);
 
     return blockParser.parse(root, sourceFile, defaultName).then((block) => {
+      blockParser.processDebugStatements(sourceFile, root, block);
       root.walkAtRules("block-reference", (atRule) => {
         atRule.remove();
       });
@@ -48,7 +49,6 @@ export class Plugin {
       if (this.opts.interoperableCSS) {
         this.injectExports(root, block);
       }
-      blockParser.processDebugStatements(sourceFile, root, block);
     });
   }
 
