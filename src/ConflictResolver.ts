@@ -182,10 +182,12 @@ export default class ConflictResolver {
     let foundConflict: ConflictType = ConflictType.noconflict;
     let resolvedSelectors = new Set<string>();
     curSel.forEach((cs) => {
+      let resultSels = cs.key.pseudoelement ? result.other[cs.key.pseudoelement.value] : result.main;
+      if (!resultSels || resultSels.length === 0) return;
+
       // we reverse the selectors because otherwise the insertion order causes them to be backwards from the
       // source order of the target selector
-      // TODO: handle pseudoelements
-      result.main.reverse().forEach((s) => {
+      resultSels.reverse().forEach((s) => {
         let newSels = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.opts), cs);
         if (newSels === null) return;
         let newSelStr = newSels.join(",\n");

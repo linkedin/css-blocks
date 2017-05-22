@@ -473,7 +473,6 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
-  @skip
   @test "resolves pseduoelements"() {
     let imports = new MockImportRegistry();
     imports.registerSource("other.css",
