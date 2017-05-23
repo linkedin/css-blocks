@@ -4,7 +4,7 @@ import { shorthandsFor, longhandsFor } from "./shortHandProps";
 export type Conflict = [string, string];
 export class Conflicts<T> {
   conflictingProps: Set<T> = new Set();
-  pseudoConflicts: Map<string, Set<T>>;
+  pseudoConflicts: Map<string, Set<T>> = new Map();
   getConflictSet(pseudo?: string): Set<T> {
     if (pseudo) {
       return this.pseudoConflicts.get(pseudo.startsWith("::") ? pseudo : ":" + pseudo) || new Set<T>();

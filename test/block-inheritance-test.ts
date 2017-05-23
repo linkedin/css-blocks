@@ -93,7 +93,32 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
-  @test "multiple rulesets for the same target object get resolved"() {
+  @test "inheritance conflicts automatically resolve pseudoelements to the base class"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("base.css",
+      `.foo::after { width: 100%; }`
+    );
+
+    let filename = "sub.css";
+    let inputCSS = `@block-reference "./base.css";
+                    .root {
+                      extends: base;
+                    }
+                    .foo::after {
+                      width: 80%;
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("base.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".sub__foo::after { width: 80%; }\n" +
+        ".base__foo.sub__foo::after { width: 80%; }\n"
+      );
+    });
+  }
+
+  @test "multiple rulesets for the same target object pseudoelement get resolved"() {
     let imports = new MockImportRegistry();
     imports.registerSource("base.css",
       `.nav { margin: 10px; }
