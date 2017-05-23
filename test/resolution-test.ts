@@ -1,25 +1,14 @@
 import { assert } from "chai";
 import { suite, test, skip } from "mocha-typescript";
-import * as postcss from "postcss";
 
 import BEMProcessor from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
+import assertError from "./util/assertError";
 
 import cssBlocks = require("../src/cssBlocks");
 
 @suite("Resolves conflicts")
 export class BlockInheritance extends BEMProcessor {
-  assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
-    return promise.then(
-      () => {
-        assert(false, `Error ${errorType.name} was not raised.`);
-      },
-      (reason) => {
-        assert(reason instanceof errorType, reason.toString());
-        assert.deepEqual(reason.message, message);
-      });
-  }
-
   @test "results in an error betwixt properties"() {
     let imports = new MockImportRegistry();
     imports.registerSource("a.css",
@@ -34,7 +23,7 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                     }`;
 
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Resolving border must happen either before or after all other values for border." +
         " (conflicts.css:4:23)",
@@ -54,7 +43,7 @@ export class BlockInheritance extends BEMProcessor {
                       border: resolve("a.foo");
                     }`;
 
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Cannot resolve border without a concrete value." +
         " (conflicts.css:3:23)",
@@ -335,7 +324,7 @@ export class BlockInheritance extends BEMProcessor {
                       border: 1px solid green;
                     }`;
 
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "There are no conflicting values for border found in any selectors targeting other.foo." +
         " (conflicts.css:3:23)",
@@ -473,7 +462,7 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
-  @test "resolves pseduoelements"() {
+  @test "resolves pseduoelement override"() {
     let imports = new MockImportRegistry();
     imports.registerSource("other.css",
       `.asdf::before { width: 100%; }`
@@ -492,6 +481,28 @@ export class BlockInheritance extends BEMProcessor {
         result.css.toString(),
         ".conflicts__header::before { width: 100px; }\n" +
         ".other__asdf.conflicts__header::before { width: 100%; }\n"
+      );
+    });
+  }
+  @test "resolves pseduoelement yield"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("other.css",
+      `.asdf::before { width: 100%; }`
+    );
+
+    let filename = "conflicts.css";
+    let inputCSS = `@block-reference "./other.css";
+                    .header::before {
+                      width: resolve("other.asdf");
+                      width: 100px;
+                    }`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("other.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".conflicts__header::before { width: 100px; }\n" +
+        ".other__asdf.conflicts__header::before { width: 100px; }\n"
       );
     });
   }
@@ -574,7 +585,7 @@ export class BlockInheritance extends BEMProcessor {
                       color: blue;
                     }`;
 
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Cannot resolve conflicts with your own block." +
         " (conflicts.css:3:23)",
@@ -595,7 +606,7 @@ export class BlockInheritance extends BEMProcessor {
                       color: resolve(".main");
                     }`;
 
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Cannot resolve conflicts with ancestors of your own block." +
         " (conflicts.css:5:23)",

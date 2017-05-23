@@ -5,7 +5,7 @@ import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
 import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
-import { StateInfo, stateParser, isState, isBlock, NodeAndType, BlockTypes } from "./BlockParser";
+import { StateInfo, stateParser, isClass, isState, isBlock, NodeAndType, BlockTypes } from "./BlockParser";
 
 interface StateMap {
   [stateName: string]: State;
@@ -414,12 +414,48 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
   nodeAsBlockObject(node: selectorParser.Node): [BlockObject, number] | null {
     if (node.type === selectorParser.CLASS && node.value === "root") {
       return [this, 0];
+    } else if (node.type === selectorParser.TAG) {
+      let otherBlock = this.getReferencedBlock(node.value);
+      if (otherBlock) {
+        let next = node.next();
+        if (next && isClass(next)) {
+          let klass = otherBlock.getClass(next.value);
+          if (klass) {
+            let another = next.next();
+            if (another && isState(another)) {
+              let info = stateParser(<selectorParser.Attribute>another);
+              let state = klass.getState(info);
+              if (state) {
+                return [state, 2];
+              } else {
+                return null; // this is invalid and should never happen.
+              }
+            } else {
+              // we don't allow scoped classes not part of a state
+              return null; // this is invalid and should never happen.
+            }
+          } else {
+            return null;
+          }
+        } else if (next && isState(next)) {
+          let info = stateParser(<selectorParser.Attribute>next);
+          let state = otherBlock.getState(info);
+          if (state) {
+            return [state, 1];
+          } else {
+            return null;
+          }
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
     } else if (node.type === selectorParser.CLASS) {
-      let klass = this._classes[node.value];
+      let klass = this.getClass(node.value);
       if (klass === undefined) {
         return null;
       }
-
       let next = node.next();
       if (next && isState(next)) {
         let info = stateParser(<selectorParser.Attribute>next);
@@ -568,6 +604,7 @@ export class State implements Exportable {
   private _container: Block | BlockClass | ExclusiveStateGroup;
   private _name: string;
   propertyConcerns = new PropertyConcerns();
+  isGlobal = false;
 
   constructor(name: string, container: Block | BlockClass | ExclusiveStateGroup) {
     this._container = container;

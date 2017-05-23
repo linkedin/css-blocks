@@ -354,7 +354,9 @@ Rules & Constraints
    context and key selectors.
 4. Pseudoelements can be used in conjunction with the key selector.
 5. Media queries and other @-rules are allowed.
-6. The context selector cannot contain classes or external selectors.
+6. The context selector cannot contain classes or external selectors. The
+   exception to this is that the block object in the key selector can be part
+   of it's own context selector.
 7. The context selector cannot contain states, except for at most one state
    if it belongs to the root class of the same block or is a global state of
    another block's root. See "Global (application) States" below.
@@ -471,20 +473,11 @@ caches in the browser. It is still often a performance win compared to
 querying the document in javascript and applying classes on many
 elements.
 
-ISSUE: Should `global: true` be changed to an at-rule?
-
 `application.block.css`
 
 ```css
-[state|is-loading] {
-  global: true;
-  /* other styles can be here too but often this state is applied
-directly to the html element. */
-}
-
-[state|is-saving] {
-  global: true;
-}
+@block-global [state|is-loading];
+@block-global [state|is-saving];
 ```
 
 `navigation.block.css`

@@ -69,6 +69,10 @@ export class MockImportRegistry {
   }
 
   getDefaultName(sourcePath: string): string {
-    return path.parse(sourcePath).name;
+    let name = path.parse(sourcePath).name;
+    if (name.endsWith(".block")) {
+      name = name.substr(0, name.length - 6);
+    }
+    return name;
   }
 }

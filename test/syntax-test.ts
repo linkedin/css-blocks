@@ -46,6 +46,21 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
+  @test "handles states as scopes"() {
+    let filename = "foo/bar/test-state.css";
+    let inputCSS = `.root {color: #111;}
+                    [state|big] .thing { transform: scale(2); }
+                    [state|big] .thing[state|medium] { transform: scale(1.8); }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        ".test-state { color: #111; }\n" +
+        ".test-state--big .test-state__thing { transform: scale( 2 ); }\n" +
+        ".test-state--big .test-state__thing--medium { transform: scale( 1.8 ); }\n"
+      );
+    });
+  }
+
   @test "handles comma-delimited states"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `[state|big], [state|really-big] { transform: scale(2); }`;
@@ -278,6 +293,16 @@ export class StraightJacket extends BEMProcessor {
       cssBlocks.InvalidBlockSyntax,
       "Missing block object in selector component ':hover': .root :hover" +
         " (foo/bar/illegal-class-combinator.css:1:7)",
+      this.process(filename, inputCSS));
+  }
+
+  @test "disallows element names attached to states."() {
+    let filename = "foo/bar/illegal.css";
+    let inputCSS = `div[state|foo] { display: block; }`;
+    return this.assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Tag name selectors are not allowed: div[state|foo]" +
+        " (foo/bar/illegal.css:1:1)",
       this.process(filename, inputCSS));
   }
 
