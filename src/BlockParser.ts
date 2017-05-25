@@ -7,10 +7,13 @@ import { ImportedFile } from "./importing";
 export { PluginOptions } from "./options";
 import { sourceLocation, selectorSourceLocation } from "./SourceLocation";
 import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
+import regexpu = require("regexpu-core");
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
 const LEGAL_COMBINATORS = new Set(["+", "~", " ", ">"]);
+
+const CLASS_NAME_IDENT = new RegExp(regexpu("((?:\\\\.|[A-Za-z_\\-\\u{00a0}-\\u{10ffff}])(?:\\\\.|[A-Za-z_\\-0-9\\u{00a0}-\\u{10ffff}])*)", "u"));
 
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 // const selectorParserFn = require("postcss-selector-parser");
@@ -112,11 +115,19 @@ export default class BlockParser {
               switch (obj.blockType) {
                 case BlockTypes.block:
                   if (obj.node.next() === undefined && obj.node.prev() === undefined) {
+                    rule.walkDecls("block-name", (decl) => {
+                      if (CLASS_NAME_IDENT.test(decl.value)) {
+                        block.name = decl.value;
+                      } else {
+                        throw new errors.InvalidBlockSyntax(`Illegal block name. '${decl.value}' is not a legal CSS identifier.`,
+                                                            sourceLocation(sourceFile, decl));
+                      }
+                    });
                     this.extendBlock(block, sourceFile, rule);
                     this.implementsBlock(block, sourceFile, rule);
                   }
                   if (isKey) {
-                    block.propertyConcerns.addProperties(rule, block, (prop) => !/(extends|implements)/.test(prop));
+                    block.propertyConcerns.addProperties(rule, block, (prop) => !/(extends|implements|block-name)/.test(prop));
                   }
                   break;
                 case BlockTypes.state:

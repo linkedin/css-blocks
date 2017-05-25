@@ -1,4 +1,4 @@
-import { suite, test } from "mocha-typescript";
+import { suite, test, skip } from "mocha-typescript";
 import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
 
@@ -71,6 +71,7 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
+  @skip
   @test "supports arbitrary whitespace in combinators"() {
     let filename = "foo/bar/self-combinator.css";
     let inputCSS = `[state|big]
@@ -403,5 +404,40 @@ export class BlockReferences extends BEMProcessor {
         ".test-block__b--big { color: blue; }\n"
       );
     });
+  }
+
+  @test "allow referenced block to specify name independently of filename"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `.root { block-name: snow-flake; }`
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference "./imported.css";
+                    @block-debug snow-flake to comment;`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("foo/bar/imported.css");
+      assert.deepEqual(
+        result.css.toString(),
+        `/* Source: foo/bar/imported.css\n` +
+        "   .root => .snow-flake */\n"
+      );
+    });
+  }
+
+  @test "doesn't allow poorly formed names"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `.root { block-name: 123; }`
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference "./imported.css";`;
+
+    return assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Illegal block name. '123' is not a legal CSS identifier. (foo/bar/imported.css:1:9)",
+      this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 }

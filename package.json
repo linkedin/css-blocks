@@ -45,6 +45,7 @@
     "typescript": "^2.2.2"
   },
   "dependencies": {
-    "postcss-selector-parser": "^2.2.3"
+    "postcss-selector-parser": "^2.2.3",
+    "regexpu-core": "^4.0.11"
   }
 }
