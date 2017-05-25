@@ -3,9 +3,8 @@ import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
 
 import BEMProcessor from "./util/BEMProcessor";
+import assertError from "./util/assertError";
 import { MockImportRegistry } from "./util/MockImportRegistry";
-
-import * as postcss from "postcss";
 
 @suite("In BEM output mode")
 export class BEMOutputMode extends BEMProcessor {
@@ -191,22 +190,11 @@ export class BEMOutputMode extends BEMProcessor {
 
 @suite("Block Syntax")
 export class StraightJacket extends BEMProcessor {
-  assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
-    return promise.then(
-      () => {
-        assert(false, `Error ${errorType.name} was not raised.`);
-      },
-      (reason) => {
-        assert(reason instanceof errorType, reason.toString());
-        assert.deepEqual(reason.message, message);
-      });
-  }
-
   @test "catches invalid states"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `.root {color: #111;}
                     [state|asdf^=foo] { transform: scale(2); }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "A state with a value must use the = operator (found ^= instead). (foo/bar/test-state.css:2:21)",
       this.process(filename, inputCSS));
@@ -216,7 +204,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `.root {color: #111;}
                     [state:asdf=foo] { transform: scale(2); }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "State attribute selctors use a `|`, not a `:` which is illegal CSS syntax and won't work in other parsers: [state:asdf=foo]" +
       " (foo/bar/test-state.css:2:21)",
@@ -226,7 +214,7 @@ export class StraightJacket extends BEMProcessor {
   @test "cannot combine two different states"() {
     let filename = "foo/bar/illegal-state-combinator.css";
     let inputCSS = `[state|a] [state|b] { float: left; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Illegal scoping of a root-level state: [state|a] [state|b]" +
         " (foo/bar/illegal-state-combinator.css:1:10)",
@@ -236,7 +224,7 @@ export class StraightJacket extends BEMProcessor {
   @test "cannot combine two different exclusive states"() {
     let filename = "foo/bar/illegal-state-combinator.css";
     let inputCSS = `[state|a] [state|exclusive=b] { float: left; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Illegal scoping of a root-level state: [state|a] [state|exclusive=b]" +
         " (foo/bar/illegal-state-combinator.css:1:10)",
@@ -247,7 +235,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
                     .my-class .another-class { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Distinct classes cannot be combined: .my-class .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:31)",
@@ -258,7 +246,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
                     [state|foo] ~ .another-class { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "A class cannot be a sibling with a root-level state: [state|foo] ~ .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:33)",
@@ -269,7 +257,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
                     [state|foo] + [state|foo] ~ .another-class { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "A class cannot be a sibling with a root-level state: [state|foo] + [state|foo] ~ .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:47)",
@@ -280,7 +268,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
                     [state|foo] + .another-class { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "A class cannot be a sibling with a root-level state: [state|foo] + .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:33)",
@@ -291,7 +279,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
                     .my-class.another-class { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Two distinct classes cannot be selected on the same element: .my-class.another-class" +
         " (foo/bar/illegal-class-combinator.css:2:30)",
@@ -301,7 +289,7 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows pseudos not attached to a block object."() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root :hover { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Missing block object in selector component ':hover': .root :hover" +
         " (foo/bar/illegal-class-combinator.css:1:7)",
@@ -311,7 +299,7 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows element names attached to states."() {
     let filename = "foo/bar/illegal.css";
     let inputCSS = `div[state|foo] { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Tag name selectors are not allowed: div[state|foo]" +
         " (foo/bar/illegal.css:1:1)",
@@ -321,7 +309,7 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows stand-alone attribute selectors except for states."() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root [href] { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Cannot select attributes other than states: .root [href]" +
         " (foo/bar/illegal-class-combinator.css:1:7)",
@@ -334,7 +322,7 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows attribute selectors except for states."() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root[href] { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Cannot select attributes other than states: .root[href]" +
         " (foo/bar/illegal-class-combinator.css:1:6)",
@@ -345,7 +333,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
                     [state|foo].another-class { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "The class must precede the state: [state|foo].another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
@@ -355,7 +343,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
                     .root.another-class { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       ".another-class cannot be on the same element as .root: .root.another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
@@ -365,7 +353,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root {color: #111;}
                     .root[state|foo] { display: block; }`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "It's redundant to specify a state with an explicit .root: .root[state|foo]" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
@@ -374,7 +362,7 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows !important"() {
     let filename = "foo/bar/no-important.css";
     let inputCSS = `.root {color: #111 !important;}`;
-    return this.assertError(
+    return assertError(
       cssBlocks.InvalidBlockSyntax,
       "!important is not allowed for `color` in `.root` (foo/bar/no-important.css:1:8)",
       this.process(filename, inputCSS));
