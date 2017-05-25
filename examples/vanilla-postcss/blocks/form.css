@@ -3,13 +3,10 @@
 [state|theme=dark]      { color: #ccc; }
 [state|compact]         { margin: 0.5em 0; padding: 0.5em; }
 .input-area             { display: flex; margin: 1em 0; font-size: 1.5rem; }
-[state|compact]
-  .input-area           { margin: 0.25em 0; }
+[state|compact] .input-area           { margin: 0.25em 0; }
 .label                  { flex-basis: 1; }
 .input                  { flex-basis: 3; }
-[state|theme=light]
-  .input                { border-color: #333; }
-[state|theme=dark]
-  .input                { border-color: #ccc; }
+[state|theme=light] .input                { border-color: #333; }
+[state|theme=dark] .input                { border-color: #ccc; }
 .submit                 { width: 200px; }
 .submit[state|disabled] { color: gray; }

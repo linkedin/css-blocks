@@ -1,0 +1,19 @@
+.link {
+  color: gray;
+  text-decoration: none;
+}
+
+.link:hover {
+  color: blue;
+  text-decoration: underline;
+}
+
+
+[state|active] .link {
+  color: lightblue;
+  text-decoration: underline;
+}
+
+[state|active] .link:hover {
+  color: darkblue;
+}

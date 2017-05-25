@@ -1,0 +1,10 @@
+@block-reference "./link.css";
+
+.root {
+  extends: link;
+}
+
+.link {
+  color: pink;
+  font-style: italic;
+}
