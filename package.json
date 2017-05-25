@@ -40,6 +40,7 @@
     "perfectionist": "^2.4.0",
     "postcss": "^5.2.17",
     "remap-istanbul": "^0.9.5",
+    "source-map-support": "^0.4.15",
     "tslint": "^5.1.0",
     "typedoc": "^0.7.1",
     "typescript": "^2.2.2"
