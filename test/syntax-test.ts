@@ -72,6 +72,18 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
+  @test "supports arbitrary whitespace in combinators"() {
+    let filename = "foo/bar/self-combinator.css";
+    let inputCSS = `[state|big]
+     [state|big]::after { content: "" }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        ".self-combinator--big .self-combinator--big::after { content: \"\"; }\n"
+      );
+    });
+  }
+
   @test "a state can be combined with itself"() {
     let filename = "foo/bar/self-combinator.css";
     let inputCSS = `[state|big] + [state|big]::after { content: "" }`;
