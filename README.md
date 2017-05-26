@@ -734,6 +734,222 @@ resolved selector has the value from the local selector.
 
 Let's consider some more complex cases and see how the resolver handles those.
 
+### Resolving Pseudoelements
+
+When resovling a selector for a psuedoelement, only conflicts for other
+selectors of that same psuedoelement are resolved.
+
+```css
+/* links.block.css */
+.external { font-style: normal; }
+.external::before { content: "["; font-style: normal; }
+.external::after { content: "]"; font-style: normal; }
+```
+
+```css
+/* lists.block.css */
+@block-reference "./links.block.css";
+.list-item::before {
+  content: "*";
+  content: resolve("links.external");
+  font-style: resolve("links.external");
+  font-style: italic;
+}
+```
+
+In this case, the only resolution would be:
+
+```css
+.links__external.lists__list-item::before {
+  content: "[";
+  font-style: italic;
+}
+```
+
+### Resolving Pseudoclasses
+
+All selectors conflicting with the resolved property are resolved against the
+target block's root, class or state regardless of pseudoclasses.
+
+What this means is that when you override a target with pseudo classes, you
+effectively nullify the effect of those pseudoclasses on the resolved property.
+Those pseudoclasses would have to be reproduced locally and set to and explicit
+value (also with an override resolution) in order to preserve the conflicting pseudoclass behavior.
+
+Example:
+
+```css
+/* links.block.css */
+.external { color: blue; }
+.external:nth-child(2n + 1) { color: yellow; }
+.external:hover { color: green; }
+```
+
+```css
+/* lists.block.css */
+@block-reference "./links.block.css";
+.list-item {
+  color: purple;
+  color: resolve("links.external");
+}
+.list-item:nth-child(4n + 1) {
+  color: resolve("links.external");
+  color: black;
+}
+```
+
+In this case, the resolutions would be:
+
+```css
+.links__external.lists__list-item {
+  color: blue;
+}
+.links__external.lists__list-item:nth-child(2n + 1) {
+  color: yellow;
+}
+.links__external.lists__list-item:hover {
+  color: green;
+}
+.links__external.lists__list-item:nth-child(4n + 1),
+.links__external.lists__list-item:nth-child(2n + 1):nth-child(4n + 1),
+.links__external.lists__list-item:hover:nth-child(4n + 1) {
+  color: black;
+}
+```
+
+### Resolving State Conflicts
+
+Styles for target block's root state or class state may also conflict with
+the current selector. State selectors have a higher specificity and so you
+may expect that they would automatically resolve against a lower specificity
+selector without needing an explicit resolution. But experience shows
+specificity is not always the determining factor in what should win; if it
+were, we'd never have used `!important` to work around it. Each state is
+it's own concern and must be resolved in the case of a conflict.
+
+```css
+/* article.block.css */
+.link { color: lightblue; }
+.link[state|destination=on-page] { color: blue; }
+.link[state|destination=external] { color: red; }
+.link[state|disabled] { color: gray; }
+[state|is-loading] > .link { color: darkgray; }
+```
+
+```css
+/* icons.block.css */
+.icon {
+  color: resolve("article.link");
+  color: resolve("article.link[state|destination=on-page]");
+  color: white;
+  color: resolve("article.link[state|destination=external]");
+  color: resolve("article.link[state|disabled]");
+  color: resolve("article[state|disabled] article.link");
+}
+```
+
+Now, that's quite a lot of resolutions but a few things to note here, we're
+conflicting with a primary responsiblity of the target class and its states
+in this case, so it stands to reason that we would have to do more work and
+this may give us pause about whether it's appropriate to even have these
+styles on the same element together.
+
+Note that selector query expressions with `resolve()` must handle
+global states by referencing the same global block locally and using it in
+the selector query expression. It is not required for both blocks to use the
+same local identifier for the block with the global state. Example:
+
+```css
+/* icons.block.css */
+@block-reference "./article.block.css";
+@block-reference "./app.block.css";
+.icon {
+  color: white;
+  color: resolve("app[state|is-loading] article.link");
+}
+```
+
+#### Resolution Queries with Wildcards
+
+In some cases, it may be appropriate to have resolution policies for
+conflicts that encompass multiple states. To handle this more elegantly it
+is possible to query selectors involving states with wildcard expressions.
+
+When using wildcard expressions, the same target selector may get resolved by
+several query expressions. In the case where a selector is both yielded and
+overridden, the more fully specified query will win.
+
+In the following example we achieve the same resolution as above:
+
+```css
+/* icons.block.css */
+.icon {
+  color: resolve("article.link");
+  color: resolve("article.link[state|destination=on-page]");
+  color: white;
+  color: resolve("article.link[state|*]");
+  color: resolve("article[state|disabled] article.link");
+}
+```
+
+Wildcard syntax:
+
+* `.*` - any class.
+* `[state|*]` - any state.
+* `[state|foo=*]` - any substate of state `foo`.
+* `[state?|*]` - any state or no state at all.
+* `[state?|foo=*]` - any substate of the state `foo` or no substate at all.
+
+Wildcard examples:
+
+* `block.*` - All classes in the block `block`.
+* `block.class[state|*]` - All states for the class `class` (but not the class itself).
+* `block.class[state|foo=*]` - All substates for the specific state `foo`.
+* `block.class[state?|foo]` - The class as well the state `foo` if it exists.
+* `block.class[state?|*]` - The class as well as all states of the class.
+* `block[state|*] block.class` - The class but only when modified by any root-level state with any legal combinator(s).
+* `block[state?|*] block.class` - The class as well as when it is modified by any root-level state with any legal combinator(s).
+* `block[state?|*] block.class` - The class as well as when it is modified by any root-level state with any legal combinator(s).
+
+In addition to wildcards, the `resolve-all()` function will resolve all
+states relating to a block object as well as the object itself. If given a
+state, the class for that state is not resolved, but all root-level state
+scopes of that state are resolved.
+
+Example:
+
+```css
+/* icons.block.css */
+@block-reference "./article.block.css";
+.icon {
+  color: white;
+  color: resolve-all("article.link");
+}
+```
+
+You can think of resolve all as being a simpler way of writing
+complex state queries:
+
+`resolve-all()` | `resolve()` Equivalent
+----------------|-----------------------
+`resolve-all("block.class")` | `resolve("[state?|*] block.class[state?|*]")`
+`resolve-all("block.class[state|foo]")` | `resolve("[state?|*] block.class[state|foo]")`
+`resolve-all("block.*[state|foo]")` | `resolve("block[state?|*] .*[state|foo]")`
+`resolve-all("block.*")` | `resolve("block[state?|*] block.*[state?|*]")`
+
+Note that `resolve-all("block.*")` essentially resolves all conflicts
+for that property against every selector in the other block that might conflict.
+This is the `!important` of css-blocks.
+
+Note that `resolve-all()` has the additional behavior of resolving against global
+states from other blocks.
+
+It is possible to combine resolutions with `resolve()` in combination with
+`resolve-all()` in order to specify a different resolution for a specific
+set of selectors. This is especially useful if a resolution encounters a
+resolution constraint that forces a yield instead of an override. So
+now is probably a good time to learn what resolution constraints are...
+
 ### Resolution Constraints
 
 Some properties are critical to proper functioning of the block. For
@@ -806,6 +1022,31 @@ In this case, the compiler copies all the values for the conflicting
 .other__nav.conflicts__header { font-size: 18px; font-size: 1.2rem; }
 ```
 
+#### Overriding Wildcard Resolutions
+
+Earlier we said "In the case where a selector is both yielded and
+overridden, the more fully specified query will win." and this was a bit
+hand-wavey. What does it mean for a query to be "more specified"?
+
+1. A query that has no wildcards is more fully-specified than a query with a
+   wildcard.
+2. A substate wildcard (`[state|foo=*]`) is more specified than a general
+   state wildcard (`[state|*]`).
+3. A state wildcard is more specified than an optional state wildcard of the
+   same type. E.g. `[state?|*]` loses to `[state|*]`, `[state?|foo=*]` loses
+   to `[state|foo=*]`.
+4. A class wildcard for a specific state is less well specified than a state
+   wildcard for a specific class. E.g. `.*[state|foo]` loses to `.foo[state|*]`
+   and to `.foo[state?|*]`
+5. A state wildcard on a specific class is more specified than a state
+   wildcard as context.
+6. A substate wildcard as context is more well specified than a
+   class wildcard with or without a state.
+
+TBD: We need to decide on a way to ascribe a numeric value or values for a query
+that will allow queries to be compared. We should document that specific
+calculation here.
+
 #### Multiple Conflicting Target Selectors and Context Selector Handling
 
 Consider the following conflicts when `target.main` and `conflicts.article` are applied to the same element:
@@ -855,7 +1096,21 @@ a block is or what inheritance is. Also, since we can't guarantee the
 concatentation order of these two blocks when the CSS is ultimately
 delivered, the block compiler detects all style conflicts between the base
 and sub blocks and generates an override resolution in the sub-block for
-them.
+them. However, the inheritance resolution does not override states conflicts,
+that must be done by specifying the states in the inherited block.
+
+Specifically for any property that has a conflict with the super block element
+of the same value in the key selector the following resolution is created:
+
+```css
+@block-reference "./base.block.css";
+.root { extends: base; }
+.foo {
+  color: resolve("base.foo");
+  color: blue; // conflicts with color value(s) in a selector targeting base.foo
+  color: resolve-all("base.foo");
+}
+```
 
 #### Composing blocks by the consuming app
 
