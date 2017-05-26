@@ -10,8 +10,9 @@ module.exports = function(grunt) {
         ]
       },
       dist: {
-        src: 'blocks/*.css',
-        dest: 'dist/blocks/*.css',
+        expand: true,
+        src: [ "blocks/**/*.css" ],
+        dest: "dist"
       }
     }
   }); 
