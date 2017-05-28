@@ -24,6 +24,7 @@
   "bugs": {
     "url": "https://github.com/sailfishers/css-blocks/issues"
   },
+  "types": "dist/src",
   "files": [
     "dist",
     "*.md",
