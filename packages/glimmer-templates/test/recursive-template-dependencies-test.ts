@@ -1,4 +1,4 @@
-import Analyzer from '../src';
+import Analyzer from '../src/Analyzer';
 import path = require('path');
 import { expect } from 'chai';
 

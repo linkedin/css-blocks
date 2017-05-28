@@ -1,6 +1,6 @@
 import Resolver from '@glimmer/resolver';
 import { AST, preprocess, traverse } from '@glimmer/syntax';
-import Project, { Template} from "./project";
+import Project, { ResolvedFile } from "./project";
 import { pathFromSpecifier } from "./utils";
 
 export interface TemplateDependencies {

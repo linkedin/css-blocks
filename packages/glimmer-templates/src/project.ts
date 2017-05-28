@@ -11,13 +11,15 @@ export interface ResolutionMap {
   [specifier: string]: string;
 }
 
-export class Template {
+export class ResolvedFile {
   string: string;
   specifier: string;
+  path: string;
 
-  constructor(templateString: string, specifier: string) {
+  constructor(templateString: string, specifier: string, path: string) {
     this.string = templateString;
     this.specifier = specifier;
+    this.path = path;
   }
 }
 
@@ -50,6 +52,19 @@ export default class Project {
     this.resolver = new Resolver(config, this.registry);
   }
 
+  stylesheetFor(templateName: string): ResolvedFile  {
+    let specifier = this.resolver.identify(`stylesheet:${templateName}`);
+    if (!specifier) {
+      throw new Error(`Couldn't find s for component ${templateName} in Glimmer app ${this.projectDir}.`)
+    }
+
+    let stylePath = this.resolver.resolve(specifier);
+    let fullPath = path.join(this.projectDir, 'src', stylePath);
+    let contents = fs.readFileSync(fullPath, 'utf8');
+
+    return new ResolvedFile(contents, specifier, fullPath);
+  }
+
   templateFor(templateName: string) {
     let specifier = this.resolver.identify(`template:${templateName}`);
     if (!specifier) {
@@ -57,9 +72,10 @@ export default class Project {
     }
 
     let templatePath = this.resolver.resolve(specifier);
-    let templateString = fs.readFileSync(path.join(this.projectDir, 'src', templatePath), 'utf8');
+    let fullPath = path.join(this.projectDir, 'src', templatePath);
+    let templateString = fs.readFileSync(fullPath, 'utf8');
 
-    return new Template(templateString, specifier);
+    return new ResolvedFile(templateString, specifier, fullPath);
   }
 
   private loadPackageJSON(appPath: string) {

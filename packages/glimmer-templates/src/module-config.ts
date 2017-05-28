@@ -5,6 +5,7 @@ export default {
     "renderer": { "definitiveCollection": "main" },
     "service": { "definitiveCollection": "services" },
     "template": { "definitiveCollection": "components" },
+    "stylesheet": { "definitiveCollection": "components" },
     "util": { "definitiveCollection": "utils" }
   },
   "collections": {
@@ -13,7 +14,7 @@ export default {
     },
     "components": {
       "group": "ui",
-      "types": ["component", "template"],
+      "types": ["component", "template", "stylesheet"],
       "defaultType": "component",
       "privateCollections": ["utils"]
     },
