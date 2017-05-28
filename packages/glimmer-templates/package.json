@@ -40,6 +40,7 @@
   "dependencies": {
     "@glimmer/resolution-map-builder": "0.4.0",
     "@glimmer/resolver": "^0.3.0",
-    "@glimmer/syntax": "0.23.0-alpha.17"
+    "@glimmer/syntax": "0.23.0-alpha.17",
+    "postcss": "^6.0.1"
   }
 }
