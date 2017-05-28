@@ -1,7 +1,8 @@
 import fs = require('fs');
 import path = require('path');
 
-import { buildResolutionMap } from '@glimmer/resolution-map-builder';
+import resMapBuilder = require('@glimmer/resolution-map-builder');
+const buildResolutionMap  = resMapBuilder.buildResolutionMap;
 import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
 
 import DEFAULT_MODULE_CONFIG from './module-config';

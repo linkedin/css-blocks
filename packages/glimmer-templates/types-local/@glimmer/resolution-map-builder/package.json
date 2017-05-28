@@ -1,0 +1,7 @@
+{
+  "dependencies": {},
+  "description": "TypeScript definitions for @glimmer/resolution-map-builder 0.4.0",
+  "name": "@types/@glimmer/resolution-map-builder",
+  "typings": "index.d.ts",
+  "version": "0.4.0"
+}
