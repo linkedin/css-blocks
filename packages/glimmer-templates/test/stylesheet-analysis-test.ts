@@ -15,8 +15,8 @@ describe('Stylesheet dependency analysis', function() {
       assert.deepEqual(analysis.blocks, {
         "": fixture("styled-app/src/ui/components/my-app/stylesheet.css")
       });
-      assert.deepEqual(analysis.stylesFound, [".root", "[state|is-loading]"]);
-      assert.deepEqual(analysis.styleCorrelations, [[0, 1]]);
+      assert.deepEqual(analysis.stylesFound, [".editor", ".editor[state|disabled]" ,".root", "[state|is-loading]"]);
+      assert.deepEqual(analysis.styleCorrelations, [[2, 3], [0, 1]]);
     }).catch((error) => {
       console.error(error);
       throw error;

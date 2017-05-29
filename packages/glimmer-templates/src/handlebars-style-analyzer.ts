@@ -1,10 +1,22 @@
 import Resolver from '@glimmer/resolver';
 import * as postcss from "postcss";
 import { AST, preprocess, traverse } from '@glimmer/syntax';
-import { BlockParser, PluginOptions, PluginOptionsReader, CssBlockError } from "css-blocks";
+import {
+  Block,
+  BlockClass,
+  BlockObject,
+  BlockParser,
+  PluginOptions,
+  PluginOptionsReader,
+  CssBlockError,
+  QueryKeySelector,
+  ClassifiedParsedSelectors
+} from "css-blocks";
 import Project, { ResolvedFile } from "./project";
 import { pathFromSpecifier } from "./utils";
 import StyleAnalysis from "./StyleAnalysis";
+
+type StateContainer = Block | BlockClass;
 
 const STATE = /state:(.*)/;
 
@@ -25,75 +37,127 @@ export function performStyleAnalysis(templateName: string, project: Project): Pr
   return result.then((block) => {
     analysis.blocks[""] = block;
     traverse(ast, {
-      AttrNode(node) {
-        if (node.name === "class") {
-          if (node.value.type === "TextNode") {
-            let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
-            classNames.forEach((name) => {
-              if (name === "root") {
-                analysis.addStyle(block);
-              } else {
-                let klass = block.getClass(name);
-                if (klass) {
-                  analysis.addStyle(klass);
-                } else {
-                  throw new CssBlockError(`No class ${name} found in block at ${stylesheet.path}`, {
-                    filename: node.loc.source || template.path,
-                    line: node.loc.start.line,
-                    column: node.loc.start.column
-                  })
-                }
-              }
-            });
-          }
-        } else if (node.name.match(STATE)) {
-          let stateName = RegExp.$1;
-          let substateName: string | null = null;
-          if (node.value && node.value.type === "TextNode" && node.value.chars) {
-              substateName = node.value.chars;
-              let state = block.getState({ group: stateName, name: substateName });
-              if (state) {
-                analysis.addStyle(state);
-              } else {
-                throw new CssBlockError(`No state ${stateName}=${node.value.chars} found in block at ${stylesheet.path}`, {
-                  filename: node.loc.source || template.path,
-                  line: node.loc.start.line,
-                  column: node.loc.start.column
-                })
-              }
-          } else if (node.value && node.value.type !== "TextNode") {
-            // dynamic stuff will go here
-            throw new CssBlockError("No handling for dynamic styles yet", {
-                filename: node.loc.source || template.path,
-                line: node.loc.start.line,
-                column: node.loc.start.column
-            })
-          } else {
-            let state = block.getState({ name: stateName });
-            if (state) {
-              analysis.addStyle(state);
-            } else {
-              throw new CssBlockError(`No state ${stateName} found in block at ${stylesheet.path}`, {
-                filename: node.loc.source || template.path,
-                line: node.loc.start.line,
-                column: node.loc.start.column
-              })
-            }
-          }
-        }
-      },
-
       ElementNode(node) {
         analysis.endElement();
         analysis.startElement();
         elementCount++;
-      }
+        let atRootElement = (elementCount === 1);
+        // If there are root styles, we add them on the root element implicitly. The rewriter will add the block's root class.
+        if (atRootElement) {
+          let query = new QueryKeySelector(block);
+          let res = query.execute(root, block);
+          if (selectorCount(res) > 0) { 
+            analysis.addStyle(block);
+          }
+        }
+        let classObjects: StateContainer[] | undefined = undefined;
+        node.attributes.forEach((n) => {
+          if (n.name === "class") {
+            classObjects = processClass(n, block, analysis, stylesheet, template);
+            validateClasses(block, atRootElement, classObjects, node, template);
+          }
+        });
+        node.attributes.forEach((n) => {
+          if (n.name.match(STATE)) {
+            let stateContainers: StateContainer[] = classObjects ? classObjects.slice() : [];
+            if (atRootElement) {
+              stateContainers.unshift(block);
+            }
+            if (stateContainers.length > 0) {
+              processState(RegExp.$1, n, block, stateContainers, analysis, stylesheet, template);
+            } else {
+              throw cssBlockError(`Cannot apply a block state without a block class or root`, n, template);
+            }
+          }
+        });
+      },
     });
     analysis.endElement();
     return analysis;
   });
+}
 
+function validateClasses(block: Block, atRootElement: boolean, objects: BlockObject[], node: AST.Node, template: ResolvedFile) {
+  if (atRootElement && objects.length > 0) {
+    objects.forEach((obj) => {
+      if (obj.block === block) {
+        throw cssBlockError(`Cannot put block classes on the block's root element`, node, template);
+      }
+    });
+  }
+  let blocks = new Set<Block>();
+  objects.forEach((o) => {
+    if (blocks.has(o.block)) {
+      throw cssBlockError(`Multiple classes from the same block on an element are not allowed.`, node, template);
+    } else {
+      blocks.add(o.block);
+    }
+  });
+}
 
+function processClass(node: AST.AttrNode, block: Block, analysis: StyleAnalysis, stylesheet: ResolvedFile, template: ResolvedFile): StateContainer[] {
+  let blockObjects: StateContainer[] = [];
+  if (node.value.type === "TextNode") {
+    let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
+    classNames.forEach((name) => {
+      if (name === "root") { // TODO handle other block's root class instead of this -- which is implicitly on the root element if there are root styles.
+        blockObjects.push(block);
+        analysis.addStyle(block);
+      } else {
+        let klass = block.getClass(name);
+        if (klass) {
+          blockObjects.push(klass);
+          analysis.addStyle(klass);
+        } else {
+          throw cssBlockError(`No class ${name} found in block at ${stylesheet.path}`, node, template);
+        }
+      }
+    });
+  }
+  return blockObjects;
+}
+
+function processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: StyleAnalysis, stylesheet: ResolvedFile, template: ResolvedFile) {
+  let defaultContainer = stateContainers.find((c) => c.block === block);
+  if (!defaultContainer) {
+    throw cssBlockError(`class missing for state in the default block`, node, template);
+  }
+  let substateName: string | null = null;
+  if (node.value && node.value.type === "TextNode" && node.value.chars) {
+      substateName = node.value.chars;
+      let state = defaultContainer.getState({ group: stateName, name: substateName });
+      if (state) {
+        analysis.addStyle(state);
+      } else {
+        throw cssBlockError(`No state ${stateName}=${node.value.chars} found in block at ${stylesheet.path}`, node, template);
+      }
+  } else if (node.value && node.value.type !== "TextNode") {
+    // dynamic stuff will go here
+    throw cssBlockError("No handling for dynamic styles yet", node, template);
+  } else {
+    let state = defaultContainer.getState({ name: stateName });
+    if (state) {
+      analysis.addStyle(state);
+    } else {
+      throw cssBlockError(`No state ${stateName} found in block at ${stylesheet.path}`, node, template);
+    }
+  }
+}
+
+function cssBlockError(message: string, node: AST.Node, template: ResolvedFile) {
+  return new CssBlockError(message, {
+    filename: node.loc.source || template.path,
+    line: node.loc.start.line,
+    column: node.loc.start.column
+  })
+}
+
+function selectorCount(result: ClassifiedParsedSelectors) {
+  let count = result.main.length;
+  Object.keys(result.other).forEach((k) => {
+    count += result.other[k].length;
+  });
+  return count;
 }
 
 function isComponentHelper({ path }: AST.MustacheStatement) {

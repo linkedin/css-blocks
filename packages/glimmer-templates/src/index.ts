@@ -14,7 +14,7 @@ class BlockAnalyzer {
   }
 
   analyze(componentName: string): Promise<StyleAnalysis> {
-    return performStyleAnalysis(componentName, this.project)
+    return performStyleAnalysis(componentName, this.project);
   }
 }
 
