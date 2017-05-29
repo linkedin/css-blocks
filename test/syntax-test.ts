@@ -426,6 +426,10 @@ export class BlockReferences extends BEMProcessor {
     });
   }
 
+  @skip
+  @test "doesn't allow a block ref name to collide with a class name"() {
+  }
+
   @test "doesn't allow poorly formed names"() {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/imported.css",
