@@ -27,6 +27,16 @@ export {
 export {
   OutputMode
 } from "./OutputMode";
+export {
+  ParsedSelectorAndRule,
+  ClassifiedParsedSelectors,
+  QueryKeySelector
+} from "./query";
+export {
+  default as parseSelector,
+  ParsedSelector,
+  CompoundSelector
+} from "./parseSelector";
 
 import cssBlocks = require("./cssBlocks");
 export default cssBlocks;
