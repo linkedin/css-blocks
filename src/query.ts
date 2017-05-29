@@ -2,6 +2,7 @@ import { Block, BlockObject } from "./Block";
 import postcss = require("postcss");
 import parseSelector, { ParsedSelector } from "./parseSelector";
 
+// QUESTION: Can we bake this functionality in to the `Block` class? Makes sense to be there.
 export interface Query {
   execute(container: postcss.Container): ClassifiedParsedSelectors;
 }
@@ -31,8 +32,7 @@ export class QueryKeySelector implements Query {
     };
     container.walkRules((node) => {
       let parsedSelectors = block && block.getParsedSelectors(node) || parseSelector(node.selector);
-      let found = parsedSelectors.filter((value: ParsedSelector) =>
-        this.target.matches(value.key));
+      let found = parsedSelectors.filter((value: ParsedSelector) => this.target.matches(value.key));
       found.forEach((sel) => {
         let key = sel.key;
         if (key.pseudoelement !== undefined) {

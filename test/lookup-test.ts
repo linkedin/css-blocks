@@ -12,13 +12,13 @@ export class LookupTests {
   }
   @test "finds a state"() {
     let block = new Block("test", "test.block.css");
-    let state = block.ensureState({name: "foo"});
+    let state = block.states._ensureState({name: "foo"});
     let found = block.lookup("[state|foo]");
     assert.deepEqual(state, found);
   }
   @test "finds an exclusive state"() {
     let block = new Block("test", "test.block.css");
-    let state = block.ensureState({name: "bar", group: "foo"});
+    let state = block.states._ensureState({name: "bar", group: "foo"});
     let found = block.lookup("[state|foo=bar]");
     assert.deepEqual(state, found);
   }
@@ -31,14 +31,14 @@ export class LookupTests {
   @test "finds a class state"() {
     let block = new Block("test", "test.block.css");
     let klass = block.ensureClass("foo");
-    let state = klass.ensureState({name: "a"});
+    let state = klass.states._ensureState({name: "a"});
     let found = block.lookup(".foo[state|a]");
     assert.deepEqual(state, found);
   }
   @test "finds an exclusive class state"() {
     let block = new Block("test", "test.block.css");
     let klass = block.ensureClass("foo");
-    let state = klass.ensureState({name: "a", group: "b"});
+    let state = klass.states._ensureState({name: "a", group: "b"});
     let found = block.lookup(".foo[state|b=a]");
     assert.deepEqual(state, found);
   }
