@@ -1,0 +1,11 @@
+.root {
+   font-size: 18px; 
+}
+
+.emphasis {
+    font-style: italic;
+}
+
+.emphasis[state|extra] {
+    font-weight: bold;
+}

@@ -30,6 +30,15 @@ export default class StyleAnalysis {
     this.stylesFound = new Set();
     this.styleCorrelations = [];
   }
+  getBlockName(block: Block): string | null {
+    let names = Object.keys(this.blocks);
+    for (let i = 0; i < names.length; i++) {
+      if (this.blocks[names[i]] === block) {
+        return names[i];
+      }
+    }
+    return null;
+  }
   addStyle(obj: BlockObject): StyleAnalysis {
     this.stylesFound.add(obj);
     if (!this.currentCorrelation) {
@@ -52,6 +61,9 @@ export default class StyleAnalysis {
     }
     return this;
   }
+  serializedName(o: BlockObject) {
+    return `${this.getBlockName(o.block) || ''}${o.asSource()}`;
+  }
   serialize(): SerializedAnalysis {
     let blockRefs: BlockPathReferences = {};
     let objects: BlockObject[];
@@ -60,7 +72,7 @@ export default class StyleAnalysis {
       blockRefs[localname] = this.blocks[localname].source;
     });
     this.stylesFound.forEach((s) => {
-      styles.push(s.asSource());
+      styles.push(this.serializedName(s));
     });
     styles.sort();
 
@@ -69,7 +81,7 @@ export default class StyleAnalysis {
       if (correlation.size > 1) {
         let cc: number[] = [];
         correlation.forEach((c) => {
-          cc.push(styles.indexOf(c.asSource()));
+          cc.push(styles.indexOf(this.serializedName(c)));
         });
         cc.sort();
         correlations.push(cc);

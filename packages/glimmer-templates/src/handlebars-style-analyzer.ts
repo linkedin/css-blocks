@@ -36,6 +36,9 @@ export function performStyleAnalysis(templateName: string, project: Project): Pr
 
   return result.then((block) => {
     analysis.blocks[""] = block;
+    block.eachBlockReference((name, refBlock) => {
+      analysis.blocks[name] = refBlock;
+    });
     traverse(ast, {
       ElementNode(node) {
         analysis.endElement();
@@ -100,17 +103,12 @@ function processClass(node: AST.AttrNode, block: Block, analysis: StyleAnalysis,
   if (node.value.type === "TextNode") {
     let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
     classNames.forEach((name) => {
-      if (name === "root") { // TODO handle other block's root class instead of this -- which is implicitly on the root element if there are root styles.
-        blockObjects.push(block);
-        analysis.addStyle(block);
+      let found = block.find(name) || block.find(`.${name}`);
+      if (found) {
+        blockObjects.push(<Block|BlockClass>found);
+        analysis.addStyle(found);
       } else {
-        let klass = block.getClass(name);
-        if (klass) {
-          blockObjects.push(klass);
-          analysis.addStyle(klass);
-        } else {
-          throw cssBlockError(`No class ${name} found in block at ${stylesheet.path}`, node, template);
-        }
+        throw cssBlockError(`No class ${name} found in block at ${stylesheet.path}`, node, template);
       }
     });
   }
@@ -118,24 +116,38 @@ function processClass(node: AST.AttrNode, block: Block, analysis: StyleAnalysis,
 }
 
 function processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: StyleAnalysis, stylesheet: ResolvedFile, template: ResolvedFile) {
-  let defaultContainer = stateContainers.find((c) => c.block === block);
-  if (!defaultContainer) {
-    throw cssBlockError(`class missing for state in the default block`, node, template);
+  let blockName: string | undefined;
+  let md = stateName.match(/^([^\.]+)\.([^\.]+)$/);
+  let stateBlock = block;
+  if (md && md.index === 0) {
+    blockName = md[1];
+    stateName = md[2];
+    let tStateBlock = block.getReferencedBlock(blockName);
+    if (tStateBlock) {
+      stateBlock = tStateBlock;
+    } else {
+      throw cssBlockError(`No block referenced as ${blockName}`, node, template);
+    }
+  }
+
+  let container = stateContainers.find((c) => c.block === stateBlock);
+  if (!container) {
+    throw cssBlockError(`Element lacks a class from the corresponding block`, node, template);
   }
   let substateName: string | null = null;
   if (node.value && node.value.type === "TextNode" && node.value.chars) {
-      substateName = node.value.chars;
-      let state = defaultContainer.getState({ group: stateName, name: substateName });
-      if (state) {
-        analysis.addStyle(state);
-      } else {
-        throw cssBlockError(`No state ${stateName}=${node.value.chars} found in block at ${stylesheet.path}`, node, template);
-      }
+    substateName = node.value.chars;
+    let state = container.getState({ group: stateName, name: substateName });
+    if (state) {
+      analysis.addStyle(state);
+    } else {
+      throw cssBlockError(`No state ${stateName}=${node.value.chars} found in block at ${stylesheet.path}`, node, template);
+    }
   } else if (node.value && node.value.type !== "TextNode") {
     // dynamic stuff will go here
     throw cssBlockError("No handling for dynamic styles yet", node, template);
   } else {
-    let state = defaultContainer.getState({ name: stateName });
+    let state = container.getState({ name: stateName });
     if (state) {
       analysis.addStyle(state);
     } else {

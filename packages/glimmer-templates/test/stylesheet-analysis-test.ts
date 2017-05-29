@@ -6,10 +6,10 @@ function fixture(fixturePath: string) {
   return path.join(__dirname, 'fixtures', fixturePath);
 }
 
-describe('Stylesheet dependency analysis', function() {
-  it('analyzes basic root-level styles', function() {
+describe('Stylesheet analysis', function() {
+  it('analyzes styles from the implicit block', function() {
     let analyzer = new BlockAnalyzer(fixture('styled-app'));
-    let analysis = analyzer.analyze('my-app').then((richAnalysis) => {
+    return analyzer.analyze('my-app').then((richAnalysis) => {
       let analysis = richAnalysis.serialize();
       assert.equal(analysis.template, fixture("styled-app/src/ui/components/my-app/template.hbs"));
       assert.deepEqual(analysis.blocks, {
@@ -17,6 +17,23 @@ describe('Stylesheet dependency analysis', function() {
       });
       assert.deepEqual(analysis.stylesFound, [".editor", ".editor[state|disabled]" ,".root", "[state|is-loading]"]);
       assert.deepEqual(analysis.styleCorrelations, [[2, 3], [0, 1]]);
+    }).catch((error) => {
+      console.error(error);
+      throw error;
+    });
+  });
+
+  it('analyzes styles from a referenced block', function() {
+    let analyzer = new BlockAnalyzer(fixture('styled-app'));
+    return analyzer.analyze('with-multiple-blocks').then((richAnalysis) => {
+      let analysis = richAnalysis.serialize();
+      assert.equal(analysis.template, fixture("styled-app/src/ui/components/with-multiple-blocks/template.hbs"));
+      assert.deepEqual(analysis.blocks, {
+        "": fixture("styled-app/src/ui/components/with-multiple-blocks/stylesheet.css"),
+        "h": fixture("styled-app/src/ui/components/with-multiple-blocks/header.css")
+      });
+      assert.deepEqual(analysis.stylesFound, [".root", ".world", ".world[state|thick]", "h.emphasis", "h.emphasis[state|extra]", "h.root"]);
+      assert.deepEqual(analysis.styleCorrelations, [[1, 2, 3, 4]]);
     }).catch((error) => {
       console.error(error);
       throw error;
