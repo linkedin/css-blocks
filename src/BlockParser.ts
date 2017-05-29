@@ -13,7 +13,7 @@ const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
 const LEGAL_COMBINATORS = new Set(["+", "~", " ", ">"]);
 
-const CLASS_NAME_IDENT = new RegExp(regexpu("((?:\\\\.|[A-Za-z_\\-\\u{00a0}-\\u{10ffff}])(?:\\\\.|[A-Za-z_\\-0-9\\u{00a0}-\\u{10ffff}])*)", "u"));
+export const CLASS_NAME_IDENT = new RegExp(regexpu("((?:\\\\.|[A-Za-z_\\-\\u{00a0}-\\u{10ffff}])(?:\\\\.|[A-Za-z_\\-0-9\\u{00a0}-\\u{10ffff}])*)", "u"));
 
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 // const selectorParserFn = require("postcss-selector-parser");

@@ -5,7 +5,7 @@ import { OptionsReader } from "./options";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError } from "./errors";
 import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
-import { StateInfo, stateParser, isClass, isState, isBlock, NodeAndType, BlockTypes } from "./BlockParser";
+import { StateInfo, stateParser, isClass, isState, isBlock, NodeAndType, BlockTypes, CLASS_NAME_IDENT } from "./BlockParser";
 
 interface StateMap {
   [stateName: string]: State;
