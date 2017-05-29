@@ -202,7 +202,7 @@ export default class BlockParser {
   public resolveReferences(block: Block, root: postcss.Root, sourceFile: string): Promise<Block> {
     let namedBlockReferences: Promise<[string, Block]>[] = [];
     root.walkAtRules("block-reference", (atRule) => {
-      let md = atRule.params.match(/\s*((\w+)\s+from\s+)?\s*("|')([^\3]+)\3/);
+      let md = atRule.params.match(/^\s*((\w+)\s+from\s+)?\s*("|')([^\3]+)\3\s*$/);
       if (!md) {
         throw new errors.InvalidBlockSyntax(
           `Malformed block reference: \`@block-reference ${atRule.params}\``,
