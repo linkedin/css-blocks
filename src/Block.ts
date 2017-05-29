@@ -284,6 +284,25 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
 
   // This is a really dumb impl
   find(sourceName: string): BlockObject | undefined {
+    let blockRefName: string | undefined;
+    let md = sourceName.match(CLASS_NAME_IDENT);
+    if (md && md.index === 0) {
+      blockRefName = md[0];
+      let blockRef: Block | undefined;
+      this.eachBlockReference((name, block) => {
+        if (blockRefName === name) {
+          blockRef = block;
+        }
+      });
+      if (blockRef) {
+        if (md[0].length === sourceName.length) {
+          return blockRef;
+        }
+        return blockRef.find(sourceName.slice(md[0].length));
+      } else {
+        return undefined;
+      }
+    }
     return this.all().find(e => e.asSource() === sourceName);
   }
 
@@ -344,6 +363,12 @@ export class Block extends ExclusiveStateGroupContainer implements Exportable, H
 
   getReferencedBlock(localName: string): Block | null {
     return this._blockReferences[localName] || null;
+  }
+
+  eachBlockReference(callback: (name: string, block: Block) => any) {
+    Object.keys(this._blockReferences).forEach((name) => {
+      callback(name, this._blockReferences[name]);
+    });
   }
 
   all(shallow?: boolean): BlockObject[] {
