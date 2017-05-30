@@ -1,3 +1,4 @@
+import * as path from "path";
 import { Block, BlockObject } from "css-blocks";
 import { ResolvedFile } from "./project";
 
@@ -64,12 +65,12 @@ export default class StyleAnalysis {
   serializedName(o: BlockObject) {
     return `${this.getBlockName(o.block) || ''}${o.asSource()}`;
   }
-  serialize(): SerializedAnalysis {
+  serialize(pathsRelativeTo: string): SerializedAnalysis {
     let blockRefs: BlockPathReferences = {};
     let objects: BlockObject[];
     let styles: string[] =  [];
     Object.keys(this.blocks).forEach((localname) => {
-      blockRefs[localname] = this.blocks[localname].source;
+      blockRefs[localname] = path.relative(pathsRelativeTo, this.blocks[localname].source);
     });
     this.stylesFound.forEach((s) => {
       styles.push(this.serializedName(s));
@@ -88,7 +89,7 @@ export default class StyleAnalysis {
       }
     });
     return {
-      template: this.template.path,
+      template: path.relative(pathsRelativeTo, this.template.path),
       blocks: blockRefs,
       stylesFound: styles,
       styleCorrelations: correlations
