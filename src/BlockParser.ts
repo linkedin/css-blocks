@@ -93,7 +93,6 @@ export default class BlockParser {
             let info = stateParser(<selectorParser.Attribute>selectors[0].key.nodes[0]);
             let state = block.ensureState(info);
             state.isGlobal = true;
-            console.log(state);
           } else {
             throw new errors.InvalidBlockSyntax(
               `Illegal global state declaration: ${atRule.toString()}`,
