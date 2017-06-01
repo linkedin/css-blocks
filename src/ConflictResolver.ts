@@ -63,29 +63,7 @@ export default class ConflictResolver {
   }
 
   /**
-   * Given a ruleset and Set of conflicting properties, inject `resolve-inherited`
-   * calls for the conflicts for `resolve()` to use later.
-   * @param rule  The PostCSS ruleset to operate on.
-   * @param conflictingProps  A Set of conflicting property names.
-   * @param expression  Expression where property can be found on remote Block.
-   * @param handledResolutions  Shared set of handledResolutions
-   */
-  private resolveInheritedConflict(rule: postcss.Rule, conflictingProps: Set<[string,string]> | undefined, expression: string, handledResolutions: Set<string>) {
-    if (!conflictingProps || conflictingProps.size === 0) { return; }
-    let ruleProps = new Set<string>();
-    rule.walkDecls((decl) => {
-      ruleProps.add(decl.prop);
-    });
-    conflictingProps.forEach(([thisProp, _]) => {
-      if (ruleProps.has(thisProp) && !handledResolutions.has(thisProp)) {
-        handledResolutions.add(thisProp);
-        rule.prepend(postcss.decl({prop: thisProp, value: `resolve-inherited("${expression}")`}));
-      }
-    });
-  }
-
-  /**
-   * Given a ruleset and Block, resolve all conflicts inherited by a parent block.
+   * Given a ruleset and Block, resolve all conflicts against the parent block as an override
    * by automatically injecting `resolve-inherited()` calls for conflicting properties.
    * @param root  The PostCSS ruleset to operate on.
    * @param block  The owner block of these rules.
@@ -130,9 +108,19 @@ export default class ConflictResolver {
           let handledConflictSet = handledConflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
           let conflictingProps = conflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
 
-          // QUESTION: Can I get rid of `resolveInheritedConflict` and inline it here?
-          //           Its actually longer and harder to understand with it ripped out.
-          this.resolveInheritedConflict(rule, conflictingProps, `${blockBaseName}${baseSource}`, handledConflictSet);
+          // Given a ruleset and Set of conflicting properties, inject `resolve-inherited`
+          // calls for the conflicts for `resolve()` to use later.
+          if (!conflictingProps || conflictingProps.size === 0) { return; }
+          let ruleProps = new Set<string>();
+          rule.walkDecls((decl) => {
+            ruleProps.add(decl.prop);
+          });
+          conflictingProps.forEach(([thisProp, _]) => {
+            if (ruleProps.has(thisProp) && !handledConflictSet.has(thisProp)) {
+              handledConflictSet.add(thisProp);
+              rule.prepend(postcss.decl({prop: thisProp, value: `resolve-inherited("${blockBaseName}${baseSource}")`}));
+            }
+          });
         });
       });
     }

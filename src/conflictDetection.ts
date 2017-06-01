@@ -20,8 +20,8 @@ export class Conflicts<T> {
 }
 
 /**
- * Given two sets representing property concerns, return a set containing properties
- * present in both.
+ * Given two sets representing property concerns, return a set containing the
+ * properties that conflict with each other
  * @param props1  BlockObject one.
  * @param props2  BlockObject two.
  * @returns A Set that contains the full set of property conflicts.
@@ -47,7 +47,7 @@ function detectPropertyConflicts(props1: Set<string>, props2: Set<string>): Set<
 }
 
 /**
- * Given a two Block objects, detect all conflicting properties for itself and its
+ * Given two block objects, detect all conflicting properties for itself and its
  * pseudo elements.
  * @param obj1  BlockObject one.
  * @param obj2  BlockObject two.

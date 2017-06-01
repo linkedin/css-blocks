@@ -6,7 +6,7 @@ import selectorParser = require("postcss-selector-parser");
  * @param node Node to check if is a pseudo element
  * @return True or false if a pseudo element
  */
-function isPseudoelement(node: any) {
+function isPseudoelement(node: selectorParser.Node) {
   return node && node.type === selectorParser.PSEUDO &&
     (
       node.value.startsWith("::") ||
@@ -22,7 +22,6 @@ export interface CombinatorAndSelector<SelectorType> {
 
 export interface CombinatorAndCompoundSelector extends CombinatorAndSelector<CompoundSelector> {}
 
-// QUESTION: This isn't used anywhere but to extend `CompoundSelector`. Can we merge the two and get rid of this?
 export class CombinedSelector<T> {
   next?: CombinatorAndSelector<T>;
   setNext(combinator: selectorParser.Combinator, selector: T) {
@@ -271,11 +270,10 @@ export class ParsedSelector {
 /**
  * All valid selector-like inputs to the `parseSelector` helper methods.
  */
- export type Selectorish = string | selectorParser.Root | selectorParser.Selector | selectorParser.Selector[] | selectorParser.Node[] | selectorParser.Node[][];
+ export type Selectorish = string | selectorParser.Root | selectorParser.Node[] | selectorParser.Node[][];
 
 /**
  * Coerce a `selectorParser.Root` object to `selectorParser.Node[][]`.
- * QUESTION: I broke this out of the `toNodes` function, that okay?
  *
  * @param root  `selectorParser.Root` object
  * @return Array of `selectorParser.Node` arrays.
@@ -291,8 +289,6 @@ function coerceRootToNodeList(root: selectorParser.Root): selectorParser.Node[][
  * @return Array of `selectorParser.Node` arrays.
  */
 function toNodes(selector: Selectorish): selectorParser.Node[][] {
-
-  // QUESTION: Does `toNodes` properly handle `selectorParser.Selector[]` input?
 
   // If input is already an array of Nodes, return.
   if (Array.isArray(selector)) {
@@ -318,11 +314,6 @@ function toNodes(selector: Selectorish): selectorParser.Node[][] {
   return [selector.nodes];
 }
 
-// QUESTION: This function returns an array of `CompoundSelector`s, which is then
-//           immidately converted into an array of `ParsedSelector`s. (See `parseSelector`)
-//           This is the only place where `ParsedSelector` or `parseCompoundSelectors`
-//           are used. Why not merge the two classes / functions?
-
 /**
  * Converts a selector like object, return an array of `CompoundSelector` objects.
  *
@@ -345,7 +336,7 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
         lastCompoundSel.setNext(<selectorParser.Combinator>n, compoundSel);
       }
 
-      // Normalize :before and :after to always use double colins and save.
+      // Normalize :before and :after to always use double colons and save.
       else if (isPseudoelement(n)) {
         compoundSel.pseudoelement = <selectorParser.Pseudo>n;
         if (!compoundSel.pseudoelement.value.startsWith("::")) {

@@ -6,12 +6,13 @@ import { SourceLocation } from "./SourceLocation";
  */
 export class CssBlockError extends Error {
   origMessage: string;
-  _location?: SourceLocation | void;
+  private _location?: SourceLocation | void;
 
   constructor(message: string, location?: SourceLocation | void) {
     super(message);
     this.origMessage = message;
-    this.location = location;
+    this._location = location;
+    super.message = this.annotatedMessage();
   }
 
   private annotatedMessage() {
@@ -31,18 +32,10 @@ export class CssBlockError extends Error {
     return this._location;
   }
 
-  // QUESTION: Why are there side effects in this setter?
-  //           Shouldn't `location` be private and all this should happen in the
-  //           constructor?
-  set location(location: SourceLocation | void) {
-    this._location = location;
-    super.message = this.annotatedMessage();
-  }
-
 }
 
 /**
- * Custom CSS Blocks error for missing path from `@block-reference`
+ * Custom CSS Blocks error for missing source path from PostCSS
  */
 export class MissingSourcePath extends CssBlockError {
   constructor() {

@@ -6,9 +6,6 @@ import ConflictResolver from "./ConflictResolver";
 import * as errors from "./errors";
 export { PluginOptions } from "./options";
 
-// QUESTION: Why are we not using the standard `postcss.plugin()` here?
-//           https://github.com/postcss/postcss/blob/master/docs/guidelines/plugin.md
-
 /**
  * CSS Blocks PostCSS plugin.
  */
@@ -49,12 +46,13 @@ export class Plugin {
 
       // Process all debug statements for this block.
       blockParser.processDebugStatements(sourceFile, root, block);
-      // QUESTION: Can we move this rule cleanup into the parser?
+
+      // Clean up CSS Block specific properties.
       root.walkAtRules("block-reference", (atRule) => {
         atRule.remove();
       });
       root.walkRules(/\.root/, (rule) => {
-        rule.walkDecls(/^(extends|implements)$/, (decl) => {
+        rule.walkDecls(/^(extends|implements|block-name)$/, (decl) => {
           decl.remove();
         });
         if (rule.nodes === undefined || rule.nodes.length === 0) {

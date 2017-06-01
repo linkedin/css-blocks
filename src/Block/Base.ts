@@ -3,32 +3,38 @@ import { OptionsReader } from "../options";
 import { CompoundSelector } from "../parseSelector";
 import { BlockObject, State, Block, BlockClass } from "./index";
 
+// `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
+if (!(<any>Object).values) {
+  require('object.values').shim();
+}
+
+type Properties = Set<string>;
+
 /**
  * Cache and interface methods for block properties.
  */
-type Properties = Set<string>;
 export class PropertyContainer {
-  private concerns: Properties = new Set();
-  private pseudoConcerns = new Map<string,Properties>();
+  private props: Properties = new Set();
+  private pseudoProps = new Map<string,Properties>();
 
   /**
    * Track a single property.
    * @param	property	The property we're tracking
-   * @param	pseudo	The pseudo element this rule is concerned with to, if applicable.
+   * @param	pseudo	The pseudo element this rule is styling, if applicable.
    */
   addProperty(property: string, pseudo?: string) {
     let props: Properties;
     if (pseudo) {
-      props = this.pseudoConcerns.get(pseudo) || new Set();
-      this.pseudoConcerns.set(pseudo, props);
+      props = this.pseudoProps.get(pseudo) || new Set();
+      this.pseudoProps.set(pseudo, props);
     } else {
-      props = this.concerns;
+      props = this.props;
     }
     props.add(property);
   }
 
   /**
-   * Track all properties from a ruleset in this block's properties cache.
+   * Track all properties from a ruleset in this block's PropertyContainer.
    * @param	rule	PostCSS ruleset
    * @param	block	External block
    */
@@ -49,27 +55,27 @@ export class PropertyContainer {
   }
 
   /**
-   * Retreive properties from a ruleset in this block's properties cache.
+   * Retreive properties from all rulesets in this block.
    * @param	pseudo	Optional pseudo element to get properties from
    * @returns A set of property names.
    */
   getProperties(pseudo?: string): Set<string> {
     let props: Properties;
     if (pseudo) {
-      props = this.pseudoConcerns.get(pseudo) || new Set();
-      this.pseudoConcerns.set(pseudo, props);
+      props = this.pseudoProps.get(pseudo) || new Set();
+      this.pseudoProps.set(pseudo, props);
       return props;
     } else {
-      return this.concerns;
+      return this.props;
     }
   }
 
   /**
-   * Retreive pseudo element properties in this block's properties cache.
+   * Retrieve the pseudo elements which were found to have properties.
    * @returns A set of property names.
    */
   getPseudos(): Set<string> {
-    return new Set(this.pseudoConcerns.keys());
+    return new Set(this.pseudoProps.keys());
   }
 }
 
@@ -106,7 +112,7 @@ export class StateContainer {
 
   /**
    * Save a reference to our parent element on instantiation. Only Blocks and
-   * BlockClasses can currently contain States.
+   * BlockClasses can contain States.
    */
   constructor(parent: Block | BlockClass){
     this._parent = parent;
@@ -126,7 +132,8 @@ export class StateContainer {
    * @param group Optional group name for this state object.
    * @returns The State that was just added
    */
-  addState(state: State, group?: string): State {
+  addState(state: State): State {
+    let group: string | null = state.group;
     if (group) {
       this._groups[group] = (this._groups[group] || {});
       return this._groups[group][state.name] = state;
@@ -161,12 +168,12 @@ export class StateContainer {
    * @return The `State` object on this `Block`
    */
   ensureState(name: string, group?: string): State {
-    // Could assert that the stateinfo group name matched but yolo.
-    if (this.getState(name, group)) {
-      return <State>this.getState(name, group);
+    let state = this.getState(name, group);
+    if (state) {
+      return state;
     } else {
       let state = new State(name, group, this.parent);
-      return this.addState(state, group);
+      return this.addState(state);
     }
   }
 
@@ -182,7 +189,7 @@ export class StateContainer {
       return <State>this.getState(info.name, info.group);
     } else {
       let state = new State(info.name, info.group, this.parent);
-      return this.addState(state, info.group);
+      return this.addState(state);
     }
   }
 
@@ -249,19 +256,52 @@ export abstract class Base {
   /**
    * Readonly Block name.
    */
-  get name(): string { return this._name; }
+  get name(): string {
+    return this._name;
+  }
 
   /**
    * Block parent container.
    */
-  get parent(): BlockParent { return this._container; }
+  get parent(): BlockParent {
+    return this._container;
+  }
 
-  // Abstract methods that all extenders must implement.
+  /**
+   * Get the base inherited block object.
+   * @returns The base inherited block object.
+   */
   public abstract get base(): any;
+
+  /**
+   * Return the local identifier for this `BlockObject`.
+   * @returns The local name.
+   */
   public abstract localName(): string;
+
+  /**
+   * Return the source selector this `BlockObject` was read from.
+   * @returns The source selector.
+   */
   public abstract asSource(): string;
+
+  /**
+   * Return the css selector for this `BlockObject`.
+   * @param opts Option hash configuring output mode.
+   * @returns The CSS class.
+   */
   public abstract cssClass(opts: OptionsReader): string;
+
+  /**
+   * Return true or false if the given `CompoundSelector`.
+   * @param opts An options hash with an `outputMode` property of type `OutputMode` to switch output type.
+   * @returns The CSS class.
+   */
   public abstract matches(compoundSel: CompoundSelector): boolean;
+
+  /**
+   * Returns the list of all `BlockObjects` that are ancestors of this block.
+   */
   public abstract all(): BlockObject[];
 
   /**

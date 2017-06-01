@@ -426,6 +426,27 @@ export class BlockReferences extends BEMProcessor {
     });
   }
 
+  @test "block-name property only works in the root ruleset"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `.not-root { block-name: snow-flake; }`
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference "./imported.css";
+                    @block-debug imported to comment;`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      imports.assertImported("foo/bar/imported.css");
+      assert.deepEqual(
+        result.css.toString(),
+        `/* Source: foo/bar/imported.css\n` +
+        "   .root => .imported\n" +
+        "   .not-root => .imported__not-root */\n"
+      );
+    });
+  }
+
   @skip
   @test "doesn't allow a block ref name to collide with a class name"() {
   }

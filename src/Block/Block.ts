@@ -2,7 +2,7 @@ import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
 import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
-import { stateParser, isClass, isState, isBlock, NodeAndType, BlockTypes, CLASS_NAME_IDENT } from "../BlockParser";
+import { stateParser, isClass, isState, isRootSelector, NodeAndType, BlockTypes, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockObject, BlockClass } from "./index";
 import { OptionsReader } from "../options";
 import { OutputMode } from "../OutputMode";
@@ -50,15 +50,6 @@ export class Block extends Base {
 
   get source() {
     return this._source;
-  }
-
-  /**
-   * Blocks can have mutable base names. Expose a setter.
-   * TODO: Update external block references on name change, although this
-   *       shouldn't happen in regular execution.
-   */
-  updateName(val: string) {
-    this._name = val;
   }
 
   setBase(baseName: string, base: Block) {
@@ -183,7 +174,7 @@ export class Block extends Base {
 
   /**
    * Return array self and all children.
-   * @param shallow Pass false to not include children.
+   * @param shallow Pass false to not include inherited objects.
    * @returns Array of BlockObjects.
    */
   all(shallow?: boolean): BlockObject[] {
@@ -375,7 +366,7 @@ export class Block extends Base {
   }
 
   matches(compoundSel: CompoundSelector): boolean {
-    return compoundSel.nodes.some(node => isBlock(node));
+    return compoundSel.nodes.some(node => isRootSelector(node));
   }
 
   debug(opts: OptionsReader): string[] {
@@ -410,8 +401,10 @@ export class Block extends Base {
   }
 
   /**
+   * TODO: Move selector cache into `parseSelector` and have consumers of this
+   *       method interface with the parseSelector utility directly.
    * Given a PostCSS Rule, ensure it is present in this Block's parsed rule
-   * selectors hash, and return the ParsedSelector array.
+   * selectors cache, and return the ParsedSelector array.
    * @param rule  PostCSS Rule
    * @return ParsedSelector array
    */

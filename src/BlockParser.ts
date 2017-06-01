@@ -18,7 +18,7 @@ export const CLASS_NAME_IDENT = new RegExp(regexpu("((?:\\\\.|[A-Za-z_\\-\\u{00a
 // This fixes an annoying interop issue because of how postcss-selector-parser exports.
 // const selectorParserFn = require("postcss-selector-parser");
 
-// QUESTION: Can we re-name `block` to `root`? Its a little confusing.
+// TODO: Re-name `block` to `root`, its a little confusing.
 export enum BlockTypes {
   block = 1,
   state,
@@ -37,11 +37,8 @@ export interface BlockNodeAndType extends NodeAndType {
 
 /**
  * Check if given selector node is targeting the root block node
- * QUESTION: Can we re-name to something like `isRootSelector()`?
- * @param  node The selector to test.
- * @return True if block selector, false if not.
  */
-export function isBlock(node: selectorParser.Node) {
+export function isRootSelector(node: selectorParser.Node) {
   return node.type === selectorParser.CLASS &&
          node.value === "root";
 }
@@ -71,9 +68,6 @@ export function isClass(node: selectorParser.Node) {
  * @return A `StateInfo` object that represents the state.
  */
 export function stateParser(attr: selectorParser.Attribute): StateInfo {
-  // QUESTION: This is only every used as an intermediate step between this file
-  //           and `Block.assertState`. Can we remove the concept of `StateInfo`
-  //           entirely and just have `assertState` take the attribute selector?
   let info: StateInfo = {
     name: attr.attribute
   };
@@ -115,23 +109,31 @@ export default class BlockParser {
       }
     });
 
+    // Eagerly fetch custom `block-name` from the root block rule.
+    root.walkRules(".root", (rule) => {
+      rule.walkDecls("block-name", (decl) => {
+        if (CLASS_NAME_IDENT.test(decl.value)) {
+          return defaultName = decl.value;
+        }
+        throw new errors.InvalidBlockSyntax(`Illegal block name. '${decl.value}' is not a legal CSS identifier.`, sourceLocation(sourceFile, decl));
+      });
+    });
+
     // Create our new Block object and save reference to the raw AST
     let block = new Block(defaultName, sourceFile);
-
-    block.root = root; // QUESTION: Why not pass this in to the constructor?
+    block.root = root;
 
     // Once all block references included by this block are resolved
-    // QUESTION: `root` and `sourceFile` is on the `block` object, why does it need to be passed to `resolveReferences`?
-    return this.resolveReferences(block, root, sourceFile).then((block) => {
+    return this.resolveReferences(block).then((block) => {
 
       // Handle any global states defined by this block.
       root.walkAtRules("block-global", (atRule) => {
 
         let selectors = parseSelector(atRule.params.trim());
 
-        // If selector is present, and provided selector is a single attribute
-        // selector, ensure this state is registered with this block, and mark
-        // as global.
+        // The syntax for a `@block-global` at-rule is a simple selector for a state.
+        // Parse selector allows a much broader syntax so we validate that the parsed
+        // result is legal here, if it is, we create the state and mark it global.
         if (selectors.length === 1 && selectors[0].key === selectors[0].selector) {
           let nodes = selectors[0].key.nodes;
           if (nodes.length === 1 && nodes[0].type === selectorParser.ATTRIBUTE) {
@@ -144,7 +146,9 @@ export default class BlockParser {
               sourceLocation(sourceFile, atRule));
           }
         }
-        // QUESTION: Is this an error state?
+
+        // TODO: Handle complex global selector
+
       });
 
       // For each rule in this Block
@@ -159,15 +163,13 @@ export default class BlockParser {
           let currentCompoundSel: CompoundSelector | undefined = iSel.selector;
 
           // Assert this selector is well formed according to CSS Blocks' selector rules.
-          // QUESTION: `assertValidCombinators` also asserts individual
-          //            CompoundSelectors under the hood. Should be called `assertValidSelector`?
-          this.assertValidCombinators(block, rule, iSel);
+          this.assertValidSelector(block, rule, iSel);
 
           // For each `CompoundSelector` in this rule, configure the `Block` object
           // depending on the BlockType.
           while (currentCompoundSel) {
             let isKey = (keySel === currentCompoundSel);
-            let obj = BlockParser.getBlockNode(currentCompoundSel); // QUESTION: Why not assertBlockNode?
+            let obj = BlockParser.getBlockNode(currentCompoundSel);
             if (obj) {
               switch (obj.blockType) {
 
@@ -175,19 +177,13 @@ export default class BlockParser {
                 // itself, excluding any inheritance properties. Make sure to
                 // process any inheritance properties present in this ruleset.
                 case BlockTypes.block:
-                  // QUESTION: Why this check?
+
+                  // If is bare root selector, execute on extend and implement calls.
                   if (obj.node.next() === undefined && obj.node.prev() === undefined) {
-                    rule.walkDecls("block-name", (decl) => {
-                      if (CLASS_NAME_IDENT.test(decl.value)) {
-                        block.updateName(decl.value);
-                      } else {
-                        throw new errors.InvalidBlockSyntax(`Illegal block name. '${decl.value}' is not a legal CSS identifier.`,
-                                                            sourceLocation(sourceFile, decl));
-                      }
-                    });
                     this.extendBlock(block, sourceFile, rule);
                     this.implementsBlock(block, sourceFile, rule);
                   }
+
                   if (isKey) {
                     block.propertyConcerns.addProperties(rule, block, (prop) => !/(extends|implements|block-name)/.test(prop));
                   }
@@ -290,12 +286,17 @@ export default class BlockParser {
   /**
    * Resolve all block references for a given block.
    * @param block Block to resolve references for
-   * @param root PostCSS Root for block. QUESTION: This is on the Block object, not needed?
-   * @param sourceFile File name of block in question. QUESTION: This is on the Block object, not needed?
    * @return Promise that resolves when all references have been loaded.
    */
-  private resolveReferences(block: Block, root: postcss.Root, sourceFile: string): Promise<Block> {
+  private resolveReferences(block: Block): Promise<Block> {
+
+    let root: postcss.Root | undefined = block.root;
+    let sourceFile: string = block.source;
     let namedBlockReferences: Promise<[string, Block]>[] = [];
+
+    if (!root) {
+      throw new errors.InvalidBlockSyntax(`Error finding PostCSS root for block ${block.name}`);
+    }
 
     // For each `@block-reference` expression, read in the block file, parse and
     // push to block references Promise array.
@@ -308,8 +309,8 @@ export default class BlockParser {
       }
       let importPath = md[4];
       let localName = md[2];
-      // QUESTION: Why not just chain `.then` statements here and avoid
-      //           intermediate variables? Is this a TypeScript thing?
+
+      // Import file, then parse file, then save block reference.
       let result: Promise<ImportedFile> = this.opts.importer(sourceFile, importPath);
       let extractedResult: Promise<Block> = result.then((importedFile: ImportedFile) => {
         let otherRoot = this.postcss.parse(importedFile.contents, {from: importedFile.path});
@@ -333,8 +334,8 @@ export default class BlockParser {
 
   /**
    * Process all `@block-debug` statements, output debug statement to console or in comment as requested.
-   * @param sourceFile File name of block in question. QUESTION: This is on the Block object, not needed?
-   * @param root PostCSS Root for block. QUESTION: This is on the Block object, not needed?
+   * @param sourceFile File name of block in question.
+   * @param root PostCSS Root for block.
    * @param block Block to resolve references for
    */
   public processDebugStatements(sourceFile: string, root: postcss.Root, block: Block) {
@@ -388,7 +389,7 @@ export default class BlockParser {
    */
   static getBlockNode(sel: CompoundSelector): BlockNodeAndType | null {
     let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
-    let n = sel.nodes.find(n => isBlock(n));
+    let n = sel.nodes.find(n => isRootSelector(n));
     if (n) {
       return {
         blockName: blockName && blockName.value,
@@ -466,7 +467,7 @@ export default class BlockParser {
 
       // If selecting the root element, indicate we have encountered it. If this
       // is not the first BlockType encountered, throw the appropriate error
-      if (isBlock(n)) {
+      if (isRootSelector(n)) {
         if (found === null) {
           found = {
             blockType: BlockTypes.block,
@@ -649,9 +650,9 @@ export default class BlockParser {
    * @param rule The PostCSS Rule.
    * @param selector The `ParsedSelector` to verify.
    */
-  private assertValidCombinators(block: Block, rule: postcss.Rule, selector: ParsedSelector) {
+  private assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedSelector) {
 
-    // Verify our key selector isn't targeting an external block.
+    // Verify our key selector targets a block object, but not one from an another block.
     let keyObject = this.assertBlockObject(block, selector.key, rule);
     if (keyObject.blockName) {
       throw new errors.InvalidBlockSyntax(
@@ -729,7 +730,6 @@ export default class BlockParser {
       }
 
       // Class-level objects cannot be combined with each other. only with themselves.
-      // QUESTION: Can you explain this restriction to me?
       if (this.isClassLevelObject(nextObject)) {
         let conflictObj = foundObjects.find(obj => this.isClassLevelObject(obj) && obj.node.toString() !== nextObject.node.toString());
         if (conflictObj) {

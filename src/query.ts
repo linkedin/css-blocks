@@ -2,7 +2,6 @@ import { Block, BlockObject } from "./Block";
 import postcss = require("postcss");
 import parseSelector, { ParsedSelector } from "./parseSelector";
 
-// QUESTION: Can we bake this functionality in to the `Block` class? Makes sense to be there.
 export interface Query {
   execute(container: postcss.Container): ClassifiedParsedSelectors;
 }

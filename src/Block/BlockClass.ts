@@ -7,17 +7,21 @@ import { Base, StateContainer } from "./Base";
 import { Block, BlockObject } from "./index";
 
 /**
- * Represents a Block Class key selector.
+ * Represents a Class present in the Block.
  */
 export class BlockClass extends Base {
 
   public readonly states: StateContainer;
 
   /**
-   * Create the StateContainer unique to this instance.
+   * BlockClass constructor
+   * @param name Name for this BlockClass instance
+   * @param parent The parent block of this class.
    */
-  constructor(name: string, block: Block) {
-    super(name, block);
+  constructor(name: string, parent: Block) {
+    super(name, parent);
+
+    // BlockClases may contain states, provide it a place to put them.
     this.states = new StateContainer(this);
   }
 
@@ -45,6 +49,7 @@ export class BlockClass extends Base {
 
   /**
    * Export as new class name.
+   * @param opts Option hash configuring output mode.
    * @returns String representing output class.
    */
   cssClass(opts: OptionsReader) {
@@ -57,8 +62,7 @@ export class BlockClass extends Base {
   }
 
   /**
-   * Export as new class name.
-   * @returns String representing output class.
+   * @returns Whether the given selector refers to this class
    */
   matches(compoundSel: CompoundSelector): boolean {
     let srcVal = this.name;
