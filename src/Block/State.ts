@@ -6,15 +6,30 @@ import { stateParser, isState } from "../BlockParser";
 import { Block, BlockClass, BlockObject } from "./index";
 import { Base, StateInfo } from "./Base";
 
+/**
+ * States represent a state attribute selector in a particular Block. States may
+ * optionally be a member of a group of states, and or designated "global".
+ */
 export class State extends Base {
   private _group: string | null;
   isGlobal = false;
 
+  /**
+   * State constructor. Provide a local name for this State, an optional group name,
+   * and the parent container.
+   * @param name The local name for this state.
+   * @param group An optional parent group name.
+   * @param container The parent container of this State.
+   */
   constructor(name: string, group: string | null | undefined = null, container: Block | BlockClass) {
     super(name, container);
     this._group = group;
   }
 
+  /**
+   * Retreive the BlockClass that this state belongs to, if applicable.
+   * @returns The parent block class, or null.
+   */
   get blockClass(): BlockClass | null {
     if (this._container instanceof BlockClass) {
       return this._container;
@@ -23,6 +38,10 @@ export class State extends Base {
     }
   }
 
+  /**
+   * Retreive this state's group name, if applicable.
+   * @returns The parent group name, or null.
+   */
   get group(): string | null {
     return this._group;
   }
@@ -36,6 +55,10 @@ export class State extends Base {
     return source;
   }
 
+  /**
+   * Retreive this State's selector as it appears in the Block source code.
+   * @returns The State's attribute selector
+   */
   asSource(): string {
     if (this.blockClass === null) {
       return this.unqualifiedSource();
@@ -44,6 +67,10 @@ export class State extends Base {
     }
   }
 
+  /**
+   * Retreive this State's local name, including the optional BlockClass and group designators.
+   * @returns The State's local name.
+   */
   localName(): string {
     let localNames: string[] = [];
     if (this.blockClass) {
@@ -57,6 +84,11 @@ export class State extends Base {
     return localNames.join("--");
   }
 
+  /**
+   * Export as new class name.
+   * @param opts Option hash configuring output mode.
+   * @returns String representing output class.
+   */
   cssClass(opts: OptionsReader) {
     switch(opts.outputMode) {
       case OutputMode.BEM:
@@ -76,6 +108,11 @@ export class State extends Base {
     }
   }
 
+  /**
+   * Given a StateInfo object, return weather this State object has the same group and name.
+   * @param info StateInfo to compare against
+   * @returns True or false.
+   */
   private sameNameAndGroup(info: StateInfo): boolean {
     if (info.name === this.name) {
       if (this.group && info.group) {
@@ -88,6 +125,9 @@ export class State extends Base {
     }
   }
 
+  /**
+   * @returns Whether the given selector refers to this state
+   */
   matches(compoundSel: CompoundSelector): boolean {
     let classVal: null | string = null;
     if (this.blockClass) {
@@ -103,6 +143,10 @@ export class State extends Base {
     }
   }
 
+  /**
+   * Get the base inherited block object.
+   * @returns The base inherited block object.
+   */
   get base() {
     let info: StateInfo = {name: this.name};
     if (this.group) {
