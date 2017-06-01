@@ -202,8 +202,6 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
 /**
  * `ParsedSelector` serves as a container object for a `CompoundSelector` linked
  * list and provides a number of convenience methods for interacting with it.
- * QUESTION: Nearly every method on this container object is present on `CompoundSelector`.
- *           can we safely get rid of this?
  */
 export class ParsedSelector {
   selector: CompoundSelector;

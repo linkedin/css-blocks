@@ -95,7 +95,6 @@ interface GroupMap {
 
 /**
  * Holds state values to be passed to the StateContainer.
- * TODO: This isn't really needed, we can safely remove this concept.
  */
 export interface StateInfo {
   group?: string;
