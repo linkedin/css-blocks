@@ -230,7 +230,7 @@ export interface Export {
 /**
  * Valid parent types for a BlockObject
  */
-export type BlockParent = BlockObject | Base | undefined;
+export type BlockParent = Block | BlockClass | undefined;
 
 /**
  * Abstract class that serves as the base for all BlockObjects. Contains basic
@@ -308,8 +308,10 @@ export abstract class Base {
    * @returns The base block in this container tree.
    */
   get block(): Block {
-    let tmp: BlockParent = this;
-    while (tmp.parent) { tmp = tmp.parent; }
+    let tmp: Base | undefined = this;
+    while (tmp.parent) {
+      tmp = tmp.parent;
+    }
     return <Block>tmp;
   }
 
