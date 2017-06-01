@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import * as perfectionist from "perfectionist";
 
-import { PluginOptions } from "../../src/Options";
+import { PluginOptions } from "../../src/options";
 import cssBlocks = require("../../src/cssBlocks");
 
 export default class BEMProcessor {

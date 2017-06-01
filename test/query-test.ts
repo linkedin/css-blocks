@@ -4,7 +4,7 @@ import * as postcss from "postcss";
 
 import BlockParser from "../src/BlockParser";
 import { Block } from "../src/Block";
-import { PluginOptions } from "../src/Options";
+import { PluginOptions } from "../src/options";
 import { QueryKeySelector } from "../src/query";
 
 type BlockAndRoot = [Block, postcss.Container];
