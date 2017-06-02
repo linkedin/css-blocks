@@ -7,7 +7,7 @@
     "compile": "rm -rf dist && tsc -p test/tsconfig.json",
     "postinstall": "npm run compile",
     "pretest": "npm run compile && tslint --project tsconfig.json",
-    "prepublishOnly": "npm run compile",
+    "prepublish": "npm run compile",
     "tslint": "tslint --project tsconfig.json",
     "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
