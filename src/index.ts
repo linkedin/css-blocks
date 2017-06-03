@@ -6,11 +6,11 @@ export {
   State,
   BlockClass,
   BlockObject,
-  PropertyConcerns
+  PropertyContainer,
+  StateInfo
 } from "./Block";
 export {
-  default as BlockParser,
-  StateInfo
+  default as BlockParser
 } from "./BlockParser";
 export {
   CssBlockError,

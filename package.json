@@ -4,8 +4,10 @@
   "description": "Fast, maintainable, optimal, component-oriented CSS.",
   "main": "dist/src/index.js",
   "scripts": {
-    "prepublish": "tsc -p test/tsconfig.json",
-    "pretest": "tsc -p test/tsconfig.json && tslint --project tsconfig.json",
+    "compile": "rm -rf dist && tsc -p test/tsconfig.json",
+    "postinstall": "npm run compile",
+    "pretest": "npm run compile && tslint --project tsconfig.json",
+    "prepublish": "npm run compile",
     "tslint": "tslint --project tsconfig.json",
     "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
@@ -48,6 +50,7 @@
     "typescript": "^2.2.2"
   },
   "dependencies": {
+    "object.values": "^1.0.4",
     "postcss-selector-parser": "^2.2.3",
     "regexpu-core": "^4.0.11"
   }

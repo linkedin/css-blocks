@@ -21,6 +21,10 @@ const CONTIGUOUS_COMBINATORS = new Set(["+", ">"]);
 const NONCONTIGUOUS_COMBINATORS = new Set(["~", " "]);
 const RESOLVE_RE = /resolve(-inherited)?\(("|')([^\2]*)\2\)/;
 
+/**
+ * Assert that `obj` is of type `BlockObject`. Throw if not.
+ * @param obj BlockObject to test.
+ */
 function assertBlockObject(obj: BlockObject | undefined, key: string, source: SourceLocation | undefined): BlockObject {
   if (obj === undefined) {
     // TODO: Better value source location for the bad block object reference.
@@ -46,6 +50,11 @@ function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
   }
 }
 
+/**
+ * `ConflictResolver` is a utility class that crawls a Block, the block it inherits from,
+ * and any other explititly referenced blocks where resolution rules are applied, and
+ * resolves property values accordingly.
+ */
 export default class ConflictResolver {
   readonly opts: OptionsReader;
 
@@ -53,128 +62,168 @@ export default class ConflictResolver {
     this.opts = opts;
   }
 
-  private resolveInheritedConflict(rule: postcss.Rule, conflictingProps: Set<[string,string]> | undefined, expression: string, handledResolutions: Set<string>) {
-    if (conflictingProps && conflictingProps.size > 0) {
-      let ruleProps = new Set<string>();
-      rule.walkDecls((decl) => {
-        ruleProps.add(decl.prop);
-      });
-      conflictingProps.forEach(([thisProp, _]) => {
-        if (ruleProps.has(thisProp) && !handledResolutions.has(thisProp)) {
-          handledResolutions.add(thisProp);
-          rule.prepend(postcss.decl({prop: thisProp, value: `resolve-inherited("${expression}")`}));
-        }
-      });
-    }
-  }
-
+  /**
+   * Given a ruleset and Block, resolve all conflicts against the parent block as an override
+   * by automatically injecting `resolve-inherited()` calls for conflicting properties.
+   * @param root  The PostCSS ruleset to operate on.
+   * @param block  The owner block of these rules.
+   */
   resolveInheritance(root: postcss.Root, block: Block) {
     let blockBase = block.base;
     let blockBaseName = block.baseName;
+
+    // If this block inherits from another block, walk every ruleset.
     if (blockBase && blockBaseName) {
       root.walkRules((rule) => {
-        let parsedSelectors = block.getParsedSelectors(rule);
+
+        // These two conflicts caches persist between comma seperated selectors
+        // so we don't resolve the same Properties or BlockObject twice in a single pass.
         let handledConflicts = new conflictDetection.Conflicts<string>();
         let handledObjects = new conflictDetection.Conflicts<BlockObject>();
+
+        // For each key selector:
+        let parsedSelectors = block.getParsedSelectors(rule);
         parsedSelectors.forEach((sel) => {
           let key = sel.key;
+
+          // Fetch the associated `BlockObject`. If does not exist (ex: malformed selector), skip.
           let blockNode = BlockParser.getBlockNode(key);
-          if (blockNode) {
-            let obj = block.nodeAndTypeToBlockObject(blockNode);
-            if (obj) {
-              let objectConflicts = handledObjects.getConflictSet(key.pseudoelement && key.pseudoelement.value);
-              if (!objectConflicts.has(obj)) {
-                objectConflicts.add(obj);
-                let base = obj.base;
-                if (base) {
-                  let baseSource = base.asSource();
-                  let conflicts = conflictDetection.detectConflicts(obj, base);
-                  let handledConflictSet = handledConflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
-                  let conflictingProps = conflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
-                  this.resolveInheritedConflict(rule, conflictingProps, `${blockBaseName}${baseSource}`, handledConflictSet);
-                }
-              }
+          if ( !blockNode ) { return; }
+          let obj: BlockObject | undefined = block.nodeAndTypeToBlockObject(blockNode);
+          if ( !obj ) { return; }
+
+          // Fetch the set of BlockObject conflicts. If the BlockObject has already
+          // been handled, skip.
+          let objectConflicts = handledObjects.getConflictSet(key.pseudoelement && key.pseudoelement.value);
+          if ( objectConflicts.has(obj) ) { return; }
+          objectConflicts.add(obj);
+
+          // Fetch the parent BlockObject this BlockObject inherits from. If none, skip.
+          let base = obj.base;
+          if ( !base ) { return; }
+
+          // Handle the inheritance conflicts
+          let baseSource = base.asSource();
+          let conflicts = conflictDetection.detectConflicts(obj, base);
+          let handledConflictSet = handledConflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
+          let conflictingProps = conflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
+
+          // Given a ruleset and Set of conflicting properties, inject `resolve-inherited`
+          // calls for the conflicts for `resolve()` to use later.
+          if (!conflictingProps || conflictingProps.size === 0) { return; }
+          let ruleProps = new Set<string>();
+          rule.walkDecls((decl) => {
+            ruleProps.add(decl.prop);
+          });
+          conflictingProps.forEach(([thisProp, _]) => {
+            if (ruleProps.has(thisProp) && !handledConflictSet.has(thisProp)) {
+              handledConflictSet.add(thisProp);
+              rule.prepend(postcss.decl({prop: thisProp, value: `resolve-inherited("${blockBaseName}${baseSource}")`}));
             }
-          }
+          });
         });
       });
     }
   }
 
+  /**
+   * Given a ruleset and Block, resolve all `resolve()` and `resolve-inherited()`
+   * calls with the appropriate values from the local block and resolved blocks.
+   * @param root  The PostCSS ruleset to operate on.
+   * @param block  The owner block of these rules.
+   */
   resolve(root: postcss.Root, block: Block) {
     root.walkDecls((decl) => {
+
+      // If value is not `resolve()` or `resolve-inherited()` call, continue.
       let resolveDeclarationMatch = decl.value.match(RESOLVE_RE);
-      if (resolveDeclarationMatch !== null) {
-        let resolveInherited = !!resolveDeclarationMatch[1];
-        let otherDecls: postcss.Declaration[] = [];
-        let isOverride = false;
-        let foundOtherValue: number | null = null;
-        let foundResolve: number | null = null;
-        decl.parent.walkDecls(decl.prop, (otherDecl, idx) => {
-          if (otherDecl.value.match(RESOLVE_RE)) {
-            // Ignore other resolutions.
-            if (otherDecl.value === decl.value) {
-              foundResolve = idx;
-              if (foundOtherValue !== null) {
-                isOverride = true;
-              }
-            }
-          } else {
-            if (foundOtherValue !== null && foundResolve !== null && foundOtherValue < foundResolve) {
-              throw new errors.InvalidBlockSyntax(`Resolving ${decl.prop} must happen either before or after all other values for ${decl.prop}.`,
-                                                  sourceLocation(block.source, decl));
-            }
-            foundOtherValue = idx;
-            otherDecls.push(otherDecl);
-          }
-        });
-        if (foundOtherValue === null) {
-          throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, sourceLocation(block.source, decl));
-        }
-        let referenceStr = resolveDeclarationMatch[3];
-        let other: BlockObject | undefined = block.lookup(referenceStr);
-        assertBlockObject(other, referenceStr, decl.source && decl.source.start);
-        if (block.equal(other && other.block)) {
-          throw new errors.InvalidBlockSyntax(
-            `Cannot resolve conflicts with your own block.`,
-            sourceLocation(block.source, decl));
-        } else if (!resolveInherited && other && other.block.isAncestor(block)) {
-          throw new errors.InvalidBlockSyntax(
-            `Cannot resolve conflicts with ancestors of your own block.`,
-            sourceLocation(block.source, decl));
-        }
-        let foundConflict = ConflictType.noconflict;
-        while (other && foundConflict === ConflictType.noconflict) {
-          foundConflict = this.resolveConflictWith(referenceStr, other, isOverride, decl, otherDecls);
-          if (foundConflict === ConflictType.noconflict) {
-            other = other.base;
-          }
+      if (resolveDeclarationMatch === null) { return; }
+
+      let resolveInherited = !!resolveDeclarationMatch[1];
+      let referenceStr = resolveDeclarationMatch[3];
+      let otherDecls: postcss.Declaration[] = [];
+      let isOverride = false;
+      let foundOtherValue: number | null = null;
+      let foundResolve: number | null = null;
+
+      // Find other resolutions or values for the same property in this block.
+      decl.parent.walkDecls(decl.prop, (otherDecl, idx) => {
+
+        // If you encounder the resolve, capture the index and determine if it is a value override.
+        if (otherDecl.value.match(RESOLVE_RE)) {
+          if (otherDecl.value !== decl.value) { return; }
+          foundResolve = idx;
+          isOverride = (foundOtherValue !== null);
         }
 
-        if (foundConflict === ConflictType.noconflict) {
-          throw new errors.InvalidBlockSyntax(
-            `There are no conflicting values for ${decl.prop} found in any selectors targeting ${referenceStr}.`,
-            sourceLocation(block.source, decl));
+        // Else, if is a value for this property, capture other decl.
+        else {
+          // Throw if resolutions are not all before or after values for the same property.
+          if (foundOtherValue !== null && foundResolve !== null && foundOtherValue < foundResolve) {
+            throw new errors.InvalidBlockSyntax(`Resolving ${decl.prop} must happen either before or after all other values for ${decl.prop}.`, sourceLocation(block.source, decl));
+          }
+          foundOtherValue = idx;
+          otherDecls.push(otherDecl);
         }
-        decl.remove();
+      });
+
+      // If no local value found, throw.
+      if (foundOtherValue === null) {
+        throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, sourceLocation(block.source, decl));
       }
+
+      // Look up the block that contains the asked resolution.
+      let other: BlockObject | undefined = block.lookup(referenceStr);
+      assertBlockObject(other, referenceStr, decl.source && decl.source.start);
+
+      // If trying to resolve rule from the same block, throw.
+      if (block.equal(other && other.block)) {
+        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with your own block.`, sourceLocation(block.source, decl));
+      }
+
+      // If trying to explicitly resolve (aka: not injected inheritance) from an
+      // ancestor block, throw.
+      else if (!resolveInherited && other && other.block.isAncestor(block)) {
+        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with ancestors of your own block.`, sourceLocation(block.source, decl));
+      }
+
+      // Crawl up inheritance tree of the other block and attempt to resolve the
+      // conflict at each level.
+      let foundConflict = ConflictType.noconflict;
+      while (other && foundConflict === ConflictType.noconflict) {
+        foundConflict = this.resolveConflictWith(referenceStr, other, decl, otherDecls, isOverride);
+        if (foundConflict === ConflictType.noconflict) {
+          other = other.base;
+        }
+      }
+
+      // If no conflicting Declarations were found (aka: calling for a resolution
+      // with nothing to resolve), throw error.
+      if (foundConflict === ConflictType.noconflict) {
+        throw new errors.InvalidBlockSyntax(`There are no conflicting values for ${decl.prop} found in any selectors targeting ${referenceStr}.`, sourceLocation(block.source, decl));
+      }
+
+      // Remove resolution Declaration
+      decl.remove();
     });
   }
 
   private resolveConflictWith(
     referenceStr: string,
     other: BlockObject,
-    isOverride: boolean,
     decl: postcss.Declaration,
-    otherDecls: postcss.Declaration[]
+    otherDecls: postcss.Declaration[],
+    isOverride: boolean
   ): ConflictType {
     let curSel = parseSelector((<postcss.Rule>decl.parent).selector); // can't use the cache, it's already been rewritten.
     let prop = decl.prop;
     let root = other.block.root;
+
+    // This should never happen, but it satisfies the compiler.
     if (root === undefined) {
-      // This should never happen, but it satisfies the compiler.
       throw new TypeError(`Cannot resolve. The block for ${referenceStr} is missing a stylesheet root`);
     }
+
     // Something to consider: when resolving against a subblock that has overridden a property, do we need
     // to include the base object selector(s) in the key selector as well?
     let query = new QueryKeySelector(other);

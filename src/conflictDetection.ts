@@ -2,6 +2,11 @@ import { BlockObject } from "./Block";
 import { shorthandsFor, longhandsFor } from "./shortHandProps";
 
 export type Conflict = [string, string];
+
+/**
+ * Contains Sets of properties for any two `BlockObject`s and their associated
+ * pseudo elements that are in conflict with each other.
+ */
 export class Conflicts<T> {
   conflictingProps: Set<T> = new Set();
   pseudoConflicts: Map<string, Set<T>> = new Map();
@@ -14,6 +19,13 @@ export class Conflicts<T> {
   }
 }
 
+/**
+ * Given two sets representing property concerns, return a set containing the
+ * properties that conflict with each other
+ * @param props1  BlockObject one.
+ * @param props2  BlockObject two.
+ * @returns A Set that contains the full set of property conflicts.
+ */
 function detectPropertyConflicts(props1: Set<string>, props2: Set<string>): Set<Conflict> {
   let conflicts = new Set<[string, string]>();
   props1.forEach((prop) => {
@@ -34,6 +46,13 @@ function detectPropertyConflicts(props1: Set<string>, props2: Set<string>): Set<
   return conflicts;
 }
 
+/**
+ * Given two block objects, detect all conflicting properties for itself and its
+ * pseudo elements.
+ * @param obj1  BlockObject one.
+ * @param obj2  BlockObject two.
+ * @returns The `Conflict` object that represents the full set of property conflicts.
+ */
 export function detectConflicts(obj1: BlockObject, obj2: BlockObject): Conflicts<Conflict> {
   let conflicts = new Conflicts<Conflict>();
   conflicts.conflictingProps = detectPropertyConflicts(obj1.propertyConcerns.getProperties(),

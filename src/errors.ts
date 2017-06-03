@@ -1,13 +1,18 @@
 import { SourceLocation } from "./SourceLocation";
 
+/**
+ * Custom CSS Blocks error base class. Will format `SourceLocation` into thrown
+ * error message if provided.
+ */
 export class CssBlockError extends Error {
   origMessage: string;
-  _location?: SourceLocation | void;
+  private _location?: SourceLocation | void;
 
   constructor(message: string, location?: SourceLocation | void) {
     super(message);
     this.origMessage = message;
-    this.location = location;
+    this._location = location;
+    super.message = this.annotatedMessage();
   }
 
   private annotatedMessage() {
@@ -27,13 +32,11 @@ export class CssBlockError extends Error {
     return this._location;
   }
 
-  set location(location: SourceLocation | void) {
-    this._location = location;
-    super.message = this.annotatedMessage();
-  }
-
 }
 
+/**
+ * Custom CSS Blocks error for missing source path from PostCSS
+ */
 export class MissingSourcePath extends CssBlockError {
   constructor() {
     super("PostCSS `from` option is missing." +
@@ -41,6 +44,9 @@ export class MissingSourcePath extends CssBlockError {
   }
 }
 
+/**
+ * Custom CSS Blocks error for Block syntax error
+ */
 export class InvalidBlockSyntax extends CssBlockError {
   constructor(message: string, location?: SourceLocation) {
     super(message, location);

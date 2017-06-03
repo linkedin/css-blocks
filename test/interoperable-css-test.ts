@@ -24,13 +24,13 @@ export class ICssAdapterTest {
   }
   @test "adapts simple state"() {
     let block = new Block("foo", "foo.css");
-    block.ensureState({name: "asdf"});
+    block.states._ensureState({name: "asdf"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles("[state|asdf]"), "foo--asdf");
   }
   @test "adapts exclusive state"() {
     let block = new Block("foo", "foo.css");
-    block.ensureState({group: "theme", name: "fancy"});
+    block.states._ensureState({group: "theme", name: "fancy"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles("[state|theme=fancy]"), "foo--theme-fancy");
   }
@@ -43,14 +43,14 @@ export class ICssAdapterTest {
   @test "adapts class state"() {
     let block = new Block("foo", "foo.css");
     let blockClass = block.ensureClass("label");
-    blockClass.ensureState({name: "small"});
+    blockClass.states._ensureState({name: "small"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles(".label[state|small]"), "foo__label--small");
   }
   @test "adapts exclusive class state"() {
     let block = new Block("foo", "foo.css");
     let blockClass = block.ensureClass("label");
-    blockClass.ensureState({group: "font", name: "small"});
+    blockClass.states._ensureState({group: "font", name: "small"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles(".label[state|font=small]"), "foo__label--font-small");
   }

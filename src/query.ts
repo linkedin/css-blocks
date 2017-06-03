@@ -31,8 +31,7 @@ export class QueryKeySelector implements Query {
     };
     container.walkRules((node) => {
       let parsedSelectors = block && block.getParsedSelectors(node) || parseSelector(node.selector);
-      let found = parsedSelectors.filter((value: ParsedSelector) =>
-        this.target.matches(value.key));
+      let found = parsedSelectors.filter((value: ParsedSelector) => this.target.matches(value.key));
       found.forEach((sel) => {
         let key = sel.key;
         if (key.pseudoelement !== undefined) {
