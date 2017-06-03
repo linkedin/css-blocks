@@ -27,6 +27,7 @@
   "types": "dist/src",
   "files": [
     "dist",
+    "types-local",
     "*.md",
     "test/mocha.opts"
   ],
