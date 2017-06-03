@@ -15,10 +15,6 @@ const LEGAL_COMBINATORS = new Set(["+", "~", " ", ">"]);
 
 export const CLASS_NAME_IDENT = new RegExp(regexpu("((?:\\\\.|[A-Za-z_\\-\\u{00a0}-\\u{10ffff}])(?:\\\\.|[A-Za-z_\\-0-9\\u{00a0}-\\u{10ffff}])*)", "u"));
 
-// This fixes an annoying interop issue because of how postcss-selector-parser exports.
-// const selectorParserFn = require("postcss-selector-parser");
-
-// TODO: Re-name `block` to `root`, its a little confusing.
 export enum BlockType {
   root = 1,
   state,
