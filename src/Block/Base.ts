@@ -267,10 +267,10 @@ export abstract class Base {
   }
 
   /**
-   * Get the base inherited block object.
+   * Get the inherited block object for this block object of the same name and type.
    * @returns The base inherited block object.
    */
-  public abstract get base(): any;
+  public abstract get base(): Base | undefined;
 
   /**
    * Return the local identifier for this `BlockObject`.
