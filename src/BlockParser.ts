@@ -19,15 +19,15 @@ export const CLASS_NAME_IDENT = new RegExp(regexpu("((?:\\\\.|[A-Za-z_\\-\\u{00a
 // const selectorParserFn = require("postcss-selector-parser");
 
 // TODO: Re-name `block` to `root`, its a little confusing.
-export enum BlockTypes {
-  block = 1,
+export enum BlockType {
+  root = 1,
   state,
   class,
   classState
 }
 
 export interface NodeAndType {
-  blockType: BlockTypes;
+  blockType: BlockType;
   node: selectorParser.Node;
 }
 
@@ -176,7 +176,7 @@ export default class BlockParser {
                 // If type `block`, track all property concerns on the block object
                 // itself, excluding any inheritance properties. Make sure to
                 // process any inheritance properties present in this ruleset.
-                case BlockTypes.block:
+                case BlockType.root:
 
                   // If is bare root selector, execute on extend and implement calls.
                   if (obj.node.next() === undefined && obj.node.prev() === undefined) {
@@ -192,7 +192,7 @@ export default class BlockParser {
                 // If a local state selector, ensure the state is registered with
                 // the parent block and track add all property concerns from this
                 // ruleset. If a foreign state, do nothing (validation happened earlier).
-                case BlockTypes.state:
+                case BlockType.state:
                   if (obj.blockName) {
                     let foreignBlock = block.getReferencedBlock(obj.blockName);
                     if (foreignBlock) {
@@ -208,7 +208,7 @@ export default class BlockParser {
 
                 // If a class selector, ensure this class is registered with the
                 // parent block and track all property concerns from this ruleset.
-                case BlockTypes.class:
+                case BlockType.class:
                   let blockClass = block.ensureClass(obj.node.value);
                   if (isKey) {
                     blockClass.propertyConcerns.addProperties(rule, block);
@@ -218,7 +218,7 @@ export default class BlockParser {
                 // If a classState selector, ensure the class is registered with
                 // the parent block, and the state is registered with this class.
                 // Track all property concerns from this ruleset.
-                case BlockTypes.classState:
+                case BlockType.classState:
                   let classNode = obj.node.prev();
                   let classObj = block.ensureClass(classNode.value);
                   let classState = classObj.states._ensureState(stateParser(<selectorParser.Attribute>obj.node));
@@ -393,7 +393,7 @@ export default class BlockParser {
     if (n) {
       return {
         blockName: blockName && blockName.value,
-        blockType: BlockTypes.block,
+        blockType: BlockType.root,
         node: n
       };
     }
@@ -403,13 +403,13 @@ export default class BlockParser {
       if (prev && isClass(prev)) {
         return {
           blockName: blockName && blockName.value,
-          blockType: BlockTypes.classState,
+          blockType: BlockType.classState,
           node: n
         };
       } else {
         return {
           blockName: blockName && blockName.value,
-          blockType: BlockTypes.state,
+          blockType: BlockType.state,
           node: n
         };
       }
@@ -418,7 +418,7 @@ export default class BlockParser {
     if (n) {
       return {
         blockName: blockName && blockName.value,
-        blockType: BlockTypes.class,
+        blockType: BlockType.class,
         node: n
       };
     } else {
@@ -470,15 +470,15 @@ export default class BlockParser {
       if (isRoot(n)) {
         if (found === null) {
           found = {
-            blockType: BlockTypes.block,
+            blockType: BlockType.root,
             node: n
           };
         } else {
-          if (found.blockType === BlockTypes.class || found.blockType === BlockTypes.classState) {
+          if (found.blockType === BlockType.class || found.blockType === BlockType.classState) {
             throw new errors.InvalidBlockSyntax(
               `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
               selectorSourceLocation(block.source, rule, sel.nodes[0]));
-          } else if (found.blockType === BlockTypes.state) {
+          } else if (found.blockType === BlockType.state) {
             throw new errors.InvalidBlockSyntax(
               `It's redundant to specify a state with the an explicit .root: ${rule.selector}`,
               selectorSourceLocation(block.source, rule, n));
@@ -493,20 +493,20 @@ export default class BlockParser {
         if (!found) {
           found = {
             node: n,
-            blockType: BlockTypes.state
+            blockType: BlockType.state
           };
-        } else if (found.blockType === BlockTypes.class) {
+        } else if (found.blockType === BlockType.class) {
           found = {
             node: n,
-            blockType: BlockTypes.classState
+            blockType: BlockType.classState
           };
-        } else if (found.blockType === BlockTypes.state || found.blockType === BlockTypes.classState) {
+        } else if (found.blockType === BlockType.state || found.blockType === BlockType.classState) {
           if (n.toString() !== found.node.toString()) {
             throw new errors.InvalidBlockSyntax(
               `Two distinct states cannot be selected on the same element: ${rule.selector}`,
               selectorSourceLocation(block.source, rule, n));
           }
-        } else if (found.blockType === BlockTypes.block) {
+        } else if (found.blockType === BlockType.root) {
             throw new errors.InvalidBlockSyntax(
               `It's redundant to specify a state with an explicit .root: ${rule.selector}`,
               selectorSourceLocation(block.source, rule, found.node));
@@ -519,20 +519,20 @@ export default class BlockParser {
         if (!found) {
           found = {
             node: n,
-            blockType: BlockTypes.class
+            blockType: BlockType.class
           };
         } else {
-          if (found.blockType === BlockTypes.block) {
+          if (found.blockType === BlockType.root) {
             throw new errors.InvalidBlockSyntax(
               `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
               selectorSourceLocation(block.source, rule, sel.nodes[0]));
-          } else if (found.blockType === BlockTypes.class) {
+          } else if (found.blockType === BlockType.class) {
             if (n.toString() !== found.node.toString()) {
               throw new errors.InvalidBlockSyntax(
                 `Two distinct classes cannot be selected on the same element: ${rule.selector}`,
                 selectorSourceLocation(block.source, rule, n));
             }
-          } else if (found.blockType === BlockTypes.classState || found.blockType === BlockTypes.state) {
+          } else if (found.blockType === BlockType.classState || found.blockType === BlockType.state) {
             throw new errors.InvalidBlockSyntax(
               `The class must precede the state: ${rule.selector}`,
               selectorSourceLocation(block.source, rule, sel.nodes[0]));
@@ -565,13 +565,13 @@ export default class BlockParser {
    * @param options Options for output, currently just to specify plurality.
    * @return A human readable descriptor for the given `BlockType`.
    */
-  private objectTypeName(t: BlockTypes, options?: {plural: boolean}): string {
+  private objectTypeName(t: BlockType, options?: {plural: boolean}): string {
     let isPlural = options && options.plural;
     switch(t) {
-      case BlockTypes.block: return isPlural ? "block roots" : "block root";
-      case BlockTypes.state: return isPlural ? "root-level states" : "root-level state";
-      case BlockTypes.class: return isPlural ? "classes" : "class";
-      case BlockTypes.classState: return isPlural ? "class states" : "class state";
+      case BlockType.root: return isPlural ? "block roots" : "block root";
+      case BlockType.state: return isPlural ? "root-level states" : "root-level state";
+      case BlockType.class: return isPlural ? "classes" : "class";
+      case BlockType.classState: return isPlural ? "class states" : "class state";
       default: return "¯\_(ツ)_/¯";
     }
   }
@@ -582,7 +582,7 @@ export default class BlockParser {
    * @param object The CompoundSelector's descriptor object.
    */
   private isRootLevelObject(object: NodeAndType): boolean {
-    return object.blockType === BlockTypes.block || object.blockType === BlockTypes.state;
+    return object.blockType === BlockType.root || object.blockType === BlockType.state;
   }
 
   /**
@@ -591,7 +591,7 @@ export default class BlockParser {
    * @param object The CompoundSelector's descriptor object.
    */
   private isClassLevelObject(object: NodeAndType): boolean {
-    return object.blockType === BlockTypes.class || object.blockType === BlockTypes.classState;
+    return object.blockType === BlockType.class || object.blockType === BlockType.classState;
   }
 
   /**
@@ -611,7 +611,7 @@ export default class BlockParser {
     }
 
     // If selecting something other than a state on external block, throw.
-    if (obj.blockType !== BlockTypes.state) {
+    if (obj.blockType !== BlockType.state) {
       throw new errors.InvalidBlockSyntax(
         `Only global states from other blocks can be used in selectors: ${rule.selector}`,
         selectorSourceLocation(block.source, rule, obj.node));

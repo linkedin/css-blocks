@@ -2,7 +2,7 @@ import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
 import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
-import { stateParser, isClass, isState, isRoot, NodeAndType, BlockTypes, CLASS_NAME_IDENT } from "../BlockParser";
+import { stateParser, isClass, isState, isRoot, NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockClass } from "./index";
 import { OptionsReader } from "../options";
 import { OutputMode } from "../OutputMode";
@@ -239,13 +239,13 @@ export class Block extends BlockObject {
    */
   nodeAndTypeToBlockObject(obj: NodeAndType): BlockObject | undefined {
     switch (obj.blockType) {
-      case BlockTypes.block:
+      case BlockType.root:
         return this;
-      case BlockTypes.state:
+      case BlockType.state:
         return this.states._getState(stateParser(<selectorParser.Attribute>obj.node));
-      case BlockTypes.class:
+      case BlockType.class:
         return this.getClass(obj.node.value);
-      case BlockTypes.classState:
+      case BlockType.classState:
         let classNode = obj.node.prev();
         let classObj = this.getClass(classNode.value);
         if (classObj) {
