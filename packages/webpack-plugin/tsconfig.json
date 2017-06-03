@@ -1,0 +1,57 @@
+{
+  "compilerOptions": {
+    // Compilation Configuration
+    "target": "es2015",
+    "inlineSources": true,
+    "inlineSourceMap": true,
+    "declaration": true,
+    "allowSyntheticDefaultImports": true,
+
+    // Environment Configuration
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "preserveConstEnums": true,
+
+    // output options
+    "newLine": "LF",
+    "outDir": "dist",
+    "module": "commonjs",
+    "traceResolution": false,
+    "baseUrl": ".",
+    "paths": {
+      "perfectionist": [
+        "node_modules/css-blocks/types-local/perfectionist"
+      ],
+      "postcss": [
+        "node_modules/postcss"
+      ],
+      "postcss-selector-parser": [
+        "node_modules/css-blocks/types-local/postcss-selector-parser"
+      ],
+      "regexpu-core": [
+        "node_modules/css-blocks/types-local/regexpu-core"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "sanity",
+    "dist",
+    "tsbuild",
+    "node_modules",
+    "test"
+  ]
+}

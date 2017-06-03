@@ -1,0 +1,55 @@
+{
+  "name": "@css-blocks/webkit-plugin",
+  "version": "0.9.0",
+  "description": "Webkit plugin for css-blocks.",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "prepublish": "tsc -p test/tsconfig.json",
+    "pretest": "tsc -p test/tsconfig.json && tslint --project tsconfig.json",
+    "tslint": "tslint --project tsconfig.json",
+    "test": "mocha dist/test --opts test/mocha.opts",
+    "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "typedoc --out ./docs ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/css-block/webkit-plugin-css-blocks.git"
+  },
+  "keywords": [
+    "css"
+  ],
+  "author": "Chris Eppstein",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/css-blocks/webkit-plugin-css-blocks/issues"
+  },
+  "types": "dist/src",
+  "files": [
+    "dist",
+    "*.md",
+    "test/mocha.opts"
+  ],
+  "homepage": "https://github.com/css-blocks/webkit-plugin-css-blocks#readme",
+  "devDependencies": {
+    "@types/chai": "^3.5.2",
+    "@types/node": "^7.0.13",
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.3.0",
+    "mocha-typescript": "^1.0.23",
+    "postcss": "^5.2.17",
+    "remap-istanbul": "^0.9.5",
+    "source-map-support": "^0.4.15",
+    "tslint": "^5.1.0",
+    "typedoc": "^0.7.1",
+    "typescript": "^2.2.2"
+  },
+  "dependencies": {
+    "@types/webpack": "^2.2.15",
+    "css-blocks": "^0.9.0",
+    "install": "^0.10.1",
+    "npm": "^5.0.2",
+    "webpack": "^2.6.1"
+  }
+}
