@@ -3,10 +3,10 @@ import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
 import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
 import { stateParser, isClass, isState, isRoot, NodeAndType, BlockTypes, CLASS_NAME_IDENT } from "../BlockParser";
-import { BlockObject, BlockClass } from "./index";
+import { BlockClass } from "./index";
 import { OptionsReader } from "../options";
 import { OutputMode } from "../OutputMode";
-import { Base, StateContainer } from "./Base";
+import { BlockObject, StateContainer } from "./BlockObject";
 
 interface BlockReferenceMap {
   [blockName: string]: Block;
@@ -20,7 +20,7 @@ export interface MergedObjectMap {
   [sourceName: string]: BlockObject[];
 }
 
-export class Block extends Base {
+export class Block extends BlockObject {
   private _classes: BlockClassMap = {};
   private _blockReferences: BlockReferenceMap = {};
   private _source: string;

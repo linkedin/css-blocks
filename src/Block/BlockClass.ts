@@ -3,13 +3,13 @@ import { OptionsReader } from "../options";
 import { OutputMode } from "../OutputMode";
 import { CompoundSelector } from "../parseSelector";
 import { isState } from "../BlockParser";
-import { Base, StateContainer } from "./Base";
-import { Block, BlockObject } from "./index";
+import { BlockObject, StateContainer } from "./BlockObject";
+import { Block } from "./index";
 
 /**
  * Represents a Class present in the Block.
  */
-export class BlockClass extends Base {
+export class BlockClass extends BlockObject {
 
   public readonly states: StateContainer;
 

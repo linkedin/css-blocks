@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import { OptionsReader } from "../options";
 import { CompoundSelector } from "../parseSelector";
-import { BlockObject, State, Block, BlockClass } from "./index";
+import { State, Block, BlockClass } from "./index";
 
 // `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
 if (!(<any>Object).values) {
@@ -236,7 +236,7 @@ export type BlockParent = Block | BlockClass | undefined;
  * Abstract class that serves as the base for all BlockObjects. Contains basic
  * properties and abstract methods that extenders must implement.
  */
-export abstract class Base {
+export abstract class BlockObject {
 
   protected _name: string;
   protected _container: BlockParent;
@@ -270,7 +270,7 @@ export abstract class Base {
    * Get the inherited block object for this block object of the same name and type.
    * @returns The base inherited block object.
    */
-  public abstract get base(): Base | undefined;
+  public abstract get base(): BlockObject | undefined;
 
   /**
    * Return the local identifier for this `BlockObject`.
@@ -308,7 +308,7 @@ export abstract class Base {
    * @returns The base block in this container tree.
    */
   get block(): Block {
-    let tmp: Base | undefined = this;
+    let tmp: BlockObject | undefined = this;
     while (tmp.parent) {
       tmp = tmp.parent;
     }

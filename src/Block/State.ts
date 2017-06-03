@@ -3,14 +3,14 @@ import { OptionsReader } from "../options";
 import { OutputMode } from "../OutputMode";
 import { CompoundSelector } from "../parseSelector";
 import { stateParser, isState } from "../BlockParser";
-import { Block, BlockClass, BlockObject } from "./index";
-import { Base, StateInfo } from "./Base";
+import { Block, BlockClass } from "./index";
+import { BlockObject, StateInfo } from "./BlockObject";
 
 /**
  * States represent a state attribute selector in a particular Block. States may
  * optionally be a member of a group of states, and or designated "global".
  */
-export class State extends Base {
+export class State extends BlockObject {
   private _group: string | null;
   isGlobal = false;
 
