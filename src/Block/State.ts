@@ -21,9 +21,9 @@ export class State extends Base {
    * @param group An optional parent group name.
    * @param container The parent container of this State.
    */
-  constructor(name: string, group: string | null | undefined = null, container: Block | BlockClass) {
+  constructor(name: string, group: string | null | undefined = undefined, container: Block | BlockClass) {
     super(name, container);
-    this._group = group;
+    this._group = group || null;
   }
 
   /**
