@@ -38,7 +38,7 @@ export interface BlockNodeAndType extends NodeAndType {
 /**
  * Check if given selector node is targeting the root block node
  */
-export function isRootSelector(node: selectorParser.Node) {
+export function isRoot(node: selectorParser.Node) {
   return node.type === selectorParser.CLASS &&
          node.value === "root";
 }
@@ -389,7 +389,7 @@ export default class BlockParser {
    */
   static getBlockNode(sel: CompoundSelector): BlockNodeAndType | null {
     let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
-    let n = sel.nodes.find(n => isRootSelector(n));
+    let n = sel.nodes.find(n => isRoot(n));
     if (n) {
       return {
         blockName: blockName && blockName.value,
@@ -467,7 +467,7 @@ export default class BlockParser {
 
       // If selecting the root element, indicate we have encountered it. If this
       // is not the first BlockType encountered, throw the appropriate error
-      if (isRootSelector(n)) {
+      if (isRoot(n)) {
         if (found === null) {
           found = {
             blockType: BlockTypes.block,

@@ -2,7 +2,7 @@ import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
 import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
-import { stateParser, isClass, isState, isRootSelector, NodeAndType, BlockTypes, CLASS_NAME_IDENT } from "../BlockParser";
+import { stateParser, isClass, isState, isRoot, NodeAndType, BlockTypes, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockObject, BlockClass } from "./index";
 import { OptionsReader } from "../options";
 import { OutputMode } from "../OutputMode";
@@ -366,7 +366,7 @@ export class Block extends Base {
   }
 
   matches(compoundSel: CompoundSelector): boolean {
-    return compoundSel.nodes.some(node => isRootSelector(node));
+    return compoundSel.nodes.some(node => isRoot(node));
   }
 
   debug(opts: OptionsReader): string[] {
