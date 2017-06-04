@@ -1,0 +1,47 @@
+{
+  "name": "@cssblocks/jsx-analyzer",
+  "version": "0.1.0",
+  "description": "Statically analyzes JSX files for CSS Blocks use.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "npm run build && mocha dist/test --opts test/mocha.opts",
+    "build": "rm -rf dist && tsc -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/css-blocks/jsx-analyzer.git"
+  },
+  "keywords": [
+    "jsx",
+    "preact",
+    "react",
+    "static",
+    "analysis",
+    "CSS Blocks"
+  ],
+  "author": "Adam Miller <ammiller@linkedin.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/css-blocks/jsx-analyzer/issues"
+  },
+  "homepage": "https://github.com/css-blocks/jsx-analyzer#readme",
+  "devDependencies": {
+    "@types/babylon": "^6.16.1",
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.18",
+    "chai": "^3.5.0",
+    "mocha": "^3.4.1",
+    "mocha-typescript": "^1.1.4",
+    "ts-node": "^3.0.4",
+    "typescript": "^2.3.2"
+  },
+  "dependencies": {
+    "babylon": "^6.17.2",
+    "postcss": "^6.0.1"
+  }
+}
