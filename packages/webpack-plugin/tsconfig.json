@@ -1,17 +1,12 @@
 {
   "compilerOptions": {
-    // Compilation Configuration
     "target": "es2015",
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
     "allowSyntheticDefaultImports": true,
-
-    // Environment Configuration
     "experimentalDecorators": true,
     "moduleResolution": "node",
-
-    // Enhance Strictness
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
@@ -21,8 +16,6 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "preserveConstEnums": true,
-
-    // output options
     "newLine": "LF",
     "outDir": "dist",
     "module": "commonjs",
@@ -40,6 +33,9 @@
       ],
       "regexpu-core": [
         "node_modules/css-blocks/types-local/regexpu-core"
+      ],
+      "loader-utils": [
+        "types-local/loader-utils"
       ]
     }
   },

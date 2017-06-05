@@ -3,3 +3,4 @@ dist/
 docs/
 coverage/
 build/
+test/fixtures/output

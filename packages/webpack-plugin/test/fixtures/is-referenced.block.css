@@ -1,0 +1,6 @@
+.root {
+  color: red;
+}
+[state|active] {
+  color: yellow;
+}
