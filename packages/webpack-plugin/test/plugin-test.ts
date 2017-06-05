@@ -17,4 +17,7 @@ export class PluginTest {
   @test "compiles a css block with a reference"() {
     return execTest("has-reference");
   }
+  @test "compiles with interoperableCSS support"() {
+    return execTest("interoperable", {interoperableCSS: true});
+  }
 }
