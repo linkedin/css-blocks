@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "removeComments": false,
+    "outDir": "../dist"
+  },
+  "include": [
+    "../src",
+    "."
+  ],
+  "exclude": [
+    "../dist",
+    "../node_modules",
+    "mocha.opts"
+  ]
+}

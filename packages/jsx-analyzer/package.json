@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "test": "npm run build && mocha dist/test --opts test/mocha.opts",
+    "test": "npm run build && mocha dist/test --recursive --opts test/mocha.opts",
     "build": "rm -rf dist && tsc -p tsconfig.json"
   },
   "repository": {
@@ -37,10 +37,12 @@
     "chai": "^3.5.0",
     "mocha": "^3.4.1",
     "mocha-typescript": "^1.1.4",
+    "mock-fs": "^4.3.0",
     "ts-node": "^3.0.4",
     "typescript": "^2.3.2"
   },
   "dependencies": {
+    "babel-traverse": "^6.24.1",
     "babylon": "^6.17.2",
     "postcss": "^6.0.1"
   }

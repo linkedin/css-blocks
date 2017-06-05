@@ -1,8 +1,9 @@
+
+// TODO: Move this file to `@css-blocks/css-blocks` npm package.
+
 import * as path from "path";
 import { Block, BlockObject } from "css-blocks";
 import { ResolvedFile } from "./index";
-
-// TODO: Move this class to `@css-blocks/css-blocks` npm package.
 
 export interface BlockPathReferences {
   [localName: string]: string
@@ -14,7 +15,7 @@ export interface BlockReferences {
 export type BlockObjectCorrelation = Set<BlockObject>;
 
 export interface SerializedAnalysis {
-  template: string;
+  template: string | undefined;
   blocks: BlockPathReferences;
   stylesFound: string[];
    // The numbers stored in each correlation are an index into a stylesFound;
@@ -22,6 +23,7 @@ export interface SerializedAnalysis {
 }
 
 export default class StyleAnalysis {
+  apiName: string | undefined;
   template: ResolvedFile;
   blocks: BlockReferences;
   stylesFound: Set<BlockObject>;
@@ -69,7 +71,6 @@ export default class StyleAnalysis {
   }
   serialize(pathsRelativeTo: string): SerializedAnalysis {
     let blockRefs: BlockPathReferences = {};
-    let objects: BlockObject[];
     let styles: string[] =  [];
     Object.keys(this.blocks).forEach((localname) => {
       blockRefs[localname] = path.relative(pathsRelativeTo, this.blocks[localname].source);
@@ -91,7 +92,7 @@ export default class StyleAnalysis {
       }
     });
     return {
-      template: path.relative(pathsRelativeTo, this.template.path),
+      template: path.relative(pathsRelativeTo, this.template.path || ''),
       blocks: blockRefs,
       stylesFound: styles,
       styleCorrelations: correlations

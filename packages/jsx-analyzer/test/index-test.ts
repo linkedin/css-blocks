@@ -2,19 +2,53 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import parser from "../src/index";
 
-@suite("Example Test")
-export class Test {
-  @test "tests run"() {
-    assert.equal(1, 1);
-  }
+var mock = require('mock-fs');
 
-  @test "parser parses"(){
-    parser({
+@suite("Parser Test")
+export class Test {
+
+  @test "parses when provided a string"(){
+    return parser({
       string: `class Foo {
         method(){
           console.log(1);
         }
       }`
+    }).then((analysis) => {
+      mock.restore();
+      assert.ok(analysis);
+    });
+  }
+
+  @test "parses when provided a path"(){
+    mock({
+      "bar.js": `class Foo {
+        method(){
+          console.log(1);
+        }
+      }`,
+    });
+    return parser({
+      path: 'bar.js'
+    }).then((analysis) => {
+      mock.restore();
+      assert.ok(analysis);
+    });
+  }
+
+  @test "parser takes an optional options hash with baseDir"(){
+    mock({
+      "/foo/baz/bar.js": `class Foo {
+        method(){
+          console.log(1);
+        }
+      }`,
+    });
+    return parser({
+      path: 'bar.js'
+    }, { baseDir: '/foo/baz'}).then((analysis) => {
+      mock.restore();
+      assert.ok(analysis);
     });
   }
 }

@@ -15,7 +15,7 @@
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedParameters": false,
     "allowUnreachableCode": false,
     "strictNullChecks": true,
     "noImplicitReturns": true,
@@ -27,7 +27,15 @@
     "outDir": "dist",
     "module": "commonjs",
     "traceResolution": false,
-    "baseUrl": "dist/src"
+    "baseUrl": "dist/src",
+
+    "paths": {
+      // These are all required when css-blocks is npm linked locally...
+      "postcss": [ "../../node_modules/postcss" ],
+      "perfectionist": [ "../../../css-blocks/types-local/perfectionist" ],
+      "postcss-selector-parser": ["../../../css-blocks/types-local/postcss-selector-parser"],
+      "regexpu-core":  ["../../../css-blocks/types-local/regexpu-core"]
+    }
   },
   "include": [
     "src",
