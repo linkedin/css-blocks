@@ -45,7 +45,7 @@ function runWebpack(webpackConfig: webpack.Configuration, done: (err: Error) => 
     });
 }
 
-function readBundle(filename: string) {
+export function readBundle(filename: string) {
     const outputLocation = path.resolve(DIST_DIRECTORY, `./test_output/${ filename }`);
     delete require.cache[outputLocation];
 

@@ -3,6 +3,8 @@ import postcss = require("postcss");
 import * as loaderUtils from "loader-utils";
 import cssBlocks from "css-blocks";
 
+let selfPath = require.resolve("./index.js");
+
 /**
  * The css-blocks loader makes css-blocks available to webpack modules.
  *
@@ -15,7 +17,13 @@ const blockLoader: loader.Loader = function(content: string) {
       throw new Error("synchronous compilation is not supported");
     }
     this.cacheable();
-    const options = loaderUtils.getOptions(this);
+    let thisLoader = this.loaders.find(loader => loader.path === selfPath);
+    let options;
+    if (thisLoader.options) {
+      options = thisLoader.options;
+    } else {
+      options = loaderUtils.getOptions(this);
+    }
     let plugin = cssBlocks(postcss)(options);
     let result = postcss([plugin]).process(content, {from: this.resourcePath});
     result.then((result) => {
