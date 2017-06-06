@@ -5,7 +5,6 @@
   "main": "dist/src/index.js",
   "scripts": {
     "compile": "rm -rf dist && tsc -p test/tsconfig.json",
-    "postinstall": "npm run compile",
     "pretest": "npm run compile && tslint --project tsconfig.json",
     "prepublish": "npm run compile",
     "tslint": "tslint --project tsconfig.json",
