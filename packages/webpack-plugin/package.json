@@ -33,9 +33,14 @@
   "homepage": "https://github.com/css-blocks/webkit-plugin-css-blocks#readme",
   "devDependencies": {
     "@types/chai": "^3.5.2",
+    "@types/extract-text-webpack-plugin": "^2.1.0",
+    "@types/glob": "^5.0.30",
     "@types/node": "^7.0.13",
     "@types/webpack-merge": "0.0.4",
     "chai": "^3.5.0",
+    "css-loader": "^0.28.4",
+    "extract-text-webpack-plugin": "^2.1.0",
+    "glob": "^7.1.2",
     "istanbul": "^0.4.5",
     "mocha": "^3.3.0",
     "mocha-typescript": "^1.0.23",
@@ -43,6 +48,7 @@
     "raw-loader": "^0.5.1",
     "remap-istanbul": "^0.9.5",
     "source-map-support": "^0.4.15",
+    "style-loader": "^0.18.2",
     "tslint": "^5.1.0",
     "typedoc": "^0.7.1",
     "typescript": "^2.2.2",
@@ -54,6 +60,6 @@
     "install": "^0.10.1",
     "npm": "^5.0.2",
     "webpack": "^2.6.1",
-   "loader-utils": "^1.0.1"
+    "loader-utils": "^1.0.1"
   }
 }
