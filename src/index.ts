@@ -42,6 +42,11 @@ export {
   Importer,
   filesystemImporter
 } from "./importing";
+export {
+  SerializedTemplateAnalysis,
+  TemplateInfo,
+  TemplateAnalysis
+} from "./TemplateAnalysis";
 
 import cssBlocks = require("./cssBlocks");
 export default cssBlocks;
