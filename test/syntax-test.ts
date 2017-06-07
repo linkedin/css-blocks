@@ -451,6 +451,10 @@ export class BlockReferences extends BEMProcessor {
   @test "doesn't allow a block ref name to collide with a class name"() {
   }
 
+  @skip
+  @test "cannot combine .root with a class as a descendant"() {
+  }
+
   @test "doesn't allow poorly formed names"() {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/imported.css",
