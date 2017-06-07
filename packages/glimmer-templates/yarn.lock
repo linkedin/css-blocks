@@ -186,6 +186,10 @@ concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
 
+css-blocks@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/css-blocks/-/css-blocks-0.0.0.tgz#f60ed7383ad22dc87e04d3a6ea8b19c5031c8e2f"
+
 debug@2.6.0, debug@^2.2.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.0.tgz#bc596bcabe7617f11d9fa15361eded5608b8499b"

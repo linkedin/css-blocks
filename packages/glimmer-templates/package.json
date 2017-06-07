@@ -1,7 +1,7 @@
 {
-  "name": "glimmer-analyzer",
+  "name": "@css-blocks/glimmer-analyzer",
   "version": "0.1.0",
-  "description": "Statically analyzes Handlebars templates and components for dependency trees and other information.",
+  "description": "Statically analyzes the css-block styles in Handlebars templates.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -13,20 +13,26 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tomdale/glimmer-analyzer.git"
+    "url": "git+https://github.com/css-block/glimmer-analyzer.git"
   },
   "keywords": [
     "glimmer",
     "static",
     "analysis",
-    "handlebars"
+    "handlebars",
+    "css-blocks",
+    "css",
+    "optimizer"
   ],
-  "author": "Tom Dale <tom@tomdale.net>",
+  "author": "Chris Eppstein <chris@eppsteins.net>",
+  "contributors": [
+    "Tom Dale <tom@tomdale.net>"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tomdale/glimmer-analyzer/issues"
+    "url": "https://github.com/css-blocks/glimmer-analyzer/issues"
   },
-  "homepage": "https://github.com/tomdale/glimmer-analyzer#readme",
+  "homepage": "https://github.com/css-blocks/glimmer-analyzer#readme",
   "devDependencies": {
     "@glimmer/compiler": "^0.22.1",
     "@types/chai": "^3.5.2",
@@ -41,6 +47,7 @@
     "@glimmer/resolution-map-builder": "0.4.0",
     "@glimmer/resolver": "^0.3.0",
     "@glimmer/syntax": "0.23.0-alpha.17",
+    "css-blocks": "^0.0.0",
     "postcss": "^6.0.1"
   }
 }
