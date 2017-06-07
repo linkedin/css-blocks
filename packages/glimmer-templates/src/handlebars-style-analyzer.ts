@@ -10,11 +10,11 @@ import {
   PluginOptionsReader,
   CssBlockError,
   QueryKeySelector,
-  ClassifiedParsedSelectors
+  ClassifiedParsedSelectors,
+  TemplateAnalysis as StyleAnalysis
 } from "css-blocks";
 import Project, { ResolvedFile } from "./project";
 import { pathFromSpecifier } from "./utils";
-import StyleAnalysis from "./StyleAnalysis";
 
 type StateContainer = Block | BlockClass;
 
@@ -137,7 +137,7 @@ function processState(stateName: string, node: AST.AttrNode, block: Block, state
   let substateName: string | null = null;
   if (node.value && node.value.type === "TextNode" && node.value.chars) {
     substateName = node.value.chars;
-    let state = container.getState({ group: stateName, name: substateName });
+    let state = container.states.getState(substateName, stateName);
     if (state) {
       analysis.addStyle(state);
     } else {
@@ -147,7 +147,7 @@ function processState(stateName: string, node: AST.AttrNode, block: Block, state
     // dynamic stuff will go here
     throw cssBlockError("No handling for dynamic styles yet", node, template);
   } else {
-    let state = container.getState({ name: stateName });
+    let state = container.states.getState(stateName);
     if (state) {
       analysis.addStyle(state);
     } else {

@@ -1,5 +1,6 @@
 import fs = require('fs');
 import path = require('path');
+import { TemplateInfo } from "css-blocks";
 
 import resMapBuilder = require('@glimmer/resolution-map-builder');
 const buildResolutionMap  = resMapBuilder.buildResolutionMap;
@@ -11,15 +12,14 @@ export interface ResolutionMap {
   [specifier: string]: string;
 }
 
-export class ResolvedFile {
+export class ResolvedFile extends TemplateInfo {
   string: string;
   specifier: string;
-  path: string;
 
   constructor(templateString: string, specifier: string, path: string) {
+    super(path);
     this.string = templateString;
     this.specifier = specifier;
-    this.path = path;
   }
 }
 

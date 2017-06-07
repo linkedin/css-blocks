@@ -3,7 +3,7 @@ import Project, { ResolutionMap } from './project';
 import {
   performStyleAnalysis
 } from './handlebars-style-analyzer';
-import StyleAnalysis from './StyleAnalysis';
+import { TemplateAnalysis as StyleAnalysis } from "css-blocks";
 import { pathFromSpecifier } from './utils';
 
 class BlockAnalyzer {
