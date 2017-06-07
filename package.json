@@ -5,7 +5,7 @@
   "main": "dist/src/index.js",
   "scripts": {
     "compile": "rm -rf dist && tsc -p test/tsconfig.json",
-    "pretest": "npm run compile && tslint --project tsconfig.json",
+    "pretest": "npm run compile && tslint --project tsconfig.json --type-check",
     "prepublish": "npm run compile",
     "tslint": "tslint --project tsconfig.json",
     "test": "mocha dist/test --opts test/mocha.opts",
