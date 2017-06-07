@@ -11,7 +11,7 @@ components are to create strong boundaries and isolated behaviors that can
 be composed without tight coupling. CSS is global and the desire to create
 visual consistency across an application seems at odds with the goal of
 isolation. What's more, techniques that produce styles that are kept in
-isolation have been at odds with browser performance: highty specific and
+isolation have been at odds with browser performance: highly specific and
 scoped selectors have performance issues, class name mangling is bad for
 gzip compression, inline styles are slow, and mixins, while useful for
 sharing styles consistently into components, produce bloated output.
@@ -35,7 +35,7 @@ significant changes that the optimizer makes.
 When it all comes together, the bloat and performance issues that are
 inherent to isolation are optimized away. You can write `width: 100%`
 hundreds of times but the optimized CSS will only have a few such
-declarations where they are abolutely needed.
+declarations where they are absolutely needed.
 
 Inspired by CSS Modules, BEM and Atomic CSS
 -------------------------------------------
@@ -85,7 +85,7 @@ in a functional way such that they wouldn't make sense by themselves.
 The styles in a block are kept in their own CSS file to avoid confusion.
 
 Most commonly, there's a single block for a particular component. However,
-it also completely natural and expected for several blocks to be composed 
+it also completely natural and expected for several blocks to be composed
 together in an HTML template.
 
 The name "Block" finds it's origin in the BEM approach to CSS architecture.
@@ -306,7 +306,7 @@ hard to describe clearly without these terms.
    There are several subtypes:
 
     1. `simple selector` - selects one aspect of an html element. E.g. element name,
-       class, attribute, identifier, `*`, pseudoclass, pseudoelement,
+       class, attribute, identifier, `*`, pseudo-class, pseudo-element,
     2. `compound selector` - a sequence of `simple selectors` applied to the same element.
     3. `combinator` - a symbol that describes the document relationship
        between two selectors. The most common `combinator` is the space which
@@ -315,7 +315,7 @@ hard to describe clearly without these terms.
        the element that receives the `declarations` in the `ruleset`.
     5. `context selector` - Describes the other elements on the page that must be present
        in order for the `key selector` to match.
-2. `ruleset` - A selector and a set of styles applied to the elemements selected.
+2. `ruleset` - A selector and a set of styles applied to the elements selected.
 3. `property` - A style attribute.
 4. `value` - What a `property` is set to.
 5. `declaration` - A `property`/`value` pair.
@@ -350,9 +350,9 @@ Rules & Constraints
    block root, a block class, or a state).
 2. The same block object targeted by the key selector can be used in the
    context selector.
-3. Psuedoclasses can be used in conjunction with any block object in the
+3. pseudo-classes can be used in conjunction with any block object in the
    context and key selectors.
-4. Pseudoelements can be used in conjunction with the key selector.
+4. Pseudo-elements can be used in conjunction with the key selector.
 5. Media queries and other @-rules are allowed.
 6. The context selector cannot contain classes or external selectors. The
    exception to this is that the block object in the key selector can be part
@@ -423,7 +423,7 @@ Then those states can be style in a block with corresponding attribute selectors
 ```
 
 The attribute selector for a substate must use the `=` operator. This ensures
-that substates are mutually exclusive and also that a correspondance between
+that substates are mutually exclusive and also that a correspondence between
 attributes and optimized classnames can be created.
 
 Note that we use a `|` instead of a colon in the stylesheet. This is
@@ -502,7 +502,7 @@ block object.
 
   - `.root` represents the block root for the current block.
   - `a-block-reference.root` represents the block root for the
-    block that has a `@block-reference` as `a-block-reference` from the currrent
+    block that has a `@block-reference` as `a-block-reference` from the current
     block. In many cases, the `.root` can be safely omitted.
   - `[state|foo]` or `[state|foo=bar]` represent the
     root state named `foo` or the state named `foo` with the substate of `bar`.
@@ -528,7 +528,7 @@ block object.
 
 ### External Selectors
 
-Sometime a class, identifier, or tagname comes from an external library or
+Sometime a class, identifier, or tag name comes from an external library or
 content comes from a database and the only thing you can do is use them as
 is. For these situations The block must declare the simple selectors that
 are external to the block. These simple selectors can then be used as key
@@ -588,13 +588,13 @@ class to the name of the block you wish to inherit.
 Note that block inheritance does not change the CSS output for a block.
 instead, it changes exported identifiers associated with the block's
 different objects. That is, the class(es) that are generated from
-`another-block`'s `.foo` element are now assocated with this blocks
+`another-block`'s `.foo` element are now associated with this blocks
 `.foo` element and all of the classes will be returned to the template.
 Additionally, even if an object from the base class isn't mentioned in
-the subclass, you can still set the classnames assocated with it as if
+the subclass, you can still set the classnames associated with it as if
 it had them.
 
-Inheritance is generally prefered over root states when a design difference affects
+Inheritance is generally preferred over root states when a design difference affects
 many classes within the block because it optimizes better -- but it is not
 friendly for composing with other sub-blocks on the same element.
 
@@ -619,7 +619,7 @@ Missing implementations for: [state|large], .foo[state|small] from
 ./base.block.css
 ```
 
-Note that this doesn't require a selector-level correspondance, merely
+Note that this doesn't require a selector-level correspondence, merely
 that the different types of states and classes have *some* styling.
 
 ### Resolving Style Conflicts
@@ -637,7 +637,7 @@ granularity of control over how collisions are resolved.
 Probably the most important concept that you need to understand about conflict
 resolutions is that you are declaring which block object owns a particular property
 when it conflicts with a specific selector in the current scope. Then, the block compiler
-generates selelectors that use specificity to create the desired resolution value
+generates selectors that use specificity to create the desired resolution value
 for all selectors that conflict with that property for that block object.
 
 Conflict resolution is aware of short-hand/long-hand property collisions and
@@ -646,7 +646,7 @@ will resolve the desired property correctly.
 During template analysis, any selectors that conflict due to actual usage
 will produce an error unless a resolution is provided.
 
-This may sound very complicated, but some code examples will ellucidate
+This may sound very complicated, but some code examples will elucidate
 just how natural it feels in use:
 
 #### Yield Resolution
@@ -694,7 +694,7 @@ them. It would have to assume that they might conflict. With template
 analysis alone it may be able to safely combine those declarations with
 intervening conflicts because it could know that two particular classes never
 collide. But with this extra hint it can go even further -- it proves that
-yes, there's a conflict, but thanks to specificity, it can now rewite all
+yes, there's a conflict, but thanks to specificity, it can now rewrite all
 three selectors having the declaration of `border: 1px solid black` into a
 single selector as long as it correctly rewrites the template to use that
 class instead of the one associated with `border:none`.
@@ -734,10 +734,10 @@ resolved selector has the value from the local selector.
 
 Let's consider some more complex cases and see how the resolver handles those.
 
-### Resolving Pseudoelements
+### Resolving Pseudo-elements
 
-When resovling a selector for a psuedoelement, only conflicts for other
-selectors of that same psuedoelement are resolved.
+When resolving a selector for a pseudo-element, only conflicts for other
+selectors of that same pseudo-element are resolved.
 
 ```css
 /* links.block.css */
@@ -766,15 +766,15 @@ In this case, the only resolution would be:
 }
 ```
 
-### Resolving Pseudoclasses
+### Resolving Pseudo-classes
 
 All selectors conflicting with the resolved property are resolved against the
-target block's root, class or state regardless of pseudoclasses.
+target block's root, class or state regardless of pseudo-classes.
 
 What this means is that when you override a target with pseudo classes, you
-effectively nullify the effect of those pseudoclasses on the resolved property.
-Those pseudoclasses would have to be reproduced locally and set to and explicit
-value (also with an override resolution) in order to preserve the conflicting pseudoclass behavior.
+effectively nullify the effect of those pseudo-classes on the resolved property.
+Those pseudo-classes would have to be reproduced locally and set to and explicit
+value (also with an override resolution) in order to preserve the conflicting pseudo-class behavior.
 
 Example:
 
@@ -849,7 +849,7 @@ it's own concern and must be resolved in the case of a conflict.
 ```
 
 Now, that's quite a lot of resolutions but a few things to note here, we're
-conflicting with a primary responsiblity of the target class and its states
+conflicting with a primary responsibility of the target class and its states
 in this case, so it stands to reason that we would have to do more work and
 this may give us pause about whether it's appropriate to even have these
 styles on the same element together.
@@ -981,7 +981,7 @@ You can also list legal values that it can be resolved to, separated by a comma.
 
  As you can see from above, you can provide constraints on a long hand
  property to set a constraint on just one of the values in a short hand
- property that is specifed. This would allow the border to be resolved
+ property that is specified. This would allow the border to be resolved
  arbitrarily for the `border-width` and `border-color` as long as the
  `border-style` is matches the constraint.
 
@@ -1089,11 +1089,11 @@ browser.
 #### Block Inheritance and the Resolver
 
 Inheritance sets up a very specific model of resolution where the sub-block
-takes precendence over the base-block in any conflict. Since inheritance is
+takes precedence over the base-block in any conflict. Since inheritance is
 implemented as a multiple class abstraction in the template these look like
 conflicts to the template analyzer, which doesn't have any knowledge of what
 a block is or what inheritance is. Also, since we can't guarantee the
-concatentation order of these two blocks when the CSS is ultimately
+concatenation order of these two blocks when the CSS is ultimately
 delivered, the block compiler detects all style conflicts between the base
 and sub blocks and generates an override resolution in the sub-block for
 them. However, the inheritance resolution does not override states conflicts,
@@ -1192,7 +1192,7 @@ Writing Optimizer-friendly CSS
 
 1. CSS constructs that reduce the optimizer's effectiveness. Optimization
    occurs within an optimization context based on a selector's @-rules, context selector,
-   and psuedo selectors. These constructs are often faster than javascript-based
+   and pseudo selectors. These constructs are often faster than javascript-based
    equivalents, but in aggregate can reduce the overall optimization so use them
    only when necessary.
 2. Explicit Resolution on a per-property basis is required for block objects
@@ -1273,7 +1273,7 @@ Help
 
 ### Ember/Glimmer (Handlebars)
 
-Each component has an assocated `styles.block.css` file.
+Each component has an associated `styles.block.css` file.
 
 The template root element is automatically the block root.
 
@@ -1282,7 +1282,7 @@ The template root element is automatically the block root.
   <div class="input-area">
     <label class="label">Username</label>
     <input class="input">
-  </div> 
+  </div>
   <submit class="submit" state:disabled>
 </form>
 ```
@@ -1296,7 +1296,7 @@ have no effect. If in BEM output mode, the above template is re-written to:
   <div class="my-form__input-area">
     <label class="my-form__label">Username</label>
     <input class="my-form__input">
-  </div> 
+  </div>
   <submit class="my-form__submit my-form__submit--disabled">
 </form>
 ```
@@ -1349,7 +1349,7 @@ In BEM output mode this would compile to:
 
 In order to return class names dynamically to the template that
 reference the styles in the stylesheet, you can import the styles
-directly and use the imported component. 
+directly and use the imported component.
 
 The `block-select` helper is what enables you to set block styles
 on a template dynamically. Because of the static analysis requirements
@@ -1363,8 +1363,8 @@ from the helper. The helper should pass calls through one of the following metho
   the Syntax section above.
 
 To return the styles of several elements together use the
-`cssBlocks.union(...expresions: (string | BlockObject)[]): BlockObject[]` method. This ensures that the
-classes returned are correct, deduplicated, resolved and legal to be used
+`cssBlocks.union(...expressions: (string | BlockObject)[]): BlockObject[]` method. This ensures that the
+classes returned are correct, de-duplicated, resolved and legal to be used
 together, and can still provide hints correctly to the CSS optimizer.
 
 
@@ -1399,7 +1399,7 @@ export default class MyForm extends Component {
                              styles.classes('submit[state|disabled]'));
     } else {
       return styles.classes('submit');
-    } 
+    }
   }
 }
 ```
@@ -1409,11 +1409,11 @@ export default class MyForm extends Component {
   <div class="input-area">
     <label class="label" for="username">Username:</label>
     <input type="text" id="username" class="input" value={{username}}>
-  </div> 
+  </div>
   <div class="input-area">
     <label class="label" for="password">Password:</label>
     <input type="text" id="password" class="input">
-  </div> 
+  </div>
   <submit class="submit" state:disabled={{isDisabled}} disabled={{isDisabled}}>
   <submit class={{block-select submitButtonClass "submit" "submit[state|disabled]"}}>
 </form>
@@ -1449,13 +1449,13 @@ because it does its work in three stages:
  total ordering of the component CSS files, Errors are generated for style
  conflicts across different block files and must be resolved explicitly.
 
-**Stage 3: Optimization.** The constriants on the authoring of blocks, together with
+**Stage 3: Optimization.** The constraints on the authoring of blocks, together with
  the template analysis and explicit resolution scheme, provides a highly
  optimizable framework for combining declarations safely. Unused classes are
  optimized out. A single class from a stylesheet may end up represented by
  as many classes as there are declarations in a ruleset.
 
-**Stage 4: Template Optimization.** 
+**Stage 4: Template Optimization.**
  These final class mappings are then rewritten back into the templates one last time.
 
  TODO: How to wire each stage into a build system.
@@ -1511,7 +1511,7 @@ There are few techniques being considered to compress classes:
    counter. This strategy works fine for within a single block. We don't
    need to ensure cache consistency once a block changes. But we
    must ensure uniqueness across all blocks. To this end, we would need to
-   set a maximum number of identifers in a block so that we can reserve
+   set a maximum number of identifiers in a block so that we can reserve
    higher order bits for counting files themselves in a stable way.
    Addition of new files over time would cause larger than expected cache
    invalidations unless we have a hand maintained file number for each
@@ -1520,15 +1520,15 @@ There are few techniques being considered to compress classes:
    detects added or removed block files and updates the counters file
    accordingly. In theory, this technique generates smaller output but
    for additional developer complexity.
-3. *Localized*. This stragey would keep the local names for a block but
+3. *Localized*. This strategy would keep the local names for a block but
    scope them with a unique identifier to avoid users being able to
    predict the classnames while still preserving some developer
    familiarity when reading the output. This might be best for
    development mode.
 4. *Content hashing*. This strategy produces predictable classnames which
    means that developers **could** abuse them if they wanted to.
-   However, this approach also means that class names can be deduplicated
-   across files built separately in downstream processing and exracted to
+   However, this approach also means that class names can be de-duplicated
+   across files built separately in downstream processing and extracted to
    a shared file. It also means that a custom brotli dictionary could be
    produced that would allow the most common class names to be efficiently
    compressed across templates and CSS files.
