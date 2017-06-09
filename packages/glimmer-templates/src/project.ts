@@ -1,10 +1,18 @@
 import fs = require('fs');
 import path = require('path');
-import { TemplateInfo } from "css-blocks";
+import * as postcss from "postcss";
+import { 
+  Block,
+  BlockParser,
+  PluginOptions,
+  TemplateInfo,
+  TemplateAnalysis as StyleAnalysis
+} from "css-blocks";
 
 import resMapBuilder = require('@glimmer/resolution-map-builder');
 const buildResolutionMap  = resMapBuilder.buildResolutionMap;
 import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
+import DependencyAnalyzer from "glimmer-analyzer";
 
 import DEFAULT_MODULE_CONFIG from './module-config';
 
@@ -28,14 +36,16 @@ export default class Project {
   map: ResolutionMap;
   resolver: Resolver;
   registry: BasicModuleRegistry;
+  blocks: {[specifier:string]: Promise<Block>};
 
-  constructor(projectDir: string) {
+  constructor(projectDir: string, moduleConfig?: any) {
     this.projectDir = projectDir;
+    this.blocks = {};
     let pkg = this.loadPackageJSON(projectDir);
     let { name } = pkg;
 
     let config = {
-      ...DEFAULT_MODULE_CONFIG,
+      ...(moduleConfig || DEFAULT_MODULE_CONFIG),
       app: {
         name,
         rootName: name
@@ -50,6 +60,21 @@ export default class Project {
 
     this.registry = new BasicModuleRegistry(map);
     this.resolver = new Resolver(config, this.registry);
+  }
+
+  blockFor(templateName: string): Promise<Block> {
+    let result = this.blocks[templateName];
+    if (result) {
+      return result;
+    }
+    let resolver = this.resolver;
+    let stylesheet = this.stylesheetFor(templateName);
+    let blockOpts: PluginOptions = {}; // TODO: read this in from a file somehow?
+    let parser = new BlockParser(postcss, blockOpts);
+    let root = postcss.parse(stylesheet.string);
+    result = parser.parse(root, stylesheet.path, templateName);
+    this.blocks[templateName] = result;
+    return result;
   }
 
   stylesheetFor(templateName: string): ResolvedFile  {

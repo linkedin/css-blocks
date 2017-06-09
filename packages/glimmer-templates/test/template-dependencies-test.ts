@@ -1,4 +1,4 @@
-import Analyzer from '../src/Analyzer';
+import Analyzer from 'glimmer-analyzer';
 import path = require('path');
 import { expect } from 'chai';
 

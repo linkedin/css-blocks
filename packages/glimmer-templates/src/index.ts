@@ -1,8 +1,8 @@
 import Resolver from '@glimmer/resolver';
 import Project, { ResolutionMap } from './project';
 import {
-  performStyleAnalysis
-} from './handlebars-style-analyzer';
+  HandlebarsStyleAnalyzer
+} from './HandlebarsStyleAnalyzer';
 import { TemplateAnalysis as StyleAnalysis } from "css-blocks";
 import { pathFromSpecifier } from './utils';
 
@@ -14,7 +14,8 @@ class BlockAnalyzer {
   }
 
   analyze(componentName: string): Promise<StyleAnalysis> {
-    return performStyleAnalysis(componentName, this.project);
+    let analyzer = new HandlebarsStyleAnalyzer(this.project);
+    return analyzer.performStyleAnalysis(componentName);
   }
 }
 
