@@ -6,6 +6,7 @@ import { BlockObject } from "../Block/BlockObject";
 import { Block } from "../Block/Block";
 // tslint:disable-next-line:no-unused-variable Imported for Documentation link
 import { CLASS_NAME_IDENT } from "../BlockParser";
+import { StyleAnalysis } from "./StyleAnalysis";
 
 /**
  * Base class for template information for an analyzed template.
@@ -42,7 +43,8 @@ export interface SerializedTemplateAnalysis {
  * 2. Call [[markDynamic markDynamic(blockObject)]] for all the styles used dynamically on the current html element.
  * 3. Call [[endElement endElement()]] when done adding styles for the current element.
  */
-export class TemplateAnalysis {
+export class TemplateAnalysis implements StyleAnalysis {
+
   template: TemplateInfo;
   /**
    * A map from a local name for the block to the [[Block]].
@@ -52,6 +54,7 @@ export class TemplateAnalysis {
   blocks: {
     [localName: string]: Block;
   };
+
   /**
    * All the block styles used in this template. Due to how Set works, it's exceedingly important
    * that the same instance for the same block object is used over the course of a single template analysis.
@@ -151,6 +154,44 @@ export class TemplateAnalysis {
    */
   serializedName(o: BlockObject): string {
     return `${this.getBlockName(o.block) || ''}${o.asSource()}`;
+  }
+
+  referencedBlocks(): Block[] {
+    return Object.keys(this.blocks).map(k => this.blocks[k]);
+  }
+
+  transitiveBlockDependencies(): Set<Block> {
+    let deps = new Set<Block>();
+    this.referencedBlocks().forEach((block) => {
+      deps.add(block);
+      let moreDeps = block.transitiveBlockDependencies();
+      if (moreDeps.size > 0) {
+        deps = new Set([...deps, ...moreDeps]);
+      }
+    });
+    return deps;
+  }
+
+  blockDependencies(): Set<Block> {
+    return new Set<Block>(this.referencedBlocks());
+  }
+
+  areCorrelated(...styles: BlockObject[]): boolean {
+    for (let i = 0; i < this.styleCorrelations.length; i++) {
+      let c = this.styleCorrelations[i];
+      if (styles.every(s => c.has(s))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isDynamic(style: BlockObject): boolean {
+    return this.dynamicStyles.has(style);
+  }
+
+  wasFound(style: BlockObject): boolean {
+    return this.stylesFound.has(style);
   }
 
   /**

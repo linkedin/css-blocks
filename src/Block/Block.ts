@@ -172,6 +172,18 @@ export class Block extends BlockObject {
     return this._blockReferences[localName] || null;
   }
 
+  transitiveBlockDependencies(): Set<Block> {
+    let deps = new Set<Block>();
+    this.eachBlockReference((_name, block) => {
+      deps.add(block);
+      let moreDeps = block.transitiveBlockDependencies();
+      if (moreDeps.size > 0) {
+        deps = new Set([...deps, ...moreDeps]);
+      }
+    });
+    return deps;
+  }
+
   /**
    * Return array self and all children.
    * @param shallow Pass false to not include inherited objects.

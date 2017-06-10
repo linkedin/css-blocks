@@ -47,6 +47,12 @@ export {
   TemplateInfo,
   TemplateAnalysis
 } from "./TemplateAnalysis";
+export {
+  MetaTemplateAnalysis
+} from "./TemplateAnalysis/MetaAnalysis";
+export {
+  StyleAnalysis
+} from "./TemplateAnalysis/StyleAnalysis";
 
 import cssBlocks = require("./cssBlocks");
 export default cssBlocks;

@@ -469,4 +469,16 @@ export class BlockReferences extends BEMProcessor {
       "Illegal block name. '123' is not a legal CSS identifier. (foo/bar/imported.css:1:9)",
       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
+
+  @test "block-name is removed from output"() {
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `.root { block-name: foo; } .asdf { color: blue; }`;
+
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        `.foo__asdf { color: blue; }\n`
+      );
+    });
+  }
 }
