@@ -329,42 +329,6 @@ export default class BlockParser {
   }
 
   /**
-   * Process all `@block-debug` statements, output debug statement to console or in comment as requested.
-   * @param sourceFile File name of block in question.
-   * @param root PostCSS Root for block.
-   * @param block Block to resolve references for
-   */
-  public processDebugStatements(sourceFile: string, root: postcss.Root, block: Block) {
-    root.walkAtRules("block-debug", (atRule) => {
-      let md = atRule.params.match(/([^\s]+) to (comment|stderr|stdout)/);
-      if (!md) {
-        throw new errors.InvalidBlockSyntax(
-          `Malformed block debug: \`@block-debug ${atRule.params}\``,
-          sourceLocation(sourceFile, atRule));
-      }
-      let localName = md[1];
-      let outputTo = md[2];
-      let ref: Block | null = block.getReferencedBlock(localName);
-      if (!ref) {
-        throw new errors.InvalidBlockSyntax(
-          `No block named ${localName} exists in this context.`,
-          sourceLocation(sourceFile, atRule));
-      }
-      let debugStr = ref.debug(this.opts);
-      if (outputTo === "comment") {
-        atRule.replaceWith(this.postcss.comment({text: debugStr.join("\n   ")}));
-      } else {
-        if (outputTo === "stderr") {
-          console.warn(debugStr.join("\n"));
-        } else {
-          console.log(debugStr.join("\n"));
-        }
-        atRule.remove();
-      }
-    });
-  }
-
-  /**
    * Assert that a provided state rule is valid.
    * @param sourceFile File name of block in question.
    * @param root The PostCSS Rule.

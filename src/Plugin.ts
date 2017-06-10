@@ -1,8 +1,7 @@
 import * as postcss from "postcss";
 import { PluginOptions, OptionsReader } from "./options";
-import { MergedObjectMap, Block } from "./Block";
 import BlockParser from "./BlockParser";
-import ConflictResolver from "./ConflictResolver";
+import BlockCompiler from "./BlockCompiler";
 import * as errors from "./errors";
 export { PluginOptions } from "./options";
 
@@ -39,51 +38,12 @@ export class Plugin {
 
     // Fetch block name from importer
     let defaultName: string = this.opts.importer.getDefaultName(sourceFile);
-    let resolver = new ConflictResolver(this.opts);
     let blockParser = new BlockParser(this.postcss, this.opts);
 
     return blockParser.parse(root, sourceFile, defaultName).then((block) => {
-
-      // Process all debug statements for this block.
-      blockParser.processDebugStatements(sourceFile, root, block);
-
-      // Clean up CSS Block specific properties.
-      root.walkAtRules("block-reference", (atRule) => {
-        atRule.remove();
-      });
-      root.walkRules(/\.root/, (rule) => {
-        rule.walkDecls(/^(extends|implements|block-name)$/, (decl) => {
-          decl.remove();
-        });
-        if (rule.nodes === undefined || rule.nodes.length === 0) {
-          rule.remove();
-        }
-      });
-
-      // Resolve inheritance based conflicts
-      resolver.resolveInheritance(root, block);
-      root.walkRules((rule) => {
-        let parsedSelectors = block.getParsedSelectors(rule);
-        rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.opts)).join(",\n");
-      });
-      resolver.resolve(root, block);
-
-      if (this.opts.interoperableCSS) {
-        this.injectExports(root, block);
-      }
+      let compiler = new BlockCompiler(postcss, this.opts);
+      compiler.compile(block, root);
     });
   }
 
-  private injectExports(root: postcss.Root, block: Block) {
-    let exportsRule = this.postcss.rule({selector: ":export"});
-    root.prepend(exportsRule);
-    let objsMap: MergedObjectMap = block.merged();
-    Object.keys(objsMap).forEach((name) => {
-      let objs = objsMap[name];
-      exportsRule.append(this.postcss.decl({
-        prop: objs[0].localName(),
-        value: objs.map(obj => obj.cssClass(this.opts)).join(" ")
-      }));
-    });
-  }
 }
