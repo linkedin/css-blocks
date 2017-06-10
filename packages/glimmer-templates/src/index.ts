@@ -6,17 +6,4 @@ import {
 import { TemplateAnalysis as StyleAnalysis } from "css-blocks";
 import { pathFromSpecifier } from './utils';
 
-class BlockAnalyzer {
-  project: Project;
-
-  constructor(projectDir: string) {
-    this.project = new Project(projectDir);
-  }
-
-  analyze(componentName: string): Promise<StyleAnalysis> {
-    let analyzer = new HandlebarsStyleAnalyzer(this.project);
-    return analyzer.performStyleAnalysis(componentName);
-  }
-}
-
-export default BlockAnalyzer;
+export default HandlebarsStyleAnalyzer;

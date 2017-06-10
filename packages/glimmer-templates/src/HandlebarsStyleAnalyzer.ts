@@ -10,10 +10,12 @@ import {
   CssBlockError,
   QueryKeySelector,
   ClassifiedParsedSelectors,
-  TemplateAnalysis as StyleAnalysis
+  TemplateAnalysis as StyleAnalysis,
+  MetaTemplateAnalysis as MetaStyleAnalysis
 } from "css-blocks";
 import Project, { ResolvedFile } from "./project";
 import { pathFromSpecifier } from "./utils";
+import DependencyAnalyzer from "glimmer-analyzer";
 
 export type StateContainer = Block | BlockClass;
 
@@ -22,13 +24,29 @@ const STATE = /state:(.*)/;
 export class HandlebarsStyleAnalyzer {
   project: Project;
 
-  constructor(project: Project) {
-    this.project = project;
+  constructor(project: Project | string) {
+    if (typeof project === "string") {
+      this.project = new Project(project);
+    } else {
+      this.project = project;
+    }
   }
 
-  
+ persformTransitiveAnalysis(templateName: string): Promise<MetaStyleAnalysis> {
+    let depAnalyzer = new DependencyAnalyzer(this.project.projectDir); // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
+    let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(templateName);
+    let analysisPromises: Promise<StyleAnalysis>[] = [];
+    componentDeps.components.forEach(dep => {
+      analysisPromises.push(this.performAnalysis(dep))
+    });
+    return Promise.all(analysisPromises).then((analyses)=> {
+      let metaAnalysis = new MetaStyleAnalysis();
+      metaAnalysis.addAllAnalyses(analyses);
+      return metaAnalysis;
+    });
+  }
 
-  performStyleAnalysis(templateName: string): Promise<StyleAnalysis> {
+  performAnalysis(templateName: string): Promise<StyleAnalysis> {
     let template = this.project.templateFor(templateName);
     let analysis = new StyleAnalysis(template);
     let ast = preprocess(template.string);

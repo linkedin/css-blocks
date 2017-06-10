@@ -10,7 +10,7 @@ describe('Stylesheet analysis', function() {
   it('analyzes styles from the implicit block', function() {
     let projectDir = fixture('styled-app');
     let analyzer = new BlockAnalyzer(projectDir);
-    return analyzer.analyze('my-app').then((richAnalysis) => {
+    return analyzer.performAnalysis('my-app').then((richAnalysis) => {
       let analysis = richAnalysis.serialize(projectDir);
       assert.equal(analysis.template, "src/ui/components/my-app/template.hbs");
       assert.deepEqual(analysis.blocks, {
@@ -27,7 +27,7 @@ describe('Stylesheet analysis', function() {
   it('analyzes styles from a referenced block', function() {
     let projectDir = fixture('styled-app');
     let analyzer = new BlockAnalyzer(projectDir);
-    return analyzer.analyze('with-multiple-blocks').then((richAnalysis) => {
+    return analyzer.performAnalysis('with-multiple-blocks').then((richAnalysis) => {
       let analysis = richAnalysis.serialize(projectDir);
       assert.equal(analysis.template, "src/ui/components/with-multiple-blocks/template.hbs");
       assert.deepEqual(analysis.blocks, {

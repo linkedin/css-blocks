@@ -12,7 +12,6 @@ import {
 import resMapBuilder = require('@glimmer/resolution-map-builder');
 const buildResolutionMap  = resMapBuilder.buildResolutionMap;
 import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
-import DependencyAnalyzer from "glimmer-analyzer";
 
 import DEFAULT_MODULE_CONFIG from './module-config';
 
@@ -76,6 +75,7 @@ export default class Project {
     this.blocks[templateName] = result;
     return result;
   }
+
 
   stylesheetFor(templateName: string): ResolvedFile  {
     let specifier = this.resolver.identify(`stylesheet:${templateName}`);
