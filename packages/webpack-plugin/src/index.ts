@@ -1,2 +1,2 @@
-export { default as cssBlocksLoader } from "./loader";
+export { default as loader } from "./loader";
 export { LoaderOptions } from "./LoaderOptions";

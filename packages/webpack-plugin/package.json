@@ -1,7 +1,7 @@
 {
-  "name": "@css-blocks/webkit-plugin",
+  "name": "@css-blocks/webpack-plugin",
   "version": "0.9.0",
-  "description": "Webkit plugin for css-blocks.",
+  "description": "Webpack plugin for css-blocks.",
   "main": "dist/src/index.js",
   "scripts": {
     "prepublish": "tsc -p test/tsconfig.json",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-block/webkit-plugin-css-blocks.git"
+    "url": "git+https://github.com/css-blocks/webpack-plugin-css-blocks.git"
   },
   "keywords": [
     "css"
@@ -22,7 +22,7 @@
   "author": "Chris Eppstein",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/css-blocks/webkit-plugin-css-blocks/issues"
+    "url": "https://github.com/css-blocks/webpack-plugin-css-blocks/issues"
   },
   "types": "dist/src",
   "files": [
@@ -30,7 +30,7 @@
     "*.md",
     "test/mocha.opts"
   ],
-  "homepage": "https://github.com/css-blocks/webkit-plugin-css-blocks#readme",
+  "homepage": "https://github.com/css-blocks/webpack-plugin-css-blocks#readme",
   "devDependencies": {
     "@types/chai": "^3.5.2",
     "@types/extract-text-webpack-plugin": "^2.1.0",
