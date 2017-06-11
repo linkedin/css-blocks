@@ -1,7 +1,7 @@
-import {
-  HandlebarsStyleAnalyzer
-} from './HandlebarsStyleAnalyzer';
 export {
+  HandlebarsStyleAnalyzer,
+  HandlebarsTransitiveStyleAnalyzer,
+  BaseStyleAnalyzer,
   StateContainer
 } from "./HandlebarsStyleAnalyzer";
 export {
@@ -9,4 +9,3 @@ export {
   ResolutionMap,
   ResolvedFile
 } from "./project";
-export default HandlebarsStyleAnalyzer;

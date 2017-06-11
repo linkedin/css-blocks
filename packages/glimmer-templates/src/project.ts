@@ -60,27 +60,34 @@ export default class Project {
     this.resolver = new Resolver(config, this.registry);
   }
 
-  blockFor(templateName: string): Promise<Block> {
+  blockFor(templateName: string): Promise<Block | undefined> {
     let result = this.blocks[templateName];
     if (result) {
       return result;
     }
     let stylesheet = this.stylesheetFor(templateName);
-    let blockOpts: PluginOptions = {}; // TODO: read this in from a file somehow?
-    let parser = new BlockParser(postcss, blockOpts);
-    let root = postcss.parse(stylesheet.string);
-    result = parser.parse(root, stylesheet.path, templateName);
-    this.blocks[templateName] = result;
-    return result;
+    if (stylesheet) {
+      let blockOpts: PluginOptions = {}; // TODO: read this in from a file somehow?
+      let parser = new BlockParser(postcss, blockOpts);
+      let root = postcss.parse(stylesheet.string);
+      result = parser.parse(root, stylesheet.path, templateName);
+      this.blocks[templateName] = result;
+      return result;
+    } else {
+      return Promise.resolve(undefined);
+    }
   }
 
-  stylesheetFor(templateName: string): ResolvedFile  {
+  stylesheetFor(templateName: string): ResolvedFile | undefined  {
     let specifier = this.resolver.identify(`stylesheet:${templateName}`);
     if (!specifier) {
-      throw new Error(`Couldn't find s for component ${templateName} in Glimmer app ${this.projectDir}.`);
+      return;
     }
 
     let stylePath = this.resolver.resolve(specifier);
+    if (!stylePath) {
+      return;
+    }
     let fullPath = path.join(this.projectDir, 'src', stylePath);
     let contents = fs.readFileSync(fullPath, 'utf8');
 

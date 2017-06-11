@@ -1,4 +1,4 @@
-import BlockAnalyzer from '../src';
+import { HandlebarsStyleAnalyzer } from '../src';
 import path = require('path');
 import { assert } from 'chai';
 import { fixture } from "./fixtures";
@@ -6,7 +6,7 @@ import { fixture } from "./fixtures";
 describe('Stylesheet analysis', function() {
   it('analyzes styles from the implicit block', function() {
     let projectDir = fixture('styled-app');
-    let analyzer = new BlockAnalyzer(projectDir, 'my-app');
+    let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'my-app');
     return analyzer.analyze().then((richAnalysis) => {
       let analysis = richAnalysis.serialize(projectDir);
       assert.equal(analysis.template, "src/ui/components/my-app/template.hbs");
@@ -23,7 +23,7 @@ describe('Stylesheet analysis', function() {
 
   it('analyzes styles from a referenced block', function() {
     let projectDir = fixture('styled-app');
-    let analyzer = new BlockAnalyzer(projectDir, 'with-multiple-blocks');
+    let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'with-multiple-blocks');
     return analyzer.analyze().then((richAnalysis) => {
       let analysis = richAnalysis.serialize(projectDir);
       assert.equal(analysis.template, "src/ui/components/with-multiple-blocks/template.hbs");

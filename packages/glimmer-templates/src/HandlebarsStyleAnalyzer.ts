@@ -44,6 +44,7 @@ export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> im
     let result = this.project.blockFor(templateName);
 
     return result.then((block) => {
+      if (!block) return analysis;
       analysis.blocks[""] = block;
       block.eachBlockReference((name, refBlock) => {
         analysis.blocks[name] = refBlock;
@@ -209,6 +210,7 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer<MetaSty
     let depAnalyzer = new DependencyAnalyzer(this.project.projectDir); // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
     let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(this.templateName);
     let analysisPromises: Promise<SingleTemplateStyleAnalysis>[] = [];
+    analysisPromises.push(this.analyzeTemplate(this.templateName));
     componentDeps.components.forEach(dep => {
       analysisPromises.push(this.analyzeTemplate(dep));
     });
