@@ -16,7 +16,9 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
   }
 
   addAllAnalyses(analyses: TemplateAnalysis[]) {
-    analyses.forEach.call(this, this.addAnalysis);
+    analyses.forEach((analysis) => {
+      this.addAnalysis(analysis);
+    });
   }
 
   addAnalysis(analysis: TemplateAnalysis) {

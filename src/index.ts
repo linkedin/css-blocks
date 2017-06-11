@@ -53,6 +53,9 @@ export {
 export {
   StyleAnalysis
 } from "./TemplateAnalysis/StyleAnalysis";
+export {
+  Analyzer as TemplateAnalyzer
+} from "./TemplateAnalysis/Analyzer";
 
 import cssBlocks = require("./cssBlocks");
 export default cssBlocks;

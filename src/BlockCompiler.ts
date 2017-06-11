@@ -4,6 +4,7 @@ import { PluginOptions, OptionsReader } from "./options";
 import { sourceLocation } from "./SourceLocation";
 import { MergedObjectMap, Block } from "./Block";
 import ConflictResolver from "./ConflictResolver";
+import { StyleAnalysis } from "./TemplateAnalysis/StyleAnalysis";
 /**
  * Compiler that, given a Block will return a transformed AST
  * interface is `BlockParser.parse`.
@@ -17,7 +18,10 @@ export default class BlockCompiler {
     this.postcss = postcssImpl;
   }
 
-  compile(block: Block, root: postcss.Root): postcss.Root {
+  compile(block: Block, root: postcss.Root, analysis?: StyleAnalysis): postcss.Root {
+      if (analysis) {
+        console.log("Got an analysis for compilation. I should use it probably.", analysis);
+      }
       let resolver = new ConflictResolver(this.opts);
       // Process all debug statements for this block.
       this.processDebugStatements(block.source, root, block);
