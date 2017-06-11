@@ -1,16 +1,13 @@
 import BlockAnalyzer from '../src';
 import path = require('path');
 import { assert } from 'chai';
-
-function fixture(fixturePath: string) {
-  return path.join(__dirname, 'fixtures', fixturePath);
-}
+import { fixture } from "./fixtures";
 
 describe('Stylesheet analysis', function() {
   it('analyzes styles from the implicit block', function() {
     let projectDir = fixture('styled-app');
-    let analyzer = new BlockAnalyzer(projectDir);
-    return analyzer.performAnalysis('my-app').then((richAnalysis) => {
+    let analyzer = new BlockAnalyzer(projectDir, 'my-app');
+    return analyzer.analyze().then((richAnalysis) => {
       let analysis = richAnalysis.serialize(projectDir);
       assert.equal(analysis.template, "src/ui/components/my-app/template.hbs");
       assert.deepEqual(analysis.blocks, {
@@ -26,8 +23,8 @@ describe('Stylesheet analysis', function() {
 
   it('analyzes styles from a referenced block', function() {
     let projectDir = fixture('styled-app');
-    let analyzer = new BlockAnalyzer(projectDir);
-    return analyzer.performAnalysis('with-multiple-blocks').then((richAnalysis) => {
+    let analyzer = new BlockAnalyzer(projectDir, 'with-multiple-blocks');
+    return analyzer.analyze().then((richAnalysis) => {
       let analysis = richAnalysis.serialize(projectDir);
       assert.equal(analysis.template, "src/ui/components/with-multiple-blocks/template.hbs");
       assert.deepEqual(analysis.blocks, {

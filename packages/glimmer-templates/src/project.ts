@@ -1,12 +1,11 @@
 import fs = require('fs');
 import path = require('path');
 import * as postcss from "postcss";
-import { 
+import {
   Block,
   BlockParser,
   PluginOptions,
-  TemplateInfo,
-  TemplateAnalysis as StyleAnalysis
+  TemplateInfo
 } from "css-blocks";
 
 import resMapBuilder = require('@glimmer/resolution-map-builder');
@@ -66,7 +65,6 @@ export default class Project {
     if (result) {
       return result;
     }
-    let resolver = this.resolver;
     let stylesheet = this.stylesheetFor(templateName);
     let blockOpts: PluginOptions = {}; // TODO: read this in from a file somehow?
     let parser = new BlockParser(postcss, blockOpts);
@@ -76,11 +74,10 @@ export default class Project {
     return result;
   }
 
-
   stylesheetFor(templateName: string): ResolvedFile  {
     let specifier = this.resolver.identify(`stylesheet:${templateName}`);
     if (!specifier) {
-      throw new Error(`Couldn't find s for component ${templateName} in Glimmer app ${this.projectDir}.`)
+      throw new Error(`Couldn't find s for component ${templateName} in Glimmer app ${this.projectDir}.`);
     }
 
     let stylePath = this.resolver.resolve(specifier);
@@ -93,7 +90,7 @@ export default class Project {
   templateFor(templateName: string) {
     let specifier = this.resolver.identify(`template:${templateName}`);
     if (!specifier) {
-      throw new Error(`Couldn't find template for component ${templateName} in Glimmer app ${this.projectDir}.`)
+      throw new Error(`Couldn't find template for component ${templateName} in Glimmer app ${this.projectDir}.`);
     }
 
     let templatePath = this.resolver.resolve(specifier);

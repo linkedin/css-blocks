@@ -8,8 +8,14 @@
     "dist"
   ],
   "scripts": {
-    "test": "mocha",
-    "build": "tsc -p tsconfig.build.json"
+    "test": "mocha --opts test/mocha.opts dist/test",
+    "compile": "rm -rf dist && tsc -p test/tsconfig.json",
+    "pretest": "npm run compile && npm run tslint",
+    "prepublish": "npm run compile",
+    "tslint": "tslint --project tsconfig.json --type-check",
+    "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "typedoc --out ./docs ."
   },
   "repository": {
     "type": "git",
@@ -39,15 +45,20 @@
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.18",
     "chai": "^3.5.0",
+    "istanbul": "^0.4.5",
     "mocha": "^3.4.1",
+    "remap-istanbul": "^0.9.5",
+    "source-map-support": "^0.4.15",
     "ts-node": "^3.0.4",
+    "tslint": "^5.4.3",
+    "typedoc": "^0.7.1",
     "typescript": "^2.3.2"
   },
   "dependencies": {
     "@glimmer/resolution-map-builder": "0.4.0",
     "@glimmer/resolver": "^0.3.0",
     "@glimmer/syntax": "0.23.0-alpha.17",
-    "css-blocks": "^0.0.0",
+    "css-blocks": "file:/Users/ceppstei/Work/sailfish/css-blocks",
     "glimmer-analyzer": "^0.1.2",
     "postcss": "^6.0.1"
   }

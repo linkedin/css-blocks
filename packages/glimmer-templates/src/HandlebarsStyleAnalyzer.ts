@@ -1,12 +1,8 @@
-import Resolver from '@glimmer/resolver';
 import { AST, preprocess, traverse } from '@glimmer/syntax';
 import {
   Block,
   BlockClass,
   BlockObject,
-  BlockParser,
-  PluginOptions,
-  PluginOptionsReader,
   CssBlockError,
   QueryKeySelector,
   ClassifiedParsedSelectors,
@@ -16,7 +12,6 @@ import {
   TemplateAnalyzer
 } from "css-blocks";
 import Project, { ResolvedFile } from "./project";
-import { pathFromSpecifier } from "./utils";
 import DependencyAnalyzer from "glimmer-analyzer";
 
 export type StateContainer = Block | BlockClass;
@@ -45,7 +40,6 @@ export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> im
     let analysis = new SingleTemplateStyleAnalysis(template);
     let ast = preprocess(template.string);
     let elementCount = 0;
-    let elementStyles: string[] = [];
     let self = this;
     let result = this.project.blockFor(templateName);
 
@@ -178,7 +172,7 @@ export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> im
       filename: node.loc.source || template.path,
       line: node.loc.start.line,
       column: node.loc.start.column
-    })
+    });
   }
 
   private selectorCount(result: ClassifiedParsedSelectors) {
@@ -203,7 +197,6 @@ export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer<SingleTemplateSty
   }
 }
 
-
 export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer<MetaStyleAnalysis> {
   templateName: string;
 
@@ -217,7 +210,7 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer<MetaSty
     let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(this.templateName);
     let analysisPromises: Promise<SingleTemplateStyleAnalysis>[] = [];
     componentDeps.components.forEach(dep => {
-      analysisPromises.push(this.analyzeTemplate(dep))
+      analysisPromises.push(this.analyzeTemplate(dep));
     });
     return Promise.all(analysisPromises).then((analyses)=> {
       let metaAnalysis = new MetaStyleAnalysis();

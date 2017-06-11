@@ -1,10 +1,7 @@
 import Analyzer from 'glimmer-analyzer';
 import path = require('path');
 import { expect } from 'chai';
-
-function fixture(fixturePath: string) {
-  return path.join(__dirname, 'fixtures', fixturePath);
-}
+import { fixture } from "./fixtures";
 
 describe('Recursive template dependency analysis', function() {
   it('discovers recursive dependencies', function() {

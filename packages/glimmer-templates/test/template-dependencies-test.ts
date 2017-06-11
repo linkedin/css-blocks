@@ -1,10 +1,7 @@
 import Analyzer from 'glimmer-analyzer';
 import path = require('path');
 import { expect } from 'chai';
-
-function fixture(fixturePath: string) {
-  return path.join(__dirname, 'fixtures', fixturePath);
-}
+import { fixture } from "./fixtures";
 
 describe('Template dependency analysis', function() {
   it('discovers angle bracket components', function() {
