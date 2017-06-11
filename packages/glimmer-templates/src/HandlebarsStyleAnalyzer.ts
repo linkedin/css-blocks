@@ -10,8 +10,10 @@ import {
   CssBlockError,
   QueryKeySelector,
   ClassifiedParsedSelectors,
-  TemplateAnalysis as StyleAnalysis,
-  MetaTemplateAnalysis as MetaStyleAnalysis
+  StyleAnalysis as GenericAnalysis,
+  TemplateAnalysis as SingleTemplateStyleAnalysis,
+  MetaTemplateAnalysis as MetaStyleAnalysis,
+  TemplateAnalyzer
 } from "css-blocks";
 import Project, { ResolvedFile } from "./project";
 import { pathFromSpecifier } from "./utils";
@@ -21,7 +23,7 @@ export type StateContainer = Block | BlockClass;
 
 const STATE = /state:(.*)/;
 
-export class HandlebarsStyleAnalyzer {
+export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> implements TemplateAnalyzer {
   project: Project;
 
   constructor(project: Project | string) {
@@ -32,23 +34,15 @@ export class HandlebarsStyleAnalyzer {
     }
   }
 
- persformTransitiveAnalysis(templateName: string): Promise<MetaStyleAnalysis> {
-    let depAnalyzer = new DependencyAnalyzer(this.project.projectDir); // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
-    let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(templateName);
-    let analysisPromises: Promise<StyleAnalysis>[] = [];
-    componentDeps.components.forEach(dep => {
-      analysisPromises.push(this.performAnalysis(dep))
-    });
-    return Promise.all(analysisPromises).then((analyses)=> {
-      let metaAnalysis = new MetaStyleAnalysis();
-      metaAnalysis.addAllAnalyses(analyses);
-      return metaAnalysis;
-    });
+  abstract analyze(): Promise<AnalysisType>;
+
+  reset() {
+    this.project = new Project(this.project.projectDir);
   }
 
-  performAnalysis(templateName: string): Promise<StyleAnalysis> {
+  protected analyzeTemplate(templateName: string): Promise<SingleTemplateStyleAnalysis> {
     let template = this.project.templateFor(templateName);
-    let analysis = new StyleAnalysis(template);
+    let analysis = new SingleTemplateStyleAnalysis(template);
     let ast = preprocess(template.string);
     let elementCount = 0;
     let elementStyles: string[] = [];
@@ -103,7 +97,7 @@ export class HandlebarsStyleAnalyzer {
     });
   }
 
-  validateClasses(block: Block, atRootElement: boolean, objects: BlockObject[], node: AST.Node, template: ResolvedFile) {
+  private validateClasses(block: Block, atRootElement: boolean, objects: BlockObject[], node: AST.Node, template: ResolvedFile) {
     if (atRootElement && objects.length > 0) {
       objects.forEach((obj) => {
         if (obj.block === block) {
@@ -121,7 +115,7 @@ export class HandlebarsStyleAnalyzer {
     });
   }
 
-  processClass(node: AST.AttrNode, block: Block, analysis: StyleAnalysis, stylesheetPath: string, template: ResolvedFile): StateContainer[] {
+  private processClass(node: AST.AttrNode, block: Block, analysis: SingleTemplateStyleAnalysis, stylesheetPath: string, template: ResolvedFile): StateContainer[] {
     let blockObjects: StateContainer[] = [];
     if (node.value.type === "TextNode") {
       let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
@@ -138,7 +132,7 @@ export class HandlebarsStyleAnalyzer {
     return blockObjects;
   }
 
-  processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: StyleAnalysis, stylesheetPath: string, template: ResolvedFile) {
+  private processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: SingleTemplateStyleAnalysis, stylesheetPath: string, template: ResolvedFile) {
     let blockName: string | undefined;
     let md = stateName.match(/^([^\.]+)\.([^\.]+)$/);
     let stateBlock = block;
@@ -179,7 +173,7 @@ export class HandlebarsStyleAnalyzer {
     }
   }
 
-  cssBlockError(message: string, node: AST.Node, template: ResolvedFile) {
+  private cssBlockError(message: string, node: AST.Node, template: ResolvedFile) {
     return new CssBlockError(message, {
       filename: node.loc.source || template.path,
       line: node.loc.start.line,
@@ -187,17 +181,48 @@ export class HandlebarsStyleAnalyzer {
     })
   }
 
-  selectorCount(result: ClassifiedParsedSelectors) {
+  private selectorCount(result: ClassifiedParsedSelectors) {
     let count = result.main.length;
     Object.keys(result.other).forEach((k) => {
       count += result.other[k].length;
     });
     return count;
   }
+}
 
-  isComponentHelper({ path }: AST.MustacheStatement) {
-    return path.type === 'PathExpression'
-      && path.parts.length === 1
-      && path.parts[0] === 'component';
+export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer<SingleTemplateStyleAnalysis> {
+  templateName: string;
+
+  constructor(project: Project | string, templateName: string) {
+    super(project);
+    this.templateName = templateName;
+  }
+
+  analyze(): Promise<SingleTemplateStyleAnalysis> {
+    return this.analyzeTemplate(this.templateName);
+  }
+}
+
+
+export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer<MetaStyleAnalysis> {
+  templateName: string;
+
+  constructor(project: Project | string, templateName: string) {
+    super(project);
+    this.templateName = templateName;
+  }
+
+  analyze(): Promise<MetaStyleAnalysis> {
+    let depAnalyzer = new DependencyAnalyzer(this.project.projectDir); // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
+    let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(this.templateName);
+    let analysisPromises: Promise<SingleTemplateStyleAnalysis>[] = [];
+    componentDeps.components.forEach(dep => {
+      analysisPromises.push(this.analyzeTemplate(dep))
+    });
+    return Promise.all(analysisPromises).then((analyses)=> {
+      let metaAnalysis = new MetaStyleAnalysis();
+      metaAnalysis.addAllAnalyses(analyses);
+      return metaAnalysis;
+    });
   }
 }
