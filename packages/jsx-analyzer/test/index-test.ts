@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import parser from "../src/index";
+import { parse, parseFile} from "../src/index";
 
 var mock = require('mock-fs');
 
@@ -8,13 +8,13 @@ var mock = require('mock-fs');
 export class Test {
 
   @test "parses when provided a string"(){
-    return parser({
-      string: `class Foo {
+    return parse(`
+      class Foo {
         method(){
           console.log(1);
         }
-      }`
-    }).then((analysis) => {
+      }
+    `).then((analysis) => {
       mock.restore();
       assert.ok(analysis);
     });
@@ -28,9 +28,7 @@ export class Test {
         }
       }`,
     });
-    return parser({
-      path: 'bar.js'
-    }).then((analysis) => {
+    return parseFile('bar.js').then((analysis) => {
       mock.restore();
       assert.ok(analysis);
     });
@@ -44,9 +42,7 @@ export class Test {
         }
       }`,
     });
-    return parser({
-      path: 'bar.js'
-    }, { baseDir: '/foo/baz'}).then((analysis) => {
+    return parseFile('bar.js', { baseDir: '/foo/baz'}).then((analysis) => {
       mock.restore();
       assert.ok(analysis);
     });

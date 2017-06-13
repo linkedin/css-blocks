@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import parser from "../src/index";
-import StyleAnalysis from '../src/StyleAnalysis';
+import { parse } from "../src/index";
+import Analysis from '../src/Analysis';
 import { Block } from "css-blocks";
 
 var mock = require('mock-fs');
@@ -10,9 +10,7 @@ var mock = require('mock-fs');
 export class Test {
 
   @test "imports for non-css-block related files are ignored"(){
-    parser({
-      string: `import foo from 'bar';`
-    }).then((analysis: StyleAnalysis) => {
+    parse(`import foo from 'bar';`).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 0);
     });
@@ -22,9 +20,7 @@ export class Test {
     mock({
       "bar.block.css": ".root { color: red; }",
     });
-    return parser({
-      string: `import bar from 'bar.block.css';`
-    }).then((analysis: StyleAnalysis) => {
+    return parse(`import bar from 'bar.block.css';`).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.blocks['bar'].constructor, Block);
@@ -35,9 +31,7 @@ export class Test {
     mock({
       "bar.block.css": ".root { color: red; }",
     });
-    parser({
-      string: `import * as bar from 'bar.block.css';`
-    }).then((analysis: StyleAnalysis) => {
+    parse(`import * as bar from 'bar.block.css';`).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.blocks['bar'].constructor, Block);
@@ -49,13 +43,126 @@ export class Test {
       "bar.block.css": ".root { color: red; }",
       "baz.block.css": ".root { color: blue; }"
     });
-    parser({
-      string: `import * as bar from 'bar.block.css';\nimport baz from 'baz.block.css';`
-    }).then((analysis: StyleAnalysis) => {
+    parse(`
+      import * as bar from 'bar.block.css';
+      import baz from 'baz.block.css';
+    `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 2);
       assert.equal(analysis.blocks['bar'].constructor, Block);
       assert.equal(analysis.blocks['baz'].constructor, Block);
+    });
+  }
+
+  @test "imported blocks may be renamed locally"(){
+    mock({
+      "bar.block.css": ".root { color: red; }",
+      "baz.block.css": ".root { color: blue; }"
+    });
+    parse(`
+      import * as foo from 'bar.block.css';
+      import biz from 'baz.block.css';
+    `).then((analysis: Analysis) => {
+      mock.restore();
+      assert.equal(Object.keys(analysis.blocks).length, 2);
+      assert.equal(analysis.blocks['bar'], analysis.localBlocks['foo']);
+      assert.equal(analysis.blocks['baz'], analysis.localBlocks['biz']);
+    });
+  }
+
+  @test "block identifiers may not be re-declaired elsewhere in the file – Function Declaration"(){
+    mock({
+      "baz.block.css": ".root { color: blue; }"
+    });
+    parse(`
+      import biz from 'baz.block.css';
+      () => {
+        function biz(){};
+      }
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, 'Block identifier "biz" cannot be re-defined in any scope once imported.');
+    });
+  }
+
+  @test "block identifiers may not be re-declaired elsewhere in the file – Variable Declaration"(){
+    mock({
+      "baz.block.css": ".root { color: blue; }"
+    });
+    parse(`
+      import biz from 'baz.block.css';
+      () => {
+        let biz = 'test';
+      }
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, 'Block identifier "biz" cannot be re-defined in any scope once imported.');
+    });
+  }
+
+  @test "block identifiers may not be re-declaired elsewhere in the file – Class Name"(){
+    mock({
+      "baz.block.css": ".root { color: blue; }"
+    });
+    parse(`
+      import biz from 'baz.block.css';
+      () => {
+        class biz {};
+      }
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, 'Block identifier "biz" cannot be re-defined in any scope once imported.');
+    });
+  }
+
+  @test "block identifiers may not be re-declaired elsewhere in the file – Function Param"(){
+    mock({
+      "baz.block.css": ".root { color: blue; }"
+    });
+    parse(`
+      import biz from 'baz.block.css';
+      (biz) => {
+
+      }
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, 'Block identifier "biz" cannot be re-defined in any scope once imported.');
+    });
+  }
+
+  @test "block identifiers may not be re-declaired elsewhere in the file – Class Method Param"(){
+    mock({
+      "baz.block.css": ".root { color: blue; }"
+    });
+    parse(`
+      import biz from 'baz.block.css';
+      class Test {
+        method(biz){}
+      }
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, 'Block identifier "biz" cannot be re-defined in any scope once imported.');
+    });
+  }
+
+  @test "block identifiers may not be re-declaired elsewhere in the file – Object Method Param"(){
+    mock({
+      "baz.block.css": ".root { color: blue; }"
+    });
+    parse(`
+      import biz from 'baz.block.css';
+      let obj = {
+        method(biz){}
+      };
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, 'Block identifier "biz" cannot be re-defined in any scope once imported.');
     });
   }
 

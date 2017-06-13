@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/css-blocks/jsx-analyzer#readme",
   "devDependencies": {
+    "@types/babel-types": "^6.7.16",
     "@types/babylon": "^6.16.1",
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
@@ -43,7 +44,8 @@
   },
   "dependencies": {
     "babel-traverse": "^6.24.1",
-    "babylon": "^6.17.2",
+    "babel-types": "^6.24.1",
+    "babylon": "epicmiller/babylon#de84728",
     "postcss": "^6.0.1"
   }
 }
