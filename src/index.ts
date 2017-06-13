@@ -13,6 +13,9 @@ export {
   default as BlockParser
 } from "./BlockParser";
 export {
+  default as BlockCompiler
+} from "./BlockCompiler";
+export {
   CssBlockError,
   InvalidBlockSyntax,
   MissingSourcePath
