@@ -36,6 +36,9 @@
       ],
       "loader-utils": [
         "types-local/loader-utils"
+      ],
+      "virtual-module-webpack-plugin": [
+        "types-local/virtual-module-webpack-plugin"
       ]
     }
   },

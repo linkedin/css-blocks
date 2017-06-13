@@ -1,9 +1,13 @@
 import Tapable = require("tapable");
 import * as webpack from "webpack";
-import { TemplateAnalyzer, StyleAnalysis } from "css-blocks";
+import * as postcss from "postcss";
+import * as path from "path";
+import { TemplateAnalyzer, StyleAnalysis, BlockCompiler, PluginOptions as CssBlocksOptions } from "css-blocks";
+import VirtualModulePlugin = require("virtual-module-webpack-plugin");
 
 export interface CssBlocksPluginOptions {
   templateAnalyzer?: TemplateAnalyzer;
+  compilationOptions?: CssBlocksOptions;
 }
 
 /* exposes plugin events for compiler to tap into */
@@ -35,13 +39,77 @@ export class CssBlocksTemplateAnalysisPlugin extends Tapable implements webpack.
   }
 }
 
+interface HasFilesystem {
+  fileSystem: any;
+}
+
 /* exposes plugin events for optimizer to tap into */
 export class CssBlocksCompilerPlugin extends Tapable implements webpack.Plugin {
   analysis: StyleAnalysis | undefined;
   pendingAnalysis: Promise<StyleAnalysis> | undefined;
-  apply(compiler: webpack.Compiler) {
-    compiler.plugin("compilation", (_compilation) => {
-    });
+  options: CssBlocksPluginOptions | undefined;
+  _entryPoint: string | undefined;
+
+  constructor(options?: CssBlocksPluginOptions) {
+    super();
+    this.options = options || {};
+  }
+
+  entryPoint(): string {
+    if (!this._entryPoint) {
+      this._entryPoint = blockFilenameGenerator();
+      return this._entryPoint;
+    } else {
+      throw new Error("Only one entry point per plugin is allowed.");
+    }
+  }
+
+  asPromised(): Promise<StyleAnalysis> {
+    if (this.analysis) {
+      return Promise.resolve(this.analysis);
+    } else if (this.pendingAnalysis) {
+      return this.pendingAnalysis;
+    } else {
+      throw new Error("You gotta wait 'till the analysis starts.");
+    }
+  }
+
+  apply(compiler: any) {
+    if (!this._entryPoint) {
+      throw new Error("You must add entryPoint() to the webpack configuration before registering the css-blocks plugin.");
+    }
+    let self = this;
+    let resolverPlugin = function(this: HasFilesystem, request: any, cb: any) {
+      const fs = this.fileSystem;
+      if (request.path && request.path.endsWith(self._entryPoint)) {
+        // console.log("resolving app css", request);
+        return self.asPromised().then(analysis => {
+          let options: CssBlocksOptions = self.options && self.options.compilationOptions || {};
+          let blockCompiler = new BlockCompiler(postcss, options);
+          let cssBundle: string[] = [];
+          let assetPath = path.join(path.dirname(request.descriptionFilePath), "css-blocks", self._entryPoint || "");
+          // console.log(assetPath);
+          analysis.blockDependencies().forEach(block => {
+            if (block.root && block.source) {
+              cssBundle.push(blockCompiler.compile(block, block.root, analysis).toString());
+            }
+          });
+          VirtualModulePlugin.populateFilesystem({fs: fs, modulePath: assetPath, contents: cssBundle.join("\n"), ctime: VirtualModulePlugin.statsDate()});
+          // console.log("populated app css", fs.readFileSync(assetPath));
+          cb(null, {path: assetPath});
+        });
+      } else {
+        cb();
+        return;
+      }
+    };
+    if (!compiler.resolvers.normal) {
+      compiler.plugin('after-resolvers', () => {
+        compiler.resolvers.normal.plugin('file', resolverPlugin);
+      });
+    } else {
+      compiler.resolvers.normal.plugin('file', resolverPlugin);
+    }
   }
   setAnalysis(analysis: StyleAnalysis) {
     this.analysis = analysis;
@@ -78,12 +146,19 @@ export class CssBlocksOptimizerPlugin extends Tapable implements webpack.Plugin 
   }
 }
 
+let filenameCounter = 0;
+function blockFilenameGenerator() {
+  return `css-blocks-${++filenameCounter}.css`;
+}
+
 export class CssBlocksPlugin extends Tapable implements webpack.Plugin {
   options: CssBlocksPluginOptions;
+  compilerPlugin: CssBlocksCompilerPlugin;
 
   constructor(options?: CssBlocksPluginOptions) {
     super();
     this.options = options || {};
+    this.compilerPlugin = new CssBlocksCompilerPlugin();
   }
 
   apply(compiler: webpack.Compiler) {
@@ -92,14 +167,17 @@ export class CssBlocksPlugin extends Tapable implements webpack.Plugin {
     let analyzer: CssBlocksTemplateAnalysisPlugin | undefined;
     if (this.options.templateAnalyzer) {
       analyzer = new CssBlocksTemplateAnalysisPlugin(this.options.templateAnalyzer);
-      let blockCompilerPlugin = new CssBlocksCompilerPlugin();
-      analyzer.afterTemplateAnalysis(blockCompilerPlugin.getTemplateAnalysisHandler());
-      analyzer.onStartingTemplateAnalysis(blockCompilerPlugin.getTemplateAnalysisStartedHandler());
+      analyzer.afterTemplateAnalysis(this.compilerPlugin.getTemplateAnalysisHandler());
+      analyzer.onStartingTemplateAnalysis(this.compilerPlugin.getTemplateAnalysisStartedHandler());
       analyzer.apply(compiler);
-      blockCompilerPlugin.apply(compiler);
+      this.compilerPlugin.apply(compiler);
     }
     compiler.plugin("compilation", (_compilation) => {
       // console.log("coordinator", compilation);
     });
+  }
+
+  entryPoint(): string {
+    return this.compilerPlugin.entryPoint();
   }
 }
