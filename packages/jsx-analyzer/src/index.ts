@@ -21,15 +21,15 @@ const defaultOptions: ParserOptions = {
   parserOptions: {
     sourceType: 'module',
     plugins: [
-      "jsx",
-      "decorators",
-      "classProperties",
-      "exportExtensions",
-      "asyncGenerators",
-      "functionBind",
-      "functionSent",
-      "dynamicImport"
-    ],
+      'jsx',
+      'decorators',
+      'classProperties',
+      'exportExtensions',
+      'asyncGenerators',
+      'functionBind',
+      'functionSent',
+      'dynamicImpor'
+    ]
   }
 };
 
@@ -45,12 +45,12 @@ export function parse(data: string, opts: ParserOptions = {}): Promise<Analysis>
 
   // If not enough file information has been provided, throw.
   if ( !data ) {
-    throw new Error("Invalid file input to CSS Blocks JSX Analyzer");
+    throw new Error('Invalid file input to CSS Blocks JSX Analyzer');
   }
 
   // Parse the file into an AST.
   let ast = babylon.parse(data, {
-    sourceType: "module",
+    sourceType: 'module',
     plugins: [
       'jsx',
       'decorators',
@@ -88,7 +88,6 @@ export function parse(data: string, opts: ParserOptions = {}): Promise<Analysis>
   });
 
 }
-
 
 /**
  * Provided a file path, return a promise for the fully parsed analytics object.

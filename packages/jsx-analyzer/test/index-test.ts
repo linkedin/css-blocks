@@ -1,13 +1,13 @@
-import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
-import { parse, parseFile} from "../src/index";
+import { assert } from 'chai';
+import { suite, test } from 'mocha-typescript';
+import { parse, parseFile} from '../src/index';
 
-var mock = require('mock-fs');
+const mock = require('mock-fs');
 
-@suite("Parser Test")
+@suite('Parser Test')
 export class Test {
 
-  @test "parses when provided a string"(){
+  @test 'parses when provided a string'(){
     return parse(`
       class Foo {
         method(){
@@ -20,9 +20,9 @@ export class Test {
     });
   }
 
-  @test "parses when provided a path"(){
+  @test 'parses when provided a path'(){
     mock({
-      "bar.js": `class Foo {
+      'bar.js': `class Foo {
         method(){
           console.log(1);
         }
@@ -34,9 +34,9 @@ export class Test {
     });
   }
 
-  @test "parser takes an optional options hash with baseDir"(){
+  @test 'parser takes an optional options hash with baseDir'(){
     mock({
-      "/foo/baz/bar.js": `class Foo {
+      '/foo/baz/bar.js': `class Foo {
         method(){
           console.log(1);
         }

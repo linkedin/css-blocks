@@ -28,7 +28,7 @@ const OBJSTR_PACKAGE_NAME = 'obj-str';
 const CLASS_PROPERTIES = {
   'class': 1,
   'className': 1
-}
+};
 
 type Property = ObjectProperty | SpreadProperty | ObjectMethod;
 

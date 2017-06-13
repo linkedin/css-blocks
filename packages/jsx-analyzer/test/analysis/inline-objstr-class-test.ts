@@ -1,16 +1,16 @@
-import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { assert } from 'chai';
+import { suite, test } from 'mocha-typescript';
 import Analysis from '../../src/Analysis';
-import { parse } from "../../src/index";
+import { parse } from '../../src/index';
 
-var mock = require('mock-fs');
+const mock = require('mock-fs');
 
-@suite("Inline Objstr Class Styles")
+@suite('Inline Objstr Class Styles')
 export class Test {
 
-  @test "Inline objstrs with classes are tracked when applied"(){
+  @test 'Inline objstrs with classes are tracked when applied'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -23,16 +23,16 @@ export class Test {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.stylesFound.size, 1);
-      var styleIter = analysis.stylesFound.entries();
+      let styleIter = analysis.stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
       assert.equal(analysis.styleCorrelations.length, 1);
       assert.equal(analysis.styleCorrelations[0].size, 1);
     });
   }
 
-  @test "Multiple classes from the same block on objstrs are tracked when applied"(){
+  @test 'Multiple classes from the same block on objstrs are tracked when applied'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; } .baz { color: red; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; } .baz { color: red; }'
     });
 
     return parse(`
@@ -45,7 +45,7 @@ export class Test {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.stylesFound.size, 2);
-      var styleIter = analysis.stylesFound.entries();
+      let styleIter = analysis.stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
       assert.equal(styleIter.next().value[0].asSource(), '.baz');
       assert.equal(analysis.styleCorrelations.length, 1);
@@ -53,10 +53,10 @@ export class Test {
     });
   }
 
-  @test "Multiple classes from differnet blocks on objstrs are tracked when applied"(){
+  @test 'Multiple classes from differnet blocks on objstrs are tracked when applied'(){
     mock({
-      "foo.block.css": ".root { color: red; } .biz { color: blue; } .baz { color: red; }",
-      "bar.block.css": ".root { color: red; } .biz { color: blue; } .baz { color: red; }"
+      'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
+      'bar.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }'
     });
 
     return parse(`
@@ -70,7 +70,7 @@ export class Test {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 2);
       assert.equal(analysis.stylesFound.size, 4);
-      var styleIter = analysis.stylesFound.entries();
+      let styleIter = analysis.stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.biz');
       assert.equal(styleIter.next().value[0].asSource(), '.baz');
       assert.equal(styleIter.next().value[0].asSource(), '.baz');
@@ -80,9 +80,9 @@ export class Test {
     });
   }
 
-  @test "Non-computed properties on objstr calls are ignored"(){
+  @test 'Non-computed properties on objstr calls are ignored'(){
     mock({
-      "foo.block.css": ".root { color: red; } .biz { color: blue; } .baz { color: red; }",
+      'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
     });
 
     return parse(`
@@ -97,9 +97,9 @@ export class Test {
     });
   }
 
-  @test "Inline Objstr function name may be renamed at import"(){
+  @test 'Inline Objstr function name may be renamed at import'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -114,9 +114,9 @@ export class Test {
     });
   }
 
-  @test "Objstr call throws if objstr is not imported"(){
+  @test 'Objstr call throws if objstr is not imported'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -125,13 +125,13 @@ export class Test {
     `
   ).catch((err: Error) => {
       mock.restore();
-      assert.equal(err.message, 'Variable "objstr" is undefined');
+      assert.equal(err.message, `Variable 'objstr' is undefined`);
     });
   }
 
-  @test "Objstr lookup understands scope"(){
+  @test 'Objstr lookup understands scope'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -145,7 +145,7 @@ export class Test {
     `
   ).catch((err: Error) => {
       mock.restore();
-      assert.equal(err.message, 'Class attribute value "style" must be either an "objstr" call, or a Block reference');
+      assert.equal(err.message, `Class attribute value 'style' must be either an 'objstr' call, or a Block reference`);
     });
   }
 

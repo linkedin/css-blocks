@@ -1,20 +1,20 @@
-import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { assert } from 'chai';
+import { suite, test } from 'mocha-typescript';
 import Analysis from '../../src/Analysis';
-import JSXOpeningElement from "../../src/analyzer/JSXOpeningElement";
-import { parse } from "../../src/index";
+import JSXOpeningElement from '../../src/analyzer/JSXOpeningElement';
+import { parse } from '../../src/index';
 
-var mock = require('mock-fs');
+const mock = require('mock-fs');
 
-@suite("Inline Objstr Root Styles")
+@suite('Inline Objstr Root Styles')
 export class Test {
-  @test "exists"() {
+  @test 'exists'() {
     assert.equal(typeof JSXOpeningElement, 'function');
   }
 
-  @test "Elements with root applied are tracked on attribute `class`"(){
+  @test 'Elements with root applied are tracked on attribute `class`'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -31,9 +31,9 @@ export class Test {
     });
   }
 
-  @test "Root block styles may be applied with `.root` on attribute `class`"(){
+  @test 'Root block styles may be applied with `.root` on attribute `class`'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -50,9 +50,9 @@ export class Test {
     });
   }
 
-  @test "Elements with root applied are tracked on attribute `className`"(){
+  @test 'Elements with root applied are tracked on attribute `className`'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -69,9 +69,9 @@ export class Test {
     });
   }
 
-  @test "Root block styles may be applied with `.root` on attribute `className`"(){
+  @test 'Root block styles may be applied with `.root` on attribute `className`'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -88,9 +88,9 @@ export class Test {
     });
   }
 
-  @test "Root block styles are deduped if applied to multiple valid properties"(){
+  @test 'Root block styles are deduped if applied to multiple valid properties'(){
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -106,7 +106,5 @@ export class Test {
       assert.equal(analysis.stylesFound.size, 1);
     });
   }
-
-
 
 }

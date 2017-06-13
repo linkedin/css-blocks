@@ -1,16 +1,16 @@
-import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { assert } from 'chai';
+import { suite, test } from 'mocha-typescript';
 import Analysis from '../../src/Analysis';
-import { parse } from "../../src/index";
+import { parse } from '../../src/index';
 
-var mock = require('mock-fs');
+const mock = require('mock-fs');
 
-@suite("Inline Class Styles")
+@suite('Inline Class Styles')
 export class Test {
 
-  @test "Elements with classes applied are tracked"() {
+  @test 'Elements with classes applied are tracked'() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -22,7 +22,7 @@ export class Test {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.stylesFound.size, 2);
-      var styleIter = analysis.stylesFound.entries();
+      let styleIter = analysis.stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.root');
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
       assert.equal(analysis.styleCorrelations.length, 2);
@@ -32,9 +32,9 @@ export class Test {
     });
   }
 
-  @test "Elements with classes applied are tracked on property 'className'"() {
+  @test 'Elements with classes applied are tracked on property "className"'() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -46,7 +46,7 @@ export class Test {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.stylesFound.size, 2);
-      var styleIter = analysis.stylesFound.entries();
+      let styleIter = analysis.stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.root');
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
       assert.equal(analysis.styleCorrelations.length, 2);
@@ -56,9 +56,9 @@ export class Test {
     });
   }
 
-  @test "Unrecognized classes throw"() {
+  @test 'Unrecognized classes throw'() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }"
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
 
     return parse(`
@@ -73,9 +73,9 @@ export class Test {
     });
   }
 
-  @test "Throw when referencing block object out of depth"() {
+  @test 'Throw when referencing block object out of depth'() {
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .root { color: red; }
         .foo { color: blue; }
         .baz { color: yellow; }

@@ -1,5 +1,5 @@
-import * as postcss from "postcss";
-import { Block, BlockParser } from "css-blocks";
+import * as postcss from 'postcss';
+import { Block, BlockParser } from 'css-blocks';
 import { NodePath } from 'babel-traverse';
 import { ImportDeclaration,
          VariableDeclaration,
@@ -96,7 +96,7 @@ export default function importer(blocks: Promise<ResolvedBlock>[]){
 
     // Ensure no Class Declarations in this file override an imported Block name.
     ClassDeclaration(path: NodePath<ClassDeclaration>){
-      throwIfRegistered(path.node.id.name, _localBlocks)
+      throwIfRegistered(path.node.id.name, _localBlocks);
     },
 
     // Ensure no Function Declarations in this file override an imported Block name.
@@ -104,11 +104,11 @@ export default function importer(blocks: Promise<ResolvedBlock>[]){
       let node = path.node;
 
       if (isIdentifier(node.id)) {
-        throwIfRegistered(node.id.name, _localBlocks)
+        throwIfRegistered(node.id.name, _localBlocks);
       }
 
       node.params.forEach((param: Identifier) => {
-        throwIfRegistered(param.name, _localBlocks)
+        throwIfRegistered(param.name, _localBlocks);
       });
     }
   };

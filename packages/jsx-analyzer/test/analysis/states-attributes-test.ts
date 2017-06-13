@@ -1,16 +1,16 @@
-import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { assert } from 'chai';
+import { suite, test } from 'mocha-typescript';
 import Analysis from '../../src/Analysis';
-import { parse } from "../../src/index";
+import { parse } from '../../src/index';
 
-var mock = require('mock-fs');
+const mock = require('mock-fs');
 
-@suite("Dynamic Styles")
+@suite('Dynamic Styles')
 export class Test {
 
-  @test "States with substates are tracked"(){
+  @test 'States with substates are tracked'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -21,7 +21,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} bar.pretty:color="yellow"></div>;
+      <div class={bar.pretty} bar.pretty:color='yellow'></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
@@ -30,9 +30,9 @@ export class Test {
     });
   }
 
-  @test "When provided state value is string literal, only the corresponding state is registered"(){
+  @test 'When provided state value is string literal, only the corresponding state is registered'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -46,7 +46,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} bar.pretty:color="green"></div>;
+      <div class={bar.pretty} bar.pretty:color='green'></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
@@ -55,9 +55,9 @@ export class Test {
     });
   }
 
-  @test "When provided state value is dynamic, all states in the group are registered"(){
+  @test 'When provided state value is dynamic, all states in the group are registered'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -80,9 +80,9 @@ export class Test {
     });
   }
 
-  @test "Boolean states with no value only ever register the one state and are never dynamic"(){
+  @test 'Boolean states with no value only ever register the one state and are never dynamic'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|awesome] {
@@ -102,9 +102,9 @@ export class Test {
     });
   }
 
-  @test "Boolean states with a literal value only ever register the one state and are not dynamic"(){
+  @test 'Boolean states with a literal value only ever register the one state and are not dynamic'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|awesome] {
@@ -115,7 +115,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} bar.pretty:awesome="true"></div>;
+      <div class={bar.pretty} bar.pretty:awesome='true'></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
@@ -124,9 +124,9 @@ export class Test {
     });
   }
 
-  @test "Boolean states with a dynamic value only ever register the one state and are dynamic"(){
+  @test 'Boolean states with a dynamic value only ever register the one state and are dynamic'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|awesome] {

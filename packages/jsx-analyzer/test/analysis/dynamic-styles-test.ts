@@ -1,16 +1,16 @@
-import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { assert } from 'chai';
+import { suite, test } from 'mocha-typescript';
 import Analysis from '../../src/Analysis';
-import { parse } from "../../src/index";
+import { parse } from '../../src/index';
 
-var mock = require('mock-fs');
+const mock = require('mock-fs');
 
-@suite("Dynamic Styles")
+@suite('Dynamic Styles')
 export class Test {
 
-  @test "Objstr where value is a literal are not marked dynamic"(){
+  @test 'Objstr where value is a literal are not marked dynamic'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .str { color: red; }
         .int { color: blue; }
         .bool { color: blue; }
@@ -44,9 +44,9 @@ export class Test {
     });
   }
 
-  @test "Objstr where value is a not a literal are marked dynamic"(){
+  @test 'Objstr where value is a not a literal are marked dynamic'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .expr { color: red; }
         .equality { color: blue; }
         .bool { color: blue; }
@@ -76,9 +76,9 @@ export class Test {
     });
   }
 
-  @test "Inline objstr where value is a literal are not marked dynamic"(){
+  @test 'Inline objstr where value is a literal are not marked dynamic'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .str { color: red; }
         .int { color: blue; }
         .bool { color: blue; }
@@ -103,9 +103,9 @@ export class Test {
     });
   }
 
-  @test "Inline objstr where value is a not a literal are marked dynamic"(){
+  @test 'Inline objstr where value is a not a literal are marked dynamic'(){
     mock({
-      "bar.block.css": `
+      'bar.block.css': `
         .expr { color: red; }
         .equality { color: blue; }
         .bool { color: blue; }
