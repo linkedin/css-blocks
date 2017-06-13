@@ -164,7 +164,7 @@ export class Test {
     `
   ).catch((err: Error) => {
       mock.restore();
-      assert.equal(err.message, 'Variable "objstr" is undefined');
+      assert.equal(err.message, `Variable "objstr" is undefined`);
     });
   }
 

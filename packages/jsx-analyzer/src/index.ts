@@ -4,6 +4,7 @@ import traverse from 'babel-traverse';
 import importer, { ResolvedBlock } from './importer';
 import analyzer from './analyzer';
 import Analysis from './Analysis';
+import { TemplateInfo } from 'css-blocks';
 
 const fs = require('fs');
 const path = require('path');
@@ -100,6 +101,9 @@ export function parseFile(file: string, opts: ParserOptions = {}): Promise<Analy
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
 
+  // Save template object to put on analysis later
+  let templateInfo = new TemplateInfo(file);
+
   // If requesting the file at a relative path, resolve to provided `opts.baseDir`.
   if ( file && !path.isAbsolute(file) ) {
     file = path.resolve(opts.baseDir, file);
@@ -109,5 +113,8 @@ export function parseFile(file: string, opts: ParserOptions = {}): Promise<Analy
   let data = <string>fs.readFileSync(<string>file, 'utf8');
 
   // Return promise for parsed analysis object.
-  return parse(data, opts);
+  return parse(data, opts).then((analysis: Analysis) => {
+    analysis.template = templateInfo;
+    return analysis;
+  });
 }

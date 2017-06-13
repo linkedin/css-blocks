@@ -82,7 +82,7 @@ export class Test {
     `).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, `Block identifier 'biz' cannot be re-defined in any scope once imported.`);
+      assert.equal(err.message, `Block identifier "biz" cannot be re-defined in any scope once imported.`);
     });
   }
 
@@ -98,7 +98,7 @@ export class Test {
     `).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, `Block identifier 'biz' cannot be re-defined in any scope once imported.`);
+      assert.equal(err.message, `Block identifier "biz" cannot be re-defined in any scope once imported.`);
     });
   }
 
@@ -114,7 +114,7 @@ export class Test {
     `).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, `Block identifier 'biz' cannot be re-defined in any scope once imported.`);
+      assert.equal(err.message, `Block identifier "biz" cannot be re-defined in any scope once imported.`);
     });
   }
 
@@ -130,7 +130,7 @@ export class Test {
     `).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, `Block identifier 'biz' cannot be re-defined in any scope once imported.`);
+      assert.equal(err.message, `Block identifier "biz" cannot be re-defined in any scope once imported.`);
     });
   }
 
@@ -146,7 +146,7 @@ export class Test {
     `).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, `Block identifier 'biz' cannot be re-defined in any scope once imported.`);
+      assert.equal(err.message, `Block identifier "biz" cannot be re-defined in any scope once imported.`);
     });
   }
 
@@ -162,7 +162,7 @@ export class Test {
     `).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, `Block identifier 'biz' cannot be re-defined in any scope once imported.`);
+      assert.equal(err.message, `Block identifier "biz" cannot be re-defined in any scope once imported.`);
     });
   }
 

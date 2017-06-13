@@ -1,6 +1,6 @@
 import Analysis from '../Analysis';
 import { NodePath, Binding } from 'babel-traverse';
-import { Block, BlockClass, State } from "css-blocks";
+import { Block, BlockClass, State } from 'css-blocks';
 import { JSXOpeningElement,
          JSXAttribute,
          isJSXIdentifier,
@@ -95,7 +95,7 @@ function getExpressionParts(expression: any ): string[] {
 
     else {
       // TODO: Add location data in error message.
-      throw new Error('Cannot pass complex member expressions to attribute "class" on <name of element here>')
+      throw new Error('Cannot pass complex member expressions to attribute "class" on <name of element here>');
     }
   }
 
@@ -118,7 +118,7 @@ function getExpressionParts(expression: any ): string[] {
  * @param analysis The Analysis object with Block data and to store our results in.
  * @param isDynamic If the style to save is dynamic.
  */
-function addStyle(parts: string[] = [], analysis: Analysis, isDynamic: boolean = false): void {
+function addStyle(parts: string[] = [], analysis: Analysis, isDynamic = false): void {
 
   // Fetch selector parts and look for a block under the local name.
   let blockName: string | undefined = parts[0];
@@ -164,10 +164,9 @@ function addStyle(parts: string[] = [], analysis: Analysis, isDynamic: boolean =
 
   // Otherwise throw a helpful error.
   else {
-    throw new Error(`No class named "${className}" found on block "${blockName}"`)
+    throw new Error(`No class named "${className}" found on block "${blockName}"`);
   }
 }
-
 
 /**
  * Primary analytics parser for Babylon. Crawls all JSX Elements and their attributes
