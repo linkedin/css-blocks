@@ -142,6 +142,15 @@ export class StateContainer {
   }
 
   /**
+   * Group getter. Returns a list of State objects in the requested group.
+   * @param group State group for lookup
+   * @returns An array of all States that were requested.
+   */
+  getGroup(group: string): State[] {
+    return this._groups[group] ? (<any>Object).values(this._groups[group]) : [this._states[group]];
+  }
+
+  /**
    * State getter
    * @param name The State's name to lookup.
    * @param group  Optional state group for lookup
