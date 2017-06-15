@@ -2,12 +2,23 @@ import Tapable = require("tapable");
 import * as webpack from "webpack";
 import * as postcss from "postcss";
 import * as path from "path";
-import { TemplateAnalyzer, StyleAnalysis, BlockCompiler, PluginOptions as CssBlocksOptions } from "css-blocks";
+import {
+  TemplateAnalyzer,
+  MetaTemplateAnalysis,
+  Block,
+  BlockCompiler,
+  PluginOptions as CssBlocksOptions,
+  PluginOptionsReader as CssBlocksOptionsReader,
+  TemplateRewriter,
+  StyleMapping,
+  MetaStyleMapping,
+} from "css-blocks";
 import VirtualModulePlugin = require("virtual-module-webpack-plugin");
 
-export interface CssBlocksPluginOptions {
+export interface CssBlocksPluginOptions<RewriterType extends TemplateRewriter> {
   templateAnalyzer?: TemplateAnalyzer;
   compilationOptions?: CssBlocksOptions;
+  templateRewriter?: (mapping: StyleMapping | null) => RewriterType;
 }
 
 /* exposes plugin events for compiler to tap into */
@@ -21,20 +32,17 @@ export class CssBlocksTemplateAnalysisPlugin extends Tapable implements webpack.
     compiler.plugin("watch-run", () => {
       this.analyzer.reset();
     });
-    // console.log("registering analysis plugin");
     compiler.plugin("before-run", (_params, cb) => {
-      // console.log("starting analysis");
-      this.analyzer.analyze().then((analysis: StyleAnalysis) => {
-        // console.log("analysis complete", analysis);
+      this.analyzer.analyze().then((analysis: MetaTemplateAnalysis) => {
         this.applyPlugins("after-template-analysis", analysis);
         cb();
       });
     });
   }
-  afterTemplateAnalysis(handler: (analysis: StyleAnalysis) => any) {
+  afterTemplateAnalysis(handler: (analysis: MetaTemplateAnalysis) => any) {
     this.plugin("after-template-analysis", handler);
   }
-  onStartingTemplateAnalysis(handler: (analysis: Promise<StyleAnalysis>) => any) {
+  onStartingTemplateAnalysis(handler: (analysis: Promise<MetaTemplateAnalysis>) => any) {
     this.plugin("starting-template-analysis", handler);
   }
 }
@@ -44,13 +52,13 @@ interface HasFilesystem {
 }
 
 /* exposes plugin events for optimizer to tap into */
-export class CssBlocksCompilerPlugin extends Tapable implements webpack.Plugin {
-  analysis: StyleAnalysis | undefined;
-  pendingAnalysis: Promise<StyleAnalysis> | undefined;
-  options: CssBlocksPluginOptions | undefined;
+export class CssBlocksCompilerPlugin<RewriterType extends TemplateRewriter> extends Tapable implements webpack.Plugin {
+  analysis: MetaTemplateAnalysis | undefined;
+  pendingAnalysis: Promise<MetaTemplateAnalysis> | undefined;
+  options: CssBlocksPluginOptions<RewriterType> | undefined;
   _entryPoint: string | undefined;
 
-  constructor(options?: CssBlocksPluginOptions) {
+  constructor(options?: CssBlocksPluginOptions<RewriterType>) {
     super();
     this.options = options || {};
   }
@@ -64,7 +72,7 @@ export class CssBlocksCompilerPlugin extends Tapable implements webpack.Plugin {
     }
   }
 
-  asPromised(): Promise<StyleAnalysis> {
+  asPromised(): Promise<MetaTemplateAnalysis> {
     if (this.analysis) {
       return Promise.resolve(this.analysis);
     } else if (this.pendingAnalysis) {
@@ -82,20 +90,19 @@ export class CssBlocksCompilerPlugin extends Tapable implements webpack.Plugin {
     let resolverPlugin = function(this: HasFilesystem, request: any, cb: any) {
       const fs = this.fileSystem;
       if (request.path && request.path.endsWith(self._entryPoint)) {
-        // console.log("resolving app css", request);
         return self.asPromised().then(analysis => {
           let options: CssBlocksOptions = self.options && self.options.compilationOptions || {};
           let blockCompiler = new BlockCompiler(postcss, options);
           let cssBundle: string[] = [];
           let assetPath = path.join(path.dirname(request.descriptionFilePath), "css-blocks", self._entryPoint || "");
-          // console.log(assetPath);
-          analysis.blockDependencies().forEach(block => {
+          analysis.blockDependencies().forEach((block: Block) => {
             if (block.root && block.source) {
               cssBundle.push(blockCompiler.compile(block, block.root, analysis).toString());
             }
           });
+          let metaMapping = MetaStyleMapping.fromMetaAnalysis(analysis, new CssBlocksOptionsReader(options));
+          self.applyPlugins("after-compilation", metaMapping);
           VirtualModulePlugin.populateFilesystem({fs: fs, modulePath: assetPath, contents: cssBundle.join("\n"), ctime: VirtualModulePlugin.statsDate()});
-          // console.log("populated app css", fs.readFileSync(assetPath));
           cb(null, {path: assetPath});
         });
       } else {
@@ -111,29 +118,26 @@ export class CssBlocksCompilerPlugin extends Tapable implements webpack.Plugin {
       compiler.resolvers.normal.plugin('file', resolverPlugin);
     }
   }
-  setAnalysis(analysis: StyleAnalysis) {
+  setAnalysis(analysis: MetaTemplateAnalysis) {
     this.analysis = analysis;
   }
-  setPendingAnalysis(analysis: Promise<StyleAnalysis>) {
+  setPendingAnalysis(analysis: Promise<MetaTemplateAnalysis>) {
     this.pendingAnalysis = analysis;
   }
   getTemplateAnalysisHandler() {
     let self = this;
-    return function(analysis: StyleAnalysis) {
-      // console.log("compiler got analysis");
-      // console.log("Need to compile:");
-      // analysis.transitiveBlockDependencies().forEach(d => {
-      //   console.log(d.source);
-      // });
+    return function(analysis: MetaTemplateAnalysis) {
       self.setAnalysis(analysis);
     };
   }
   getTemplateAnalysisStartedHandler() {
     let self = this;
-    return function(analysis: Promise<StyleAnalysis>) {
-      // console.log("compiler got pending analysis");
+    return function(analysis: Promise<MetaTemplateAnalysis>) {
       self.setPendingAnalysis(analysis);
     };
+  }
+  afterCompilation(handler: (mapping: MetaStyleMapping) => any) {
+    this.plugin("after-compilation", handler);
   }
 }
 
@@ -151,25 +155,28 @@ function blockFilenameGenerator() {
   return `css-blocks-${++filenameCounter}.css`;
 }
 
-export class CssBlocksPlugin extends Tapable implements webpack.Plugin {
-  options: CssBlocksPluginOptions;
-  compilerPlugin: CssBlocksCompilerPlugin;
-
-  constructor(options?: CssBlocksPluginOptions) {
+export class CssBlocksPlugin<RewriterType extends TemplateRewriter> extends Tapable implements webpack.Plugin {
+  options: CssBlocksPluginOptions<RewriterType>;
+  compilerPlugin: CssBlocksCompilerPlugin<RewriterType>;
+  compilationPromise: Promise<MetaStyleMapping>;
+  constructor(options?: CssBlocksPluginOptions<RewriterType>) {
     super();
     this.options = options || {};
-    this.compilerPlugin = new CssBlocksCompilerPlugin();
+    this.compilerPlugin = new CssBlocksCompilerPlugin<RewriterType>();
   }
 
   apply(compiler: webpack.Compiler) {
-    // console.log("setting up css block plugins");
-    // console.log(this.options);
     let analyzer: CssBlocksTemplateAnalysisPlugin | undefined;
     if (this.options.templateAnalyzer) {
       analyzer = new CssBlocksTemplateAnalysisPlugin(this.options.templateAnalyzer);
       analyzer.afterTemplateAnalysis(this.compilerPlugin.getTemplateAnalysisHandler());
       analyzer.onStartingTemplateAnalysis(this.compilerPlugin.getTemplateAnalysisStartedHandler());
       analyzer.apply(compiler);
+      this.compilationPromise = new Promise((resolve, _reject) => {
+        this.compilerPlugin.afterCompilation(mapping => {
+          resolve(mapping);
+        });
+      });
       this.compilerPlugin.apply(compiler);
     }
     compiler.plugin("compilation", (_compilation) => {
@@ -179,5 +186,24 @@ export class CssBlocksPlugin extends Tapable implements webpack.Plugin {
 
   entryPoint(): string {
     return this.compilerPlugin.entryPoint();
+  }
+
+  rewriter(): (path: string) => Promise<RewriterType> {
+    if (this.options.templateRewriter) {
+      let rewriterMaker = this.options.templateRewriter;
+      let self = this;
+      return function(path) {
+        return self.compilationPromise.then((mapping) => {
+          let styleMapping = mapping.templates.get(path);
+          if (styleMapping) {
+            return rewriterMaker(styleMapping);
+          } else {
+            return rewriterMaker(null);
+          }
+        });
+      };
+    } else {
+      throw new Error("Cannot call rewriter unless the templateRewriter option is set.");
+    }
   }
 }
