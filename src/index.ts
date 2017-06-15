@@ -59,6 +59,18 @@ export {
 export {
   Analyzer as TemplateAnalyzer
 } from "./TemplateAnalysis/Analyzer";
+export {
+ TemplateRewriter
+} from "./TemplateRewriter";
+export {
+  ClassName
+} from "./TemplateRewriter/ClassName";
+export {
+  StyleMapping
+} from "./TemplateRewriter/StyleMapping";
+export {
+  MetaStyleMapping
+} from "./TemplateRewriter/MetaStyleMapping";
 
 import cssBlocks = require("./cssBlocks");
 export default cssBlocks;

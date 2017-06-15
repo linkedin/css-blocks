@@ -32,7 +32,9 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
   }
 
   eachAnalysis(cb: (v: TemplateAnalysis) => any) {
-    this.analyses.forEach.call(null, cb);
+    this.analyses.forEach(a => {
+      cb(a);
+    });
   }
 
   wasFound(style: BlockObject): boolean {
