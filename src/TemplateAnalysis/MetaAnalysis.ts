@@ -1,8 +1,12 @@
 import { Block, BlockObject } from "../Block";
-import { TemplateAnalysis } from "./index";
+import { TemplateAnalysis, SerializedTemplateAnalysis } from "./index";
 import { StyleAnalysis } from "./StyleAnalysis";
 
 type TemplateAnalysisMap = Map<BlockObject, TemplateAnalysis[]>;
+
+export class SerializedMetaTemplateAnalysis {
+  analyses: SerializedTemplateAnalysis[];
+}
 
 export class MetaTemplateAnalysis implements StyleAnalysis {
   private analyses: TemplateAnalysis[];
@@ -77,6 +81,14 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
       allBlocks = new Set<Block>([...allBlocks, ...analysis.transitiveBlockDependencies()]);
     });
     return allBlocks;
+  }
+
+  serialize(pathsRelativeTo: string): SerializedMetaTemplateAnalysis {
+    let analyses: SerializedTemplateAnalysis[] = [];
+    this.eachAnalysis(a => {
+      analyses.push(a.serialize(pathsRelativeTo));
+    });
+    return { analyses };
   }
 
   private addAnalysisToStyleMap(map: TemplateAnalysisMap, style: BlockObject, analysis: TemplateAnalysis) {
