@@ -1,4 +1,9 @@
-import { AST, TransformASTPluginFactory, TransformASTPlugin, Syntax } from '@glimmer/syntax';
+import {
+  AST,
+  TransformASTPluginFactory,
+  TransformASTPlugin,
+  Syntax
+} from '@glimmer/syntax';
 import {
   Block,
   State,
