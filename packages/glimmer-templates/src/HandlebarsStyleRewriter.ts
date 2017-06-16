@@ -17,7 +17,7 @@ export interface RewriterOptions {
   plugins?: {
     ast?: TransformASTPluginFactory[]
   };
-  block: Block | null;
+  meta: { [metaprop:string]: any };
   cssBlocks: {
     styleMapping: StyleMapping | null;
   };

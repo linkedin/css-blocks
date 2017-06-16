@@ -1,5 +1,5 @@
 {
-  "name": "@css-blocks/glimmer-analyzer",
+  "name": "@css-blocks/glimmer-templates",
   "version": "0.1.0",
   "description": "Statically analyzes the css-block styles in Handlebars templates.",
   "main": "dist/src/index.js",
