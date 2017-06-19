@@ -144,10 +144,17 @@ export class StateContainer {
   /**
    * Group getter. Returns a list of State objects in the requested group.
    * @param group State group for lookup
+   * @param substate Optional substate to filter states by.
    * @returns An array of all States that were requested.
    */
-  getGroup(group: string): State[] {
-    return this._groups[group] ? (<any>Object).values(this._groups[group]) : [this._states[group]];
+  getGroup(groupName: string, substate?: string|undefined): State[] {
+    let group: StateMap = this._groups[groupName];
+    if ( group ) {
+      return substate ? [group[substate]] : (<any>Object).values(group);
+    }
+    else {
+      return substate ? [] : [this._states[groupName]];
+    }
   }
 
   /**
