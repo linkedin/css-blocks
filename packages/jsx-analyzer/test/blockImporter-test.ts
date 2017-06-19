@@ -10,7 +10,7 @@ const mock = require('mock-fs');
 export class Test {
 
   @test 'imports for non-css-block related files are ignored'(){
-    parse(`import foo from 'bar';`).then((analysis: Analysis) => {
+    return parse(`import foo from 'bar';`).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 0);
     });
@@ -27,11 +27,46 @@ export class Test {
     });
   }
 
+  @test 'imports for css-block files are registered using explicit default import'(){
+    mock({
+      'bar.block.css': '.root { color: red; }',
+    });
+    return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: Analysis) => {
+      mock.restore();
+      assert.equal(Object.keys(analysis.blocks).length, 1);
+      assert.equal(analysis.blocks['bar'].constructor, Block);
+    });
+  }
+
+  @test 'imports for css-block files register explicit state object import'(){
+    mock({
+      'bar.block.css': '.root { color: red; }',
+    });
+    return parse(`import bar, { states as barStates } from 'bar.block.css';`).then((analysis: Analysis) => {
+      mock.restore();
+      assert.equal(Object.keys(analysis.blocks).length, 1);
+      assert.equal(analysis.blocks['bar'].constructor, Block);
+      assert.deepEqual(analysis.localStates, {'bar': 'barStates'});
+    });
+  }
+
+  @test 'imports for css-block files register explicit state object import with explicit default import'(){
+    mock({
+      'bar.block.css': '.root { color: red; }',
+    });
+    return parse(`import { states as barStates, default as bar } from 'bar.block.css';`).then((analysis: Analysis) => {
+      mock.restore();
+      assert.equal(Object.keys(analysis.blocks).length, 1);
+      assert.equal(analysis.blocks['bar'].constructor, Block);
+      assert.deepEqual(analysis.localStates, {'bar': 'barStates'});
+    });
+  }
+
   @test 'imports for css-block files are registered using "as" syntax'(){
     mock({
       'bar.block.css': '.root { color: red; }',
     });
-    parse(`import * as bar from 'bar.block.css';`).then((analysis: Analysis) => {
+    return parse(`import * as bar from 'bar.block.css';`).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.blocks['bar'].constructor, Block);
@@ -43,7 +78,7 @@ export class Test {
       'bar.block.css': '.root { color: red; }',
       'baz.block.css': '.root { color: blue; }'
     });
-    parse(`
+    return parse(`
       import * as bar from 'bar.block.css';
       import baz from 'baz.block.css';
     `).then((analysis: Analysis) => {
@@ -59,7 +94,7 @@ export class Test {
       'bar.block.css': '.root { color: red; }',
       'baz.block.css': '.root { color: blue; }'
     });
-    parse(`
+    return parse(`
       import * as foo from 'bar.block.css';
       import biz from 'baz.block.css';
     `).then((analysis: Analysis) => {
@@ -74,7 +109,7 @@ export class Test {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
-    parse(`
+    return parse(`
       import biz from 'baz.block.css';
       () => {
         function biz(){};
@@ -90,7 +125,7 @@ export class Test {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
-    parse(`
+    return parse(`
       import biz from 'baz.block.css';
       () => {
         let biz = 'test';
@@ -106,7 +141,7 @@ export class Test {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
-    parse(`
+    return parse(`
       import biz from 'baz.block.css';
       () => {
         class biz {};
@@ -122,7 +157,7 @@ export class Test {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
-    parse(`
+    return parse(`
       import biz from 'baz.block.css';
       (biz) => {
 
@@ -138,7 +173,7 @@ export class Test {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
-    parse(`
+    return parse(`
       import biz from 'baz.block.css';
       class Test {
         method(biz){}
@@ -154,7 +189,7 @@ export class Test {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
-    parse(`
+    return parse(`
       import biz from 'baz.block.css';
       let obj = {
         method(biz){}
@@ -166,4 +201,67 @@ export class Test {
     });
   }
 
+  @test 'state identifiers may not be re-declaired elsewhere in the file – Variable Declaration'(){
+    mock({
+      'baz.block.css': '.root { color: blue; }'
+    });
+    return parse(`
+      import biz, { states as woo } from 'baz.block.css';
+      () => {
+        let woo = 'test';
+      }
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, `Block state identifier "woo" cannot be re-defined in any scope once imported.`);
+    });
+  }
+
+  @test 'state identifiers may not be re-declaired elsewhere in the file – Function Param'(){
+    mock({
+      'baz.block.css': '.root { color: blue; }'
+    });
+    return parse(`
+      import biz, { states as woo } from 'baz.block.css';
+      (woo) => {
+
+      }
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, `Block state identifier "woo" cannot be re-defined in any scope once imported.`);
+    });
+  }
+
+  @test 'state identifiers may not be re-declaired elsewhere in the file – Class Method Param'(){
+    mock({
+      'baz.block.css': '.root { color: blue; }'
+    });
+    return parse(`
+      import biz, { states as woo } from 'baz.block.css';
+      class Test {
+        method(woo){}
+      }
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, `Block state identifier "woo" cannot be re-defined in any scope once imported.`);
+    });
+  }
+
+  @test 'state identifiers may not be re-declaired elsewhere in the file – Object Method Param'(){
+    mock({
+      'baz.block.css': '.root { color: blue; }'
+    });
+    return parse(`
+      import biz, { states as woo } from 'baz.block.css';
+      let obj = {
+        method(woo){}
+      };
+    `).then(() => {
+      assert.equal('Should never get here', '');
+    }).catch((err: Error) => {
+      assert.equal(err.message, `Block state identifier "woo" cannot be re-defined in any scope once imported.`);
+    });
+  }
 }

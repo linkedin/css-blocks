@@ -168,6 +168,30 @@ export class Test {
     });
   }
 
+  @test 'Overly complex expressions to reference a CSS Block throw'(){
+    mock({
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+    });
+
+    return parse(`
+      import bar from 'bar.block.css';
+      import objstr from 'obj-str';
+
+      function test(){ return 'foo'; }
+
+      let style = objstr({
+        [bar[test()]]: 'bar',
+        biz: 'baz'
+      });
+
+      <div class={style}></div>;
+    `
+  ).catch((err: Error) => {
+      mock.restore();
+      assert.equal(err.message, `Cannot parse overly complex expression to reference a CSS Block.`);
+    });
+  }
+
   @test 'Objstr lookup understands scope'(){
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'

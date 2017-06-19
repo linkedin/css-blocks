@@ -81,7 +81,12 @@ export function parse(data: string, opts: ParserOptions = {}): Promise<Analysis>
   // file. Each visitor has access to the analysis object to make updates.
   .then((blocks: ResolvedBlock[]) => {
     blocks.forEach((res: ResolvedBlock) => {
+      if ( !res.block ) {
+        throw new Error(`Something went wrong importing block ${res.name}`);
+      }
+
       analysis.localBlocks[res.localName] = res.block;
+      analysis.localStates[res.localName] = res.localState;
       analysis.blocks[res.name] = res.block;
     });
     traverse(ast, analyzer(analysis));

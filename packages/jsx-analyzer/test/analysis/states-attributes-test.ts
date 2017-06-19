@@ -5,7 +5,7 @@ import { parse } from '../../src/index';
 
 const mock = require('mock-fs');
 
-@suite('Dynamic Styles')
+@suite('State Attributes')
 export class Test {
 
   @test 'States with substates are tracked'(){
@@ -21,7 +21,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} bar.pretty:color='yellow'></div>;
+      <div class={bar.pretty} state:bar.pretty.color='yellow'></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
@@ -46,7 +46,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} bar.pretty:color='green'></div>;
+      <div class={bar.pretty} state:bar.pretty.color='green'></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
@@ -71,7 +71,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} bar.pretty:color={ohgod}></div>;
+      <div class={bar.pretty} state:bar.pretty.color={ohgod}></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
@@ -93,7 +93,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} bar.pretty:awesome ></div>;
+      <div class={bar.pretty} state:bar.pretty.awesome ></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
@@ -115,7 +115,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} bar.pretty:awesome='true'></div>;
+      <div class={bar.pretty} state:bar.pretty.awesome='true'></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
@@ -137,7 +137,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} bar.pretty:awesome={ohmy}></div>;
+      <div class={bar.pretty} state:bar.pretty.awesome={ohmy}></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);

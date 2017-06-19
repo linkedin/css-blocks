@@ -11,7 +11,7 @@ export class Test {
     return parse(`
       class Foo {
         method(){
-          console.log(1);
+          1;
         }
       }
     `).then((analysis) => {
@@ -24,7 +24,7 @@ export class Test {
     mock({
       'bar.js': `class Foo {
         method(){
-          console.log(1);
+          1;
         }
       }`,
     });
@@ -38,7 +38,7 @@ export class Test {
     mock({
       '/foo/baz/bar.js': `class Foo {
         method(){
-          console.log(1);
+          1;
         }
       }`,
     });

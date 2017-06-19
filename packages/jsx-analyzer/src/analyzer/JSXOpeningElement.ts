@@ -1,11 +1,11 @@
 import Analysis from '../Analysis';
 import { NodePath, Binding } from 'babel-traverse';
 import { Block, BlockClass, State } from 'css-blocks';
+import { ExpressionReader } from '../utils/ExpressionReader';
 import { JSXOpeningElement,
          JSXAttribute,
          isJSXIdentifier,
          isJSXNamespacedName,
-         isJSXMemberExpression,
          isMemberExpression,
          isJSXExpressionContainer,
          isStringLiteral,
@@ -23,6 +23,7 @@ import { JSXOpeningElement,
        } from 'babel-types';
 
 const OBJSTR_PACKAGE_NAME = 'obj-str';
+const STATE_NAMESPACE = 'state';
 
 // Properties to check for block classes applied
 const CLASS_PROPERTIES = {
@@ -39,75 +40,50 @@ type Property = ObjectProperty | SpreadProperty | ObjectMethod;
  * @param fund The suspected Object String `CallExpression` to process.
  * @returns The array of `Property` values passed to Object String
  */
-function getObjstrProps(path: NodePath<any>, func: any) : Property[]{
+function saveObjstrProps(analysis: Analysis, path: NodePath<any>, func: any) {
   let props: Property[] = [];
 
   // If this node is not a call expression (ex: `objstr({})`), or is a complex
   // call expression that we'll have trouble analyzing (ex: `(true && objstr)({})`)
-  // short circuit
+  // short circuit and continue execution.
   if ( !isCallExpression(func) || !isIdentifier(func.callee) ) {
-    return props;
+    return;
   }
 
+  // Fetch the function name. If we can't get the name, or the function is not in scope, throw
   let name = func.callee.name;
-  // If there is no `name` in scope, throw
   let binding: Binding | undefined = path.scope.getBinding(name);
   if ( !binding ) {
     throw new Error(`Variable "${name}" is undefined`);
   }
+
+  // If this call expression is not an `objstr` call, or is in a form we don't
+  // recognize (Ex: first arg is not an object), short circuit and continue execution.
   let funcDef = binding.path.parent;
   let isObjstr = isImportDeclaration(funcDef) && funcDef.source.value ===  OBJSTR_PACKAGE_NAME;
-
   if ( !isObjstr || !isObjectExpression(func.arguments[0]) ) {
-    return props;
+    return;
   }
 
-  return (<ObjectExpression>func.arguments[0]).properties;
-}
+  props = (<ObjectExpression>func.arguments[0]).properties;
 
-/**
- * Given a `MemberExpression` object, or `Identifier`, return an array of all
- * expression identifiers. Ex: `foo.bar['baz']` => ['foo', 'bar', 'baz']. Return
- * empty array if input is not a valid type.
- * @param expression The expression in question.
- * @returns An array of strings representing the expression parts.
- */
-function getExpressionParts(expression: any ): string[] {
-
-  let parts: string[] = [];
-
-  if ( !isMemberExpression(expression)    &&
-       !isIdentifier(expression)          &&
-       !isJSXMemberExpression(expression) &&
-       !isJSXIdentifier(expression)
-  ) {
-    return parts;
+  if ( !props ) {
+    throw new Error(`Class attribute value "${name}" must be either an "objstr" call, or a Block reference`);
   }
 
-  function addPart(prop: any) { // Yes, any. We do explicit type checking here.
-    if ( isIdentifier(prop) || isJSXIdentifier(prop) ) {
-      parts.unshift(prop.name);
+  // For each property passed to objstr, parse the expression and attempt to save the style.
+  props.forEach((prop: Property) => {
+
+    // Ignore non computed properties, they will never be blocks objects.
+    if ( !isObjectProperty(prop) || prop.computed === false ) {
+      return;
     }
 
-    else if ( isStringLiteral(prop) ) {
-      parts.unshift(prop.value);
-    }
+    // Get expression from computed property name.
+    let parts: ExpressionReader = new ExpressionReader(prop.key);
+    saveStyle(parts, analysis, !isLiteral(prop.value));
 
-    else {
-      // TODO: Add location data in error message.
-      throw new Error('Cannot pass complex member expressions to attribute "class" on <name of element here>');
-    }
-  }
-
-  // Crawl member expression adding each part we discover.
-  while ( isMemberExpression(expression) || isJSXMemberExpression(expression) ) {
-    let prop = expression.property;
-    addPart(prop);
-    expression = expression.object;
-  }
-  addPart(expression);
-
-  return parts;
+  });
 }
 
 /**
@@ -118,53 +94,79 @@ function getExpressionParts(expression: any ): string[] {
  * @param analysis The Analysis object with Block data and to store our results in.
  * @param isDynamic If the style to save is dynamic.
  */
-function addStyle(parts: string[] = [], analysis: Analysis, isDynamic = false): void {
-
-  // Fetch selector parts and look for a block under the local name.
-  let blockName: string | undefined = parts[0];
-  let className: string | undefined = parts[1];
+function saveStyle(reader: ExpressionReader, analysis: Analysis, isDynamic = false): void {
+  let part: string | undefined;
+  let blockName: string | undefined;
+  let className: string | undefined;
+  let stateName: string | undefined;
+  let substateName: string | undefined;
 
   // If nothing here, we don't care!
-  if (parts.length === 0) {
+  if ( reader.length === 0 ) {
     return;
+  }
+
+  while ( part = reader.next() ){
+    if ( !blockName ) {
+      blockName = part;
+    }
+    else if ( analysis.localStates[blockName] === part ) {
+      stateName = reader.next();
+      substateName = reader.next();
+    }
+    else if ( !className ) {
+      className = part;
+    }
+    // If the user is referencing something deeper than allowed, throw.
+    else {
+      throw new Error(`Attempted to access non-existant block class or state "${reader.toString()}"`);
+    }
   }
 
   // If there is no block imported under this local name, this is a class
   // we don't care about. Return.
-  let block: Block | undefined = analysis.localBlocks[blockName];
+  let block: Block | undefined = blockName ? analysis.localBlocks[blockName] : undefined;
   if ( !block ) {
     return;
   }
 
-  // If we have discovered a block reference, but the user is referencing
-  // something other than a class, throw.
-  if ( parts.length > 2 ) {
-    // TODO: Add location data in error message.
-    throw new Error(`Attempted to access non-existant block class or state "${parts.join('.')}"`);
-  }
-
-  // If this is a block reference, fetch the class referenced in this selector.
-  let classBlock: BlockClass | undefined = block.getClass(className);
-
   // If applying the root styles, either by `class="block.root"` or `class="block"`
-  if ( className === 'root' || className === undefined ) {
-    analysis.addStyle(block);
-    if ( isDynamic ) {
-      analysis.markDynamic(block);
+  if ( className === 'root' || ( !className ) ) {
+
+    if ( stateName ) {
+      let stateBlocks: State[] = block.states.getGroup(stateName, substateName);
+      if ( !stateBlocks.length ){
+        throw new Error(`No state named "${stateName}${substateName ? '='+substateName : ''}" found on block "${block.name}"`);
+      }
+      stateBlocks.forEach((stateBlock: State) => {
+        analysis.addStyle(stateBlock, isDynamic);
+      });
+    }
+    else {
+      analysis.addStyle(block, isDynamic);
     }
   }
 
-  // If we found a class of the same name in this Block
-  else if ( classBlock ) {
-    analysis.addStyle(classBlock);
-    if ( isDynamic ) {
-      analysis.markDynamic(classBlock);
-    }
-  }
-
-  // Otherwise throw a helpful error.
+  // Otherwise, fetch the class referenced in this selector. If it exists, add.
   else {
-    throw new Error(`No class named "${className}" found on block "${blockName}"`);
+    let classBlock: BlockClass | undefined = className ? block.getClass(className) : undefined;
+    if ( !classBlock ){
+      throw new Error(`No class named "${className}" found on block "${blockName}"`);
+    }
+
+    if ( stateName ) {
+      let stateBlocks: State[] = classBlock.states.getGroup(stateName, substateName);
+
+      if ( !stateBlocks.length ){
+        throw new Error(`No state "${stateName}${substateName ? '='+substateName : ''}" found on class "${className}" in block "${block.name}"`);
+      }
+      stateBlocks.forEach((stateBlock: State) => {
+        analysis.addStyle(stateBlock, isDynamic);
+      });
+    }
+    else {
+      analysis.addStyle(classBlock, isDynamic);
+    }
   }
 }
 
@@ -225,54 +227,24 @@ export default function JSXOpeningElement(this: Analysis, path: NodePath<JSXOpen
             objstr = objstr.init;
           }
 
-          let props: Property[] = getObjstrProps(path, objstr);
-          if ( !props ) {
-            throw new Error(`Class attribute value "${name}" must be either an "objstr" call, or a Block reference`);
-          }
-
-          props.forEach((prop: Property) => {
-
-            // Ignore non computed properties, they will never be blocks objects.
-            if ( !isObjectProperty(prop) || prop.computed === false ) {
-              return;
-            }
-
-            // Get expression from computed property name.
-            let parts: string[] = getExpressionParts(prop.key);
-            addStyle(parts, this, !isLiteral(prop.value));
-
-          });
+          // Optimistically assume we have an objstr call and try to save it.
+          // Will fail silently and continue with exection if it is not an objstr call.
+          saveObjstrProps(this, path, objstr);
 
         }
 
+        // If we discover an inlined call expression, assume it is an objstr call
+        // until proven otherwise. Fails silently and continues with execution if is not.
         if ( isCallExpression(value.expression) ) {
-
-          let props: Property[] = getObjstrProps(path, value.expression);
-
-          if ( !props ) {
-            throw new Error(`Class attribute value "${name}" must be either an "objstr" call, or a Block reference`);
-          }
-
-          props.forEach((prop: Property) => {
-
-            // Ignore non computed properties, they will never be blocks objects.
-            if ( !isObjectProperty(prop) || prop.computed === false ) {
-              return;
-            }
-
-            // Get expression from computed property name.
-            let parts: string[] = getExpressionParts(prop.key);
-            addStyle(parts, this, !isLiteral(prop.value));
-
-          });
+          saveObjstrProps(this, path, value.expression);
         }
 
         // Discover direct references to an imported block.
         // Ex: `blockName.foo` || `blockname['bar']`
         if ( isMemberExpression(value.expression) ) {
           let expression: any = value.expression;
-          let parts: string[] = getExpressionParts(expression);
-          addStyle(parts, this, false);
+          let parts: ExpressionReader = new ExpressionReader(expression);
+          saveStyle(parts, this, false);
         }
       }
     }
@@ -280,21 +252,27 @@ export default function JSXOpeningElement(this: Analysis, path: NodePath<JSXOpen
     // Handle state attributes
     else if ( isJSXNamespacedName(property) ) {
 
+      // If this namespace is something more complex than an identifier, or is not
+      // `state`, we don't care.
+      if ( !isJSXIdentifier(property.namespace) || property.namespace.name !== STATE_NAMESPACE ) {
+        return;
+      }
+
       // Fetch selector parts and look for a block under the local name.
-      let parts = getExpressionParts(property.namespace);
-      let blockName: string | undefined = parts[0];
-      let className: string | undefined = parts[1];
-      let stateName: string = property.name.name;
+      let reader: ExpressionReader = new ExpressionReader(property.name);
+      let blockName: string | undefined = reader.next();
+      let className: string | undefined = reader.next();
+      let stateName: string | undefined = reader.next() || className;
 
       // If there is no block imported under this local name, this is a class
       // we don't care about. Return.
-      let block: Block | undefined = this.localBlocks[blockName];
+      let block: Block | undefined = (blockName) ? this.localBlocks[blockName] : undefined;
       if ( !block || !stateName ) {
         return;
       }
 
       // If this is a block reference, fetch the class referenced in this selector.
-      let classBlock: BlockClass | undefined = block.getClass(className);
+      let classBlock: BlockClass | undefined = ( className ) ? block.getClass(className) : undefined;
 
       // Now that we have our block or class, fetch the requested state object.
       let states: State[] = (classBlock || block).states.getGroup(stateName);
@@ -322,17 +300,14 @@ export default function JSXOpeningElement(this: Analysis, path: NodePath<JSXOpen
 
       // If we have  not discovered a state object, or if the user is referencing
       // a namespace other than a class or root, throw.
-      if ( !states || parts.length > 2 ) {
+      if ( !states ) {
         // TODO: Add location data in error message.
-        throw new Error(`Attempted to access non-existant state "${stateName}" on block class namespace "${parts.join('.')}"`);
+        throw new Error(`Attempted to access non-existant state "${stateName}" on block class namespace "${reader.toString()}"`);
       }
 
       // Register all states with our analysis
       states.forEach((state: State) => {
-        this.addStyle(state);
-        if ( isDynamic ) {
-          this.markDynamic(state);
-        }
+        this.addStyle(state, isDynamic);
       });
 
     }

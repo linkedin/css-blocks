@@ -6,7 +6,7 @@ NOTE: To run locally, this module currently requires the latest version of `css-
 
 ## API Straw Man
 
-### Version 1
+### Version 3
 ```css
 {! bar.block.css }
 
@@ -150,6 +150,32 @@ return (
           <span>My Network</span>
         </BuddyLink>
       </li>
+  </nav>
+);
+
+// ...
+
+```
+
+### Version 1
+
+```javascript
+import * as style from 'css-blocks-api';
+import grid 'styles/grid.block.css';
+import nav from 'ui/navigation/navigation.block.css';
+
+// ...
+
+const style = objstr({
+  'nav.my-class': true,
+  'state:nav.my-class.a-state': true,
+  'grid.span-6': true
+});
+
+return (
+  <nav class="nav.root">
+    <div class={style}></div>
+    <div class="grid.span-6 state:nav.some-state"></div>
   </nav>
 );
 
