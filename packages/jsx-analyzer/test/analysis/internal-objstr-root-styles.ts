@@ -1,16 +1,12 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
-import Analysis from '../../src/Analysis';
-import JSXOpeningElement from '../../src/analyzer/JSXOpeningElement';
+import Analysis from '../../src/utils/Analysis';
 import { parse } from '../../src/index';
 
 const mock = require('mock-fs');
 
 @suite('Inline Objstr Root Styles')
 export class Test {
-  @test 'exists'() {
-    assert.equal(typeof JSXOpeningElement, 'function');
-  }
 
   @test 'Elements with root applied are tracked on attribute `class`'(){
     mock({

@@ -1,0 +1,11 @@
+.root {
+  color: blue;
+}
+
+.pretty {
+  color: red;
+}
+
+.pretty[state|color=yellow] {
+  color: yellow;
+}

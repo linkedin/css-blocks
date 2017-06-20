@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
 import { parse } from '../src/index';
-import Analysis from '../src/Analysis';
+import Analysis from '../src/utils/Analysis';
 import { Block } from 'css-blocks';
 
 const mock = require('mock-fs');
@@ -46,7 +46,7 @@ export class Test {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.blocks['bar'].constructor, Block);
-      assert.deepEqual(analysis.localStates, {'bar': 'barStates'});
+      assert.deepEqual(analysis.files[0].localStates, {'bar': 'barStates'});
     });
   }
 
@@ -58,7 +58,7 @@ export class Test {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.blocks['bar'].constructor, Block);
-      assert.deepEqual(analysis.localStates, {'bar': 'barStates'});
+      assert.deepEqual(analysis.files[0].localStates, {'bar': 'barStates'});
     });
   }
 
@@ -100,8 +100,8 @@ export class Test {
     `).then((analysis: Analysis) => {
       mock.restore();
       assert.equal(Object.keys(analysis.blocks).length, 2);
-      assert.equal(analysis.blocks['bar'], analysis.localBlocks['foo']);
-      assert.equal(analysis.blocks['baz'], analysis.localBlocks['biz']);
+      assert.equal(analysis.blocks['bar'], analysis.files[0].localBlocks['foo']);
+      assert.equal(analysis.blocks['baz'], analysis.files[0].localBlocks['biz']);
     });
   }
 

@@ -1,4 +1,7 @@
+import Analysis, { FileContainer } from '../utils/Analysis';
+
 import * as postcss from 'postcss';
+import { parseFileWith } from '../index';
 import { Block, BlockParser } from 'css-blocks';
 import { NodePath } from 'babel-traverse';
 import { ImportDeclaration,
@@ -13,20 +16,16 @@ import { ImportDeclaration,
          isImportNamespaceSpecifier
        } from 'babel-types';
 
+const parser = new BlockParser(postcss);
 const fs = require('fs');
-const { parse } = require('path');
+const path = require('path');
 
 const BLOCK_SUFFIX = '.block.css'; // TODO: Make configurable.
 const STATE_IDENTIFIER = 'states';
 const DEFAULT_IDENTIFIER = 'default';
-const parser = new BlockParser(postcss);
-
-export interface ResolvedBlock {
-  name: string;
-  localName: string;
-  localState: string;
-  block: Block | undefined;
-}
+const VALID_FILE_EXTS = {
+  '.jsx': 1, '.tsx': 1
+};
 
 interface BlockRegistry {
   [key: string]: number;
@@ -59,20 +58,50 @@ function throwIfRegistered(name: string, blockRegistry: BlockRegistry, blockStat
  * can begin.
  * @param blocks The ResolvedBlock Promise array that will contain all read Block files.
  */
-export default function importer(blocks: Promise<ResolvedBlock>[]){
+export default function importer(file: FileContainer, analysis: Analysis){
 
   // Keep a running record of local block names while traversing so we can check
   // for name conflicts elsewhere in the file.
   let _localBlocks: BlockRegistry = {};
   let _localStates: BlockStateRegistry = {};
+  let dirname = path.dirname(file.path);
 
   return {
 
     // For each Block import declaration, try to read the block file from disk,
     // compile its contents, and save the Block promises in the passed Blocks array.
-    ImportDeclaration(path: NodePath<ImportDeclaration>) {
-      let filepath = path.node.source.value;
-      let specifiers = path.node.specifiers;
+    ImportDeclaration(nodepath: NodePath<ImportDeclaration>) {
+      let filepath = nodepath.node.source.value;
+      let specifiers = nodepath.node.specifiers;
+      let absoluteFilepath = path.resolve(dirname, filepath);
+
+      // TODO: Handle blocks / components delivered through node_modules
+
+      // Check if this is a jsx or tsx file on disk. If yes, this is a potential
+      // part of the CSS Blocks dependency tree. We need to test all valid jsx
+      // and typescript file extensions – require.resolve will not pick them up.
+      let parsedPath = path.parse(absoluteFilepath);
+      delete parsedPath.base;
+      if ( !parsedPath.ext ) {
+        let exists = false;
+        for (let key in VALID_FILE_EXTS) {
+          parsedPath.ext = key;
+          if ( fs.existsSync(path.format(parsedPath)) ){
+            exists = true;
+            break;
+          }
+        }
+        if ( !exists ) {
+          delete parsedPath.ext;
+        }
+      }
+      absoluteFilepath = path.format(parsedPath);
+
+      // If this is a jsx or tsx file, parse it with the same analysis object.
+      if ( fs.existsSync(absoluteFilepath) && VALID_FILE_EXTS[parsedPath.ext] ) {
+        parseFileWith(absoluteFilepath, analysis);
+        return;
+      }
 
       // If this is not a CSS Blocks file, return.
       if ( !~filepath.indexOf(BLOCK_SUFFIX) ) {
@@ -80,12 +109,7 @@ export default function importer(blocks: Promise<ResolvedBlock>[]){
       }
 
       // For each specifier in this block import statement:
-      let blockDescriptor: ResolvedBlock = {
-        name: '',
-        localName: '',
-        localState: '',
-        block: undefined
-      };
+      let localState = '';
       specifiers.forEach((specifier) => {
 
         // TODO: For namespaced imports, the parser needs to be smart enougn to
@@ -96,26 +120,33 @@ export default function importer(blocks: Promise<ResolvedBlock>[]){
         // Then, parse CSS Block, resolve local name and compiled block when done.
         if (   isImportDefaultSpecifier(specifier) || isNamespace ||
              ( isImportSpecifier(specifier) && specifier.imported.name === DEFAULT_IDENTIFIER ) ) {
-          let filename = parse(filepath).base;
-          let blockName = filename.replace(BLOCK_SUFFIX, '');
-          let stylesheet = fs.readFileSync(filepath);
+          let localName = specifier.local.name;
+          let blockPath = path.resolve(dirname, filepath);
 
-          blockDescriptor.localName = specifier.local.name;
-          let res = parser.parse(postcss.parse(stylesheet), filepath, blockName).then((block) : ResolvedBlock => {
-            blockDescriptor.name = block.name;
-            blockDescriptor.block = block;
-            return blockDescriptor;
-          });
+          // Try to fetch an existing Block Promise. If it does not exist, start processing.
+          let res: Promise<Block> = analysis.blockPromises[blockPath];
+          if ( !res ) {
+            let stylesheet = fs.readFileSync(blockPath);
+            let blockName = path.parse(filepath).base.replace(BLOCK_SUFFIX, '');
+            res = parser.parse(postcss.parse(stylesheet), filepath, blockName).then((block) : Block => {
+              analysis.blocks[block.name] = block;
+              file.localBlocks[localName] = block;
+              file.localStates[localName] = localState;
+              return block;
+            });
+            analysis.blockPromises[blockPath] = res;
+            analysis.blockPromisesArray.push(res);
+          }
 
           // Add to our blocks import Promise array
-          _localBlocks[blockDescriptor.localName] = 1;
-          blocks.push(res);
+          _localBlocks[localName] = 1;
+          file.blockPromises.push(res);
         }
 
         // If this is a named import specifier, discover local state object name.
         else if ( isImportSpecifier(specifier) ) {
           if ( specifier.imported.name === STATE_IDENTIFIER ) {
-            blockDescriptor.localState = specifier.local.name;
+            localState = specifier.local.name;
             _localStates[specifier.local.name] = 1;
           }
         }

@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
     // Compilation Configuration
-    "target": "es2015",
+    "target": "ES6",
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
     "allowSyntheticDefaultImports": true,
+    "jsx": "Preserve",
+    "jsxFactory": "h",
 
     // Environment Configuration
     "experimentalDecorators": true,

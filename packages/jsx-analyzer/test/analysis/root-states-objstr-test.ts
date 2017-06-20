@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
-import Analysis from '../../src/Analysis';
+import Analysis from '../../src/utils/Analysis';
 import { parse } from '../../src/index';
 
 const mock = require('mock-fs');
@@ -30,7 +30,7 @@ export class Test {
       <div class={style}></div>;
     `).then((analysis: Analysis) => {
       mock.restore();
-      assert.deepEqual(analysis.localStates, {'bar': 'barStates'});
+      assert.deepEqual(analysis.files[0].localStates, {'bar': 'barStates'});
       assert.equal(Object.keys(analysis.blocks).length, 1);
       assert.equal(analysis.stylesFound.size, 2);
       assert.equal(analysis.dynamicStyles.size, 0);

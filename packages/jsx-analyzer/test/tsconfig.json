@@ -11,6 +11,7 @@
   "exclude": [
     "../dist",
     "../node_modules",
-    "mocha.opts"
+    "mocha.opts",
+    "fixtures"
   ]
 }

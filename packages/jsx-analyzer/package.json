@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "test": "npm run build && mocha dist/test --recursive --opts test/mocha.opts",
-    "build": "rm -rf dist && tsc -p tsconfig.json"
+    "build": "rm -rf dist && tsc --jsx preserve -p tsconfig.json"
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,9 @@
     "mocha": "^3.4.1",
     "mocha-typescript": "^1.1.4",
     "mock-fs": "^4.3.0",
+    "mock-require": "^2.0.2",
+    "obj-str": "^1.0.0",
+    "preact": "^8.1.0",
     "ts-node": "^3.0.4",
     "typescript": "^2.3.2"
   },
