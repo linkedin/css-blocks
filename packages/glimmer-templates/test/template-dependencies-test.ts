@@ -11,6 +11,7 @@ describe('Template dependency analysis', function() {
     expect(analysis).to.deep.equal({
       path: '/basic-app/components/my-app',
       hasComponentHelper: false,
+      helpers: [],
       components: [
         '/basic-app/components/my-app/page-banner',
         '/basic-app/components/text-editor'
@@ -24,6 +25,7 @@ describe('Template dependency analysis', function() {
 
     expect(analysis).to.deep.equal({
       path: '/basic-app/components/with-component-helper',
+      helpers: [],
       hasComponentHelper: true,
       components: [
         '/basic-app/components/my-app'
