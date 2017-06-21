@@ -40,7 +40,6 @@
   },
   "homepage": "https://github.com/css-blocks/glimmer-analyzer#readme",
   "devDependencies": {
-    "@glimmer/compiler": "^0.24.0-beta.5 || ^0.24.0",
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.18",
@@ -55,9 +54,10 @@
     "typescript": "^2.3.2"
   },
   "dependencies": {
-    "@glimmer/resolution-map-builder": "0.4.0",
+    "@glimmer/resolution-map-builder": "0.5.1",
     "@glimmer/resolver": "^0.3.0",
-    "@glimmer/syntax": "^0.24.0-beta.6 || ^0.24.0",
+    "@glimmer/compiler": "^0.25.1",
+    "@glimmer/syntax": "^0.25.1",
     "css-blocks": "0.9.1",
     "glimmer-analyzer": "^0.1.2",
     "postcss": "^6.0.1"

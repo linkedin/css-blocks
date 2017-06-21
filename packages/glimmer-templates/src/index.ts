@@ -6,7 +6,6 @@ export {
 } from "./HandlebarsStyleAnalyzer";
 export {
   Rewriter,
-  RewriterOptions,
   rewriteAdapter
 } from "./HandlebarsStyleRewriter";
 export {

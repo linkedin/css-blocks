@@ -88,7 +88,7 @@ export default class Project {
     if (!stylePath) {
       return;
     }
-    let fullPath = path.join(this.projectDir, 'src', stylePath);
+    let fullPath = path.join(this.projectDir, 'src', `${stylePath}.css`);
     let contents = fs.readFileSync(fullPath, 'utf8');
 
     return new ResolvedFile(contents, specifier, fullPath);
@@ -101,7 +101,7 @@ export default class Project {
     }
 
     let templatePath = this.resolver.resolve(specifier);
-    let fullPath = path.join(this.projectDir, 'src', templatePath);
+    let fullPath = path.join(this.projectDir, 'src', `${templatePath}.hbs`);
     let templateString = fs.readFileSync(fullPath, 'utf8');
 
     return new ResolvedFile(templateString, specifier, fullPath);
