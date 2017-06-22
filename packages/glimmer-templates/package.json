@@ -5,7 +5,9 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "types-local"
   ],
   "scripts": {
     "test": "mocha --opts test/mocha.opts dist/test",
