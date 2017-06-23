@@ -33,6 +33,7 @@
   "homepage": "https://github.com/css-blocks/webpack-plugin-css-blocks#readme",
   "devDependencies": {
     "@types/chai": "^3.5.2",
+    "@types/debug": "0.0.29",
     "@types/extract-text-webpack-plugin": "^2.1.0",
     "@types/glob": "^5.0.30",
     "@types/node": "^7.0.13",
@@ -57,6 +58,7 @@
   "dependencies": {
     "@types/webpack": "^2.2.15",
     "css-blocks": "0.9.1",
+    "debug": "^2.6.8",
     "install": "^0.10.1",
     "loader-utils": "^1.0.1",
     "npm": "^5.0.2",
