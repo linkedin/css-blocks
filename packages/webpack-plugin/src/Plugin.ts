@@ -1,8 +1,10 @@
 import Tapable = require("tapable");
 import * as webpack from "webpack";
+import { RawSource } from 'webpack-sources';
 import * as postcss from "postcss";
 import * as path from "path";
 import * as debugGenerator from "debug";
+import VirtualModulePlugin = require("virtual-module-webpack-plugin");
 import {
   TemplateAnalyzer,
   MetaTemplateAnalysis,
@@ -14,7 +16,6 @@ import {
   StyleMapping,
   MetaStyleMapping,
 } from "css-blocks";
-import VirtualModulePlugin = require("virtual-module-webpack-plugin");
 
 export interface CssBlocksPluginOptions<RewriterType extends TemplateRewriter> {
   templateAnalyzer?: TemplateAnalyzer;
@@ -84,15 +85,24 @@ export class CssBlocksCompilerPlugin<RewriterType extends TemplateRewriter> exte
     this.options = options || {};
   }
 
-  entryPoint(): string {
+  entryPoint(name?: string): string {
     if (!this._entryPoint) {
-      let ep = blockFilenameGenerator();
+      let ep;
+      if (name) {
+        ep = name;
+      } else {
+        ep = blockFilenameGenerator();
+      }
       this.trace(`entry point is ${ep}`);
       this._entryPoint = ep;
       return this._entryPoint;
     } else {
-      throw new Error("Only one entry point per plugin is allowed.");
+      throw new Error("Only one entry point per plugin is allowed. Try using getOrCreateEntryPoint()?");
     }
+  }
+
+  getOrCreateEntryPoint(): string {
+    return this._entryPoint || this.entryPoint();
   }
 
   asPromised(): Promise<MetaTemplateAnalysis> | null{
@@ -109,14 +119,11 @@ export class CssBlocksCompilerPlugin<RewriterType extends TemplateRewriter> exte
   }
 
   apply(compiler: any) {
-    if (!this._entryPoint) {
-      throw new Error("You must add entryPoint() to the webpack configuration before registering the css-blocks plugin.");
-    }
     let self = this;
     let compileAndConcat = function(): Promise<string | null> {
         let promise = self.asPromised();
         if (promise === null) {
-          self.trace(`giving up on contents for ${self._entryPoint}.`);
+          self.trace(`giving up on contents for ${self.getOrCreateEntryPoint()}.`);
           return Promise.resolve(null);
         }
         return promise.then(analysis => {
@@ -131,7 +138,7 @@ export class CssBlocksCompilerPlugin<RewriterType extends TemplateRewriter> exte
           });
           let metaMapping = MetaStyleMapping.fromMetaAnalysis(analysis, new CssBlocksOptionsReader(options));
           self.applyPlugins("after-compilation", metaMapping);
-          self.trace(`compiled ${cssBundle.length} files for ${self._entryPoint}.`);
+          self.trace(`compiled ${cssBundle.length} files for ${self.getOrCreateEntryPoint()}.`);
           return cssBundle.join("\n");
         }).catch((e) => {
           console.error(e);
@@ -140,18 +147,11 @@ export class CssBlocksCompilerPlugin<RewriterType extends TemplateRewriter> exte
     };
     let resolverPlugin = function(this: HasFilesystem, request: any, cb: any) {
       const fs = this.fileSystem;
-      if (request.path && request.path.endsWith(self._entryPoint)) {
-        let assetPath = path.join(path.dirname(request.descriptionFilePath), "css-blocks", self._entryPoint || "");
-        compileAndConcat().then(contents => {
-          if (contents) {
-            VirtualModulePlugin.populateFilesystem({fs: fs, modulePath: assetPath, contents: contents, ctime: VirtualModulePlugin.statsDate()});
-            cb(null, {path: assetPath});
-          } else {
-            cb();
-          }
-        });
-      } else {
-        cb();
+      if (request.path && request.path.endsWith(self.getOrCreateEntryPoint())) {
+        let assetPath = path.join(path.dirname(request.descriptionFilePath), "css-blocks", self.getOrCreateEntryPoint());
+        let contents = "";
+        VirtualModulePlugin.populateFilesystem({fs: fs, modulePath: assetPath, contents: contents, ctime: VirtualModulePlugin.statsDate()});
+        cb(null, {path: assetPath});
       }
     };
     if (!compiler.resolvers.normal) {
@@ -161,6 +161,18 @@ export class CssBlocksCompilerPlugin<RewriterType extends TemplateRewriter> exte
     } else {
       compiler.resolvers.normal.plugin('file', resolverPlugin);
     }
+    compiler.plugin("make", (compilation: any, cb: (error?: Error) => void) => {
+      compileAndConcat().then(css => {
+        if (css) {
+          let name = self.getOrCreateEntryPoint();
+          self.trace(`setting css asset ${name}`);
+          compilation.assets[name] = new RawSource(css);
+        }
+        cb();
+      }).catch((e) => {
+        cb(e);
+      });
+    });
   }
   onTraceMessage(handler: TraceHandler) {
     this.plugin("trace", handler);
@@ -205,6 +217,14 @@ function blockFilenameGenerator() {
   return `css-blocks-${++filenameCounter}.css`;
 }
 
+export class CssBlockConcatPlugin<RewriterType extends TemplateRewriter> {
+  plugins: CssBlocksCompilerPlugin<RewriterType>[];
+
+  constructor(...plugins: CssBlocksCompilerPlugin<RewriterType>[]) {
+    this.plugins = plugins;
+  }
+}
+
 export class CssBlocksPlugin<RewriterType extends TemplateRewriter> extends Tapable implements webpack.Plugin {
   options: CssBlocksPluginOptions<RewriterType>;
   compilerPlugin: CssBlocksCompilerPlugin<RewriterType>;
@@ -237,9 +257,6 @@ export class CssBlocksPlugin<RewriterType extends TemplateRewriter> extends Tapa
       });
       this.compilerPlugin.apply(compiler);
     }
-    compiler.plugin("compilation", (_compilation) => {
-      // console.log("coordinator", compilation);
-    });
   }
 
   entryPoint(): string {

@@ -29,6 +29,13 @@ export function readCss(id: string): string {
   return css;
 }
 
+export function readAsset(filename: string): string {
+  const outputLocation = path.resolve(DIST_DIRECTORY, `./test_output/${ filename }`);
+  let content = fs.readFileSync(outputLocation, "utf8");
+  content = content.replace(CR, "");
+  return content;
+}
+
 export function runWebpackAsPromise(webpackConfig: webpack.Configuration) {
   return new Promise((resolve, reject) => {
       runWebpack(webpackConfig, (err: Error) => err ? reject(err) : resolve());

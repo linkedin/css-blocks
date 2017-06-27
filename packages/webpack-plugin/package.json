@@ -57,12 +57,15 @@
   },
   "dependencies": {
     "@types/webpack": "^2.2.15",
+    "@types/webpack-sources": "^0.1.1",
     "css-blocks": "0.9.1",
     "debug": "^2.6.8",
+    "extract-text-webpack-plugin": "^2.1.2",
     "install": "^0.10.1",
     "loader-utils": "^1.0.1",
     "npm": "^5.0.2",
     "virtual-module-webpack-plugin": "^0.2.0",
-    "webpack": "^2.6.1"
+    "webpack": "^3.0.0",
+    "webpack-sources": "^1.0.1"
   }
 }

@@ -2,7 +2,7 @@ import * as glob from "glob";
 import * as path from "path";
 import * as fs from "fs";
 import { suite, test, skip } from "mocha-typescript";
-import execTest, { runWebpackAsPromise, readCss, readBundle } from "./util/execTest";
+import execTest, { runWebpackAsPromise, readCss, readBundle, readAsset } from "./util/execTest";
 import { DIST_DIRECTORY, BLOCK_FIXTURES_DIRECTORY} from "./util/testPaths";
 import { config as extractTextConfig } from "./configs/extractTextConfig";
 import { config as templateConfig } from "./configs/templateConfig";
@@ -65,9 +65,9 @@ export class PluginTest {
   @test "integrates with templates"() {
     return templateConfig().then(config => {
       return runWebpackAsPromise(config).then(() => {
-        const actualCss = readBundle("bundle.template.js");
+        const actualCss = readAsset("css-blocks-1.css");
         const expectedCss = readCss("concat.template");
-        assert.deepEqual(actualCss[0][1], expectedCss);
+        assert.deepEqual(actualCss, expectedCss);
       });
     });
   }
