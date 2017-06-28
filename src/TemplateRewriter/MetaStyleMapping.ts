@@ -1,6 +1,6 @@
 import { StyleMapping } from "./StyleMapping";
 import { MetaTemplateAnalysis } from "../TemplateAnalysis/MetaAnalysis";
-import { TemplateAnalysis } from "../TemplateAnalysis/index";
+import { TemplateAnalysis } from "../TemplateAnalysis";
 import { OptionsReader } from "../options";
 
 export class MetaStyleMapping {
