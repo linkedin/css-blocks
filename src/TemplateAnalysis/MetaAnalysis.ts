@@ -2,8 +2,6 @@ import { Block, BlockObject } from "../Block";
 import { TemplateAnalysis, SerializedTemplateAnalysis } from "./index";
 import { StyleAnalysis } from "./StyleAnalysis";
 
-export type TemplateAnalysisMap = Map<BlockObject, TemplateAnalysis[]>;
-
 export class SerializedMetaTemplateAnalysis {
   analyses: SerializedTemplateAnalysis[];
 }
