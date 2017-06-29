@@ -1,5 +1,6 @@
 import { StyleMapping } from "./StyleMapping";
 import { MetaTemplateAnalysis } from "../TemplateAnalysis/MetaAnalysis";
+import { TemplateAnalysis } from "../TemplateAnalysis";
 import { OptionsReader } from "../options";
 
 export class MetaStyleMapping {
@@ -7,7 +8,7 @@ export class MetaStyleMapping {
   constructor() {
     this.templates = new Map();
   }
-  static fromMetaAnalysis(analysis: MetaTemplateAnalysis, options: OptionsReader): MetaStyleMapping {
+  static fromMetaAnalysis(analysis: MetaTemplateAnalysis<TemplateAnalysis>, options: OptionsReader): MetaStyleMapping {
     let metaMapping = new MetaStyleMapping();
     analysis.eachAnalysis(a => {
       let mapping = new StyleMapping();

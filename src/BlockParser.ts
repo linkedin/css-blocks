@@ -312,7 +312,7 @@ export default class BlockParser {
         let otherRoot = this.postcss.parse(importedFile.contents, {from: importedFile.path});
         return this.parse(otherRoot, importedFile.path, importedFile.defaultName);
       });
-      let namedResult: Promise<[string, Block]> = extractedResult.then((referencedBlock) => {
+      let namedResult: Promise<[string, Block]> = extractedResult.then((referencedBlock: Block): [string, Block] => {
         return [localName, referencedBlock];
       });
       namedBlockReferences.push(namedResult);

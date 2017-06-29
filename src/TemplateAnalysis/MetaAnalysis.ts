@@ -2,16 +2,14 @@ import { Block, BlockObject } from "../Block";
 import { TemplateAnalysis, SerializedTemplateAnalysis } from "./index";
 import { StyleAnalysis } from "./StyleAnalysis";
 
-type TemplateAnalysisMap = Map<BlockObject, TemplateAnalysis[]>;
-
 export class SerializedMetaTemplateAnalysis {
   analyses: SerializedTemplateAnalysis[];
 }
 
-export class MetaTemplateAnalysis implements StyleAnalysis {
-  private analyses: TemplateAnalysis[];
-  private stylesFound: TemplateAnalysisMap;
-  private dynamicStyles: TemplateAnalysisMap;
+export class MetaTemplateAnalysis<Analysis extends TemplateAnalysis> implements StyleAnalysis {
+  protected analyses: Analysis[];
+  protected stylesFound: Map<BlockObject, Analysis[]>;
+  protected dynamicStyles: Map<BlockObject, Analysis[]>;
 
   constructor() {
     this.analyses = [];
@@ -19,13 +17,13 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     this.dynamicStyles = new Map();
   }
 
-  addAllAnalyses(analyses: TemplateAnalysis[]) {
+  addAllAnalyses(analyses: Analysis[]) {
     analyses.forEach((analysis) => {
       this.addAnalysis(analysis);
     });
   }
 
-  addAnalysis(analysis: TemplateAnalysis) {
+  addAnalysis(analysis: Analysis) {
     this.analyses.push(analysis);
     analysis.stylesFound.forEach((style) => {
       this.addAnalysisToStyleMap(this.stylesFound, style, analysis);
@@ -35,7 +33,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     });
   }
 
-  eachAnalysis(cb: (v: TemplateAnalysis) => any) {
+  eachAnalysis(cb: (v: Analysis) => any) {
     this.analyses.forEach(a => {
       cb(a);
     });
@@ -51,7 +49,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
 
   areCorrelated(...styles: BlockObject[]): boolean {
     if (styles.length < 2) return false;
-    let possibleAnalyses: TemplateAnalysis[] = this.stylesFound.get(styles[0]) || [];
+    let possibleAnalyses: Analysis[] = this.stylesFound.get(styles[0]) || [];
     for (let si = 1; si < styles.length && possibleAnalyses.length > 1; si++) {
       possibleAnalyses = possibleAnalyses.filter(a => a.stylesFound.has(styles[si]));
     }
@@ -91,7 +89,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     return { analyses };
   }
 
-  private addAnalysisToStyleMap(map: TemplateAnalysisMap, style: BlockObject, analysis: TemplateAnalysis) {
+  private addAnalysisToStyleMap(map: Map<BlockObject, Analysis[]>, style: BlockObject, analysis: Analysis) {
     let analyses = map.get(style);
     if (analyses) {
       analyses.push(analysis);
