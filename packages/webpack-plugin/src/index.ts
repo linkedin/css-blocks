@@ -1,9 +1,7 @@
 export { default as loader } from "./loader";
 export { LoaderOptions } from "./LoaderOptions";
 export {
-  CssBlocksCompilerPlugin,
-  CssBlocksOptimizerPlugin,
   CssBlocksPlugin,
-  CssBlocksPluginOptions,
-  CssBlocksTemplateAnalysisPlugin
+  CssBlocksWebpackOptions,
+  BlockCompilationComplete
 } from "./Plugin";

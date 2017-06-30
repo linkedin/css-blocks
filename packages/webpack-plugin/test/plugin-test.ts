@@ -65,7 +65,7 @@ export class PluginTest {
   @test "integrates with templates"() {
     return templateConfig().then(config => {
       return runWebpackAsPromise(config).then(() => {
-        const actualCss = readAsset("css-blocks-1.css");
+        const actualCss = readAsset("css-blocks.css");
         const expectedCss = readCss("concat.template");
         assert.deepEqual(actualCss, expectedCss);
       });

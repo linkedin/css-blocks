@@ -5,12 +5,12 @@ import * as fs from "fs";
 import * as path from "path";
 import { config as defaultOutputConfig } from "./defaultOutputConfig";
 import { CssBlocksPlugin } from "../../src/Plugin";
-import { Block, TemplateAnalyzer, StyleAnalysis, StyleMapping, BlockObject, BlockParser } from "css-blocks";
+import { Block, TemplateAnalyzer, StyleAnalysis, BlockObject, BlockParser } from "css-blocks";
 import { BLOCK_FIXTURES_DIRECTORY } from "../util/testPaths";
 
-interface TestRewriterResult {
-  blocks?: Block[];
-}
+// interface TestRewriterResult {
+//   blocks?: Block[];
+// }
 
 class TestAnalysis implements StyleAnalysis {
   blocks: { [name: string]: Block } = {};
@@ -74,16 +74,6 @@ class TestTemplateAnalyzer implements TemplateAnalyzer {
   }
 }
 
-function rewriteAdapter(mapping: StyleMapping | null): TestRewriterResult {
-  if (mapping) {
-    return {
-      blocks: Object.keys(mapping.blocks).map(k => mapping.blocks[k])
-    };
-  } else {
-    return {};
-  }
-}
-
 export function config(): Promise<webpack.Configuration> {
   let block1 = getBlock("concat-1");
   let block2 = getBlock("concat-2");
@@ -91,13 +81,12 @@ export function config(): Promise<webpack.Configuration> {
     let analysis = new TestAnalysis();
     blocks.forEach((b, i) => analysis.addBlock(`concat-${i}`, b));
 
-    let cssBlocks = new CssBlocksPlugin<TestRewriterResult>({
-      templateAnalyzer: new TestTemplateAnalyzer(analysis),
-      templateRewriter: rewriteAdapter
+    let cssBlocks = new CssBlocksPlugin({
+      analyzer: new TestTemplateAnalyzer(analysis)
     });
 
     return merge(defaultOutputConfig(), {
-      entry: cssBlocks.entryPoint(),
+      entry: "./test/fixtures/javascripts/foo.js",
       output: {
         filename: "bundle.template.js"
       },
