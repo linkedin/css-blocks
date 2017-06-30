@@ -107,6 +107,10 @@ export default class Project {
     return new ResolvedFile(templateString, specifier, fullPath);
   }
 
+  reset() {
+    this.blocks = {};
+  }
+
   private loadPackageJSON(appPath: string) {
     let pkgPath = path.join(appPath, 'package.json');
     try {

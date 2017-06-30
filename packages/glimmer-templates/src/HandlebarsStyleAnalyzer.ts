@@ -32,7 +32,7 @@ export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> im
   abstract analyze(): Promise<AnalysisType>;
 
   reset() {
-    this.project = new Project(this.project.projectDir);
+    this.project.reset();
   }
 
   protected analyzeTemplate(templateName: string): Promise<SingleTemplateStyleAnalysis> {

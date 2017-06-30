@@ -6,7 +6,7 @@ export {
 } from "./HandlebarsStyleAnalyzer";
 export {
   Rewriter,
-  rewriteAdapter
+  loaderAdapter
 } from "./HandlebarsStyleRewriter";
 export {
   default as Project,

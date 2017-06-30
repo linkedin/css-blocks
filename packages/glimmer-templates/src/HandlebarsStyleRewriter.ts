@@ -12,18 +12,38 @@ import {
   BlockObject,
   PluginOptionsReader as CssBlocksOptionsReader,
   TemplateRewriter,
+  MetaStyleMapping,
   StyleMapping
 } from "css-blocks";
 
 type StateContainer = Block | BlockClass;
 
 const STATE = /state:(.*)/;
-
-export function rewriteAdapter(styleMapping: StyleMapping): ASTPlugin {
-  let block = styleMapping && styleMapping.blocks[""];
+export function loaderAdapter(loaderContext: any): ASTPlugin {
+  let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
+  let styleMapping: StyleMapping | undefined = undefined;
+  let block: Block | undefined = undefined;
+  cssFileNames.forEach(filename => {
+    let metaMapping: MetaStyleMapping = loaderContext.cssBlocks.mappings[filename];
+    let mapping: StyleMapping | undefined = metaMapping.templates.get(loaderContext.resourcePath);
+    if (mapping) {
+      if (styleMapping) {
+        throw Error("Multiple css blocks outputs use this template and I don't know how to handle that yet.");
+      }
+      let blockNames = Object.keys(mapping.blocks);
+      blockNames.forEach(n => {
+        let b = (<StyleMapping>mapping).blocks[n];
+        if (n === "") {
+          block = b;
+        }
+        loaderContext.dependency(b.source);
+      });
+      styleMapping = mapping;
+    }
+  });
   if (styleMapping && block) {
     return (env: ASTPluginEnvironment) => {
-      let rewriter = new Rewriter(env.syntax, styleMapping, block);
+      let rewriter = new Rewriter(env.syntax, <StyleMapping>styleMapping, <Block>block);
       return {
         name: "css-blocks",
         visitors: {
