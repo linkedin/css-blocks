@@ -29,6 +29,13 @@ export function readCss(id: string): string {
   return css;
 }
 
+export function readCssSourceMap(id: string): string {
+  let json = fs.readFileSync(path.join(BLOCK_FIXTURES_DIRECTORY, id + ".css.map"), "utf8");
+  json = json.replace(CR, "");
+  json = json.replace("FIXTURES_DIRECTORY", BLOCK_FIXTURES_DIRECTORY);
+  return JSON.parse(json);
+}
+
 export function readAsset(filename: string): string {
   const outputLocation = path.resolve(DIST_DIRECTORY, `./test_output/${ filename }`);
   let content = fs.readFileSync(outputLocation, "utf8");

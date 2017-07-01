@@ -2,7 +2,8 @@ import Tapable = require("tapable");
 import * as webpack from "webpack";
 import * as debugGenerator from "debug";
 import * as postcss from "postcss";
-import { RawSource } from 'webpack-sources';
+import * as path from "path";
+import { SourceMapSource, ConcatSource, RawSource } from 'webpack-sources';
 
 import {
   TemplateAnalyzer,
@@ -27,7 +28,7 @@ export interface CssBlocksWebpackOptions {
 }
 
 interface CompilationResult {
-  css: string;
+  css: ConcatSource;
   mapping: MetaStyleMapping;
 }
 
@@ -70,7 +71,10 @@ export class CssBlocksPlugin
           return this.compileBlocks(<MetaTemplateAnalysis>analysis);
         }).then(result => {
           this.trace(`setting css asset: ${this.outputCssFile}`);
-          compilation.assets[this.outputCssFile] = new RawSource(result.css);
+          let { source, map } = result.css.sourceAndMap();
+          let mapFile = this.outputCssFile + ".map";
+          compilation.assets[this.outputCssFile] = new RawSource(source + `\n/*# sourceMappingURL=${path.basename(mapFile)} */`);
+          compilation.assets[mapFile] =  new RawSource(JSON.stringify(map));
           let completion: BlockCompilationComplete = {
             compilation: compilation,
             assetPath: this.outputCssFile,
@@ -104,18 +108,24 @@ export class CssBlocksPlugin
     let options: CssBlocksOptions = this.compilationOptions;
     let reader = new CssBlocksOptionsReader(options);
     let blockCompiler = new BlockCompiler(postcss, options);
-    let cssBundle: string[] = [];
+    let cssBundle = new ConcatSource();
     analysis.blockDependencies().forEach((block: Block) => {
-      console.log(block.debug(reader).join("\n"));
       if (block.root && block.source) {
         this.trace(`compiling ${block.source}.`);
-        cssBundle.push(blockCompiler.compile(block, block.root, analysis).toString());
+        let originalSource = block.root.toString();
+        let root = blockCompiler.compile(block, block.root, analysis);
+        let cssOutputName = block.source.replace(".block.css", ".css");
+        let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
+        // TODO: handle a sourcemap from compiling the block file via a preprocessor.
+        let source = new SourceMapSource(result.css, block.source,
+                                          result.map.toJSON(), originalSource);
+        cssBundle.add(source);
       }
     });
-    this.trace(`compiled ${cssBundle.length} blocks.`);
+    this.trace(`compiled ${cssBundle.size} blocks.`);
     let metaMapping = MetaStyleMapping.fromMetaAnalysis(analysis, reader);
     return {
-      css: cssBundle.join("\n"),
+      css: cssBundle,
       mapping: metaMapping
     };
   }
