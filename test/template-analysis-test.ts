@@ -21,7 +21,7 @@ export class KeyQueryTests {
   @test "can add styles from a block"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("/my/Project/templates/my-template.hbs");
+    let info = new TemplateInfo("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -29,15 +29,15 @@ export class KeyQueryTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "/my/Project/blocks/foo.block.css", reader).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       analysis.startElement();
       analysis.addStyle(block);
       analysis.endElement();
-      let result = analysis.serialize("/my/Project");
+      let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis = {
         blocks: {"": "blocks/foo.block.css"},
-        template: "templates/my-template.hbs",
+        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
         dynamicStyles: [],
         styleCorrelations: []
@@ -48,7 +48,7 @@ export class KeyQueryTests {
   @test "can add dynamic styles from a block"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("/my/Project/templates/my-template.hbs");
+    let info = new TemplateInfo("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -56,16 +56,16 @@ export class KeyQueryTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "/my/Project/blocks/foo.block.css", reader).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       analysis.startElement();
       analysis.addStyle(block);
       analysis.markDynamic(block);
       analysis.endElement();
-      let result = analysis.serialize("/my/Project");
+      let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis = {
         blocks: {"": "blocks/foo.block.css"},
-        template: "templates/my-template.hbs",
+        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
         dynamicStyles: [0],
         styleCorrelations: []
@@ -76,7 +76,7 @@ export class KeyQueryTests {
   @test "can correlate styles"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("/my/Project/templates/my-template.hbs");
+    let info = new TemplateInfo("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -84,7 +84,7 @@ export class KeyQueryTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "/my/Project/blocks/foo.block.css", reader).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       analysis.startElement();
       let klass = block.getClass("asdf");
@@ -96,10 +96,10 @@ export class KeyQueryTests {
         }
       }
       analysis.endElement();
-      let result = analysis.serialize("/my/Project");
+      let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis = {
         blocks: {"": "blocks/foo.block.css"},
-        template: "templates/my-template.hbs",
+        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]"],
         dynamicStyles: [],
         styleCorrelations: [[0, 1]]
@@ -110,7 +110,7 @@ export class KeyQueryTests {
   @test "can add styles from two blocks"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("/my/Project/templates/my-template.hbs");
+    let info = new TemplateInfo("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -119,20 +119,20 @@ export class KeyQueryTests {
       .asdf[state|larger] { font-size: 26px; }
     `;
 
-    return this.parseBlock(css, "/my/Project/blocks/foo.block.css", reader).then(([block1, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block1, _]) => {
       analysis.blocks[""] = block1;
       analysis.startElement();
       analysis.addStyle(block1);
       analysis.endElement();
-      return this.parseBlock(`.root { border: 1px solid black; }`, "/my/Project/blocks/bar.block.css").then(([block2, _]) => {
+      return this.parseBlock(`.root { border: 1px solid black; }`, "blocks/bar.block.css").then(([block2, _]) => {
         analysis.blocks["ref"] = block2;
         analysis.startElement();
         analysis.addStyle(block2);
         analysis.endElement();
-        let result = analysis.serialize("/my/Project");
+        let result = analysis.serialize();
         let expectedResult: SerializedTemplateAnalysis = {
           blocks: {"": "blocks/foo.block.css", "ref": "blocks/bar.block.css"},
-          template: "templates/my-template.hbs",
+          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "ref.root"],
           dynamicStyles: [],
           styleCorrelations: []

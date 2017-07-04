@@ -1,22 +1,18 @@
 import { StyleMapping } from "./StyleMapping";
 import { MetaTemplateAnalysis } from "../TemplateAnalysis/MetaAnalysis";
-import { TemplateAnalysis } from "../TemplateAnalysis";
+import { TemplateInfo } from "../TemplateAnalysis";
 import { OptionsReader } from "../options";
 
-export class MetaStyleMapping {
-  templates: Map<string, StyleMapping>;
+export class MetaStyleMapping<Template extends TemplateInfo> {
+  templates: Map<string, StyleMapping<Template>>;
   constructor() {
     this.templates = new Map();
   }
-  static fromMetaAnalysis(analysis: MetaTemplateAnalysis<TemplateAnalysis>, options: OptionsReader): MetaStyleMapping {
-    let metaMapping = new MetaStyleMapping();
+  static fromMetaAnalysis<Template extends TemplateInfo>(analysis: MetaTemplateAnalysis<Template>, options: OptionsReader): MetaStyleMapping<Template> {
+    let metaMapping = new MetaStyleMapping<Template>();
     analysis.eachAnalysis(a => {
-      let mapping = new StyleMapping();
-      Object.keys(a.blocks).forEach(name => {
-        mapping.addBlockReference(name, a.blocks[name]);
-      });
-      mapping.addObjects(options, ...a.stylesFound);
-      metaMapping.templates.set(a.template.path, mapping);
+      let mapping = StyleMapping.fromAnalysis<Template>(a, options);
+      metaMapping.templates.set(a.template.identifier, mapping);
     });
     return metaMapping;
   }

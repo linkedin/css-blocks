@@ -1,30 +1,74 @@
 /**
  * @module "TemplateAnalysis"
  */
-import * as path from "path";
 import { BlockObject } from "../Block/BlockObject";
 import { Block } from "../Block/Block";
 // tslint:disable-next-line:no-unused-variable Imported for Documentation link
 import { CLASS_NAME_IDENT } from "../BlockParser";
 import { StyleAnalysis } from "./StyleAnalysis";
 
+interface TemplateInfoConstructor {
+    deserialize<TI extends TemplateInfo>(identifier: string, ...data: any[]): TI;
+}
+
+class TemplateInfoFactory {
+  static constructors: Map<Symbol, TemplateInfoConstructor> = new Map();
+  static register(name: string, constructor: TemplateInfoConstructor) {
+    TemplateInfoFactory.constructors.set(Symbol.for(name), constructor);
+  }
+  static create<TemplateInfoType extends TemplateInfo>(name: string, identifier: string, ...data: any[]): TemplateInfoType {
+    let constructor: TemplateInfoConstructor | undefined = TemplateInfoFactory.constructors.get(Symbol.for(name));
+    if (constructor) {
+      return constructor.deserialize<TemplateInfoType>(identifier, ...data);
+    } else {
+      throw new Error(`No template info registered for ${name}`);
+    }
+  }
+  static deserialize<TemplateInfoType extends TemplateInfo>(obj: SerializedTemplateInfo): TemplateInfoType {
+    let data: any[] = obj.data || [];
+    return TemplateInfoFactory.create<TemplateInfoType>(obj.type, obj.identifier, ...data);
+  }
+}
+
+export interface SerializedTemplateInfo {
+  type: string;
+  identifier: string;
+  data?: any[];
+}
+
 /**
  * Base class for template information for an analyzed template.
  */
 export class TemplateInfo {
-  path: string;
+  static typeName = "CssBlocks.TemplateInfo";
+  identifier: string;
 
-  constructor(path: string) {
-    this.path = path;
+  constructor(identifier: string) {
+    this.identifier = identifier;
+  }
+
+  static deserialize(identifier: string, ..._data: any[]): TemplateInfo {
+    return new TemplateInfo(identifier);
+  }
+
+  // Subclasses should override this and set type to the string value that their class is registered as.
+  // any additional data for serialization
+  serialize(): SerializedTemplateInfo {
+    return {
+      type: TemplateInfo.typeName,
+      identifier: this.identifier,
+    };
   }
 }
+
+TemplateInfoFactory.register(TemplateInfo.typeName, TemplateInfo);
 
 /**
  * This interface defines a JSON friendly serialization
  * of a {TemplateAnalysis}.
  */
 export interface SerializedTemplateAnalysis {
-  template: string;
+  template: SerializedTemplateInfo;
   blocks: {
     [localName: string]: string;
   };
@@ -43,9 +87,9 @@ export interface SerializedTemplateAnalysis {
  * 2. Call [[markDynamic markDynamic(blockObject)]] for all the styles used dynamically on the current html element.
  * 3. Call [[endElement endElement()]] when done adding styles for the current element.
  */
-export class TemplateAnalysis implements StyleAnalysis {
+export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAnalysis {
 
-  template: TemplateInfo;
+  template: Template;
   /**
    * A map from a local name for the block to the [[Block]].
    * The local name must be a legal CSS ident/class name but this is not validated here.
@@ -79,7 +123,7 @@ export class TemplateAnalysis implements StyleAnalysis {
   /**
    * @param template The template being analyzed.
    */
-  constructor(template: TemplateInfo) {
+  constructor(template: Template) {
     this.template = template;
     this.blocks = {};
     this.stylesFound = new Set();
@@ -198,12 +242,12 @@ export class TemplateAnalysis implements StyleAnalysis {
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
    * @param pathsRelativeTo A path against which all the absolute paths in this analysis should be relativized.
    */
-  serialize(pathsRelativeTo: string): SerializedTemplateAnalysis {
+  serialize(): SerializedTemplateAnalysis {
     let blockRefs = {};
     let styles: string[] =  [];
     let dynamicStyles: number[] = [];
     Object.keys(this.blocks).forEach((localname) => {
-      blockRefs[localname] = path.relative(pathsRelativeTo, this.blocks[localname].source);
+      blockRefs[localname] = this.blocks[localname].source;
     });
     this.stylesFound.forEach((s) => {
       styles.push(this.serializedName(s));
@@ -226,7 +270,7 @@ export class TemplateAnalysis implements StyleAnalysis {
       }
     });
     return {
-      template: path.relative(pathsRelativeTo, this.template.path),
+      template: this.template.serialize(),
       blocks: blockRefs,
       stylesFound: styles,
       dynamicStyles: dynamicStyles,
