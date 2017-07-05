@@ -3,7 +3,8 @@ import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import BlockParser from "../src/BlockParser";
-import { Block } from "../src/Block";
+import { Importer, ImportedFile } from "../src/importing";
+import { Block, BlockObject } from "../src/Block";
 import { PluginOptions, OptionsReader } from "../src/options";
 import { SerializedTemplateAnalysis, TemplateInfo, TemplateAnalysis } from "../src/TemplateAnalysis";
 
@@ -140,5 +141,57 @@ export class KeyQueryTests {
         assert.deepEqual(result, expectedResult);
       });
     });
+  }
+  @test "analysis can be serialized and deserialized"() {
+    let source = `
+      .root {}
+      .myclass {}
+      [state|a-state] {}
+      .myclass[state|a-sub-state] {}
+    `;
+    let processPromise = postcss().process(source, {from: "test.css"});
+    let testImporter: Importer = <Importer>function(_fromFile: string, importPath: string): Promise<ImportedFile> {
+      if (importPath === "test.css") {
+        return Promise.resolve({defaultName: "test", path: importPath, contents: source});
+      } else {
+        throw new Error("wtf");
+      }
+    };
+    testImporter.getDefaultName = (_path: string) => "test";
+    let options: PluginOptions =  {
+      importer: testImporter
+    };
+    let blockPromise = <Promise<Block>>processPromise.then(result => {
+      if (result.root) {
+        let parser = new BlockParser(postcss);
+        try {
+        return parser.parse(result.root, "test.css", "a-block");
+        } catch (e) { console.error(e); throw e; }
+      } else {
+        throw new Error("wtf");
+      }
+    });
+    let analysisPromise = blockPromise.then(block => {
+      let template = new TemplateInfo("my-template.html");
+      let analysis = new TemplateAnalysis(template);
+      analysis.blocks["a"] = block;
+      analysis.startElement();
+      analysis.addStyle(block.find(".root") as BlockObject);
+      analysis.endElement();
+      analysis.startElement();
+      analysis.addStyle(block.find(".myclass") as BlockObject);
+      analysis.addStyle(block.find(".myclass[state|a-sub-state]") as BlockObject);
+      analysis.endElement();
+      return analysis;
+    });
+    let testPromise = analysisPromise.then(analysis => {
+      let serialization = analysis.serialize();
+      assert.deepEqual(serialization.template, {type: TemplateInfo.typeName, identifier: "my-template.html"});
+      return TemplateAnalysis.deserialize<TemplateInfo>(serialization, options, postcss).then(analysis => {
+        let reserialization = analysis.serialize();
+        assert.deepEqual(serialization, reserialization);
+      });
+    });
+    return testPromise;
   }
 }

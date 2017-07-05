@@ -1,10 +1,12 @@
 /**
  * @module "TemplateAnalysis"
  */
+import * as postcss from "postcss";
 import { BlockObject } from "../Block/BlockObject";
 import { Block } from "../Block/Block";
+import { PluginOptions, OptionsReader } from "../options";
 // tslint:disable-next-line:no-unused-variable Imported for Documentation link
-import { CLASS_NAME_IDENT } from "../BlockParser";
+import BlockParser, { CLASS_NAME_IDENT } from "../BlockParser";
 import { StyleAnalysis } from "./StyleAnalysis";
 
 interface TemplateInfoConstructor {
@@ -276,5 +278,59 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
       dynamicStyles: dynamicStyles,
       styleCorrelations: correlations
     };
+  }
+
+  static deserialize<Template extends TemplateInfo>(serializedAnalysis: SerializedTemplateAnalysis, options: PluginOptions, postcssImpl: typeof postcss): Promise<TemplateAnalysis<Template>> {
+    let blockNames = Object.keys(serializedAnalysis.blocks);
+    let info = TemplateInfoFactory.deserialize<Template>(serializedAnalysis.template);
+    let analysis = new TemplateAnalysis(info);
+    let parser = new BlockParser(postcssImpl, options);
+    let blockPromises = new Array<Promise<{name: string, block: Block}>>();
+    let reader = new OptionsReader(options);
+    let templateId = serializedAnalysis.template.identifier;
+    blockNames.forEach(n => {
+      let blockPath = serializedAnalysis.blocks[n];
+      let promise = reader.importer(templateId, blockPath).then(file => {
+        let resultPromise = postcssImpl().process(file.contents, {from: file.path});
+        return resultPromise.then(result => {
+          if (result.root) {
+            return parser.parse(result.root, file.path, reader.importer.getDefaultName(file.path)).then(b => {
+              return {name: n, block: b};
+            });
+          } else {
+            throw new Error("Missing root");
+          }
+        });
+      });
+      blockPromises.push(promise);
+    });
+    return Promise.all(blockPromises).then(values => {
+      let lookupBlock = new Block("lookup", "");
+      values.forEach(o => {
+        analysis.blocks[o.name] = o.block;
+        lookupBlock.addBlockReference(o.name, o.block);
+      });
+      let objects = new Array<BlockObject>();
+      serializedAnalysis.stylesFound.forEach(s => {
+        let blockObject = lookupBlock.lookup(s);
+        if (blockObject) {
+          objects.push(blockObject);
+          analysis.stylesFound.add(blockObject);
+        } else {
+          throw new Error(`Cannot resolve ${s} to a block style.`);
+        }
+      });
+      serializedAnalysis.styleCorrelations.forEach(correlation => {
+        analysis.startElement();
+        correlation.forEach(idx => {
+          analysis.addStyle(objects[idx]);
+        });
+        analysis.endElement();
+      });
+      serializedAnalysis.dynamicStyles.forEach(idx => {
+        analysis.markDynamic(objects[idx]);
+      });
+      return analysis;
+    });
   }
 }
