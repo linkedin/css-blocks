@@ -5,6 +5,7 @@ import * as postcss from "postcss";
 import BlockParser from "../src/BlockParser";
 import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockObject } from "../src/Block";
+import { BlockFactory } from "../src/Block/BlockFactory";
 import { PluginOptions, OptionsReader } from "../src/options";
 import { SerializedTemplateAnalysis, TemplateInfo, TemplateAnalysis } from "../src/TemplateAnalysis";
 
@@ -187,7 +188,8 @@ export class KeyQueryTests {
     let testPromise = analysisPromise.then(analysis => {
       let serialization = analysis.serialize();
       assert.deepEqual(serialization.template, {type: TemplateInfo.typeName, identifier: "my-template.html"});
-      return TemplateAnalysis.deserialize<TemplateInfo>(serialization, options, postcss).then(analysis => {
+      let factory = new BlockFactory(options, testImporter, postcss);
+      return TemplateAnalysis.deserialize<TemplateInfo>(serialization, factory).then(analysis => {
         let reserialization = analysis.serialize();
         assert.deepEqual(serialization, reserialization);
       });

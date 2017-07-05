@@ -1,18 +1,27 @@
 /**
  * @module "TemplateAnalysis"
  */
-import * as postcss from "postcss";
 import { BlockObject } from "../Block/BlockObject";
 import { Block } from "../Block/Block";
-import { PluginOptions, OptionsReader } from "../options";
+import { BlockFactory } from "../Block/BlockFactory";
 // tslint:disable-next-line:no-unused-variable Imported for Documentation link
 import BlockParser, { CLASS_NAME_IDENT } from "../BlockParser";
 import { StyleAnalysis } from "./StyleAnalysis";
 
+/**
+ * Responsible for creating instances of a template info of the correct type
+ * given an identifier and an array of arbitrary data from the result of
+ * serializing an instance of the same class.
+ */
 interface TemplateInfoConstructor {
     deserialize<TI extends TemplateInfo>(identifier: string, ...data: any[]): TI;
 }
 
+/**
+ * Subclasses of TemplateInfo must be registered onto the static class factory.
+ * it is important for the registered name of the template info to be unique
+ * from all other possible names for other types of template info.
+ */
 class TemplateInfoFactory {
   static constructors: Map<Symbol, TemplateInfoConstructor> = new Map();
   static register(name: string, constructor: TemplateInfoConstructor) {
@@ -32,9 +41,20 @@ class TemplateInfoFactory {
   }
 }
 
+/**
+ * This type is used to serialize arbitrary template info instances to JSON and back.
+ */
 export interface SerializedTemplateInfo {
+  /** This is the type string for the template info class as it's registered with TemplateInfoFactory. */
   type: string;
+
+  /**
+   * any identifier that can be used to look up a template by the templateinfo.
+   * Usually a relative path to a file.
+   */
   identifier: string;
+
+  /** the values stored in here must be JSON-friendly. */
   data?: any[];
 }
 
@@ -202,10 +222,16 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     return `${this.getBlockName(o.block) || ''}${o.asSource()}`;
   }
 
+  /**
+   * All the blocks referenced by this analysis.
+   */
   referencedBlocks(): Block[] {
     return Object.keys(this.blocks).map(k => this.blocks[k]);
   }
 
+  /**
+   * All the blocks referenced by this block and all the blocks they reference recursively.
+   */
   transitiveBlockDependencies(): Set<Block> {
     let deps = new Set<Block>();
     this.referencedBlocks().forEach((block) => {
@@ -218,10 +244,17 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     return deps;
   }
 
+  /**
+   * All bhe blocks this block depends on. Same as referenced blocks except for the return type.
+   */
   blockDependencies(): Set<Block> {
     return new Set<Block>(this.referencedBlocks());
   }
 
+  /**
+   * Return whether the styles are correlated by this analysis.
+   * @param styles the styles that might be correlated
+   */
   areCorrelated(...styles: BlockObject[]): boolean {
     for (let i = 0; i < this.styleCorrelations.length; i++) {
       let c = this.styleCorrelations[i];
@@ -232,17 +265,24 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     return false;
   }
 
+  /**
+   * Checks whether a block object is used in a dynamic expression in a template.
+   * @param style The block object that might be dynamic.
+   */
   isDynamic(style: BlockObject): boolean {
     return this.dynamicStyles.has(style);
   }
 
+  /**
+   * Checks if a block object is ever used in the template that was analyzed.
+   * @param style the block object that might have been used.
+   */
   wasFound(style: BlockObject): boolean {
     return this.stylesFound.has(style);
   }
 
   /**
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
-   * @param pathsRelativeTo A path against which all the absolute paths in this analysis should be relativized.
    */
   serialize(): SerializedTemplateAnalysis {
     let blockRefs = {};
@@ -280,27 +320,22 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     };
   }
 
-  static deserialize<Template extends TemplateInfo>(serializedAnalysis: SerializedTemplateAnalysis, options: PluginOptions, postcssImpl: typeof postcss): Promise<TemplateAnalysis<Template>> {
+  /**
+   * Creates a TemplateAnalysis from its serialized form.
+   * @param serializedAnalysis The analysis to be recreated.
+   * @param options The plugin options that are used to parse the blocks.
+   * @param postcssImpl The instance of postcss that should be used to parse the block's css.
+   */
+  static deserialize<Template extends TemplateInfo>(serializedAnalysis: SerializedTemplateAnalysis, blockFactory: BlockFactory): Promise<TemplateAnalysis<Template>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
     let info = TemplateInfoFactory.deserialize<Template>(serializedAnalysis.template);
     let analysis = new TemplateAnalysis(info);
-    let parser = new BlockParser(postcssImpl, options);
     let blockPromises = new Array<Promise<{name: string, block: Block}>>();
-    let reader = new OptionsReader(options);
     let templateId = serializedAnalysis.template.identifier;
     blockNames.forEach(n => {
       let blockPath = serializedAnalysis.blocks[n];
-      let promise = reader.importer(templateId, blockPath).then(file => {
-        let resultPromise = postcssImpl().process(file.contents, {from: file.path});
-        return resultPromise.then(result => {
-          if (result.root) {
-            return parser.parse(result.root, file.path, reader.importer.getDefaultName(file.path)).then(b => {
-              return {name: n, block: b};
-            });
-          } else {
-            throw new Error("Missing root");
-          }
-        });
+      let promise = blockFactory.getBlockRelative(templateId, blockPath).then(block => {
+        return {name: n, block: block};
       });
       blockPromises.push(promise);
     });
