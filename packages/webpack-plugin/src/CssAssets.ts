@@ -6,21 +6,11 @@ import { Source, RawSource, SourceMapSource, ConcatSource } from "webpack-source
 import { RawSourceMap } from "source-map";
 import convertSourceMap from "convert-source-map";
 
-export interface CssAssetsOptionsWithDefaults {
+export interface CssAssetsOptions {
     cssFiles: {
         [assetPath: string]: string;
     };
     concat: {
-        [concatAssetPath: string]: string[]
-    };
-    emitSourceMaps: boolean; // defaults to true
-    inlineSourceMaps: boolean; // defaults to false
-}
-export interface CssAssetsOptions {
-    cssFiles?: {
-        [assetPath: string]: string;
-    };
-    concat?: {
         [concatAssetPath: string]: string[]
     };
     emitSourceMaps: boolean; // defaults to true
@@ -44,9 +34,9 @@ function assetAsSource(contents: string, filename: string): Source {
 }
 
 export class CssAssets {
-  options: CssAssetsOptionsWithDefaults;
-    constructor(options: CssAssetsOptions) {
-        let defaultOpts: CssAssetsOptionsWithDefaults = { cssFiles: {}, concat: {}, emitSourceMaps: true, inlineSourceMaps: false };
+  options: CssAssetsOptions;
+    constructor(options: Partial<CssAssetsOptions>) {
+        let defaultOpts: CssAssetsOptions = { cssFiles: {}, concat: {}, emitSourceMaps: true, inlineSourceMaps: false };
         this.options = Object.assign(defaultOpts, options);
     }
 
