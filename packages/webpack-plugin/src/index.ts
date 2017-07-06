@@ -5,3 +5,7 @@ export {
   CssBlocksWebpackOptions,
   BlockCompilationComplete
 } from "./Plugin";
+export {
+  CssAssets,
+  CssAssetsOptions
+} from "./CssAssets";

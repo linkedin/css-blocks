@@ -4,26 +4,50 @@ import * as postcss from "postcss";
 import * as fs from "fs";
 import * as path from "path";
 import { config as defaultOutputConfig } from "./defaultOutputConfig";
-import { CssBlocksPlugin } from "../../src/Plugin";
-import { Block, TemplateAnalyzer, StyleAnalysis, BlockObject, BlockParser } from "css-blocks";
+import { CssBlocksPlugin, CssAssets } from "../../src/index";
+import {
+  Block,
+  MultiTemplateAnalyzer,
+  StyleAnalysis,
+  BlockObject,
+  BlockParser,
+  TemplateInfo,
+  MetaTemplateAnalysis,
+  TemplateAnalysis,
+  SerializedTemplateInfo,
+  TemplateInfoFactory,
+  TemplateInfoConstructor
+} from "css-blocks";
 import { BLOCK_FIXTURES_DIRECTORY } from "../util/testPaths";
 
-// interface TestRewriterResult {
-//   blocks?: Block[];
-// }
-
-class TestAnalysis implements StyleAnalysis {
-  blocks: { [name: string]: Block } = {};
-  get template() {
+class TestTemplateInfo extends TemplateInfo {
+  index: number;
+  constructor(identifier: string, index: number) {
+    super(identifier);
+    this.index = index;
+  }
+  serialize(): SerializedTemplateInfo {
     return {
-      path: "asdf.html"
+      type: TestTemplateInfo.typeName,
+      identifier: this.identifier,
+      data: [ this.index ]
     };
+  }
+  static deserialize(identifier: string, index: number): TestTemplateInfo {
+    return new TestTemplateInfo(identifier, index);
+  }
+  static typeName = "WebpackPlugin.TestTemplateInfo";
+}
+
+TemplateInfoFactory.register(TestTemplateInfo.typeName, TestTemplateInfo as TemplateInfoConstructor);
+
+class TestAnalysis extends TemplateAnalysis<TestTemplateInfo> {
+  blocks: { [name: string]: Block } = {};
+  constructor(template: TestTemplateInfo) {
+    super(template);
   }
   addBlock(name: string, block: Block) {
     this.blocks[name] = block;
-  }
-  get stylesFound() {
-    return [];
   }
   eachAnalysis(cb: (a: StyleAnalysis) => void) {
     cb(this);
@@ -49,6 +73,14 @@ class TestAnalysis implements StyleAnalysis {
   }
 }
 
+class TestMetaTemplateAnalysis extends MetaTemplateAnalysis<TestTemplateInfo> {
+  analyses: TemplateAnalysis<TestTemplateInfo>[];
+  constructor() {
+    super();
+    this.analyses.push(new TestAnalysis(new TestTemplateInfo("test.html", 1)));
+  }
+}
+
 function getBlock(name: string): Promise<Block> {
   let parser = new BlockParser(postcss);
   let filename = path.resolve(BLOCK_FIXTURES_DIRECTORY, name + ".block.css");
@@ -61,12 +93,12 @@ function getBlock(name: string): Promise<Block> {
   });
 }
 
-class TestTemplateAnalyzer implements TemplateAnalyzer {
-  analysis: TestAnalysis;
-  constructor(a: TestAnalysis) {
+class TestTemplateAnalyzer implements MultiTemplateAnalyzer<TemplateInfo> {
+  analysis: TestMetaTemplateAnalysis;
+  constructor(a: TestMetaTemplateAnalysis) {
     this.analysis = a;
   }
-  analyze(): Promise<TestAnalysis> {
+  analyze(): Promise<MetaTemplateAnalysis<TemplateInfo>> {
     return Promise.resolve(this.analysis);
   }
   reset() {
@@ -78,8 +110,10 @@ export function config(): Promise<webpack.Configuration> {
   let block1 = getBlock("concat-1");
   let block2 = getBlock("concat-2");
   return Promise.all([block1, block2]).then(blocks => {
-    let analysis = new TestAnalysis();
-    blocks.forEach((b, i) => analysis.addBlock(`concat-${i}`, b));
+    let analysis = new TestMetaTemplateAnalysis();
+    blocks.forEach((b, i) => {
+      analysis.analyses[0].blocks[`concat-${i}`] = b;
+    });
 
     let cssBlocks = new CssBlocksPlugin({
       analyzer: new TestTemplateAnalyzer(analysis)
@@ -100,7 +134,11 @@ export function config(): Promise<webpack.Configuration> {
         ]
       },
       plugins: [
-        cssBlocks
+        cssBlocks,
+        new CssAssets({
+          emitSourceMaps: true,
+          inlineSourceMaps: false
+        })
       ]
     });
   });

@@ -2,11 +2,11 @@ import Tapable = require("tapable");
 import * as webpack from "webpack";
 import * as debugGenerator from "debug";
 import * as postcss from "postcss";
-import * as path from "path";
-import { SourceMapSource, ConcatSource, RawSource } from 'webpack-sources';
+import { SourceMapSource, ConcatSource } from 'webpack-sources';
 
 import {
-  TemplateAnalyzer,
+  MultiTemplateAnalyzer,
+  TemplateInfo,
   MetaTemplateAnalysis,
   Block,
   BlockCompiler,
@@ -16,40 +16,40 @@ import {
   MetaStyleMapping,
 } from "css-blocks";
 
-export interface CssBlocksWebpackOptions {
+export interface CssBlocksWebpackOptions<Template extends TemplateInfo> {
   /// The name of the instance of the plugin. Defaults to outputCssFile.
   name?: string;
   /// The analzyer that decides what templates are analyzed and what blocks will be compiled.
-  analyzer: TemplateAnalyzer;
+  analyzer: MultiTemplateAnalyzer<Template>;
   /// The output css file for all compiled CSS Blocks. Defaults to "css-blocks.css"
   outputCssFile?: string;
   /// Compilation options pass to css-blocks
   compilationOptions?: CssBlocksOptions;
 }
 
-interface CompilationResult {
+interface CompilationResult<Template extends TemplateInfo> {
   css: ConcatSource;
-  mapping: MetaStyleMapping;
+  mapping: MetaStyleMapping<Template>;
 }
 
-export interface BlockCompilationComplete {
+export interface BlockCompilationComplete<Template extends TemplateInfo> {
   compilation: any;
   assetPath: string;
-  mapping: MetaStyleMapping;
+  mapping: MetaStyleMapping<Template>;
 }
 
-export class CssBlocksPlugin
+export class CssBlocksPlugin<Template extends TemplateInfo>
   extends Tapable
   implements webpack.Plugin
 {
   name: string;
-  analyzer: TemplateAnalyzer;
+  analyzer: MultiTemplateAnalyzer<Template>;
   projectDir: string;
   outputCssFile: string;
   compilationOptions: CssBlocksOptions;
   debug: (message: string) => void;
 
-  constructor(options: CssBlocksWebpackOptions) {
+  constructor(options: CssBlocksWebpackOptions<Template>) {
     super();
 
     this.debug = debugGenerator("css-blocks:webpack");
@@ -66,22 +66,19 @@ export class CssBlocksPlugin
     compiler.plugin("make", (compilation: any, cb: (error?: Error) => void) => {
       this.analyzer.reset();
       this.trace(`starting analysis.`);
-      let pendingResult: Promise<BlockCompilationComplete> =
+      let pendingResult: Promise<BlockCompilationComplete<Template>> =
         this.analyzer.analyze().then(analysis => {
-          return this.compileBlocks(<MetaTemplateAnalysis>analysis);
+          return this.compileBlocks(<MetaTemplateAnalysis<Template>>analysis);
         }).then(result => {
           this.trace(`setting css asset: ${this.outputCssFile}`);
-          let { source, map } = result.css.sourceAndMap();
-          let mapFile = this.outputCssFile + ".map";
-          compilation.assets[this.outputCssFile] = new RawSource(source + `\n/*# sourceMappingURL=${path.basename(mapFile)} */`);
-          compilation.assets[mapFile] =  new RawSource(JSON.stringify(map));
-          let completion: BlockCompilationComplete = {
+          compilation.assets[this.outputCssFile] = result.css;
+          let completion: BlockCompilationComplete<Template> = {
             compilation: compilation,
             assetPath: this.outputCssFile,
             mapping: result.mapping
           };
           return completion;
-        }).then((completion) => {
+        }).then<BlockCompilationComplete<Template>>((completion) => {
           this.trace(`notifying of completion`);
           compilation.plugin("normal-module-loader", (context: any, _mod: any) => {
             this.trace(`preparing normal-module-loader`);
@@ -95,16 +92,13 @@ export class CssBlocksPlugin
           this.notifyComplete(completion, cb);
           this.trace(`notified of completion`);
           return completion;
-        }, (e: Error) => {
-          console.error(e);
-          cb(e);
-        });
+        }, <any>cb);
       this.trace(`notifying of pending compilation`);
       this.notifyPendingCompilation(pendingResult);
       this.trace(`notified of pending compilation`);
     });
   }
-  private compileBlocks(analysis: MetaTemplateAnalysis): CompilationResult {
+  private compileBlocks(analysis: MetaTemplateAnalysis<Template>): CompilationResult<Template> {
     let options: CssBlocksOptions = this.compilationOptions;
     let reader = new CssBlocksOptionsReader(options);
     let blockCompiler = new BlockCompiler(postcss, options);
@@ -133,16 +127,16 @@ export class CssBlocksPlugin
     message = message.replace(this.projectDir + "/", "");
     this.debug(`[${this.name}] ${message}`);
   }
-  onPendingCompilation(handler: (pendingResult: Promise<BlockCompilationComplete>) => void) {
+  onPendingCompilation(handler: (pendingResult: Promise<BlockCompilationComplete<Template>>) => void) {
     this.plugin("block-compilation-pending", handler);
   }
-  notifyPendingCompilation(pendingResult: Promise<BlockCompilationComplete>) {
+  notifyPendingCompilation(pendingResult: Promise<BlockCompilationComplete<Template>>) {
     this.applyPlugins("block-compilation-pending", pendingResult);
   }
-  onComplete(handler: (result: BlockCompilationComplete, cb: (err: Error) => void) => void) {
+  onComplete(handler: (result: BlockCompilationComplete<Template>, cb: (err: Error) => void) => void) {
     this.plugin("block-compilation-complete", handler);
   }
-  notifyComplete(result: BlockCompilationComplete, cb: (err: Error) => void) {
+  notifyComplete(result: BlockCompilationComplete<Template>, cb: (err: Error) => void) {
     this.applyPluginsAsync("block-compilation-complete", result, cb);
   }
 }
