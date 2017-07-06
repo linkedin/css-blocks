@@ -5,7 +5,10 @@ import {
   Block,
   BlockParser,
   PluginOptions,
-  TemplateInfo
+  TemplateInfo,
+  TemplateInfoConstructor,
+  TemplateInfoFactory,
+  SerializedTemplateInfo
 } from "css-blocks";
 
 import resMapBuilder = require('@glimmer/resolution-map-builder');
@@ -21,13 +24,29 @@ export interface ResolutionMap {
 export class ResolvedFile extends TemplateInfo {
   string: string;
   specifier: string;
+  static typeName = "GlimmerTemplates.ResolvedFile";
 
-  constructor(templateString: string, specifier: string, path: string) {
-    super(path);
+  constructor(templateString: string, specifier: string, identifier: string) {
+    super(identifier);
     this.string = templateString;
     this.specifier = specifier;
   }
+  serialize(): SerializedTemplateInfo {
+    return {
+      type: ResolvedFile.typeName,
+      identifier: this.identifier,
+      data: [
+        this.string,
+        this.specifier
+      ]
+    };
+  }
+  static deserialize(identifier, string, specifier): ResolvedFile {
+    return new ResolvedFile(string, specifier, identifier);
+  }
 }
+
+TemplateInfoFactory.register(ResolvedFile.typeName, ResolvedFile as TemplateInfoConstructor);
 
 export default class Project {
   projectDir: string;
@@ -70,7 +89,7 @@ export default class Project {
       let blockOpts: PluginOptions = {}; // TODO: read this in from a file somehow?
       let parser = new BlockParser(postcss, blockOpts);
       let root = postcss.parse(stylesheet.string);
-      result = parser.parse(root, stylesheet.path, templateName);
+      result = parser.parse(root, stylesheet.identifier, templateName);
       this.blocks[templateName] = result;
       return result;
     } else {

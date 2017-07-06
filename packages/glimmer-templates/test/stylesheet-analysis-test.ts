@@ -8,10 +8,10 @@ describe('Stylesheet analysis', function() {
     let projectDir = fixture('styled-app');
     let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'my-app');
     return analyzer.analyze().then((richAnalysis) => {
-      let analysis = richAnalysis.serialize(projectDir);
-      assert.equal(analysis.template, "src/ui/components/my-app/template.hbs");
+      let analysis = richAnalysis.serialize();
+      assert.equal(analysis.template.identifier, fixture("styled-app/src/ui/components/my-app/template.hbs"));
       assert.deepEqual(analysis.blocks, {
-        "": "src/ui/components/my-app/stylesheet.css"
+        "": fixture("styled-app/src/ui/components/my-app/stylesheet.css")
       });
       assert.deepEqual(analysis.stylesFound, [".editor", ".editor[state|disabled]" ,".root", "[state|is-loading]"]);
       assert.deepEqual(analysis.styleCorrelations, [[2, 3], [0, 1]]);
@@ -25,11 +25,11 @@ describe('Stylesheet analysis', function() {
     let projectDir = fixture('styled-app');
     let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'with-multiple-blocks');
     return analyzer.analyze().then((richAnalysis) => {
-      let analysis = richAnalysis.serialize(projectDir);
-      assert.equal(analysis.template, "src/ui/components/with-multiple-blocks/template.hbs");
+      let analysis = richAnalysis.serialize();
+      assert.equal(analysis.template.identifier, fixture("styled-app/src/ui/components/with-multiple-blocks/template.hbs"));
       assert.deepEqual(analysis.blocks, {
-        "": "src/ui/components/with-multiple-blocks/stylesheet.css",
-        "h": "src/ui/components/with-multiple-blocks/header.css"
+        "": fixture("styled-app/src/ui/components/with-multiple-blocks/stylesheet.css"),
+        "h": fixture("styled-app/src/ui/components/with-multiple-blocks/header.css")
       });
       assert.deepEqual(analysis.stylesFound, [".root", ".world", ".world[state|thick]", "h.emphasis", "h.emphasis[state|extra]", "h.root"]);
       assert.deepEqual(analysis.styleCorrelations, [[1, 2, 3, 4]]);

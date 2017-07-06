@@ -15,24 +15,27 @@ import {
   MetaStyleMapping,
   StyleMapping
 } from "css-blocks";
+import {
+  ResolvedFile
+} from "./project";
 
 type StateContainer = Block | BlockClass;
 
 const STATE = /state:(.*)/;
 export function loaderAdapter(loaderContext: any): ASTPlugin {
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
-  let styleMapping: StyleMapping | undefined = undefined;
+  let styleMapping: StyleMapping<ResolvedFile> | undefined = undefined;
   let block: Block | undefined = undefined;
   cssFileNames.forEach(filename => {
-    let metaMapping: MetaStyleMapping = loaderContext.cssBlocks.mappings[filename];
-    let mapping: StyleMapping | undefined = metaMapping.templates.get(loaderContext.resourcePath);
+    let metaMapping: MetaStyleMapping<ResolvedFile> = loaderContext.cssBlocks.mappings[filename];
+    let mapping = metaMapping.templates.get(loaderContext.resourcePath);
     if (mapping) {
       if (styleMapping) {
         throw Error("Multiple css blocks outputs use this template and I don't know how to handle that yet.");
       }
       let blockNames = Object.keys(mapping.blocks);
       blockNames.forEach(n => {
-        let b = (<StyleMapping>mapping).blocks[n];
+        let b = (<StyleMapping<ResolvedFile>>mapping).blocks[n];
         if (n === "") {
           block = b;
         }
@@ -43,7 +46,7 @@ export function loaderAdapter(loaderContext: any): ASTPlugin {
   });
   if (styleMapping && block) {
     return (env: ASTPluginEnvironment) => {
-      let rewriter = new Rewriter(env.syntax, <StyleMapping>styleMapping, <Block>block);
+      let rewriter = new Rewriter(env.syntax, <StyleMapping<ResolvedFile>>styleMapping, <Block>block);
       return {
         name: "css-blocks",
         visitors: {
@@ -67,9 +70,9 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
   elementCount: number;
   syntax: Syntax;
   block: Block;
-  styleMapping: StyleMapping | null;
+  styleMapping: StyleMapping<ResolvedFile> | null;
   cssBlocksOpts: CssBlocksOptionsReader;
-  constructor(syntax: Syntax, styleMapping: StyleMapping, defaultBlock: Block) {
+  constructor(syntax: Syntax, styleMapping: StyleMapping<ResolvedFile>, defaultBlock: Block) {
     this.syntax = syntax;
     this.styleMapping = styleMapping;
     this.cssBlocksOpts = new CssBlocksOptionsReader();

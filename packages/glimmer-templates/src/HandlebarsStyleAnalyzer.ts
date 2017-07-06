@@ -6,10 +6,10 @@ import {
   CssBlockError,
   QueryKeySelector,
   ClassifiedParsedSelectors,
-  StyleAnalysis as GenericAnalysis,
   TemplateAnalysis as SingleTemplateStyleAnalysis,
   MetaTemplateAnalysis as MetaStyleAnalysis,
-  TemplateAnalyzer
+  TemplateAnalyzer,
+  MultiTemplateAnalyzer
 } from "css-blocks";
 import Project, { ResolvedFile } from "./project";
 import DependencyAnalyzer from "glimmer-analyzer";
@@ -18,7 +18,7 @@ export type StateContainer = Block | BlockClass;
 
 const STATE = /state:(.*)/;
 
-export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> implements TemplateAnalyzer {
+export class BaseStyleAnalyzer {
   project: Project;
 
   constructor(project: Project | string) {
@@ -29,13 +29,7 @@ export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> im
     }
   }
 
-  abstract analyze(): Promise<AnalysisType>;
-
-  reset() {
-    this.project.reset();
-  }
-
-  protected analyzeTemplate(templateName: string): Promise<SingleTemplateStyleAnalysis> {
+  protected analyzeTemplate(templateName: string): Promise<SingleTemplateStyleAnalysis<ResolvedFile>> {
     let template = this.project.templateFor(templateName);
     let analysis = new SingleTemplateStyleAnalysis(template);
     let ast = preprocess(template.string);
@@ -110,7 +104,7 @@ export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> im
     });
   }
 
-  private processClass(node: AST.AttrNode, block: Block, analysis: SingleTemplateStyleAnalysis, stylesheetPath: string, template: ResolvedFile): StateContainer[] {
+  private processClass(node: AST.AttrNode, block: Block, analysis: SingleTemplateStyleAnalysis<ResolvedFile>, stylesheetPath: string, template: ResolvedFile): StateContainer[] {
     let blockObjects: StateContainer[] = [];
     if (node.value.type === "TextNode") {
       let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
@@ -127,7 +121,7 @@ export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> im
     return blockObjects;
   }
 
-  private processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: SingleTemplateStyleAnalysis, stylesheetPath: string, template: ResolvedFile) {
+  private processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: SingleTemplateStyleAnalysis<ResolvedFile>, stylesheetPath: string, template: ResolvedFile) {
     let blockName: string | undefined;
     let md = stateName.match(/^([^\.]+)\.([^\.]+)$/);
     let stateBlock = block;
@@ -170,7 +164,7 @@ export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> im
 
   private cssBlockError(message: string, node: AST.Node, template: ResolvedFile) {
     return new CssBlockError(message, {
-      filename: node.loc.source || template.path,
+      filename: node.loc.source || template.identifier,
       line: node.loc.start.line,
       column: node.loc.start.column
     });
@@ -185,7 +179,8 @@ export abstract class BaseStyleAnalyzer<AnalysisType extends GenericAnalysis> im
   }
 }
 
-export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer<SingleTemplateStyleAnalysis> {
+export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements TemplateAnalyzer<ResolvedFile> {
+  project: Project;
   templateName: string;
 
   constructor(project: Project | string, templateName: string) {
@@ -193,12 +188,17 @@ export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer<SingleTemplateSty
     this.templateName = templateName;
   }
 
-  analyze(): Promise<SingleTemplateStyleAnalysis> {
+  analyze(): Promise<SingleTemplateStyleAnalysis<ResolvedFile>> {
     return this.analyzeTemplate(this.templateName);
+  }
+
+  reset() {
+    this.project.reset();
   }
 }
 
-export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer<MetaStyleAnalysis> {
+export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer implements MultiTemplateAnalyzer<ResolvedFile> {
+  project: Project;
   templateName: string;
 
   constructor(project: Project | string, templateName: string) {
@@ -206,16 +206,20 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer<MetaSty
     this.templateName = templateName;
   }
 
-  analyze(): Promise<MetaStyleAnalysis> {
+  reset() {
+    this.project.reset();
+  }
+
+  analyze(): Promise<MetaStyleAnalysis<ResolvedFile>> {
     let depAnalyzer = new DependencyAnalyzer(this.project.projectDir); // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
     let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(this.templateName);
-    let analysisPromises: Promise<SingleTemplateStyleAnalysis>[] = [];
+    let analysisPromises: Promise<SingleTemplateStyleAnalysis<ResolvedFile>>[] = [];
     analysisPromises.push(this.analyzeTemplate(this.templateName));
     componentDeps.components.forEach(dep => {
       analysisPromises.push(this.analyzeTemplate(dep));
     });
     return Promise.all(analysisPromises).then((analyses)=> {
-      let metaAnalysis = new MetaStyleAnalysis();
+      let metaAnalysis = new MetaStyleAnalysis<ResolvedFile>();
       metaAnalysis.addAllAnalyses(analyses);
       return metaAnalysis;
     });
