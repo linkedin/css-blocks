@@ -46,7 +46,7 @@
     "source-map-support": "^0.4.15",
     "tslint": "^5.1.0",
     "typedoc": "^0.7.1",
-    "typescript": "^2.2.2"
+    "typescript": "^2.4.1"
   },
   "dependencies": {
     "object.values": "^1.0.4",

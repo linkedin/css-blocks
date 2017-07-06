@@ -57,7 +57,8 @@ export {
   StyleAnalysis
 } from "./TemplateAnalysis/StyleAnalysis";
 export {
-  Analyzer as TemplateAnalyzer
+  Analyzer as TemplateAnalyzer,
+  MultiTemplateAnalyzer
 } from "./TemplateAnalysis/Analyzer";
 export {
  TemplateRewriter

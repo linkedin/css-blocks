@@ -14,7 +14,7 @@ import { StyleAnalysis } from "./StyleAnalysis";
  * serializing an instance of the same class.
  */
 interface TemplateInfoConstructor {
-    deserialize<TI extends TemplateInfo>(identifier: string, ...data: any[]): TI;
+    deserialize<Template extends TemplateInfo>(identifier: string, ...data: any[]): Template;
 }
 
 /**
@@ -27,17 +27,17 @@ class TemplateInfoFactory {
   static register(name: string, constructor: TemplateInfoConstructor) {
     TemplateInfoFactory.constructors.set(Symbol.for(name), constructor);
   }
-  static create<TemplateInfoType extends TemplateInfo>(name: string, identifier: string, ...data: any[]): TemplateInfoType {
+  static create<Template extends TemplateInfo>(name: string, identifier: string, ...data: any[]): Template {
     let constructor: TemplateInfoConstructor | undefined = TemplateInfoFactory.constructors.get(Symbol.for(name));
     if (constructor) {
-      return constructor.deserialize<TemplateInfoType>(identifier, ...data);
+      return constructor.deserialize<Template>(identifier, ...data);
     } else {
       throw new Error(`No template info registered for ${name}`);
     }
   }
-  static deserialize<TemplateInfoType extends TemplateInfo>(obj: SerializedTemplateInfo): TemplateInfoType {
+  static deserialize<Template extends TemplateInfo>(obj: SerializedTemplateInfo): Template {
     let data: any[] = obj.data || [];
-    return TemplateInfoFactory.create<TemplateInfoType>(obj.type, obj.identifier, ...data);
+    return TemplateInfoFactory.create<Template>(obj.type, obj.identifier, ...data);
   }
 }
 
@@ -83,7 +83,7 @@ export class TemplateInfo {
   }
 }
 
-TemplateInfoFactory.register(TemplateInfo.typeName, TemplateInfo);
+TemplateInfoFactory.register(TemplateInfo.typeName, TemplateInfo as TemplateInfoConstructor);
 
 /**
  * This interface defines a JSON friendly serialization
@@ -328,7 +328,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    */
   static deserialize<Template extends TemplateInfo>(serializedAnalysis: SerializedTemplateAnalysis, blockFactory: BlockFactory): Promise<TemplateAnalysis<Template>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
-    let info = TemplateInfoFactory.deserialize<Template>(serializedAnalysis.template);
+    let info = TemplateInfoFactory.deserialize<Template>(serializedAnalysis.template) as Template;
     let analysis = new TemplateAnalysis(info);
     let blockPromises = new Array<Promise<{name: string, block: Block}>>();
     let templateId = serializedAnalysis.template.identifier;
@@ -340,6 +340,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
       blockPromises.push(promise);
     });
     return Promise.all(blockPromises).then(values => {
+      // TODO: we should refactor this lookup functionality to a utility function/class.
       let lookupBlock = new Block("lookup", "");
       values.forEach(o => {
         analysis.blocks[o.name] = o.block;
