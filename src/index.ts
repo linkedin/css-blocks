@@ -47,8 +47,11 @@ export {
 } from "./importing";
 export {
   SerializedTemplateAnalysis,
+  SerializedTemplateInfo,
   TemplateInfo,
-  TemplateAnalysis
+  TemplateAnalysis,
+  TemplateInfoConstructor,
+  TemplateInfoFactory
 } from "./TemplateAnalysis";
 export {
   MetaTemplateAnalysis

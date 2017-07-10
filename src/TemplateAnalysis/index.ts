@@ -13,7 +13,7 @@ import { StyleAnalysis } from "./StyleAnalysis";
  * given an identifier and an array of arbitrary data from the result of
  * serializing an instance of the same class.
  */
-interface TemplateInfoConstructor {
+export interface TemplateInfoConstructor {
     deserialize<Template extends TemplateInfo>(identifier: string, ...data: any[]): Template;
 }
 
@@ -22,7 +22,7 @@ interface TemplateInfoConstructor {
  * it is important for the registered name of the template info to be unique
  * from all other possible names for other types of template info.
  */
-class TemplateInfoFactory {
+export class TemplateInfoFactory {
   static constructors: Map<Symbol, TemplateInfoConstructor> = new Map();
   static register(name: string, constructor: TemplateInfoConstructor) {
     TemplateInfoFactory.constructors.set(Symbol.for(name), constructor);
