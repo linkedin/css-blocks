@@ -4,16 +4,38 @@ import * as  async from "async";
 import * as fs from "fs";
 import { Source, RawSource, SourceMapSource, ConcatSource } from "webpack-sources";
 import { RawSourceMap } from "source-map";
-import convertSourceMap from "convert-source-map";
+import * as convertSourceMap from "convert-source-map";
 
+/**
+ * Options for managing CSS assets without javascript imports.
+ */
 export interface CssAssetsOptions {
+    /** Maps css files from a source location to a webpack asset location. */
     cssFiles: {
-        [assetPath: string]: string;
+        [assetPath: string]: string | {
+            /** The name of the chunk to which the asset should belong. If omitted, the asset won't belong to a any chunk. */
+            chunk: string | undefined;
+            /** the source path to the css asset. */
+            source: string | string[];
+        };
     };
+    /**
+     * Maps several webpack assets to a new concatenated asset and manages their
+     * sourcemaps. The concatenated asset will belong to all the chunks to which
+     * the assets belonged.
+     */
     concat: {
-        [concatAssetPath: string]: string[]
+        [concatAssetPath: string]: string[];
     };
+    /**
+     * When true, any source maps related to the assets are written out as
+     * additional files or inline depending on the value of `inlineSourceMaps`.
+     */
     emitSourceMaps: boolean; // defaults to true
+    /**
+     * Whether source maps should be included in the css file itself. This
+     * should only be used in development.
+     */
     inlineSourceMaps: boolean; // defaults to false
 }
 
@@ -31,6 +53,52 @@ function assetAsSource(contents: string, filename: string): Source {
     } else {
         return new RawSource(contents);
     }
+}
+function assetFilesAsSource(filenames: string[], callback: (err: Error | undefined, source?: ConcatSource) => void) {
+    let assetSource = new ConcatSource();
+    let assetFiles = filenames.slice();
+    let eachAssetFile = (err?: Error) => {
+        if (err) {
+            callback(err);
+        } else {
+            const nextAssetFile = assetFiles.shift();
+            if (nextAssetFile) {
+                processAsset(nextAssetFile, eachAssetFile);
+            } else {
+                callback(undefined, assetSource);
+            }
+        }
+    };
+    const firstAssetFile = assetFiles.shift();
+    if (firstAssetFile) {
+        processAsset(firstAssetFile, eachAssetFile);
+    } else {
+        callback(new Error("No asset files provided."));
+    }
+    function processAsset(assetPath: string, assetCallback: (err?: Error) => void) {
+        fs.readFile(assetPath, "utf-8", (err, data) => {
+            if (err) {
+                assetCallback(err);
+            } else {
+              assetSource.add(assetAsSource(data, assetPath));
+              assetCallback();
+            }
+        });
+    }
+}
+
+function assetFileAsSource(sourcePath: string, callback: (err: Error | undefined, source?: Source) => void) {
+    fs.readFile(sourcePath, "utf-8", (err, contents) => {
+        if (err) {
+            callback(err);
+        } else {
+            try {
+                callback(undefined, assetAsSource(contents, sourcePath));
+            } catch (e) {
+                callback(e);
+            }
+        }
+    });
 }
 
 export class CssAssets {
@@ -52,44 +120,35 @@ export class CssAssets {
             let assetPaths = Object.keys(this.options.cssFiles);
             async.forEach(assetPaths, (assetPath, outputCallback) => {
                 let asset = this.options.cssFiles[assetPath];
-                if (Array.isArray(asset)) {
-                    let concat = new ConcatSource();
-                    async.forEach(asset, (a, inputCallback) => {
-                        let sourcePath = path.resolve(compiler.options.context, a);
-                        fs.readFile(sourcePath, "utf-8", (err, contents) => {
-                            if (err) {
-                                inputCallback(err);
-                            } else {
-                                try {
-                                    concat.add(assetAsSource(contents, sourcePath));
-                                    inputCallback();
-                                } catch (e) {
-                                    inputCallback(e);
-                                }
-                            }
-                        });
-                    }, (err) => {
-                        if (err) {
-                            outputCallback(err);
-                        } else {
-                            compilation.assets[assetPath] = concat;
-                            outputCallback();
-                        }
-                    });
+                let sourcePath: string | string[], chunkName: string | undefined = undefined;
+                if (typeof asset === "string" || Array.isArray(asset)) {
+                    sourcePath = asset;
                 } else {
-                    let sourcePath = path.resolve(compiler.options.context, asset);
-                    fs.readFile(sourcePath, "utf-8", (err, contents) => {
-                        if (err) {
-                            outputCallback(err);
-                        } else {
-                            try {
-                                compilation.assets[assetPath] = assetAsSource(contents, sourcePath);
-                                outputCallback();
-                            } catch (e) {
-                                outputCallback(e);
-                            }
+                    sourcePath = asset.source;
+                    chunkName = asset.chunk;
+                }
+                let chunks: any[] = compilation.chunks;
+                let chunk: any | undefined = chunkName && chunks.find(c => c.name === chunkName);
+                if (chunkName && !chunk) {
+                    throw new Error(`No chunk named ${chunkName} found.`);
+                }
+
+                const handleSource = (err: Error | undefined, source?: Source) => {
+                    if (err) {
+                        outputCallback(err);
+                    } else {
+                        compilation.assets[assetPath] = source;
+                        if (chunk) {
+                            chunk.files.push(assetPath);
                         }
-                    });
+                        outputCallback();
+                    }
+                };
+                if (Array.isArray(sourcePath)) {
+                    const sourcePaths = sourcePath.map(sourcePath => path.resolve(compiler.options.context, sourcePath));
+                    assetFilesAsSource(sourcePaths, handleSource);
+                } else {
+                    assetFileAsSource(path.resolve(compiler.options.context, sourcePath), handleSource);
                 }
             }, cb);
         });
@@ -105,14 +164,24 @@ export class CssAssets {
                 let concatSource = new ConcatSource();
                 let inputFiles = this.options.concat[concatFile];
                 let missingFiles = inputFiles.filter(f => (!compilation.assets[f]));
+                let chunks = new Set<any>();
                 if (missingFiles.length === 0) {
                     inputFiles.forEach(inputFile => {
                         let asset = compilation.assets[inputFile];
                         concatSource.add(asset);
+                        let chunksWithInputAsset = compilation.chunks.filter((chunk: any) => (<Array<string>>chunk.files).indexOf(inputFile) >= 0);
+                        chunksWithInputAsset.forEach((chunk: any) => {
+                            chunks.add(chunk);
+                            let files: string[] = chunk.files;
+                            chunk.files = files.filter(file => file !== inputFile);
+                        });
                         delete compilation.assets[inputFile];
                     });
                     compilation.assets[concatFile] = concatSource;
                 }
+                chunks.forEach(chunk => {
+                    chunk.files.push(concatFile);
+                });
             });
             cb();
         });
