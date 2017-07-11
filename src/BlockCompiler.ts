@@ -70,6 +70,9 @@ export default class BlockCompiler {
       let localName = md[1];
       let outputTo = md[2];
       let ref: Block | null = block.getReferencedBlock(localName);
+      if (!ref && (localName === "self" || localName === block.name)) {
+        ref = block;
+      }
       if (!ref) {
         throw new errors.InvalidBlockSyntax(
           `No block named ${localName} exists in this context.`,
