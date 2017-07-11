@@ -22,7 +22,7 @@ export class StyleMapping<Template extends TemplateInfo> {
 
   addObjects(options: OptionsReader, ...objects: BlockObject[]) {
     objects.forEach(o => {
-      this.blockMappings.set(o, o.cssClass(options).split(/\s+/));
+      this.blockMappings.set(o, o.cssClasses(options));
     });
   }
 

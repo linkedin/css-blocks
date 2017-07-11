@@ -395,11 +395,11 @@ export class BlockReferences extends BEMProcessor {
         result.css.toString(),
         `/* Source: foo/bar/imported.css\n` +
         "   .root => .imported\n" +
-        "   [state|theme=red] => .imported--theme-red\n" +
-        "   [state|large] => .imported--large\n" +
         "   .foo => .imported__foo\n" +
         "   .foo[state|font=fancy] => .imported__foo--font-fancy\n" +
-        "   .foo[state|small] => .imported__foo--small */\n" +
+        "   .foo[state|small] => .imported__foo--small\n" +
+        "   [state|large] => .imported--large\n" +
+        "   [state|theme=red] => .imported--theme-red */\n" +
         ".test-block { color: red; }\n" +
         ".test-block__b--big { color: blue; }\n"
       );

@@ -383,10 +383,13 @@ export class Block extends BlockObject {
 
   debug(opts: OptionsReader): string[] {
     let result: string[] = [`Source: ${this.source}`, this.asDebug(opts)];
-    result = result.concat(this.states.debug(opts));
-    this.classes.forEach((blockClass) => {
-      result.push(blockClass.asDebug(opts));
-      result = result.concat(blockClass.states.debug(opts));
+    let sourceNames = new Set<string>(this.all().map(o => o.asSource()));
+    let sortedNames = [...sourceNames].sort();
+    sortedNames.forEach(n => {
+      if (n !== ".root") {
+        let o = this.find(n) as BlockObject;
+        result.push(o.asDebug(opts));
+      }
     });
     return result;
   }

@@ -332,6 +332,21 @@ export abstract class BlockObject {
   }
 
   /**
+   * Returns all the classes needed to represent this block object
+   * including inherited classes.
+   * @returns this object's css class and all inherited classes.
+   */
+  cssClasses(opts: OptionsReader): string[] {
+    let classes = [this.cssClass(opts)];
+    let base = this.base;
+    while (base) {
+      classes.push(base.cssClass(opts));
+      base = base.base;
+    }
+    return classes;
+  }
+
+  /**
    * Standard export method for a given block.
    * @param opts  Options for rendering cssClass.
    * @returns The Export object representing this BlockObject.
@@ -349,7 +364,7 @@ export abstract class BlockObject {
    * @returns A debug string.
    */
   asDebug(opts: OptionsReader) {
-    return `${this.asSource()} => .${this.cssClass(opts)}`;
+    return `${this.asSource()} => ${this.cssClasses(opts).map(n => `.${n}`).join(" ")}`;
   }
 
 }
