@@ -61,8 +61,6 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
   }
   apply(compiler: webpack.Compiler) {
     this.projectDir = compiler.options.context || this.projectDir;
-    // compiler.plugin("compilation", (compilation) => {
-    // });
     compiler.plugin("make", (compilation: any, cb: (error?: Error) => void) => {
       this.analyzer.reset();
       this.trace(`starting analysis.`);
@@ -80,19 +78,21 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
           return completion;
         }).then<BlockCompilationComplete<Template>>((completion) => {
           this.trace(`notifying of completion`);
-          compilation.plugin("normal-module-loader", (context: any, _mod: any) => {
-            this.trace(`preparing normal-module-loader`);
-            context.cssBlocks = context.cssBlocks || {mappings: {}};
-            if (context.cssBlocks.mappings[this.outputCssFile]) {
-              throw new Error(`css conflict detected. Multiple compiles writing to ${this.outputCssFile}`);
-            } else {
-              context.cssBlocks.mappings[this.outputCssFile] = completion.mapping;
-            }
-          });
           this.notifyComplete(completion, cb);
           this.trace(`notified of completion`);
           return completion;
         }, <any>cb);
+      compilation.plugin("normal-module-loader", (context: any, mod: any) => {
+        this.trace(`preparing normal-module-loader for ${mod.resource}`);
+        context.cssBlocks = context.cssBlocks || {mappings: {}};
+        if (context.cssBlocks.mappings[this.outputCssFile]) {
+          throw new Error(`css conflict detected. Multiple compiles writing to ${this.outputCssFile}`);
+        } else {
+          context.cssBlocks.mappings[this.outputCssFile] = pendingResult.then(compilationResult => {
+            return compilationResult.mapping;
+          });
+        }
+      });
       this.trace(`notifying of pending compilation`);
       this.notifyPendingCompilation(pendingResult);
       this.trace(`notified of pending compilation`);
@@ -103,6 +103,7 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
     let reader = new CssBlocksOptionsReader(options);
     let blockCompiler = new BlockCompiler(postcss, options);
     let cssBundle = new ConcatSource();
+    let numBlocks = 0;
     analysis.blockDependencies().forEach((block: Block) => {
       if (block.root && block.source) {
         this.trace(`compiling ${block.source}.`);
@@ -114,9 +115,10 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
         let source = new SourceMapSource(result.css, block.source,
                                           result.map.toJSON(), originalSource);
         cssBundle.add(source);
+        numBlocks++;
       }
     });
-    this.trace(`compiled ${cssBundle.size} blocks.`);
+    this.trace(`compiled ${numBlocks} blocks.`);
     let metaMapping = MetaStyleMapping.fromMetaAnalysis(analysis, reader);
     return {
       css: cssBundle,
