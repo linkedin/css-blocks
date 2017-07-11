@@ -5,7 +5,6 @@ import {
   BlockObject,
   CssBlockError,
   QueryKeySelector,
-  ClassifiedParsedSelectors,
   TemplateAnalysis as SingleTemplateStyleAnalysis,
   MetaTemplateAnalysis as MetaStyleAnalysis,
   TemplateAnalyzer,
@@ -13,6 +12,7 @@ import {
 } from "css-blocks";
 import Project, { ResolvedFile } from "./project";
 import DependencyAnalyzer from "glimmer-analyzer";
+import { selectorCount } from "./utils";
 
 export type StateContainer = Block | BlockClass;
 
@@ -54,7 +54,7 @@ export class BaseStyleAnalyzer {
             let query = new QueryKeySelector(block);
             if (block.root) {
               let res = query.execute(block.root, block);
-              if (self.selectorCount(res) > 0) {
+              if (selectorCount(res) > 0) {
                 analysis.addStyle(block);
               }
             }
@@ -168,14 +168,6 @@ export class BaseStyleAnalyzer {
       line: node.loc.start.line,
       column: node.loc.start.column
     });
-  }
-
-  private selectorCount(result: ClassifiedParsedSelectors) {
-    let count = result.main.length;
-    Object.keys(result.other).forEach((k) => {
-      count += result.other[k].length;
-    });
-    return count;
   }
 }
 

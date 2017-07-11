@@ -18,6 +18,9 @@ import {
 import {
   ResolvedFile
 } from "./project";
+// import {
+//   selectorCount
+// } from "./utils";
 
 type StateContainer = Block | BlockClass;
 
@@ -83,6 +86,19 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
     let classObjects: StateContainer[] = [];
+    // If there are root styles, we add them on the root element implicitly. The rewriter will add the block's root class.
+    // if (atRootElement) {
+    //   let query = new QueryKeySelector(this.block);
+    //   if (this.block.root) {
+    //     let res = query.execute(this.block.root, this.block);
+    //     if (selectorCount(res) > 0) {
+    //       classObjects.unshift(this.block);
+    //     }
+    //   }
+    // }
+    if (atRootElement) {
+      classObjects.unshift(this.block);
+    }
     node.attributes.forEach((n) => {
       if (n.name === "class") {
         classObjects = this.processClass(n, this.block);
@@ -111,12 +127,14 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     let classAttr = node.attributes.find(n => n.name === "class");
     if (addedRoot) classObjects.push(this.block);
     let objects = new Set<BlockObject>([...classObjects, ...states]);
-    let newClassValue = [...objects].map(o => o.cssClass(this.cssBlocksOpts)).join(" ");
-    if (!classAttr) {
-      classAttr = this.syntax.builders.attr("class", this.syntax.builders.text(newClassValue));
-      node.attributes.push(classAttr);
-    } else {
-      classAttr.value = this.syntax.builders.text(newClassValue);
+    if (objects.size > 0) {
+      let newClassValue = [...objects].map(o => o.cssClasses(this.cssBlocksOpts).join(' ')).join(" ");
+      if (!classAttr) {
+        classAttr = this.syntax.builders.attr("class", this.syntax.builders.text(newClassValue));
+        node.attributes.push(classAttr);
+      } else {
+        classAttr.value = this.syntax.builders.text(newClassValue);
+      }
     }
   }
   private processClass(node: AST.AttrNode, block: Block): StateContainer[] {
