@@ -426,6 +426,36 @@ export class BlockReferences extends BEMProcessor {
     });
   }
 
+  @test "block names in double quotes fail parse with helpful error"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `.root { block-name: "snow-flake"; }`
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference "./imported.css";
+                    @block-debug snow-flake to comment;`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).catch((err) => {
+      assert.equal(err.message, "Illegal block name. '\"snow-flake\"' is not a legal CSS identifier. (foo/bar/imported.css:1:9)");
+    });
+  }
+
+  @test "block names in single quotes fail parse with helpful error"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `.root { block-name: 'snow-flake'; }`
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference "./imported.css";
+                    @block-debug snow-flake to comment;`;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).catch((err) => {
+      assert.equal(err.message, "Illegal block name. ''snow-flake'' is not a legal CSS identifier. (foo/bar/imported.css:1:9)");
+    });
+  }
+
   @test "block-name property only works in the root ruleset"() {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/imported.css",
