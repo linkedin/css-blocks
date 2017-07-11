@@ -12,6 +12,7 @@ import {
 } from "css-blocks";
 import Project, { ResolvedFile } from "./project";
 import DependencyAnalyzer from "glimmer-analyzer";
+import * as debugGenerator from "debug";
 import { selectorCount } from "./utils";
 
 export type StateContainer = Block | BlockClass;
@@ -20,6 +21,7 @@ const STATE = /state:(.*)/;
 
 export class BaseStyleAnalyzer {
   project: Project;
+  debug: debugGenerator.IDebugger;
 
   constructor(project: Project | string) {
     if (typeof project === "string") {
@@ -27,6 +29,7 @@ export class BaseStyleAnalyzer {
     } else {
       this.project = project;
     }
+    this.debug = debugGenerator("css-blocks:glimmer");
   }
 
   protected analyzeTemplate(templateName: string): Promise<SingleTemplateStyleAnalysis<ResolvedFile>> {
@@ -38,11 +41,18 @@ export class BaseStyleAnalyzer {
     let result = this.project.blockFor(templateName);
 
     return result.then((block) => {
-      if (!block) return analysis;
+      if (!block) {
+        self.debug(`Analyzing ${templateName}. No block for component. Returning empty analysis.`);
+        return analysis;
+      } else {
+        self.debug(`Analyzing ${templateName}. Got block for component.`);
+      }
       analysis.blocks[""] = block;
       block.eachBlockReference((name, refBlock) => {
         analysis.blocks[name] = refBlock;
       });
+      let localBlockNames = Object.keys(analysis.blocks).map(n => n === "" ? "<default>" : n);
+      self.debug(`Analyzing ${templateName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(', ')}.`);
       traverse(ast, {
         ElementNode(node) {
           analysis.endElement();
@@ -81,6 +91,12 @@ export class BaseStyleAnalyzer {
           });
         },
       });
+      if (this.debug.enabled) {
+        if (analysis.currentCorrelation && analysis.currentCorrelation.size > 1) {
+          let objects = new Array(...analysis.currentCorrelation).map(o => o.asSource());
+          this.debug(`Found correlated styles: ${objects.join(', ')}`);
+        }
+      }
       analysis.endElement();
       return analysis;
     });

@@ -1,3 +1,4 @@
+import * as debugGenerator from "debug";
 import {
   AST,
   ASTPlugin,
@@ -24,56 +25,75 @@ import {
 
 type StateContainer = Block | BlockClass;
 
+const debug = debugGenerator("css-blocks:glimmer");
+
+interface MappingAndBlock {
+  mapping: StyleMapping<ResolvedFile>;
+  block: Block;
+}
 const STATE = /state:(.*)/;
-export function loaderAdapter(loaderContext: any): ASTPlugin {
+export function loaderAdapter(loaderContext: any): Promise<ASTPlugin> {
+  debug(`loader adapter. Got loader context for css-blocks:`, loaderContext.cssBlocks);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
-  let styleMapping: StyleMapping<ResolvedFile> | undefined = undefined;
-  let block: Block | undefined = undefined;
+  let metaMappingPromises = new Array<Promise<MetaStyleMapping<ResolvedFile>>>();
   cssFileNames.forEach(filename => {
-    let metaMapping: MetaStyleMapping<ResolvedFile> = loaderContext.cssBlocks.mappings[filename];
-    let mapping = metaMapping.templates.get(loaderContext.resourcePath);
-    if (mapping) {
-      if (styleMapping) {
-        throw Error("Multiple css blocks outputs use this template and I don't know how to handle that yet.");
-      }
-      let blockNames = Object.keys(mapping.blocks);
-      blockNames.forEach(n => {
-        let b = (<StyleMapping<ResolvedFile>>mapping).blocks[n];
-        if (n === "") {
-          block = b;
-        }
-        loaderContext.dependency(b.source);
-      });
-      styleMapping = mapping;
-    }
+    metaMappingPromises.push(loaderContext.cssBlocks.mappings[filename]);
   });
-  if (styleMapping && block) {
-    return (env: ASTPluginEnvironment) => {
-      let rewriter = new Rewriter(env.syntax, <StyleMapping<ResolvedFile>>styleMapping, <Block>block);
-      return {
-        name: "css-blocks",
-        visitors: {
-          ElementNode(node) {
-            rewriter.ElementNode(node);
-          }
+  let thisMappingPromise: Promise<MappingAndBlock | undefined> = Promise.all(metaMappingPromises).then(metaMappings => {
+    let mappingAndBlock: MappingAndBlock | undefined = undefined;
+    metaMappings.forEach(metaMapping => {
+      let mapping = metaMapping.templates.get(loaderContext.resourcePath);
+      if (mapping) {
+        if (mappingAndBlock) {
+          throw Error("Multiple css blocks outputs use this template and I don't know how to handle that yet.");
         }
+        let blockNames = Object.keys(mapping.blocks);
+        blockNames.forEach(n => {
+          let block = (<StyleMapping<ResolvedFile>>mapping).blocks[n];
+          if (n === "" && mapping && block) {
+            mappingAndBlock = {
+              block,
+              mapping
+            };
+          }
+          loaderContext.dependency(block.source);
+        });
+      }
+    });
+    return mappingAndBlock;
+  });
+  let pluginPromise: Promise<ASTPlugin> = thisMappingPromise.then(mappingAndBlock => {
+    let astPlugin: ASTPlugin;
+    if (mappingAndBlock) {
+        astPlugin = (env: ASTPluginEnvironment) => {
+          let rewriter = new Rewriter(env.syntax, mappingAndBlock.mapping, mappingAndBlock.block);
+          return {
+            name: "css-blocks",
+            visitors: {
+              ElementNode(node) {
+                rewriter.ElementNode(node);
+              }
+            }
+          };
+        };
+    } else {
+      astPlugin = (_env: ASTPluginEnvironment) => {
+        return {
+          name: "css-blocks-noop",
+          visitors: {}
+        };
       };
-    };
-  } else {
-    return (_env: ASTPluginEnvironment) => {
-      return {
-        name: "css-blocks-noop",
-        visitors: {}
-      };
-    };
-  }
+    }
+    return astPlugin;
+  });
+  return pluginPromise;
 }
 
 export class Rewriter implements TemplateRewriter, NodeVisitor {
   elementCount: number;
   syntax: Syntax;
   block: Block;
-  styleMapping: StyleMapping<ResolvedFile> | null;
+  styleMapping: StyleMapping<ResolvedFile>;
   cssBlocksOpts: CssBlocksOptionsReader;
   constructor(syntax: Syntax, styleMapping: StyleMapping<ResolvedFile>, defaultBlock: Block) {
     this.syntax = syntax;
@@ -128,7 +148,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     if (addedRoot) classObjects.push(this.block);
     let objects = new Set<BlockObject>([...classObjects, ...states]);
     if (objects.size > 0) {
-      let newClassValue = [...objects].map(o => o.cssClasses(this.cssBlocksOpts).join(' ')).join(" ");
+      let newClassValue = this.styleMapping.mapObjects(...objects).join(" ");
       if (!classAttr) {
         classAttr = this.syntax.builders.attr("class", this.syntax.builders.text(newClassValue));
         node.attributes.push(classAttr);

@@ -43,6 +43,7 @@
   "homepage": "https://github.com/css-blocks/glimmer-analyzer#readme",
   "devDependencies": {
     "@types/chai": "^3.5.2",
+    "@types/debug": "0.0.29",
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.18",
     "chai": "^3.5.0",
@@ -56,11 +57,12 @@
     "typescript": "^2.4.1"
   },
   "dependencies": {
+    "@glimmer/compiler": "^0.25.1",
     "@glimmer/resolution-map-builder": "0.5.1",
     "@glimmer/resolver": "^0.3.0",
-    "@glimmer/compiler": "^0.25.1",
     "@glimmer/syntax": "^0.25.1",
     "css-blocks": "^0.9.2",
+    "debug": "^2.6.8",
     "glimmer-analyzer": "^0.1.2",
     "postcss": "^6.0.1"
   }

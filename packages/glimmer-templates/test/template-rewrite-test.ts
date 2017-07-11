@@ -26,22 +26,23 @@ describe('Template Rewriting', function() {
         dependency(_path) {
         }
       };
-      let plugin = loaderAdapter(fakeLoaderContext);
-      let options = {
-        meta: {},
-        plugins: {
-          ast: [plugin]
-        }
-      };
-      let templateContent = fs.readFileSync(templatePath);
-      let result = JSON.parse(precompile(templateContent.toString(), options));
-      let classes: string[] = [];
-      JSON.parse(result.block).statements.forEach(statement => {
-        if (statement[0] === 9 && statement[1] === "class") {
-          classes.push(statement[2]);
-        }
+      return loaderAdapter(fakeLoaderContext).then(plugin => {
+        let options = {
+          meta: {},
+          plugins: {
+            ast: [plugin]
+          }
+        };
+        let templateContent = fs.readFileSync(templatePath);
+        let result = JSON.parse(precompile(templateContent.toString(), options));
+        let classes: string[] = [];
+        JSON.parse(result.block).statements.forEach(statement => {
+          if (statement[0] === 9 && statement[1] === "class") {
+            classes.push(statement[2]);
+          }
+        });
+        assert.deepEqual(classes, ['my-app my-app--is-loading']);
       });
-      assert.deepEqual(classes, ['my-app my-app--is-loading']);
     }).catch((error) => {
       console.error(error);
       throw error;
