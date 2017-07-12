@@ -13,7 +13,8 @@ const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
 const LEGAL_COMBINATORS = new Set(["+", "~", " ", ">"]);
 
-export const CLASS_NAME_IDENT = new RegExp(regexpu("((?:\\\\.|[A-Za-z_\\-\\u{00a0}-\\u{10ffff}])(?:\\\\.|[A-Za-z_\\-0-9\\u{00a0}-\\u{10ffff}])*)", "u"));
+// CSS <ident-token> Defined: https://www.w3.org/TR/css-syntax-3/#typedef-ident-token
+export const CLASS_NAME_IDENT = new RegExp(regexpu("^(-?(?:\\\\.|[A-Za-z_\\u{0080}-\\u{10ffff}])(?:\\\\.|[A-Za-z0-9_\\-\\u{0080}-\\u{10ffff}])*)$", "u"));
 
 export enum BlockType {
   root = 1,
