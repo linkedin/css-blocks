@@ -12,6 +12,7 @@ import {
   BlockClass,
   BlockObject,
   PluginOptionsReader as CssBlocksOptionsReader,
+  PluginOptions as CssBlocksOpts,
   TemplateRewriter,
   MetaStyleMapping,
   StyleMapping
@@ -66,7 +67,7 @@ export function loaderAdapter(loaderContext: any): Promise<ASTPlugin> {
     let astPlugin: ASTPlugin;
     if (mappingAndBlock) {
         astPlugin = (env: ASTPluginEnvironment) => {
-          let rewriter = new Rewriter(env.syntax, mappingAndBlock.mapping, mappingAndBlock.block);
+          let rewriter = new Rewriter(env.syntax, mappingAndBlock.mapping, mappingAndBlock.block, loaderContext.cssBlocks.compilationOptions);
           return {
             name: "css-blocks",
             visitors: {
@@ -95,10 +96,10 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
   block: Block;
   styleMapping: StyleMapping<ResolvedFile>;
   cssBlocksOpts: CssBlocksOptionsReader;
-  constructor(syntax: Syntax, styleMapping: StyleMapping<ResolvedFile>, defaultBlock: Block) {
+  constructor(syntax: Syntax, styleMapping: StyleMapping<ResolvedFile>, defaultBlock: Block, cssBlocksOpts: CssBlocksOpts) {
     this.syntax = syntax;
     this.styleMapping = styleMapping;
-    this.cssBlocksOpts = new CssBlocksOptionsReader();
+    this.cssBlocksOpts = new CssBlocksOptionsReader(cssBlocksOpts);
     this.block = defaultBlock;
     this.elementCount = 0;
   }
@@ -162,7 +163,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     if (node.value.type === "TextNode") {
       let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
       classNames.forEach((name) => {
-        let found = block.find(name) || block.find(`.${name}`);
+        let found = block.lookup(name) || block.lookup(`.${name}`);
         if (found) {
           blockObjects.push(<Block | BlockClass>found);
         }

@@ -54,9 +54,11 @@ export default class Project {
   resolver: Resolver;
   registry: BasicModuleRegistry;
   blocks: {[specifier:string]: Promise<Block>};
+  cssBlocksOpts: PluginOptions;
 
-  constructor(projectDir: string, moduleConfig?: any) {
+  constructor(projectDir: string, moduleConfig?: any, blockOpts?: PluginOptions) {
     this.projectDir = projectDir;
+    this.cssBlocksOpts = blockOpts || {};
     this.blocks = {};
     let pkg = this.loadPackageJSON(projectDir);
     let { name } = pkg;
@@ -86,8 +88,7 @@ export default class Project {
     }
     let stylesheet = this.stylesheetFor(templateName);
     if (stylesheet) {
-      let blockOpts: PluginOptions = {}; // TODO: read this in from a file somehow?
-      let parser = new BlockParser(postcss, blockOpts);
+      let parser = new BlockParser(postcss, this.cssBlocksOpts);
       let root = postcss.parse(stylesheet.string);
       result = parser.parse(root, stylesheet.identifier, templateName);
       this.blocks[templateName] = result;

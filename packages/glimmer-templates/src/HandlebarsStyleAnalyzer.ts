@@ -125,7 +125,7 @@ export class BaseStyleAnalyzer {
     if (node.value.type === "TextNode") {
       let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
       classNames.forEach((name) => {
-        let found = block.find(name) || block.find(`.${name}`);
+        let found = block.lookup(name) || block.lookup(`.${name}`);
         if (found) {
           blockObjects.push(<Block | BlockClass>found);
           analysis.addStyle(found);
