@@ -84,7 +84,7 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
         }, <any>cb);
       compilation.plugin("normal-module-loader", (context: any, mod: any) => {
         this.trace(`preparing normal-module-loader for ${mod.resource}`);
-        context.cssBlocks = context.cssBlocks || {mappings: {}};
+        context.cssBlocks = context.cssBlocks || {mappings: {}, compilationOptions: this.compilationOptions};
         if (context.cssBlocks.mappings[this.outputCssFile]) {
           throw new Error(`css conflict detected. Multiple compiles writing to ${this.outputCssFile}`);
         } else {
