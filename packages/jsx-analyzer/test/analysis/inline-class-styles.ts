@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
-import Analysis from '../../src/utils/Analysis';
+import { MetaAnalysis } from '../../src/utils/Analysis';
 import { parse } from '../../src/index';
 
 const mock = require('mock-fs');
@@ -18,17 +18,17 @@ export class Test {
       function render(){
         return ( <div class={bar}> <div class={bar.foo}> </div> </div> );
       }`
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      let styleIter = analysis.stylesFound.entries();
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      let styleIter = analysis.getStyles().entries();
       assert.equal(styleIter.next().value[0].asSource(), '.root');
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
-      assert.equal(analysis.styleCorrelations.length, 2);
-      assert.equal(analysis.styleCorrelations[0].size, 1);
-      assert.equal(analysis.styleCorrelations[1].size, 1);
-      assert.equal(analysis.dynamicStyles.size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 2);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations[1].size, 1);
+      assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
 
@@ -42,17 +42,17 @@ export class Test {
       function render(){
         return ( <div className={bar}> <div className={bar.foo}> </div> </div> );
       }`
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      let styleIter = analysis.stylesFound.entries();
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      let styleIter = analysis.getStyles().entries();
       assert.equal(styleIter.next().value[0].asSource(), '.root');
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
-      assert.equal(analysis.styleCorrelations.length, 2);
-      assert.equal(analysis.styleCorrelations[0].size, 1);
-      assert.equal(analysis.styleCorrelations[1].size, 1);
-      assert.equal(analysis.dynamicStyles.size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 2);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations[1].size, 1);
+      assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
 

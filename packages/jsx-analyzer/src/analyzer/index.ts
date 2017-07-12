@@ -1,4 +1,4 @@
-import Analysis, { FileContainer } from '../utils/Analysis';
+import Analysis from '../utils/Analysis';
 import { NodePath, Binding } from 'babel-traverse';
 import { Block, BlockClass, State } from 'css-blocks';
 import { ExpressionReader } from '../utils/ExpressionReader';
@@ -40,7 +40,7 @@ type Property = ObjectProperty | SpreadProperty | ObjectMethod;
  * @param fund The suspected Object String `CallExpression` to process.
  * @returns The array of `Property` values passed to Object String
  */
-function saveObjstrProps(analysis: Analysis, file: FileContainer, path: NodePath<any>, func: any) {
+function saveObjstrProps(analysis: Analysis, path: NodePath<any>, func: any) {
   let props: Property[] = [];
 
   // If this node is not a call expression (ex: `objstr({})`), or is a complex
@@ -81,7 +81,7 @@ function saveObjstrProps(analysis: Analysis, file: FileContainer, path: NodePath
 
     // Get expression from computed property name.
     let parts: ExpressionReader = new ExpressionReader(prop.key);
-    saveStyle(parts, analysis, file, !isLiteral(prop.value));
+    saveStyle(parts, analysis, !isLiteral(prop.value));
 
   });
 }
@@ -94,7 +94,7 @@ function saveObjstrProps(analysis: Analysis, file: FileContainer, path: NodePath
  * @param analysis The Analysis object with Block data and to store our results in.
  * @param isDynamic If the style to save is dynamic.
  */
-function saveStyle(reader: ExpressionReader, analysis: Analysis, file: FileContainer, isDynamic = false): void {
+function saveStyle(reader: ExpressionReader, analysis: Analysis, isDynamic = false): void {
   let part: string | undefined;
   let blockName: string | undefined;
   let className: string | undefined;
@@ -110,7 +110,7 @@ function saveStyle(reader: ExpressionReader, analysis: Analysis, file: FileConta
     if ( !blockName ) {
       blockName = part;
     }
-    else if ( file.localStates[blockName] === part ) {
+    else if ( analysis.localStates[blockName] === part ) {
       stateName = reader.next();
       substateName = reader.next();
     }
@@ -125,7 +125,7 @@ function saveStyle(reader: ExpressionReader, analysis: Analysis, file: FileConta
 
   // If there is no block imported under this local name, this is a class
   // we don't care about. Return.
-  let block: Block | undefined = blockName ? file.localBlocks[blockName] : undefined;
+  let block: Block | undefined = blockName ? analysis.blocks[blockName] : undefined;
   if ( !block ) {
     return;
   }
@@ -171,7 +171,7 @@ function saveStyle(reader: ExpressionReader, analysis: Analysis, file: FileConta
 }
 
 // Consolidate all visitors into a hash that we can pass to `babel-traverse`
-export default function visitors(file: FileContainer, analysis: Analysis): object {
+export default function visitors(analysis: Analysis): object {
   return {
 
     /**
@@ -210,7 +210,7 @@ export default function visitors(file: FileContainer, analysis: Analysis): objec
               let name = identifier.name;
 
               // Check if there is a block of this name imported. If so, add style and exit.
-              let block: Block | undefined = file.localBlocks[name];
+              let block: Block | undefined = analysis.blocks[name];
               if ( block ) {
                 analysis.addStyle(block);
                 return;
@@ -233,14 +233,14 @@ export default function visitors(file: FileContainer, analysis: Analysis): objec
 
               // Optimistically assume we have an objstr call and try to save it.
               // Will fail silently and continue with exection if it is not an objstr call.
-              saveObjstrProps(analysis, file, path, objstr);
+              saveObjstrProps(analysis, path, objstr);
 
             }
 
             // If we discover an inlined call expression, assume it is an objstr call
             // until proven otherwise. Fails silently and continues with execution if is not.
             if ( isCallExpression(value.expression) ) {
-              saveObjstrProps(analysis, file, path, value.expression);
+              saveObjstrProps(analysis, path, value.expression);
             }
 
             // Discover direct references to an imported block.
@@ -248,7 +248,7 @@ export default function visitors(file: FileContainer, analysis: Analysis): objec
             if ( isMemberExpression(value.expression) ) {
               let expression: any = value.expression;
               let parts: ExpressionReader = new ExpressionReader(expression);
-              saveStyle(parts, analysis, file, false);
+              saveStyle(parts, analysis, false);
             }
           }
         }
@@ -270,7 +270,7 @@ export default function visitors(file: FileContainer, analysis: Analysis): objec
 
           // If there is no block imported under this local name, this is a class
           // we don't care about. Return.
-          let block: Block | undefined = (blockName) ? file.localBlocks[blockName] : undefined;
+          let block: Block | undefined = (blockName) ? analysis.blocks[blockName] : undefined;
           if ( !block || !stateName ) {
             return;
           }

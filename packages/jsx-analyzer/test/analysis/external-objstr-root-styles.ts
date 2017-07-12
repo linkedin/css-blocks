@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
-import Analysis from '../../src/utils/Analysis';
+import { MetaAnalysis } from '../../src/utils/Analysis';
 import analyzer from '../../src/analyzer';
 import { parse } from '../../src/index';
 
@@ -28,11 +28,11 @@ export class Test {
         });
         return ( <div class={style}></div> );
       }`
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 1);
-      assert.equal(analysis.dynamicStyles.size, 0);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 1);
+      assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
 
@@ -52,10 +52,10 @@ export class Test {
         });
         return ( <div class={style}></div> );
       }`
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 1);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 1);
     });
   }
 
@@ -75,10 +75,10 @@ export class Test {
         });
         return ( <div className={style}></div> );
       }`
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 1);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 1);
     });
   }
 
@@ -98,10 +98,10 @@ export class Test {
         });
         return ( <div className={style}></div> );
       }`
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 1);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 1);
     });
   }
 
@@ -121,10 +121,10 @@ export class Test {
         });
         return ( <div class={style} className={style}></div> );
       }`
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 1);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 1);
     });
   }
 

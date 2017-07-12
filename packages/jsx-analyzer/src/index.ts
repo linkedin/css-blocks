@@ -1,10 +1,12 @@
 import * as babylon from 'babylon';
+import * as typescript from 'typescript';
 import traverse from 'babel-traverse';
 
 import importer from './importer';
 import analyzer from './analyzer';
-import Analysis, { FileContainer } from './utils/Analysis';
-import { Block } from 'css-blocks';
+import CSSBlocksJSXTransformer from './transformer';
+import Analysis, { Template, MetaAnalysis } from './utils/Analysis';
+import { Block, MultiTemplateAnalyzer } from 'css-blocks';
 
 const fs = require('fs');
 const path = require('path');
@@ -26,18 +28,19 @@ const defaultOptions: ParserOptions = {
     sourceType: 'module',
     plugins: [
       'jsx',
+      'flow',
       'decorators',
       'classProperties',
       'exportExtensions',
       'asyncGenerators',
       'functionBind',
       'functionSent',
-      'dynamicImpor'
+      'dynamicImport'
     ]
   }
 };
 
-export function parseWith(template: FileContainer, analysis: Analysis, opts: ParserOptions = defaultOptions): Promise<FileContainer> {
+export function parseWith(template: Template, metaAnalysis: MetaAnalysis, opts: ParserOptions = defaultOptions): Promise<Analysis> {
 
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
@@ -46,39 +49,59 @@ export function parseWith(template: FileContainer, analysis: Analysis, opts: Par
   let oldDir = process.cwd();
   process.chdir(opts.baseDir);
 
+  let analysis: Analysis = new Analysis(template, metaAnalysis);
+
   // Parse the file into an AST.
-  template.ast = babylon.parse(template.data, opts.parserOptions);
+  try {
+
+    // Babylon currently has...abysmal support for typescript. We need to transpile
+    // it with the standard typescript library first.
+    // TODO: When Typescript support lands in Babylon, remove this: https://github.com/babel/babylon/issues/320
+    if ( path.parse(template.identifier).ext === '.tsx') {
+      let wat = typescript.transpileModule(template.data, {
+        compilerOptions: {
+          module: typescript.ModuleKind.ES2015,
+          jsx: typescript.JsxEmit.Preserve,
+          target: typescript.ScriptTarget.Latest
+        }
+      });
+      template.data = wat.outputText;
+    }
+
+    analysis.template.ast = babylon.parse(template.data, opts.parserOptions);
+  } catch (e) {
+    throw new Error(`Error parsing '${template.identifier}'\n${e.message}\n\n${template.data}.`);
+  }
 
   // The blocks importer will insert a promise that resolves to a `ResolvedBlock`
   // for each CSS Blocks import it encounters.
-  traverse(template.ast, importer(template, analysis));
+  traverse(analysis.template.ast, importer(template, analysis));
 
   // After import traversal, it is save to move back to our old working directory.
   process.chdir(oldDir);
 
   // Once all blocks this file is waiting for resolve, resolve with the File object.
-  let filePromise = Promise.resolve()
+  let analysisPromise = Promise.resolve()
   .then(() => {
-    return Promise.all(template.blockPromises);
+    return Promise.all(analysis.blockPromises);
   })
   .then((blocks: Block[]) => {
-    template.blocks = blocks;
-    return template;
+    return analysis;
   });
 
   // Add this file promise to the list of dependents waiting to resolve.
-  analysis.filePromises.push(filePromise);
-  return filePromise;
+  metaAnalysis.analysisPromises.push(analysisPromise);
+  return analysisPromise;
 
 }
 
 /**
- * Provided a file path, return a promise for the parsed FileContainer object.
+ * Provided a file path, return a promise for the parsed Template object.
  * // TODO: Make streaming?
  * @param file The file path to read in and parse.
  * @param opts Optional analytics parser options.
  */
-export function parseFileWith(file: string, analysis: Analysis, opts: ParserOptions = defaultOptions): Promise<FileContainer> {
+export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, opts: ParserOptions = defaultOptions): Promise<Analysis> {
 
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
@@ -89,34 +112,39 @@ export function parseFileWith(file: string, analysis: Analysis, opts: ParserOpti
   }
 
   // Fetch file contents from the now absolute path.
-  let data = <string>fs.readFileSync(<string>file, 'utf8');
+  let data: string;
+  try {
+    data = <string>fs.readFileSync(<string>file, 'utf8');
+  } catch (e) {
+    throw new Error(`Cannot read JSX entrypoint file ${file}`);
+  }
 
   // Return promise for parsed analysis object.
-  let template: FileContainer = new FileContainer(file, data);
+  let template: Template = new Template(file, data);
 
-  return parseWith(template, analysis, opts);
+  return parseWith(template, metaAnalysis, opts);
 }
 /**
  * Provided a code string, return a promise for the fully parsed analytics object.
  * @param data The code string to parse.
  * @param opts Optional analytics parser options.
  */
-export function parse(data: string, opts: ParserOptions = defaultOptions): Promise<Analysis> {
+export function parse(data: string, opts: ParserOptions = defaultOptions): Promise<MetaAnalysis> {
 
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
 
-  let analysis: Analysis = new Analysis({ path: opts.baseDir });
-  let template: FileContainer = new FileContainer('', data);
+  let template: Template = new Template('', data);
+  let metaAnalysis: MetaAnalysis = new MetaAnalysis();
 
   return Promise.resolve().then(() => {
-    parseWith(template, analysis, opts);
-    return Promise.all(analysis.filePromises).then((files: FileContainer[]) => {
-      analysis.files = files;
-      files.forEach((file: FileContainer) => {
-        traverse(file.ast, analyzer(file, analysis));
+    parseWith(template, metaAnalysis, opts);
+    return Promise.all(metaAnalysis.analysisPromises).then((analyses: Analysis[]) => {
+      analyses.forEach((analysis: Analysis) => {
+        traverse(analysis.template.ast, analyzer(analysis));
+        metaAnalysis.addAnalysis(analysis);
       });
-      return analysis;
+      return metaAnalysis;
     });
   });
 }
@@ -127,7 +155,7 @@ export function parse(data: string, opts: ParserOptions = defaultOptions): Promi
  * @param file The file path to read in and parse.
  * @param opts Optional analytics parser options.
  */
-export function parseFile(file: string, opts: ParserOptions = defaultOptions): Promise<Analysis> {
+export function parseFile(file: string, opts: ParserOptions = defaultOptions): Promise<MetaAnalysis> {
 
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
@@ -138,20 +166,47 @@ export function parseFile(file: string, opts: ParserOptions = defaultOptions): P
   }
 
   // Fetch file contents from the now absolute path.
-  let data = <string>fs.readFileSync(<string>file, 'utf8');
+  let data: string;
+  try {
+    data = <string>fs.readFileSync(<string>file, 'utf8');
+  } catch (e) {
+    throw new Error(`Cannot read JSX entrypoint file ${file}`);
+  }
 
   // Return promise for parsed analysis object.
-  let template: FileContainer = new FileContainer(file, data);
-  let analysis: Analysis      = new Analysis({ path: opts.baseDir });
+  let template: Template = new Template(file, data);
+  let metaAnalysis: MetaAnalysis = new MetaAnalysis();
 
   return Promise.resolve().then(() => {
-    parseWith(template, analysis, opts);
-    return Promise.all(analysis.filePromises).then((files: FileContainer[]) => {
-      analysis.files = files;
-      files.forEach((file: FileContainer) => {
-        traverse(file.ast, analyzer(file, analysis));
+    parseWith(template, metaAnalysis, opts);
+    return Promise.all(metaAnalysis.analysisPromises).then((analyses: Analysis[]) => {
+      analyses.forEach((analysis: Analysis) => {
+        traverse(analysis.template.ast, analyzer(analysis));
+        metaAnalysis.addAnalysis(analysis);
       });
-      return analysis;
+      return metaAnalysis;
     });
   });
 }
+
+export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer<Template> {
+  private entrypoint: string;
+  private name: string;
+
+  constructor(entrypoint: string, name: string){
+    this.entrypoint = entrypoint;
+    this.name = name;
+  }
+  analyze(): Promise<MetaAnalysis> {
+    if ( !this.entrypoint || !this.name ) {
+      throw new Error('CSS Blocks JSX Analyzer must be passed an entrypoint and name.');
+    }
+    return parseFile(this.entrypoint);
+  }
+  reset()  : Promise<MetaAnalysis> { return parseFile(''); }
+}
+
+export default {
+  Analyzer: CSSBlocksJSXAnalyzer,
+  Rewriter: CSSBlocksJSXTransformer,
+};

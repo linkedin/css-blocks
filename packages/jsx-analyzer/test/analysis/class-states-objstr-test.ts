@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
-import Analysis from '../../src/utils/Analysis';
+import { MetaAnalysis } from '../../src/utils/Analysis';
 import analyzer from '../../src/analyzer';
 import { parse } from '../../src/index';
 
@@ -34,12 +34,13 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.deepEqual(analysis.files[0].localStates, {'bar': 'barStates'});
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      assert.equal(analysis.dynamicStyles.size, 0);
+      console.log(analysis);
+      assert.deepEqual(analysis.getAnalysis(0).localStates, {'bar': 'barStates'});
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
 
@@ -67,11 +68,11 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      assert.equal(analysis.dynamicStyles.size, 1);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 1);
     });
   }
 
@@ -95,11 +96,11 @@ export class Test {
         [bar.pretty[barStates.awesome]]: ohgod
       });
       <div class={style}></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      assert.equal(analysis.dynamicStyles.size, 1);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 1);
     });
   }
 
@@ -123,11 +124,11 @@ export class Test {
         [bar.pretty[barStates.awesome.wat]]: ohgod
       });
       <div class={style}></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      assert.equal(analysis.dynamicStyles.size, 1);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 1);
     }).catch((err) => {
       assert.equal(err.message, 'No state "awesome=wat" found on class "pretty" in block "bar"');
     });

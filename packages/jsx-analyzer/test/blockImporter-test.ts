@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
 import { parse } from '../src/index';
-import Analysis from '../src/utils/Analysis';
+import { MetaAnalysis } from '../src/utils/Analysis';
 import { Block } from 'css-blocks';
 
 const mock = require('mock-fs');
@@ -10,9 +10,9 @@ const mock = require('mock-fs');
 export class Test {
 
   @test 'imports for non-css-block related files are ignored'(){
-    return parse(`import foo from 'bar';`).then((analysis: Analysis) => {
+    return parse(`import foo from 'bar';`).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 0);
+      assert.equal(analysis.blockDependencies().size, 0);
     });
   }
 
@@ -20,10 +20,10 @@ export class Test {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
-    return parse(`import bar from 'bar.block.css';`).then((analysis: Analysis) => {
+    return parse(`import bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.blocks['bar'].constructor, Block);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
     });
   }
 
@@ -31,10 +31,10 @@ export class Test {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
-    return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: Analysis) => {
+    return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.blocks['bar'].constructor, Block);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
     });
   }
 
@@ -42,11 +42,11 @@ export class Test {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
-    return parse(`import bar, { states as barStates } from 'bar.block.css';`).then((analysis: Analysis) => {
+    return parse(`import bar, { states as barStates } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.blocks['bar'].constructor, Block);
-      assert.deepEqual(analysis.files[0].localStates, {'bar': 'barStates'});
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
+      assert.deepEqual(analysis.getAnalysis(0).localStates, {'bar': 'barStates'});
     });
   }
 
@@ -54,11 +54,11 @@ export class Test {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
-    return parse(`import { states as barStates, default as bar } from 'bar.block.css';`).then((analysis: Analysis) => {
+    return parse(`import { states as barStates, default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.blocks['bar'].constructor, Block);
-      assert.deepEqual(analysis.files[0].localStates, {'bar': 'barStates'});
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
+      assert.deepEqual(analysis.getAnalysis(0).localStates, {'bar': 'barStates'});
     });
   }
 
@@ -66,10 +66,10 @@ export class Test {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
-    return parse(`import * as bar from 'bar.block.css';`).then((analysis: Analysis) => {
+    return parse(`import * as bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.blocks['bar'].constructor, Block);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
     });
   }
 
@@ -81,11 +81,11 @@ export class Test {
     return parse(`
       import * as bar from 'bar.block.css';
       import baz from 'baz.block.css';
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 2);
-      assert.equal(analysis.blocks['bar'].constructor, Block);
-      assert.equal(analysis.blocks['baz'].constructor, Block);
+      assert.equal(analysis.blockDependencies().size, 2);
+      assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).blocks['baz'].constructor, Block);
     });
   }
 
@@ -97,11 +97,11 @@ export class Test {
     return parse(`
       import * as foo from 'bar.block.css';
       import biz from 'baz.block.css';
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 2);
-      assert.equal(analysis.blocks['bar'], analysis.files[0].localBlocks['foo']);
-      assert.equal(analysis.blocks['baz'], analysis.files[0].localBlocks['biz']);
+      assert.equal(analysis.blockDependencies().size, 2);
+      assert.ok(analysis.getAnalysis(0).blocks['foo']);
+      assert.ok(analysis.getAnalysis(0).blocks['biz']);
     });
   }
 

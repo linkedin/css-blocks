@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
-import Analysis from '../../src/utils/Analysis';
+import { MetaAnalysis } from '../../src/utils/Analysis';
 import { parse } from '../../src/index';
 
 const mock = require('mock-fs');
@@ -24,15 +24,15 @@ export class Test {
 
       <div class={style}></div>;
     `
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 1);
-      let styleIter = analysis.stylesFound.entries();
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 1);
+      let styleIter = analysis.getStyles().entries();
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
-      assert.equal(analysis.styleCorrelations.length, 1);
-      assert.equal(analysis.styleCorrelations[0].size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 1);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 1);
     });
   }
 
@@ -53,16 +53,16 @@ export class Test {
 
       <div class={style}></div>;
     `
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      let styleIter = analysis.stylesFound.entries();
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      let styleIter = analysis.getStyles().entries();
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
       assert.equal(styleIter.next().value[0].asSource(), '.baz');
-      assert.equal(analysis.styleCorrelations.length, 1);
-      assert.equal(analysis.styleCorrelations[0].size, 2);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 1);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 2);
     });
   }
 
@@ -87,18 +87,18 @@ export class Test {
 
       <div class={style}></div>;
     `
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 2);
-      assert.equal(analysis.stylesFound.size, 4);
-      let styleIter = analysis.stylesFound.entries();
+      assert.equal(analysis.blockDependencies().size, 2);
+      assert.equal(analysis.getStyles().size, 4);
+      let styleIter = analysis.getStyles().entries();
       assert.equal(styleIter.next().value[0].asSource(), '.biz');
       assert.equal(styleIter.next().value[0].asSource(), '.baz');
       assert.equal(styleIter.next().value[0].asSource(), '.baz');
       assert.equal(styleIter.next().value[0].asSource(), '.biz');
-      assert.equal(analysis.styleCorrelations.length, 1);
-      assert.equal(analysis.styleCorrelations[0].size, 4);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 1);
+      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 4);
     });
   }
 
@@ -117,10 +117,10 @@ export class Test {
 
       <div class={style}></div>;
     `
-    ).then((analysis: Analysis) => {
+    ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 0);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 0);
     });
   }
 
@@ -140,10 +140,10 @@ export class Test {
 
       <div class={style}></div>;
     `
-  ).then((analysis: Analysis) => {
+  ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 1);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 1);
     });
   }
 

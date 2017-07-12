@@ -1,4 +1,4 @@
-import Analysis, { FileContainer } from '../utils/Analysis';
+import Analysis, { Template } from '../utils/Analysis';
 
 import * as postcss from 'postcss';
 import { parseFileWith } from '../index';
@@ -58,13 +58,13 @@ function throwIfRegistered(name: string, blockRegistry: BlockRegistry, blockStat
  * can begin.
  * @param blocks The ResolvedBlock Promise array that will contain all read Block files.
  */
-export default function importer(file: FileContainer, analysis: Analysis){
+export default function importer(file: Template, analysis: Analysis){
 
   // Keep a running record of local block names while traversing so we can check
   // for name conflicts elsewhere in the file.
   let _localBlocks: BlockRegistry = {};
   let _localStates: BlockStateRegistry = {};
-  let dirname = path.dirname(file.path);
+  let dirname = path.dirname(file.identifier);
 
   return {
 
@@ -99,7 +99,7 @@ export default function importer(file: FileContainer, analysis: Analysis){
 
       // If this is a jsx or tsx file, parse it with the same analysis object.
       if ( fs.existsSync(absoluteFilepath) && VALID_FILE_EXTS[parsedPath.ext] ) {
-        parseFileWith(absoluteFilepath, analysis);
+        parseFileWith(absoluteFilepath, analysis.parent);
         return;
       }
 
@@ -124,23 +124,21 @@ export default function importer(file: FileContainer, analysis: Analysis){
           let blockPath = path.resolve(dirname, filepath);
 
           // Try to fetch an existing Block Promise. If it does not exist, start processing.
-          let res: Promise<Block> = analysis.blockPromises[blockPath];
+          let res: Promise<Block> = analysis.parent.blockPromises[blockPath];
           if ( !res ) {
             let stylesheet = fs.readFileSync(blockPath);
             let blockName = path.parse(filepath).base.replace(BLOCK_SUFFIX, '');
             res = parser.parse(postcss.parse(stylesheet), filepath, blockName).then((block) : Block => {
-              analysis.blocks[block.name] = block;
-              file.localBlocks[localName] = block;
-              file.localStates[localName] = localState;
+              analysis.blocks[localName] = block;
+              analysis.localStates[localName] = localState;
               return block;
             });
-            analysis.blockPromises[blockPath] = res;
-            analysis.blockPromisesArray.push(res);
+            analysis.parent.blockPromises[blockPath] = res;
           }
 
           // Add to our blocks import Promise array
           _localBlocks[localName] = 1;
-          file.blockPromises.push(res);
+          analysis.blockPromises.push(res);
         }
 
         // If this is a named import specifier, discover local state object name.

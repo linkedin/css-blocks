@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
-import Analysis from '../../src/utils/Analysis';
+import { MetaAnalysis } from '../../src/utils/Analysis';
 import { parseFile } from '../../src/index';
 
 const path = require('path');
@@ -10,39 +10,40 @@ export class Test {
 
   @test 'All blocks are discovered in multi-file app from entrypoint'(){
     let base = path.resolve(__dirname, '../../../test/fixtures/basic-multifile');
-    return parseFile('index.tsx', { baseDir: base }).then((analysis: Analysis) => {
-      assert.equal(Object.keys(analysis.blocks).length, 2);
-      assert.equal(analysis.stylesFound.size, 4);
-      assert.equal(analysis.files.length, 2);
+    return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
+      assert.equal(analysis.fileCount(), 2);
+      assert.equal(Object.keys(analysis.getAnalysis(0).blocks).length, 1);
+      assert.equal(Object.keys(analysis.getAnalysis(1).blocks).length, 1);
+      assert.equal(analysis.getStyles().size, 4);
     });
   }
 
   @test 'Duplicate blocks are only parsed once'(){
     let base = path.resolve(__dirname, '../../../test/fixtures/duplicate-blocks-multifile');
-    return parseFile('index.tsx', { baseDir: base }).then((analysis: Analysis) => {
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(Object.keys(analysis.blockPromises).length, 1);
-      assert.equal(analysis.stylesFound.size, 3);
-      assert.equal(analysis.files.length, 2);
+    return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
+      assert.equal(analysis.fileCount(), 2);
+      assert.equal(analysis.blockCount(), 1);
+      assert.equal(analysis.blockPromisesCount(), 1);
+      assert.equal(analysis.getStyles().size, 3);
     });
   }
 
   @test 'Dependency Tree Crawling finds dependents of dependents'(){
     let base = path.resolve(__dirname, '../../../test/fixtures/deep-multifile');
-    return parseFile('index.tsx', { baseDir: base }).then((analysis: Analysis) => {
-      assert.equal(Object.keys(analysis.blocks).length, 3);
-      assert.equal(Object.keys(analysis.blockPromises).length, 3);
-      assert.equal(analysis.stylesFound.size, 5);
-      assert.equal(analysis.files.length, 3);
+    return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
+      assert.equal(analysis.fileCount(), 3);
+      assert.equal(analysis.blockCount(), 3);
+      assert.equal(analysis.blockPromisesCount(), 3);
+      assert.equal(analysis.getStyles().size, 5);
     });
   }
 
   @test 'Conflicting local import names don\'t interfere with each other'(){
     let base = path.resolve(__dirname, '../../../test/fixtures/conflicting-local-multifile');
-    return parseFile('index.tsx', { baseDir: base }).then((analysis: Analysis) => {
-      assert.equal(Object.keys(analysis.blocks).length, 2);
-      assert.equal(analysis.stylesFound.size, 4);
-      assert.equal(analysis.files.length, 2);
+    return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
+      assert.equal(analysis.fileCount(), 2);
+      assert.equal(analysis.blockCount(), 2);
+      assert.equal(analysis.getStyles().size, 4);
     });
   }
 }

@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
-import Analysis from '../../src/utils/Analysis';
+import { MetaAnalysis } from '../../src/utils/Analysis';
 import { parse } from '../../src/index';
 
 const mock = require('mock-fs');
@@ -22,11 +22,11 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.color='yellow'></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      assert.equal(analysis.dynamicStyles.size, 0);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
 
@@ -47,11 +47,11 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.color='green'></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      assert.equal(analysis.dynamicStyles.size, 0);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
 
@@ -72,11 +72,11 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.color={ohgod}></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 3);
-      assert.equal(analysis.dynamicStyles.size, 2);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 3);
+      assert.equal(analysis.getDynamicStyles().size, 2);
     });
   }
 
@@ -94,11 +94,11 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.awesome ></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      assert.equal(analysis.dynamicStyles.size, 0);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
 
@@ -116,11 +116,11 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.awesome='true'></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      assert.equal(analysis.dynamicStyles.size, 0);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
 
@@ -138,11 +138,11 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.awesome={ohmy}></div>;
-    `).then((analysis: Analysis) => {
+    `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.equal(Object.keys(analysis.blocks).length, 1);
-      assert.equal(analysis.stylesFound.size, 2);
-      assert.equal(analysis.dynamicStyles.size, 1);
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 1);
     });
   }
 }
