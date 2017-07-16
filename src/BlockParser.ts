@@ -307,7 +307,7 @@ export default class BlockParser {
       let localName = md[2];
 
       // Import file, then parse file, then save block reference.
-      let result: Promise<ImportedFile> = this.opts.importer(sourceFile, importPath);
+      let result: Promise<ImportedFile> = this.opts.importer.import(sourceFile, importPath, this.opts);
       let extractedResult: Promise<Block> = result.then((importedFile: ImportedFile) => {
         let otherRoot = this.postcss.parse(importedFile.contents, {from: importedFile.path});
         return this.parse(otherRoot, importedFile.path, importedFile.defaultName);

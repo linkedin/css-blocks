@@ -37,7 +37,7 @@ export class Plugin {
     }
 
     // Fetch block name from importer
-    let defaultName: string = this.opts.importer.getDefaultName(sourceFile);
+    let defaultName: string = this.opts.importer.getDefaultName(sourceFile, this.opts);
     let blockParser = new BlockParser(this.postcss, this.opts);
 
     return blockParser.parse(root, sourceFile, defaultName).then((block) => {

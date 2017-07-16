@@ -24,6 +24,7 @@ export {
  SourceLocation
 } from "./SourceLocation";
 export {
+  ImporterData,
   PluginOptions,
   OptionsReader as PluginOptionsReader,
 } from "./options";
@@ -43,6 +44,7 @@ export {
 export {
   ImportedFile,
   Importer,
+  FilesystemImporter,
   filesystemImporter
 } from "./importing";
 export {

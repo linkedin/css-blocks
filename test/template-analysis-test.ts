@@ -151,14 +151,18 @@ export class KeyQueryTests {
       .myclass[state|a-sub-state] {}
     `;
     let processPromise = postcss().process(source, {from: "test.css"});
-    let testImporter: Importer = <Importer>function(_fromFile: string, importPath: string): Promise<ImportedFile> {
-      if (importPath === "test.css") {
-        return Promise.resolve({defaultName: "test", path: importPath, contents: source});
-      } else {
-        throw new Error("wtf");
+    let testImporter: Importer = {
+      import(_fromFile: string, importPath: string): Promise<ImportedFile> {
+        if (importPath === "test.css") {
+          return Promise.resolve({ defaultName: "test", path: importPath, contents: source });
+        } else {
+          throw new Error("wtf");
+        }
+      },
+      getDefaultName(_path: string): string {
+        return "test";
       }
     };
-    testImporter.getDefaultName = (_path: string) => "test";
     let options: PluginOptions =  {
       importer: testImporter
     };

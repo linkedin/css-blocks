@@ -31,11 +31,11 @@ export class BlockFactory {
     return Promise.resolve(new Block("placeholder", ""));
   }
   getBlockRelative(fromPath: string, blockPath: string): Promise<Block> {
-    return this.options.importer(fromPath, blockPath).then(file => {
+    return this.options.importer.import(fromPath, blockPath, this.options).then(file => {
       let resultPromise = this.postcssImpl().process(file.contents, { from: file.path });
       return resultPromise.then(result => {
         if (result.root) {
-          return this.parser.parse(result.root, file.path, this.options.importer.getDefaultName(file.path)).then(block => {
+          return this.parser.parse(result.root, file.path, this.options.importer.getDefaultName(file.path, this.options)).then(block => {
             return block;
           });
         } else {
