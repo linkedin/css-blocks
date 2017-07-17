@@ -46,7 +46,7 @@ export class Test {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
-      assert.deepEqual(analysis.getAnalysis(0).localStates, {'bar': 'barStates'});
+      assert.deepEqual(analysis.getAnalysis(0).template.localStates, {'bar': 'barStates'});
     });
   }
 
@@ -58,7 +58,7 @@ export class Test {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
-      assert.deepEqual(analysis.getAnalysis(0).localStates, {'bar': 'barStates'});
+      assert.deepEqual(analysis.getAnalysis(0).template.localStates, {'bar': 'barStates'});
     });
   }
 

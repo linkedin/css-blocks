@@ -203,7 +203,7 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer<Template> {
     }
     return parseFile(this.entrypoint);
   }
-  reset()  : Promise<MetaAnalysis> { return parseFile(''); }
+  reset() { return; }
 }
 
 export default {

@@ -30,7 +30,7 @@ export class Test {
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      assert.deepEqual(analysis.getAnalysis(0).localStates, {'bar': 'barStates'});
+      assert.deepEqual(analysis.getAnalysis(0).template.localStates, {'bar': 'barStates'});
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getStyles().size, 2);
       assert.equal(analysis.getDynamicStyles().size, 0);
@@ -59,6 +59,33 @@ export class Test {
         [bar[barStates.color.yellow]]: ohgod
       });
 
+      <div class={style}></div>;
+    `).then((analysis: MetaAnalysis) => {
+      mock.restore();
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 2);
+      assert.equal(analysis.getDynamicStyles().size, 1);
+    });
+  }
+
+  @test 'States may be imported under default name'(){
+    mock({
+      'bar.block.css': `
+        .root { color: blue; }
+        [state|awesome] {
+          color: yellow;
+        }
+      `
+    });
+
+    return parse(`
+      import bar, { states } from 'bar.block.css';
+      import objstr from 'obj-str';
+      let ohgod = true;
+      let style = objstr({
+        [bar]: true,
+        [bar[states.awesome]]: ohgod
+      });
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
       mock.restore();

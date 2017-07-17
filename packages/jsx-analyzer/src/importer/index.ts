@@ -108,37 +108,26 @@ export default function importer(file: Template, analysis: Analysis){
         return;
       }
 
+      // TODO: Make configurable
+      filepath = filepath.replace('cssblock!', '');
+
       // For each specifier in this block import statement:
       let localState = '';
+      let localName = '';
+      let blockPath = path.resolve(dirname, filepath);
+
       specifiers.forEach((specifier) => {
 
         // TODO: For namespaced imports, the parser needs to be smart enougn to
         //       recognize `namespace.default` and `namespace.states` as block references.
         let isNamespace = isImportNamespaceSpecifier(specifier);
 
-        // If is default import specifier, read the referenced block file from disk.
-        // Then, parse CSS Block, resolve local name and compiled block when done.
+        // If is default import specifier, then fetch local name for block.
         if (   isImportDefaultSpecifier(specifier) || isNamespace ||
              ( isImportSpecifier(specifier) && specifier.imported.name === DEFAULT_IDENTIFIER ) ) {
-          let localName = specifier.local.name;
-          let blockPath = path.resolve(dirname, filepath);
 
-          // Try to fetch an existing Block Promise. If it does not exist, start processing.
-          let res: Promise<Block> = analysis.parent.blockPromises[blockPath];
-          if ( !res ) {
-            let stylesheet = fs.readFileSync(blockPath);
-            let blockName = path.parse(filepath).base.replace(BLOCK_SUFFIX, '');
-            res = parser.parse(postcss.parse(stylesheet), filepath, blockName).then((block) : Block => {
-              analysis.blocks[localName] = block;
-              analysis.localStates[localName] = localState;
-              return block;
-            });
-            analysis.parent.blockPromises[blockPath] = res;
-          }
-
-          // Add to our blocks import Promise array
+          localName = specifier.local.name;
           _localBlocks[localName] = 1;
-          analysis.blockPromises.push(res);
         }
 
         // If this is a named import specifier, discover local state object name.
@@ -148,6 +137,23 @@ export default function importer(file: Template, analysis: Analysis){
             _localStates[specifier.local.name] = 1;
           }
         }
+      });
+
+      // Try to fetch an existing Block Promise. If it does not exist, parse CSS Block.
+      let res: Promise<Block> = analysis.parent.blockPromises[blockPath];
+      if ( !res ) {
+        let stylesheet = fs.readFileSync(blockPath);
+        let blockName = path.parse(filepath).base.replace(BLOCK_SUFFIX, '');
+        res = parser.parse(postcss.parse(stylesheet), filepath, blockName);
+        analysis.parent.blockPromises[blockPath] = res;
+      }
+
+      // When block parsing is done, add to analysis object.
+      analysis.blockPromises.push(res);
+      res.then((block) : Block => {
+        analysis.blocks[localName] = block;
+        analysis.template.localStates[localName] = localState;
+        return block;
       });
 
     },

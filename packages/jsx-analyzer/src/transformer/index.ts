@@ -1,10 +1,8 @@
 import { TemplateRewriter, StyleMapping } from 'css-blocks';
-import { NodePath } from 'babel-traverse';
-import { Program } from 'babel-types';
 import { Template } from '../utils/Analysis';
 
 export interface RewriterOptions {
-  meta: { [metaprop:string]: any };
+  meta?: { [metaprop: string]: any };
   cssBlocks: {
     styleMapping: StyleMapping<Template> | null;
   };
@@ -15,6 +13,11 @@ export interface RewriterOutput {
   map: any;
 }
 
+// TODO: The entire point of this class is to serve as a transport mechanism for
+//       our StyleMapping across the Webpack/Typescript/Babel barrier. This will
+//       be replaced by searalizing the Mapping to JSON in the loader, appending
+//       it in a comment sourcemaps style to the file, and hydrating/removing it
+//       in the transformer. Remove this when that is added.
 export default class CSSBlocksJSXTransformer implements TemplateRewriter {
 
   private styleMapping: StyleMapping<Template> | null;
@@ -23,13 +26,4 @@ export default class CSSBlocksJSXTransformer implements TemplateRewriter {
     this.styleMapping = opts.cssBlocks.styleMapping;
   }
 
-  transform(): any {
-      return {
-        visitor: {
-          Program(path: NodePath<Program>, state: any){
-            console.log('state', state.opts);
-          }
-      }
-    };
-  }
 }

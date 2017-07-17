@@ -36,8 +36,7 @@ export class Test {
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
-      console.log(analysis);
-      assert.deepEqual(analysis.getAnalysis(0).localStates, {'bar': 'barStates'});
+      assert.deepEqual(analysis.getAnalysis(0).template.localStates, {'bar': 'barStates'});
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getStyles().size, 2);
       assert.equal(analysis.getDynamicStyles().size, 0);

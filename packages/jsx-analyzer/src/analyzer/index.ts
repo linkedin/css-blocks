@@ -110,7 +110,7 @@ function saveStyle(reader: ExpressionReader, analysis: Analysis, isDynamic = fal
     if ( !blockName ) {
       blockName = part;
     }
-    else if ( analysis.localStates[blockName] === part ) {
+    else if ( analysis.template.localStates[blockName] === part ) {
       stateName = reader.next();
       substateName = reader.next();
     }

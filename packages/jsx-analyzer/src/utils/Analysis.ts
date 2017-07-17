@@ -1,9 +1,18 @@
-import { TemplateAnalysis, Block, BlockObject, TemplateInfo, MetaTemplateAnalysis, TemplateInfoFactory, SerializedTemplateInfo } from 'css-blocks';
+import { TemplateAnalysis,
+         Block,
+         BlockObject,
+         TemplateInfo,
+         MetaTemplateAnalysis,
+         TemplateInfoFactory,
+         SerializedTemplateInfo,
+         TemplateInfoConstructor
+       } from 'css-blocks';
 import { File } from 'babel-types';
 
 export class Template extends TemplateInfo {
 
   static typeName = 'CssBlocks.JSXTemplateInfo';
+  localStates: { [blockName: string]: string } = {};
   data: string;
   ast: File;
 
@@ -25,7 +34,7 @@ export class Template extends TemplateInfo {
   }
 }
 
-TemplateInfoFactory.register(TemplateInfo.typeName, Template);
+TemplateInfoFactory.register(TemplateInfo.typeName, Template as TemplateInfoConstructor);
 
 /**
 * Extension of the default css-bocks analytics object to store blocks and other
@@ -36,7 +45,6 @@ export default class Analysis extends TemplateAnalysis<Template> {
   template: Template;
   parent: MetaAnalysis;
   blockPromises: Promise<Block>[] = [];
-  localStates: { [localState: string]: string} = {};
 
   constructor(template: Template, parent: MetaAnalysis){
     super(template);
@@ -44,6 +52,9 @@ export default class Analysis extends TemplateAnalysis<Template> {
   }
 
   addStyle(block: BlockObject, isDynamic=false): this {
+    if (!block) {
+      return this;
+    }
     super.addStyle(block);
     if ( isDynamic ) {
       this.markDynamic(block);
@@ -66,11 +77,14 @@ export class MetaAnalysis extends MetaTemplateAnalysis<Template> {
   }
 
   blockCount(): number {
-    let count = 0;
+    let blocks: Set<Block> = new Set();
     this.eachAnalysis((analysis: TemplateAnalysis<Template>) => {
-      count += Object.keys(analysis.blocks).length;
+      let keys = Object.keys(analysis.blocks);
+      keys.forEach((key) => {
+        blocks.add(analysis.blocks[key]);
+      });
     });
-    return count;
+    return blocks.size;
   }
 
   blockPromisesCount(): number {

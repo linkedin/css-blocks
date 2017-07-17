@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
+import { suite, test, skip } from 'mocha-typescript';
 import { MetaAnalysis } from '../../src/utils/Analysis';
 import { parse } from '../../src/index';
 
@@ -8,7 +8,7 @@ const mock = require('mock-fs');
 @suite('State Attributes')
 export class Test {
 
-  @test 'States with substates are tracked'(){
+  @skip @test 'States with substates are tracked'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -30,7 +30,7 @@ export class Test {
     });
   }
 
-  @test 'When provided state value is string literal, only the corresponding state is registered'(){
+  @skip @test 'When provided state value is string literal, only the corresponding state is registered'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -55,7 +55,7 @@ export class Test {
     });
   }
 
-  @test 'When provided state value is dynamic, all states in the group are registered'(){
+  @skip @test 'When provided state value is dynamic, all states in the group are registered'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -80,7 +80,7 @@ export class Test {
     });
   }
 
-  @test 'Boolean states with no value only ever register the one state and are never dynamic'(){
+  @skip @test 'Boolean states with no value only ever register the one state and are never dynamic'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -102,7 +102,7 @@ export class Test {
     });
   }
 
-  @test 'Boolean states with a literal value only ever register the one state and are not dynamic'(){
+  @skip @test 'Boolean states with a literal value only ever register the one state and are not dynamic'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -124,7 +124,7 @@ export class Test {
     });
   }
 
-  @test 'Boolean states with a dynamic value only ever register the one state and are dynamic'(){
+  @skip @test 'Boolean states with a dynamic value only ever register the one state and are dynamic'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
