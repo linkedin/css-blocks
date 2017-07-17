@@ -289,7 +289,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     let styles: string[] =  [];
     let dynamicStyles: number[] = [];
     Object.keys(this.blocks).forEach((localname) => {
-      blockRefs[localname] = this.blocks[localname].source;
+      blockRefs[localname] = this.blocks[localname].identifier;
     });
     this.stylesFound.forEach((s) => {
       styles.push(this.serializedName(s));

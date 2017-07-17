@@ -160,7 +160,7 @@ export default class ConflictResolver {
         else {
           // Throw if resolutions are not all before or after values for the same property.
           if (foundOtherValue !== null && foundResolve !== null && foundOtherValue < foundResolve) {
-            throw new errors.InvalidBlockSyntax(`Resolving ${decl.prop} must happen either before or after all other values for ${decl.prop}.`, sourceLocation(block.source, decl));
+            throw new errors.InvalidBlockSyntax(`Resolving ${decl.prop} must happen either before or after all other values for ${decl.prop}.`, this.sourceLocation(block, decl));
           }
           foundOtherValue = idx;
           otherDecls.push(otherDecl);
@@ -169,7 +169,7 @@ export default class ConflictResolver {
 
       // If no local value found, throw.
       if (foundOtherValue === null) {
-        throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, sourceLocation(block.source, decl));
+        throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, this.sourceLocation(block, decl));
       }
 
       // Look up the block that contains the asked resolution.
@@ -178,13 +178,13 @@ export default class ConflictResolver {
 
       // If trying to resolve rule from the same block, throw.
       if (block.equal(other && other.block)) {
-        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with your own block.`, sourceLocation(block.source, decl));
+        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with your own block.`, this.sourceLocation(block, decl));
       }
 
       // If trying to explicitly resolve (aka: not injected inheritance) from an
       // ancestor block, throw.
       else if (!resolveInherited && other && other.block.isAncestor(block)) {
-        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with ancestors of your own block.`, sourceLocation(block.source, decl));
+        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with ancestors of your own block.`, this.sourceLocation(block, decl));
       }
 
       // Crawl up inheritance tree of the other block and attempt to resolve the
@@ -200,7 +200,7 @@ export default class ConflictResolver {
       // If no conflicting Declarations were found (aka: calling for a resolution
       // with nothing to resolve), throw error.
       if (foundConflict === ConflictType.noconflict) {
-        throw new errors.InvalidBlockSyntax(`There are no conflicting values for ${decl.prop} found in any selectors targeting ${referenceStr}.`, sourceLocation(block.source, decl));
+        throw new errors.InvalidBlockSyntax(`There are no conflicting values for ${decl.prop} found in any selectors targeting ${referenceStr}.`, this.sourceLocation(block, decl));
       }
 
       // Remove resolution Declaration
@@ -348,5 +348,9 @@ export default class ConflictResolver {
       mergedSels.push(mergedKey);
     }
     return mergedSels.map(sel => new ParsedSelector(sel));
+  }
+  sourceLocation(block: Block, node: postcss.Node): SourceLocation | undefined {
+    let blockPath = this.opts.importer.inspect(block.identifier, this.opts);
+    return sourceLocation(blockPath, node);
   }
 }

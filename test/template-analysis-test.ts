@@ -3,18 +3,21 @@ import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import BlockParser from "../src/BlockParser";
+import { BlockFactory } from "../src/Block/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockObject } from "../src/Block";
-import { BlockFactory } from "../src/Block/BlockFactory";
 import { PluginOptions, OptionsReader } from "../src/options";
 import { SerializedTemplateAnalysis, TemplateInfo, TemplateAnalysis } from "../src/TemplateAnalysis";
+import { MockImportRegistry } from "./util/MockImportRegistry";
 
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Template Analysis")
 export class KeyQueryTests {
   private parseBlock(css: string, filename: string, opts?: PluginOptions): Promise<BlockAndRoot> {
-    let blockParser = new BlockParser(postcss, opts);
+    let options: PluginOptions = opts || {};
+    let factory = new BlockFactory(options, postcss);
+    let blockParser = new BlockParser(postcss, options, factory);
     let root = postcss.parse(css, {from: filename});
     return blockParser.parse(root, filename, "query-test").then((block) => {
       return <BlockAndRoot>[block, root];
@@ -151,27 +154,21 @@ export class KeyQueryTests {
       .myclass[state|a-sub-state] {}
     `;
     let processPromise = postcss().process(source, {from: "test.css"});
-    let testImporter: Importer = {
-      import(_fromFile: string, importPath: string): Promise<ImportedFile> {
-        if (importPath === "test.css") {
-          return Promise.resolve({ defaultName: "test", path: importPath, contents: source });
-        } else {
-          throw new Error("wtf");
-        }
-      },
-      getDefaultName(_path: string): string {
-        return "test";
-      }
-    };
+    let registry = new MockImportRegistry();
+    registry.registerSource("test.css", source);
+    let testImporter = registry.importer();
     let options: PluginOptions =  {
       importer: testImporter
     };
+    let factory = new BlockFactory(options, postcss);
     let blockPromise = <Promise<Block>>processPromise.then(result => {
       if (result.root) {
-        let parser = new BlockParser(postcss);
+        let parser = new BlockParser(postcss, options, factory);
         try {
-        return parser.parse(result.root, "test.css", "a-block");
-        } catch (e) { console.error(e); throw e; }
+          return parser.parse(result.root, "test.css", "a-block");
+        } catch (e) {
+          console.error(e); throw e;
+        }
       } else {
         throw new Error("wtf");
       }
@@ -192,7 +189,7 @@ export class KeyQueryTests {
     let testPromise = analysisPromise.then(analysis => {
       let serialization = analysis.serialize();
       assert.deepEqual(serialization.template, {type: TemplateInfo.typeName, identifier: "my-template.html"});
-      let factory = new BlockFactory(options, testImporter, postcss);
+      let factory = new BlockFactory(options, postcss);
       return TemplateAnalysis.deserialize<TemplateInfo>(serialization, factory).then(analysis => {
         let reserialization = analysis.serialize();
         assert.deepEqual(serialization, reserialization);

@@ -7,6 +7,7 @@ import { BlockClass } from "./index";
 import { OptionsReader } from "../options";
 import { OutputMode } from "../OutputMode";
 import { BlockObject, StateContainer } from "./BlockObject";
+import { FileIdentifier } from "../importing";
 
 interface BlockReferenceMap {
   [blockName: string]: Block;
@@ -23,7 +24,7 @@ export interface MergedObjectMap {
 export class Block extends BlockObject {
   private _classes: BlockClassMap = {};
   private _blockReferences: BlockReferenceMap = {};
-  private _source: string;
+  private _identifier: FileIdentifier;
   private _base?: Block;
   private _baseName?: string;
   private _implements: Block[] = [];
@@ -33,9 +34,9 @@ export class Block extends BlockObject {
   public readonly states: StateContainer;
   public readonly parsedRuleSelectors: WeakMap<postcss.Rule,ParsedSelector[]>;
 
-  constructor(name: string, source: string) {
+  constructor(name: string, identifier: FileIdentifier) {
     super(name);
-    this._source = source;
+    this._identifier = identifier;
     this.parsedRuleSelectors = new WeakMap();
     this.states = new StateContainer(this);
   }
@@ -48,8 +49,8 @@ export class Block extends BlockObject {
     return this._baseName;
   }
 
-  get source() {
-    return this._source;
+  get identifier(): FileIdentifier {
+    return this._identifier;
   }
 
   setBase(baseName: string, base: Block) {
@@ -93,7 +94,7 @@ export class Block extends BlockObject {
       let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
       if (missingObjs.length > 0) {
         let s = missingObjs.length > 1 ? 's' : '';
-        throw new CssBlockError( `Missing implementation${s} for: ${missingObjsStr} from ${b.source}`);
+        throw new CssBlockError( `Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
       }
     });
   }
@@ -382,7 +383,7 @@ export class Block extends BlockObject {
   }
 
   debug(opts: OptionsReader): string[] {
-    let result: string[] = [`Source: ${this.source}`, this.asDebug(opts)];
+    let result: string[] = [`Source: ${this.identifier}`, this.asDebug(opts)];
     let sourceNames = new Set<string>(this.all().map(o => o.asSource()));
     let sortedNames = [...sourceNames].sort();
     sortedNames.forEach(n => {
@@ -400,7 +401,7 @@ export class Block extends BlockObject {
    * @return True or False if self and `other` are equal.
    */
   equal(other: Block | undefined | null) {
-    return other && this.source === other.source;
+    return other && this.identifier === other.identifier;
   }
 
   isAncestor(other: Block | undefined | null): boolean {

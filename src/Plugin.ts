@@ -1,5 +1,6 @@
 import * as postcss from "postcss";
 import { PluginOptions, OptionsReader } from "./options";
+import { BlockFactory } from "./Block/BlockFactory";
 import BlockParser from "./BlockParser";
 import BlockCompiler from "./BlockCompiler";
 import * as errors from "./errors";
@@ -36,9 +37,11 @@ export class Plugin {
       throw new errors.MissingSourcePath();
     }
 
+    let factory = new BlockFactory(this.opts, this.postcss);
     // Fetch block name from importer
-    let defaultName: string = this.opts.importer.getDefaultName(sourceFile, this.opts);
-    let blockParser = new BlockParser(this.postcss, this.opts);
+    let identifier = this.opts.importer.identifier(null, sourceFile, this.opts);
+    let defaultName: string = this.opts.importer.defaultName(identifier, this.opts);
+    let blockParser = new BlockParser(this.postcss, this.opts, factory);
 
     return blockParser.parse(root, sourceFile, defaultName).then((block) => {
       let compiler = new BlockCompiler(postcss, this.opts);

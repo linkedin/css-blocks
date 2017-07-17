@@ -3,6 +3,7 @@ import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import BlockParser from "../src/BlockParser";
+import { BlockFactory } from "../src/Block/BlockFactory";
 import { Block } from "../src/Block";
 import { PluginOptions } from "../src/options";
 import { QueryKeySelector } from "../src/query";
@@ -12,7 +13,9 @@ type BlockAndRoot = [Block, postcss.Container];
 @suite("Querying")
 export class KeyQueryTests {
   private parseBlock(css: string, filename: string, opts?: PluginOptions): Promise<BlockAndRoot> {
-    let blockParser = new BlockParser(postcss, opts);
+    let options: PluginOptions = opts || {};
+    let factory = new BlockFactory(options, postcss);
+    let blockParser = new BlockParser(postcss, options, factory);
     let root = postcss.parse(css, {from: filename});
     return blockParser.parse(root, filename, "query-test").then((block) => {
       return <BlockAndRoot>[block, root];

@@ -1,8 +1,9 @@
 import * as postcss from "postcss";
 import { Block } from "./Block";
+import { IBlockFactory } from "./IBlockFactory";
 import BlockParser from "../BlockParser";
 import { PluginOptions, OptionsReader } from "../options";
-import { Importer } from "../importing";
+import { Importer, FileIdentifier } from "../importing";
 
 /**
  * This factory ensures that instances of a block are re-used when blocks are
@@ -12,36 +13,46 @@ import { Importer } from "../importing";
  * Note: this is a fake impl right now, callers can use it for api stability
  * but it's not yet used internally -- that will arrive in a subsequent commit.
  */
-export class BlockFactory {
+export class BlockFactory implements IBlockFactory {
   postcssImpl: typeof postcss;
   importer: Importer;
   options: OptionsReader;
   parser: BlockParser;
-  constructor(options: PluginOptions, importer?: Importer, postcssImpl = postcss) {
+  private blocks: {
+    [identifier: string]: Promise<Block>
+  };
+  constructor(options: PluginOptions, postcssImpl = postcss, importer?: Importer) {
     this.postcssImpl = postcssImpl;
     this.options = new OptionsReader(options);
     this.importer = importer || this.options.importer;
-    this.parser = new BlockParser(this.postcssImpl, options);
+    this.parser = new BlockParser(this.postcssImpl, options, this);
+    this.blocks = {};
   }
-  getBlock(blockPath: string): Promise<Block> {
-    let a = 0;
-    if (blockPath) {
-      a += 1;
-    }
-    return Promise.resolve(new Block("placeholder", ""));
-  }
-  getBlockRelative(fromPath: string, blockPath: string): Promise<Block> {
-    return this.options.importer.import(fromPath, blockPath, this.options).then(file => {
-      let resultPromise = this.postcssImpl().process(file.contents, { from: file.path });
-      return resultPromise.then(result => {
-        if (result.root) {
-          return this.parser.parse(result.root, file.path, this.options.importer.getDefaultName(file.path, this.options)).then(block => {
-            return block;
-          });
-        } else {
-          throw new Error("Missing root");
-        }
+  getBlock(identifier: FileIdentifier): Promise<Block> {
+    if (this.blocks[identifier]) {
+      return this.blocks[identifier];
+    } else {
+      let blockPromise = this.importer.import(identifier, this.options).then(file => {
+        let filename = this.importer.filesystemPath(identifier, this.options) || file.identifier;
+        let resultPromise = this.postcssImpl().process(file.contents, { from: filename });
+        return resultPromise.then(result => {
+          if (result.root) {
+            return this.parser.parse(result.root, file.identifier, file.defaultName).then(block => {
+              return block;
+            });
+          } else {
+            // this doesn't happen but it makes the typechecker happy.
+            throw new Error("Missing root");
+          }
+        });
       });
-    });
+      this.blocks[identifier] = blockPromise;
+      return blockPromise;
+    }
+  }
+  getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Promise<Block> {
+    let importer = this.importer;
+    let identifier = importer.identifier(fromIdentifier, importPath, this.options);
+    return this.getBlock(identifier);
   }
 }

@@ -45,7 +45,8 @@ export {
   ImportedFile,
   Importer,
   FilesystemImporter,
-  filesystemImporter
+  filesystemImporter,
+  FileIdentifier
 } from "./importing";
 export {
   SerializedTemplateAnalysis,

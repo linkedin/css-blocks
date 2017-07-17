@@ -2,10 +2,10 @@ import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { PluginOptions, OptionsReader } from "./options";
 import { Block, StateInfo } from "./Block";
+import { IBlockFactory } from "./Block/IBlockFactory";
 import * as errors from "./errors";
-import { ImportedFile } from "./importing";
 export { PluginOptions } from "./options";
-import { sourceLocation, selectorSourceLocation } from "./SourceLocation";
+import { sourceLocation, selectorSourceLocation, SourceLocation } from "./SourceLocation";
 import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
 import regexpu = require("regexpu-core");
 
@@ -81,10 +81,12 @@ export function stateParser(attr: selectorParser.Attribute): StateInfo {
 export default class BlockParser {
   private opts: OptionsReader;
   private postcss: typeof postcss;
+  private factory: IBlockFactory;
 
-  constructor(postcssImpl: typeof postcss, opts?: PluginOptions) {
+  constructor(postcssImpl: typeof postcss, opts: PluginOptions, factory: IBlockFactory) {
     this.opts = new OptionsReader(opts);
     this.postcss = postcssImpl;
+    this.factory = factory;
   }
 
   /**
@@ -287,8 +289,8 @@ export default class BlockParser {
   private resolveReferences(block: Block): Promise<Block> {
 
     let root: postcss.Root | undefined = block.root;
-    let sourceFile: string = block.source;
-    let namedBlockReferences: Promise<[string, Block]>[] = [];
+    let sourceFile: string = this.opts.importer.inspect(block.identifier, this.opts);
+    let namedBlockReferences: Promise<[string, string, postcss.AtRule, Block]>[] = [];
 
     if (!root) {
       throw new errors.InvalidBlockSyntax(`Error finding PostCSS root for block ${block.name}`);
@@ -307,21 +309,25 @@ export default class BlockParser {
       let localName = md[2];
 
       // Import file, then parse file, then save block reference.
-      let result: Promise<ImportedFile> = this.opts.importer.import(sourceFile, importPath, this.opts);
-      let extractedResult: Promise<Block> = result.then((importedFile: ImportedFile) => {
-        let otherRoot = this.postcss.parse(importedFile.contents, {from: importedFile.path});
-        return this.parse(otherRoot, importedFile.path, importedFile.defaultName);
-      });
-      let namedResult: Promise<[string, Block]> = extractedResult.then((referencedBlock: Block): [string, Block] => {
-        return [localName, referencedBlock];
+
+      let blockPromise: Promise<Block> = this.factory.getBlockRelative(sourceFile, importPath);
+      let namedResult: Promise<[string, string, postcss.AtRule, Block]> = blockPromise.then((referencedBlock: Block): [string, string, postcss.AtRule, Block] => {
+        return [localName || referencedBlock.name, importPath, atRule, referencedBlock];
       });
       namedBlockReferences.push(namedResult);
     });
 
     // When all import promises have resolved, save the block references and resolve.
     return Promise.all(namedBlockReferences).then((results) => {
-      results.forEach(([localName, otherBlock]) => {
-        block.addBlockReference(localName || otherBlock.name, otherBlock);
+      let localNames: {[name: string]: string} = {};
+      results.forEach(([localName, importPath, atRule, otherBlock]) => {
+        if (localNames[localName]) {
+          throw new errors.InvalidBlockSyntax(`Blocks ${localNames[localName]} and ${importPath} cannot both have the name ${localName} in this scope.`,
+                                              sourceLocation(sourceFile, atRule));
+        } else {
+          block.addBlockReference(localName, otherBlock);
+          localNames[localName] = importPath;
+        }
       });
     }).then(() => {
       return block;
@@ -334,10 +340,10 @@ export default class BlockParser {
    * @param root The PostCSS Rule.
    * @param attr Attribute to verify.
    */
-  private assertValidState(sourceFile: string, rule: postcss.Rule, attr: selectorParser.Attribute) {
+  private assertValidState(block: Block, rule: postcss.Rule, attr: selectorParser.Attribute) {
     if (attr.value && attr.operator !== "=") {
       throw new errors.InvalidBlockSyntax(`A state with a value must use the = operator (found ${attr.operator} instead).`,
-                                          selectorSourceLocation(sourceFile, rule, attr));
+                                          this.selectorSourceLocation(block, rule, attr));
     }
   }
 
@@ -404,7 +410,7 @@ export default class BlockParser {
       if (!refBlock) {
         throw new errors.InvalidBlockSyntax(
           `Tag name selectors are not allowed: ${rule.selector}`,
-          selectorSourceLocation(block.source, rule, blockName));
+          this.selectorSourceLocation(block, rule, blockName));
       }
     }
 
@@ -414,11 +420,11 @@ export default class BlockParser {
       if ((<selectorParser.Attribute>nonStateAttribute).attribute.match(/state:/)) {
         throw new errors.InvalidBlockSyntax(
           `State attribute selctors use a \`|\`, not a \`:\` which is illegal CSS syntax and won't work in other parsers: ${rule.selector}`,
-          selectorSourceLocation(block.source, rule, nonStateAttribute));
+          this.selectorSourceLocation(block, rule, nonStateAttribute));
       } else {
         throw new errors.InvalidBlockSyntax(
           `Cannot select attributes other than states: ${rule.selector}`,
-          selectorSourceLocation(block.source, rule, nonStateAttribute));
+          this.selectorSourceLocation(block, rule, nonStateAttribute));
       }
     }
 
@@ -437,11 +443,11 @@ export default class BlockParser {
           if (found.blockType === BlockType.class || found.blockType === BlockType.classState) {
             throw new errors.InvalidBlockSyntax(
               `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
-              selectorSourceLocation(block.source, rule, sel.nodes[0]));
+              this.selectorSourceLocation(block, rule, sel.nodes[0]));
           } else if (found.blockType === BlockType.state) {
             throw new errors.InvalidBlockSyntax(
               `It's redundant to specify a state with the an explicit .root: ${rule.selector}`,
-              selectorSourceLocation(block.source, rule, n));
+              this.selectorSourceLocation(block, rule, n));
           }
         }
       }
@@ -449,7 +455,7 @@ export default class BlockParser {
       // If selecting a state attribute, assert it is valid, save the found state,
       // and throw the appropriate error if conflicting selectors are found.
       else if (isState(n)) {
-        this.assertValidState(block.source, rule, <selectorParser.Attribute>n);
+        this.assertValidState(block, rule, <selectorParser.Attribute>n);
         if (!found) {
           found = {
             node: n,
@@ -464,12 +470,12 @@ export default class BlockParser {
           if (n.toString() !== found.node.toString()) {
             throw new errors.InvalidBlockSyntax(
               `Two distinct states cannot be selected on the same element: ${rule.selector}`,
-              selectorSourceLocation(block.source, rule, n));
+              this.selectorSourceLocation(block, rule, n));
           }
         } else if (found.blockType === BlockType.root) {
             throw new errors.InvalidBlockSyntax(
               `It's redundant to specify a state with an explicit .root: ${rule.selector}`,
-              selectorSourceLocation(block.source, rule, found.node));
+              this.selectorSourceLocation(block, rule, found.node));
         }
       }
 
@@ -485,17 +491,17 @@ export default class BlockParser {
           if (found.blockType === BlockType.root) {
             throw new errors.InvalidBlockSyntax(
               `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
-              selectorSourceLocation(block.source, rule, sel.nodes[0]));
+              this.selectorSourceLocation(block, rule, sel.nodes[0]));
           } else if (found.blockType === BlockType.class) {
             if (n.toString() !== found.node.toString()) {
               throw new errors.InvalidBlockSyntax(
                 `Two distinct classes cannot be selected on the same element: ${rule.selector}`,
-                selectorSourceLocation(block.source, rule, n));
+                this.selectorSourceLocation(block, rule, n));
             }
           } else if (found.blockType === BlockType.classState || found.blockType === BlockType.state) {
             throw new errors.InvalidBlockSyntax(
               `The class must precede the state: ${rule.selector}`,
-              selectorSourceLocation(block.source, rule, sel.nodes[0]));
+              this.selectorSourceLocation(block, rule, sel.nodes[0]));
           }
         }
       }
@@ -506,7 +512,7 @@ export default class BlockParser {
     if (!result) {
       throw new errors.InvalidBlockSyntax(
         `Missing block object in selector component '${sel.nodes.join('')}': ${rule.selector}`,
-        selectorSourceLocation(block.source, rule, sel.nodes[0]));
+        this.selectorSourceLocation(block, rule, sel.nodes[0]));
     }
 
     // Otherwise, return the block, type and associated node.
@@ -567,14 +573,14 @@ export default class BlockParser {
     if (!obj.blockName) {
       throw new errors.InvalidBlockSyntax(
         `Foreign reference expected but not found: ${rule.selector}`,
-        selectorSourceLocation(block.source, rule, obj.node));
+        this.selectorSourceLocation(block, rule, obj.node));
     }
 
     // If selecting something other than a state on external block, throw.
     if (obj.blockType !== BlockType.state) {
       throw new errors.InvalidBlockSyntax(
         `Only global states from other blocks can be used in selectors: ${rule.selector}`,
-        selectorSourceLocation(block.source, rule, obj.node));
+        this.selectorSourceLocation(block, rule, obj.node));
     }
 
     // If referened block does not exist, throw.
@@ -582,7 +588,7 @@ export default class BlockParser {
     if (!otherBlock) {
       throw new errors.InvalidBlockSyntax(
         `No block named ${obj.blockName} found: ${rule.selector}`,
-        selectorSourceLocation(block.source, rule, obj.node));
+        this.selectorSourceLocation(block, rule, obj.node));
     }
 
     // If state referenced does not exist on external block, throw
@@ -591,14 +597,14 @@ export default class BlockParser {
     if (!otherState) {
       throw new errors.InvalidBlockSyntax(
         `No state ${obj.node.toString()} found in : ${rule.selector}`,
-        selectorSourceLocation(block.source, rule, obj.node));
+        this.selectorSourceLocation(block, rule, obj.node));
     }
 
     // If external state is not set as global, throw.
     if (!otherState.isGlobal) {
       throw new errors.InvalidBlockSyntax(
         `${obj.node.toString()} is not global: ${rule.selector}`,
-        selectorSourceLocation(block.source, rule, obj.node));
+        this.selectorSourceLocation(block, rule, obj.node));
     }
 
   }
@@ -617,7 +623,7 @@ export default class BlockParser {
     if (keyObject.blockName) {
       throw new errors.InvalidBlockSyntax(
         `Cannot style values from other blocks: ${rule.selector}`,
-        selectorSourceLocation(block.source, rule, keyObject.node));
+        this.selectorSourceLocation(block, rule, keyObject.node));
     }
 
     // Fetch and validate our first `CompoundSelector`
@@ -653,7 +659,7 @@ export default class BlockParser {
       if (!LEGAL_COMBINATORS.has(combinator)) {
         throw new errors.InvalidBlockSyntax(
           `Illegal Combinator '${combinator}': ${rule.selector}`,
-          selectorSourceLocation(block.source, rule, currentCompoundSel.next.combinator));
+          this.selectorSourceLocation(block, rule, currentCompoundSel.next.combinator));
       }
 
       // Class level objects cannot be ancestors of root level objects
@@ -662,14 +668,14 @@ export default class BlockParser {
            && SIBLING_COMBINATORS.has(combinator)){
           throw new errors.InvalidBlockSyntax(
             `A class is never a sibling of a ${this.objectTypeName(nextObject.blockType)}: ${rule.selector}`,
-            selectorSourceLocation(block.source, rule, selector.selector.nodes[0]));
+            this.selectorSourceLocation(block, rule, selector.selector.nodes[0]));
       }
 
       // Once you go to the class level there's no combinator that gets you back to the root level
       if (foundClassLevel && nextLevelIsRoot) {
         throw new errors.InvalidBlockSyntax(
           `Illegal scoping of a ${this.objectTypeName(currentObject.blockType)}: ${rule.selector}`,
-          selectorSourceLocation(block.source, rule, currentCompoundSel.next.combinator));
+          this.selectorSourceLocation(block, rule, currentCompoundSel.next.combinator));
       }
 
       // You can't reference a new root level object once you introduce descend the hierarchy
@@ -678,7 +684,7 @@ export default class BlockParser {
         if (!foundObjects.every(f => f.node.toString() === nextObject.node.toString())) {
           throw new errors.InvalidBlockSyntax(
             `Illegal scoping of a ${this.objectTypeName(currentObject.blockType)}: ${rule.selector}`,
-            selectorSourceLocation(block.source, rule, currentCompoundSel.next.combinator));
+            this.selectorSourceLocation(block, rule, currentCompoundSel.next.combinator));
         }
       }
 
@@ -686,7 +692,7 @@ export default class BlockParser {
       if (nextLevelIsClass && this.isRootLevelObject(currentObject) && SIBLING_COMBINATORS.has(combinator)) {
         throw new errors.InvalidBlockSyntax(
           `A ${this.objectTypeName(nextObject.blockType)} cannot be a sibling with a ${this.objectTypeName(currentObject.blockType)}: ${rule.selector}`,
-          selectorSourceLocation(block.source, rule, currentCompoundSel.next.combinator));
+          this.selectorSourceLocation(block, rule, currentCompoundSel.next.combinator));
       }
 
       // Class-level objects cannot be combined with each other. only with themselves.
@@ -697,11 +703,11 @@ export default class BlockParser {
           if (conflictObj.blockType === nextObject.blockType) {
             throw new errors.InvalidBlockSyntax(
               `Distinct ${this.objectTypeName(conflictObj.blockType, {plural: true})} cannot be combined: ${rule.selector}`,
-              selectorSourceLocation(block.source, rule, nextObject.node));
+              this.selectorSourceLocation(block, rule, nextObject.node));
           } else {
             throw new errors.InvalidBlockSyntax(
               `Cannot combine a ${this.objectTypeName(conflictObj.blockType)} with a ${this.objectTypeName(nextObject.blockType)}}: ${rule.selector}`,
-              selectorSourceLocation(block.source, rule, nextObject.node));
+              this.selectorSourceLocation(block, rule, nextObject.node));
           }
         }
       }
@@ -713,5 +719,9 @@ export default class BlockParser {
       currentObject = nextObject;
       currentCompoundSel = nextCompoundSel;
     }
+  }
+  selectorSourceLocation(block: Block, rule: postcss.Rule, selector: selectorParser.Node): SourceLocation | undefined {
+    let blockPath = this.opts.importer.inspect(block.identifier, this.opts);
+    return selectorSourceLocation(blockPath, rule, selector);
   }
 }
