@@ -8,9 +8,10 @@
     "dist"
   ],
   "scripts": {
-    "test": "npm run build && mocha dist/test --recursive --opts test/mocha.opts",
+    "test": "npm run build && npm run tslint && mocha dist/test --recursive --opts test/mocha.opts",
     "build": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
-    "watch": "watch 'npm run build' './src' --wait=3"
+    "watch": "watch 'npm run build' './src' --wait=3",
+    "tslint": "tslint --project tsconfig.json --type-check"
   },
   "repository": {
     "type": "git",
@@ -48,6 +49,7 @@
     "obj-str": "^1.0.0",
     "preact": "^8.1.0",
     "ts-node": "^3.0.4",
+    "tslint": "^5.5.0",
     "watch": "^1.0.2"
   },
   "dependencies": {
