@@ -147,8 +147,6 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>, f
     // Parse the expression to fetch class mapping
     let exp: Expression = expParts(parts, mapping);
 
-    console.log(exp);
-
     // Replace with new string
     if ( exp.block ) {
       prop.key = stringLiteral(exp.str);
@@ -178,7 +176,6 @@ export default function transform(): any {
         // there is no need to parse it. Set flag to short circuit babel plugin.
         mapping = state.opts.rewriter.blocks[filename];
         shouldProcess = !!(mapping && Object.keys(mapping.blocks).length);
-        console.log(filename, mapping);
       },
 
       // If this is a CSS Blocks import, remove it.
