@@ -149,8 +149,12 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>, f
     // Parse the expression to fetch class mapping
     let exp: Expression = expParts(parts, mapping);
 
+    console.log(exp);
+
     // Replace with new string
-    prop.key = stringLiteral(exp.str);
+    if ( exp.block ) {
+      prop.key = stringLiteral(exp.str);
+    }
 
   });
 }
@@ -176,6 +180,7 @@ export default function transform(): any {
         // there is no need to parse it. Set flag to short circuit babel plugin.
         mapping = state.opts.rewriter.blocks[filename];
         shouldProcess = !!(mapping && Object.keys(mapping.blocks).length);
+        console.log(filename, mapping);
       },
 
       // If this is a CSS Blocks import, remove it.
@@ -267,72 +272,16 @@ export default function transform(): any {
                 let exp: Expression = expParts(parts, mapping);
 
                 // Replace with new string
-                attr.value = stringLiteral(exp.str);
+                if ( exp.block ) {
+                  attr.value = stringLiteral(exp.str);
+                }
               }
             }
           }
 
           // Handle state attributes
           else if ( isJSXNamespacedName(property) ) {
-
-            // If this namespace is something more complex than an identifier, or is not
-            // `state`, we don't care.
-            if ( !isJSXIdentifier(property.namespace) || property.namespace.name !== STATE_NAMESPACE ) {
-              return;
-            }
-
-            // Fetch selector parts and look for a block under the local name.
-            let reader: ExpressionReader = new ExpressionReader(property.name);
-            let blockName: string | undefined = reader.next();
-            let className: string | undefined = reader.next();
-            let stateName: string | undefined = reader.next() || className;
-
-            // If there is no block imported under this local name, this is a class
-            // we don't care about. Return.
-            let block: Block | undefined = (blockName) ? mapping.blocks[blockName]  : undefined;
-            if ( !block || !stateName ) {
-              return;
-            }
-
-            // If this is a block reference, fetch the class referenced in this selector.
-            let classBlock: BlockClass | undefined = ( className ) ? block.getClass(className) : undefined;
-
-            // Now that we have our block or class, fetch the requested state object.
-            let states: State[] = (classBlock || block).states.getGroup(stateName);
-            let isDynamic = true;
-
-            // If value is set to a string literal value, we only need to register the single state.
-            if ( isStringLiteral(value) ) {
-              let state: State | undefined = (classBlock || block).states.getState(value.value, stateName);
-
-              // If no state was returned, It may be a boolean state. Try to just get it by attribute name.
-              if ( !state ) {
-                state = (classBlock || block).states.getState(stateName);
-              }
-
-              states = state ? [ state ] : [];
-              isDynamic = false;
-            }
-
-            // If value is set to a null, this must be a boolean state.
-            else if ( value === null ) {
-              let state: State | undefined = (classBlock || block).states.getState(stateName);
-              states = state ? [ state ] : [];
-              isDynamic = false;
-            }
-
-            // If we have  not discovered a state object, or if the user is referencing
-            // a namespace other than a class or root, throw.
-            if ( !states ) {
-              // TODO: Add location data in error message.
-              throw new Error(`Attempted to access non-existant state "${stateName}" on block class namespace "${reader.toString()}"`);
-            }
-
-            // Register all states with our analysis
-            states.forEach((state: State) => {
-              // analysis.addStyle(state, isDynamic);
-            });
-
+            // TODO: Handle state attributes
           }
         });
 
