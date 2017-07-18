@@ -33,7 +33,7 @@ export class BlockFactory implements IBlockFactory {
       return this.blocks[identifier];
     } else {
       let blockPromise = this.importer.import(identifier, this.options).then(file => {
-        let filename = this.importer.filesystemPath(identifier, this.options) || file.identifier;
+        let filename: string = this.importer.filesystemPath(identifier, this.options) || this.importer.inspect(identifier, this.options);
         let resultPromise = this.postcssImpl().process(file.contents, { from: filename });
         return resultPromise.then(result => {
           if (result.root) {

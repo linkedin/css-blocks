@@ -10,6 +10,12 @@ export {
   StateInfo
 } from "./Block";
 export {
+  IBlockFactory
+} from "./Block/IBlockFactory";
+export {
+  BlockFactory
+} from "./Block/BlockFactory";
+export {
   default as BlockParser
 } from "./BlockParser";
 export {
@@ -46,7 +52,8 @@ export {
   Importer,
   FilesystemImporter,
   filesystemImporter,
-  FileIdentifier
+  FileIdentifier,
+  PathBasedImporter
 } from "./importing";
 export {
   SerializedTemplateAnalysis,
