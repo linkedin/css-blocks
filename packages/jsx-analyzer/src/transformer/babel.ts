@@ -13,7 +13,6 @@ import {
   isCallExpression,
   isMemberExpression,
   isJSXNamespacedName,
-  isStringLiteral,
   ImportDeclaration,
   stringLiteral,
   ObjectProperty,
@@ -28,7 +27,6 @@ let { parse } = require('path');
 // Properties to check for block classes applied
 // TODO: Consolidate constants across visitor files.
 const OBJSTR_PACKAGE_NAME = 'obj-str';
-const STATE_NAMESPACE = 'state';
 const CLASS_PROPERTIES = {
   'class': 1,
   'className': 1
