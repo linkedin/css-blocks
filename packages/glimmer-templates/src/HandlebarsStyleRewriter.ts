@@ -36,6 +36,7 @@ const STATE = /state:(.*)/;
 export function loaderAdapter(loaderContext: any): Promise<ASTPlugin> {
   debug(`loader adapter. Got loader context for css-blocks:`, loaderContext.cssBlocks);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
+  let options = new CssBlocksOptionsReader(loaderContext.cssBlocks.compilationOptions);
   let metaMappingPromises = new Array<Promise<MetaStyleMapping<ResolvedFile>>>();
   cssFileNames.forEach(filename => {
     metaMappingPromises.push(loaderContext.cssBlocks.mappings[filename]);
@@ -57,7 +58,10 @@ export function loaderAdapter(loaderContext: any): Promise<ASTPlugin> {
               mapping
             };
           }
-          loaderContext.dependency(block.source);
+          let sourceFile = options.importer.filesystemPath(block.identifier, options);
+          if (sourceFile !== null) {
+            loaderContext.dependency(sourceFile);
+          }
         });
       }
     });

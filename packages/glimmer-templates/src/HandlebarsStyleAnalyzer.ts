@@ -8,7 +8,8 @@ import {
   TemplateAnalysis as SingleTemplateStyleAnalysis,
   MetaTemplateAnalysis as MetaStyleAnalysis,
   TemplateAnalyzer,
-  MultiTemplateAnalyzer
+  MultiTemplateAnalyzer,
+  PluginOptionsReader
 } from "css-blocks";
 import Project, { ResolvedFile } from "./project";
 import DependencyAnalyzer from "glimmer-analyzer";
@@ -22,6 +23,7 @@ const STATE = /state:(.*)/;
 export class BaseStyleAnalyzer {
   project: Project;
   debug: debugGenerator.IDebugger;
+  options: PluginOptionsReader;
 
   constructor(project: Project | string) {
     if (typeof project === "string") {
@@ -30,29 +32,32 @@ export class BaseStyleAnalyzer {
       this.project = project;
     }
     this.debug = debugGenerator("css-blocks:glimmer");
+    this.options = new PluginOptionsReader(this.project.cssBlocksOpts);
   }
 
-  protected analyzeTemplate(templateName: string): Promise<SingleTemplateStyleAnalysis<ResolvedFile>> {
-    let template = this.project.templateFor(templateName);
+  protected analyzeTemplate(componentName: string): Promise<SingleTemplateStyleAnalysis<ResolvedFile>> {
+    let template = this.project.templateFor(componentName);
     let analysis = new SingleTemplateStyleAnalysis(template);
     let ast = preprocess(template.string);
     let elementCount = 0;
     let self = this;
-    let result = this.project.blockFor(templateName);
+    let blockIdentifier = this.project.blockImporter.identifier(null, componentName, this.options);
+    let result = this.project.blockFactory.getBlock(blockIdentifier);
 
     return result.then((block) => {
       if (!block) {
-        self.debug(`Analyzing ${templateName}. No block for component. Returning empty analysis.`);
+        self.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
         return analysis;
       } else {
-        self.debug(`Analyzing ${templateName}. Got block for component.`);
+        self.debug(`Analyzing ${componentName}. Got block for component.`);
       }
+      let blockDebugPath = self.options.importer.inspect(block.identifier, this.options);
       analysis.blocks[""] = block;
       block.eachBlockReference((name, refBlock) => {
         analysis.blocks[name] = refBlock;
       });
       let localBlockNames = Object.keys(analysis.blocks).map(n => n === "" ? "<default>" : n);
-      self.debug(`Analyzing ${templateName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(', ')}.`);
+      self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(', ')}.`);
       traverse(ast, {
         ElementNode(node) {
           analysis.endElement();
@@ -72,7 +77,7 @@ export class BaseStyleAnalyzer {
           let classObjects: StateContainer[] | undefined = undefined;
           node.attributes.forEach((n) => {
             if (n.name === "class") {
-              classObjects = self.processClass(n, block, analysis, block.source, template);
+              classObjects = self.processClass(n, block, analysis, blockDebugPath, template);
               self.validateClasses(block, atRootElement, classObjects, node, template);
             }
           });
@@ -83,7 +88,7 @@ export class BaseStyleAnalyzer {
                 stateContainers.unshift(block);
               }
               if (stateContainers.length > 0) {
-                self.processState(RegExp.$1, n, block, stateContainers, analysis, block.source, template);
+                self.processState(RegExp.$1, n, block, stateContainers, analysis, blockDebugPath, template);
               } else {
                 throw self.cssBlockError(`Cannot apply a block state without a block class or root`, n, template);
               }
@@ -120,7 +125,7 @@ export class BaseStyleAnalyzer {
     });
   }
 
-  private processClass(node: AST.AttrNode, block: Block, analysis: SingleTemplateStyleAnalysis<ResolvedFile>, stylesheetPath: string, template: ResolvedFile): StateContainer[] {
+  private processClass(node: AST.AttrNode, block: Block, analysis: SingleTemplateStyleAnalysis<ResolvedFile>, debugPath: string, template: ResolvedFile): StateContainer[] {
     let blockObjects: StateContainer[] = [];
     if (node.value.type === "TextNode") {
       let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
@@ -130,7 +135,7 @@ export class BaseStyleAnalyzer {
           blockObjects.push(<Block | BlockClass>found);
           analysis.addStyle(found);
         } else {
-          throw this.cssBlockError(`No class ${name} found in block at ${stylesheetPath}`, node, template);
+          throw this.cssBlockError(`No class ${name} found in block at ${debugPath}`, node, template);
         }
       });
     }
