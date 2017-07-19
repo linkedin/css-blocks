@@ -7,9 +7,10 @@ import { BlockClass } from "./index";
 import { OptionsReader } from "../options";
 import { OutputMode } from "../OutputMode";
 import { BlockObject, StateContainer } from "./BlockObject";
+import { BlockScope } from "./LocalScope";
 import { FileIdentifier } from "../importing";
 
-interface BlockReferenceMap {
+export interface BlockReferenceMap {
   [blockName: string]: Block;
 }
 
@@ -28,6 +29,7 @@ export class Block extends BlockObject {
   private _base?: Block;
   private _baseName?: string;
   private _implements: Block[] = [];
+  private _localScope: BlockScope;
 
   root?: postcss.Root;
 
@@ -39,6 +41,7 @@ export class Block extends BlockObject {
     this._identifier = identifier;
     this.parsedRuleSelectors = new WeakMap();
     this.states = new StateContainer(this);
+    this._localScope = new BlockScope(this);
   }
 
   get base(): Block | undefined {
@@ -208,26 +211,7 @@ export class Block extends BlockObject {
    * @returns The BlockObject referenced at the supplied path.
    */
   lookup(reference: string): BlockObject | undefined {
-
-    // Try to split the reference string to find block name reference. If there
-    // is a block name reference, fetch the named block and run lookup in that context.
-    let refMatch = reference.match(/^(\w+)(\W.*)?$/);
-    if (refMatch) {
-      let refName = refMatch[1];
-      let subObjRef = refMatch[2];
-      let refBlock = this._blockReferences[refName];
-      if (refBlock === undefined) {
-        return undefined;
-      }
-      if (subObjRef !== undefined) {
-        return refBlock.lookup(subObjRef);
-      } else {
-        return refBlock;
-      }
-    }
-
-    // Otherwise, find the sub-block locally.
-    return this.all(false).find((o) => o.asSource() === reference); // <-- Super ineffecient algorithm. Better to parse the string and traverse directly.
+    return this._localScope.lookup(reference);
   }
 
   merged(): MergedObjectMap {

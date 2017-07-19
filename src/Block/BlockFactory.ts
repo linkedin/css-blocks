@@ -28,6 +28,9 @@ export class BlockFactory implements IBlockFactory {
     this.parser = new BlockParser(this.postcssImpl, options, this);
     this.blocks = {};
   }
+  reset() {
+    this.blocks = {};
+  }
   getBlock(identifier: FileIdentifier): Promise<Block> {
     if (this.blocks[identifier]) {
       return this.blocks[identifier];

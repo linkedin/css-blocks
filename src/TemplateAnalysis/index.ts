@@ -4,6 +4,7 @@
 import { BlockObject } from "../Block/BlockObject";
 import { Block } from "../Block/Block";
 import { BlockFactory } from "../Block/BlockFactory";
+import { CustomBlockScope } from "../Block/LocalScope";
 // tslint:disable-next-line:no-unused-variable Imported for Documentation link
 import BlockParser, { CLASS_NAME_IDENT } from "../BlockParser";
 import { StyleAnalysis } from "./StyleAnalysis";
@@ -331,24 +332,26 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     let info = TemplateInfoFactory.deserialize<Template>(serializedAnalysis.template) as Template;
     let analysis = new TemplateAnalysis(info);
     let blockPromises = new Array<Promise<{name: string, block: Block}>>();
-    let templateId = serializedAnalysis.template.identifier;
     blockNames.forEach(n => {
-      let blockPath = serializedAnalysis.blocks[n];
-      let promise = blockFactory.getBlockRelative(templateId, blockPath).then(block => {
+      let blockIdentifier = serializedAnalysis.blocks[n];
+      let promise = blockFactory.getBlock(blockIdentifier).then(block => {
         return {name: n, block: block};
       });
       blockPromises.push(promise);
     });
     return Promise.all(blockPromises).then(values => {
-      // TODO: we should refactor this lookup functionality to a utility function/class.
-      let lookupBlock = new Block("lookup", "");
+      let localScope = new CustomBlockScope();
       values.forEach(o => {
         analysis.blocks[o.name] = o.block;
-        lookupBlock.addBlockReference(o.name, o.block);
+        if (o.name === "") {
+          localScope.setDefaultBlock(o.block);
+        } else {
+          localScope.setBlockReference(o.name, o.block);
+        }
       });
       let objects = new Array<BlockObject>();
       serializedAnalysis.stylesFound.forEach(s => {
-        let blockObject = lookupBlock.lookup(s);
+        let blockObject = localScope.lookup(s);
         if (blockObject) {
           objects.push(blockObject);
           analysis.stylesFound.add(blockObject);

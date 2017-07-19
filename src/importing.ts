@@ -86,7 +86,7 @@ export abstract class PathBasedImporter implements Importer {
     }
     return name;
   }
-  filesystemPath(identifier: FileIdentifier, _options: OptionsReader): string {
+  filesystemPath(identifier: FileIdentifier, _options: OptionsReader): string | null {
     return identifier;
   }
   inspect(identifier: FileIdentifier, options: OptionsReader): string {
