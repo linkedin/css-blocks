@@ -311,7 +311,7 @@ export default class BlockParser {
 
       // Import file, then parse file, then save block reference.
 
-      let blockPromise: Promise<Block> = this.factory.getBlockRelative(sourceFile, importPath);
+      let blockPromise: Promise<Block> = this.factory.getBlockRelative(block.identifier, importPath);
       let namedResult: Promise<[string, string, postcss.AtRule, Block]> = blockPromise.then((referencedBlock: Block): [string, string, postcss.AtRule, Block] => {
         return [localName || referencedBlock.name, importPath, atRule, referencedBlock];
       });
