@@ -2,7 +2,8 @@ import * as path from "path";
 import { assert } from "chai";
 
 import { ImportedFile, Importer, PathBasedImporter } from "../../src/importing";
-import { OptionsReader } from "../../src/options";
+import { OptionsReader } from "../../src/OptionsReader";
+import { Syntax } from "../../src/preprocessing";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 
@@ -34,6 +35,7 @@ export class MockImporter extends PathBasedImporter {
       if (contents) {
         this.registry.imported[resolvedPath] = true;
         resolve({
+          syntax: Syntax.css,
           identifier: resolvedPath,
           defaultName: this.defaultName(resolvedPath, options),
           contents: contents

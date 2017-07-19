@@ -1,7 +1,7 @@
 import { StyleMapping } from "./StyleMapping";
 import { MetaTemplateAnalysis } from "../TemplateAnalysis/MetaAnalysis";
 import { TemplateInfo } from "../TemplateAnalysis";
-import { OptionsReader } from "../options";
+import { OptionsReader } from "../OptionsReader";
 
 export class MetaStyleMapping<Template extends TemplateInfo> {
   templates: Map<string, StyleMapping<Template>>;

@@ -6,7 +6,8 @@ import BlockParser from "../src/BlockParser";
 import { BlockFactory } from "../src/Block/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockObject } from "../src/Block";
-import { PluginOptions, OptionsReader } from "../src/options";
+import { PluginOptions } from "../src/options";
+import { OptionsReader } from "../src/OptionsReader";
 import { SerializedTemplateAnalysis, TemplateInfo, TemplateAnalysis } from "../src/TemplateAnalysis";
 import { MockImportRegistry } from "./util/MockImportRegistry";
 

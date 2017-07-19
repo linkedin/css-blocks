@@ -30,10 +30,11 @@ export {
  SourceLocation
 } from "./SourceLocation";
 export {
-  ImporterData,
   PluginOptions,
-  OptionsReader as PluginOptionsReader,
 } from "./options";
+export {
+  OptionsReader as PluginOptionsReader,
+} from "./OptionsReader";
 export {
   OutputMode
 } from "./OutputMode";
@@ -48,6 +49,7 @@ export {
   CompoundSelector
 } from "./parseSelector";
 export {
+  ImporterData,
   ImportedFile,
   Importer,
   FilesystemImporter,
@@ -55,6 +57,13 @@ export {
   FileIdentifier,
   PathBasedImporter
 } from "./importing";
+export {
+  annotateCssContentWithSourceMap,
+  ProcessedFile,
+  Preprocessor,
+  Preprocessors,
+  Syntax
+} from "./preprocessing";
 export {
   SerializedTemplateAnalysis,
   SerializedTemplateInfo,

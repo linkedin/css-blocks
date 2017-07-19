@@ -1,6 +1,7 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
-import { PluginOptions, OptionsReader } from "./options";
+import { PluginOptions } from "./options";
+import { OptionsReader } from "./OptionsReader";
 import { Block, StateInfo } from "./Block";
 import { IBlockFactory } from "./Block/IBlockFactory";
 import * as errors from "./errors";

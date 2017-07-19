@@ -1,6 +1,7 @@
 import * as postcss from "postcss";
 import * as errors from "./errors";
-import { PluginOptions, OptionsReader } from "./options";
+import { PluginOptions } from "./options";
+import { OptionsReader } from "./OptionsReader";
 import { sourceLocation } from "./SourceLocation";
 import { MergedObjectMap, Block } from "./Block";
 import ConflictResolver from "./ConflictResolver";

@@ -4,7 +4,7 @@ import { CssBlockError } from "../errors";
 import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
 import { stateParser, isClass, isState, isRoot, NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockClass } from "./index";
-import { OptionsReader } from "../options";
+import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 import { BlockObject, StateContainer } from "./BlockObject";
 import { BlockScope } from "./LocalScope";

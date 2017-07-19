@@ -5,8 +5,10 @@ import * as postcss from "postcss";
 import cssBlocks = require("../src/cssBlocks");
 import {
   PluginOptions,
-  OptionsReader
 } from "../src/options";
+import {
+  OptionsReader,
+} from "../src/OptionsReader";
 import {
   BlockFactory
 } from "../src/Block/BlockFactory";

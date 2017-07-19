@@ -1,5 +1,6 @@
 import * as postcss from "postcss";
-import { PluginOptions, OptionsReader } from "./options";
+import { PluginOptions } from "./options";
+import { OptionsReader } from "./OptionsReader";
 import { BlockFactory } from "./Block/BlockFactory";
 import BlockParser from "./BlockParser";
 import BlockCompiler from "./BlockCompiler";
@@ -37,7 +38,7 @@ export class Plugin {
       throw new errors.MissingSourcePath();
     }
 
-    let factory = new BlockFactory(this.opts, this.postcss);
+    let factory = this.opts.factory || new BlockFactory(this.opts, this.postcss);
     // Fetch block name from importer
     let identifier = this.opts.importer.identifier(null, sourceFile, this.opts);
     let defaultName: string = this.opts.importer.defaultName(identifier, this.opts);

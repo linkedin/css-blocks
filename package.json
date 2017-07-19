@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@types/source-map": "^0.5.0",
+    "inline-source-map-comment": "^1.0.5",
     "object.values": "^1.0.4",
     "postcss-selector-parser": "^2.2.3",
     "regexpu-core": "^4.0.11",

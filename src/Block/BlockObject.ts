@@ -1,5 +1,5 @@
 import * as postcss from "postcss";
-import { OptionsReader } from "../options";
+import { OptionsReader } from "../OptionsReader";
 import { CompoundSelector } from "../parseSelector";
 import { State, Block, BlockClass } from "./index";
 
