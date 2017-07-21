@@ -1,0 +1,25 @@
+{
+  // Use IntelliSense to learn about possible Node.js debug attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "preLaunchTask": "compile",
+      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "args": [
+        "dist/test",
+        "--opts",
+        "test/mocha.opts"
+      ],
+      "cwd": "${workspaceRoot}",
+      "outFiles": [
+        "${workspaceRoot}/dist/**/*.js"
+      ],
+      "sourceMaps": true
+    }
+  ]
+}
