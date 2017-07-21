@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
-import { parse, parseFile} from '../src/index';
+import { testParse as parse, testParseFile as parseFile} from './util';
 
 const mock = require('mock-fs');
 

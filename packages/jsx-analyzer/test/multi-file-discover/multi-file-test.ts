@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
 import { MetaAnalysis } from '../../src/utils/Analysis';
-import { parseFile } from '../../src/index';
+import { testParseFile as parseFile } from '../util';
 
 const path = require('path');
 

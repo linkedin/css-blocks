@@ -1,4 +1,4 @@
-import { Block, BlockClass, State, StyleMapping } from 'css-blocks';
+import { Block, BlockClass, State, StyleMapping, PluginOptionsReader } from 'css-blocks';
 import { NodePath, Binding } from 'babel-traverse';
 import { ExpressionReader } from '../utils/ExpressionReader';
 import { Template } from '../utils/Analysis';
@@ -158,6 +158,7 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>, f
 export default function transform(): any {
   let filename = '';
   let mapping: StyleMapping<Template>;
+  let cssBlockOptions: PluginOptionsReader;
   let shouldProcess = true;
 
   return {
@@ -175,6 +176,7 @@ export default function transform(): any {
         // Fetch the block mapping object. If no blocks were found in this file,
         // there is no need to parse it. Set flag to short circuit babel plugin.
         mapping = state.opts.rewriter.blocks[filename];
+        cssBlockOptions = state.opts.rewriter.cssBlockOptions;
         shouldProcess = !!(mapping && Object.keys(mapping.blocks).length);
       },
 

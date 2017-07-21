@@ -1,8 +1,7 @@
 import Analysis, { Template } from '../utils/Analysis';
 
-import * as postcss from 'postcss';
 import { parseFileWith } from '../index';
-import { Block, BlockParser } from 'css-blocks';
+import { Block, BlockFactory } from 'css-blocks';
 import { NodePath } from 'babel-traverse';
 import { ImportDeclaration,
          VariableDeclaration,
@@ -16,7 +15,6 @@ import { ImportDeclaration,
          isImportNamespaceSpecifier
        } from 'babel-types';
 
-const parser = new BlockParser(postcss);
 const fs = require('fs');
 const path = require('path');
 
@@ -58,7 +56,7 @@ function throwIfRegistered(name: string, blockRegistry: BlockRegistry, blockStat
  * can begin.
  * @param blocks The ResolvedBlock Promise array that will contain all read Block files.
  */
-export default function importer(file: Template, analysis: Analysis){
+export default function importer(file: Template, analysis: Analysis, blockFactory: BlockFactory) {
 
   // Keep a running record of local block names while traversing so we can check
   // for name conflicts elsewhere in the file.
@@ -99,7 +97,7 @@ export default function importer(file: Template, analysis: Analysis){
 
       // If this is a jsx or tsx file, parse it with the same analysis object.
       if ( fs.existsSync(absoluteFilepath) && VALID_FILE_EXTS[parsedPath.ext] ) {
-        parseFileWith(absoluteFilepath, analysis.parent);
+        parseFileWith(absoluteFilepath, analysis.parent, blockFactory);
         return;
       }
 
@@ -142,9 +140,7 @@ export default function importer(file: Template, analysis: Analysis){
       // Try to fetch an existing Block Promise. If it does not exist, parse CSS Block.
       let res: Promise<Block> = analysis.parent.blockPromises[blockPath];
       if ( !res ) {
-        let stylesheet = fs.readFileSync(blockPath);
-        let blockName = path.parse(filepath).base.replace(BLOCK_SUFFIX, '');
-        res = parser.parse(postcss.parse(stylesheet), filepath, blockName);
+        res = blockFactory.getBlockFromPath(blockPath);
         analysis.parent.blockPromises[blockPath] = res;
       }
 

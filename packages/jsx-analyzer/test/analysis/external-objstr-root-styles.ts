@@ -2,7 +2,7 @@ import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
 import { MetaAnalysis } from '../../src/utils/Analysis';
 import analyzer from '../../src/analyzer';
-import { parse } from '../../src/index';
+import { testParse as parse } from '../util';
 
 const mock = require('mock-fs');
 

@@ -1,10 +1,11 @@
-import { TemplateRewriter, StyleMapping } from 'css-blocks';
+import { TemplateRewriter, StyleMapping, PluginOptions } from 'css-blocks';
 import { Template } from '../utils/Analysis';
 
 export interface RewriterOptions {
   meta?: { [metaprop: string]: any };
   cssBlocks: {
     styleMapping: StyleMapping<Template> | null;
+    compilationOptions: PluginOptions;
   };
 }
 

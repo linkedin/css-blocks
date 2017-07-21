@@ -6,7 +6,7 @@ import importer from './importer';
 import analyzer from './analyzer';
 import CSSBlocksJSXTransformer from './transformer';
 import Analysis, { Template, MetaAnalysis } from './utils/Analysis';
-import { Block, MultiTemplateAnalyzer } from 'css-blocks';
+import { Block, MultiTemplateAnalyzer, PluginOptionsReader as CssBlocksOptions, BlockFactory } from 'css-blocks';
 
 const fs = require('fs');
 const path = require('path');
@@ -40,7 +40,7 @@ const defaultOptions: ParserOptions = {
   }
 };
 
-export function parseWith(template: Template, metaAnalysis: MetaAnalysis, opts: ParserOptions = defaultOptions): Promise<Analysis> {
+export function parseWith(template: Template, metaAnalysis: MetaAnalysis, factory: BlockFactory, opts: ParserOptions = defaultOptions): Promise<Analysis> {
 
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
@@ -75,7 +75,7 @@ export function parseWith(template: Template, metaAnalysis: MetaAnalysis, opts: 
 
   // The blocks importer will insert a promise that resolves to a `ResolvedBlock`
   // for each CSS Blocks import it encounters.
-  traverse(analysis.template.ast, importer(template, analysis));
+  traverse(analysis.template.ast, importer(template, analysis, factory));
 
   // After import traversal, it is save to move back to our old working directory.
   process.chdir(oldDir);
@@ -101,7 +101,7 @@ export function parseWith(template: Template, metaAnalysis: MetaAnalysis, opts: 
  * @param file The file path to read in and parse.
  * @param opts Optional analytics parser options.
  */
-export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, opts: ParserOptions = defaultOptions): Promise<Analysis> {
+export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory: BlockFactory, opts: ParserOptions = defaultOptions): Promise<Analysis> {
 
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
@@ -114,7 +114,7 @@ export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, opts: Pa
   // Fetch file contents from the now absolute path.
   let data: string;
   try {
-    data = <string>fs.readFileSync(<string>file, 'utf8');
+    data = fs.readFileSync(file, 'utf8');
   } catch (e) {
     throw new Error(`Cannot read JSX entrypoint file ${file}`);
   }
@@ -122,14 +122,14 @@ export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, opts: Pa
   // Return promise for parsed analysis object.
   let template: Template = new Template(file, data);
 
-  return parseWith(template, metaAnalysis, opts);
+  return parseWith(template, metaAnalysis, factory, opts);
 }
 /**
  * Provided a code string, return a promise for the fully parsed analytics object.
  * @param data The code string to parse.
  * @param opts Optional analytics parser options.
  */
-export function parse(data: string, opts: ParserOptions = defaultOptions): Promise<MetaAnalysis> {
+export function parse(data: string, factory: BlockFactory, opts: ParserOptions = defaultOptions): Promise<MetaAnalysis> {
 
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
@@ -138,7 +138,7 @@ export function parse(data: string, opts: ParserOptions = defaultOptions): Promi
   let metaAnalysis: MetaAnalysis = new MetaAnalysis();
 
   return Promise.resolve().then(() => {
-    parseWith(template, metaAnalysis, opts);
+    parseWith(template, metaAnalysis, factory, opts);
     return Promise.all(metaAnalysis.analysisPromises).then((analyses: Analysis[]) => {
       analyses.forEach((analysis: Analysis) => {
         traverse(analysis.template.ast, analyzer(analysis));
@@ -155,7 +155,7 @@ export function parse(data: string, opts: ParserOptions = defaultOptions): Promi
  * @param file The file path to read in and parse.
  * @param opts Optional analytics parser options.
  */
-export function parseFile(file: string, opts: ParserOptions = defaultOptions): Promise<MetaAnalysis> {
+export function parseFile(file: string, factory: BlockFactory, opts: ParserOptions = defaultOptions): Promise<MetaAnalysis> {
 
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
@@ -168,7 +168,7 @@ export function parseFile(file: string, opts: ParserOptions = defaultOptions): P
   // Fetch file contents from the now absolute path.
   let data: string;
   try {
-    data = <string>fs.readFileSync(<string>file, 'utf8');
+    data = fs.readFileSync(file, 'utf8');
   } catch (e) {
     throw new Error(`Cannot read JSX entrypoint file ${file}`);
   }
@@ -178,7 +178,7 @@ export function parseFile(file: string, opts: ParserOptions = defaultOptions): P
   let metaAnalysis: MetaAnalysis = new MetaAnalysis();
 
   return Promise.resolve().then(() => {
-    parseWith(template, metaAnalysis, opts);
+    parseWith(template, metaAnalysis, factory, opts);
     return Promise.all(metaAnalysis.analysisPromises).then((analyses: Analysis[]) => {
       analyses.forEach((analysis: Analysis) => {
         traverse(analysis.template.ast, analyzer(analysis));
@@ -192,16 +192,19 @@ export function parseFile(file: string, opts: ParserOptions = defaultOptions): P
 export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer<Template> {
   private entrypoint: string;
   private name: string;
+  private cssBlocksOptions: CssBlocksOptions;
 
-  constructor(entrypoint: string, name: string){
+  constructor(entrypoint: string, name: string, cssBlocksOptions: CssBlocksOptions){
     this.entrypoint = entrypoint;
     this.name = name;
+    this.cssBlocksOptions = cssBlocksOptions;
   }
   analyze(): Promise<MetaAnalysis> {
+    let factory = new BlockFactory(this.cssBlocksOptions);
     if ( !this.entrypoint || !this.name ) {
       throw new Error('CSS Blocks JSX Analyzer must be passed an entrypoint and name.');
     }
-    return parseFile(this.entrypoint);
+    return parseFile(this.entrypoint, factory);
   }
   reset() { return; }
 }

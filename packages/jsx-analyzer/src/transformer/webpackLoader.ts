@@ -1,4 +1,4 @@
-import { MetaStyleMapping, StyleMapping } from 'css-blocks';
+import { MetaStyleMapping, StyleMapping, PluginOptionsReader, FileIdentifier } from 'css-blocks';
 import { Template } from '../utils/Analysis';
 
 const loaderUtils = require('loader-utils');
@@ -24,6 +24,8 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
   }
 
   let cssFileNames = Object.keys(this.cssBlocks.mappings);
+  let cssBlockOpts: PluginOptionsReader = new PluginOptionsReader(this.cssBlocks.compilationOptions);
+  rewriter.cssBlockOptions = cssBlockOpts;
   let metaMappingPromises = new Array<Promise<MetaStyleMapping<Template>>>();
   cssFileNames.forEach(filename => {
     metaMappingPromises.push(this.cssBlocks.mappings[filename]);
@@ -36,7 +38,11 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
         return;
       }
       for ( let key in styleMapping.blocks ) {
-        this.dependency(styleMapping.blocks[key].source);
+        let identifier: FileIdentifier = styleMapping.blocks[key].identifier;
+        let blockFilename = cssBlockOpts.importer.filesystemPath(identifier, cssBlockOpts);
+        if (blockFilename) {
+          this.dependency(blockFilename);
+        }
       }
       rewriter.blocks[path] = styleMapping;
     });
