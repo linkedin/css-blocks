@@ -24,6 +24,12 @@ export interface ImporterData {
  * serialized across processes and should not encode any transient state. If an importer
  * wraps another importer, it is responsible for mangling and demangling the import identifier to
  * ensure that the namespaces of the importers do not collide.
+ *
+ * Care should be taken to ensure that the same block file is never returned
+ * with different identifiers. The identifier a returned on an ImportedFile
+ * should be different from the identifier that was requested if the requested
+ * identifier was not canonical. The block factory will ensure that all blocks
+ * returned to the consumer are unique to the canonical identifier.
  */
 export type FileIdentifier = string;
 
@@ -103,7 +109,20 @@ export abstract class PathBasedImporter implements Importer {
     let filename = this.filesystemPath(identifier, options);
     if (filename) {
       let ext = path.extname(filename).substring(1);
-      return Syntax[ext] || Syntax.other;
+      switch(ext) {
+        case Syntax.css:
+          return Syntax.css;
+        case Syntax.scss:
+          return Syntax.scss;
+        case Syntax.sass:
+          return Syntax.sass;
+        case Syntax.less:
+          return Syntax.less;
+        case Syntax.stylus:
+          return Syntax.stylus;
+        default:
+          return Syntax.other;
+      }
     } else {
       return Syntax.other;
     }
@@ -111,10 +130,17 @@ export abstract class PathBasedImporter implements Importer {
   inspect(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string {
     return path.relative(options.rootDir, identifier);
   }
-  abstract import(meta: FileIdentifier, options: CssBlockOptionsReadonly): Promise<ImportedFile>;
+  abstract import(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Promise<ImportedFile>;
 }
 
 export class FilesystemImporter extends PathBasedImporter {
+  filesystemPath(identifier: FileIdentifier, _options: CssBlockOptionsReadonly): string | null {
+    if (path.isAbsolute(identifier) && existsSync(identifier)) {
+      return identifier;
+    } else {
+      return null;
+    }
+  }
   import(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Promise<ImportedFile> {
     return new Promise((resolve, reject) => {
       fs.readFile(identifier, 'utf-8', (err: any, data: string) => {
@@ -131,6 +157,16 @@ export class FilesystemImporter extends PathBasedImporter {
         }
       });
     });
+  }
+}
+
+function existsSync(path: string) {
+  try {
+    fs.accessSync(path);
+    return true;
+  } catch(e) {
+    console.error(e);
+    return false;
   }
 }
 

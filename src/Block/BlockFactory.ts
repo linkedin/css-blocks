@@ -1,4 +1,5 @@
 import * as postcss from "postcss";
+import * as path from "path";
 import { Block } from "./Block";
 import { IBlockFactory } from "./IBlockFactory";
 import BlockParser from "../BlockParser";
@@ -31,8 +32,14 @@ export class BlockFactory implements IBlockFactory {
   options: CssBlockOptionsReadonly;
   parser: BlockParser;
   preprocessors: Preprocessors;
-  private blocks: {
+  private promises: {
     [identifier: string]: Promise<Block>
+  };
+  private blocks: {
+    [identifier: string]: Block
+  };
+  private paths: {
+    [path: string]: string;
   };
   constructor(options: PluginOptions, postcssImpl = postcss) {
     this.postcssImpl = postcssImpl;
@@ -41,42 +48,91 @@ export class BlockFactory implements IBlockFactory {
     this.preprocessors = this.options.preprocessors;
     this.parser = new BlockParser(this.postcssImpl, options, this);
     this.blocks = {};
+    this.promises = {};
+    this.paths = {};
   }
   reset() {
     this.blocks = {};
+    this.paths = {};
+    this.promises = {};
+  }
+  getBlockFromPath(filePath: string): Promise<Block> {
+    if (!path.isAbsolute(filePath)) {
+      throw new Error(`An absolute path is required. Got: ${filePath}.`);
+    }
+    filePath = path.resolve(filePath);
+    let identifier: FileIdentifier | undefined = this.paths[filePath];
+    if (identifier && this.promises[identifier]) {
+      return this.promises[identifier];
+    } else {
+      identifier = identifier || this.importer.identifier(null, filePath, this.options);
+      return this._getBlockPromise(identifier);
+    }
   }
   getBlock(identifier: FileIdentifier): Promise<Block> {
-    if (this.blocks[identifier]) {
-      return this.blocks[identifier];
+    if (this.promises[identifier]) {
+      return this.promises[identifier];
     } else {
-      let blockPromise = this.importer.import(identifier, this.options).then(file => {
-        let filename: string = this.importer.filesystemPath(identifier, this.options) || this.importer.inspect(identifier, this.options);
-        let preprocessor = this.preprocessor(identifier);
-        let preprocessPromise = preprocessor(filename, file.contents, this.options);
-        let resultPromise = preprocessPromise.then(preprocessResult => {
-          let sourceMap = sourceMapFromProcessedFile(preprocessResult);
-          let content = preprocessResult.content;
-          if (sourceMap) {
-            content = annotateCssContentWithSourceMap(content, sourceMap);
+      return this._getBlockPromise(identifier);
+    }
+  }
+  _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
+    let importPromise = this.importer.import(identifier, this.options);
+    let blockPromise = importPromise.then(file => {
+      let realFilename = this.importer.filesystemPath(file.identifier, this.options);
+      if (realFilename) {
+        if (this.paths[realFilename]) {
+          if (this.paths[realFilename] !== file.identifier) {
+            throw new Error(`The same block file was returned with different identifiers: ${this.paths[realFilename]} and ${file.identifier}`);
           }
-          return new Promise<postcss.Result>((resolve, reject) => {
-            this.postcssImpl().process(content, { from: filename }).then(resolve, reject);
-          });
-        });
-        return resultPromise.then(result => {
-          if (result.root) {
-            return this.parser.parse(result.root, file.identifier, file.defaultName).then(block => {
-              return block;
-            });
-          } else {
-            // this doesn't happen but it makes the typechecker happy.
-            throw new Error("Missing root");
-          }
+        } else {
+          this.paths[realFilename] = file.identifier;
+        }
+        if (!this.promises[file.identifier]) {
+          this.promises[file.identifier] = blockPromise;
+        }
+      }
+      // skip preprocessing if we can.
+      if (this.blocks[file.identifier]) {
+        return this.blocks[file.identifier];
+      }
+      let filename: string = realFilename || this.importer.inspect(file.identifier, this.options);
+      let preprocessor = this.preprocessor(identifier);
+      let preprocessPromise = preprocessor(filename, file.contents, this.options);
+      let resultPromise = preprocessPromise.then(preprocessResult => {
+        let sourceMap = sourceMapFromProcessedFile(preprocessResult);
+        let content = preprocessResult.content;
+        if (sourceMap) {
+          content = annotateCssContentWithSourceMap(content, sourceMap);
+        }
+        return new Promise<postcss.Result>((resolve, reject) => {
+          this.postcssImpl().process(content, { from: filename }).then(resolve, reject);
         });
       });
-      this.blocks[identifier] = blockPromise;
-      return blockPromise;
-    }
+      return resultPromise.then(result => {
+        // skip parsing if we can.
+        if (this.blocks[file.identifier]) {
+          return this.blocks[file.identifier];
+        }
+        if (result.root) {
+          return this.parser.parse(result.root, file.identifier, file.defaultName).then(block => {
+            return block;
+          });
+        } else {
+          // this doesn't happen but it makes the typechecker happy.
+          throw new Error("Missing root");
+        }
+      });
+    }).then(block => {
+      // last check  to make sure we don't return a new instance
+      if (this.blocks[block.identifier]) {
+        return this.blocks[block.identifier];
+      } else {
+        return block;
+      }
+    });
+    this.promises[identifier] = blockPromise;
+    return blockPromise;
   }
   getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Promise<Block> {
     let importer = this.importer;
