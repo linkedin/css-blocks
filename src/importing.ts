@@ -170,6 +170,86 @@ function existsSync(path: string) {
   }
 }
 
+export interface Alias {
+  /**
+   * A path segment that identifies this path location. Relative import paths can start with this
+   * path segment and will be resolved to the corresponding absolute path.
+   */
+  alias: string;
+  /**
+   * An absolute path that the alias refers to.
+   */
+  path: string;
+}
+
+export type PathAliases = Alias[] | {
+  /**
+   * map of alias prefixes to absolute paths.
+   */
+  [alias: string]: string;
+};
+
+/**
+ * The PathAliasImporter is a replacement for the fileystem importer. Relative import paths
+ * are first checked to see if they match an existing file relative to the from identifier (when provided).
+ * Then if the relative import path has a first segment that is any of the aliases provided the path
+ * will be made absolute using that alias's path location. Finally any relative path is resolved against
+ * the rootDir specified from {CssBlockOptionsReadonly}.
+ *
+ * When inspecting an identifier it is made relative to an alias, if one exists, where the identifier is
+ * within an aliased directory. If several such aliased paths exist, the most specific alias will be used.
+ */
+
+export class PathAliasImporter extends FilesystemImporter {
+  aliases: Alias[];
+  constructor(aliases: PathAliases) {
+    super();
+    if (Array.isArray(aliases)) {
+      this.aliases = aliases;
+    } else {
+      this.aliases = [];
+      Object.keys(aliases).forEach(alias => {
+        this.aliases.push({alias: alias, path: aliases[alias]});
+      });
+    }
+    this.aliases.forEach(alias => {
+      if (!path.isAbsolute(alias.path)) {
+        throw new Error(`Alias paths must be absolute. Got ${alias.alias} => ${alias.path}`);
+      }
+    });
+    this.aliases.sort((a, b) => {
+      return b.path.length - a.path.length;
+    });
+  }
+  identifier(from: FileIdentifier | null, importPath: string, options: CssBlockOptionsReadonly) {
+    if (path.isAbsolute(importPath)) {
+      return importPath;
+    }
+    if (from) {
+      let fromPath = this.filesystemPath(from, options);
+      if (fromPath) {
+        let resolvedPath = path.resolve(path.dirname(fromPath), importPath);
+        if (existsSync(resolvedPath)) {
+          return resolvedPath;
+        }
+      }
+    }
+    let alias = this.aliases.find(a => importPath.startsWith(a.alias + path.sep));
+    if (alias) {
+      return path.resolve(alias.path, importPath.substring(alias.alias.length + 1));
+    } else {
+      return path.resolve(options.rootDir, importPath);
+    }
+  }
+  inspect(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string {
+    let alias = this.aliases.find(a => identifier.startsWith(a.path));
+    if (alias) {
+      return path.join(alias.alias, path.relative(alias.path, identifier));
+    }
+    return path.relative(options.rootDir, identifier);
+  }
+}
+
 /**
  * Default importer. Returns `ImportedFile` from disk
  * @param fromFile
