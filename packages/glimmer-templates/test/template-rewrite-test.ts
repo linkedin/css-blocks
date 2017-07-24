@@ -1,4 +1,4 @@
-import { HandlebarsStyleAnalyzer, Rewriter, loaderAdapter } from '../src';
+import { HandlebarsStyleAnalyzer, Rewriter, loaderAdapter, Project } from '../src';
 import path = require('path');
 import fs = require('fs');
 import { assert } from 'chai';
@@ -10,10 +10,11 @@ import { StyleMapping, PluginOptionsReader, Block, MetaStyleMapping } from "css-
 describe('Template Rewriting', function() {
   it('analyzes styles from the implicit block', function() {
     let projectDir = fixture('styled-app');
-    let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'my-app');
+    let project = new Project(projectDir);
+    let cssBlocksOpts = new PluginOptionsReader(project.cssBlocksOpts);
+    let analyzer = new HandlebarsStyleAnalyzer(project, 'my-app');
     let templatePath = fixture('styled-app/src/ui/components/my-app/template.hbs');
     return analyzer.analyze().then((richAnalysis) => {
-      let cssBlocksOpts = new PluginOptionsReader();
       let metaMapping = new MetaStyleMapping();
       metaMapping.templates.set(templatePath, StyleMapping.fromAnalysis(richAnalysis, cssBlocksOpts));
       let fakeLoaderContext = {
@@ -21,7 +22,8 @@ describe('Template Rewriting', function() {
         cssBlocks: {
           mappings: {
             'css-blocks.css': metaMapping
-          }
+          },
+          compilationOptions: cssBlocksOpts
         },
         dependency(_path) {
         }

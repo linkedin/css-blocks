@@ -35,13 +35,13 @@ export class BaseStyleAnalyzer {
     this.options = new PluginOptionsReader(this.project.cssBlocksOpts);
   }
 
-  protected analyzeTemplate(componentName: string): Promise<SingleTemplateStyleAnalysis<ResolvedFile>> {
+  protected analyzeTemplate(componentName: string): Promise<SingleTemplateStyleAnalysis<ResolvedFile> | null> {
     let template = this.project.templateFor(componentName);
     let analysis = new SingleTemplateStyleAnalysis(template);
     let ast = preprocess(template.string);
     let elementCount = 0;
     let self = this;
-    let blockIdentifier = this.project.blockImporter.identifier(null, componentName, this.options);
+    let blockIdentifier = this.project.blockImporter.identifier(template.identifier, "stylesheet:", this.options);
     let result = this.project.blockFactory.getBlock(blockIdentifier);
 
     return result.then((block) => {
@@ -104,6 +104,8 @@ export class BaseStyleAnalyzer {
       }
       analysis.endElement();
       return analysis;
+    }).catch((_error) => {
+      return null;
     });
   }
 
@@ -202,7 +204,13 @@ export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements Templa
   }
 
   analyze(): Promise<SingleTemplateStyleAnalysis<ResolvedFile>> {
-    return this.analyzeTemplate(this.templateName);
+    return this.analyzeTemplate(this.templateName).then(result => {
+      if (result === null) {
+        throw new Error(`No stylesheet for ${this.templateName}`);
+      } else {
+        return result;
+      }
+    });
   }
 
   reset() {
@@ -226,14 +234,18 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer impleme
   analyze(): Promise<MetaStyleAnalysis<ResolvedFile>> {
     let depAnalyzer = new DependencyAnalyzer(this.project.projectDir); // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
     let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(this.templateName);
-    let analysisPromises: Promise<SingleTemplateStyleAnalysis<ResolvedFile>>[] = [];
+    let analysisPromises: Promise<SingleTemplateStyleAnalysis<ResolvedFile> | null>[] = [];
     analysisPromises.push(this.analyzeTemplate(this.templateName));
     componentDeps.components.forEach(dep => {
       analysisPromises.push(this.analyzeTemplate(dep));
     });
     return Promise.all(analysisPromises).then((analyses)=> {
       let metaAnalysis = new MetaStyleAnalysis<ResolvedFile>();
-      metaAnalysis.addAllAnalyses(analyses);
+      analyses.forEach(a => {
+        if (a !== null) {
+          metaAnalysis.addAnalysis(a);
+        }
+      });
       return metaAnalysis;
     });
   }

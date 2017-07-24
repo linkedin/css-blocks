@@ -1,4 +1,4 @@
-@block-reference h from "./header.css";
+@block-reference h from "header.css";
 
 .root {
     color: red;

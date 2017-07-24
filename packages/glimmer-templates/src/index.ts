@@ -11,5 +11,6 @@ export {
 export {
   default as Project,
   ResolutionMap,
-  ResolvedFile
+  ResolvedFile,
+  GlimmerImporter
 } from "./project";
