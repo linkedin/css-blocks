@@ -109,7 +109,7 @@ export abstract class PathBasedImporter implements Importer {
     let filename = this.filesystemPath(identifier, options);
     if (filename) {
       let ext = path.extname(filename).substring(1);
-      switch(ext) {
+      switch (ext) {
         case Syntax.css:
           return Syntax.css;
         case Syntax.scss:
@@ -164,8 +164,7 @@ function existsSync(path: string) {
   try {
     fs.accessSync(path);
     return true;
-  } catch(e) {
-    console.error(e);
+  } catch (e) {
     return false;
   }
 }
@@ -209,7 +208,7 @@ export class PathAliasImporter extends FilesystemImporter {
     } else {
       this.aliases = [];
       Object.keys(aliases).forEach(alias => {
-        this.aliases.push({alias: alias, path: aliases[alias]});
+        this.aliases.push({ alias: alias, path: aliases[alias] });
       });
     }
     this.aliases.forEach(alias => {

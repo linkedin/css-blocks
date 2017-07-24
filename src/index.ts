@@ -55,7 +55,10 @@ export {
   FilesystemImporter,
   filesystemImporter,
   FileIdentifier,
-  PathBasedImporter
+  PathBasedImporter,
+  PathAliasImporter,
+  Alias,
+  PathAliases
 } from "./importing";
 export {
   annotateCssContentWithSourceMap,

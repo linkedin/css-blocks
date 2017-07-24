@@ -136,8 +136,14 @@ export class BlockFactory implements IBlockFactory {
   }
   getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Promise<Block> {
     let importer = this.importer;
+    let fromPath = importer.inspect(fromIdentifier, this.options);
     let identifier = importer.identifier(fromIdentifier, importPath, this.options);
-    return this.getBlock(identifier);
+    return this.getBlock(identifier).catch(err => {
+      if (err.code === "ENOENT") {
+        err.message = `From ${fromPath}: ${err.message}`;
+      }
+      throw err;
+    });
   }
   preprocessor(identifier: FileIdentifier): Preprocessor {
     let syntax = this.importer.syntax(identifier, this.options);
