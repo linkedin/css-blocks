@@ -200,7 +200,7 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer<Template> {
     this.cssBlocksOptions = cssBlocksOptions;
   }
   analyze(): Promise<MetaAnalysis> {
-    let factory = new BlockFactory(this.cssBlocksOptions);
+    let factory = this.cssBlocksOptions.factory || new BlockFactory(this.cssBlocksOptions);
     if ( !this.entrypoint || !this.name ) {
       throw new Error('CSS Blocks JSX Analyzer must be passed an entrypoint and name.');
     }
