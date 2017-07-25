@@ -1,6 +1,7 @@
 import Analysis, { Template } from '../utils/Analysis';
-
 import { parseFileWith } from '../index';
+import isBlockFilename from '../utils/isBlockFilename';
+
 import { Block, BlockFactory } from 'css-blocks';
 import { NodePath } from 'babel-traverse';
 import { ImportDeclaration,
@@ -18,7 +19,6 @@ import { ImportDeclaration,
 const fs = require('fs');
 const path = require('path');
 
-const BLOCK_SUFFIX = '.block.css'; // TODO: Make configurable.
 const STATE_IDENTIFIER = 'states';
 const DEFAULT_IDENTIFIER = 'default';
 const VALID_FILE_EXTS = {
@@ -102,7 +102,7 @@ export default function importer(file: Template, analysis: Analysis, blockFactor
       }
 
       // If this is not a CSS Blocks file, return.
-      if ( !~filepath.indexOf(BLOCK_SUFFIX) ) {
+      if (!isBlockFilename(filepath)) {
         return;
       }
 

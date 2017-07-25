@@ -2,6 +2,7 @@ import { Block, BlockClass, State, StyleMapping, PluginOptionsReader } from 'css
 import { NodePath, Binding } from 'babel-traverse';
 import { ExpressionReader } from '../utils/ExpressionReader';
 import { Template } from '../utils/Analysis';
+import isBlockFilename from '../utils/isBlockFilename';
 import {
   Program,
   JSXOpeningElement,
@@ -31,7 +32,6 @@ const CLASS_PROPERTIES = {
   'class': 1,
   'className': 1
 };
-const BLOCK_SUFFIX = '.block.css'; // TODO: Make configurable.
 
 // TODO: THis expression parsing logic can be abstracted out and shared
 //       with the analyzer in `utils/ExpressionReader.ts`.
@@ -187,7 +187,7 @@ export default function transform(): any {
           return;
         }
 
-        if ( !!~nodepath.node.source.value.indexOf(BLOCK_SUFFIX) ) {
+        if ( isBlockFilename(nodepath.node.source.value) ) {
           nodepath.remove();
         }
       },
