@@ -5,8 +5,8 @@ import { IBlockFactory } from "./IBlockFactory";
 import BlockParser from "../BlockParser";
 import { PluginOptions, CssBlockOptionsReadonly } from "../options";
 import { OptionsReader } from "../OptionsReader";
-import { Importer, FileIdentifier } from "../importing";
-import { annotateCssContentWithSourceMap, Preprocessors, Preprocessor, ProcessedFile, Syntax } from "../preprocessing";
+import { Importer, FileIdentifier, ImportedFile } from "../importing";
+import { annotateCssContentWithSourceMap, Preprocessors, Preprocessor, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
 import { RawSourceMap } from "source-map";
 
 declare module "../options" {
@@ -97,7 +97,7 @@ export class BlockFactory implements IBlockFactory {
         return this.blocks[file.identifier];
       }
       let filename: string = realFilename || this.importer.inspect(file.identifier, this.options);
-      let preprocessor = this.preprocessor(identifier);
+      let preprocessor = this.preprocessor(file);
       let preprocessPromise = preprocessor(filename, file.contents, this.options);
       let resultPromise = preprocessPromise.then(preprocessResult => {
         let sourceMap = sourceMapFromProcessedFile(preprocessResult);
@@ -145,8 +145,8 @@ export class BlockFactory implements IBlockFactory {
       throw err;
     });
   }
-  preprocessor(identifier: FileIdentifier): Preprocessor {
-    let syntax = this.importer.syntax(identifier, this.options);
+  preprocessor(file: ImportedFile): Preprocessor {
+    let syntax = file.syntax;
     let firstPreprocessor: Preprocessor = this.preprocessors[syntax];
     let preprocessor: Preprocessor | null = null;
     if (firstPreprocessor) {
@@ -167,6 +167,8 @@ export class BlockFactory implements IBlockFactory {
       } else {
         preprocessor = firstPreprocessor;
       }
+    } else if (syntax !== Syntax.css) {
+      throw new Error(`No preprocessor provided for ${syntaxName(syntax)}.`);
     } else {
       preprocessor = (_fullPath: string, content: string, _options: CssBlockOptionsReadonly): Promise<ProcessedFile> => {
         return Promise.resolve({

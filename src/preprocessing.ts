@@ -29,6 +29,10 @@ export enum Syntax {
   other = "other"
 }
 
+export function syntaxName(syntax: Syntax): string {
+  return Object.keys(Syntax).find(s => Syntax[s] === syntax) || "other";
+}
+
 export interface ProcessedFile {
     /**
      * The result of processing the file.

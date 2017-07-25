@@ -8,7 +8,10 @@ import { Syntax } from "../../src/preprocessing";
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 
 export interface SourceRegistry {
-  [sourcePath: string]: string;
+  [sourcePath: string]: {
+    contents: string;
+    syntax: Syntax;
+  };
 }
 
 export interface ImportedFiles {
@@ -31,14 +34,14 @@ export class MockImporter extends PathBasedImporter {
   }
   import(resolvedPath: string, options: OptionsReader): Promise<ImportedFile> {
     return new Promise<ImportedFile>((resolve, reject) => {
-      let contents = this.registry.sources[resolvedPath];
-      if (contents) {
+      let source = this.registry.sources[resolvedPath];
+      if (source) {
         this.registry.imported[resolvedPath] = true;
         resolve({
-          syntax: Syntax.css,
+          syntax: source.syntax,
           identifier: resolvedPath,
           defaultName: this.defaultName(resolvedPath, options),
-          contents: contents
+          contents: source.contents
         });
       } else {
         let importedFiles = Object.keys(this.registry.sources).join(", ");
@@ -52,9 +55,12 @@ export class MockImportRegistry {
   sources: SourceRegistry = {};
   imported: ImportedFiles = {};
 
-  registerSource(sourcePath: string, contents: string) {
+  registerSource(sourcePath: string, contents: string, syntax?: Syntax) {
     sourcePath = this.relativize(sourcePath);
-    this.sources[sourcePath] = contents;
+    this.sources[sourcePath] = {
+      contents: contents,
+      syntax: syntax || Syntax.css
+    };
   }
 
   markImported(sourcePath: string) {
