@@ -127,7 +127,7 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>, f
     return;
   }
 
-  props = (<ObjectExpression>func.arguments[0]).properties.filter(isObjectProperty);
+  props = <ObjectProperty[]>(<ObjectExpression>func.arguments[0]).properties.filter(p => isObjectProperty(p));
 
   if ( !props ) {
     throw new Error(`Class attribute value "${name}" must be either an "objstr" call, or a Block reference`);
