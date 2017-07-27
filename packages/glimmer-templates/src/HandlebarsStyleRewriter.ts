@@ -33,6 +33,21 @@ interface MappingAndBlock {
   block: Block;
 }
 const STATE = /state:(.*)/;
+
+type LoaderContext = {
+  dependency(dep: string): void;
+};
+
+function trackBlockDependencies(loaderContext: LoaderContext, block: Block, options: CssBlocksOptionsReader) {
+  let sourceFile = options.importer.filesystemPath(block.identifier, options);
+  if (sourceFile !== null) {
+    loaderContext.dependency(sourceFile);
+  }
+  block.dependencies.forEach(dep => {
+    loaderContext.dependency(dep);
+  });
+}
+
 export function loaderAdapter(loaderContext: any): Promise<ASTPlugin> {
   debug(`loader adapter. Got loader context for css-blocks:`, loaderContext.cssBlocks);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
@@ -58,10 +73,10 @@ export function loaderAdapter(loaderContext: any): Promise<ASTPlugin> {
               mapping
             };
           }
-          let sourceFile = options.importer.filesystemPath(block.identifier, options);
-          if (sourceFile !== null) {
-            loaderContext.dependency(sourceFile);
-          }
+          trackBlockDependencies(loaderContext, block, options);
+          block.transitiveBlockDependencies().forEach(blockDep => {
+            trackBlockDependencies(loaderContext, blockDep, options);
+          });
         });
       }
     });
