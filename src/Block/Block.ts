@@ -30,6 +30,12 @@ export class Block extends BlockObject {
   private _baseName?: string;
   private _implements: Block[] = [];
   private _localScope: BlockScope;
+  /**
+   * array of paths that this block depends on and, if changed, would
+   * invalidate the compiled css of this block. This is usually only useful in
+   * preprocessed blocks.
+   */
+  private _dependencies: Set<string>;
 
   root?: postcss.Root;
 
@@ -42,6 +48,21 @@ export class Block extends BlockObject {
     this.parsedRuleSelectors = new WeakMap();
     this.states = new StateContainer(this);
     this._localScope = new BlockScope(this);
+    this._dependencies = new Set<string>();
+  }
+
+  /**
+   * Add an absolute, normalized path as a compilation dependency. This is used
+   * to invalidate caches and trigger watchers when those files change.
+   *
+   * It is not necessary or helpful to add css-block files.
+   */
+  addDependency(filepath: string) {
+    this._dependencies.add(filepath);
+  }
+
+  get dependencies(): string[] {
+    return new Array(...this._dependencies);
   }
 
   get base(): Block | undefined {

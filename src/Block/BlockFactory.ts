@@ -2,7 +2,7 @@ import * as postcss from "postcss";
 import * as path from "path";
 import { Block } from "./Block";
 import { IBlockFactory } from "./IBlockFactory";
-import BlockParser from "../BlockParser";
+import BlockParser, { ParsedSource } from "../BlockParser";
 import { PluginOptions, CssBlockOptionsReadonly } from "../options";
 import { OptionsReader } from "../OptionsReader";
 import { Importer, FileIdentifier, ImportedFile } from "../importing";
@@ -99,7 +99,7 @@ export class BlockFactory implements IBlockFactory {
       let filename: string = realFilename || this.importer.inspect(file.identifier, this.options);
       let preprocessor = this.preprocessor(file);
       let preprocessPromise = preprocessor(filename, file.contents, this.options);
-      let resultPromise = preprocessPromise.then(preprocessResult => {
+      let resultPromise: Promise<[ProcessedFile, postcss.Result]> = preprocessPromise.then(preprocessResult => {
         let sourceMap = sourceMapFromProcessedFile(preprocessResult);
         let content = preprocessResult.content;
         if (sourceMap) {
@@ -107,21 +107,27 @@ export class BlockFactory implements IBlockFactory {
         }
         return new Promise<postcss.Result>((resolve, reject) => {
           this.postcssImpl().process(content, { from: filename }).then(resolve, reject);
+        }).then(result => {
+          let res: [ProcessedFile, postcss.Result] = [preprocessResult, result];
+          return res;
         });
       });
-      return resultPromise.then(result => {
+      return resultPromise.then(([preprocessedResult, result]) => {
         // skip parsing if we can.
         if (this.blocks[file.identifier]) {
           return this.blocks[file.identifier];
         }
-        if (result.root) {
-          return this.parser.parse(result.root, file.identifier, file.defaultName).then(block => {
-            return block;
-          });
-        } else {
-          // this doesn't happen but it makes the typechecker happy.
-          throw new Error("Missing root");
-        }
+        let source: ParsedSource = {
+          identifier: file.identifier,
+          defaultName: file.defaultName,
+          parseResult: result,
+          originalSource: file.contents,
+          originalSyntax: file.syntax,
+          dependencies: preprocessedResult.dependencies || []
+        };
+        return this.parser.parseSource(source).then(block => {
+          return block;
+        });
       });
     }).then(block => {
       // last check  to make sure we don't return a new instance

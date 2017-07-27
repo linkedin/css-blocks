@@ -9,6 +9,8 @@ export { PluginOptions } from "./options";
 import { sourceLocation, selectorSourceLocation, SourceLocation } from "./SourceLocation";
 import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
 import regexpu = require("regexpu-core");
+import { FileIdentifier } from "./importing";
+import { Syntax } from "./preprocessing";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
@@ -75,6 +77,15 @@ export function stateParser(attr: selectorParser.Attribute): StateInfo {
   return info;
 }
 
+export interface ParsedSource {
+  identifier: FileIdentifier;
+  defaultName: string;
+  originalSource: string;
+  originalSyntax: Syntax;
+  parseResult: postcss.Result;
+  dependencies: string[];
+}
+
 /**
  * Parser that, given a PostCSS AST will return a `Block` object. Main public
  * interface is `BlockParser.parse`.
@@ -90,6 +101,20 @@ export default class BlockParser {
     this.factory = factory;
   }
 
+  public parseSource(source: ParsedSource): Promise<Block> {
+    let root = source.parseResult.root;
+    if (!root) {
+      // this should never happen but it makes the typechecker happy.
+      throw new errors.CssBlockError("No postcss root found.");
+    }
+    return this.parse(root, source.identifier, source.defaultName).then(block => {
+      source.dependencies.forEach(dep => {
+        block.addDependency(dep);
+      });
+      return block;
+    });
+  }
+
   /**
    * Main public interface of `BlockParser`. Given a PostCSS AST, returns a promise
    * for the new `Block` object.
@@ -97,7 +122,9 @@ export default class BlockParser {
    * @param sourceFile  Source file name
    * @param defaultName Name of block
    */
-  public parse(root: postcss.Root, sourceFile: string, defaultName: string): Promise<Block> {
+  public parse(root: postcss.Root, identifier: string, defaultName: string): Promise<Block> {
+    let importer = this.opts.importer;
+    let sourceFile = importer.filesystemPath(identifier, this.opts) || importer.inspect(identifier, this.opts);
 
     // `!important` is not allowed in Blocks. If contains `!important` declaration, throw.
     root.walkDecls((decl) => {
@@ -119,7 +146,7 @@ export default class BlockParser {
     });
 
     // Create our new Block object and save reference to the raw AST
-    let block = new Block(defaultName, sourceFile);
+    let block = new Block(defaultName, identifier);
     block.root = root;
 
     // Once all block references included by this block are resolved
