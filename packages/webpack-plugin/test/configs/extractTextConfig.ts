@@ -1,5 +1,5 @@
 import ExtractTextPlugin = require("extract-text-webpack-plugin");
-import * as webpack from "webpack";
+import { Configuration as WebpackConfiguration } from "webpack";
 import * as merge from "webpack-merge";
 import { config as defaultOutputConfig } from "./defaultOutputConfig";
 import { BLOCK_LOADER_PATH } from "../util/testPaths";
@@ -7,7 +7,7 @@ import { LoaderOptions } from "../../src/LoaderOptions";
 
 // const path = require("path");
 
-export function config(entry: string, options?: LoaderOptions): webpack.Configuration {
+export function config(entry: string, options?: LoaderOptions): WebpackConfiguration {
   const extractText = new ExtractTextPlugin({
       filename: "[name].[contenthash].css"
   });

@@ -1,5 +1,5 @@
 import Tapable = require("tapable");
-import * as webpack from "webpack";
+import { Plugin as WebpackPlugin, Compiler as WebpackCompiler } from "webpack";
 import * as debugGenerator from "debug";
 import * as postcss from "postcss";
 import * as path from "path";
@@ -41,7 +41,7 @@ export interface BlockCompilationComplete<Template extends TemplateInfo> {
 
 export class CssBlocksPlugin<Template extends TemplateInfo>
   extends Tapable
-  implements webpack.Plugin
+  implements WebpackPlugin
 {
   name: string;
   analyzer: MultiTemplateAnalyzer<Template>;
@@ -60,7 +60,7 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
     this.compilationOptions = options.compilationOptions || {};
     this.projectDir = process.cwd();
   }
-  apply(compiler: webpack.Compiler) {
+  apply(compiler: WebpackCompiler) {
     this.projectDir = compiler.options.context || this.projectDir;
     let outputPath = compiler.options.output && compiler.options.output.path || this.projectDir; // TODO What is the webpack default output directory?
     compiler.plugin("make", (compilation: any, cb: (error?: Error) => void) => {

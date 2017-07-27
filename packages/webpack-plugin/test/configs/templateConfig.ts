@@ -1,4 +1,4 @@
-import * as webpack from "webpack";
+import { Configuration as WebpackConfiguration } from "webpack";
 import * as merge from "webpack-merge";
 import * as postcss from "postcss";
 import * as path from "path";
@@ -97,7 +97,7 @@ function fixture(name: string) {
   return path.resolve(BLOCK_FIXTURES_DIRECTORY, name + ".block.css");
 }
 
-export function config(): Promise<webpack.Configuration> {
+export function config(): Promise<WebpackConfiguration> {
   let factory = new BlockFactory({}, postcss);
   let block1 = factory.getBlock(fixture("concat-1"));
   let block2 = factory.getBlock(fixture("concat-2"));

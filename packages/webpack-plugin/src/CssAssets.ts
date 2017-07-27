@@ -1,4 +1,4 @@
-import * as webpack from "webpack";
+import { Compiler as WebpackCompiler } from "webpack";
 import * as path from "path";
 import * as  async from "async";
 import * as fs from "fs";
@@ -108,7 +108,7 @@ export class CssAssets {
         this.options = Object.assign(defaultOpts, options);
     }
 
-    apply(compiler: webpack.Compiler) {
+    apply(compiler: WebpackCompiler) {
         // install assets
         // This puts assets into the compilation results but they won't be part of
         // any chunk. the cssFiles option is an object where the keys are

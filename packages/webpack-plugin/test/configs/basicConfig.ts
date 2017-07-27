@@ -1,11 +1,11 @@
-import * as webpack from "webpack";
+import { Configuration as WebpackConfiguration } from "webpack";
 import * as merge from "webpack-merge";
 import { config as defaultOutputConfig } from "./defaultOutputConfig";
 import { BLOCK_LOADER_PATH } from "../util/testPaths";
 import { LoaderOptions } from "../../src/LoaderOptions";
 
-export function config(entry: string, options?: LoaderOptions): webpack.Configuration {
-  const baseConfig: webpack.Configuration = {
+export function config(entry: string, options?: LoaderOptions): WebpackConfiguration {
+  const baseConfig: WebpackConfiguration = {
       entry: entry,
       output: {
           filename: "bundle.block.css.js"
