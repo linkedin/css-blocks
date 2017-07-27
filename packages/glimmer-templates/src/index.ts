@@ -9,8 +9,11 @@ export {
   loaderAdapter
 } from "./HandlebarsStyleRewriter";
 export {
-  default as Project,
-  ResolutionMap,
   ResolvedFile,
-  GlimmerImporter
+} from "./GlimmerProject";
+export {
+  default as Project,
 } from "./project";
+export {
+  default as GlimmerImporter
+} from "./GlimmerImporter";

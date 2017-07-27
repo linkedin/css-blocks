@@ -11,7 +11,8 @@ import {
   MultiTemplateAnalyzer,
   PluginOptionsReader
 } from "css-blocks";
-import Project, { ResolvedFile } from "./project";
+import Project from "./project";
+import { ResolvedFile } from "./GlimmerProject";
 import DependencyAnalyzer from "glimmer-analyzer";
 import * as debugGenerator from "debug";
 import { selectorCount } from "./utils";

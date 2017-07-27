@@ -4,17 +4,7 @@ import * as glob from 'glob';
 import * as postcss from "postcss";
 import {
   PluginOptions,
-  TemplateInfo,
-  TemplateInfoConstructor,
-  TemplateInfoFactory,
-  SerializedTemplateInfo,
-  BlockFactory,
-  Importer,
-  PathBasedImporter,
-  FileIdentifier,
-  ImportedFile,
-  PluginOptionsReader,
-  filesystemImporter
+  BlockFactory
 } from "css-blocks";
 
 import resMapBuilder = require('@glimmer/resolution-map-builder');
@@ -22,178 +12,16 @@ const buildResolutionMap = resMapBuilder.buildResolutionMap;
 import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
 
 import DEFAULT_MODULE_CONFIG from './module-config';
+import GlimmerImporter from "./GlimmerImporter";
+import { parseSpecifier } from "./utils";
+import { GlimmerProject, ResolvedPath, ResolvedFile } from "./GlimmerProject";
 
-export interface ResolutionMap {
-  [specifier: string]: string;
-}
-
-export interface ResolvedPath {
-  specifier: string;
-  fullPath: string;
-}
-
-export class ResolvedFile extends TemplateInfo {
-  string: string;
-  fullPath: string;
-  static typeName = "GlimmerTemplates.ResolvedFile";
-
-  constructor(templateString: string, specifier: string, fullPath: string) {
-    super(specifier);
-    this.string = templateString;
-    this.fullPath = fullPath;
-  }
-  serialize(): SerializedTemplateInfo {
-    return {
-      type: ResolvedFile.typeName,
-      identifier: this.identifier,
-      data: [
-        this.string,
-        this.fullPath
-      ]
-    };
-  }
-  static deserialize(identifier, string, fullPath): ResolvedFile {
-    return new ResolvedFile(string, identifier, fullPath);
-  }
-}
-
-function parseSpecifier(specifier: string): { componentType: string; componentName: string; } | null {
-  if (/^(component|template|stylesheet):(.*)$/.test(specifier)) {
-    return {
-      componentType: RegExp.$1,
-      componentName: RegExp.$2
-    };
-  } else {
-    return null;
-  }
-}
-
-TemplateInfoFactory.register(ResolvedFile.typeName, ResolvedFile as TemplateInfoConstructor);
-
-const glimmerImportIdentifier = /^glimmer:(.+)$/;
-
-export class GlimmerImporter extends PathBasedImporter {
-  project: Project;
-  otherImporter: Importer;
-  constructor(project: Project, otherImporter?: Importer) {
-    super();
-    this.project = project;
-    this.otherImporter = otherImporter || filesystemImporter;
-  }
-  demangle(identifier: FileIdentifier | null): string | null {
-    if (identifier && glimmerImportIdentifier.exec(identifier)) {
-      return RegExp.$1;
-    } else if (identifier && parseSpecifier(identifier)) {
-      return identifier;
-    } else {
-      return null;
-    }
-  }
-  defaultName(identifier: FileIdentifier, options: PluginOptionsReader) {
-    let specifier = this.demangle(identifier);
-    if (specifier) {
-      let parsedSpecifier = parseSpecifier(specifier);
-      if (parsedSpecifier) {
-        return path.basename(parsedSpecifier.componentName);
-      } else {
-        throw new Error(`${identifier} is not a glimmer specifier.`);
-      }
-    } else {
-      return this.otherImporter.defaultName(identifier, options);
-    }
-  }
-  identifier(fromFile: FileIdentifier | null, importPath: string, options: PluginOptionsReader): FileIdentifier {
-    let referrer = this.demangle(fromFile) || undefined;
-    let resolution: ResolvedPath | null;
-    try {
-      resolution = this.project.resolveStylesheet(importPath, referrer);
-    } catch (e) {
-      try {
-        // might be absolute already try again
-        resolution = this.project.resolveStylesheet(importPath);
-      } catch (e2) {
-        resolution = null;
-      }
-    }
-    if (resolution === null) {
-      let specifier = parseSpecifier(importPath);
-      if (specifier) { // it's a glimmer specifier, just return it.
-        return `glimmer:${specifier.componentType}:${specifier.componentName}`;
-      }
-    }
-    if (resolution) {
-      return `glimmer:${resolution.specifier}`;
-    } else {
-      if (referrer) {
-        let refResolution = this.project.resolve(referrer);
-        if (refResolution) {
-          try {
-            fromFile = this.otherImporter.identifier(null, refResolution.fullPath, options);
-          } catch (e) {
-            // >_< The other importer doesn't understand file paths, we'll try it without.
-            fromFile = null;
-          }
-          return this.otherImporter.identifier(fromFile, importPath, options);
-        } else {
-          throw new Error(`Could not resolve Glimmer specifier '${referrer}' to a file.`);
-        }
-      } else {
-        return this.otherImporter.identifier(fromFile, importPath, options);
-      }
-    }
-  }
-  filesystemPath(identifier: string, options: PluginOptionsReader): string | null {
-    let specifier = this.demangle(identifier);
-    if (specifier) {
-      let resolution = this.project.resolve(specifier);
-      if (resolution) {
-        return resolution.fullPath;
-      } else {
-        return null;
-      }
-    } else {
-      return this.otherImporter.filesystemPath(identifier, options);
-    }
-  }
-  inspect(identifier: string, options): string {
-    let specifier = this.demangle(identifier);
-    if (specifier) {
-      let resolution = this.project.resolve(specifier);
-      if (resolution) {
-        return this.project.relativize(resolution.fullPath);
-      } else {
-        return specifier;
-      }
-    } else {
-      return this.otherImporter.inspect(identifier, options);
-    }
-  }
-  import(identifier: FileIdentifier, options: PluginOptionsReader): Promise<ImportedFile> {
-    let specifier = this.demangle(identifier);
-    if (specifier) {
-      let resolution = this.project.resolveFile(specifier);
-      if (resolution) {
-        return Promise.resolve({
-          syntax: this.syntax(identifier, options),
-          identifier: identifier,
-          contents: resolution.string,
-          defaultName: this.defaultName(identifier, options)
-        });
-      } else {
-        return Promise.reject(new Error(`File not found for ${specifier}`));
-      }
-    } else {
-      return this.otherImporter.import(identifier, options);
-    }
-  }
-}
-
-export default class Project {
+export default class Project implements GlimmerProject {
   projectDir: string;
-  map: ResolutionMap;
+  map: resMapBuilder.ResolutionMap;
   resolver: Resolver;
   registry: BasicModuleRegistry;
-  blockImporter: Importer;
+  blockImporter: GlimmerImporter;
   blockFactory: BlockFactory;
   cssBlocksOpts: PluginOptions;
 

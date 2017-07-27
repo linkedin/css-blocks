@@ -19,7 +19,7 @@ import {
 } from "css-blocks";
 import {
   ResolvedFile
-} from "./project";
+} from "./GlimmerProject";
 // import {
 //   selectorCount
 // } from "./utils";
