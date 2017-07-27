@@ -3,9 +3,6 @@ import * as path from 'path';
 import * as glob from 'glob';
 import * as postcss from "postcss";
 import {
-  RawSourceMap
-} from "source-map";
-import {
   PluginOptions,
   TemplateInfo,
   TemplateInfoConstructor,
@@ -97,8 +94,7 @@ export class GlimmerImporter extends PathBasedImporter {
     if (specifier) {
       let parsedSpecifier = parseSpecifier(specifier);
       if (parsedSpecifier) {
-        let { componentType, componentName } = parsedSpecifier;
-        return path.basename(componentName);
+        return path.basename(parsedSpecifier.componentName);
       } else {
         throw new Error(`${identifier} is not a glimmer specifier.`);
       }
