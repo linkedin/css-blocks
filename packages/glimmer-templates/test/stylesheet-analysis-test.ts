@@ -51,4 +51,31 @@ describe('Stylesheet analysis', function() {
       throw error;
     });
   });
+
+  it('analyzes styles from a referenced block with dynamic state', function() {
+    let projectDir = fixture('styled-app');
+    let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'with-dynamic-states');
+    return analyzer.analyze().then((richAnalysis) => {
+      let analysis = richAnalysis.serialize();
+      assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-states");
+      assert.deepEqual(analysis.blocks, {
+        "": "glimmer:stylesheet:/styled-app/components/with-dynamic-states",
+        "h": fixture("styled-app/src/ui/components/with-dynamic-states/header.css")
+      });
+      assert.deepEqual(analysis.stylesFound, [
+        '.root',
+         '.world',
+         '.world[state|thick]',
+         'h.emphasis',
+         'h.emphasis[state|style=bold]',
+         'h.emphasis[state|style=italic]',
+         'h.root'
+      ]);
+      assert.deepEqual(analysis.styleCorrelations, [[1, 2, 3, 4, 5]]);
+    }).catch((error) => {
+      console.error(error);
+      throw error;
+    });
+  });
+
 });

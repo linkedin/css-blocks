@@ -144,7 +144,9 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
         classObjects = this.processClass(n, this.block);
       }
     });
-    let states: State[] = [];
+
+    let statesMap: Map<AST.TextNode | AST.MustacheStatement | AST.ConcatStatement, BlockObject[]> = new Map();
+
     let addedRoot = false;
     node.attributes.forEach((n) => {
       if (n.name.match(STATE)) {
@@ -153,28 +155,94 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
           stateContainers.unshift(this.block);
         }
         if (stateContainers.length > 0) {
-          let state = this.processState(RegExp.$1, n, this.block, stateContainers);
-          if (state) {
-            if (state.parent === this.block) {
+          let foundStates = this.processState(RegExp.$1, n, this.block, stateContainers);
+          if (foundStates.length) {
+            if (foundStates[0].parent === this.block) {
               addedRoot = true;
             }
-            states.push(state);
+            statesMap.set(n.value, foundStates);
           }
         }
         node.attributes = node.attributes.filter((an) => an !== n);
       }
     });
     let classAttr = node.attributes.find(n => n.name === "class");
-    if (addedRoot) classObjects.push(this.block);
-    let objects = new Set<BlockObject>([...classObjects, ...states]);
-    if (objects.size > 0) {
-      let newClassValue = this.styleMapping.mapObjects(...objects).join(" ");
-      if (!classAttr) {
-        classAttr = this.syntax.builders.attr("class", this.syntax.builders.text(newClassValue));
-        node.attributes.push(classAttr);
-      } else {
-        classAttr.value = this.syntax.builders.text(newClassValue);
-      }
+    if (addedRoot) { classObjects.push(this.block); }
+
+    // For constructing our Handlebars AST concat group
+    let parts: (AST.MustacheStatement | AST.TextNode)[] = [];
+
+    // Get our new class...classes
+    let classSet = new Set<BlockObject>([...classObjects]);
+    let newClassValue: string = this.styleMapping.mapObjects(...classSet).join(' ');
+
+    parts.push(this.syntax.builders.text(newClassValue));
+
+    // Get our new state classes expression
+    statesMap.forEach((states: State[], value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement) => {
+      states.forEach((state: State) => {
+        let newClass = this.styleMapping.blockMappings.get(state);
+
+        if ( !newClass ) { return; }
+        let classStr = ' ' + newClass.join(' ');
+
+        // If value is a string, we can just add the class to our new class list.
+        if ( value.type === 'TextNode' ) {
+          parts.push(this.syntax.builders.text(classStr));
+        }
+
+        // Otherise, this state value is dynamic, we need to have some fun. We
+        // need to force it into the right type, then output it into our {{if-style}}
+        // helper.
+        else {
+          let condition: AST.SubExpression | AST.Literal | AST.PathExpression | undefined;
+
+          if ( value.type === 'MustacheStatement' ) {
+            condition = value.path;
+          }
+
+          // If this is a concat statement, we need to emit a concat subexpression
+          // helper instead.
+          else if ( value.type === 'ConcatStatement' ) {
+            condition = this.syntax.builders.sexpr (
+              this.syntax.builders.path('/css-blocks/components/concat'),
+              value.parts.reduce( (arr, val): AST.Expression[] => {
+                arr.push( (val.type === 'TextNode') ? this.syntax.builders.string(val.chars) : val.path);
+                return arr;
+              }, ([] as AST.Expression[]))
+            );
+          }
+
+          // If we couldn't create a well formed condition statement, move on.
+          if ( !condition ) { return; }
+
+          // Constructo our helper and add to class list.
+          let helper: AST.MustacheStatement;
+          if ( states.length > 1 ) {
+            helper = this.syntax.builders.mustache('/css-blocks/components/block', [
+              condition,
+              this.syntax.builders.string(state.name),
+              this.syntax.builders.string(classStr)
+            ]);
+          }
+          else {
+            helper = this.syntax.builders.mustache('/css-blocks/components/block', [
+              condition,
+              this.syntax.builders.string(classStr)
+            ]);
+          }
+          parts.push(helper);
+        }
+      });
+    });
+
+    let concatStatement = this.syntax.builders.concat(parts);
+
+    if (!classAttr) {
+      classAttr = this.syntax.builders.attr("class", concatStatement);
+      node.attributes.push(classAttr);
+    } else {
+      classAttr.value = concatStatement;
     }
   }
   private processClass(node: AST.AttrNode, block: Block): StateContainer[] {
@@ -190,7 +258,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     }
     return blockObjects;
   }
-  private processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[]): State | null {
+  private processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[]): State[] {
     let blockName: string | undefined;
     let md = stateName.match(/^([^\.]+)\.([^\.]+)$/);
     let stateBlock = block;
@@ -201,33 +269,20 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
       if (tStateBlock) {
         stateBlock = tStateBlock;
       } else {
-        return null;
+        return [];
       }
     }
 
     let container = stateContainers.find((c) => c.block === stateBlock);
     if (!container) {
-      return null;
+      return [];
     }
-    let substateName: string | null = null;
-    if (node.value && node.value.type === "TextNode" && node.value.chars) {
-      substateName = node.value.chars;
-      let state = container.states.getState(substateName, stateName);
-      if (state) {
-        return state;
-      } else {
-        return null;
-      }
-    } else if (node.value && node.value.type !== "TextNode") {
-      // dynamic stuff will go here
-      return null;
-    } else {
-      let state = container.states.getState(stateName);
-      if (state) {
-        return state;
-      } else {
-        return null;
-      }
+    let substateName: string | undefined;
+    if (node.value) {
+      substateName = (node.value.type === "TextNode") ? node.value.chars : undefined;
+      let states = container.states.getGroup(stateName, substateName);
+      return states;
     }
+    return [];
   }
 }

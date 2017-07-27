@@ -8,12 +8,13 @@ import { precompile, PrecompileOptions } from "@glimmer/compiler";
 import { StyleMapping, PluginOptionsReader, Block, MetaStyleMapping } from "css-blocks";
 
 describe('Template Rewriting', function() {
-  it('analyzes styles from the implicit block', function() {
+
+  it('rewrites styles from dynamic attributes', function() {
     let projectDir = fixture('styled-app');
     let project = new Project(projectDir);
     let cssBlocksOpts = new PluginOptionsReader(project.cssBlocksOpts);
-    let analyzer = new HandlebarsStyleAnalyzer(project, 'my-app');
-    let templatePath = fixture('styled-app/src/ui/components/my-app/template.hbs');
+    let analyzer = new HandlebarsStyleAnalyzer(project, 'with-dynamic-states');
+    let templatePath = fixture('styled-app/src/ui/components/with-dynamic-states/template.hbs');
     return analyzer.analyze().then((richAnalysis) => {
       let metaMapping = new MetaStyleMapping();
       metaMapping.templates.set(templatePath, StyleMapping.fromAnalysis(richAnalysis, cssBlocksOpts));
@@ -37,17 +38,53 @@ describe('Template Rewriting', function() {
         };
         let templateContent = fs.readFileSync(templatePath);
         let result = JSON.parse(precompile(templateContent.toString(), options));
-        let classes: string[] = [];
-        JSON.parse(result.block).statements.forEach(statement => {
-          if (statement[0] === 9 && statement[1] === "class") {
-            classes.push(statement[2]);
+        let classes: any = {};
+
+        JSON.parse(result.block).statements.forEach((statement, i) => {
+          if ((statement[0] === 10) && statement[1] === "class") {
+            classes[i] = statement[2][1];
           }
         });
-        assert.deepEqual(classes, ['my-app my-app--is-loading']);
+        assert.deepEqual(classes, {
+          1: ['with-dynamic-states'],
+          5: ['header'],
+          9: [
+              "with-dynamic-states__world header__emphasis",
+              [
+                25, "/css-blocks/components/block",
+                [
+                  [ 19, 0, [ "isThick" ] ],
+                  " with-dynamic-states__world--thick"
+                ],
+                null
+              ],
+              [
+                25, "/css-blocks/components/block",
+                [
+                  [
+                    19, 0, [ "textStyle" ]
+                  ],
+                  "bold",
+                  " header__emphasis--style-bold"
+                ],
+                null
+              ],
+              [
+                25, "/css-blocks/components/block",
+                [
+                  [ 19, 0, [ "textStyle" ] ],
+                  "italic",
+                  " header__emphasis--style-italic"
+                ],
+                null
+              ]
+            ]
+        });
       });
     }).catch((error) => {
       console.error(error);
       throw error;
     });
   });
+
 });

@@ -65,7 +65,9 @@ export class BaseStyleAnalyzer {
           analysis.startElement();
           elementCount++;
           let atRootElement = (elementCount === 1);
-          // If there are root styles, we add them on the root element implicitly. The rewriter will add the block's root class.
+
+          // If there are root styles, we add them on the root element implicitly.
+          // The rewriter will add the block's root class.
           if (atRootElement) {
             let query = new QueryKeySelector(block);
             if (block.root) {
@@ -75,6 +77,7 @@ export class BaseStyleAnalyzer {
               }
             }
           }
+
           let classObjects: StateContainer[] | undefined = undefined;
           node.attributes.forEach((n) => {
             if (n.name === "class") {
@@ -164,24 +167,21 @@ export class BaseStyleAnalyzer {
     if (!container) {
       throw this.cssBlockError(`Element lacks a class from the corresponding block`, node, template);
     }
-    let substateName: string | null = null;
-    if (node.value && node.value.type === "TextNode" && node.value.chars) {
-      substateName = node.value.chars;
-      let state = container.states.getState(substateName, stateName);
-      if (state) {
-        analysis.addStyle(state);
+    let substateName: string | undefined;
+
+    if (node.value) {
+      substateName = (node.value.type === "TextNode") ? node.value.chars : undefined;
+      let states = container.states.getGroup(stateName, substateName);
+      if (states) {
+        states.forEach((state) => {
+          analysis.addStyle(state);
+        });
       } else {
-        throw this.cssBlockError(`No state ${stateName}=${node.value.chars} found in block at ${stylesheetPath}`, node, template);
-      }
-    } else if (node.value && node.value.type !== "TextNode") {
-      // dynamic stuff will go here
-      throw this.cssBlockError("No handling for dynamic styles yet", node, template);
-    } else {
-      let state = container.states.getState(stateName);
-      if (state) {
-        analysis.addStyle(state);
-      } else {
-        throw this.cssBlockError(`No state ${stateName} found in block at ${stylesheetPath}`, node, template);
+        if (substateName) {
+          throw this.cssBlockError(`No state ${stateName}=${substateName} found in block at ${stylesheetPath}`, node, template);
+        } else {
+          throw this.cssBlockError(`No state ${stateName} found in block at ${stylesheetPath}`, node, template);
+        }
       }
     }
   }

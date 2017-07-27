@@ -1,0 +1,13 @@
+@block-reference h from "./header.css";
+
+.root {
+    color: red;
+}
+
+.world {
+    border: 1px solid black;
+}
+
+.world[state|thick] {
+    border-width: 3px;
+}

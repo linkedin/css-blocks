@@ -17,7 +17,8 @@
     "tslint": "tslint --project tsconfig.json --type-check",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "docs": "typedoc --out ./docs ."
+    "docs": "typedoc --out ./docs .",
+    "watch": "watch 'npm run test' src test types-local --wait=1"
   },
   "repository": {
     "type": "git",
@@ -54,7 +55,8 @@
     "ts-node": "^3.0.4",
     "tslint": "^5.4.3",
     "typedoc": "^0.7.1",
-    "typescript": "^2.4.1"
+    "typescript": "^2.4.1",
+    "watch": "^1.0.2"
   },
   "dependencies": {
     "@glimmer/compiler": "^0.25.1",
