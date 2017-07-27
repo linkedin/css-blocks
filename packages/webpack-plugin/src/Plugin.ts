@@ -2,6 +2,7 @@ import Tapable = require("tapable");
 import * as webpack from "webpack";
 import * as debugGenerator from "debug";
 import * as postcss from "postcss";
+import * as path from "path";
 import { SourceMapSource, ConcatSource } from 'webpack-sources';
 
 import {
@@ -61,12 +62,13 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
   }
   apply(compiler: webpack.Compiler) {
     this.projectDir = compiler.options.context || this.projectDir;
+    let outputPath = compiler.options.output && compiler.options.output.path || this.projectDir; // TODO What is the webpack default output directory?
     compiler.plugin("make", (compilation: any, cb: (error?: Error) => void) => {
       this.analyzer.reset();
       this.trace(`starting analysis.`);
       let pendingResult: Promise<BlockCompilationComplete<Template>> =
         this.analyzer.analyze().then(analysis => {
-          return this.compileBlocks(<MetaTemplateAnalysis<Template>>analysis);
+          return this.compileBlocks(<MetaTemplateAnalysis<Template>>analysis, path.join(outputPath, this.outputCssFile));
         }).then(result => {
           this.trace(`setting css asset: ${this.outputCssFile}`);
           compilation.assets[this.outputCssFile] = result.css;
@@ -98,21 +100,21 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
       this.trace(`notified of pending compilation`);
     });
   }
-  private compileBlocks(analysis: MetaTemplateAnalysis<Template>): CompilationResult<Template> {
+  private compileBlocks(analysis: MetaTemplateAnalysis<Template>, cssOutputName: string): CompilationResult<Template> {
     let options: CssBlocksOptions = this.compilationOptions;
     let reader = new CssBlocksOptionsReader(options);
     let blockCompiler = new BlockCompiler(postcss, options);
     let cssBundle = new ConcatSource();
     let numBlocks = 0;
     analysis.blockDependencies().forEach((block: Block) => {
-      if (block.root && block.source) {
-        this.trace(`compiling ${block.source}.`);
+      if (block.root && block.identifier) {
+        this.trace(`compiling ${block.identifier}.`);
         let originalSource = block.root.toString();
         let root = blockCompiler.compile(block, block.root, analysis);
-        let cssOutputName = block.source.replace(".block.css", ".css");
         let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
         // TODO: handle a sourcemap from compiling the block file via a preprocessor.
-        let source = new SourceMapSource(result.css, block.source,
+        let filename = reader.importer.filesystemPath(block.identifier, reader) || reader.importer.inspect(block.identifier, reader);
+        let source = new SourceMapSource(result.css, filename,
                                           result.map.toJSON(), originalSource);
         cssBundle.add(source);
         numBlocks++;

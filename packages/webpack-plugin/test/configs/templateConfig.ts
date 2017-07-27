@@ -1,7 +1,6 @@
 import * as webpack from "webpack";
 import * as merge from "webpack-merge";
 import * as postcss from "postcss";
-import * as fs from "fs";
 import * as path from "path";
 import { config as defaultOutputConfig } from "./defaultOutputConfig";
 import { CssBlocksPlugin, CssAssets } from "../../src/index";
@@ -10,13 +9,13 @@ import {
   MultiTemplateAnalyzer,
   StyleAnalysis,
   BlockObject,
-  BlockParser,
   TemplateInfo,
   MetaTemplateAnalysis,
   TemplateAnalysis,
   SerializedTemplateInfo,
   TemplateInfoFactory,
-  TemplateInfoConstructor
+  TemplateInfoConstructor,
+  BlockFactory
 } from "css-blocks";
 import { BLOCK_FIXTURES_DIRECTORY } from "../util/testPaths";
 
@@ -81,18 +80,6 @@ class TestMetaTemplateAnalysis extends MetaTemplateAnalysis<TestTemplateInfo> {
   }
 }
 
-function getBlock(name: string): Promise<Block> {
-  let parser = new BlockParser(postcss);
-  let filename = path.resolve(BLOCK_FIXTURES_DIRECTORY, name + ".block.css");
-  return postcss().process(fs.readFileSync(filename)).then(result => {
-    if (result.root) {
-      return parser.parse(result.root, filename, name);
-    } else {
-      throw result.warnings().join("\n");
-    }
-  });
-}
-
 class TestTemplateAnalyzer implements MultiTemplateAnalyzer<TemplateInfo> {
   analysis: TestMetaTemplateAnalysis;
   constructor(a: TestMetaTemplateAnalysis) {
@@ -106,9 +93,14 @@ class TestTemplateAnalyzer implements MultiTemplateAnalyzer<TemplateInfo> {
   }
 }
 
+function fixture(name: string) {
+  return path.resolve(BLOCK_FIXTURES_DIRECTORY, name + ".block.css");
+}
+
 export function config(): Promise<webpack.Configuration> {
-  let block1 = getBlock("concat-1");
-  let block2 = getBlock("concat-2");
+  let factory = new BlockFactory({}, postcss);
+  let block1 = factory.getBlock(fixture("concat-1"));
+  let block2 = factory.getBlock(fixture("concat-2"));
   return Promise.all([block1, block2]).then(blocks => {
     let analysis = new TestMetaTemplateAnalysis();
     blocks.forEach((b, i) => {

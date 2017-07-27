@@ -1,7 +1,7 @@
 import * as path from "path";
 import { assert } from "chai";
 
-import { ImportedFile, Importer } from "css-blocks";
+import { ImportedFile, Importer, PluginOptionsReader, PathBasedImporter, Syntax } from "css-blocks";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 
@@ -11,6 +11,39 @@ export interface SourceRegistry {
 
 export interface ImportedFiles {
   [sourcePath: string]: boolean;
+}
+
+export class MockImporter extends PathBasedImporter {
+  registry: MockImportRegistry;
+  constructor(registry: MockImportRegistry) {
+    super();
+    this.registry = registry;
+  }
+  identifier(fromFile: string | null, importPath: string, _options: PluginOptionsReader) {
+    if (fromFile) {
+      let sourceDir: string = path.dirname(fromFile);
+      return this.registry.relativize(path.resolve(sourceDir, importPath));
+    } else {
+      return importPath;
+    }
+  }
+  import(resolvedPath: string, options: PluginOptionsReader): Promise<ImportedFile> {
+    return new Promise<ImportedFile>((resolve, reject) => {
+      let contents = this.registry.sources[resolvedPath];
+      if (contents) {
+        this.registry.imported[resolvedPath] = true;
+        resolve({
+          syntax: Syntax.css,
+          identifier: resolvedPath,
+          defaultName: this.defaultName(resolvedPath, options),
+          contents: contents
+        });
+      } else {
+        let importedFiles = Object.keys(this.registry.sources).join(", ");
+        reject(new Error(`Mock file ${resolvedPath} not found. Available: ${importedFiles}`));
+      }
+    });
+  }
 }
 
 export class MockImportRegistry {
@@ -45,34 +78,6 @@ export class MockImportRegistry {
   }
 
   importer(): Importer {
-    let registry = this;
-    let importer: Importer = <Importer>function(fromFile: string, importPath: string): Promise<ImportedFile> {
-      let sourceDir: string = path.dirname(fromFile);
-      let resolvedPath = registry.relativize(path.resolve(sourceDir, importPath));
-      return new Promise<ImportedFile>((resolve, reject) => {
-        let contents = registry.sources[resolvedPath];
-        if (contents) {
-          registry.imported[resolvedPath] = true;
-          resolve({
-            path: resolvedPath,
-            defaultName: importer.getDefaultName(resolvedPath),
-            contents: contents
-          });
-        } else {
-          let importedFiles = Object.keys(registry.sources).join(", ");
-          reject(new Error(`Mock file ${resolvedPath} not found. Available: ${importedFiles}`));
-        }
-      });
-    };
-    importer.getDefaultName = this.getDefaultName;
-    return importer;
-  }
-
-  getDefaultName(sourcePath: string): string {
-    let name = path.parse(sourcePath).name;
-    if (name.endsWith(".block")) {
-      name = name.substr(0, name.length - 6);
-    }
-    return name;
+    return new MockImporter(this);
   }
 }

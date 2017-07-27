@@ -1,1 +1,1 @@
-{"version":3,"sources":["<input css 1>","<input css 2>"],"names":[],"mappings":"AAAA;EACE,aAAa;CCDf;EACE,WAAW","file":"x","sourcesContent":[".root {\n  color: black;\n}",".root {\n  color: red;\n}"]}
+{"version":3,"sources":["../../test/fixtures/blocks/concat-1.block.css","../../test/fixtures/blocks/concat-2.block.css"],"names":[],"mappings":"AAAA;EACE,aAAa;CCDf;EACE,WAAW","file":"x","sourcesContent":[".root {\n  color: black;\n}",".root {\n  color: red;\n}"]}
