@@ -1,7 +1,21 @@
-import { MetaStyleMapping, StyleMapping, PluginOptionsReader, FileIdentifier } from 'css-blocks';
+import { MetaStyleMapping, StyleMapping, PluginOptionsReader, Block } from 'css-blocks';
 import { Template } from '../utils/Analysis';
 
 const loaderUtils = require('loader-utils');
+
+type LoaderContext = {
+  dependency(dep: string): void;
+};
+
+function trackBlockDependencies(loaderContext: LoaderContext, block: Block, options: PluginOptionsReader): void {
+  let sourceFile = options.importer.filesystemPath(block.identifier, options);
+  if (sourceFile !== null) {
+    loaderContext.dependency(sourceFile);
+  }
+  block.dependencies.forEach(dep => {
+    loaderContext.dependency(dep);
+  });
+}
 
 export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any){
 
@@ -38,11 +52,11 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
         return;
       }
       for ( let key in styleMapping.blocks ) {
-        let identifier: FileIdentifier = styleMapping.blocks[key].identifier;
-        let blockFilename = cssBlockOpts.importer.filesystemPath(identifier, cssBlockOpts);
-        if (blockFilename) {
-          this.dependency(blockFilename);
-        }
+        let block = styleMapping.blocks[key];
+        trackBlockDependencies(this, block, cssBlockOpts);
+        block.transitiveBlockDependencies().forEach(b => {
+          trackBlockDependencies(this, b, cssBlockOpts);
+        });
       }
       rewriter.blocks[path] = styleMapping;
     });
