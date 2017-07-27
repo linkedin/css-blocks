@@ -1,6 +1,7 @@
 import * as postcss from "postcss";
 import * as errors from "./errors";
-import { PluginOptions, OptionsReader } from "./options";
+import { PluginOptions } from "./options";
+import { OptionsReader } from "./OptionsReader";
 import { sourceLocation } from "./SourceLocation";
 import { MergedObjectMap, Block } from "./Block";
 import ConflictResolver from "./ConflictResolver";
@@ -23,8 +24,9 @@ export default class BlockCompiler {
         // console.log("Got an analysis for compilation. I should use it probably.", analysis);
       }
       let resolver = new ConflictResolver(this.opts);
+      let filename = this.opts.importer.inspect(block.identifier, this.opts);
       // Process all debug statements for this block.
-      this.processDebugStatements(block.source, root, block);
+      this.processDebugStatements(filename, root, block);
 
       // Clean up CSS Block specific properties.
       root.walkAtRules("block-reference", (atRule) => {

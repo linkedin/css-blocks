@@ -1,6 +1,5 @@
 import * as postcss from "postcss";
-
-import { PluginOptions } from "./options";
+import { CssBlockOptions } from "./options";
 import { Plugin } from "./Plugin";
 import { OutputMode } from "./OutputMode";
 import { CssBlockError, InvalidBlockSyntax, MissingSourcePath } from "./errors";
@@ -9,14 +8,14 @@ import { CssBlockError, InvalidBlockSyntax, MissingSourcePath } from "./errors";
 // I welcome a patch that cleans this up.
 
 function makeApi(): {
-  (postcssImpl: typeof postcss): (opts?: PluginOptions) => any;
+  (postcssImpl: typeof postcss): (opts?: Partial<Readonly<CssBlockOptions>>) => any;
   OutputMode: typeof OutputMode;
   CssBlockError: typeof CssBlockError;
   InvalidBlockSyntax: typeof InvalidBlockSyntax;
   MissingSourcePath: typeof MissingSourcePath;
 } {
   type temp = {
-    (postcssImpl: typeof postcss): (opts?: PluginOptions) => any;
+    (postcssImpl: typeof postcss): (opts?: Partial<Readonly<CssBlockOptions>>) => any;
     OutputMode: typeof OutputMode;
     CssBlockError: typeof CssBlockError;
     InvalidBlockSyntax: typeof InvalidBlockSyntax;
@@ -25,7 +24,7 @@ function makeApi(): {
 
   let cssBlocks: temp;
   cssBlocks = <temp>function(postcssImpl: typeof postcss) {
-    return (opts?: PluginOptions) => {
+    return (opts?: Partial<Readonly<CssBlockOptions>>) => {
       let plugin = new Plugin(postcssImpl, opts);
       return plugin.process.bind(plugin);
     };

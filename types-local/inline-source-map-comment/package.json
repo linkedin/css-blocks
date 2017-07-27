@@ -1,0 +1,7 @@
+{
+  "dependencies": {},
+  "description": "TypeScript definitions for inline-source-map-comment 1.0.5",
+  "name": "@types/inline-source-map-comment",
+  "typings": "index.d.ts",
+  "version": "1.0.5"
+}

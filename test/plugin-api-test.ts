@@ -3,7 +3,7 @@ import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import cssBlocks = require("../src/cssBlocks");
-import { OptionsReader } from "../src/options";
+import { OptionsReader } from "../src/OptionsReader";
 
 @suite("Setting up")
 export class SetupTests {
@@ -15,7 +15,6 @@ export class SetupTests {
   @test "default options"() {
     const reader = new OptionsReader({});
     assert.equal(reader.outputMode, cssBlocks.OutputMode.BEM);
-    assert.equal(reader.outputModeName, "BEM");
   }
   @test "a filename is required"() {
     let cssBlocksPlugin = cssBlocks(postcss);

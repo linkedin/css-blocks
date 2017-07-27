@@ -36,6 +36,9 @@
       ],
       "regexpu-core": [
         "../../types-local/regexpu-core"
+      ],
+      "inline-source-map-comment": [
+        "../../types-local/inline-source-map-comment"
       ]
     }
   },

@@ -10,6 +10,12 @@ export {
   StateInfo
 } from "./Block";
 export {
+  IBlockFactory
+} from "./Block/IBlockFactory";
+export {
+  BlockFactory
+} from "./Block/BlockFactory";
+export {
   default as BlockParser
 } from "./BlockParser";
 export {
@@ -25,8 +31,10 @@ export {
 } from "./SourceLocation";
 export {
   PluginOptions,
-  OptionsReader as PluginOptionsReader,
 } from "./options";
+export {
+  OptionsReader as PluginOptionsReader,
+} from "./OptionsReader";
 export {
   OutputMode
 } from "./OutputMode";
@@ -41,10 +49,24 @@ export {
   CompoundSelector
 } from "./parseSelector";
 export {
+  ImporterData,
   ImportedFile,
   Importer,
-  filesystemImporter
+  FilesystemImporter,
+  filesystemImporter,
+  FileIdentifier,
+  PathBasedImporter,
+  PathAliasImporter,
+  Alias,
+  PathAliases
 } from "./importing";
+export {
+  annotateCssContentWithSourceMap,
+  ProcessedFile,
+  Preprocessor,
+  Preprocessors,
+  Syntax
+} from "./preprocessing";
 export {
   SerializedTemplateAnalysis,
   SerializedTemplateInfo,

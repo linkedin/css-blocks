@@ -3,7 +3,7 @@
 import { suite, test } from "mocha-typescript";
 import { assert } from "chai";
 import { Block, BlockObject } from "../src/Block";
-import { OptionsReader } from "../src/options";
+import { OptionsReader } from "../src/OptionsReader";
 import iCssAdapter, { ExportDictionary }  from "../src/iCssAdapter";
 import BEMProcessor from "./util/BEMProcessor";
 

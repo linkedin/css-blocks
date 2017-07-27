@@ -4,11 +4,13 @@ import { CssBlockError } from "../errors";
 import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
 import { stateParser, isClass, isState, isRoot, NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockClass } from "./index";
-import { OptionsReader } from "../options";
+import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 import { BlockObject, StateContainer } from "./BlockObject";
+import { BlockScope } from "./LocalScope";
+import { FileIdentifier } from "../importing";
 
-interface BlockReferenceMap {
+export interface BlockReferenceMap {
   [blockName: string]: Block;
 }
 
@@ -23,21 +25,44 @@ export interface MergedObjectMap {
 export class Block extends BlockObject {
   private _classes: BlockClassMap = {};
   private _blockReferences: BlockReferenceMap = {};
-  private _source: string;
+  private _identifier: FileIdentifier;
   private _base?: Block;
   private _baseName?: string;
   private _implements: Block[] = [];
+  private _localScope: BlockScope;
+  /**
+   * array of paths that this block depends on and, if changed, would
+   * invalidate the compiled css of this block. This is usually only useful in
+   * preprocessed blocks.
+   */
+  private _dependencies: Set<string>;
 
   root?: postcss.Root;
 
   public readonly states: StateContainer;
   public readonly parsedRuleSelectors: WeakMap<postcss.Rule,ParsedSelector[]>;
 
-  constructor(name: string, source: string) {
+  constructor(name: string, identifier: FileIdentifier) {
     super(name);
-    this._source = source;
+    this._identifier = identifier;
     this.parsedRuleSelectors = new WeakMap();
     this.states = new StateContainer(this);
+    this._localScope = new BlockScope(this);
+    this._dependencies = new Set<string>();
+  }
+
+  /**
+   * Add an absolute, normalized path as a compilation dependency. This is used
+   * to invalidate caches and trigger watchers when those files change.
+   *
+   * It is not necessary or helpful to add css-block files.
+   */
+  addDependency(filepath: string) {
+    this._dependencies.add(filepath);
+  }
+
+  get dependencies(): string[] {
+    return new Array(...this._dependencies);
   }
 
   get base(): Block | undefined {
@@ -48,8 +73,8 @@ export class Block extends BlockObject {
     return this._baseName;
   }
 
-  get source() {
-    return this._source;
+  get identifier(): FileIdentifier {
+    return this._identifier;
   }
 
   setBase(baseName: string, base: Block) {
@@ -93,7 +118,7 @@ export class Block extends BlockObject {
       let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
       if (missingObjs.length > 0) {
         let s = missingObjs.length > 1 ? 's' : '';
-        throw new CssBlockError( `Missing implementation${s} for: ${missingObjsStr} from ${b.source}`);
+        throw new CssBlockError( `Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
       }
     });
   }
@@ -207,26 +232,7 @@ export class Block extends BlockObject {
    * @returns The BlockObject referenced at the supplied path.
    */
   lookup(reference: string): BlockObject | undefined {
-
-    // Try to split the reference string to find block name reference. If there
-    // is a block name reference, fetch the named block and run lookup in that context.
-    let refMatch = reference.match(/^(\w+)(\W.*)?$/);
-    if (refMatch) {
-      let refName = refMatch[1];
-      let subObjRef = refMatch[2];
-      let refBlock = this._blockReferences[refName];
-      if (refBlock === undefined) {
-        return undefined;
-      }
-      if (subObjRef !== undefined) {
-        return refBlock.lookup(subObjRef);
-      } else {
-        return refBlock;
-      }
-    }
-
-    // Otherwise, find the sub-block locally.
-    return this.all(false).find((o) => o.asSource() === reference); // <-- Super ineffecient algorithm. Better to parse the string and traverse directly.
+    return this._localScope.lookup(reference);
   }
 
   merged(): MergedObjectMap {
@@ -382,7 +388,7 @@ export class Block extends BlockObject {
   }
 
   debug(opts: OptionsReader): string[] {
-    let result: string[] = [`Source: ${this.source}`, this.asDebug(opts)];
+    let result: string[] = [`Source: ${this.identifier}`, this.asDebug(opts)];
     let sourceNames = new Set<string>(this.all().map(o => o.asSource()));
     let sortedNames = [...sourceNames].sort();
     sortedNames.forEach(n => {
@@ -400,7 +406,7 @@ export class Block extends BlockObject {
    * @return True or False if self and `other` are equal.
    */
   equal(other: Block | undefined | null) {
-    return other && this.source === other.source;
+    return other && this.identifier === other.identifier;
   }
 
   isAncestor(other: Block | undefined | null): boolean {

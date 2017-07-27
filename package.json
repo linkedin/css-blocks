@@ -35,10 +35,11 @@
   "homepage": "https://github.com/sailfishers/css-blocks#readme",
   "devDependencies": {
     "@types/chai": "^3.5.2",
-    "@types/node": "^7.0.13",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.39",
     "chai": "^3.5.0",
     "istanbul": "^0.4.5",
-    "mocha": "^3.3.0",
+    "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
     "perfectionist": "^2.4.0",
     "postcss": "^5.2.17",
@@ -49,8 +50,15 @@
     "typescript": "^2.4.1"
   },
   "dependencies": {
+    "@types/source-map": "^0.5.0",
+    "inline-source-map-comment": "^1.0.5",
     "object.values": "^1.0.4",
     "postcss-selector-parser": "^2.2.3",
-    "regexpu-core": "^4.0.11"
-  }
+    "regexpu-core": "^4.0.11",
+    "source-map": "^0.5.6"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "engineStrict": true
 }
