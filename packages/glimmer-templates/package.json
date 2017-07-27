@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/glimmer-templates",
-  "version": "0.9.4",
+  "version": "0.10.0",
   "description": "Statically analyze & rewrite the css-block styles in Handlebars templates.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -64,7 +64,7 @@
     "@glimmer/resolver": "^0.3.0",
     "@glimmer/syntax": "^0.25.1",
     "@types/glob": "^5.0.30",
-    "css-blocks": "^0.9.3",
+    "css-blocks": "^0.10.0",
     "debug": "^2.6.8",
     "glimmer-analyzer": "^0.1.2",
     "glob": "^7.1.2",
