@@ -1,11 +1,10 @@
 import * as postcss from "postcss";
-import * as errors from "./errors";
 import { PluginOptions } from "./options";
 import { OptionsReader } from "./OptionsReader";
-import { sourceLocation } from "./SourceLocation";
 import { MergedObjectMap, Block } from "./Block";
 import ConflictResolver from "./ConflictResolver";
 import { StyleAnalysis } from "./TemplateAnalysis/StyleAnalysis";
+import parseBlockDebug from "./parseBlockDebug";
 /**
  * Compiler that, given a Block will return a transformed AST
  * interface is `BlockParser.parse`.
@@ -63,32 +62,12 @@ export default class BlockCompiler {
    */
   public processDebugStatements(sourceFile: string, root: postcss.Root, block: Block) {
     root.walkAtRules("block-debug", (atRule) => {
-      let md = atRule.params.match(/([^\s]+) to (comment|stderr|stdout)/);
-      if (!md) {
-        throw new errors.InvalidBlockSyntax(
-          `Malformed block debug: \`@block-debug ${atRule.params}\``,
-          sourceLocation(sourceFile, atRule));
-      }
-      let localName = md[1];
-      let outputTo = md[2];
-      let ref: Block | null = block.getReferencedBlock(localName);
-      if (!ref && (localName === "self" || localName === block.name)) {
-        ref = block;
-      }
-      if (!ref) {
-        throw new errors.InvalidBlockSyntax(
-          `No block named ${localName} exists in this context.`,
-          sourceLocation(sourceFile, atRule));
-      }
-      let debugStr = ref.debug(this.opts);
-      if (outputTo === "comment") {
+      let {block: ref, channel} = parseBlockDebug(atRule, sourceFile, block);
+      if (channel === "comment") {
+        let debugStr = ref.debug(this.opts);
         atRule.replaceWith(this.postcss.comment({text: debugStr.join("\n   ")}));
       } else {
-        if (outputTo === "stderr") {
-          console.warn(debugStr.join("\n"));
-        } else {
-          console.log(debugStr.join("\n"));
-        }
+        // stderr/stdout are emitted during parse.
         atRule.remove();
       }
     });

@@ -11,6 +11,7 @@ import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector
 import regexpu = require("regexpu-core");
 import { FileIdentifier } from "./importing";
 import { Syntax } from "./preprocessing";
+import parseBlockDebug from "./parseBlockDebug";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
@@ -127,24 +128,28 @@ export default class BlockParser {
     let importer = this.opts.importer;
     let sourceFile = importer.filesystemPath(identifier, this.opts) || importer.inspect(identifier, this.opts);
 
-    // `!important` is not allowed in Blocks. If contains `!important` declaration, throw.
-    root.walkDecls((decl) => {
-      if (decl.important) {
-        throw new errors.InvalidBlockSyntax(
-          `!important is not allowed for \`${decl.prop}\` in \`${(<postcss.Rule>decl.parent).selector}\``,
-          sourceLocation(sourceFile, decl));
-      }
-    });
-
-    // Eagerly fetch custom `block-name` from the root block rule.
-    root.walkRules(".root", (rule) => {
-      rule.walkDecls("block-name", (decl) => {
-        if (CLASS_NAME_IDENT.test(decl.value)) {
-          return defaultName = decl.value;
+    try {
+      // `!important` is not allowed in Blocks. If contains `!important` declaration, throw.
+      root.walkDecls((decl) => {
+        if (decl.important) {
+          throw new errors.InvalidBlockSyntax(
+            `!important is not allowed for \`${decl.prop}\` in \`${(<postcss.Rule>decl.parent).selector}\``,
+            sourceLocation(sourceFile, decl));
         }
-        throw new errors.InvalidBlockSyntax(`Illegal block name. '${decl.value}' is not a legal CSS identifier.`, sourceLocation(sourceFile, decl));
       });
-    });
+
+      // Eagerly fetch custom `block-name` from the root block rule.
+      root.walkRules(".root", (rule) => {
+        rule.walkDecls("block-name", (decl) => {
+          if (CLASS_NAME_IDENT.test(decl.value)) {
+            return defaultName = decl.value;
+          }
+          throw new errors.InvalidBlockSyntax(`Illegal block name. '${decl.value}' is not a legal CSS identifier.`, sourceLocation(sourceFile, decl));
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
 
     // Create our new Block object and save reference to the raw AST
     let block = new Block(defaultName, identifier);
@@ -264,7 +269,28 @@ export default class BlockParser {
 
       // Validate that all rules from external block this block impelemnets are...implemented
       block.checkImplementations();
+      this.processDebugStatements(importer.inspect(identifier, this.opts), root, block);
       return block;
+    });
+  }
+
+  /**
+   * Process all `@block-debug` statements, output debug statement to console or in comment as requested.
+   * @param sourceFile File name of block in question.
+   * @param root PostCSS Root for block.
+   * @param block Block to resolve references for
+   */
+  private processDebugStatements(sourceFile: string, root: postcss.Root, block: Block) {
+    root.walkAtRules("block-debug", (atRule) => {
+      let {block: ref, channel} = parseBlockDebug(atRule, sourceFile, block);
+      let debugStr = ref.debug(this.opts);
+      if (channel !== "comment") {
+        if (channel === "stderr") {
+          console.warn(debugStr.join("\n"));
+        } else {
+          console.log(debugStr.join("\n"));
+        }
+      }
     });
   }
 
