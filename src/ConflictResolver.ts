@@ -199,7 +199,7 @@ export default class ConflictResolver {
 
       // If no conflicting Declarations were found (aka: calling for a resolution
       // with nothing to resolve), throw error.
-      if (foundConflict === ConflictType.noconflict) {
+      if (!resolveInherited && foundConflict === ConflictType.noconflict) {
         throw new errors.InvalidBlockSyntax(`There are no conflicting values for ${decl.prop} found in any selectors targeting ${referenceStr}.`, this.sourceLocation(block, decl));
       }
 
