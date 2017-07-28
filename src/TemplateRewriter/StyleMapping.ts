@@ -22,7 +22,11 @@ export class StyleMapping<Template extends TemplateInfo> {
 
   addObjects(options: OptionsReader, ...objects: BlockObject[]) {
     objects.forEach(o => {
-      this.blockMappings.set(o, o.cssClasses(options));
+      if (o) {
+        this.blockMappings.set(o, o.cssClasses(options));
+      } else {
+        console.error(new Error("FIXME: Undefined value passed as block object."));
+      }
     });
   }
 
