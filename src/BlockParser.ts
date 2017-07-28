@@ -521,12 +521,6 @@ export default class BlockParser {
             node: n,
             blockType: BlockType.classState
           };
-        } else if (found.blockType === BlockType.state || found.blockType === BlockType.classState) {
-          if (n.toString() !== found.node.toString()) {
-            throw new errors.InvalidBlockSyntax(
-              `Two distinct states cannot be selected on the same element: ${rule.selector}`,
-              this.selectorSourceLocation(block, rule, n));
-          }
         } else if (found.blockType === BlockType.root) {
             throw new errors.InvalidBlockSyntax(
               `It's redundant to specify a state with an explicit .root: ${rule.selector}`,
