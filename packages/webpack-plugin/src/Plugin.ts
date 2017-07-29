@@ -113,7 +113,7 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
         let root = blockCompiler.compile(block, block.root, analysis);
         let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
         // TODO: handle a sourcemap from compiling the block file via a preprocessor.
-        let filename = reader.importer.filesystemPath(block.identifier, reader) || reader.importer.inspect(block.identifier, reader);
+        let filename = reader.importer.filesystemPath(block.identifier, reader) || reader.importer.debugIdentifier(block.identifier, reader);
         let source = new SourceMapSource(result.css, filename,
                                           result.map.toJSON(), originalSource);
         cssBundle.add(source);
