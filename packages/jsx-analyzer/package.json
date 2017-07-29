@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/jsx",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Statically analyzes JSX files for CSS Blocks use.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -60,6 +60,6 @@
     "minimatch": "^3.0.4",
     "postcss": "^6.0.1",
     "typescript": "^2.3.4",
-    "css-blocks": "^0.10.0"
+    "css-blocks": "^0.10.2"
   }
 }
