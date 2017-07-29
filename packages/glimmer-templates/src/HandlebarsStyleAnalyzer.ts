@@ -52,7 +52,7 @@ export class BaseStyleAnalyzer {
       } else {
         self.debug(`Analyzing ${componentName}. Got block for component.`);
       }
-      let blockDebugPath = self.options.importer.inspect(block.identifier, this.options);
+      let blockDebugPath = self.options.importer.debugIdentifier(block.identifier, this.options);
       analysis.blocks[""] = block;
       block.eachBlockReference((name, refBlock) => {
         analysis.blocks[name] = refBlock;

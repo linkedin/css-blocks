@@ -95,7 +95,7 @@ export default class GlimmerImporter extends PathBasedImporter {
       return this.otherImporter.filesystemPath(identifier, options);
     }
   }
-  inspect(identifier: string, options): string {
+  debugIdentifier(identifier: string, options): string {
     let specifier = this.demangle(identifier);
     if (specifier) {
       let resolution = this.project.resolve(specifier);
@@ -105,7 +105,7 @@ export default class GlimmerImporter extends PathBasedImporter {
         return specifier;
       }
     } else {
-      return this.otherImporter.inspect(identifier, options);
+      return this.otherImporter.debugIdentifier(identifier, options);
     }
   }
   import(identifier: FileIdentifier, options: PluginOptionsReader): Promise<ImportedFile> {
