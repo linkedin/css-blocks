@@ -96,7 +96,7 @@ export class BlockFactory implements IBlockFactory {
       if (this.blocks[file.identifier]) {
         return this.blocks[file.identifier];
       }
-      let filename: string = realFilename || this.importer.inspect(file.identifier, this.options);
+      let filename: string = realFilename || this.importer.debugIdentifier(file.identifier, this.options);
       let preprocessor = this.preprocessor(file);
       let preprocessPromise = preprocessor(filename, file.contents, this.options);
       let resultPromise: Promise<[ProcessedFile, postcss.Result]> = preprocessPromise.then(preprocessResult => {
@@ -142,7 +142,7 @@ export class BlockFactory implements IBlockFactory {
   }
   getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Promise<Block> {
     let importer = this.importer;
-    let fromPath = importer.inspect(fromIdentifier, this.options);
+    let fromPath = importer.debugIdentifier(fromIdentifier, this.options);
     let identifier = importer.identifier(fromIdentifier, importPath, this.options);
     return this.getBlock(identifier).catch(err => {
       if (err.code === "ENOENT") {

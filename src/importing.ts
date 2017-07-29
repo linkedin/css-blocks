@@ -83,7 +83,7 @@ export interface Importer {
    * As is used in debug statements and error reporting. Unlike filesystemPath,
    * this needn't resolve to an actual file or be an absolute path.
    */
-  inspect(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string;
+  debugIdentifier(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string;
   /**
    * returns the syntax the contents are written in.
    */
@@ -127,7 +127,7 @@ export abstract class PathBasedImporter implements Importer {
       return Syntax.other;
     }
   }
-  inspect(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string {
+  debugIdentifier(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string {
     return path.relative(options.rootDir, identifier);
   }
   abstract import(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Promise<ImportedFile>;
@@ -195,7 +195,7 @@ export type PathAliases = Alias[] | {
  * will be made absolute using that alias's path location. Finally any relative path is resolved against
  * the rootDir specified from {CssBlockOptionsReadonly}.
  *
- * When inspecting an identifier it is made relative to an alias, if one exists, where the identifier is
+ * When debugging an identifier it is made relative to an alias, if one exists, where the identifier is
  * within an aliased directory. If several such aliased paths exist, the most specific alias will be used.
  */
 
@@ -240,7 +240,7 @@ export class PathAliasImporter extends FilesystemImporter {
       return path.resolve(options.rootDir, importPath);
     }
   }
-  inspect(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string {
+  debugIdentifier(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string {
     let alias = this.aliases.find(a => identifier.startsWith(a.path));
     if (alias) {
       return path.join(alias.alias, path.relative(alias.path, identifier));

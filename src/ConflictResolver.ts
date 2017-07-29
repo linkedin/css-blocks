@@ -350,7 +350,7 @@ export default class ConflictResolver {
     return mergedSels.map(sel => new ParsedSelector(sel));
   }
   sourceLocation(block: Block, node: postcss.Node): SourceLocation | undefined {
-    let blockPath = this.opts.importer.inspect(block.identifier, this.opts);
+    let blockPath = this.opts.importer.debugIdentifier(block.identifier, this.opts);
     return sourceLocation(blockPath, node);
   }
 }

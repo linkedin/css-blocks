@@ -126,7 +126,7 @@ export default class BlockParser {
    */
   public parse(root: postcss.Root, identifier: string, defaultName: string): Promise<Block> {
     let importer = this.opts.importer;
-    let sourceFile = importer.filesystemPath(identifier, this.opts) || importer.inspect(identifier, this.opts);
+    let sourceFile = importer.filesystemPath(identifier, this.opts) || importer.debugIdentifier(identifier, this.opts);
 
     try {
       // `!important` is not allowed in Blocks. If contains `!important` declaration, throw.
@@ -269,7 +269,7 @@ export default class BlockParser {
 
       // Validate that all rules from external block this block impelemnets are...implemented
       block.checkImplementations();
-      this.processDebugStatements(importer.inspect(identifier, this.opts), root, block);
+      this.processDebugStatements(importer.debugIdentifier(identifier, this.opts), root, block);
       return block;
     });
   }
@@ -344,7 +344,7 @@ export default class BlockParser {
   private resolveReferences(block: Block): Promise<Block> {
 
     let root: postcss.Root | undefined = block.root;
-    let sourceFile: string = this.opts.importer.inspect(block.identifier, this.opts);
+    let sourceFile: string = this.opts.importer.debugIdentifier(block.identifier, this.opts);
     let namedBlockReferences: Promise<[string, string, postcss.AtRule, Block]>[] = [];
 
     if (!root) {
@@ -770,7 +770,7 @@ export default class BlockParser {
     }
   }
   selectorSourceLocation(block: Block, rule: postcss.Rule, selector: selectorParser.Node): SourceLocation | undefined {
-    let blockPath = this.opts.importer.inspect(block.identifier, this.opts);
+    let blockPath = this.opts.importer.debugIdentifier(block.identifier, this.opts);
     return selectorSourceLocation(blockPath, rule, selector);
   }
 }

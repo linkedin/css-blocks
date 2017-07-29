@@ -23,7 +23,7 @@ export default class BlockCompiler {
         // console.log("Got an analysis for compilation. I should use it probably.", analysis);
       }
       let resolver = new ConflictResolver(this.opts);
-      let filename = this.opts.importer.inspect(block.identifier, this.opts);
+      let filename = this.opts.importer.debugIdentifier(block.identifier, this.opts);
       // Process all debug statements for this block.
       this.processDebugStatements(filename, root, block);
 

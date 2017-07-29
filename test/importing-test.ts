@@ -80,7 +80,7 @@ function testFSImporter(name: string, importer: Importer) {
       let options = getOptions();
       let filename = path.resolve(FSI_FIXTURES, "a.block.css");
       let ident = importer.identifier(null, filename, options);
-      let inspected = importer.inspect(ident, options);
+      let inspected = importer.debugIdentifier(ident, options);
       assert.equal(inspected, "a.block.css");
     });
     it("decides syntax based on extension", () => {
@@ -133,7 +133,7 @@ describe("PathAliasImporter", () => {
       let actualFilename = importer.filesystemPath(ident, options);
       let expectedFilename = path.resolve(ALIAS_FIXTURES, "alias1.block.css");
       assert.equal(expectedFilename, actualFilename);
-      let inspected = importer.inspect(ident, options);
+      let inspected = importer.debugIdentifier(ident, options);
       assert.equal("pai/alias1.block.css", inspected);
   });
   it("produces the same identifier via different aliases", function() {
@@ -147,9 +147,9 @@ describe("PathAliasImporter", () => {
       assert.equal(actualFilename, filename1);
       let filename2 = importer.filesystemPath(ident2, options);
       assert.equal(actualFilename, filename2);
-      let inspected1 = importer.inspect(ident1, options);
+      let inspected1 = importer.debugIdentifier(ident1, options);
       assert.equal(inspected1, "sub/sub.block.css");
-      let inspected2 = importer.inspect(ident2, options);
+      let inspected2 = importer.debugIdentifier(ident2, options);
       assert.equal(inspected2, "sub/sub.block.css");
   });
   it("imports an aliased file", async function() {
