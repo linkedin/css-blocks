@@ -49,7 +49,8 @@ function trackBlockDependencies(loaderContext: LoaderContext, block: Block, opti
 }
 
 export function loaderAdapter(loaderContext: any): Promise<ASTPlugin> {
-  debug(`loader adapter. Got loader context for css-blocks:`, loaderContext.cssBlocks);
+  debug(`loader adapter for:`, loaderContext.resourcePath);
+  // debug(`loader adapter. Got loader context for css-blocks:`, loaderContext.cssBlocks);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
   let options = new CssBlocksOptionsReader(loaderContext.cssBlocks.compilationOptions);
   let metaMappingPromises = new Array<Promise<MetaStyleMapping<ResolvedFile>>>();
@@ -59,7 +60,14 @@ export function loaderAdapter(loaderContext: any): Promise<ASTPlugin> {
   let thisMappingPromise: Promise<MappingAndBlock | undefined> = Promise.all(metaMappingPromises).then(metaMappings => {
     let mappingAndBlock: MappingAndBlock | undefined = undefined;
     metaMappings.forEach(metaMapping => {
-      let mapping = metaMapping.templates.get(loaderContext.resourcePath);
+      debug("Templates with StyleMappings:", ...metaMapping.templates.keys());
+      let mapping: StyleMapping<ResolvedFile> | undefined;
+      metaMapping.templates.forEach(aMapping => {
+        if (aMapping && aMapping.template.fullPath === loaderContext.resourcePath) {
+          debug("Found mapping.");
+          mapping = aMapping;
+        }
+      });
       if (mapping) {
         if (mappingAndBlock) {
           throw Error("Multiple css blocks outputs use this template and I don't know how to handle that yet.");
@@ -122,6 +130,9 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     this.block = defaultBlock;
     this.elementCount = 0;
   }
+  debug(message: string, ...args: any[]): void {
+    debug(`${this.styleMapping.template.fullPath}: ${message}`, ...args);
+  }
   ElementNode(node: AST.ElementNode) {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
@@ -174,7 +185,14 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
 
     // Get our new class...classes
     let classSet = new Set<BlockObject>([...classObjects]);
+    let staticClassNames: string[] | undefined;
+    if (debug.enabled) {
+      staticClassNames = classObjects.map(o => `${o.block.name}${o.asSource()}`);
+    }
     let newClassValue: string = this.styleMapping.mapObjects(...classSet).join(' ');
+    if (debug.enabled && staticClassNames) {
+      this.debug(`Rewriting static classes "${staticClassNames.join(' ')}" to "${newClassValue}"`);
+    }
 
     parts.push(this.syntax.builders.text(newClassValue));
 
@@ -188,6 +206,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
 
         // If value is a string, we can just add the class to our new class list.
         if ( value.type === 'TextNode' ) {
+          this.debug(`Rewriting static state "${state.block.name}.${state.asSource()}" to "${newClass.join(' ')}"`);
           parts.push(this.syntax.builders.text(classStr));
         }
 
@@ -214,11 +233,14 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
           }
 
           // If we couldn't create a well formed condition statement, move on.
-          if ( !condition ) { return; }
+          if ( !condition ) {
+            throw Error(`Unsupported Mustache expression for state: ${value.type}`);
+          }
 
           // Constructo our helper and add to class list.
           let helper: AST.MustacheStatement;
           if ( states.length > 1 ) {
+            this.debug(`Rewriting dynamic state "${state.block.name}.${state.asSource()}" to "${classStr}"`);
             helper = this.syntax.builders.mustache('/css-blocks/components/block', [
               condition,
               this.syntax.builders.string(state.name),
@@ -226,6 +248,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
             ]);
           }
           else {
+            this.debug(`Rewriting dynamic state "${state.block.name}.${state.asSource()}" to "${classStr}"`);
             helper = this.syntax.builders.mustache('/css-blocks/components/block', [
               condition,
               this.syntax.builders.string(classStr)
