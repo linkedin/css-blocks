@@ -354,7 +354,7 @@ export default class BlockParser {
     // For each `@block-reference` expression, read in the block file, parse and
     // push to block references Promise array.
     root.walkAtRules("block-reference", (atRule) => {
-      let md = atRule.params.match(/^\s*((\w+)\s+from\s+)?\s*("|')([^\3]+)\3\s*$/);
+      let md = atRule.params.match(/^\s*(([-\w]+)\s+from\s+)?\s*("|')([^\3]+)\3\s*$/);
       if (!md) {
         throw new errors.InvalidBlockSyntax(
           `Malformed block reference: \`@block-reference ${atRule.params}\``,

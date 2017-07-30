@@ -19,7 +19,7 @@ export abstract class LocalScope {
 
     // Try to split the reference string to find block name reference. If there
     // is a block name reference, fetch the named block and run lookup in that context.
-    let refMatch = reference.match(/^(\w+)(\W.*)?$/);
+    let refMatch = reference.match(/^([-\w]+)((?:\.|\[).*)?$/);
     if (refMatch) {
       let refName = refMatch[1];
       let subObjRef = refMatch[2];

@@ -269,7 +269,7 @@ export abstract class BlockObject {
   }
 
   /**
-   * Readonly Block name.
+   * Readonly name of this object.
    */
   get name(): string {
     return this._name;
