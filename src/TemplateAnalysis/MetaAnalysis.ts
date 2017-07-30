@@ -1,6 +1,10 @@
+import * as debugGenerator from "debug";
+
 import { Block, BlockObject } from "../Block";
 import { TemplateAnalysis, SerializedTemplateAnalysis, TemplateInfo } from "./index";
 import { StyleAnalysis } from "./StyleAnalysis";
+
+let debug = debugGenerator("css-blocks");
 
 export class SerializedMetaTemplateAnalysis {
   analyses: SerializedTemplateAnalysis[];
@@ -24,6 +28,7 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo> implements Styl
   }
 
   addAnalysis(analysis: TemplateAnalysis<Template>) {
+    debug(`MetaAnalysis: Adding analysis for ${analysis.template.identifier}`);
     this.analyses.push(analysis);
     analysis.stylesFound.forEach((style) => {
       this.addAnalysisToStyleMap(this.stylesFound, style, analysis);
