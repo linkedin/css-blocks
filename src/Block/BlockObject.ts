@@ -143,17 +143,56 @@ export class StateContainer {
 
   /**
    * Group getter. Returns a list of State objects in the requested group.
-   * @param group State group for lookup
+   * @param group State group for lookup or a boolean state name if substate is not provided.
    * @param substate Optional substate to filter states by.
    * @returns An array of all States that were requested.
    */
   getGroup(groupName: string, substate?: string|undefined): State[] {
-    let group: StateMap = this._groups[groupName];
+    let group = this._groups[groupName];
     if ( group ) {
-      return substate ? [group[substate]] : (<any>Object).values(group);
+      if (substate && group[substate]) {
+        return [group[substate]];
+      }
+      else if (substate) {
+        return [];
+      }
+      else {
+        return (<any>Object).values(group);
+      }
     }
-    else {
-      return substate ? [] : [this._states[groupName]];
+    else if (substate) {
+      return [];
+    }
+    else if (this._states[groupName]) {
+      return [this._states[groupName]];
+    } else {
+      return [];
+    }
+  }
+
+  /**
+   * like getGroup but includes the states from all super blocks for the group.
+   * @param group State group for lookup
+   * @param substate Optional substate to filter states by.
+   * @returns A map of resolved state names to their states for all States that were requested.
+   */
+  resolveGroup(groupName: string, substate?: string|undefined): {[name: string]: State} | undefined {
+    let resolution: {[name: string]: State} = {};
+    this.getGroup(groupName, substate).forEach(state => {
+      resolution[state.name] = state;
+    });
+    if (substate && resolution[substate]) {
+      return resolution;
+    }
+    let base = this._parent.base;
+    if (base) {
+      let baseResolution = base.states.resolveGroup(groupName, substate);
+      resolution = Object.assign(baseResolution, resolution); // overwrite any base definitions with their overrides.
+    }
+    if (Object.keys(resolution).length === 0) {
+      return undefined;
+    } else {
+      return resolution;
     }
   }
 
