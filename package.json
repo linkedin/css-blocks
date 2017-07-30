@@ -1,6 +1,6 @@
 {
   "name": "css-blocks",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "description": "Fast, maintainable, optimal, component-oriented CSS.",
   "main": "dist/src/index.js",
   "scripts": {
