@@ -37,7 +37,17 @@ export class BaseStyleAnalyzer {
   }
 
   protected analyzeTemplate(componentName: string): Promise<SingleTemplateStyleAnalysis<ResolvedFile> | null> {
-    let template = this.project.templateFor(componentName);
+    this.debug("Analyzing template: ", componentName);
+    let template: ResolvedFile;
+    try {
+      template = this.project.templateFor(componentName);
+    } catch (e) {
+      if (/Couldn't find template/.test(e.message)) {
+        return Promise.resolve(null);
+      } else {
+        throw e;
+      }
+    }
     let analysis = new SingleTemplateStyleAnalysis(template);
     let ast = preprocess(template.string);
     let elementCount = 0;
@@ -108,8 +118,12 @@ export class BaseStyleAnalyzer {
       }
       analysis.endElement();
       return analysis;
-    }).catch((_error) => {
-      return null;
+    }).catch((error) => {
+      if (/File not found for stylesheet/.test(error.message)) {
+        return null;
+      } else {
+        throw error;
+      }
     });
   }
 
@@ -148,33 +162,57 @@ export class BaseStyleAnalyzer {
     return blockObjects;
   }
 
-  private processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: SingleTemplateStyleAnalysis<ResolvedFile>, stylesheetPath: string, template: ResolvedFile) {
+  private localBlockName(defaultBlock: Block, o: BlockObject): string | null {
+    if (o.block === defaultBlock) {
+      return defaultBlock.name;
+    } else {
+      let blockName: string | null = null;
+      defaultBlock.eachBlockReference((name, block) => {
+        if (block === o.block) {
+          blockName = name;
+        }
+      });
+      return blockName;
+    }
+  }
+
+  private processState(qualifiedStateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: SingleTemplateStyleAnalysis<ResolvedFile>, stylesheetPath: string, template: ResolvedFile) {
     let blockName: string | undefined;
-    let md = stateName.match(/^([^\.]+)\.([^\.]+)$/);
+    let stateName: string;
+    let md = qualifiedStateName.match(/^([^\.]+)\.([^\.]+)$/);
     let stateBlock = block;
     if (md && md.index === 0) {
-      blockName = md[1];
-      stateName = md[2];
+      blockName = <string>md[1];
+      stateName = <string>md[2];
       let tStateBlock = block.getReferencedBlock(blockName);
       if (tStateBlock) {
         stateBlock = tStateBlock;
       } else {
         throw this.cssBlockError(`No block referenced as ${blockName}`, node, template);
       }
+    } else {
+      stateName = qualifiedStateName;
     }
 
     let container = stateContainers.find((c) => c.block === stateBlock);
     if (!container) {
-      throw this.cssBlockError(`Element lacks a class from the corresponding block`, node, template);
+      let message = `Element with state:${qualifiedStateName} lacks a class from the block ${blockName || stateBlock.name}.`;
+      if (stateContainers.length > 0) {
+        message += ` Element has classes from the following blocks: ${stateContainers.map(c => this.localBlockName(block, c.block))}`;
+      } else {
+        message += ` Element has no class assigned to it.`;
+      }
+      throw this.cssBlockError(message, node, template);
     }
     let substateName: string | undefined;
 
     if (node.value) {
       substateName = (node.value.type === "TextNode") ? node.value.chars : undefined;
-      let states = container.states.getGroup(stateName, substateName);
-      if (states) {
-        states.forEach((state) => {
-          analysis.addStyle(state);
+      let states = container.states.resolveGroup(stateName, substateName);
+      if (states !== undefined) {
+        let definedStates = states;
+        Object.keys(states).forEach((stateName) => {
+          analysis.addStyle(definedStates[stateName]);
         });
       } else {
         if (substateName) {
@@ -221,11 +259,11 @@ export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements Templa
 
 export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer implements MultiTemplateAnalyzer<ResolvedFile> {
   project: Project;
-  templateName: string;
+  templateNames: string[];
 
-  constructor(project: Project | string, templateName: string) {
+  constructor(project: Project | string, ...templateNames: string[]) {
     super(project);
-    this.templateName = templateName;
+    this.templateNames = templateNames;
   }
 
   reset() {
@@ -234,12 +272,23 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer impleme
 
   analyze(): Promise<MetaStyleAnalysis<ResolvedFile>> {
     let depAnalyzer = new DependencyAnalyzer(this.project.projectDir); // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
-    let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(this.templateName);
+
+    let components = new Set<string>();
     let analysisPromises: Promise<SingleTemplateStyleAnalysis<ResolvedFile> | null>[] = [];
-    analysisPromises.push(this.analyzeTemplate(this.templateName));
-    componentDeps.components.forEach(dep => {
+    this.debug(`Analyzing all templates starting with: ${this.templateNames}`);
+
+    this.templateNames.forEach(templateName => {
+      components.add(templateName);
+      let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(templateName);
+      componentDeps.components.forEach(c => components.add(c));
+    });
+    if (this.debug.enabled) {
+      this.debug(`Analzying all components: ${[...components].join(", ")}`);
+    }
+    components.forEach(dep => {
       analysisPromises.push(this.analyzeTemplate(dep));
     });
+
     return Promise.all(analysisPromises).then((analyses)=> {
       let metaAnalysis = new MetaStyleAnalysis<ResolvedFile>();
       analyses.forEach(a => {
