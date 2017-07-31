@@ -185,7 +185,9 @@ export default class BlockParser {
 
       // For each rule in this Block
       root.walkRules((rule) => {
-
+        if (!this.shouldBeParsedAsBlockSelector(rule)) {
+          return;
+        }
         // Fetch and iterate over the parsed selectors list for this rule – one
         // for each comma seperated selector.
         let parsedSelectors = block.getParsedSelectors(rule);
@@ -272,6 +274,15 @@ export default class BlockParser {
       this.processDebugStatements(importer.debugIdentifier(identifier, this.opts), root, block);
       return block;
     });
+  }
+
+  private shouldBeParsedAsBlockSelector(rule: postcss.Rule): boolean {
+    if (rule.parent &&
+      rule.parent.type === "atrule" &&
+      (<postcss.AtRule>rule.parent).name === "keyframes") {
+      return false;
+    }
+    return true;
   }
 
   /**

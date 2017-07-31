@@ -547,4 +547,21 @@ export class BlockReferences extends BEMProcessor {
       this.process(filename, inputCSS));
   }
 
+  @test "@keyframes is left alone"() {
+    let filename = "foo/bar/test-keyframes.css";
+    let inputCSS = `@keyframes foo {
+      0% { top: 0px; }
+      100% { top: 100px; }
+    }`;
+
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        "@keyframes foo {\n" +
+        " 0% { top: 0; }\n" +
+        " 100% { top: 100px; }\n" +
+        "}\n"
+      );
+    });
+  }
 }
