@@ -483,6 +483,18 @@ export default class BlockParser {
       }
     }
 
+    // Disallow pseudoclasses that take selectors as arguments.
+    sel.nodes.forEach(n => {
+      if (n.type === selectorParser.PSEUDO) {
+        let pseudo = <selectorParser.Pseudo>n;
+        if (pseudo.value === ":not" || pseudo.value === ":matches") {
+          throw new errors.InvalidBlockSyntax(
+            `The ${pseudo.value}() pseudoclass cannot be used: ${rule.selector}`,
+            this.selectorSourceLocation(block, rule, pseudo));
+        }
+      }
+    });
+
     // Test each node in selector
     let result = sel.nodes.reduce<NodeAndType|null>((found, n) => {
 

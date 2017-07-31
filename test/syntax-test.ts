@@ -1,4 +1,4 @@
-import { suite, test, skip } from "mocha-typescript";
+import { suite, test, skip, only } from "mocha-typescript";
 import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
 
@@ -524,4 +524,27 @@ export class BlockReferences extends BEMProcessor {
       );
     });
   }
+
+  @test "disallows the :not() pseudoclass."() {
+    let filename = "foo/bar/illegal-not-pseudoclass.css";
+    let inputCSS = `.root {color: #111;}
+                    .another-class:not([state|foo]) { display: block; }`;
+    return assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "The :not() pseudoclass cannot be used: .another-class:not([state|foo])" +
+        " (foo/bar/illegal-not-pseudoclass.css:2:35)",
+      this.process(filename, inputCSS));
+  }
+
+  @test "disallows the :matches() pseudoclass."() {
+    let filename = "foo/bar/illegal-not-pseudoclass.css";
+    let inputCSS = `.root {color: #111;}
+                    .another-class:matches([state|foo]) { display: block; }`;
+    return assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "The :matches() pseudoclass cannot be used: .another-class:matches([state|foo])" +
+        " (foo/bar/illegal-not-pseudoclass.css:2:35)",
+      this.process(filename, inputCSS));
+  }
+
 }
