@@ -187,7 +187,9 @@ export class StateContainer {
     let base = this._parent.base;
     if (base) {
       let baseResolution = base.states.resolveGroup(groupName, substate);
-      resolution = Object.assign(baseResolution, resolution); // overwrite any base definitions with their overrides.
+      if (baseResolution) {
+        resolution = Object.assign(baseResolution, resolution); // overwrite any base definitions with their overrides.
+      }
     }
     if (Object.keys(resolution).length === 0) {
       return undefined;

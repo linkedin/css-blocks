@@ -1,6 +1,4 @@
-import { Block, MergedObjectMap } from "./Block";
-import { State } from "./State";
-import { BlockClass } from "./BlockClass";
-import { BlockObject, StateInfo, PropertyContainer } from "./BlockObject";
-
-export { Block, MergedObjectMap, State, BlockClass, StateInfo, PropertyContainer, BlockObject };
+export { Block, MergedObjectMap } from "./Block";
+export { State } from "./State";
+export { BlockClass } from "./BlockClass";
+export { BlockObject, StateInfo, PropertyContainer, StateContainer } from "./BlockObject";

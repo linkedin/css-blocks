@@ -7,7 +7,8 @@ export {
   BlockClass,
   BlockObject,
   PropertyContainer,
-  StateInfo
+  StateInfo,
+  StateContainer
 } from "./Block";
 export {
   IBlockFactory
