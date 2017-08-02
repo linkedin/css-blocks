@@ -147,7 +147,7 @@ export class Test {
       assert.equal(analysis.getStyles().size, 2);
       assert.equal(analysis.getDynamicStyles().size, 1);
     }).catch((err) => {
-      assert.equal(err.message, 'No state named "awesome=wat" found on block "bar"');
+      assert.equal(err.message, 'No state [state|awesome=wat] found on block "bar".\n  Did you mean: [state|awesome]?');
     });
   }
 

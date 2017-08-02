@@ -75,6 +75,46 @@ export class Test {
     });
   }
 
+  @test 'Handles inherited states'(){
+    mock({
+      'bar.block.css': `
+        @block-reference "./foo.block.css";
+        .root { extends: foo; }
+        .pretty[state|color=black] {
+          color: black;
+        }
+      `,
+      'foo.block.css': `
+        .root { color: blue; }
+        .pretty { color: red; }
+        .pretty[state|color=yellow] {
+          color: yellow;
+        }
+        .pretty[state|color=green] {
+          color: green;
+        }
+      `
+    });
+
+    return parse(`
+      import bar, { states as barStates } from 'bar.block.css';
+      import objstr from 'obj-str';
+      let ohgod = true;
+      let style = objstr({
+        [bar.pretty]: true,
+        [bar.pretty[barStates.color.yellow]]: ohgod,
+        [bar.pretty[barStates.color.black]]: !ohgod
+      });
+
+      <div class={style}></div>;
+    `).then((analysis: MetaAnalysis) => {
+      mock.restore();
+      assert.equal(analysis.blockDependencies().size, 1);
+      assert.equal(analysis.getStyles().size, 3);
+      assert.equal(analysis.getDynamicStyles().size, 2);
+    });
+  }
+
   @test 'Boolean states register'(){
     mock({
       'bar.block.css': `
@@ -129,7 +169,7 @@ export class Test {
       assert.equal(analysis.getStyles().size, 2);
       assert.equal(analysis.getDynamicStyles().size, 1);
     }).catch((err) => {
-      assert.equal(err.message, 'No state "awesome=wat" found on class "pretty" in block "bar"');
+      assert.equal(err.message, 'No state [state|awesome=wat] found on block "bar".\n  Did you mean: .pretty[state|awesome]?');
     });
   }
 

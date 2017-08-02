@@ -1,6 +1,7 @@
 import Analysis from '../utils/Analysis';
+import * as debugGenerator from 'debug';
 import { NodePath, Binding } from 'babel-traverse';
-import { Block, BlockClass, State } from 'css-blocks';
+import { Block, BlockClass, State, StateContainer } from 'css-blocks';
 import { ExpressionReader } from '../utils/ExpressionReader';
 import { JSXOpeningElement,
          JSXAttribute,
@@ -30,6 +31,8 @@ const CLASS_PROPERTIES = {
   'class': 1,
   'className': 1
 };
+
+const debug = debugGenerator('css-blocks:jsx');
 
 type Property = ObjectProperty | SpreadProperty | ObjectMethod;
 
@@ -130,17 +133,14 @@ function saveStyle(reader: ExpressionReader, analysis: Analysis, isDynamic = fal
     return;
   }
 
+  let stateContainer: StateContainer | undefined = undefined;
+
   // If applying the root styles, either by `class="block.root"` or `class="block"`
   if ( className === 'root' || ( !className ) ) {
 
     if ( stateName ) {
-      let stateBlocks: State[] = block.states.getGroup(stateName, substateName);
-      if ( !stateBlocks.length ){
-        throw new Error(`No state named "${stateName}${substateName ? '='+substateName : ''}" found on block "${block.name}"`);
-      }
-      stateBlocks.forEach((stateBlock: State) => {
-        analysis.addStyle(stateBlock, isDynamic);
-      });
+      debug(`state ${stateName} is a block-level state.`);
+      stateContainer = block.states;
     }
     else {
       analysis.addStyle(block, isDynamic);
@@ -155,17 +155,36 @@ function saveStyle(reader: ExpressionReader, analysis: Analysis, isDynamic = fal
     }
 
     if ( stateName ) {
-      let stateBlocks: State[] = classBlock.states.getGroup(stateName, substateName);
-
-      if ( !stateBlocks.length ){
-        throw new Error(`No state "${stateName}${substateName ? '='+substateName : ''}" found on class "${className}" in block "${block.name}"`);
-      }
-      stateBlocks.forEach((stateBlock: State) => {
-        analysis.addStyle(stateBlock, isDynamic);
-      });
+      debug(`state ${stateName} is a class-level state for ${className}`);
+      stateContainer = classBlock.states;
     }
     else {
       analysis.addStyle(classBlock, isDynamic);
+    }
+  }
+  if (stateContainer && stateName) {
+    let statesInGroupMaybe = stateContainer.resolveGroup(stateName, substateName);
+    if (statesInGroupMaybe) {
+      let statesInGroup = statesInGroupMaybe; // for typesafety
+      Object.keys(statesInGroup).forEach((stateName) => {
+        analysis.addStyle(statesInGroup[stateName], isDynamic);
+      });
+    } else {
+      let knownStates: State[] | undefined;
+      let allSubstates = stateContainer.resolveGroup(stateName);
+      if (allSubstates) {
+        let ass = allSubstates;
+        knownStates = Object.keys(allSubstates).map(k => ass[k]);
+      }
+      let message = `No state [state|${stateName}=${substateName}] found on block "${block.name}".`;
+      if (knownStates) {
+        if (knownStates.length === 1) {
+          message += `\n  Did you mean: ${knownStates[0].asSource()}?`;
+        } else {
+          message += `\n  Did you mean one of: ${knownStates.map(s => s.asSource()).join(', ')}?`;
+        }
+      }
+      throw new Error(message);
     }
   }
 }
@@ -279,7 +298,7 @@ export default function visitors(analysis: Analysis): object {
           let classBlock: BlockClass | undefined = ( className ) ? block.getClass(className) : undefined;
 
           // Now that we have our block or class, fetch the requested state object.
-          let states: State[] = (classBlock || block).states.getGroup(stateName);
+          let states = (classBlock || block).states.resolveGroup(stateName);
           let isDynamic = true;
 
           // If value is set to a string literal value, we only need to register the single state.
@@ -291,14 +310,14 @@ export default function visitors(analysis: Analysis): object {
               state = (classBlock || block).states.getState(stateName);
             }
 
-            states = state ? [ state ] : [];
+            states = state ? {[state.name]: state} : undefined;
             isDynamic = false;
           }
 
           // If value is set to a null, this must be a boolean state.
           else if ( value === null ) {
             let state: State | undefined = (classBlock || block).states.getState(stateName);
-            states = state ? [ state ] : [];
+            states = state ? {[state.name]: state} : undefined;
             isDynamic = false;
           }
 
@@ -310,10 +329,12 @@ export default function visitors(analysis: Analysis): object {
           }
 
           // Register all states with our analysis
-          states.forEach((state: State) => {
-            analysis.addStyle(state, isDynamic);
-          });
-
+          if (states) {
+            let statesDef = states;
+            Object.keys(statesDef).forEach((k) => {
+              analysis.addStyle(statesDef[k], isDynamic);
+            });
+          }
         }
       });
 
