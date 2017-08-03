@@ -35,6 +35,7 @@ export class OptionsReader implements CssBlockOptionsReadonly {
   readonly preprocessors: Preprocessors;
   readonly disablePreprocessChaining: boolean;
   readonly factory?: BlockFactory;
+  readonly maxConcurrentCompiles: number;
 
   constructor(opts?: PluginOptions) {
     let defaults: CssBlockOptions = {
@@ -44,7 +45,8 @@ export class OptionsReader implements CssBlockOptionsReadonly {
       rootDir: process.cwd(),
       data: {},
       preprocessors: {},
-      disablePreprocessChaining: false
+      disablePreprocessChaining: false,
+      maxConcurrentCompiles: 4
     };
     Object.assign(this, defaults, opts || {});
   }

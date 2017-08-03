@@ -8,6 +8,7 @@ import { OptionsReader } from "../OptionsReader";
 import { Importer, FileIdentifier, ImportedFile } from "../importing";
 import { annotateCssContentWithSourceMap, Preprocessors, Preprocessor, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
 import { RawSourceMap } from "source-map";
+import { PromiseQueue } from "../util/PromiseQueue";
 
 declare module "../options" {
   export interface CssBlockOptions {
@@ -17,6 +18,12 @@ declare module "../options" {
      */
     factory?: BlockFactory;
   }
+}
+
+interface PreprocessJob {
+  preprocessor: Preprocessor;
+  filename: string;
+  contents: string;
 }
 
 /**
@@ -41,6 +48,9 @@ export class BlockFactory implements IBlockFactory {
   private paths: {
     [path: string]: string;
   };
+
+  private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
+
   constructor(options: PluginOptions, postcssImpl = postcss) {
     this.postcssImpl = postcssImpl;
     this.options = new OptionsReader(options);
@@ -50,6 +60,9 @@ export class BlockFactory implements IBlockFactory {
     this.blocks = {};
     this.promises = {};
     this.paths = {};
+    this.preprocessQueue = new PromiseQueue(this.options.maxConcurrentCompiles, (item: PreprocessJob) => {
+      return item.preprocessor(item.filename, item.contents, this.options);
+    });
   }
   reset() {
     this.blocks = {};
@@ -98,7 +111,11 @@ export class BlockFactory implements IBlockFactory {
       }
       let filename: string = realFilename || this.importer.debugIdentifier(file.identifier, this.options);
       let preprocessor = this.preprocessor(file);
-      let preprocessPromise = preprocessor(filename, file.contents, this.options);
+      let preprocessPromise = this.preprocessQueue.enqueue({
+        preprocessor,
+        filename,
+        contents: file.contents,
+      });
       let resultPromise: Promise<[ProcessedFile, postcss.Result]> = preprocessPromise.then(preprocessResult => {
         let sourceMap = sourceMapFromProcessedFile(preprocessResult);
         let content = preprocessResult.content;
