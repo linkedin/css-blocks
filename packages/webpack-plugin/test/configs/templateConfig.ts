@@ -81,9 +81,11 @@ class TestMetaTemplateAnalysis extends MetaTemplateAnalysis<TestTemplateInfo> {
 }
 
 class TestTemplateAnalyzer implements MultiTemplateAnalyzer<TemplateInfo> {
+  blockFactory: BlockFactory;
   analysis: TestMetaTemplateAnalysis;
-  constructor(a: TestMetaTemplateAnalysis) {
+  constructor(a: TestMetaTemplateAnalysis, factory: BlockFactory) {
     this.analysis = a;
+    this.blockFactory = factory;
   }
   analyze(): Promise<MetaTemplateAnalysis<TemplateInfo>> {
     return Promise.resolve(this.analysis);
@@ -108,7 +110,7 @@ export function config(): Promise<WebpackConfiguration> {
     });
 
     let cssBlocks = new CssBlocksPlugin({
-      analyzer: new TestTemplateAnalyzer(analysis)
+      analyzer: new TestTemplateAnalyzer(analysis, factory)
     });
 
     return merge(defaultOutputConfig(), {

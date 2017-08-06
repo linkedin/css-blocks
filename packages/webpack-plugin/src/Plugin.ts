@@ -67,7 +67,13 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
       this.analyzer.reset();
       this.trace(`starting analysis.`);
       let pendingResult: Promise<BlockCompilationComplete<Template>> =
-        this.analyzer.analyze().then(analysis => {
+        this.analyzer.analyze().catch((err) => {
+          this.trace(`Error during analysis. Draining queue.`);
+          return this.analyzer.blockFactory.prepareForExit().then(() => {
+            this.trace(`Drained. Raising error.`);
+            throw err;
+          });
+        }).then(analysis => {
           return this.compileBlocks(<MetaTemplateAnalysis<Template>>analysis, path.join(outputPath, this.outputCssFile));
         }).then(result => {
           this.trace(`setting css asset: ${this.outputCssFile}`);
