@@ -171,12 +171,14 @@ export class BlockFactory implements IBlockFactory {
         return block;
       }
     }).catch((error) => {
-      debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} proprocessing jobs. waiting.`);
       if (this.preprocessQueue.activeJobCount > 0) {
+        debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
         return this.preprocessQueue.drain().then(() => {
+          debug(`Drain complete. Raising error.`);
           throw error;
         });
       } else {
+        debug(`Block error. There are no preprocessing jobs. raising.`);
         throw error;
       }
     });
