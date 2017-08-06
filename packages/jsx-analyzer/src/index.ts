@@ -190,6 +190,7 @@ export function parseFile(file: string, factory: BlockFactory, opts: ParserOptio
 }
 
 export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer<Template> {
+  private _blockFactory: BlockFactory;
   private entrypoint: string;
   private name: string;
   private cssBlocksOptions: CssBlocksOptions;
@@ -198,15 +199,20 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer<Template> {
     this.entrypoint = entrypoint;
     this.name = name;
     this.cssBlocksOptions = cssBlocksOptions;
+    this._blockFactory = this.cssBlocksOptions.factory || new BlockFactory(this.cssBlocksOptions);
   }
   analyze(): Promise<MetaAnalysis> {
-    let factory = this.cssBlocksOptions.factory || new BlockFactory(this.cssBlocksOptions);
     if ( !this.entrypoint || !this.name ) {
       throw new Error('CSS Blocks JSX Analyzer must be passed an entrypoint and name.');
     }
-    return parseFile(this.entrypoint, factory);
+    return parseFile(this.entrypoint, this.blockFactory);
   }
+
   reset() { return; }
+
+  get blockFactory() {
+    return this._blockFactory;
+  }
 }
 
 export default {
