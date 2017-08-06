@@ -9,7 +9,8 @@ import {
   MetaTemplateAnalysis as MetaStyleAnalysis,
   TemplateAnalyzer,
   MultiTemplateAnalyzer,
-  PluginOptionsReader
+  PluginOptionsReader,
+  BlockFactory
 } from "css-blocks";
 import Project from "./project";
 import { ResolvedFile } from "./GlimmerProject";
@@ -255,6 +256,10 @@ export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements Templa
   reset() {
     this.project.reset();
   }
+
+  get blockFactory(): BlockFactory {
+    return this.project.blockFactory;
+  }
 }
 
 export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer implements MultiTemplateAnalyzer<ResolvedFile> {
@@ -268,6 +273,10 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer impleme
 
   reset() {
     this.project.reset();
+  }
+
+  get blockFactory(): BlockFactory {
+    return this.project.blockFactory;
   }
 
   analyze(): Promise<MetaStyleAnalysis<ResolvedFile>> {
