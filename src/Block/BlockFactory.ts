@@ -1,5 +1,6 @@
 import * as postcss from "postcss";
 import * as path from "path";
+import * as debugGenerator from "debug";
 import { Block } from "./Block";
 import { IBlockFactory } from "./IBlockFactory";
 import BlockParser, { ParsedSource } from "../BlockParser";
@@ -9,6 +10,8 @@ import { Importer, FileIdentifier, ImportedFile } from "../importing";
 import { annotateCssContentWithSourceMap, Preprocessors, Preprocessor, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
 import { RawSourceMap } from "source-map";
 import { PromiseQueue } from "../util/PromiseQueue";
+
+const debug = debugGenerator("css-blocks:BlockFactory");
 
 declare module "../options" {
   export interface CssBlockOptions {
@@ -68,6 +71,20 @@ export class BlockFactory implements IBlockFactory {
     this.blocks = {};
     this.paths = {};
     this.promises = {};
+  }
+  /**
+   * In some cases (like when using preprocessors with native bindings), it may
+   * be necessary to wait until the block factory has completed current
+   * asynchronous work before exiting. Calling this method stops new pending
+   * work from being performed and returns a promise that resolves when it is
+   * safe to exit.
+   */
+  prepareForExit(): Promise<void> {
+    if (this.preprocessQueue.activeJobCount > 0) {
+      return this.preprocessQueue.drain();
+    } else {
+      return Promise.resolve();
+    }
   }
   getBlockFromPath(filePath: string): Promise<Block> {
     if (!path.isAbsolute(filePath)) {
@@ -152,6 +169,15 @@ export class BlockFactory implements IBlockFactory {
         return this.blocks[block.identifier];
       } else {
         return block;
+      }
+    }).catch((error) => {
+      debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} proprocessing jobs. waiting.`);
+      if (this.preprocessQueue.activeJobCount > 0) {
+        return this.preprocessQueue.drain().then(() => {
+          throw error;
+        });
+      } else {
+        throw error;
       }
     });
     this.promises[identifier] = blockPromise;

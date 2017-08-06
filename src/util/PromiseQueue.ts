@@ -69,6 +69,9 @@ export class PromiseQueue<WorkItem, Result> {
     });
   }
 
+  get activeJobCount() {
+    return this.queue.running();
+  }
   get concurrency() {
     return this.queue.concurrency;
   }
