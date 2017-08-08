@@ -1,14 +1,19 @@
-import { SourceLocation } from "./SourceLocation";
+
+export interface ErrorLocation {
+  filename?: string;
+  line?: number;
+  column?: number;
+}
 
 /**
  * Custom CSS Blocks error base class. Will format `SourceLocation` into thrown
  * error message if provided.
  */
 export class CssBlockError extends Error {
+  static prefix = "Error";
   origMessage: string;
-  private _location?: SourceLocation | void;
-
-  constructor(message: string, location?: SourceLocation | void) {
+  private _location?: ErrorLocation | void;
+  constructor(message: string, location?: ErrorLocation | void) {
     super(message);
     this.origMessage = message;
     this._location = location;
@@ -17,30 +22,39 @@ export class CssBlockError extends Error {
 
   private annotatedMessage() {
     let loc = this.location;
-    if (loc) {
-      if (loc.filename) {
-        return `${this.origMessage} (${loc.filename}:${loc.line}:${loc.column})`;
-      } else {
-        return `${this.origMessage} (:${loc.line}:${loc.column})`;
-      }
-    } else {
+    if ( !loc ) {
       return this.origMessage;
     }
+    let filename = loc.filename || '';
+    let line = loc.line ? `:${loc.line}` : '';
+    let column = loc.column ? `:${loc.column}` : '';
+    let locMessage = ` (${filename}${line}${column})`;
+    return `[CSSBlocks] ${(this.constructor as any).prefix}: ${this.origMessage}${locMessage}`;
   }
 
-  get location(): SourceLocation | void {
+  get location(): ErrorLocation | void {
     return this._location;
   }
 
 }
 
 /**
+ * Custom CSS Blocks error type for template analysis errors.
+ */
+export class TemplateAnalysisError extends CssBlockError {
+  static prefix = "TemplateError";
+  constructor(message: string, location?: ErrorLocation) {
+    super(message, location);
+  }
+}
+
+/**
  * Custom CSS Blocks error for missing source path from PostCSS
  */
 export class MissingSourcePath extends CssBlockError {
+  static prefix = "SourcePathError";
   constructor() {
-    super("PostCSS `from` option is missing." +
-      " The source filename is required for CSS Blocks to work correctly.");
+    super("PostCSS `from` option is missing. The source filename is required for CSS Blocks to work correctly.");
   }
 }
 
@@ -48,7 +62,8 @@ export class MissingSourcePath extends CssBlockError {
  * Custom CSS Blocks error for Block syntax error
  */
 export class InvalidBlockSyntax extends CssBlockError {
-  constructor(message: string, location?: SourceLocation) {
+  static prefix = "BlockSyntaxError";
+  constructor(message: string, location?: ErrorLocation) {
     super(message, location);
   }
 }

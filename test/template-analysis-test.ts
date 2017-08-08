@@ -1,15 +1,17 @@
 import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { suite, test, only } from "mocha-typescript";
 import * as postcss from "postcss";
 
+import * as cssBlocks from "../src/errors";
 import BlockParser from "../src/BlockParser";
 import { BlockFactory } from "../src/Block/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
-import { Block, BlockObject } from "../src/Block";
+import { Block, BlockObject, BlockClass, State } from "../src/Block";
 import { PluginOptions } from "../src/options";
 import { OptionsReader } from "../src/OptionsReader";
 import { SerializedTemplateAnalysis, TemplateInfo, TemplateAnalysis } from "../src/TemplateAnalysis";
 import { MockImportRegistry } from "./util/MockImportRegistry";
+import { assertParseError } from "./util/assertError";
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -65,8 +67,7 @@ export class KeyQueryTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       analysis.startElement();
-      analysis.addStyle(block);
-      analysis.markDynamic(block);
+      analysis.addStyle(block, true);
       analysis.endElement();
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis = {
@@ -79,6 +80,7 @@ export class KeyQueryTests {
       assert.deepEqual(result, expectedResult);
     });
   }
+
   @test "can correlate styles"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -147,6 +149,232 @@ export class KeyQueryTests {
       });
     });
   }
+
+  @test "adding dynamic styles enumerates correlation in analysis"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    imports.registerSource("blocks/a.css",
+      `.foo { border: 3px; }`
+    );
+
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      @block-reference a from "a.css";
+
+      .root { color: blue; }
+      [state|foo] { color: red; }
+      .asdf { font-size: 20px; }
+      .asdf[state|larger] { font-size: 26px; }
+      .fdsa { font-size: 20px; }
+      .fdsa[state|larger] { font-size: 26px; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      analysis.blocks[""] = block;
+      let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
+      analysis.startElement();
+      let klass = block.getClass('asdf') as BlockClass;
+      analysis.addStyle( klass, false );
+      analysis.addStyle( klass.states.getState('larger') as State, true );
+      analysis.addStyle( aBlock.getClass('foo') as BlockClass, true );
+      analysis.endElement();
+      let result = analysis.serialize();
+      let expectedResult: SerializedTemplateAnalysis = {
+        blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
+        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
+        dynamicStyles: [1, 2],
+        styleCorrelations: [[0, 1], [0, 2], [0, 1, 2]]
+      };
+      assert.deepEqual(result, expectedResult);
+    });
+  }
+
+  @test "adding an array of non dynamic styles adds all styles to correlations"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    imports.registerSource("blocks/a.css",
+      `.foo { border: 3px; }`
+    );
+
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      @block-reference a from "a.css";
+
+      .root { color: blue; }
+      [state|foo] { color: red; }
+      .asdf { font-size: 20px; }
+      .asdf[state|larger] { font-size: 26px; }
+      .fdsa { font-size: 20px; }
+      .fdsa[state|larger] { font-size: 26px; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      analysis.blocks[""] = block;
+      let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
+      analysis.startElement();
+      let klass = block.getClass('asdf') as BlockClass;
+      analysis.addStyle( klass, false );
+      analysis.addExclusiveStyles( klass.states.getState('larger') as State, aBlock.getClass('foo') as BlockClass );
+      analysis.endElement();
+      let result = analysis.serialize();
+      let expectedResult: SerializedTemplateAnalysis = {
+        blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
+        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
+        dynamicStyles: [1, 2],
+        styleCorrelations: [[0, 1], [0, 2]]
+      };
+      assert.deepEqual(result, expectedResult);
+    });
+  }
+
+  @test "correlating two classes from the same block on the same elment throws an error"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+
+    let options: PluginOptions = {};
+    let reader = new OptionsReader(options);
+
+    let css = `
+      .root { color: blue; }
+      [state|foo] { color: red; }
+      .asdf { font-size: 20px; }
+      .asdf[state|larger] { font-size: 26px; }
+      .fdsa { font-size: 20px; }
+      .fdsa[state|larger] { font-size: 26px; }
+    `;
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+      "Multiple classes from the same block on an element are not allowed. (templates/my-template.hbs)",
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+          analysis.blocks[""] = block;
+          analysis.startElement();
+          analysis.addStyle( block.getClass('asdf') as BlockClass, false );
+          analysis.addStyle( block.getClass('fdsa') as BlockClass, false );
+          analysis.endElement();
+      })
+    );
+  }
+
+  @test "built-in template validators may be configured with boolean values"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info, { "no-class-pairs": false });
+    let imports = new MockImportRegistry();
+
+    let options: PluginOptions = {};
+    let reader = new OptionsReader(options);
+
+    let css = `
+      .root { color: blue; }
+      [state|foo] { color: red; }
+      .asdf { font-size: 20px; }
+      .asdf[state|larger] { font-size: 26px; }
+      .fdsa { font-size: 20px; }
+      .fdsa[state|larger] { font-size: 26px; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+          analysis.blocks[""] = block;
+          analysis.startElement();
+          analysis.addStyle( block.getClass('asdf') as BlockClass, false );
+          analysis.addStyle( block.getClass('fdsa') as BlockClass, false );
+          analysis.endElement();
+      });
+  }
+
+  @test "custom template validators may be passed to analysis"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info, { customValidator(data, err){ if (data) err('CUSTOM ERROR'); } });
+    let imports = new MockImportRegistry();
+
+    let options: PluginOptions = {};
+    let reader = new OptionsReader(options);
+
+    let css = `
+      .root { color: blue; }
+    `;
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+      "CUSTOM ERROR (templates/my-template.hbs:1:2)",
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+          analysis.blocks[""] = block;
+          analysis.startElement({ line: 1, column: 2 });
+          analysis.endElement();
+      })
+    );
+  }
+
+  @test "adding both root and a class from the same block to the same elment throws an error"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+
+    let options: PluginOptions = {};
+    let reader = new OptionsReader(options);
+
+    let css = `
+      .root { color: blue; }
+      [state|foo] { color: red; }
+      .asdf { font-size: 20px; }
+      .asdf[state|larger] { font-size: 26px; }
+      .fdsa { font-size: 20px; }
+      .fdsa[state|larger] { font-size: 26px; }
+    `;
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+      "Cannot put block classes on the block's root element (templates/my-template.hbs:10:32)",
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]): [Block, postcss.Container] => {
+          analysis.blocks[""] = block;
+          analysis.startElement({ line: 10, column: 32 });
+          analysis.addStyle( block as Block, false, );
+          analysis.addStyle( block.getClass('fdsa') as BlockClass, false);
+          analysis.endElement();
+          return [block, _];
+      })
+    );
+  }
+
+  @test "classes from other blocks may be added to the root element"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    imports.registerSource("blocks/a.css",
+      `.foo { border: 3px; }`
+    );
+
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      @block-reference a from "a.css";
+      .root { color: blue; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
+        analysis.blocks[""] = block;
+        analysis.blocks["a"] = aBlock;
+        analysis.startElement({ line: 10, column: 32 });
+        analysis.addStyle( block as Block, false, );
+        analysis.addStyle( aBlock.getClass('foo') as BlockClass, false);
+        analysis.endElement();
+
+        let result = analysis.serialize();
+        let expectedResult: SerializedTemplateAnalysis = {
+          blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
+          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          stylesFound: [".root", "a.foo"],
+          dynamicStyles: [],
+          styleCorrelations: [[0, 1]]
+        };
+        assert.deepEqual(result, expectedResult);
+    });
+  }
+
   @test "analysis can be serialized and deserialized"() {
     let source = `
       .root {}
