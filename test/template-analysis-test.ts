@@ -192,6 +192,83 @@ export class KeyQueryTests {
     });
   }
 
+  @test "multiple dynamic values added using `addExclusiveStyles` enumerate correlations correctly in analysis"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      [state|color]   { color: red; }
+      [state|bgcolor] { color: red; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        analysis.blocks[""] = block;
+        analysis.startElement({ line: 10, column: 32 });
+        analysis.addStyle(block);
+        analysis.addExclusiveStyles( ...block.states.getGroup('color') );
+        analysis.addExclusiveStyles( ...block.states.getGroup('bgcolor') );
+        analysis.endElement();
+
+        let result = analysis.serialize();
+        let expectedResult: SerializedTemplateAnalysis = {
+          blocks: {"": "blocks/foo.block.css"},
+          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          stylesFound: [".root", "[state|bgcolor]", "[state|color]"],
+          dynamicStyles: [2, 1],
+          styleCorrelations: [[0, 1, 2], [0, 1], [0, 2]]
+        };
+        assert.deepEqual(result, expectedResult);
+    });
+  }
+
+  @test "multiple exclusive dynamic values added using enumerate correlations correctly in analysis"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      [state|color=red]    { color: red; }
+      [state|color=blue]   { color: blue; }
+      [state|bgcolor=red]  { color: red; }
+      [state|bgcolor=blue] { color: blue; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        analysis.blocks[""] = block;
+        analysis.startElement({ line: 10, column: 32 });
+        analysis.addStyle(block);
+        analysis.addExclusiveStyles( ...block.states.getGroup('color') );
+        analysis.addExclusiveStyles( ...block.states.getGroup('bgcolor') );
+        analysis.endElement();
+
+        let result = analysis.serialize();
+        let expectedResult: SerializedTemplateAnalysis = {
+          blocks: {"": "blocks/foo.block.css"},
+          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          stylesFound: [".root", "[state|bgcolor=blue]", "[state|bgcolor=red]", "[state|color=blue]", "[state|color=red]"],
+          dynamicStyles: [4, 3, 2, 1],
+          // You never see 1 or 2 together, you never see 3 and 4 together.
+          styleCorrelations: [
+            [ 0, 2, 4 ],
+            [ 0, 2, 3 ],
+            [ 0, 2 ],
+            [ 0, 1, 4 ],
+            [ 0, 1, 3 ],
+            [ 0, 1 ],
+            [ 0, 4 ],
+            [ 0, 3 ]
+          ]
+        };
+
+        assert.deepEqual(result, expectedResult);
+    });
+  }
+
   @test "adding an array of non dynamic styles adds all styles to correlations"() {
     let info = new TemplateInfo("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);

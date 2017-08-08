@@ -224,15 +224,13 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
       }
 
       let toAdd: Set<BlockObject>[] = [];
-      objs.forEach( ( obj: BlockObject, idx: number ) => {
+      objs.forEach( ( obj: BlockObject ) => {
         this.stylesFound.add(obj);
 
         this.currentCorrelations.forEach( (correlation) => {
-          if (idx !== objs.length-1) {
-            correlation = new Set(correlation);
-            toAdd.push(correlation);
-          }
+          correlation = new Set(correlation);
           correlation.add(obj);
+          toAdd.push(correlation);
         });
         this.dynamicStyles.add(obj);
       });
