@@ -338,6 +338,31 @@ export class KeyQueryTests {
       })
     );
   }
+  @test "adding both root and a state from the same block to the same elment is allowed"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+
+    let options: PluginOptions = {};
+    let reader = new OptionsReader(options);
+
+    let css = `
+      .root { color: blue; }
+      [state|foo] { color: red; }
+      .asdf { font-size: 20px; }
+      .asdf[state|larger] { font-size: 26px; }
+      .fdsa { font-size: 20px; }
+      .fdsa[state|larger] { font-size: 26px; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]): [Block, postcss.Container] => {
+          analysis.blocks[""] = block;
+          analysis.startElement({ line: 10, column: 32 });
+          analysis.addStyle( block as Block, false, );
+          analysis.addStyle( block.states.getState("foo") as State, false);
+          analysis.endElement();
+          return [block, _];
+      });
+  }
 
   @test "classes from other blocks may be added to the root element"() {
     let info = new TemplateInfo("templates/my-template.hbs");

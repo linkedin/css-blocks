@@ -1,4 +1,4 @@
-import { BlockObject, Block } from "../../Block";
+import { BlockObject, Block, BlockClass } from "../../Block";
 
 /**
  * Prevent BlockClasses from being applied to the same element is their Root.
@@ -10,7 +10,7 @@ export default function rootClassValidator(correlations: Set<BlockObject>[], err
     let rootBlocks: Set<Block> = new Set();
     correlation.forEach(( blockObj ) => blockObj instanceof Block && rootBlocks.add(blockObj) );
     correlation.forEach(( blockObj ) => {
-      if ( !(blockObj instanceof Block) && rootBlocks.has(blockObj.block) ) {
+      if ( (blockObj instanceof BlockClass) && rootBlocks.has(blockObj.block) ) {
         err(`Cannot put block classes on the block's root element`);
       }
     });

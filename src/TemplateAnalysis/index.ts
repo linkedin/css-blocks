@@ -163,6 +163,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     this.stylesFound = new Set();
     this.dynamicStyles = new Set();
     this.styleCorrelations = [];
+    this.currentCorrelations = [];
     this.validator = new TemplateValidator(options);
   }
 
