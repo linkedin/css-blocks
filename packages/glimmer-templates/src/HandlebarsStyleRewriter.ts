@@ -303,7 +303,13 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     let substateName: string | undefined;
     if (node.value) {
       substateName = (node.value.type === "TextNode") ? node.value.chars : undefined;
-      let states = container.states.getGroup(stateName, substateName);
+      let allStates = container.states.resolveGroup(stateName, substateName);
+      let states;
+      if (allStates) {
+        states = Object.keys(allStates).map(k => allStates![k]);
+      } else {
+        states = [];
+      }
       return states;
     }
     return [];
