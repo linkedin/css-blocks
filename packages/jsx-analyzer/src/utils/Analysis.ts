@@ -47,20 +47,12 @@ export default class Analysis extends TemplateAnalysis<Template> {
   blockPromises: Promise<Block>[] = [];
 
   constructor(template: Template, parent: MetaAnalysis){
-    super(template);
+    super(template, {
+      'no-class-pairs': false
+    });
     this.parent = parent;
   }
 
-  addStyle(block: BlockObject, isDynamic=false): this {
-    if (!block) {
-      return this;
-    }
-    super.addStyle(block);
-    if ( isDynamic ) {
-      this.markDynamic(block);
-    }
-    return this;
-  }
 }
 
 /**

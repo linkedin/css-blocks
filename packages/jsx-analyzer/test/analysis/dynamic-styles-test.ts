@@ -26,7 +26,6 @@ export class Test {
       let val = 'test';
       function render(){
         let style = objstr({
-          [bar]: 'static root',
           [bar.str]: 'str',
           [bar.int]: 1,
           [bar.bool]: true,
@@ -39,7 +38,7 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 7);
+      assert.equal(analysis.getStyles().size, 6);
       assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
@@ -47,6 +46,7 @@ export class Test {
   @test 'Objstr where value is a not a literal are marked dynamic'(){
     mock({
       'bar.block.css': `
+        .func { color: red; }
         .expr { color: red; }
         .equality { color: blue; }
         .bool { color: blue; }
@@ -60,7 +60,7 @@ export class Test {
       let val = 'test';
       function render(){
         let style = objstr({
-          [bar]: alert(),
+          [bar.func]: alert(),
           [bar.expr]: val,
           [bar.equality]: val === test,
           [bar.bool]: val && val,
@@ -93,12 +93,12 @@ export class Test {
       import objstr from 'obj-str';
       let val = 'test';
       function render(){
-        return ( <div class={objstr( { [bar]: 'static root', [bar.str]: 'str', [bar.int]: 1, [bar.bool]: true, [bar.null]: null, [bar.regexp]: /regexp/, [bar.template]: \`template\` })}></div> );
+        return ( <div class={objstr( { [bar.str]: 'str', [bar.int]: 1, [bar.bool]: true, [bar.null]: null, [bar.regexp]: /regexp/, [bar.template]: \`template\` })}></div> );
       }`
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 7);
+      assert.equal(analysis.getStyles().size, 6);
       assert.equal(analysis.getDynamicStyles().size, 0);
     });
   }
@@ -106,6 +106,7 @@ export class Test {
   @test 'Inline objstr where value is a not a literal are marked dynamic'(){
     mock({
       'bar.block.css': `
+        .func { color: red; }
         .expr { color: red; }
         .equality { color: blue; }
         .bool { color: blue; }
@@ -118,7 +119,7 @@ export class Test {
       import objstr from 'obj-str';
       let val = 'test';
       function render(){
-        return ( <div class={ objstr({ [bar]: alert(), [bar.expr]: val, [bar.equality]: val === test, [bar.bool]: val && val, [bar.new]: new Object() }) }></div> );
+        return ( <div class={ objstr({ [bar.func]: alert(), [bar.expr]: val, [bar.equality]: val === test, [bar.bool]: val && val, [bar.new]: new Object() }) }></div> );
       }`
     ).then((analysis: MetaAnalysis) => {
       mock.restore();

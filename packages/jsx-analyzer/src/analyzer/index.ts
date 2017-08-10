@@ -207,7 +207,10 @@ export default function visitors(analysis: Analysis): object {
         return;
       }
 
-      analysis.startElement();
+      analysis.startElement({
+        line: path.node.loc.start.line,
+        column: path.node.loc.start.column,
+      });
 
       el.attributes.forEach((attr: JSXAttribute) => {
 
