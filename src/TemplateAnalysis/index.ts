@@ -1,13 +1,14 @@
 /**
  * @module "TemplateAnalysis"
  */
-import { BlockObject } from "../Block/BlockObject";
-import { Block } from "../Block/Block";
+ // tslint:disable-next-line:no-unused-variable Imported for Documentation link
+import BlockParser, { CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockFactory } from "../Block/BlockFactory";
 import { CustomBlockScope } from "../Block/LocalScope";
-// tslint:disable-next-line:no-unused-variable Imported for Documentation link
-import BlockParser, { CLASS_NAME_IDENT } from "../BlockParser";
 import { StyleAnalysis } from "./StyleAnalysis";
+import { BlockObject, Block } from "../Block";
+import * as errors from "../errors";
+import TemplateValidator, { TemplateValidatorOptions } from "./validations";
 
 /**
  * Responsible for creating instances of a template info of the correct type
@@ -141,17 +142,28 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * The current correlation is created when calling [[startElement]].
    * The current correlation is unset after calling [[endElement]].
    */
-  currentCorrelation: Set<BlockObject> | undefined;
+  currentCorrelations: Set<BlockObject>[] | undefined;
+
+  /**
+   * The location info of the current tag being processed.
+   */
+  currentLocInfo: errors.ErrorLocation;
+
+  /**
+   * Template validatior instance to verify blocks applied to an element.
+   */
+  validator: TemplateValidator;
 
   /**
    * @param template The template being analyzed.
    */
-  constructor(template: Template) {
+  constructor(template: Template, options: TemplateValidatorOptions = {}) {
     this.template = template;
     this.blocks = {};
     this.stylesFound = new Set();
     this.dynamicStyles = new Set();
     this.styleCorrelations = [];
+    this.validator = new TemplateValidator(options);
   }
 
   /**
@@ -169,39 +181,89 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
   }
 
   /**
+   * Add a single style to the analysis object. Dynamic styles will add all
+   * possible applications to the correlations list.
+   * ex: f(a, false); f(b, true); f(c, true) => [[a], [a, b], [a, c], [a, b, c]]
    * @param obj The block object referenced on the current element.
+   * @param isDynamic If this style is dynamically applied.
    */
-  addStyle(obj: BlockObject): this {
+  addStyle( obj: BlockObject, isDynamic = false ): this {
     this.stylesFound.add(obj);
-    if (!this.currentCorrelation) {
-      this.currentCorrelation = new Set();
+
+    if ( !this.currentCorrelations ) {
+      throw new errors.CssBlockError("Can not call `addStyle` before a call to `startElement`. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.", this.currentLocInfo);
     }
-    this.currentCorrelation.add(obj);
+
+    if ( !this.currentCorrelations.length ) {
+      this.currentCorrelations.push(new Set());
+    }
+
+    let toAdd: Set<BlockObject>[] = [];
+    this.currentCorrelations.forEach((correlation) => {
+      if ( isDynamic ) {
+        correlation = new Set(correlation);
+        toAdd.push(correlation);
+      }
+      correlation.add(obj);
+    });
+    this.currentCorrelations.push(...toAdd);
+
+    if ( isDynamic ) {
+      this.dynamicStyles.add(obj);
+    }
+
     return this;
   }
 
-  /**
-   * @param obj the block object that is used dynamically. Must have already been added via [[addStyle]]
-   */
-  markDynamic(obj: BlockObject): this {
-    if (this.stylesFound.has(obj)) {
-      this.dynamicStyles.add(obj);
-    } else {
-      throw new Error("Cannot mark style that hasn't yet been added as dynamic.");
+    /**
+     * Add styles to an analysis that are mutually exclusive and will never be
+     * used at the same time. Always assumed to be dynamic.
+     * ex: f(a); f(b, c, d); => [[a], [a, b], [a, c], [a, d]]
+     * @param ...objs The block object referenced on the current element.
+     */
+    addExclusiveStyles( alwaysPresent: boolean, ...objs: BlockObject[] ): this {
+      if ( !this.currentCorrelations ) {
+        throw new errors.CssBlockError("Can not call `addStyle` before a call to `startElement`. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.", this.currentLocInfo);
+      }
+
+      if ( !this.currentCorrelations.length ) {
+        this.currentCorrelations.push(new Set());
+      }
+
+      let toAdd: Set<BlockObject>[] = [];
+      objs.forEach( ( obj: BlockObject, idx: number ) => {
+        this.stylesFound.add(obj);
+
+        this.currentCorrelations!.forEach( (correlation) => {
+          if ( idx === objs.length-1 && alwaysPresent ) {
+            correlation.add(obj);
+          }
+          else {
+            correlation = new Set(correlation);
+            correlation.add(obj);
+            toAdd.push(correlation);
+          }
+        });
+        this.dynamicStyles.add(obj);
+      });
+
+      this.currentCorrelations.unshift(...toAdd);
+
+      return this;
     }
-    return this;
-  }
 
   /**
    * Indicates a new element found in a template. no allocations are performed until a style is added
    * so it is safe to call before you know whether there are any syles on the current element.
    * Allways call [[endElement]] before calling the next [[startElement]], even if the elements are nested in the document.
    */
-  startElement(): this {
-    if (this.currentCorrelation && this.currentCorrelation.size > 0) {
-      throw new Error("endElement wasn't called after a previous call to startElement");
+  startElement( locInfo: errors.ErrorLocation ): this {
+    if ( this.currentCorrelations && this.currentCorrelations.length > 0 ) {
+      throw new errors.CssBlockError(`endElement wasn't called after a previous call to startElement. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.`, this.currentLocInfo);
     }
-    this.currentCorrelation = undefined;
+    this.currentCorrelations = [];
+    locInfo.filename = this.template.identifier;
+    this.currentLocInfo = locInfo;
     return this;
   }
 
@@ -209,10 +271,19 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * Indicates all styles for the element have been found.
    */
   endElement(): this {
-    if (this.currentCorrelation && this.currentCorrelation.size > 0) {
-      this.styleCorrelations.push(this.currentCorrelation);
-      this.currentCorrelation = undefined;
+
+    if ( !this.currentCorrelations ) {
+      return this;
     }
+
+    this.validator.validate( this.currentCorrelations, this.currentLocInfo);
+
+    if (this.currentCorrelations && this.currentCorrelations.length > 0) {
+      this.styleCorrelations.push(...this.currentCorrelations);
+    }
+
+    this.currentCorrelations = undefined;
+
     return this;
   }
 
@@ -360,14 +431,11 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
         }
       });
       serializedAnalysis.styleCorrelations.forEach(correlation => {
-        analysis.startElement();
+        analysis.startElement({});
         correlation.forEach(idx => {
-          analysis.addStyle(objects[idx]);
+          analysis.addStyle(objects[idx], !!~serializedAnalysis.dynamicStyles.indexOf(idx));
         });
         analysis.endElement();
-      });
-      serializedAnalysis.dynamicStyles.forEach(idx => {
-        analysis.markDynamic(objects[idx]);
       });
       return analysis;
     });
