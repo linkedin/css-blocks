@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/jsx",
-  "version": "0.11.0",
+  "version": "0.10.2",
   "description": "Statically analyzes JSX files for CSS Blocks use.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -41,6 +41,8 @@
     "@types/node": "^7.0.18",
     "babel-core": "^6.25.0",
     "chai": "^3.5.0",
+    "grunt": "^1.0.1",
+    "grunt-release": "^0.12.0",
     "loader-utils": "^1.1.0",
     "mocha": "^3.4.1",
     "mocha-typescript": "^1.1.4",
@@ -48,6 +50,7 @@
     "mock-require": "^2.0.2",
     "obj-str": "^1.0.0",
     "preact": "^8.2.1",
+    "shelljs": "^0.7.8",
     "ts-node": "^3.0.4",
     "tslint": "^5.5.0",
     "watch": "^1.0.2"
