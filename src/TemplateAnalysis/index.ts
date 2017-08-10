@@ -222,7 +222,6 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
      * @param ...objs The block object referenced on the current element.
      */
     addExclusiveStyles( alwaysPresent: boolean, ...objs: BlockObject[] ): this {
-
       if ( !this.currentCorrelations ) {
         throw new errors.CssBlockError("Can not call `addStyle` before a call to `startElement`. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.", this.currentLocInfo);
       }
@@ -274,7 +273,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
   endElement(): this {
 
     if ( !this.currentCorrelations ) {
-      throw new errors.CssBlockError("`endElement` was called before `startElement`. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.", this.currentLocInfo);
+      return this;
     }
 
     this.validator.validate( this.currentCorrelations, this.currentLocInfo);
