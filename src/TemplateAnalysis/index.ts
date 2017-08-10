@@ -234,7 +234,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
       objs.forEach( ( obj: BlockObject, idx: number ) => {
         this.stylesFound.add(obj);
 
-        (this.currentCorrelations as Set<BlockObject>[]).forEach( (correlation) => {
+        this.currentCorrelations!.forEach( (correlation) => {
           if ( idx === objs.length-1 && alwaysPresent ) {
             correlation.add(obj);
           }
