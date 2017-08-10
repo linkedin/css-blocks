@@ -29,7 +29,7 @@ export class CssBlockError extends Error {
     let line = loc.line ? `:${loc.line}` : '';
     let column = loc.column ? `:${loc.column}` : '';
     let locMessage = ` (${filename}${line}${column})`;
-    return `[CSSBlocks] ${(this.constructor as any).prefix}: ${this.origMessage}${locMessage}`;
+    return `[css-blocks] ${(this.constructor as any).prefix}: ${this.origMessage}${locMessage}`;
   }
 
   get location(): ErrorLocation | void {
