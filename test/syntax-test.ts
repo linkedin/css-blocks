@@ -564,4 +564,25 @@ export class BlockReferences extends BEMProcessor {
       );
     });
   }
+
+  @test "@media is handled"() {
+    let filename = "foo/bar/test-media.css";
+    let inputCSS = `
+    .root { color: red; }
+    @media all and (max-width: 400px) {
+      [state|responsive] { color: blue; }
+      .a-class { width: 100%; }
+    }`;
+
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+          ".test-media { color: red; }\n" +
+          "@media all and (max-width: 400px) {\n" +
+          " .test-media--responsive { color: blue; }\n" +
+          " .test-media__a-class { width: 100%; }\n" +
+          "}\n"
+      );
+    });
+  }
 }

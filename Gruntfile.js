@@ -1,18 +1,15 @@
+const shell = require("shelljs");
 module.exports = function(grunt) {
   grunt.initConfig({
     release: {
       options: {
         npm: false,
-        afterRelease: ['run:publish']
+        afterRelease: ['publish']
       }
     },
-    run: {
-      publish: {
-        cmd: 'li-npm-publish'
-      }
-    }
   });
   grunt.loadNpmTasks('grunt-release');
-
-  grunt.registerTask('default', []);
+  grunt.registerTask('publish', "Publish to NPM", function() {
+    shell.exec('li-npm-publish');
+  });
 };
