@@ -5,16 +5,17 @@ import { BlockObject, Block, BlockClass } from "../../Block";
  * @param correlations The correlations object for a given element.
  * @param err Error callback.
  */
-export default function classPairsValidator(correlations: Set<BlockObject>[], err: (str: string) => any) {
+export default function classPairsValidator(correlations: Set<BlockObject>[], err: (str: string) => void): void {
   correlations.forEach(( correlation ) => {
-    let rootBlocks: Set<Block> = new Set();
+    let rootBlocks: Map<Block, BlockClass> = new Map();
     correlation.forEach(( blockObj ) => {
       if ( blockObj instanceof BlockClass ) {
         if ( rootBlocks.has(blockObj.block) ) {
-          err(`Multiple classes from the same block on an element are not allowed.`);
+          let blockObj2 = rootBlocks.get(blockObj.block) as BlockClass;
+          err(`Classes "${blockObj.name}" and "${blockObj2.name}" from the same block are not allowed on the same element.`);
         }
         else {
-          rootBlocks.add(blockObj.block);
+          rootBlocks.set(blockObj.block, blockObj);
         }
       }
     });

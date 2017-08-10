@@ -5,7 +5,7 @@ import { BlockObject, Block, BlockClass } from "../../Block";
  * @param correlations The correlations object for a given element.
  * @param err Error callback.
  */
-export default function rootClassValidator(correlations: Set<BlockObject>[], err: (str: string) => any) {
+export default function rootClassValidator(correlations: Set<BlockObject>[], err: (str: string) => void): void {
   correlations.forEach(( correlation ) => {
     let rootBlocks: Set<Block> = new Set();
     correlation.forEach(( blockObj ) => blockObj instanceof Block && rootBlocks.add(blockObj) );

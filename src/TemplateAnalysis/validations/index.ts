@@ -14,7 +14,7 @@ const DEFAULT_VALIDATORS = {
   "no-class-pairs": true
 };
 
-export type Validator = (str: Set<BlockObject>[], err: (str: string) => any) => Promise<any> | void;
+export type Validator = (str: Set<BlockObject>[], err: (str: string) => void) => void;
 export type TemplateValidatorOptions = { [key: string] : Validator | boolean };
 
 /**
@@ -49,6 +49,9 @@ export default class TemplateValidator {
     for ( let key in opts ) {
       if ( opts[key] instanceof Function) {
         this.validators.push(opts[key] as Validator);
+      }
+      else if ( !VALIDATORS[key] ) {
+        throw new errors.CssBlockError(`Can not find template validator "${key}".`);
       }
       else if ( opts[key] && VALIDATORS[key] ) {
         this.validators.push(VALIDATORS[key]);

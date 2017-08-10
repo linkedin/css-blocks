@@ -39,7 +39,7 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
-      analysis.startElement();
+      analysis.startElement({});
       analysis.addStyle(block);
       analysis.endElement();
       let result = analysis.serialize();
@@ -66,7 +66,7 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
-      analysis.startElement();
+      analysis.startElement({});
       analysis.addStyle(block, true);
       analysis.endElement();
       let result = analysis.serialize();
@@ -94,7 +94,7 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
-      analysis.startElement();
+      analysis.startElement({});
       let klass = block.getClass("asdf");
       if (klass) {
         analysis.addStyle(klass);
@@ -129,12 +129,12 @@ export class KeyQueryTests {
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block1, _]) => {
       analysis.blocks[""] = block1;
-      analysis.startElement();
+      analysis.startElement({});
       analysis.addStyle(block1);
       analysis.endElement();
       return this.parseBlock(`.root { border: 1px solid black; }`, "blocks/bar.block.css").then(([block2, _]) => {
         analysis.blocks["ref"] = block2;
-        analysis.startElement();
+        analysis.startElement({});
         analysis.addStyle(block2);
         analysis.endElement();
         let result = analysis.serialize();
@@ -174,7 +174,7 @@ export class KeyQueryTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
-      analysis.startElement();
+      analysis.startElement({});
       let klass = block.getClass('asdf') as BlockClass;
       analysis.addStyle( klass, false );
       analysis.addStyle( klass.states.getState('larger') as State, true );
@@ -208,8 +208,8 @@ export class KeyQueryTests {
         analysis.blocks[""] = block;
         analysis.startElement({ line: 10, column: 32 });
         analysis.addStyle(block);
-        analysis.addExclusiveStyles( ...block.states.getGroup('color') );
-        analysis.addExclusiveStyles( ...block.states.getGroup('bgcolor') );
+        analysis.addExclusiveStyles( false, ...block.states.getGroup('color') );
+        analysis.addExclusiveStyles( false, ...block.states.getGroup('bgcolor') );
         analysis.endElement();
 
         let result = analysis.serialize();
@@ -242,8 +242,8 @@ export class KeyQueryTests {
         analysis.blocks[""] = block;
         analysis.startElement({ line: 10, column: 32 });
         analysis.addStyle(block);
-        analysis.addExclusiveStyles( ...block.states.getGroup('color') );
-        analysis.addExclusiveStyles( ...block.states.getGroup('bgcolor') );
+        analysis.addExclusiveStyles( false, ...block.states.getGroup('color') );
+        analysis.addExclusiveStyles( false, ...block.states.getGroup('bgcolor') );
         analysis.endElement();
 
         let result = analysis.serialize();
@@ -293,10 +293,10 @@ export class KeyQueryTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
-      analysis.startElement();
+      analysis.startElement({});
       let klass = block.getClass('asdf') as BlockClass;
       analysis.addStyle( klass, false );
-      analysis.addExclusiveStyles( klass.states.getState('larger') as State, aBlock.getClass('foo') as BlockClass );
+      analysis.addExclusiveStyles(false, klass.states.getState('larger') as State, aBlock.getClass('foo') as BlockClass );
       analysis.endElement();
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis = {
@@ -305,6 +305,90 @@ export class KeyQueryTests {
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
         dynamicStyles: [1, 2],
         styleCorrelations: [[0, 1], [0, 2]]
+      };
+      assert.deepEqual(result, expectedResult);
+    });
+  }
+
+  @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is true"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    imports.registerSource("blocks/a.css",
+      `.foo { border: 3px; }
+       .foo[state|bar] { font-size: 26px; }
+      `
+    );
+
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      @block-reference a from "a.css";
+
+      .root { color: blue; }
+      [state|foo] { color: red; }
+      .asdf { font-size: 20px; }
+      .fdsa { font-size: 22px; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      analysis.blocks[""] = block;
+      let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
+      analysis.startElement({});
+      let klass = aBlock.getClass('foo') as BlockClass;
+      analysis.addStyle( klass, false );
+      analysis.addStyle( klass.states.getState('bar') as State, false );
+      analysis.addExclusiveStyles(true, block.getClass('asdf') as BlockClass,  block.getClass('fdsa') as BlockClass);
+      analysis.endElement();
+      let result = analysis.serialize();
+      let expectedResult: SerializedTemplateAnalysis = {
+        blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
+        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
+        dynamicStyles: [0, 1],
+        styleCorrelations: [[0, 2, 3], [1, 2, 3]]
+      };
+      assert.deepEqual(result, expectedResult);
+    });
+  }
+
+  @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is false"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    imports.registerSource("blocks/a.css",
+      `.foo { border: 3px; }
+       .foo[state|bar] { font-size: 26px; }
+      `
+    );
+
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      @block-reference a from "a.css";
+
+      .root { color: blue; }
+      [state|foo] { color: red; }
+      .asdf { font-size: 20px; }
+      .fdsa { font-size: 22px; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      analysis.blocks[""] = block;
+      let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
+      analysis.startElement({});
+      let klass = aBlock.getClass('foo') as BlockClass;
+      analysis.addStyle( klass, false );
+      analysis.addStyle( klass.states.getState('bar') as State, false );
+      analysis.addExclusiveStyles(false, block.getClass('asdf') as BlockClass,  block.getClass('fdsa') as BlockClass);
+      analysis.endElement();
+      let result = analysis.serialize();
+      let expectedResult: SerializedTemplateAnalysis = {
+        blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
+        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
+        dynamicStyles: [0, 1],
+        styleCorrelations: [[0, 2, 3], [1, 2, 3], [2, 3]]
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -328,10 +412,10 @@ export class KeyQueryTests {
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      "Multiple classes from the same block on an element are not allowed. (templates/my-template.hbs)",
+      `Classes "fdsa" and "asdf" from the same block are not allowed on the same element. (templates/my-template.hbs:10:11)`,
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
-          analysis.startElement();
+          analysis.startElement({ line: 10, column: 11});
           analysis.addStyle( block.getClass('asdf') as BlockClass, false );
           analysis.addStyle( block.getClass('fdsa') as BlockClass, false );
           analysis.endElement();
@@ -357,7 +441,7 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
-          analysis.startElement();
+          analysis.startElement({});
           analysis.addStyle( block.getClass('asdf') as BlockClass, false );
           analysis.addStyle( block.getClass('fdsa') as BlockClass, false );
           analysis.endElement();
@@ -508,10 +592,10 @@ export class KeyQueryTests {
       let template = new TemplateInfo("my-template.html");
       let analysis = new TemplateAnalysis(template);
       analysis.blocks["a"] = block;
-      analysis.startElement();
+      analysis.startElement({});
       analysis.addStyle(block.find(".root") as BlockObject);
       analysis.endElement();
-      analysis.startElement();
+      analysis.startElement({});
       analysis.addStyle(block.find(".myclass") as BlockObject);
       analysis.addStyle(block.find(".myclass[state|a-sub-state]") as BlockObject);
       analysis.endElement();

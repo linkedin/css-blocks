@@ -142,7 +142,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * The current correlation is created when calling [[startElement]].
    * The current correlation is unset after calling [[endElement]].
    */
-  currentCorrelations: Set<BlockObject>[];
+  currentCorrelations: Set<BlockObject>[] | undefined;
 
   /**
    * The location info of the current tag being processed.
@@ -157,13 +157,12 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
   /**
    * @param template The template being analyzed.
    */
-  constructor(template: Template, options: TemplateValidatorOptions={}) {
+  constructor(template: Template, options: TemplateValidatorOptions = {}) {
     this.template = template;
     this.blocks = {};
     this.stylesFound = new Set();
     this.dynamicStyles = new Set();
     this.styleCorrelations = [];
-    this.currentCorrelations = [];
     this.validator = new TemplateValidator(options);
   }
 
@@ -188,9 +187,14 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * @param obj The block object referenced on the current element.
    * @param isDynamic If this style is dynamically applied.
    */
-  addStyle( obj: BlockObject, isDynamic=false ): this {
+  addStyle( obj: BlockObject, isDynamic = false ): this {
     this.stylesFound.add(obj);
-    if (!this.currentCorrelations.length) {
+
+    if ( !this.currentCorrelations ) {
+      throw new errors.CssBlockError("Can not call `addStyle` before a call to `startElement`. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.", this.currentLocInfo);
+    }
+
+    if ( !this.currentCorrelations.length ) {
       this.currentCorrelations.push(new Set());
     }
 
@@ -217,20 +221,29 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
      * ex: f(a); f(b, c, d); => [[a], [a, b], [a, c], [a, d]]
      * @param ...objs The block object referenced on the current element.
      */
-    addExclusiveStyles( ...objs: BlockObject[] ): this {
+    addExclusiveStyles( alwaysPresent: boolean, ...objs: BlockObject[] ): this {
 
-      if (!this.currentCorrelations.length) {
+      if ( !this.currentCorrelations ) {
+        throw new errors.CssBlockError("Can not call `addStyle` before a call to `startElement`. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.", this.currentLocInfo);
+      }
+
+      if ( !this.currentCorrelations.length ) {
         this.currentCorrelations.push(new Set());
       }
 
       let toAdd: Set<BlockObject>[] = [];
-      objs.forEach( ( obj: BlockObject ) => {
+      objs.forEach( ( obj: BlockObject, idx: number ) => {
         this.stylesFound.add(obj);
 
-        this.currentCorrelations.forEach( (correlation) => {
-          correlation = new Set(correlation);
-          correlation.add(obj);
-          toAdd.push(correlation);
+        (this.currentCorrelations as Set<BlockObject>[]).forEach( (correlation) => {
+          if ( idx === objs.length-1 && alwaysPresent ) {
+            correlation.add(obj);
+          }
+          else {
+            correlation = new Set(correlation);
+            correlation.add(obj);
+            toAdd.push(correlation);
+          }
         });
         this.dynamicStyles.add(obj);
       });
@@ -245,9 +258,9 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * so it is safe to call before you know whether there are any syles on the current element.
    * Allways call [[endElement]] before calling the next [[startElement]], even if the elements are nested in the document.
    */
-  startElement( locInfo: errors.ErrorLocation={} ): this {
-    if (this.currentCorrelations && this.currentCorrelations.length > 0) {
-      throw new errors.CssBlockError(`endElement wasn't called after a previous call to startElement`, this.currentLocInfo);
+  startElement( locInfo: errors.ErrorLocation ): this {
+    if ( this.currentCorrelations && this.currentCorrelations.length > 0 ) {
+      throw new errors.CssBlockError(`endElement wasn't called after a previous call to startElement. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.`, this.currentLocInfo);
     }
     this.currentCorrelations = [];
     locInfo.filename = this.template.identifier;
@@ -260,12 +273,17 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    */
   endElement(): this {
 
+    if ( !this.currentCorrelations ) {
+      throw new errors.CssBlockError("`endElement` was called before `startElement`. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.", this.currentLocInfo);
+    }
+
     this.validator.validate( this.currentCorrelations, this.currentLocInfo);
 
     if (this.currentCorrelations && this.currentCorrelations.length > 0) {
       this.styleCorrelations.push(...this.currentCorrelations);
-      this.currentCorrelations = [];
     }
+
+    this.currentCorrelations = undefined;
 
     return this;
   }
@@ -414,7 +432,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
         }
       });
       serializedAnalysis.styleCorrelations.forEach(correlation => {
-        analysis.startElement();
+        analysis.startElement({});
         correlation.forEach(idx => {
           analysis.addStyle(objects[idx], !!~serializedAnalysis.dynamicStyles.indexOf(idx));
         });
