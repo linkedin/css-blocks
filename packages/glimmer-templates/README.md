@@ -33,6 +33,7 @@ Given the following CSS Block definition:
 .sidebar { /* ... */ }
 .sidebar[state|collapsed] { /* ... */ }
 .main { /* ... */ }
+.recommended { /* ... */ }
 ```
 
 ```css
@@ -44,17 +45,18 @@ Given the following CSS Block definition:
 We can style a glimmer template like so:
 
 ```hbs
-<div state:loading>
+<div state:loading={{isLoading}}>
   <aside class="sidebar grid.one-fifth" state:collapsed state:grid.gutter-right>
   </aside>
-  <article class="main grid.four-fifths">
+  <article class="{{style-if isRecommended 'recommended' 'main'}} grid.four-fifths">
   </article>
 </div>
 ```
 
-Of note here is that the styles for the `.root` class are automatically applied to the root
-element of the component (in this case: `div`). Classes and states from referenced blocks
-are prefixed with the name of the block (in this case: `grid`)
+Of note here:
+ - The styles for the `.root` class are automatically applied to the root element of the component (in this case: `div`).
+ - Classes and states from referenced blocks are prefixed with the name of the block (in this case: `grid`)
+ - The only expressions allowed in `class` attributes are the CSS Blocks specific `{{style-if}}` and `{{style-unless}}` helpers. Otherwise, a build time error is thrown.
 
 
 ## Creating an Analyzer
@@ -161,4 +163,3 @@ analyzer.analyze().then((analysis) => {
 
 * Default the name for a component's main block stylesheet to the name of the component so that
   `.root { block-name: name-of-component; }` is not required.
-* Dynamic CSS classes & States

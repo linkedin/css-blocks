@@ -3,7 +3,7 @@ import {
   Block,
   BlockClass,
   BlockObject,
-  CssBlockError,
+  State,
   QueryKeySelector,
   TemplateAnalysis as SingleTemplateStyleAnalysis,
   MetaTemplateAnalysis as MetaStyleAnalysis,
@@ -16,11 +16,14 @@ import Project from "./project";
 import { ResolvedFile } from "./GlimmerProject";
 import DependencyAnalyzer from "glimmer-analyzer";
 import * as debugGenerator from "debug";
-import { selectorCount } from "./utils";
+import { selectorCount, cssBlockError } from "./utils";
+import * as values from 'object.values';
 
 export type StateContainer = Block | BlockClass;
 
 const STATE = /state:(.*)/;
+const STYLE_IF = 'style-if';
+const STYLE_UNLESS = 'style-unless';
 
 export class BaseStyleAnalyzer {
   project: Project;
@@ -73,7 +76,10 @@ export class BaseStyleAnalyzer {
       traverse(ast, {
         ElementNode(node) {
           analysis.endElement();
-          analysis.startElement();
+          analysis.startElement({
+            line: node.loc.start.line,
+            column: node.loc.start.column
+          });
           elementCount++;
           let atRootElement = (elementCount === 1);
 
@@ -93,7 +99,6 @@ export class BaseStyleAnalyzer {
           node.attributes.forEach((n) => {
             if (n.name === "class") {
               classObjects = self.processClass(n, block, analysis, blockDebugPath, template);
-              self.validateClasses(block, atRootElement, classObjects, node, template);
             }
           });
           node.attributes.forEach((n) => {
@@ -105,15 +110,15 @@ export class BaseStyleAnalyzer {
               if (stateContainers.length > 0) {
                 self.processState(RegExp.$1, n, block, stateContainers, analysis, blockDebugPath, template);
               } else {
-                throw self.cssBlockError(`Cannot apply a block state without a block class or root`, n, template);
+                throw cssBlockError(`Cannot apply a block state without a block class or root`, n, template);
               }
             }
           });
         },
       });
       if (this.debug.enabled) {
-        if (analysis.currentCorrelation && analysis.currentCorrelation.size > 1) {
-          let objects = new Array(...analysis.currentCorrelation).map(o => o.asSource());
+        if (analysis.currentCorrelations && analysis.currentCorrelations.length >= 1) {
+          let objects = analysis.currentCorrelations.map(l => new Array(...l).map(o => o.asSource()));
           this.debug(`Found correlated styles: ${objects.join(', ')}`);
         }
       }
@@ -128,38 +133,67 @@ export class BaseStyleAnalyzer {
     });
   }
 
-  private validateClasses(block: Block, atRootElement: boolean, objects: BlockObject[], node: AST.Node, template: ResolvedFile) {
-    if (atRootElement && objects.length > 0) {
-      objects.forEach((obj) => {
-        if (obj.block === block) {
-          throw this.cssBlockError(`Cannot put block classes on the block's root element`, node, template);
-        }
-      });
-    }
-    let blocks = new Set<Block>();
-    objects.forEach((o) => {
-      if (blocks.has(o.block)) {
-        throw this.cssBlockError(`Multiple classes from the same block on an element are not allowed.`, node, template);
-      } else {
-        blocks.add(o.block);
-      }
-    });
+  private isStyleIfHelper( node: AST.MustacheStatement ): string | undefined {
+    if ( node.path.type !== 'PathExpression' ) { return undefined; }
+    let parts: string[] = (<AST.PathExpression>node.path).parts;
+    if ( parts.length !== 1 || ( parts[0] !== STYLE_IF &&  parts[0] !== STYLE_UNLESS ) ) { return undefined; }
+    return parts[0];
   }
 
   private processClass(node: AST.AttrNode, block: Block, analysis: SingleTemplateStyleAnalysis<ResolvedFile>, debugPath: string, template: ResolvedFile): StateContainer[] {
     let blockObjects: StateContainer[] = [];
-    if (node.value.type === "TextNode") {
-      let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
-      classNames.forEach((name) => {
-        let found = block.lookup(name) || block.lookup(`.${name}`);
-        if (found) {
-          blockObjects.push(<Block | BlockClass>found);
-          analysis.addStyle(found);
-        } else {
-          throw this.cssBlockError(`No class ${name} found in block at ${debugPath}`, node, template);
+    let statements: (AST.TextNode | AST.MustacheStatement)[];
+
+    statements = node.value.type === 'ConcatStatement' ? (<AST.ConcatStatement>node.value).parts : [node.value];
+
+    statements.forEach((statement) => {
+      if (statement.type === "TextNode") {
+        let classNames = (<AST.TextNode>statement).chars.split(/\s+/);
+
+        classNames.forEach((name) => {
+          let found = block.lookup(name) || block.lookup(`.${name}`);
+          if (found) {
+            blockObjects.push(<Block | BlockClass>found);
+            analysis.addStyle(found);
+          }
+        });
+      }
+
+      else if ( statement.type === 'MustacheStatement' ) {
+        let value = statement as AST.MustacheStatement;
+        let helperName = this.isStyleIfHelper(value);
+        if ( helperName ) {
+          if ( value.params[1] && value.params[1].type !== 'StringLiteral' ) {
+            throw cssBlockError(`{{${helperName}}} expects a block or block class as its second argument at ${debugPath}.`, node, template);
+          }
+          let name: string = (value.params[1] as AST.StringLiteral).value;
+          let found = block.lookup(name) || block.lookup(`.${name}`);
+          if (found) {
+            blockObjects.push(<Block | BlockClass>found);
+
+            // Discover our optional `else` block in the `{{style-* condition 'if-block' 'else-block'}}` helper
+            let name2: string = value.params[2] && (value.params[2] as AST.StringLiteral).value;
+            let found2 = name2 ? ( block.lookup(name2) || block.lookup(`.${name2}`) ) : undefined;
+            if (found2) {
+              blockObjects.push(<Block | BlockClass>found2);
+              analysis.addExclusiveStyles(true, found, found2);
+            }
+            else {
+              analysis.addStyle(found, true);
+            }
+
+          }
+          else {
+            throw cssBlockError(`No class ${name} found in block ${block.name} at ${debugPath}.`, statement, template);
+          }
         }
-      });
-    }
+
+        else {
+          throw cssBlockError(`Only {{style-if}} or {{style-unless}} helpers are allowed in class attributes at ${debugPath}.`, node, template);
+        }
+      }
+    });
+
     return blockObjects;
   }
 
@@ -189,7 +223,7 @@ export class BaseStyleAnalyzer {
       if (tStateBlock) {
         stateBlock = tStateBlock;
       } else {
-        throw this.cssBlockError(`No block referenced as ${blockName}`, node, template);
+        throw cssBlockError(`No block referenced as ${blockName}`, node, template);
       }
     } else {
       stateName = qualifiedStateName;
@@ -203,35 +237,37 @@ export class BaseStyleAnalyzer {
       } else {
         message += ` Element has no class assigned to it.`;
       }
-      throw this.cssBlockError(message, node, template);
+      throw cssBlockError(message, node, template);
     }
     let substateName: string | undefined;
 
     if (node.value) {
-      substateName = (node.value.type === "TextNode") ? node.value.chars : undefined;
-      let states = container.states.resolveGroup(stateName, substateName);
-      if (states !== undefined) {
-        let definedStates = states;
-        Object.keys(states).forEach((stateName) => {
-          analysis.addStyle(definedStates[stateName]);
-        });
-      } else {
+      let isDynamic = (node.value.type !== "TextNode");
+      substateName = !isDynamic ? (node.value as AST.TextNode).chars : undefined;
+
+      let statesList: State[] = values(container.states.resolveGroup(stateName, substateName) || {});
+
+      // If this is a static state, and we've discovered more than one matching
+      // state, then they did not provide the required a substate. Throw.
+      if ( !isDynamic && statesList.length > 1 ) {
+        throw cssBlockError(`State ${stateName} in block ${container.block.name} at ${stylesheetPath} requires a substate value.`, node, template);
+      }
+
+      // If we didn't find any mathing states, throw.
+      if ( !statesList.length ) {
         if (substateName) {
-          throw this.cssBlockError(`No state ${stateName}=${substateName} found in block at ${stylesheetPath}`, node, template);
+          throw cssBlockError(`No state ${stateName}=${substateName} found in block at ${stylesheetPath}`, node, template);
         } else {
-          throw this.cssBlockError(`No state ${stateName} found in block at ${stylesheetPath}`, node, template);
+          throw cssBlockError(`No state ${stateName} found in block at ${stylesheetPath}`, node, template);
         }
       }
+
+      // Add discovered states to analysis.
+      (isDynamic) ? analysis.addExclusiveStyles(false, ...statesList) : analysis.addStyle(statesList[0]);
+
     }
   }
 
-  private cssBlockError(message: string, node: AST.Node, template: ResolvedFile) {
-    return new CssBlockError(message, {
-      filename: node.loc.source || template.identifier,
-      line: node.loc.start.line,
-      column: node.loc.start.column
-    });
-  }
 }
 
 export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements TemplateAnalyzer<ResolvedFile> {

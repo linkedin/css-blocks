@@ -1,6 +1,7 @@
-import {
-  ClassifiedParsedSelectors
-} from "css-blocks";
+import { AST } from '@glimmer/syntax';
+import { ResolvedFile } from "./GlimmerProject";
+import { ClassifiedParsedSelectors, CssBlockError } from "css-blocks";
+
 export function pathFromSpecifier(specifier: string) {
   return specifier.split(':')[1];
 }
@@ -22,4 +23,12 @@ export function parseSpecifier(specifier: string): { componentType: string; comp
   } else {
     return null;
   }
+}
+
+export function cssBlockError(message: string, node: AST.Node, template: ResolvedFile) {
+  return new CssBlockError(message, {
+    filename: node.loc.source || template.identifier,
+    line: node.loc.start.line,
+    column: node.loc.start.column
+  });
 }

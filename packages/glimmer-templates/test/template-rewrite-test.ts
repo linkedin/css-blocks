@@ -3,9 +3,14 @@ import path = require('path');
 import fs = require('fs');
 import { assert } from 'chai';
 import { fixture } from "./fixtures";
-import { PreprocessOptions, ASTPlugin } from "@glimmer/syntax";
+import { PreprocessOptions, ASTPlugin, print, preprocess } from "@glimmer/syntax";
 import { precompile, PrecompileOptions } from "@glimmer/compiler";
 import { StyleMapping, PluginOptionsReader, Block, MetaStyleMapping } from "css-blocks";
+
+// Reduce whitespace.
+function minify(s) {
+  return s.replace(/^[\s\n]+|[\s\n]+$/gm, '');
+}
 
 describe('Template Rewriting', function() {
 
@@ -36,50 +41,57 @@ describe('Template Rewriting', function() {
             ast: [plugin]
           }
         };
-        let templateContent = fs.readFileSync(templatePath);
-        let result = JSON.parse(precompile(templateContent.toString(), options));
-        let classes: any = {};
 
-        JSON.parse(result.block).statements.forEach((statement, i) => {
-          if ((statement[0] === 10) && statement[1] === "class") {
-            classes[i] = statement[2][1];
+        let res = print(preprocess(fs.readFileSync(templatePath).toString(), options));
+        assert.deepEqual(minify(res), minify(`
+          <div class="with-dynamic-states">
+            <h1 class=" header">Hello, <span class=" with-dynamic-states__world header__emphasis{{/css-blocks/components/state isThick " with-dynamic-states__world--thick"}}{{/css-blocks/components/state textStyle "bold" " header__emphasis--style-bold"}}{{/css-blocks/components/state textStyle "italic" " header__emphasis--style-italic"}}">World</span>!</h1>
+          </div>`));
+      });
+    }).catch((error) => {
+      console.error(error);
+      throw error;
+    });
+  });
+
+  it('rewrites styles from dynamic classes', function() {
+    let projectDir = fixture('styled-app');
+    let project = new Project(projectDir);
+    let cssBlocksOpts = new PluginOptionsReader(project.cssBlocksOpts);
+    let analyzer = new HandlebarsStyleAnalyzer(project, 'with-dynamic-classes');
+    let templatePath = fixture('styled-app/src/ui/components/with-dynamic-classes/template.hbs');
+    return analyzer.analyze().then((richAnalysis) => {
+      let metaMapping = new MetaStyleMapping();
+      metaMapping.templates.set(templatePath, StyleMapping.fromAnalysis(richAnalysis, cssBlocksOpts));
+      let fakeLoaderContext = {
+        resourcePath: templatePath,
+        cssBlocks: {
+          mappings: {
+            'css-blocks.css': metaMapping
+          },
+          compilationOptions: cssBlocksOpts
+        },
+        dependency(_path) {
+        }
+      };
+      return loaderAdapter(fakeLoaderContext).then(plugin => {
+        let options = {
+          meta: {},
+          plugins: {
+            ast: [plugin]
           }
-        });
-        assert.deepEqual(classes, {
-          1: ['with-dynamic-states'],
-          5: ['header'],
-          9: [
-              "with-dynamic-states__world header__emphasis",
-              [
-                25, "/css-blocks/components/block",
-                [
-                  [ 19, 0, [ "isThick" ] ],
-                  " with-dynamic-states__world--thick"
-                ],
-                null
-              ],
-              [
-                25, "/css-blocks/components/block",
-                [
-                  [
-                    19, 0, [ "textStyle" ]
-                  ],
-                  "bold",
-                  " header__emphasis--style-bold"
-                ],
-                null
-              ],
-              [
-                25, "/css-blocks/components/block",
-                [
-                  [ 19, 0, [ "textStyle" ] ],
-                  "italic",
-                  " header__emphasis--style-italic"
-                ],
-                null
-              ]
-            ]
-        });
+        };
+
+        let res = print(preprocess(fs.readFileSync(templatePath).toString(), options));
+
+        assert.deepEqual(minify(res), minify(`
+          <div class="with-dynamic-classes">
+            <h1 class=" header">Hello, <span class="{{/css-blocks/components/style-if isWorld true " with-dynamic-classes__world" undefined}} header__emphasis typography__underline{{/css-blocks/components/state isThick " with-dynamic-classes__world--thick"}}{{/css-blocks/components/state textStyle "bold" " header__emphasis--style-bold"}}{{/css-blocks/components/state textStyle "italic" " header__emphasis--style-italic"}}">World</span>!</h1>
+            <div class="{{/css-blocks/components/style-if isWorld true " with-dynamic-classes__world" " header__emphasis"}}">World</div>
+            <div class="{{/css-blocks/components/style-if isWorld false " with-dynamic-classes__world" " header__emphasis"}}">World</div>
+            <div class="{{/css-blocks/components/style-if isWorld false " with-dynamic-classes__world" undefined}}">World</div>
+          </div>
+        `));
       });
     }).catch((error) => {
       console.error(error);

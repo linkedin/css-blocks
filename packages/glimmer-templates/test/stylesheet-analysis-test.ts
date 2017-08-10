@@ -71,7 +71,55 @@ describe('Stylesheet analysis', function() {
          'h.emphasis[state|style=italic]',
          'h.root'
       ]);
-      assert.deepEqual(analysis.styleCorrelations, [[1, 2, 3, 4, 5]]);
+      assert.deepEqual(analysis.styleCorrelations, [
+        [ 1, 2, 3, 4 ],
+        [ 1, 3, 4 ],
+        [ 1, 2, 3, 5 ],
+        [ 1, 3, 5 ],
+        [ 1, 2, 3 ],
+        [ 1, 3 ]
+      ]);
+    }).catch((error) => {
+      console.error(error);
+      throw error;
+    });
+  });
+
+  it('analyzes styles from a referenced block with dynamic classes', function() {
+    let projectDir = fixture('styled-app');
+    let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'with-dynamic-classes');
+    return analyzer.analyze().then((richAnalysis) => {
+      let analysis = richAnalysis.serialize();
+      assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-classes");
+      assert.deepEqual(analysis.blocks, {
+        "": "glimmer:stylesheet:/styled-app/components/with-dynamic-classes",
+        "h": fixture("styled-app/src/ui/components/with-dynamic-classes/header.css"),
+        "t": fixture("styled-app/src/ui/components/with-dynamic-classes/typography.css")
+      });
+      assert.deepEqual(analysis.stylesFound, [
+        '.root',
+         '.world',
+         '.world[state|thick]',
+         'h.emphasis',
+         'h.emphasis[state|style=bold]',
+         'h.emphasis[state|style=italic]',
+         'h.root',
+         't.underline'
+      ]);
+      assert.deepEqual(analysis.styleCorrelations, [
+        [ 2, 3, 4, 7 ],
+        [ 1, 2, 3, 4, 7 ],
+        [ 3, 4, 7 ],
+        [ 1, 3, 4, 7 ],
+        [ 2, 3, 5, 7 ],
+        [ 1, 2, 3, 5, 7 ],
+        [ 3, 5, 7 ],
+        [ 1, 3, 5, 7 ],
+        [ 2, 3, 7 ],
+        [ 1, 2, 3, 7 ],
+        [ 3, 7 ],
+        [ 1, 3, 7 ]
+      ]);
     }).catch((error) => {
       console.error(error);
       throw error;

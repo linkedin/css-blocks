@@ -17,12 +17,9 @@ import {
   MetaStyleMapping,
   StyleMapping
 } from "css-blocks";
-import {
-  ResolvedFile
-} from "./GlimmerProject";
-// import {
-//   selectorCount
-// } from "./utils";
+
+import { ResolvedFile } from "./GlimmerProject";
+import { cssBlockError } from "./utils";
 
 type StateContainer = Block | BlockClass;
 
@@ -33,10 +30,14 @@ interface MappingAndBlock {
   block: Block;
 }
 const STATE = /state:(.*)/;
+const STYLE_IF = 'style-if';
+const STYLE_UNLESS = 'style-unless';
 
 type LoaderContext = {
   dependency(dep: string): void;
 };
+
+type ConcatParts = (AST.MustacheStatement | AST.TextNode)[];
 
 function trackBlockDependencies(loaderContext: LoaderContext, block: Block, options: CssBlocksOptionsReader) {
   let sourceFile = options.importer.filesystemPath(block.identifier, options);
@@ -136,23 +137,26 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
   ElementNode(node: AST.ElementNode) {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
+
+    // Collect objects to discover states on.
     let classObjects: StateContainer[] = [];
-    // If there are root styles, we add them on the root element implicitly. The rewriter will add the block's root class.
-    // if (atRootElement) {
-    //   let query = new QueryKeySelector(this.block);
-    //   if (this.block.root) {
-    //     let res = query.execute(this.block.root, this.block);
-    //     if (selectorCount(res) > 0) {
-    //       classObjects.unshift(this.block);
-    //     }
-    //   }
-    // }
-    if (atRootElement) {
-      classObjects.unshift(this.block);
+
+    // For constructing our Handlebars AST concat group.
+    let parts: ConcatParts = [];
+
+    // If there are root styles, we add them on the root element implicitly.
+    if ( atRootElement ) {
+      let rootClass = this.styleMapping.blockMappings.get(this.block);
+      if ( rootClass ) {
+        classObjects.unshift(this.block);
+        parts.unshift(this.syntax.builders.text(rootClass.join(' ')));
+      }
     }
+
+    // Find the class attribute and process.
     node.attributes.forEach((n) => {
       if (n.name === "class") {
-        classObjects = this.processClass(n, this.block);
+        classObjects = this.processClass(n, this.block, parts, this.styleMapping.template);
       }
     });
 
@@ -180,9 +184,6 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     let classAttr = node.attributes.find(n => n.name === "class");
     if (addedRoot) { classObjects.push(this.block); }
 
-    // For constructing our Handlebars AST concat group
-    let parts: (AST.MustacheStatement | AST.TextNode)[] = [];
-
     // Get our new class...classes
     let classSet = new Set<BlockObject>([...classObjects]);
     let staticClassNames: string[] | undefined;
@@ -193,8 +194,6 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     if (debug.enabled && staticClassNames) {
       this.debug(`Rewriting static classes "${staticClassNames.join(' ')}" to "${newClassValue}"`);
     }
-
-    parts.push(this.syntax.builders.text(newClassValue));
 
     // Get our new state classes expression
     statesMap.forEach((states: State[], value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement) => {
@@ -211,7 +210,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
         }
 
         // Otherise, this state value is dynamic, we need to have some fun. We
-        // need to force it into the right type, then output it into our {{if-style}}
+        // need to force it into the right type, then output it into our {{style-if}}
         // helper.
         else {
           let condition: AST.SubExpression | AST.Literal | AST.PathExpression | undefined;
@@ -241,7 +240,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
           let helper: AST.MustacheStatement;
           if ( states.length > 1 ) {
             this.debug(`Rewriting dynamic state "${state.block.name}.${state.asSource()}" to "${classStr}"`);
-            helper = this.syntax.builders.mustache('/css-blocks/components/block', [
+            helper = this.syntax.builders.mustache('/css-blocks/components/state', [
               condition,
               this.syntax.builders.string(state.name),
               this.syntax.builders.string(classStr)
@@ -249,7 +248,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
           }
           else {
             this.debug(`Rewriting dynamic state "${state.block.name}.${state.asSource()}" to "${classStr}"`);
-            helper = this.syntax.builders.mustache('/css-blocks/components/block', [
+            helper = this.syntax.builders.mustache('/css-blocks/components/state', [
               condition,
               this.syntax.builders.string(classStr)
             ]);
@@ -268,17 +267,92 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
       classAttr.value = concatStatement;
     }
   }
-  private processClass(node: AST.AttrNode, block: Block): StateContainer[] {
+
+  private isStyleIfHelper( node: AST.MustacheStatement ): string | undefined {
+    if ( node.path.type !== 'PathExpression' ) { return undefined; }
+    let parts: string[] = (<AST.PathExpression>node.path).parts;
+    if ( parts.length !== 1 || ( parts[0] !== STYLE_IF &&  parts[0] !== STYLE_UNLESS ) ) { return undefined; }
+    return parts[0];
+  }
+
+  private processClass(node: AST.AttrNode, block: Block, parts: ConcatParts, template: ResolvedFile): StateContainer[] {
     let blockObjects: StateContainer[] = [];
-    if (node.value.type === "TextNode") {
-      let classNames = (<AST.TextNode>node.value).chars.split(/\s+/);
-      classNames.forEach((name) => {
-        let found = block.lookup(name) || block.lookup(`.${name}`);
-        if (found) {
-          blockObjects.push(<Block | BlockClass>found);
+    let statements: (AST.TextNode | AST.MustacheStatement)[];
+
+    statements = node.value.type === 'ConcatStatement' ? (<AST.ConcatStatement>node.value).parts : [node.value];
+
+    statements.forEach((statement) => {
+      if (statement.type === "TextNode") {
+        let classNames = (<AST.TextNode>statement).chars.split(/\s+/);
+        let newClassNames: string[] = [];
+        classNames.forEach((name) => {
+          let found = block.lookup(name) || block.lookup(`.${name}`);
+          if (found) {
+            blockObjects.push(<Block | BlockClass>found);
+            let newClasses = this.styleMapping.blockMappings.get(found) || [];
+            newClassNames.push(...newClasses);
+          }
+        });
+        parts.push(this.syntax.builders.text(' ' + newClassNames.join(' ')));
+      }
+
+      else if ( statement.type === 'MustacheStatement' ) {
+        let value = statement as AST.MustacheStatement;
+        let helperType = this.isStyleIfHelper(value);
+
+        // If this is a `{{style-if}}` or `{{style-unless}}` helper:
+        if ( helperType ) {
+
+          // Discover our `if` block in the `{{style-* condition 'if-block' 'else-block'}}` helper
+          if ( value.params[1] && value.params[1].type !== 'StringLiteral' ) {
+            throw cssBlockError(`{{style-if}} expects a block or block class as its second argument.`, node, template);
+          }
+          let name: string = (value.params[1] as AST.StringLiteral).value;
+          let found = block.lookup(name) || block.lookup(`.${name}`);
+
+          // If found, this is a valid `{{style-*}}` helper. Rewrite the AST as required.
+          if (found) {
+            blockObjects.push(<Block | BlockClass>found);
+            let newClass = this.styleMapping.blockMappings.get(found);
+            if ( !newClass ) {
+              throw cssBlockError(`Error rewriting class ${name}. Try cleaning your caches and building agian.`, statement, template);
+            }
+            let classStr = ' ' + newClass.join(' ');
+
+            // Discover our optional `else` block in the `{{style-* condition 'if-block' 'else-block'}}` helper
+            let name2: string = value.params[2] && (value.params[2] as AST.StringLiteral).value;
+            let found2 = name2 ? ( block.lookup(name2) || block.lookup(`.${name2}`) ) : undefined;
+            let classStr2: string | undefined = undefined;
+            if (found2) {
+              let newClass = this.styleMapping.blockMappings.get(found2);
+              if ( !newClass ) {
+                throw cssBlockError(`Error rewriting class ${name2}. Try cleaning your caches and building agian.`, statement, template);
+              }
+              classStr2 = ' ' + newClass.join(' ');
+            }
+
+            // Construct our production helper
+            let helper: AST.MustacheStatement = this.syntax.builders.mustache('/css-blocks/components/style-if', [
+              value.params[0],
+              this.syntax.builders.boolean(helperType === STYLE_IF),
+              this.syntax.builders.string(classStr),
+              classStr2 ? this.syntax.builders.string(classStr2) : this.syntax.builders.undefined()
+            ]);
+            parts.push(helper);
+          }
+
+          // If no block discovered for the `{{style-if}}` helper, this is not a valid use.
+          else {
+            throw cssBlockError(`No class ${name} found in block ${block.name}.`, statement, template);
+          }
         }
-      });
-    }
+
+        else {
+          throw cssBlockError(`Only {{style-if}} or {{style-unless}} helpers are allowed in class attributes.`, node, template);
+        }
+      }
+    });
+
     return blockObjects;
   }
   private processState(stateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[]): State[] {
@@ -314,4 +388,5 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     }
     return [];
   }
+
 }
