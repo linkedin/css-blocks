@@ -33,9 +33,6 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo> implements Styl
     analysis.stylesFound.forEach((style) => {
       this.addAnalysisToStyleMap(this.stylesFound, style, analysis);
     });
-    analysis.dynamicStyles.forEach((style) => {
-      this.addAnalysisToStyleMap(this.dynamicStyles, style, analysis);
-    });
   }
 
   eachAnalysis(cb: (v: TemplateAnalysis<Template>) => any) {
@@ -58,15 +55,16 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo> implements Styl
     for (let si = 1; si < styles.length && possibleAnalyses.length > 1; si++) {
       possibleAnalyses = possibleAnalyses.filter(a => a.stylesFound.has(styles[si]));
     }
-    for (let pai = 0; pai < possibleAnalyses.length; pai++) {
-      let analysis = possibleAnalyses[pai];
-      for (let ci = 0; ci < analysis.styleCorrelations.length; ci++) {
-        let c = analysis.styleCorrelations[ci];
-        if (styles.every(s => c.has(s))) {
-          return true;
-        }
-      }
-    }
+    // TODO: Make work again.
+    // for (let pai = 0; pai < possibleAnalyses.length; pai++) {
+    //   let analysis = possibleAnalyses[pai];
+    //   for (let ci = 0; ci < analysis.styleCorrelations.length; ci++) {
+    //     let c = analysis.styleCorrelations[ci];
+    //     if (styles.every(s => c.has(s))) {
+    //       return true;
+    //     }
+    //   }
+    // }
     return false;
   }
 

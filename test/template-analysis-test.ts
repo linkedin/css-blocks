@@ -47,8 +47,7 @@ export class KeyQueryTests {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
-        dynamicStyles: [],
-        styleCorrelations: []
+        elements: {}
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -74,8 +73,7 @@ export class KeyQueryTests {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
-        dynamicStyles: [0],
-        styleCorrelations: []
+        elements: {}
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -109,8 +107,7 @@ export class KeyQueryTests {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]"],
-        dynamicStyles: [],
-        styleCorrelations: [[0, 1]]
+        elements: {}
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -140,10 +137,20 @@ export class KeyQueryTests {
         let result = analysis.serialize();
         let expectedResult: SerializedTemplateAnalysis = {
           blocks: {"": "blocks/foo.block.css", "ref": "blocks/bar.block.css"},
+          elements: {
+            el_e: {
+              correlations: [],
+              dynamic: [],
+              styles: [ 0 ]
+            },
+            el_f: {
+              correlations: [],
+              dynamic: [],
+              styles: [ 1 ]
+            }
+          },
           template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "ref.root"],
-          dynamicStyles: [],
-          styleCorrelations: []
         };
         assert.deepEqual(result, expectedResult);
       });
@@ -185,8 +192,7 @@ export class KeyQueryTests {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
-        dynamicStyles: [1, 2],
-        styleCorrelations: [[0, 1], [0, 2], [0, 1, 2]]
+        elements: {}
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -217,8 +223,7 @@ export class KeyQueryTests {
           blocks: {"": "blocks/foo.block.css"},
           template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "[state|bgcolor]", "[state|color]"],
-          dynamicStyles: [2, 1],
-          styleCorrelations: [[0, 1, 2], [0, 1], [0, 2]]
+          elements: {}
         };
         assert.deepEqual(result, expectedResult);
     });
@@ -251,18 +256,7 @@ export class KeyQueryTests {
           blocks: {"": "blocks/foo.block.css"},
           template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "[state|bgcolor=blue]", "[state|bgcolor=red]", "[state|color=blue]", "[state|color=red]"],
-          dynamicStyles: [4, 3, 2, 1],
-          // You never see 1 or 2 together, you never see 3 and 4 together.
-          styleCorrelations: [
-            [ 0, 2, 4 ],
-            [ 0, 2, 3 ],
-            [ 0, 2 ],
-            [ 0, 1, 4 ],
-            [ 0, 1, 3 ],
-            [ 0, 1 ],
-            [ 0, 4 ],
-            [ 0, 3 ]
-          ]
+          elements: {}
         };
 
         assert.deepEqual(result, expectedResult);
@@ -303,8 +297,7 @@ export class KeyQueryTests {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
-        dynamicStyles: [1, 2],
-        styleCorrelations: [[0, 1], [0, 2]]
+        elements: {}
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -345,8 +338,7 @@ export class KeyQueryTests {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
-        dynamicStyles: [0, 1],
-        styleCorrelations: [[0, 2, 3], [1, 2, 3]]
+        elements: {}
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -387,8 +379,7 @@ export class KeyQueryTests {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
-        dynamicStyles: [0, 1],
-        styleCorrelations: [[0, 2, 3], [1, 2, 3], [2, 3]]
+        elements: {}
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -554,8 +545,7 @@ export class KeyQueryTests {
           blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
           template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "a.foo"],
-          dynamicStyles: [],
-          styleCorrelations: [[0, 1]]
+          elements: {}
         };
         assert.deepEqual(result, expectedResult);
     });
