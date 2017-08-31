@@ -10,6 +10,9 @@ import { BlockObject, Block } from "../Block";
 import * as errors from "../errors";
 import TemplateValidator, { TemplateValidatorOptions } from "./validations";
 import { Element, SerializedElement, StyleMapping } from "./ElementAnalysis";
+import IDGenerator from "../util/IDGenerator";
+
+const ELEMENT_ID_PREFIX = "el_";
 
 /**
  * Responsible for creating instances of a template info of the correct type
@@ -114,6 +117,8 @@ export interface SerializedTemplateAnalysis {
 export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAnalysis {
 
   template: Template;
+  idGenerator: IDGenerator;
+
   /**
    * A map from a local name for the block to the [[Block]].
    * The local name must be a legal CSS ident/class name but this is not validated here.
@@ -133,7 +138,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * A per-element correlation of styles used. The current correlation is added
    * to this list when [[endElement]] is called.
    */
-  elements: Map<string, Element>;
+  elements: { [name: string]: Element };
 
   /**
    * The current element, created when calling [[startElement]].
@@ -150,10 +155,11 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * @param template The template being analyzed.
    */
   constructor(template: Template, options: TemplateValidatorOptions = {}) {
+    this.idGenerator = new IDGenerator(ELEMENT_ID_PREFIX);
     this.template = template;
     this.blocks = {};
     this.stylesFound = new Set();
-    this.elements = new Map();
+    this.elements = {};
     this.validator = new TemplateValidator(options);
   }
 
@@ -176,11 +182,11 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * so it is safe to call before you know whether there are any syles on the current element.
    * Allways call [[endElement]] before calling the next [[startElement]], even if the elements are nested in the document.
    */
-  startElement( locInfo: errors.ErrorLocation ): string {
+  startElement( locInfo: errors.ErrorLocation, id?: string ): string {
     if ( this.currentElement ) {
       throw new errors.CssBlockError(`endElement wasn't called after a previous call to startElement. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.`);
     }
-    this.currentElement = new Element(locInfo);
+    this.currentElement = new Element(id || this.idGenerator.next(), locInfo);
     let eid = this.currentElement.id;
     this.elements[eid] = this.currentElement;
     locInfo.filename = this.template.identifier;
@@ -196,7 +202,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
       return undefined;
     }
 
-    this.validator.validate( this.currentElement.correlations, this.currentElement.locInfo);
+    this.validator.validate( this.currentElement, this.currentElement.locInfo);
 
     let eid = this.currentElement.id;
     this.currentElement = undefined;
@@ -391,6 +397,27 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
           throw new Error(`Cannot resolve ${s} to a block style.`);
         }
       });
+
+      let elementNames = Object.keys(serializedAnalysis.elements);
+      elementNames.forEach( (elID) => {
+        let data = serializedAnalysis.elements[elID];
+        let element = new Element(elID, data.loc || {});
+        data.styles.forEach( (idx) => element.addStyle(objects[idx], false) );
+        data.dynamic.forEach( (idx) => element.addStyle(objects[idx], true) );
+        data.correlations.forEach( (correlation) => {
+          let objs: BlockObject[] = [];
+          let alwaysPresent = true;
+          correlation.forEach((idx) => {
+            if ( idx === -1 ) {
+              alwaysPresent = false;
+            }
+            objs.push(objects[idx]);
+          });
+          element.addExclusiveStyles(alwaysPresent, ...objs);
+        });
+        analysis.elements[elID] = element;
+      });
+
       return analysis;
     });
   }

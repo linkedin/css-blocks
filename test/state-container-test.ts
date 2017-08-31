@@ -117,12 +117,12 @@ export class StateContainerTest extends BEMProcessor {
     let factory = new BlockFactory(options, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
-      let sizeGroup = block.states.resolveGroup("size");
+      let sizeGroup = block.states.resolveGroup("size") || {};
       let sizeGroupNames = Object.keys(sizeGroup);
       assert.equal(sizeGroupNames.length, 3);
       assert.includeMembers(sizeGroupNames, ["large", "small", "tiny"]);
       typedAssert.isDefined(block.getClass("foo")).and(classObj => {
-        let modeGroup = classObj.states.resolveGroup("mode");
+        let modeGroup = classObj.states.resolveGroup("mode") || {};
         let modeGroupNames = Object.keys(modeGroup);
         assert.equal(modeGroupNames.length, 3);
         typedAssert.isDefined(modeGroup).and(modeGroup => {

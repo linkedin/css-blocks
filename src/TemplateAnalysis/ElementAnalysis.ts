@@ -1,8 +1,5 @@
 import { BlockObject } from "../Block";
 import * as errors from "../errors";
-import uniqueId from "../util/uniqueId";
-
-const ELEMENT_ID_PREFIX = "el_";
 
 export interface StyleMapping {
   static: string;
@@ -17,6 +14,7 @@ export interface SerializedElement {
   styles: number[];
   dynamic: number[];
   correlations: number[][];
+  loc?: errors.ErrorLocation;
 }
 
 /**
@@ -33,15 +31,15 @@ export class Element {
   mapping:      StyleMapping;
   styles:       Set<BlockObject>;
   dynamic:      Set<BlockObject>;
-  correlations: Set<BlockObject>[];
+  correlations: Set<BlockObject | undefined>[];
   locInfo:      errors.ErrorLocation;
 
   /**
    * Construct a new ElemnetAnalysis.
    * @param locInfo The location info in the template for this element.
    */
-  constructor( locInfo: errors.ErrorLocation ) {
-    this.id = uniqueId(ELEMENT_ID_PREFIX);
+  constructor( id: string, locInfo: errors.ErrorLocation ) {
+    this.id = id;
     this.styles = new Set;
     this.dynamic = new Set;
     this.correlations = [];
@@ -65,31 +63,19 @@ export class Element {
   }
 
   /**
-   * Add a single style to the analysis object. Dynamic styles will add all
-   * possible applications to the correlations list.
-   * ex: f(a, false); f(b, true); f(c, true) => [[a], [a, b], [a, c], [a, b, c]]
+   * Add a single style to the analysis object. Dynamic styles will also be added
+   * to the dynamic styles set.
+   * ex: f(a, false); f(b, true); f(c, true) => [[a], [b], [b]]
    * @param obj The block object referenced on the current element.
    * @param isDynamic If this style is dynamically applied.
    */
   addStyle( obj: BlockObject, isDynamic = false ) {
-    this.styles.add(obj);
-
-    if ( !this.correlations.length ) {
-      this.correlations.push(new Set());
-    }
-
-    let toAdd: Set<BlockObject>[] = [];
-    this.correlations.forEach((correlation) => {
-      if ( isDynamic ) {
-        correlation = new Set(correlation);
-        toAdd.push(correlation);
-      }
-      correlation.add(obj);
-    });
-    this.correlations.push(...toAdd);
 
     if ( isDynamic ) {
       this.dynamic.add(obj);
+    }
+    else {
+      this.styles.add(obj);
     }
 
     return this;
@@ -97,8 +83,10 @@ export class Element {
 
   /**
    * Add styles to an analysis that are mutually exclusive and will never be
-   * used at the same time. Always assumed to be dynamic.
-   * ex: f(a); f(b, c, d); => [[a], [a, b], [a, c], [a, d]]
+   * used at the same time. Always assumed to be dynamic and all are added to
+   * the dynamic styles set.
+   * ex: f(true, a); f(false, b, c, d); => [[a], [b, c, d, undefined]]
+   * @param alwaysPresent If one of the passed objects must always be applied, set to true.
    * @param ...objs The block object referenced on the current element.
    */
   addExclusiveStyles( alwaysPresent: boolean, ...objs: BlockObject[] ){
@@ -107,24 +95,15 @@ export class Element {
       this.correlations.push(new Set());
     }
 
-    let toAdd: Set<BlockObject>[] = [];
-    objs.forEach( ( obj: BlockObject, idx: number ) => {
-      this.styles.add(obj);
-
-      this.correlations!.forEach( (correlation) => {
-        if ( idx === objs.length-1 && alwaysPresent ) {
-          correlation.add(obj);
-        }
-        else {
-          correlation = new Set(correlation);
-          correlation.add(obj);
-          toAdd.push(correlation);
-        }
-      });
-      this.dynamic.add(obj);
+    let toAdd: Set<BlockObject | undefined> = new Set();
+    objs.forEach( ( obj: BlockObject ) => {
+      toAdd.add(obj);
     });
+    if ( !alwaysPresent ) {
+      toAdd.add(undefined);
+    }
 
-    this.correlations.unshift(...toAdd);
+    this.correlations.unshift(toAdd);
   }
 
   serialize( parentStyles: BlockObject[] ): SerializedElement {
@@ -140,12 +119,13 @@ export class Element {
     this.dynamic.forEach((dynamicStyle) => {
       dynamic.push(parentStyles.indexOf(dynamicStyle));
     });
+    dynamic.sort();
 
     this.correlations.forEach((correlation) => {
       if (correlation.size > 1) {
         let cc: number[] = [];
         correlation.forEach((c) => {
-          cc.push(parentStyles.indexOf(c));
+          c ? cc.push(parentStyles.indexOf(c)) : cc.push(-1);
         });
         cc.sort();
         correlations.push(cc);
@@ -155,7 +135,8 @@ export class Element {
     return {
       styles,
       dynamic,
-      correlations
+      correlations,
+      loc: {}
     };
   }
 }

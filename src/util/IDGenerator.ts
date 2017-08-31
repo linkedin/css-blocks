@@ -1,5 +1,3 @@
-const ID_COUNTERS = {};
-
 // Converts from number to class string: `[a-zA-Z][a-zA-Z0-9-_]*`
 // Credit: https://github.com/ben-eb/postcss-reduce-idents/blob/master/src/lib/encode.js
 function convertBase (num: number): string {
@@ -21,9 +19,15 @@ function convertBase (num: number): string {
 }
 
 // Generate a unique integer id (unique within the entire client session).
-export default function uniqueId(prefix='') {
-  if ( !ID_COUNTERS.hasOwnProperty(prefix) ) {
-    ID_COUNTERS[prefix] = 0;
+export default class IDGenerator {
+  private prefix: string;
+  private count = 0;
+
+  constructor(prefix: string){
+    this.prefix = prefix;
   }
-  return prefix + convertBase(++ID_COUNTERS[prefix]);
+
+  next(): string{
+    return this.prefix + convertBase(this.count++);
+  }
 }

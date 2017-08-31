@@ -1,5 +1,5 @@
-import { BlockObject } from "../../Block";
 import * as errors from "../../errors";
+import { Element } from "../ElementAnalysis";
 
 import rootClassValidator from "./rootClassValidator";
 import classPairsValidator from "./classPairsValidator";
@@ -14,7 +14,7 @@ const DEFAULT_VALIDATORS = {
   "no-class-pairs": true
 };
 
-export type Validator = (str: Set<BlockObject>[], err: (str: string) => void) => void;
+export type Validator = (analysis: Element, err: (str: string) => void) => void;
 export type TemplateValidatorOptions = { [key: string] : Validator | boolean };
 
 /**
@@ -65,14 +65,14 @@ export default class TemplateValidator {
    * @param correlations The correlations object for a given element.
    * @param locInfo Location info for the elements being validated.
    */
-  validate( correlations: Set<BlockObject>[], locInfo: errors.ErrorLocation ) {
+  validate( analysis: Element, locInfo: errors.ErrorLocation ) {
 
     function err ( message: string ) {
       throw new errors.TemplateAnalysisError(message, locInfo);
     }
 
     this.validators.forEach(( func ) => {
-      func(correlations, err);
+      func(analysis, err);
     });
 
   }
