@@ -33,6 +33,13 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo> implements Styl
     analysis.stylesFound.forEach((style) => {
       this.addAnalysisToStyleMap(this.stylesFound, style, analysis);
     });
+    analysis.dynamicStyles.forEach((style) => {
+      this.addAnalysisToStyleMap(this.dynamicStyles, style, analysis);
+    });
+  }
+
+  analysisCount(): number {
+    return Object.keys(this.analyses).length;
   }
 
   eachAnalysis(cb: (v: TemplateAnalysis<Template>) => any) {
@@ -41,8 +48,16 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo> implements Styl
     });
   }
 
+  styleCount(): number {
+    return this.stylesFound.size;
+  }
+
   wasFound(style: BlockObject): boolean {
     return this.stylesFound.has(style);
+  }
+
+  dynamicCount(): number {
+    return this.dynamicStyles.size;
   }
 
   isDynamic(style: BlockObject): boolean {

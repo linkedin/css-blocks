@@ -9,7 +9,7 @@ import { Element } from "../ElementAnalysis";
 export default function classPairsValidator(analysis: Element, err: (str: string) => void): void {
 
   let rootBlocks: Map<Block, BlockClass> = new Map();
-  analysis.styles.forEach(( blockObj ) => {
+  analysis.static.forEach(( blockObj ) => {
     if ( blockObj instanceof BlockClass ) {
       if ( rootBlocks.has(blockObj.block) ) {
         let blockObj2 = rootBlocks.get(blockObj.block) as BlockClass;

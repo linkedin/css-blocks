@@ -135,16 +135,41 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
   stylesFound: Set<BlockObject>;
 
   /**
+   * All the dynamic block styles used in this template. Due to how Set works, it's exceedingly important
+   * that the same instance for the same block object is used over the course of a single template analysis.
+   */
+  dynamicStyles: Set<BlockObject>;
+
+  /**
    * A per-element correlation of styles used. The current correlation is added
    * to this list when [[endElement]] is called.
    */
-  elements: { [name: string]: Element };
+  elements: Map<string, Element>;
 
   /**
    * The current element, created when calling [[startElement]].
    * The current element is unset after calling [[endElement]].
    */
   currentElement: Element | undefined;
+
+  /**
+   * Return the number of elements discovered in this Analysis.
+   */
+  elementCount(): number{
+    return this.elements.size;
+  }
+
+  /**
+   * Get the nth element discovered in this Analysis.
+   */
+  getElement(idx: number): Element{
+    let mapIter = this.elements.entries();
+    let el = mapIter.next().value;
+    for ( let i = 0; i < idx; i++) {
+      el = mapIter.next().value;
+    }
+    return el[1];
+  }
 
   /**
    * Template validatior instance to verify blocks applied to an element.
@@ -159,7 +184,8 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     this.template = template;
     this.blocks = {};
     this.stylesFound = new Set();
-    this.elements = {};
+    this.dynamicStyles = new Set();
+    this.elements = new Map();
     this.validator = new TemplateValidator(options);
   }
 
@@ -187,10 +213,8 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
       throw new errors.CssBlockError(`endElement wasn't called after a previous call to startElement. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.`);
     }
     this.currentElement = new Element(id || this.idGenerator.next(), locInfo);
-    let eid = this.currentElement.id;
-    this.elements[eid] = this.currentElement;
     locInfo.filename = this.template.identifier;
-    return eid;
+    return this.currentElement.id;
   }
 
   /**
@@ -198,15 +222,20 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    */
   endElement(): string | undefined {
 
+    let eid: string | undefined;
+
     if ( !this.currentElement ) {
-      return undefined;
+      return eid;
     }
 
     this.validator.validate( this.currentElement, this.currentElement.locInfo);
 
-    let eid = this.currentElement.id;
-    this.currentElement = undefined;
+    if ( this.currentElement.stylesFound.size !== 0 ) {
+      eid = this.currentElement.id;
+      this.elements.set(eid, this.currentElement);
+    }
 
+    this.currentElement = undefined;
     return eid;
   }
 
@@ -214,17 +243,16 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * Generates a [[StyleMapping]] for this analysis.
    */
   getElementStyles( elementId: string ): StyleMapping {
-    let element = this.elements[elementId];
+    let element = this.elements.get(elementId);
 
     if ( !element ) {
       throw new errors.CssBlockError(`Can not find an element with the identifier ${elementId}. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.`);
     }
 
+    // TODO: Actual implementation of StyleMapping with boolean values here.
     return {
       static: '',
-      dynamic: {
-        'foo': 'bar'
-      }
+      dynamic: { }
     };
   }
 
@@ -242,6 +270,9 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     }
 
     this.stylesFound.add(obj);
+    if ( isDynamic ) {
+      this.dynamicStyles.add(obj);
+    }
     this.currentElement.addStyle(obj, isDynamic);
 
     return this;
@@ -259,6 +290,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     }
 
     objs.forEach(this.stylesFound.add.bind(this.stylesFound));
+    objs.forEach(this.dynamicStyles.add.bind(this.dynamicStyles));
     this.currentElement.addExclusiveStyles( alwaysPresent, ...objs );
 
     return this;
@@ -313,8 +345,10 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * @param styles the styles that might be correlated
    */
   areCorrelated(...styles: BlockObject[]): boolean {
-    for ( let key in this.elements ) {
-      let el: Element = this.elements[key];
+    let mapIter = this.elements.entries();
+    let item = mapIter.next();
+    while ( !item.done ) {
+      let el: Element = item.value[1];
       for (let i = 0; i < el.correlations.length; i++) {
         let c = el.correlations[i];
         if (styles.every(s => c.has(s))) {
@@ -322,6 +356,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
         }
       }
     }
+
     return false;
   }
 
@@ -350,10 +385,9 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
     });
 
     // Serialize all discovered Elements.
-    for ( let key in this.elements ) {
-      let el = this.elements[key];
-      elements[el.id] = el.serialize(styles);
-    }
+    this.elements.forEach( (el, key) => {
+      elements[key] = el.serialize(styles);
+    });
 
     // Return serialized Analysis object.
     return { template, blocks, stylesFound, elements };
@@ -402,7 +436,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
       elementNames.forEach( (elID) => {
         let data = serializedAnalysis.elements[elID];
         let element = new Element(elID, data.loc || {});
-        data.styles.forEach( (idx) => element.addStyle(objects[idx], false) );
+        data.static.forEach( (idx) => element.addStyle(objects[idx], false) );
         data.dynamic.forEach( (idx) => element.addStyle(objects[idx], true) );
         data.correlations.forEach( (correlation) => {
           let objs: BlockObject[] = [];
@@ -415,7 +449,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
           });
           element.addExclusiveStyles(alwaysPresent, ...objs);
         });
-        analysis.elements[elID] = element;
+        analysis.elements.set(elID, element);
       });
 
       return analysis;

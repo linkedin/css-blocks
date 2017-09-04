@@ -22,11 +22,11 @@ export default function rootClassValidator(analysis: Element, err: (str: string)
     }
   }
 
-  analysis.styles.forEach(add);
+  analysis.static.forEach(add);
   analysis.dynamic.forEach(add);
   analysis.correlations.forEach(( correlation ) => { correlation.forEach(add); });
 
-  analysis.styles.forEach(test);
+  analysis.static.forEach(test);
   analysis.dynamic.forEach(test);
   analysis.correlations.forEach(( correlation ) => { correlation.forEach(test); });
 

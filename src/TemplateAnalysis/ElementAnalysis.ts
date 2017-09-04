@@ -11,7 +11,7 @@ export interface StyleMapping {
  * of a {Element}.
  */
 export interface SerializedElement {
-  styles: number[];
+  static: number[];
   dynamic: number[];
   correlations: number[][];
   loc?: errors.ErrorLocation;
@@ -29,7 +29,8 @@ export class Element {
 
   id:           string;
   mapping:      StyleMapping;
-  styles:       Set<BlockObject>;
+  stylesFound:  Set<BlockObject>;
+  static:       Set<BlockObject>;
   dynamic:      Set<BlockObject>;
   correlations: Set<BlockObject | undefined>[];
   locInfo:      errors.ErrorLocation;
@@ -40,7 +41,8 @@ export class Element {
    */
   constructor( id: string, locInfo: errors.ErrorLocation ) {
     this.id = id;
-    this.styles = new Set;
+    this.stylesFound = new Set;
+    this.static = new Set;
     this.dynamic = new Set;
     this.correlations = [];
     this.locInfo = locInfo;
@@ -59,7 +61,7 @@ export class Element {
    * @param style the block object that might have been used.
    */
   wasFound(style: BlockObject): boolean {
-    return this.styles.has(style);
+    return this.stylesFound.has(style);
   }
 
   /**
@@ -71,11 +73,13 @@ export class Element {
    */
   addStyle( obj: BlockObject, isDynamic = false ) {
 
+    this.stylesFound.add(obj);
+
     if ( isDynamic ) {
       this.dynamic.add(obj);
     }
     else {
-      this.styles.add(obj);
+      this.static.add(obj);
     }
 
     return this;
@@ -97,6 +101,7 @@ export class Element {
 
     let toAdd: Set<BlockObject | undefined> = new Set();
     objs.forEach( ( obj: BlockObject ) => {
+      this.stylesFound.add(obj);
       toAdd.add(obj);
     });
     if ( !alwaysPresent ) {
@@ -107,14 +112,14 @@ export class Element {
   }
 
   serialize( parentStyles: BlockObject[] ): SerializedElement {
-    let styles: number[] = [];
+    let staticStyles: number[] = [];
     let dynamic: number[] = [];
     let correlations: number[][] = [];
 
-    this.styles.forEach((s) => {
-      styles.push(parentStyles.indexOf(s));
+    this.static.forEach((s) => {
+      staticStyles.push(parentStyles.indexOf(s));
     });
-    styles.sort();
+    staticStyles.sort();
 
     this.dynamic.forEach((dynamicStyle) => {
       dynamic.push(parentStyles.indexOf(dynamicStyle));
@@ -133,7 +138,7 @@ export class Element {
     });
 
     return {
-      styles,
+      static: staticStyles,
       dynamic,
       correlations,
       loc: {}

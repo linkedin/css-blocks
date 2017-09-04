@@ -51,7 +51,7 @@ export class KeyQueryTests {
           "el_a": {
             correlations: [],
             dynamic: [],
-            styles: [ 0 ],
+            static: [ 0 ],
             loc: {}
           }
         }
@@ -84,7 +84,7 @@ export class KeyQueryTests {
           el_a: {
             correlations: [],
             dynamic: [ 0 ],
-            styles: [ ],
+            static: [ ],
             loc: {}
           }
         }
@@ -125,7 +125,7 @@ export class KeyQueryTests {
           el_a: {
             correlations: [],
             dynamic: [],
-            styles: [ 0, 1 ],
+            static: [ 0, 1 ],
             loc: {}
           }
         }
@@ -162,13 +162,13 @@ export class KeyQueryTests {
             el_a: {
               correlations: [],
               dynamic: [],
-              styles: [ 0 ],
+              static: [ 0 ],
               loc: {}
             },
             el_b: {
               correlations: [],
               dynamic: [],
-              styles: [ 1 ],
+              static: [ 1 ],
               loc: {}
             }
           },
@@ -219,7 +219,7 @@ export class KeyQueryTests {
           el_a: {
             correlations: [],
             dynamic: [ 1, 2],
-            styles: [ 0 ],
+            static: [ 0 ],
             loc: {}
           }
         }
@@ -257,7 +257,7 @@ export class KeyQueryTests {
             el_a: {
               correlations: [ [ -1, 1], [-1, 2]],
               dynamic: [ ],
-              styles: [ 0 ],
+              static: [ 0 ],
               loc: {}
             }
           }
@@ -297,7 +297,7 @@ export class KeyQueryTests {
             el_a: {
               correlations: [ [ -1, 1, 2], [-1, 3, 4]],
               dynamic: [ ],
-              styles: [ 0 ],
+              static: [ 0 ],
               loc: {}
             }
           }
@@ -345,7 +345,7 @@ export class KeyQueryTests {
           el_a: {
             correlations: [ [ -1, 1, 2 ] ],
             dynamic: [ ],
-            styles: [ 0 ],
+            static: [ 0 ],
             loc: {}
           }
         }
@@ -393,7 +393,7 @@ export class KeyQueryTests {
           el_a: {
             correlations: [ [ 0, 1 ] ],
             dynamic: [ ],
-            styles: [ 2, 3 ],
+            static: [ 2, 3 ],
             loc: {}
           }
         }
@@ -441,7 +441,7 @@ export class KeyQueryTests {
           el_a: {
             correlations: [ [ -1, 0, 1 ]],
             dynamic: [ ],
-            styles: [ 2, 3 ],
+            static: [ 2, 3 ],
             loc: {}
           }
         }
@@ -615,7 +615,7 @@ export class KeyQueryTests {
             el_a: {
               correlations: [ ],
               dynamic: [ ],
-              styles: [ 0, 1 ],
+              static: [ 0, 1 ],
               loc: {}
             }
           }
