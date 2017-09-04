@@ -129,16 +129,37 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
   };
 
   /**
+   * Return the number of blocks discovered in this Template.
+   */
+  blockCount(): number {
+    return Object.keys(this.blocks).length;
+  }
+
+  /**
    * All the block styles used in this template. Due to how Set works, it's exceedingly important
    * that the same instance for the same block object is used over the course of a single template analysis.
    */
   stylesFound: Set<BlockObject>;
 
   /**
+   * Return the number of styles discovered in this Analysis' Template.
+   */
+  styleCount(): number {
+    return this.stylesFound.size;
+  }
+
+  /**
    * All the dynamic block styles used in this template. Due to how Set works, it's exceedingly important
    * that the same instance for the same block object is used over the course of a single template analysis.
    */
   dynamicStyles: Set<BlockObject>;
+
+  /**
+   * Return the number of dynamic styles discovered in this Analysis' Template.
+   */
+  dynamicCount(): number {
+    return this.dynamicStyles.size;
+  }
 
   /**
    * A per-element correlation of styles used. The current correlation is added
@@ -155,20 +176,27 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
   /**
    * Return the number of elements discovered in this Analysis.
    */
-  elementCount(): number{
+  elementCount(): number {
     return this.elements.size;
   }
 
   /**
    * Get the nth element discovered in this Analysis.
    */
-  getElement(idx: number): Element{
+  getElement(idx: number): Element {
     let mapIter = this.elements.entries();
     let el = mapIter.next().value;
     for ( let i = 0; i < idx; i++) {
       el = mapIter.next().value;
     }
     return el[1];
+  }
+
+  /**
+   * Get an Element by ID.
+   */
+  getElementById(id: string): Element | undefined {
+    return this.elements.get(id);
   }
 
   /**
