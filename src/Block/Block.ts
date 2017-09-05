@@ -437,4 +437,16 @@ export class Block extends BlockObject {
     }
     return sels;
   }
+
+  /**
+   * Objects that contain Blocks are often passed into assorted libraries' options
+   * hashes. Some libraries like to `JSON.stringify()` their options to create
+   * unique identifiers for re-run caching. (ex: Webpack, awesome-typescript-loader)
+   * Blocks contain circular dependencies, so we need to override their `toJSON`
+   * method so these libraries don't implode.
+   * @return The name of the block.
+   */
+  toJSON(){
+    return this._name;
+  }
 }

@@ -38,14 +38,26 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo> implements Styl
     });
   }
 
+  analysisCount(): number {
+    return Object.keys(this.analyses).length;
+  }
+
   eachAnalysis(cb: (v: TemplateAnalysis<Template>) => any) {
     this.analyses.forEach(a => {
       cb(a);
     });
   }
 
+  styleCount(): number {
+    return this.stylesFound.size;
+  }
+
   wasFound(style: BlockObject): boolean {
     return this.stylesFound.has(style);
+  }
+
+  dynamicCount(): number {
+    return this.dynamicStyles.size;
   }
 
   isDynamic(style: BlockObject): boolean {
@@ -58,15 +70,16 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo> implements Styl
     for (let si = 1; si < styles.length && possibleAnalyses.length > 1; si++) {
       possibleAnalyses = possibleAnalyses.filter(a => a.stylesFound.has(styles[si]));
     }
-    for (let pai = 0; pai < possibleAnalyses.length; pai++) {
-      let analysis = possibleAnalyses[pai];
-      for (let ci = 0; ci < analysis.styleCorrelations.length; ci++) {
-        let c = analysis.styleCorrelations[ci];
-        if (styles.every(s => c.has(s))) {
-          return true;
-        }
-      }
-    }
+    // TODO: Make work again.
+    // for (let pai = 0; pai < possibleAnalyses.length; pai++) {
+    //   let analysis = possibleAnalyses[pai];
+    //   for (let ci = 0; ci < analysis.styleCorrelations.length; ci++) {
+    //     let c = analysis.styleCorrelations[ci];
+    //     if (styles.every(s => c.has(s))) {
+    //       return true;
+    //     }
+    //   }
+    // }
     return false;
   }
 
