@@ -624,6 +624,55 @@ export class KeyQueryTests {
     });
   }
 
+  @test "throws when states are applied without their parent root"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      .root { color: blue; }
+      [state|test] { color: red; }
+    `;
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+      'Cannot use state "[state|test]" without parent block also applied. (templates/my-template.hbs:10:32)',
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+          analysis.blocks[""] = block;
+          analysis.startElement({ line: 10, column: 32 });
+          analysis.addStyle( block.states.getState('test') as State, false);
+          analysis.endElement();
+          assert.deepEqual(1, 1);
+      }));
+  }
+
+  @test "throws when states are applied without their parent BlockClass"() {
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      .foo { color: blue; }
+      .foo[state|test] { color: red; }
+    `;
+
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+      'Cannot use state ".foo[state|test]" without parent class also applied. (templates/my-template.hbs:10:32)',
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+          analysis.blocks[""] = block;
+          analysis.startElement({ line: 10, column: 32 });
+          let klass = block.getClass('foo') as BlockClass;
+          analysis.addStyle( klass.states.getState('test') as State, false);
+          analysis.endElement();
+          assert.deepEqual(1, 1);
+    }));
+
+  }
+
   @test "analysis can be serialized and deserialized"() {
     let source = `
       .root {}

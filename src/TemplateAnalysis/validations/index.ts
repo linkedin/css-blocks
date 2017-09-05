@@ -3,15 +3,18 @@ import { Element } from "../ElementAnalysis";
 
 import rootClassValidator from "./rootClassValidator";
 import classPairsValidator from "./classPairsValidator";
+import stateParentValidator from "./stateParentValidator";
 
 const VALIDATORS = {
   "no-root-classes": rootClassValidator,
-  "no-class-pairs": classPairsValidator
+  "no-class-pairs": classPairsValidator,
+  "no-state-orphans": stateParentValidator
 };
 
 const DEFAULT_VALIDATORS = {
   "no-root-classes": true,
-  "no-class-pairs": true
+  "no-class-pairs": true,
+  "no-state-orphans": true
 };
 
 export type Validator = (analysis: Element, err: (str: string) => void) => void;
@@ -31,6 +34,7 @@ export type TemplateValidatorOptions = { [key: string] : Validator | boolean };
  *
  * `no-root-classes`: Prevent BlockClasses from being applied to the same element is their Root. Enabled by default.
  * `no-class-pairs`: Prevent two BlockClasses from the same Block from being applied together. Enabled by default.
+ * `no-state-orphans`: Prevent a State from being applied without its parent BlockClass or Block. Enabled by default.
  *
  * @param options A hash of tslint-style template validator options.
  */
