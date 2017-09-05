@@ -221,7 +221,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * @param block The block for which the local name should be returned.
    * @return The local name of the given block.
    */
-  private getBlockName(block: Block): string | null {
+  getBlockName(block: Block): string | null {
     let names = Object.keys(this.blocks);
     for (let i = 0; i < names.length; i++) {
       if (this.blocks[names[i]] === block) {
@@ -238,7 +238,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    */
   startElement( locInfo: errors.ErrorLocation, id?: string ): string {
     if ( this.currentElement ) {
-      throw new errors.CssBlockError(`endElement wasn't called after a previous call to startElement. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.`);
+      throw new errors.CssBlockError(`endElement wasn't called after a previous call to startElement. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.`, locInfo);
     }
     this.currentElement = new Element(id || this.idGenerator.next(), locInfo);
     locInfo.filename = this.template.identifier;
