@@ -9,21 +9,29 @@ import { Element } from "../ElementAnalysis";
 export default function rootClassValidator(analysis: Element, err: (str: string) => void): void {
 
   let statesFound: Set<State> = new Set();
+  let parentsFound: Set<BlockObject> = new Set();
 
   // Add all discovered states to `statesFound` set.
-  function addState( blockObj: BlockObject | undefined ){
+  function separate( blockObj: BlockObject | undefined ){
+    if ( !blockObj ) { return; }
     if ( blockObj instanceof State ) { statesFound.add(blockObj); }
+    else {
+      let parent: BlockObject | undefined = blockObj;
+      do {
+        parentsFound.add(parent);
+      } while ( parent = parent.base );
+    }
   }
 
   // Test if a given state's parent BlockObject was found in this Analysis object.
   function test( state: State ){
     if ( !state.parent ) { return; }
-    if ( !analysis.stylesFound.has(state.parent)  ) {
+    if ( !parentsFound.has(state.parent)  ) {
       err(`Cannot use state "${state.asSource()}" without parent ${ state.parent instanceof BlockClass ? 'class' : 'block' } also applied.`);
     }
   }
 
-  analysis.stylesFound.forEach(addState);
+  analysis.stylesFound.forEach(separate);
   statesFound.forEach(test);
 
 }

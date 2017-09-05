@@ -673,6 +673,88 @@ export class KeyQueryTests {
 
   }
 
+  @test 'Throws when inherited states are applied without their root'(){
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    imports.registerSource("blocks/a.css",
+      `.root { color: blue; }
+      .pretty { color: red; }
+      .pretty[state|color=yellow] {
+        color: yellow;
+      }
+      .pretty[state|color=green] {
+        color: green;
+      }`
+    );
+
+    let css = `
+      @block-reference a from "a.css";
+      .root { extends: a; }
+      .pretty[state|color=black] {
+        color: black;
+      }
+    `;
+
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+      'Cannot use state ".pretty[state|color=yellow]" without parent class also applied. (templates/my-template.hbs:10:32)',
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+          let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
+          analysis.blocks[""] = block;
+          analysis.blocks["a"] = aBlock;
+          analysis.startElement({ line: 10, column: 32 });
+          let klass = block.getClass('pretty') as BlockClass;
+          let group = klass.states.resolveGroup('color') as {[name: string]: State};
+          analysis.addStyle( group['yellow'], false);
+          analysis.endElement();
+          assert.deepEqual(1, 1);
+    }));
+  }
+
+  @test 'Inherited states pass validation when applied with their root'(){
+    let info = new TemplateInfo("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    imports.registerSource("blocks/a.css",
+      `.root { color: blue; }
+      .pretty { color: red; }
+      .pretty[state|color=yellow] {
+        color: yellow;
+      }
+      .pretty[state|color=green] {
+        color: green;
+      }`
+    );
+
+    let css = `
+      @block-reference a from "a.css";
+      .root { extends: a; }
+      .pretty[state|color=black] {
+        color: black;
+      }
+    `;
+
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+          let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
+          analysis.blocks[""] = block;
+          analysis.blocks["a"] = aBlock;
+          analysis.startElement({ line: 10, column: 32 });
+          let klass = block.getClass('pretty') as BlockClass;
+          let group = klass.states.resolveGroup('color') as {[name: string]: State};
+          analysis.addStyle( klass, false);
+          analysis.addStyle( group['yellow'], false);
+          analysis.endElement();
+          assert.deepEqual(1, 1);
+    });
+  }
+
   @test "analysis can be serialized and deserialized"() {
     let source = `
       .root {}
