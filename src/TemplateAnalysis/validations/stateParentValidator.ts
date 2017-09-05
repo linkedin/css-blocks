@@ -2,7 +2,7 @@ import { BlockObject, State, BlockClass } from "../../Block";
 import { Element } from "../ElementAnalysis";
 
 /**
- * Prevent BlockClasses from being applied to the same element is their Root.
+ * Prevent State from being applied to an element without their parent BlockObject.
  * @param correlations The correlations object for a given element.
  * @param err Error callback.
  */
@@ -10,12 +10,12 @@ export default function rootClassValidator(analysis: Element, err: (str: string)
 
   let statesFound: Set<State> = new Set();
 
-  // Add any discovered root blocks to `rootBlocks` set.
+  // Add all discovered states to `statesFound` set.
   function addState( blockObj: BlockObject | undefined ){
     if ( blockObj instanceof State ) { statesFound.add(blockObj); }
   }
 
-  // Test if a given BlockObject's is a BlockClass and if their Block is in `rootBlocks`.
+  // Test if a given state's parent BlockObject was found in this Analysis object.
   function test( state: State ){
     if ( !state.parent ) { return; }
     if ( !analysis.stylesFound.has(state.parent)  ) {
