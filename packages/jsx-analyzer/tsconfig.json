@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     // Compilation Configuration
-    "target": "ES6",
+    "target": "es2015",
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
@@ -36,7 +36,8 @@
       "postcss": [ "../../node_modules/postcss" ],
       "perfectionist": [ "../../../css-blocks/types-local/perfectionist" ],
       "postcss-selector-parser": ["../../../css-blocks/types-local/postcss-selector-parser"],
-      "regexpu-core":  ["../../../css-blocks/types-local/regexpu-core"]
+      "regexpu-core":  ["../../../css-blocks/types-local/regexpu-core"],
+      "babel-core":  ["../../types-local/babel-core"]
     }
   },
   "include": [

@@ -5,7 +5,7 @@ import { testParse as parse } from '../util';
 
 const mock = require('mock-fs');
 
-@suite('External Objstr Class Styles')
+@suite('Analyzer | External Objstr Class Styles')
 export class Test {
 
   @test 'Classes on objstrs are tracked when applied'(){
@@ -28,11 +28,11 @@ export class Test {
       mock.restore();
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
-      let styleIter = analysis.getStyles().entries();
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
+      let styleIter = analysis.getAnalysis(0).stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
-      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 1);
-      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 1);
+      assert.equal(analysis.getAnalysis(0).elementCount(), 1);
+      assert.equal(analysis.getAnalysis(0).getElement(0).static.size, 1);
     });
   }
 
@@ -57,12 +57,12 @@ export class Test {
       mock.restore();
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 2);
-      let styleIter = analysis.getStyles().entries();
+      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
+      let styleIter = analysis.getAnalysis(0).stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
       assert.equal(styleIter.next().value[0].asSource(), '.baz');
-      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 1);
-      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 2);
+      assert.equal(analysis.getAnalysis(0).elementCount(), 1);
+      assert.equal(analysis.getAnalysis(0).getElement(0).static.size, 2);
     });
   }
 
@@ -91,14 +91,14 @@ export class Test {
       mock.restore();
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 2);
-      assert.equal(analysis.getStyles().size, 4);
-      let styleIter = analysis.getStyles().entries();
+      assert.equal(analysis.getAnalysis(0).styleCount(), 4);
+      let styleIter = analysis.getAnalysis(0).stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.biz');
       assert.equal(styleIter.next().value[0].asSource(), '.baz');
       assert.equal(styleIter.next().value[0].asSource(), '.baz');
       assert.equal(styleIter.next().value[0].asSource(), '.biz');
-      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 1);
-      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 4);
+      assert.equal(analysis.getAnalysis(0).elementCount(), 1);
+      assert.equal(analysis.getAnalysis(0).getElement(0).static.size, 4);
     });
   }
 
@@ -120,7 +120,7 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 0);
     });
   }
 
@@ -143,7 +143,7 @@ export class Test {
   ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
     });
   }
 

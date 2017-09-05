@@ -42,11 +42,10 @@ export class Test {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
-    return parse(`import bar, { states as barStates } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
+    return parse(`import bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
-      assert.deepEqual(analysis.getAnalysis(0).template.localStates, {'bar': 'barStates'});
     });
   }
 
@@ -54,11 +53,10 @@ export class Test {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
-    return parse(`import { states as barStates, default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
+    return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
-      assert.deepEqual(analysis.getAnalysis(0).template.localStates, {'bar': 'barStates'});
     });
   }
 
@@ -198,70 +196,6 @@ export class Test {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
       assert.equal(err.message, `Block identifier "biz" cannot be re-defined in any scope once imported.`);
-    });
-  }
-
-  @test 'state identifiers may not be re-declaired elsewhere in the file – Variable Declaration'(){
-    mock({
-      'baz.block.css': '.root { color: blue; }'
-    });
-    return parse(`
-      import biz, { states as woo } from 'baz.block.css';
-      () => {
-        let woo = 'test';
-      }
-    `).then(() => {
-      assert.equal('Should never get here', '');
-    }).catch((err: Error) => {
-      assert.equal(err.message, `Block state identifier "woo" cannot be re-defined in any scope once imported.`);
-    });
-  }
-
-  @test 'state identifiers may not be re-declaired elsewhere in the file – Function Param'(){
-    mock({
-      'baz.block.css': '.root { color: blue; }'
-    });
-    return parse(`
-      import biz, { states as woo } from 'baz.block.css';
-      (woo) => {
-
-      }
-    `).then(() => {
-      assert.equal('Should never get here', '');
-    }).catch((err: Error) => {
-      assert.equal(err.message, `Block state identifier "woo" cannot be re-defined in any scope once imported.`);
-    });
-  }
-
-  @test 'state identifiers may not be re-declaired elsewhere in the file – Class Method Param'(){
-    mock({
-      'baz.block.css': '.root { color: blue; }'
-    });
-    return parse(`
-      import biz, { states as woo } from 'baz.block.css';
-      class Test {
-        method(woo){}
-      }
-    `).then(() => {
-      assert.equal('Should never get here', '');
-    }).catch((err: Error) => {
-      assert.equal(err.message, `Block state identifier "woo" cannot be re-defined in any scope once imported.`);
-    });
-  }
-
-  @test 'state identifiers may not be re-declaired elsewhere in the file – Object Method Param'(){
-    mock({
-      'baz.block.css': '.root { color: blue; }'
-    });
-    return parse(`
-      import biz, { states as woo } from 'baz.block.css';
-      let obj = {
-        method(woo){}
-      };
-    `).then(() => {
-      assert.equal('Should never get here', '');
-    }).catch((err: Error) => {
-      assert.equal(err.message, `Block state identifier "woo" cannot be re-defined in any scope once imported.`);
     });
   }
 }

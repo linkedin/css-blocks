@@ -12,9 +12,9 @@ export class Test {
     let base = path.resolve(__dirname, '../../../test/fixtures/basic-multifile');
     return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.fileCount(), 2);
-      assert.equal(Object.keys(analysis.getAnalysis(0).blocks).length, 1);
-      assert.equal(Object.keys(analysis.getAnalysis(1).blocks).length, 1);
-      assert.equal(analysis.getStyles().size, 4);
+      assert.equal(analysis.getAnalysis(0).blockCount(), 1);
+      assert.equal(analysis.getAnalysis(1).blockCount(), 1);
+      assert.equal(analysis.styleCount(), 4);
     });
   }
 
@@ -24,7 +24,7 @@ export class Test {
       assert.equal(analysis.fileCount(), 2);
       assert.equal(analysis.blockCount(), 1);
       assert.equal(analysis.blockPromisesCount(), 1);
-      assert.equal(analysis.getStyles().size, 3);
+      assert.equal(analysis.styleCount(), 3);
     });
   }
 
@@ -34,7 +34,7 @@ export class Test {
       assert.equal(analysis.fileCount(), 3);
       assert.equal(analysis.blockCount(), 3);
       assert.equal(analysis.blockPromisesCount(), 3);
-      assert.equal(analysis.getStyles().size, 5);
+      assert.equal(analysis.styleCount(), 5);
     });
   }
 
@@ -43,7 +43,7 @@ export class Test {
     return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.fileCount(), 2);
       assert.equal(analysis.blockCount(), 2);
-      assert.equal(analysis.getStyles().size, 4);
+      assert.equal(analysis.styleCount(), 4);
     });
   }
 }

@@ -1,25 +1,25 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
+import { Block, BlockFactory } from 'css-blocks';
+import { NodePath } from 'babel-traverse';
+import {
+  ImportDeclaration,
+  VariableDeclaration,
+  VariableDeclarator,
+  Function,
+  Identifier,
+  isIdentifier,
+  ClassDeclaration,
+  isImportDefaultSpecifier,
+  isImportSpecifier,
+  isImportNamespaceSpecifier
+} from 'babel-types';
+
 import Analysis, { Template } from '../utils/Analysis';
 import { parseFileWith } from '../index';
 import isBlockFilename from '../utils/isBlockFilename';
 
-import { Block, BlockFactory } from 'css-blocks';
-import { NodePath } from 'babel-traverse';
-import { ImportDeclaration,
-         VariableDeclaration,
-         VariableDeclarator,
-         Function,
-         Identifier,
-         isIdentifier,
-         ClassDeclaration,
-         isImportDefaultSpecifier,
-         isImportSpecifier,
-         isImportNamespaceSpecifier
-       } from 'babel-types';
-
-const fs = require('fs');
-const path = require('path');
-
-const STATE_IDENTIFIER = 'states';
 const DEFAULT_IDENTIFIER = 'default';
 const VALID_FILE_EXTS = {
   '.jsx': 1, '.tsx': 1
@@ -29,22 +29,15 @@ interface BlockRegistry {
   [key: string]: number;
 }
 
-interface BlockStateRegistry {
-  [key: string]: number;
-}
-
 /**
  * If a given block name is in the passed BlockRegistry, throw.
  * @param name The Block name in question.
  * @param registry The registry to check.
  */
-function throwIfRegistered(name: string, blockRegistry: BlockRegistry, blockStateRegistry: BlockStateRegistry){
+function throwIfRegistered(name: string, blockRegistry: BlockRegistry){
   // TODO: Location reporting in errors.
   if ( blockRegistry[name] ) {
     throw new Error(`Block identifier "${name}" cannot be re-defined in any scope once imported.`);
-  }
-  else if ( blockStateRegistry[name] ) {
-    throw new Error(`Block state identifier "${name}" cannot be re-defined in any scope once imported.`);
   }
 }
 
@@ -54,14 +47,15 @@ function throwIfRegistered(name: string, blockRegistry: BlockRegistry, blockStat
  * will store all discovered and parsed Block files. Once the all resolve, the
  * Block data is loaded into our Analytics object and the main analytics parser
  * can begin.
- * @param blocks The ResolvedBlock Promise array that will contain all read Block files.
+ * @param file The Template object representing this file.
+ * @param analysis The Analysis object used to parse this file.
+ * @param blockFactory The BlockFactory we will use to ensure the Blocks and BlockPromised we wait for are singletons.
  */
 export default function importer(file: Template, analysis: Analysis, blockFactory: BlockFactory) {
 
   // Keep a running record of local block names while traversing so we can check
   // for name conflicts elsewhere in the file.
   let _localBlocks: BlockRegistry = {};
-  let _localStates: BlockStateRegistry = {};
   let dirname = path.dirname(file.identifier);
 
   return {
@@ -106,11 +100,10 @@ export default function importer(file: Template, analysis: Analysis, blockFactor
         return;
       }
 
-      // TODO: Make configurable
+      // TODO: Make import prefix configurable
       filepath = filepath.replace('cssblock!', '');
 
       // For each specifier in this block import statement:
-      let localState = '';
       let localName = '';
       let blockPath = path.resolve(dirname, filepath);
 
@@ -128,13 +121,6 @@ export default function importer(file: Template, analysis: Analysis, blockFactor
           _localBlocks[localName] = 1;
         }
 
-        // If this is a named import specifier, discover local state object name.
-        else if ( isImportSpecifier(specifier) ) {
-          if ( specifier.imported.name === STATE_IDENTIFIER ) {
-            localState = specifier.local.name;
-            _localStates[specifier.local.name] = 1;
-          }
-        }
       });
 
       // Try to fetch an existing Block Promise. If it does not exist, parse CSS Block.
@@ -148,7 +134,6 @@ export default function importer(file: Template, analysis: Analysis, blockFactor
       analysis.blockPromises.push(res);
       res.then((block) : Block => {
         analysis.blocks[localName] = block;
-        analysis.template.localStates[localName] = localState;
         return block;
       });
 
@@ -160,13 +145,13 @@ export default function importer(file: Template, analysis: Analysis, blockFactor
         if (!isIdentifier(decl.id)) {
           return;
         }
-        throwIfRegistered(decl.id.name, _localBlocks, _localStates);
+        throwIfRegistered(decl.id.name, _localBlocks);
       });
     },
 
     // Ensure no Class Declarations in this file override an imported Block name.
     ClassDeclaration(path: NodePath<ClassDeclaration>){
-      throwIfRegistered(path.node.id.name, _localBlocks, _localStates);
+      throwIfRegistered(path.node.id.name, _localBlocks);
     },
 
     // Ensure no Function Declarations in this file override an imported Block name.
@@ -174,11 +159,11 @@ export default function importer(file: Template, analysis: Analysis, blockFactor
       let node = path.node;
 
       if (isIdentifier(node.id)) {
-        throwIfRegistered(node.id.name, _localBlocks, _localStates);
+        throwIfRegistered(node.id.name, _localBlocks);
       }
 
       node.params.forEach((param: Identifier) => {
-        throwIfRegistered(param.name, _localBlocks, _localStates);
+        throwIfRegistered(param.name, _localBlocks);
       });
     }
   };

@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import * as babylon from 'babylon';
 import * as typescript from 'typescript';
 import traverse from 'babel-traverse';
@@ -8,8 +11,10 @@ import CSSBlocksJSXTransformer from './transformer';
 import Analysis, { Template, MetaAnalysis } from './utils/Analysis';
 import { Block, MultiTemplateAnalyzer, PluginOptionsReader as CssBlocksOptions, BlockFactory } from 'css-blocks';
 
-const fs = require('fs');
-const path = require('path');
+// `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
+if (!(<any>Object).values) {
+  require('object.values').shim();
+}
 
 /**
  * Requried shape of parser options object.
@@ -143,6 +148,9 @@ export function parse(data: string, factory: BlockFactory, opts: ParserOptions =
       analyses.forEach((analysis: Analysis) => {
         traverse(analysis.template.ast, analyzer(analysis));
         metaAnalysis.addAnalysis(analysis);
+        // No need to keep detailed template data anymore!
+        delete analysis.template.ast;
+        delete analysis.template.data;
       });
       return metaAnalysis;
     });
@@ -183,6 +191,9 @@ export function parseFile(file: string, factory: BlockFactory, opts: ParserOptio
       analyses.forEach((analysis: Analysis) => {
         traverse(analysis.template.ast, analyzer(analysis));
         metaAnalysis.addAnalysis(analysis);
+        // No need to keep detailed template data anymore!
+        delete analysis.template.ast;
+        delete analysis.template.data;
       });
       return metaAnalysis;
     });

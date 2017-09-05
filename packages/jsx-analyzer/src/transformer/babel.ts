@@ -1,27 +1,32 @@
-import { Block, BlockClass, State, StyleMapping, PluginOptionsReader } from 'css-blocks';
+import { BlockObject, StyleMapping, PluginOptionsReader } from 'css-blocks';
 import { NodePath, Binding } from 'babel-traverse';
+import {
+  CallExpression,
+  ImportDeclaration,
+  JSXOpeningElement,
+  JSXAttribute,
+  ObjectExpression,
+  ObjectProperty,
+  Program,
+  isCallExpression,
+  isIdentifier,
+  isImportDeclaration,
+  isJSXExpressionContainer,
+  isJSXIdentifier,
+  isJSXNamespacedName,
+  isMemberExpression,
+  isObjectExpression,
+  isObjectProperty,
+  isSpreadElement,
+  binaryExpression,
+  logicalExpression,
+  objectProperty,
+  stringLiteral,
+} from 'babel-types';
+
 import { ExpressionReader } from '../utils/ExpressionReader';
 import { Template } from '../utils/Analysis';
 import isBlockFilename from '../utils/isBlockFilename';
-import {
-  Program,
-  JSXOpeningElement,
-  JSXAttribute,
-  isJSXIdentifier,
-  isJSXExpressionContainer,
-  isIdentifier,
-  isVariableDeclarator,
-  isCallExpression,
-  isMemberExpression,
-  isJSXNamespacedName,
-  ImportDeclaration,
-  stringLiteral,
-  ObjectProperty,
-  isImportDeclaration,
-  isObjectExpression,
-  ObjectExpression,
-  isObjectProperty
-} from 'babel-types';
 
 let { parse } = require('path');
 
@@ -33,65 +38,17 @@ const CLASS_PROPERTIES = {
   'className': 1
 };
 
-// TODO: THis expression parsing logic can be abstracted out and shared
-//       with the analyzer in `utils/ExpressionReader.ts`.
-
-interface Expression {
-  blockName?: string | undefined;
-  className?: string | undefined;
-  groupName?: string | undefined;
-  stateName?: string | undefined;
-  block?: Block | undefined;
-  class?: BlockClass | undefined;
-  state?: State | undefined;
-  str: string;
-}
-
-function expParts(parts: ExpressionReader, mapping: StyleMapping<Template>): Expression {
-
-  let res: Expression = {
-    str: ''
-  };
-
-  // Fetch our possible block identifier parts.
-  res.blockName = parts.next();
-  res.block = mapping.blocks[res.blockName || ''];
-
-  if ( !res.block ) {
-    return res;
-  }
-
-  let stateIdentifier = mapping.template.localStates[res.blockName || ''];
-
-  res.className = parts.next();
-
-  // If we have encountered the state identifier, clean class name if needed
-  // (ex: a BlockState), fetch potential group and state names, then determine
-  // if we're dealing with a substate or state.
-  if (res.className === stateIdentifier || parts.next() === stateIdentifier) {
-    if ( res.className === stateIdentifier) {
-      res.className = undefined;
-    }
-
-    res.groupName = parts.next();
-    res.stateName = parts.next();
-
-    if ( !res.stateName ) {
-      res.stateName = res.groupName;
-      res.groupName = undefined;
-    }
-  }
-
-  // If this is a block reference, fetch the class referenced in this selector.
-  res.class = ( res.className ) ? res.block.getClass(res.className) : undefined;
-
-  // Now that we have our block or class, fetch the requested state object.
-  res.state = res.stateName && (res.class || res.block).states.getState(res.stateName, res.groupName) || undefined;
-
+function getBlockObjectClassnames(mapping: StyleMapping<Template>, test: BlockObject | undefined) : string {
   // Depending on the final block object we found, replace the property with the appropreate class.
-  res.str = (mapping.blockMappings.get(res.state || res.class || res.block) || []).join(' ');
-
-  return res;
+  // TODO: Babel, in some transform modes, will deep clone all options passed in.
+  //       This means we can't do a simple `blockMappings.get` on the mappings object and instead have to
+  //       test unique identifiers all the way up the block chain.
+  //       The deep clone issue passing mapping in through plugin options feels avoidable.
+  let list: string[] = [];
+  mapping.blockMappings.forEach((l, o) => {
+    if ( test && o.asSource() === test.asSource() && o.block.name === test.block.name ) { list = l; }
+  });
+  return list.join(' ');
 }
 
 /**
@@ -102,13 +59,13 @@ function expParts(parts: ExpressionReader, mapping: StyleMapping<Template>): Exp
  * @param func The Object String `CallExpression` to process.
  * @returns The array of `Property` values passed to Object String
  */
-function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>, func: any) {
-  let props: ObjectProperty[] = [];
+function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
 
   // If this node is not a call expression (ex: `objstr({})`), or is a complex
   // call expression that we'll have trouble analyzing (ex: `(true && objstr)({})`)
   // short circuit and continue execution.
-  if ( !isCallExpression(func) || !isIdentifier(func.callee) ) {
+  let func = path.node;
+  if ( !isCallExpression(path.node) || !isIdentifier(path.node.callee) ) {
     return;
   }
 
@@ -116,7 +73,7 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>, f
   let name = func.callee.name;
   let binding: Binding | undefined = path.scope.getBinding(name);
   if ( !binding ) {
-    throw new Error(`Variable "${name}" is undefined`);
+    return;
   }
 
   // If this call expression is not an `objstr` call, or is in a form we don't
@@ -127,7 +84,9 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>, f
     return;
   }
 
-  props = <ObjectProperty[]>(<ObjectExpression>func.arguments[0]).properties.filter(p => isObjectProperty(p));
+  // The object passed to objstr, and an array of all properties.
+  let obj: ObjectExpression = func.arguments[0] as ObjectExpression;
+  let props: ObjectProperty[] = obj.properties.filter(p => isObjectProperty(p)) as ObjectProperty[];
 
   if ( !props ) {
     throw new Error(`Class attribute value "${name}" must be either an "objstr" call, or a Block reference`);
@@ -142,14 +101,59 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>, f
     }
 
     // Get expression from computed property name.
-    let parts: ExpressionReader = new ExpressionReader(prop.key);
+    let parts: ExpressionReader = new ExpressionReader(prop.key, mapping);
+    if ( !parts.concerns.length ) { return; }
 
-    // Parse the expression to fetch class mapping
-    let exp: Expression = expParts(parts, mapping);
+    // If there is more than one BlockObject concern related to this expresison,
+    // start the one to many objstr rewrite.
+    // For each state in this state group, construct the logic expression using
+    // the value passed into the CSS Block State "function" and the value of
+    // the existing objstr property, and add to the objstr call.
+    // Ex:
+    //     objstr({
+    //       [block.state(expr1)]: expr2
+    //     })
+    //
+    //     transforms to
+    //
+    //     objstr({
+    //       'block--state-substate1': expr1 === 'substate1' && expr2,
+    //       'block--state-substate2': expr1 === 'substate2' && expr2
+    //     })
+    if ( parts.isDynamic ) {
 
-    // Replace with new string
-    if ( exp.block ) {
-      prop.key = stringLiteral(exp.str);
+      // Remove the old property.
+      obj.properties.splice(obj.properties.indexOf(prop), 1);
+
+      let condition1 = (prop.key as CallExpression).arguments[0];
+      let condition2 = prop.value;
+
+      parts.concerns.forEach( (state) => {
+        let className = getBlockObjectClassnames(mapping, state);
+
+        if ( !className ) {
+          throw new Error(`No class name found for state "${state.asSource()}".`);
+        }
+
+        if ( isSpreadElement(condition1) ) {
+          throw new Error(`The spread operator is not allowed in CSS Block states.`);
+        }
+
+        let propKey = stringLiteral(className);
+        let expr1 = binaryExpression('===', condition1, stringLiteral(state.name));
+        let expr2 = logicalExpression('&&', expr1, condition2);
+        obj.properties.push(objectProperty(propKey, expr2));
+
+      });
+    }
+
+    // If not a dynamic substate, simply replace with new string.
+    else {
+      let className = getBlockObjectClassnames(mapping, parts.concerns[0]);
+      if ( className ) {
+        prop.key = stringLiteral(className);
+        prop.computed = false;
+      }
     }
 
   });
@@ -192,6 +196,16 @@ export default function transform(): any {
         }
       },
 
+      // Find all objstr call expressions. Parse as though a single element's styles.
+      CallExpression(path: NodePath<CallExpression>, state: any): void {
+
+        if ( !shouldProcess ) {
+          return;
+        }
+
+        swapObjstrProps(mapping, path);
+      },
+
       JSXOpeningElement(path: NodePath<JSXOpeningElement>, state: any): void {
 
         if ( !shouldProcess ) {
@@ -214,65 +228,37 @@ export default function transform(): any {
           // If processing class names
           if ( isJSXIdentifier(property) && CLASS_PROPERTIES[property.name] ) {
 
-            // If this attribute's value is an expression, evaluate it for block references.
-            if ( isJSXExpressionContainer(value) ) {
+            // If this attribute's value is not an expression, skip.
+            if ( !isJSXExpressionContainer(value) ) { return; }
 
-              // Discover identifiers we are concerned with. These include Block root
-              // references and `objstr` references in scope that contain block objects.
-              // ex: `blockname` || `objstrVar`
-              if ( isIdentifier(value.expression) ) {
+            // Discover identifiers we are concerned with. These include Block root
+            // references and `objstr` references in scope that contain block objects.
+            // ex: `blockname` || `objstrVar`
+            if ( isIdentifier(value.expression) ) {
 
-                let name = value.expression.name;
+              let name = value.expression.name;
 
-                // Check if there is a block of this name imported. If so, add style and exit.
-                if ( mapping.blocks[name] ) {
-                  let block = mapping.blocks[name];
-                  let str = (mapping.blockMappings.get(block) || '')[0];
-                  attr.value = stringLiteral(str);
-                  return;
-                }
-
-                // If there is no `name` in scope, throw
-                let binding: Binding | undefined = path.scope.getBinding(name);
-                if ( !binding ) {
-                  throw new Error(`Variable "${name}" is undefined`);
-                }
-
-                // Yup, `any`. We're about to do a lot of type checking
-                let objstr: any = binding.path.node;
-
-                // We most likely got a varialbe declarator, unwrap the value. We're
-                // going to test if its the objstr call.
-                if ( isVariableDeclarator(objstr) ) {
-                  objstr = objstr.init;
-                }
-
-                // Optimistically assume we have an objstr call and try to save it.
-                // Will fail silently and continue with exection if it is not an objstr call.
-                swapObjstrProps(mapping, path, objstr);
-
+              // Check if there is a block of this name imported. If so, add style and exit.
+              if ( mapping.blocks[name] ) {
+                let block = mapping.blocks[name];
+                let str = getBlockObjectClassnames(mapping, block);
+                attr.value = stringLiteral(str);
+                return;
               }
 
-              // If we discover an inlined call expression, assume it is an objstr call
-              // until proven otherwise. Fails silently and continues with execution if is not.
-              if ( isCallExpression(value.expression) ) {
-                swapObjstrProps(mapping, path, value.expression);
-              }
+            }
 
-              // Discover direct references to an imported block.
-              // Ex: `blockName.foo` || `blockname['bar']`
-              if ( isMemberExpression(value.expression) ) {
-                let expression: any = value.expression;
-                let parts: ExpressionReader = new ExpressionReader(expression);
+            // Discover direct references to an imported block.
+            // Ex: `blockName.foo` || `blockname['bar']` || blockname.foo()
+            if ( isMemberExpression(value.expression) || isCallExpression(value.expression) ) {
+              let expression: any = value.expression;
+              let parts: ExpressionReader = new ExpressionReader(expression, mapping);
 
-                // Parse the expression to fetch class mapping
-                let exp: Expression = expParts(parts, mapping);
-
-                // Replace with new string
-                if ( exp.block ) {
-                  attr.value = stringLiteral(exp.str);
-                }
-              }
+              // Replace with new string
+              parts.concerns.forEach( (obj) => {
+                let className = getBlockObjectClassnames(mapping, obj);
+                if ( className ) { attr.value = stringLiteral(className); }
+              });
             }
           }
 

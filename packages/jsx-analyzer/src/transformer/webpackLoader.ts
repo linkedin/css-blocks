@@ -39,8 +39,8 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
 
   let cssFileNames = Object.keys(this.cssBlocks.mappings);
   let cssBlockOpts: PluginOptionsReader = new PluginOptionsReader(this.cssBlocks.compilationOptions);
-  rewriter.cssBlockOptions = cssBlockOpts;
   let metaMappingPromises = new Array<Promise<MetaStyleMapping<Template>>>();
+
   cssFileNames.forEach(filename => {
     metaMappingPromises.push(this.cssBlocks.mappings[filename]);
   });

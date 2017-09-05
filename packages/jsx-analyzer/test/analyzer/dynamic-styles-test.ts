@@ -5,7 +5,7 @@ import { testParse as parse } from '../util';
 
 const mock = require('mock-fs');
 
-@suite('Dynamic Styles')
+@suite('Analyzer | Dynamic Styles')
 export class Test {
 
   @test 'Objstr where value is a literal are not marked dynamic'(){
@@ -38,8 +38,8 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 6);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 6);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -71,8 +71,8 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 5);
-      assert.equal(analysis.getDynamicStyles().size, 5);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 5);
+      assert.equal(analysis.getAnalysis(0).getElement(0).dynamic.size, 5);
     });
   }
 
@@ -98,8 +98,8 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 6);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 6);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -124,8 +124,8 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 5);
-      assert.equal(analysis.getDynamicStyles().size, 5);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 5);
+      assert.equal(analysis.dynamicCount(), 5);
     });
   }
 }

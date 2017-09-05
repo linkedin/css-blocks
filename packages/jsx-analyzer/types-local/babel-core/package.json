@@ -1,0 +1,86 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "@types/babel-core@6.7.14",
+        "scope": "@types",
+        "escapedName": "@types%2fbabel-core",
+        "name": "@types/babel-core",
+        "rawSpec": "6.7.14",
+        "spec": "6.7.14",
+        "type": "version"
+      },
+      "/export/content/data/ELR_REQUESTS/7730"
+    ]
+  ],
+  "_from": "@types/babel-core@^6.7.14",
+  "_id": "@types/babel-core@6.7.14",
+  "_inBundle": false,
+  "_inCache": true,
+  "_integrity": "sha1-550DqmpfBAwirOw/t51vwCvVRUo=",
+  "_location": "/@types/babel-core",
+  "_npmOperationalInternal": {
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/babel-core-6.7.14.tgz_1474302036857_0.7637113167438656"
+  },
+  "_npmUser": {
+    "name": "types",
+    "email": "ts-npm-types@microsoft.com"
+  },
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "@types/babel-core@^6.7.14",
+    "name": "@types/babel-core",
+    "escapedName": "@types%2fbabel-core",
+    "scope": "@types",
+    "rawSpec": "^6.7.14",
+    "saveSpec": null,
+    "fetchSpec": "^6.7.14"
+  },
+  "_requiredBy": [
+    "#DEV:/"
+  ],
+  "_resolved": "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@types/babel-core/-/@types/babel-core-6.7.14.tgz",
+  "_shasum": "e79d03aa6a5f040c22acec3fb79d6fc02bd5454a",
+  "_shrinkwrap": null,
+  "_spec": "@types/babel-core@^6.7.14",
+  "_where": "/Users/ammiller/Github/jsx-analyzer",
+  "author": {
+    "name": "Troy Gerwien",
+    "email": "https://github.com/yortus"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "@types/babel-template": "*",
+    "@types/babel-traverse": "*",
+    "@types/babel-types": "*"
+  },
+  "deprecated": false,
+  "description": "TypeScript definitions for babel-core v6.7",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "a08c900a98e8987c1a98d2ea4fa0a1805a7d131f",
+    "tarball": "https://registry.npmjs.org/@types/babel-core/-/babel-core-6.7.14.tgz"
+  },
+  "license": "MIT",
+  "main": "",
+  "maintainers": [
+    {
+      "name": "types",
+      "email": "ryan.cavanaugh@microsoft.com"
+    }
+  ],
+  "name": "@types/babel-core",
+  "optionalDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://www.github.com/DefinitelyTyped/DefinitelyTyped.git"
+  },
+  "scripts": {},
+  "typesPublisherContentHash": "2d550befa083c32707f54767d78e1c72f420940facd52537e518d413e6de4b85",
+  "typings": "index.d.ts",
+  "version": "6.7.14"
+}

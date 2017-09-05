@@ -5,7 +5,7 @@ import { testParse as parse } from '../util';
 
 const mock = require('mock-fs');
 
-@suite('Inline Class Styles')
+@suite('Analyzer | Inline Class Styles')
 export class Test {
 
   @test 'Elements with classes applied are tracked'() {
@@ -21,14 +21,14 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 2);
-      let styleIter = analysis.getStyles().entries();
+      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
+      let styleIter = analysis.getAnalysis(0).stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.root');
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
-      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 2);
-      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCorrelations[1].size, 1);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).elementCount(), 2);
+      assert.equal(analysis.getAnalysis(0).getElement(0).static.size, 1);
+      assert.equal(analysis.getAnalysis(0).getElement(1).static.size, 1);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -45,14 +45,14 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 2);
-      let styleIter = analysis.getStyles().entries();
+      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
+      let styleIter = analysis.getAnalysis(0).stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.root');
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
-      assert.equal(analysis.getAnalysis(0).styleCorrelations.length, 2);
-      assert.equal(analysis.getAnalysis(0).styleCorrelations[0].size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCorrelations[1].size, 1);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).elementCount(), 2);
+      assert.equal(analysis.getAnalysis(0).getElement(0).static.size, 1);
+      assert.equal(analysis.getAnalysis(0).getElement(1).static.size, 1);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -73,7 +73,7 @@ export class Test {
     });
   }
 
-  @test 'Throw when referencing block object out of depth'() {
+  @test 'Throw when referencing non-existant substate'() {
     mock({
       'bar.block.css': `
         .root { color: red; }
@@ -85,12 +85,12 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       function render(){
-        return ( <div class={bar}> <div class={bar.foo.baz}> </div> </div> );
+        return ( <div class={bar}> <div class={bar.foo.baz.biz}> </div> </div> );
       }`
     ).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, 'Attempted to access non-existant block class or state "bar.foo.baz"');
+      assert.equal(err.message, 'No state [state|baz=biz] found on block "bar".\n  Did you mean: .foo[state|baz]?');
     });
   }
 }

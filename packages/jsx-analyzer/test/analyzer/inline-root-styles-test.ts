@@ -5,7 +5,7 @@ import { testParse as parse } from '../util';
 
 const mock = require('mock-fs');
 
-@suite('Inline Root Styles')
+@suite('Analyzer | Inline Root Styles')
 export class Test {
 
   @test 'Elements with root applied are tracked on attribute `class`'(){
@@ -21,7 +21,7 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
     });
   }
 
@@ -38,8 +38,8 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -56,8 +56,8 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -74,7 +74,7 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
     });
   }
 
@@ -91,7 +91,7 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
     });
   }
 

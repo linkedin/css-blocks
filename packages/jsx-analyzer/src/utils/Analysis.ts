@@ -1,6 +1,5 @@
 import { TemplateAnalysis,
          Block,
-         BlockObject,
          TemplateInfo,
          MetaTemplateAnalysis,
          TemplateInfoFactory,
@@ -12,7 +11,6 @@ import { File } from 'babel-types';
 export class Template extends TemplateInfo {
 
   static typeName = 'CssBlocks.JSXTemplateInfo';
-  localStates: { [blockName: string]: string } = {};
   data: string;
   ast: File;
 
@@ -87,11 +85,4 @@ export class MetaAnalysis extends MetaTemplateAnalysis<Template> {
     return this.analyses[idx] as Analysis;
   }
 
-  getStyles(): Map<BlockObject, Analysis[]> {
-    return this.stylesFound as Map<BlockObject, Analysis[]>;
-  }
-
-  getDynamicStyles(): Map<BlockObject, Analysis[]> {
-    return this.dynamicStyles as Map<BlockObject, Analysis[]>;
-  }
 }

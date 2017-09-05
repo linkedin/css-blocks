@@ -6,7 +6,7 @@ import { testParse as parse } from '../util';
 
 const mock = require('mock-fs');
 
-@suite('External Objstr Root Styles')
+@suite('Analyzer | External Objstr Root Styles')
 export class Test {
   @test 'exists'() {
     assert.equal(typeof analyzer, 'function');
@@ -31,8 +31,8 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -55,7 +55,7 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
     });
   }
 
@@ -78,7 +78,7 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
     });
   }
 
@@ -101,7 +101,7 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
     });
   }
 
@@ -124,7 +124,7 @@ export class Test {
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
     });
   }
 

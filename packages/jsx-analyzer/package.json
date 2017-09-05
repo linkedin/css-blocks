@@ -10,7 +10,7 @@
   "scripts": {
     "test": "npm run build && npm run tslint && mocha dist/test --recursive --opts test/mocha.opts",
     "build": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
-    "watch": "watch 'npm run build' './src' --wait=3",
+    "watch": "watch 'npm run test' './src' './test' --wait=3",
     "tslint": "tslint --project tsconfig.json --type-check"
   },
   "repository": {
@@ -32,11 +32,13 @@
   },
   "homepage": "https://github.com/css-blocks/jsx-analyzer#readme",
   "devDependencies": {
-    "@types/babel-core": "^6.7.14",
-    "@types/babel-traverse": "^6.7.17",
+    "@types/babel-generator": "^6.25.0",
+    "@types/babel-traverse": "^6.25.2",
     "@types/babel-types": "^6.7.16",
     "@types/babylon": "^6.16.1",
     "@types/chai": "^3.5.2",
+    "@types/debug": "0.0.29",
+    "@types/minimatch": "^2.0.29",
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.18",
     "babel-core": "^6.25.0",
@@ -56,14 +58,13 @@
     "watch": "^1.0.2"
   },
   "dependencies": {
-    "@types/debug": "0.0.29",
-    "@types/minimatch": "^2.0.29",
     "babel-traverse": "^6.24.1",
     "babel-types": "^6.24.1",
     "babylon": "^6.17.4",
     "css-blocks": "^0.11.0",
     "debug": "^2.6.8",
     "minimatch": "^3.0.4",
+    "object.values": "^1.0.4",
     "postcss": "^6.0.1",
     "typescript": "^2.3.4"
   }

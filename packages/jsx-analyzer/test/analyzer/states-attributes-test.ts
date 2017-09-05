@@ -5,7 +5,7 @@ import { testParse as parse } from '../util';
 
 const mock = require('mock-fs');
 
-@suite('State Attributes')
+@suite('Analyzer | State Attributes')
 export class Test {
 
   @skip @test 'States with substates are tracked'(){
@@ -25,8 +25,8 @@ export class Test {
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 2);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -50,8 +50,8 @@ export class Test {
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 2);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -75,8 +75,8 @@ export class Test {
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 3);
-      assert.equal(analysis.getDynamicStyles().size, 2);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 3);
+      assert.equal(analysis.dynamicCount(), 2);
     });
   }
 
@@ -97,8 +97,8 @@ export class Test {
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 2);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -119,8 +119,8 @@ export class Test {
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 2);
-      assert.equal(analysis.getDynamicStyles().size, 0);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
+      assert.equal(analysis.dynamicCount(), 0);
     });
   }
 
@@ -141,8 +141,8 @@ export class Test {
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getStyles().size, 2);
-      assert.equal(analysis.getDynamicStyles().size, 1);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
+      assert.equal(analysis.dynamicCount(), 1);
     });
   }
 }

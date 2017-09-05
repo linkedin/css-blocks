@@ -1,27 +1,27 @@
-import Analysis from '../utils/Analysis';
-import * as debugGenerator from 'debug';
 import { NodePath, Binding } from 'babel-traverse';
-import { Block, BlockClass, State, StateContainer } from 'css-blocks';
+import { Block, BlockClass, State } from 'css-blocks';
+import {
+  CallExpression,
+  JSXOpeningElement,
+  JSXAttribute,
+  ObjectMethod,
+  ObjectProperty,
+  SpreadProperty,
+  isCallExpression,
+  isIdentifier,
+  isImportDeclaration,
+  isJSXExpressionContainer,
+  isJSXIdentifier,
+  isJSXNamespacedName,
+  isLiteral,
+  isMemberExpression,
+  isObjectExpression,
+  isObjectProperty,
+  isStringLiteral
+} from 'babel-types';
+
+import Analysis from '../utils/Analysis';
 import { ExpressionReader } from '../utils/ExpressionReader';
-import { JSXOpeningElement,
-         JSXAttribute,
-         isJSXIdentifier,
-         isJSXNamespacedName,
-         isMemberExpression,
-         isJSXExpressionContainer,
-         isStringLiteral,
-         isIdentifier,
-         isVariableDeclarator,
-         isCallExpression,
-         isObjectExpression,
-         ObjectProperty,
-         isObjectProperty,
-         SpreadProperty,
-         ObjectMethod,
-         ObjectExpression,
-         isImportDeclaration,
-         isLiteral
-       } from 'babel-types';
 
 const OBJSTR_PACKAGE_NAME = 'obj-str';
 const STATE_NAMESPACE = 'state';
@@ -32,23 +32,20 @@ const CLASS_PROPERTIES = {
   'className': 1
 };
 
-const debug = debugGenerator('css-blocks:jsx');
-
 type Property = ObjectProperty | SpreadProperty | ObjectMethod;
 
 /**
- * Given a well formed Object String `CallExpression`, return the Array of `Property`
- * objects passed to it. If input is not a well formed Object String, return empty array.
- * @param path The current Path we are observing for access to scope.
- * @param fund The suspected Object String `CallExpression` to process.
- * @returns The array of `Property` values passed to Object String
+ * Given a well formed Object String `CallExpression`, add all Block style references
+ * to the given analysis object.
+ * @param analysis Theis template's analysis object.
+ * @param path The objstr CallExpression Path.
  */
-function saveObjstrProps(analysis: Analysis, path: NodePath<any>, func: any) {
-  let props: Property[] = [];
+function saveObjstrProps(analysis: Analysis, path: any) {
 
   // If this node is not a call expression (ex: `objstr({})`), or is a complex
   // call expression that we'll have trouble analyzing (ex: `(true && objstr)({})`)
   // short circuit and continue execution.
+  let func: CallExpression = path.node;
   if ( !isCallExpression(func) || !isIdentifier(func.callee) ) {
     return;
   }
@@ -56,9 +53,7 @@ function saveObjstrProps(analysis: Analysis, path: NodePath<any>, func: any) {
   // Fetch the function name. If we can't get the name, or the function is not in scope, throw
   let name = func.callee.name;
   let binding: Binding | undefined = path.scope.getBinding(name);
-  if ( !binding ) {
-    throw new Error(`Variable "${name}" is undefined`);
-  }
+  if ( !binding ) { return; }
 
   // If this call expression is not an `objstr` call, or is in a form we don't
   // recognize (Ex: first arg is not an object), short circuit and continue execution.
@@ -68,130 +63,50 @@ function saveObjstrProps(analysis: Analysis, path: NodePath<any>, func: any) {
     return;
   }
 
-  props = (<ObjectExpression>func.arguments[0]).properties;
+  // We consider every `objstr` call a single element's styles. Start a new element.
+  analysis.startElement({
+    line: path.node.loc.start.line,
+    column: path.node.loc.start.column,
+  });
 
-  if ( !props ) {
-    throw new Error(`Class attribute value "${name}" must be either an "objstr" call, or a Block reference`);
+  // Ensure the first argument passed to suspected `objstr` call is an object.
+  let obj: any = func.arguments[0];
+  if ( !isObjectExpression(obj) ) {
+    throw new Error(`Class attribute value "${name}" must either be a valid "objstr" call, or a Block reference`);
   }
 
   // For each property passed to objstr, parse the expression and attempt to save the style.
-  props.forEach((prop: Property) => {
+  obj.properties.forEach((prop: Property) => {
 
     // Ignore non computed properties, they will never be blocks objects.
     if ( !isObjectProperty(prop) || prop.computed === false ) {
       return;
     }
 
-    // Get expression from computed property name.
-    let parts: ExpressionReader = new ExpressionReader(prop.key);
-    saveStyle(parts, analysis, !isLiteral(prop.value));
+    // Get expression from computed property name and save to analysis.
+    let parts: ExpressionReader = new ExpressionReader(prop.key, analysis);
+
+    // Save all discovered BlockObjects to analysis
+    parts.concerns.forEach( (style) => {
+      analysis.addStyle(style, !isLiteral(prop.value));
+    });
 
   });
+
+  analysis.endElement();
 }
 
 /**
- * Given an array of expression string identifiers, fetch the corrosponding Block
- * Object, validate its existence, and register it properly with our `Analytics`
- * reporter.
- * @param parts The array of strings representing expression identifiers.
- * @param analysis The Analysis object with Block data and to store our results in.
- * @param isDynamic If the style to save is dynamic.
+ * Babel visitors we can pass to `babel-traverse` to run analysis on a given JSX file.
+ * @param analysis The Analysis object to store our results in.
  */
-function saveStyle(reader: ExpressionReader, analysis: Analysis, isDynamic = false): void {
-  let part: string | undefined;
-  let blockName: string | undefined;
-  let className: string | undefined;
-  let stateName: string | undefined;
-  let substateName: string | undefined;
-
-  // If nothing here, we don't care!
-  if ( reader.length === 0 ) {
-    return;
-  }
-
-  while ( part = reader.next() ){
-    if ( !blockName ) {
-      blockName = part;
-    }
-    else if ( analysis.template.localStates[blockName] === part ) {
-      stateName = reader.next();
-      substateName = reader.next();
-    }
-    else if ( !className ) {
-      className = part;
-    }
-    // If the user is referencing something deeper than allowed, throw.
-    else {
-      throw new Error(`Attempted to access non-existant block class or state "${reader.toString()}"`);
-    }
-  }
-
-  // If there is no block imported under this local name, this is a class
-  // we don't care about. Return.
-  let block: Block | undefined = blockName ? analysis.blocks[blockName] : undefined;
-  if ( !block ) {
-    return;
-  }
-
-  let stateContainer: StateContainer | undefined = undefined;
-
-  // If applying the root styles, either by `class="block.root"` or `class="block"`
-  if ( className === 'root' || ( !className ) ) {
-
-    if ( stateName ) {
-      debug(`state ${stateName} is a block-level state.`);
-      stateContainer = block.states;
-    }
-    else {
-      analysis.addStyle(block, isDynamic);
-    }
-  }
-
-  // Otherwise, fetch the class referenced in this selector. If it exists, add.
-  else {
-    let classBlock: BlockClass | undefined = className ? block.getClass(className) : undefined;
-    if ( !classBlock ){
-      throw new Error(`No class named "${className}" found on block "${blockName}"`);
-    }
-
-    if ( stateName ) {
-      debug(`state ${stateName} is a class-level state for ${className}`);
-      stateContainer = classBlock.states;
-    }
-    else {
-      analysis.addStyle(classBlock, isDynamic);
-    }
-  }
-  if (stateContainer && stateName) {
-    let statesInGroupMaybe = stateContainer.resolveGroup(stateName, substateName);
-    if (statesInGroupMaybe) {
-      let statesInGroup = statesInGroupMaybe; // for typesafety
-      Object.keys(statesInGroup).forEach((stateName) => {
-        analysis.addStyle(statesInGroup[stateName], isDynamic);
-      });
-    } else {
-      let knownStates: State[] | undefined;
-      let allSubstates = stateContainer.resolveGroup(stateName);
-      if (allSubstates) {
-        let ass = allSubstates;
-        knownStates = Object.keys(allSubstates).map(k => ass[k]);
-      }
-      let message = `No state [state|${stateName}=${substateName}] found on block "${block.name}".`;
-      if (knownStates) {
-        if (knownStates.length === 1) {
-          message += `\n  Did you mean: ${knownStates[0].asSource()}?`;
-        } else {
-          message += `\n  Did you mean one of: ${knownStates.map(s => s.asSource()).join(', ')}?`;
-        }
-      }
-      throw new Error(message);
-    }
-  }
-}
-
-// Consolidate all visitors into a hash that we can pass to `babel-traverse`
 export default function visitors(analysis: Analysis): object {
   return {
+
+    // Find all objstr class expressions. Parse as though a single element's styles.
+    CallExpression(path: NodePath<CallExpression>, state: any): void {
+      saveObjstrProps(analysis, path);
+    },
 
     /**
      * Primary analytics parser for Babylon. Crawls all JSX Elements and their attributes
@@ -224,53 +139,27 @@ export default function visitors(analysis: Analysis): object {
           // If this attribute's value is an expression, evaluate it for block references.
           if ( isJSXExpressionContainer(value) ) {
 
-            // Discover identifiers we are concerned with. These include Block root
-            // references and `objstr` references in scope that contain block objects.
-            // ex: `blockname` || `objstrVar`
+            // Discover block root identifiers.
             if ( isIdentifier(value.expression) ) {
               let identifier = value.expression;
               let name = identifier.name;
 
-              // Check if there is a block of this name imported. If so, add style and exit.
+              // Check if there is a block of this name imported. If so, save style and exit.
               let block: Block | undefined = analysis.blocks[name];
               if ( block ) {
                 analysis.addStyle(block);
                 return;
               }
-
-              // If there is no `name` in scope, throw
-              let binding: Binding | undefined = path.scope.getBinding(name);
-              if ( !binding ) {
-                throw new Error(`Variable "${name}" is undefined`);
-              }
-
-              // Yup, `any`. We're about to do a lot of type checking
-              let objstr: any = binding.path.node;
-
-              // We most likely got a varialbe declarator, unwrap the value. We're
-              // going to test if its the objstr call.
-              if ( isVariableDeclarator(objstr) ) {
-                objstr = objstr.init;
-              }
-
-              // Optimistically assume we have an objstr call and try to save it.
-              // Will fail silently and continue with exection if it is not an objstr call.
-              saveObjstrProps(analysis, path, objstr);
-
-            }
-
-            // If we discover an inlined call expression, assume it is an objstr call
-            // until proven otherwise. Fails silently and continues with execution if is not.
-            if ( isCallExpression(value.expression) ) {
-              saveObjstrProps(analysis, path, value.expression);
             }
 
             // Discover direct references to an imported block.
-            // Ex: `blockName.foo` || `blockname['bar']`
-            if ( isMemberExpression(value.expression) ) {
+            // Ex: `blockName.foo` || `blockname['bar']` || `blockname.bar()`
+            if ( isMemberExpression(value.expression) || isCallExpression(value.expression) ) {
               let expression: any = value.expression;
-              let parts: ExpressionReader = new ExpressionReader(expression);
-              saveStyle(parts, analysis, false);
+              let parts: ExpressionReader = new ExpressionReader(expression, analysis);
+              parts.concerns.forEach( (style) => {
+                analysis.addStyle(style, false);
+              });
             }
           }
         }
@@ -285,7 +174,7 @@ export default function visitors(analysis: Analysis): object {
           }
 
           // Fetch selector parts and look for a block under the local name.
-          let reader: ExpressionReader = new ExpressionReader(property.name);
+          let reader: ExpressionReader = new ExpressionReader(property.name, analysis);
           let blockName: string | undefined = reader.next();
           let className: string | undefined = reader.next();
           let stateName: string | undefined = reader.next() || className;
