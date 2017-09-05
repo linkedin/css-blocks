@@ -245,39 +245,6 @@ export class Test {
     });
   }
 
-  @test 'States with static substates are transformed when inline'(){
-    mock({
-      'bar.block.css': `
-        .root { color: blue; }
-        .pretty { color: red; }
-        .pretty[state|color=yellow] {
-          color: yellow;
-        }
-        .pretty[state|color=green] {
-          color: green;
-        }
-      `
-    });
-
-    let code = `
-      import bar from 'bar.block.css';
-      import objstr from 'obj-str';
-
-      <div class={bar}><div class={bar.pretty.color('yellow')}></div></div>;
-    `;
-
-    return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
-
-      let res = transform(code, analysis);
-
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
-
-        <div class="bar"><div class="bar__pretty--color-yellow"></div></div>;`));
-    });
-  }
-
   @test 'Gracefully handles conflicting BlockObject names.'(){
     mock({
       'bar.block.css': `

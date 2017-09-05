@@ -167,16 +167,19 @@ export class Test {
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
       let ohgod = true;
-      let style = objstr({
+      let style1 = objstr({
+        [bar.pretty]: true,
+        [bar.pretty.awesome()]: true
+      });
+      let style2 = objstr({
         [bar]: true,
         [bar.awesome()]: true,
-        [bar.pretty.awesome()]: true
       });
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 3);
+      assert.equal(analysis.getAnalysis(0).styleCount(), 4);
     });
   }
 
