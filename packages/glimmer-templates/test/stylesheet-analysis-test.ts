@@ -20,7 +20,11 @@ describe('Stylesheet analysis', function() {
         "": "glimmer:stylesheet:/styled-app/components/my-app" // I think the identifier shouldn't be the resolved value from glimmer.
       });
       assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" ,".root", "[state|is-loading]"]);
-      assert.deepEqual(serializedAnalysis.styleCorrelations, [[2, 3], [0, 1]]);
+      assert.deepEqual(serializedAnalysis.elements, {
+        el_a: { static: [ 2, 3 ], dynamic: [], correlations: [], loc: {} },
+        /* el_b has no styles, so isn't added to analysis */
+        el_c: { static: [ 0, 1 ], dynamic: [], correlations: [], loc: {} }
+      });
 
       // deserialize and re-serialize to make sure it creates the same representation.
       let factory = new BlockFactory(analyzer.project.cssBlocksOpts, postcss);
@@ -45,7 +49,11 @@ describe('Stylesheet analysis', function() {
         "h": fixture("styled-app/src/ui/components/with-multiple-blocks/header.css")
       });
       assert.deepEqual(analysis.stylesFound, [".root", ".world", ".world[state|thick]", "h.emphasis", "h.emphasis[state|extra]", "h.root"]);
-      assert.deepEqual(analysis.styleCorrelations, [[1, 2, 3, 4]]);
+      assert.deepEqual(analysis.elements, {
+        el_a: { static: [ 0 ], dynamic: [], correlations: [], loc: {} },
+        el_b: { static: [ 5 ], dynamic: [], correlations: [], loc: {} },
+        el_c: { static: [ 1, 2, 3, 4 ], dynamic: [], correlations: [], loc: {} }
+      });
     }).catch((error) => {
       console.error(error);
       throw error;
@@ -71,14 +79,11 @@ describe('Stylesheet analysis', function() {
          'h.emphasis[state|style=italic]',
          'h.root'
       ]);
-      assert.deepEqual(analysis.styleCorrelations, [
-        [ 1, 2, 3, 4 ],
-        [ 1, 3, 4 ],
-        [ 1, 2, 3, 5 ],
-        [ 1, 3, 5 ],
-        [ 1, 2, 3 ],
-        [ 1, 3 ]
-      ]);
+      assert.deepEqual(analysis.elements, {
+        el_a: { static: [ 0 ], dynamic: [], correlations: [], loc: {} },
+        el_b: { static: [ 6 ], dynamic: [], correlations: [], loc: {} },
+        el_c: { static: [ 1, 3 ], dynamic: [], correlations: [ [ -1, 4, 5 ], [ -1, 2 ] ], loc: {} }
+      });
     }).catch((error) => {
       console.error(error);
       throw error;
@@ -106,20 +111,13 @@ describe('Stylesheet analysis', function() {
          'h.root',
          't.underline'
       ]);
-      assert.deepEqual(analysis.styleCorrelations, [
-        [ 2, 3, 4, 7 ],
-        [ 1, 2, 3, 4, 7 ],
-        [ 3, 4, 7 ],
-        [ 1, 3, 4, 7 ],
-        [ 2, 3, 5, 7 ],
-        [ 1, 2, 3, 5, 7 ],
-        [ 3, 5, 7 ],
-        [ 1, 3, 5, 7 ],
-        [ 2, 3, 7 ],
-        [ 1, 2, 3, 7 ],
-        [ 3, 7 ],
-        [ 1, 3, 7 ]
-      ]);
+      assert.deepEqual(analysis.elements, { el_a: { static: [ 0 ], dynamic: [], correlations: [], loc: {} },
+        el_b: { static: [ 6 ], dynamic: [], correlations: [], loc: {} },
+        el_c: { static: [ 3, 7 ], dynamic: [ 1 ], correlations: [ [ -1, 4, 5 ], [ -1, 2 ] ], loc: {} },
+        el_d: { static: [], dynamic: [], correlations: [ [ 1, 3 ] ], loc: {} },
+        el_e: { static: [], dynamic: [], correlations: [ [ 1, 3 ] ], loc: {} },
+        el_f: { static: [], dynamic: [ 1 ], correlations: [], loc: {} }
+      });
     }).catch((error) => {
       console.error(error);
       throw error;

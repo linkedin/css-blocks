@@ -117,8 +117,8 @@ export class BaseStyleAnalyzer {
         },
       });
       if (this.debug.enabled) {
-        if (analysis.currentCorrelations && analysis.currentCorrelations.length >= 1) {
-          let objects = analysis.currentCorrelations.map(l => new Array(...l).map(o => o.asSource()));
+        if (analysis.currentElement) {
+          let objects = analysis.currentElement.correlations.map(l => new Array(...l).map(o => o && o.asSource()));
           this.debug(`Found correlated styles: ${objects.join(', ')}`);
         }
       }
