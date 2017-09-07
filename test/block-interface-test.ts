@@ -30,7 +30,7 @@ export class BlockInterfaceTests extends BEMProcessor {
     );
 
     let filename = "foo/bar/implements.css";
-    let inputCSS = `@block-reference "./base.css";
+    let inputCSS = `@block-reference base from "./base.css";
                     .root { implements: base; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}`;
@@ -60,8 +60,8 @@ export class BlockInterfaceTests extends BEMProcessor {
     );
 
     let filename = "foo/bar/implements.css";
-    let inputCSS = `@block-reference "./base.css";
-                    @block-reference "./other.css";
+    let inputCSS = `@block-reference base from "./base.css";
+                    @block-reference other from "./other.css";
                     .root { implements: base, other; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}

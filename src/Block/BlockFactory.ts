@@ -40,6 +40,7 @@ export class BlockFactory implements IBlockFactory {
   postcssImpl: typeof postcss;
   importer: Importer;
   options: CssBlockOptionsReadonly;
+  blockNames: {[name: string]: number};
   parser: BlockParser;
   preprocessors: Preprocessors;
   private promises: {
@@ -61,6 +62,7 @@ export class BlockFactory implements IBlockFactory {
     this.preprocessors = this.options.preprocessors;
     this.parser = new BlockParser(this.postcssImpl, options, this);
     this.blocks = {};
+    this.blockNames = {};
     this.promises = {};
     this.paths = {};
     this.preprocessQueue = new PromiseQueue(this.options.maxConcurrentCompiles, (item: PreprocessJob) => {
@@ -71,6 +73,7 @@ export class BlockFactory implements IBlockFactory {
     this.blocks = {};
     this.paths = {};
     this.promises = {};
+    this.blockNames = {};
   }
   /**
    * In some cases (like when using preprocessors with native bindings), it may
@@ -196,6 +199,20 @@ export class BlockFactory implements IBlockFactory {
       throw err;
     });
   }
+
+  /**
+   * Register a new block name with the BlockFactory. Return true true if successful, false if already exists.
+   * @param name The new block name to register.
+   * @return True or false depending on success status.
+   */
+  getUniqueBlockName(name: string): string{
+    if ( !this.blockNames[name] ) {
+      this.blockNames[name] = 1;
+      return name;
+    }
+    return `${name}_${++this.blockNames[name]}`;
+  }
+
   preprocessor(file: ImportedFile): Preprocessor {
     let syntax = file.syntax;
     let firstPreprocessor: Preprocessor = this.preprocessors[syntax];

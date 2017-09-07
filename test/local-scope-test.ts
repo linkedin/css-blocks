@@ -71,7 +71,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     );
     let filename = "foo/bar/hasref.block.css";
     imports.registerSource(filename,
-      `@block-reference "a-block.block.css";`
+      `@block-reference a-block from "a-block.block.css";`
     );
 
     let importer = imports.importer();
