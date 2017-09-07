@@ -210,7 +210,7 @@ export class BlockFactory implements IBlockFactory {
       this.blockNames[name] = 1;
       return name;
     }
-    return `${name}_${++this.blockNames[name]}`;
+    return `${name}-${++this.blockNames[name]}`;
   }
 
   preprocessor(file: ImportedFile): Preprocessor {

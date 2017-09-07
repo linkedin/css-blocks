@@ -84,7 +84,7 @@ export class BlockFactoryTests extends BEMProcessor {
     let block2_promise = factory.getBlock(importer.identifier(null, block2_filename, reader));
     return Promise.all([block1_promise, block2_promise]).then(([block1, block2]) => {
       assert.equal(block1.name, 'block');
-      assert.equal(block2.name, 'block_2');
+      assert.equal(block2.name, 'block-2');
     });
 
   }
