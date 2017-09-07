@@ -106,7 +106,7 @@ export class ExpressionReader {
     }
 
     // Throw an error if this state expects a substate and nothing has been provided.
-    let states = blockObj.states.resolveGroup(this.state);
+    let states = blockObj.states.resolveGroup(this.state) || {};
     if (  Object.keys(states).length > 1 && this.substate === undefined ) {
       throw new Error(`State ${this.toString()} expects a substate.`);
     }
@@ -117,7 +117,7 @@ export class ExpressionReader {
     // Throw a helpful error if this state / substate does not exist.
     if ( !Object.keys(stateObjs).length ) {
       let knownStates: State[] | undefined;
-      let allSubstates = blockObj.states.resolveGroup(this.state);
+      let allSubstates = blockObj.states.resolveGroup(this.state) || {};
       if (allSubstates) {
         let ass = allSubstates;
         knownStates = Object.keys(allSubstates).map(k => ass[k]);

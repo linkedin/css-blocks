@@ -277,4 +277,39 @@ export class Test {
     });
   }
 
+  @test 'Doesn\'t explode with empty blocks.'(){
+    mock({
+      'foo.block.css': `
+        .root { }
+        [state|cool] { }
+      `
+    });
+
+    let code = `
+      import objstr from 'obj-str';
+      import foo from 'foo.block.css';
+      let styles = objstr({
+        [foo]: true,
+        [foo.cool()]: true
+      });
+      <div class={styles}></div>;
+    `;
+
+    return parse(code).then((analysis: MetaAnalysis) => {
+      mock.restore();
+
+      let res = transform(code, analysis);
+
+      assert.equal(minify(res.code), minify(`
+        import objstr from 'obj-str';
+
+        let styles = objstr({
+          'foo': true,
+          'foo--cool': true
+        });
+        <div class={styles}></div>;
+      `));
+    });
+  }
+
 }
