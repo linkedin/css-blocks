@@ -36,8 +36,7 @@
       "postcss": [ "../../node_modules/postcss" ],
       "perfectionist": [ "../../../css-blocks/types-local/perfectionist" ],
       "postcss-selector-parser": ["../../../css-blocks/types-local/postcss-selector-parser"],
-      "regexpu-core":  ["../../../css-blocks/types-local/regexpu-core"],
-      "babel-core":  ["../../types-local/babel-core"]
+      "regexpu-core":  ["../../../css-blocks/types-local/regexpu-core"]
     }
   },
   "include": [

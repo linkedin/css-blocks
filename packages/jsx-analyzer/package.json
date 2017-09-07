@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/css-blocks/jsx-analyzer#readme",
   "devDependencies": {
+    "@types/babel-core": "^6.25.2",
     "@types/babel-generator": "^6.25.0",
     "@types/babel-template": "^6.25.0",
     "@types/babel-traverse": "^6.25.2",
