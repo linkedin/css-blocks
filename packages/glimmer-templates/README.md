@@ -27,7 +27,7 @@ at-rule from within the stylesheet.
 Given the following CSS Block definition:
 
 ```css
-@block-reference "./grid.block.css";
+@block-reference grid from "./grid.block.css";
 .root { block-name: my-component; /* ... */ }
 [state|loading] { /* ... */ }
 .sidebar { /* ... */ }
