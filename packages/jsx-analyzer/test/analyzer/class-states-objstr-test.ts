@@ -193,7 +193,7 @@ export class Test {
       mock.restore();
       assert.ok(false, 'Should never get here');
     }).catch((err) => {
-      assert.equal(err.message, 'State bar.pretty.color() expects a substate.');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: State bar.pretty.color() expects a substate. (9:9)');
     });
   }
 
@@ -249,7 +249,7 @@ export class Test {
       mock.restore();
       assert.ok(false, 'Should never get here');
     }).catch((err) => {
-      assert.equal(err.message, 'No state [state|awesome=wat] found on block "bar".\n  Did you mean: .pretty[state|awesome]?');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|awesome=wat] found on block "bar".\n  Did you mean: .pretty[state|awesome]? (7:7)');
     });
   }
 

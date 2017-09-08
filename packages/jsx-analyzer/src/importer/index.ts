@@ -19,6 +19,7 @@ import {
 import Analysis, { Template } from '../utils/Analysis';
 import { parseFileWith } from '../index';
 import isBlockFilename from '../utils/isBlockFilename';
+import { TemplateImportError, ErrorLocation } from '../utils/Errors';
 
 const DEFAULT_IDENTIFIER = 'default';
 const VALID_FILE_EXTS = {
@@ -34,10 +35,10 @@ interface BlockRegistry {
  * @param name The Block name in question.
  * @param registry The registry to check.
  */
-function throwIfRegistered(name: string, blockRegistry: BlockRegistry){
+function throwIfRegistered(name: string, blockRegistry: BlockRegistry, loc: ErrorLocation){
   // TODO: Location reporting in errors.
   if ( blockRegistry[name] ) {
-    throw new Error(`Block identifier "${name}" cannot be re-defined in any scope once imported.`);
+    throw new TemplateImportError(`Block identifier "${name}" cannot be re-defined in any scope once imported.`, loc);
   }
 }
 
@@ -145,13 +146,21 @@ export default function importer(file: Template, analysis: Analysis, blockFactor
         if (!isIdentifier(decl.id)) {
           return;
         }
-        throwIfRegistered(decl.id.name, _localBlocks);
+        throwIfRegistered(decl.id.name, _localBlocks, {
+          filename: analysis.template.identifier,
+          line: path.node.loc.start.line,
+          column: path.node.loc.start.column
+        });
       });
     },
 
     // Ensure no Class Declarations in this file override an imported Block name.
     ClassDeclaration(path: NodePath<ClassDeclaration>){
-      throwIfRegistered(path.node.id.name, _localBlocks);
+      throwIfRegistered(path.node.id.name, _localBlocks, {
+        filename: analysis.template.identifier,
+        line: path.node.loc.start.line,
+        column: path.node.loc.start.column
+      });
     },
 
     // Ensure no Function Declarations in this file override an imported Block name.
@@ -159,11 +168,19 @@ export default function importer(file: Template, analysis: Analysis, blockFactor
       let node = path.node;
 
       if (isIdentifier(node.id)) {
-        throwIfRegistered(node.id.name, _localBlocks);
+        throwIfRegistered(node.id.name, _localBlocks, {
+          filename: analysis.template.identifier,
+          line: path.node.loc.start.line,
+          column: path.node.loc.start.column
+        });
       }
 
       node.params.forEach((param: Identifier) => {
-        throwIfRegistered(param.name, _localBlocks);
+        throwIfRegistered(param.name, _localBlocks, {
+          filename: analysis.template.identifier,
+          line: path.node.loc.start.line,
+          column: path.node.loc.start.column
+        });
       });
     }
   };

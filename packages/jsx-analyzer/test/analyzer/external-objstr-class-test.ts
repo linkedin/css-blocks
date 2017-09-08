@@ -26,13 +26,50 @@ export class Test {
     `
     ).then((analysis: MetaAnalysis) => {
       mock.restore();
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 1);
       let styleIter = analysis.getAnalysis(0).stylesFound.entries();
       assert.equal(styleIter.next().value[0].asSource(), '.foo');
       assert.equal(analysis.getAnalysis(0).elementCount(), 1);
       assert.equal(analysis.getAnalysis(0).getElement(0).static.size, 1);
+    });
+  }
+
+  @test 'Empty objstr calls throw'(){
+    mock({
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+    });
+
+    return parse(`
+      import bar from 'bar.block.css'
+      import objstr from 'obj-str';
+
+      let style = objstr();
+
+      <div class={style}></div>;
+    `
+    ).catch((err: Error) => {
+      mock.restore();
+      assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
+    });
+  }
+
+  @test 'Objstr calls with non-object-literal input throw'(){
+    mock({
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+    });
+
+    return parse(`
+      import bar from 'bar.block.css'
+      import objstr from 'obj-str';
+
+      let style = objstr(foobar);
+
+      <div class={style}></div>;
+    `
+    ).catch((err: Error) => {
+      mock.restore();
+      assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
     });
   }
 

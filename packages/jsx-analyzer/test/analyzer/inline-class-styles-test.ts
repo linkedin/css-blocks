@@ -69,7 +69,7 @@ export class Test {
     ).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, 'No class named "baz" found on block "bar"');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No class named "baz" found on block "bar" (4:4)');
     });
   }
 
@@ -90,7 +90,7 @@ export class Test {
     ).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, 'No state [state|baz=biz] found on block "bar".\n  Did you mean: .foo[state|baz]?');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|baz=biz] found on block "bar".\n  Did you mean: .foo[state|baz]? (4:4)');
     });
   }
 }

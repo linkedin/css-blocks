@@ -22,6 +22,7 @@ import {
 
 import Analysis from '../utils/Analysis';
 import { ExpressionReader } from '../utils/ExpressionReader';
+import { TemplateAnalysisError } from '../utils/Errors';
 
 const OBJSTR_PACKAGE_NAME = 'obj-str';
 const STATE_NAMESPACE = 'state';
@@ -59,20 +60,24 @@ function saveObjstrProps(analysis: Analysis, path: any) {
   // recognize (Ex: first arg is not an object), short circuit and continue execution.
   let funcDef = binding.path.parent;
   let isObjstr = isImportDeclaration(funcDef) && funcDef.source.value ===  OBJSTR_PACKAGE_NAME;
-  if ( !isObjstr || !isObjectExpression(func.arguments[0]) ) {
+  if ( !isObjstr ) {
     return;
   }
 
-  // We consider every `objstr` call a single element's styles. Start a new element.
-  analysis.startElement({
+  // Location object for error reporting
+  let loc = {
+    filename: analysis.template.identifier,
     line: path.node.loc.start.line,
-    column: path.node.loc.start.column,
-  });
+    column: path.node.loc.start.column
+  };
+
+  // We consider every `objstr` call a single element's styles. Start a new element.
+  analysis.startElement(loc);
 
   // Ensure the first argument passed to suspected `objstr` call is an object.
   let obj: any = func.arguments[0];
   if ( !isObjectExpression(obj) ) {
-    throw new Error(`Class attribute value "${name}" must either be a valid "objstr" call, or a Block reference`);
+    throw new TemplateAnalysisError(`First argument passed to "objstr" call must be an object literal.`, loc);
   }
 
   // For each property passed to objstr, parse the expression and attempt to save the style.
@@ -122,10 +127,13 @@ export default function visitors(analysis: Analysis): object {
         return;
       }
 
-      analysis.startElement({
+      let loc = {
+        filename: analysis.template.identifier,
         line: path.node.loc.start.line,
         column: path.node.loc.start.column,
-      });
+      };
+
+      analysis.startElement(loc);
 
       el.attributes.forEach((attr: JSXAttribute) => {
 
@@ -217,7 +225,7 @@ export default function visitors(analysis: Analysis): object {
           // a namespace other than a class or root, throw.
           if ( !states ) {
             // TODO: Add location data in error message.
-            throw new Error(`Attempted to access non-existant state "${stateName}" on block class namespace "${reader.toString()}"`);
+            throw new TemplateAnalysisError(`Attempted to access non-existant state "${stateName}" on block class namespace "${reader.toString()}"`, loc);
           }
 
           // Register all states with our analysis

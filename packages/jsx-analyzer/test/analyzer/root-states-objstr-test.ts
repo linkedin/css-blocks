@@ -146,7 +146,7 @@ export class Test {
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 1);
     }).catch((err) => {
-      assert.equal(err.message, 'No state [state|awesome=wat] found on block "bar".\n  Did you mean: [state|awesome]?');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|awesome=wat] found on block "bar".\n  Did you mean: [state|awesome]? (7:7)');
     });
   }
 

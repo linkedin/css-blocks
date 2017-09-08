@@ -1,5 +1,6 @@
 import * as debugGenerator from 'debug';
 import { BlockObject, Block, BlockClass, State, StyleMapping } from 'css-blocks';
+import { Node } from 'babel-traverse';
 import {
   isJSXIdentifier,
   isJSXMemberExpression,
@@ -10,6 +11,7 @@ import {
 } from 'babel-types';
 
 import Analysis, { Template } from './Analysis';
+import { MalformedBlockPath, ErrorLocation } from '../utils/Errors';
 
 const debug = debugGenerator('css-blocks:jsx');
 
@@ -37,8 +39,16 @@ export class ExpressionReader {
   concerns: BlockObject[] = [];
   err: null | string = null;
 
-  constructor(expression: any, analysis: Analysis | StyleMapping<Template>){
-    this.expression = getExpressionParts(expression);
+  constructor(expression: Node, analysis: Analysis | StyleMapping<Template>){
+
+    // Expression location info object for error reporting.
+    let loc: ErrorLocation = {
+      filename: analysis.template.identifier,
+      line: expression.loc.start.line,
+      column: expression.loc.start.line
+    };
+
+    this.expression = getExpressionParts(expression, loc);
 
     // Register if this expression's substate is dynamic or static.
     if ( isCallExpression(expression) && expression.arguments[0] && !isStringLiteral(expression.arguments[0]) ) {
@@ -93,7 +103,7 @@ export class ExpressionReader {
       let classObj: BlockClass | undefined;
       classObj = (blockObj as Block).getClass(this.class);
       if ( !classObj ) {
-        throw new Error(`No class named "${this.class}" found on block "${this.block}"`);
+        throw new MalformedBlockPath(`No class named "${this.class}" found on block "${this.block}"`, loc);
       }
       blockObj = classObj;
     }
@@ -108,7 +118,7 @@ export class ExpressionReader {
     // Throw an error if this state expects a substate and nothing has been provided.
     let states = blockObj.states.resolveGroup(this.state) || {};
     if (  Object.keys(states).length > 1 && this.substate === undefined ) {
-      throw new Error(`State ${this.toString()} expects a substate.`);
+      throw new MalformedBlockPath(`State ${this.toString()} expects a substate.`, loc);
     }
 
     // Fetch all matching state objects.
@@ -130,7 +140,7 @@ export class ExpressionReader {
           message += `\n  Did you mean one of: ${knownStates.map(s => s.asSource()).join(', ')}?`;
         }
       }
-      throw new Error(message);
+      throw new MalformedBlockPath(message, loc);
     }
 
     debug(`Discovered ${this.class ? 'class-level' : 'block-level'} state ${this.state} from expression ${this.toString()}`);
@@ -196,10 +206,10 @@ export class ExpressionReader {
  * very explicit type checking here.
  * @returns An array of strings representing the expression parts.
  */
-function getExpressionParts(expression: any ): PathExpression {
+function getExpressionParts(expression: Node, loc: ErrorLocation): PathExpression {
 
   let parts: PathExpression = [];
-  let args: any[] | undefined;
+  let args: Node[] | undefined;
 
   // If this is a call expression, unwrap the callee and arguments. Validation
   // on callee expression performed below. Arguments validated and added to parts
@@ -219,7 +229,7 @@ function getExpressionParts(expression: any ): PathExpression {
   }
 
   // Yes, any. We must do very explicit type checking here.
-  function addPart(expression: any, prop: any) {
+  function addPart(expression: any, prop: Node, loc: ErrorLocation) {
     if ( isIdentifier(prop) || isJSXIdentifier(prop) ) {
       parts.unshift(prop.name);
     }
@@ -238,22 +248,22 @@ function getExpressionParts(expression: any ): PathExpression {
               isJSXIdentifier(prop)       ||
               isIdentifier(prop)
             )) {
-      parts.unshift.apply(parts, getExpressionParts(prop));
+      parts.unshift.apply(parts, getExpressionParts(prop, loc));
     }
 
     else {
       // TODO: Add location data in error message.
-      throw new Error('Cannot parse overly complex expression to reference a CSS Block.');
+      throw new MalformedBlockPath('Cannot parse overly complex expression to reference a CSS Block.', loc);
     }
   }
 
   // Crawl member expression adding each part we discover.
   while ( isMemberExpression(expression) || isJSXMemberExpression(expression) ) {
     let prop = expression.property;
-    addPart(expression, prop);
+    addPart(expression, prop, loc);
     expression = expression.object;
   }
-  addPart(expression, expression);
+  addPart(expression, expression, loc);
   parts.unshift(PATH_START);
 
   if ( args ) {

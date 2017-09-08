@@ -27,6 +27,7 @@ import {
 import { ExpressionReader } from '../utils/ExpressionReader';
 import { Template } from '../utils/Analysis';
 import isBlockFilename from '../utils/isBlockFilename';
+import { TemplateRewriteError } from '../utils/Errors';
 
 let { parse } = require('path');
 
@@ -88,9 +89,8 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
   let obj: ObjectExpression = func.arguments[0] as ObjectExpression;
   let props: ObjectProperty[] = obj.properties.filter(p => isObjectProperty(p)) as ObjectProperty[];
 
-  if ( !props ) {
-    throw new Error(`Class attribute value "${name}" must be either an "objstr" call, or a Block reference`);
-  }
+  // If no props, return. This should never happen, will throw in Analysis.
+  if ( !props ) { return; }
 
   // For each property passed to objstr, parse the expression and attempt to save the style.
   props.forEach((prop: ObjectProperty) => {
@@ -132,11 +132,19 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
         let className = getBlockObjectClassnames(mapping, state);
 
         if ( !className ) {
-          throw new Error(`No class name found for state "${state.asSource()}".`);
+          throw new TemplateRewriteError(`No class name found for state "${state.asSource()}".`, {
+            filename: mapping.template.identifier,
+            line: prop.loc.start.line,
+            column: prop.loc.start.column
+          });
         }
 
         if ( isSpreadElement(condition1) ) {
-          throw new Error(`The spread operator is not allowed in CSS Block states.`);
+          throw new TemplateRewriteError(`The spread operator is not allowed in CSS Block states.`, {
+            filename: mapping.template.identifier,
+            line: condition1.loc.start.line,
+            column: condition1.loc.start.column
+          });
         }
 
         let propKey = stringLiteral(className);

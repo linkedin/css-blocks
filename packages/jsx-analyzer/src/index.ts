@@ -4,12 +4,13 @@ import * as path from 'path';
 import * as babylon from 'babylon';
 import * as typescript from 'typescript';
 import traverse from 'babel-traverse';
+import { Block, MultiTemplateAnalyzer, PluginOptionsReader as CssBlocksOptions, BlockFactory } from 'css-blocks';
 
 import importer from './importer';
 import analyzer from './analyzer';
 import CSSBlocksJSXTransformer from './transformer';
 import Analysis, { Template, MetaAnalysis } from './utils/Analysis';
-import { Block, MultiTemplateAnalyzer, PluginOptionsReader as CssBlocksOptions, BlockFactory } from 'css-blocks';
+import { JSXParseError } from './utils/Errors';
 
 // `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
 if (!(<any>Object).values) {
@@ -75,7 +76,7 @@ export function parseWith(template: Template, metaAnalysis: MetaAnalysis, factor
 
     analysis.template.ast = babylon.parse(template.data, opts.parserOptions);
   } catch (e) {
-    throw new Error(`Error parsing '${template.identifier}'\n${e.message}\n\n${template.data}.`);
+    throw new JSXParseError(`Error parsing '${template.identifier}'\n${e.message}\n\n${template.data}.`, { filename: template.identifier });
   }
 
   // The blocks importer will insert a promise that resolves to a `ResolvedBlock`
@@ -121,7 +122,7 @@ export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory:
   try {
     data = fs.readFileSync(file, 'utf8');
   } catch (e) {
-    throw new Error(`Cannot read JSX entrypoint file ${file}`);
+    throw new JSXParseError(`Cannot read JSX entrypoint file ${file}`, { filename: file });
   }
 
   // Return promise for parsed analysis object.
@@ -178,7 +179,7 @@ export function parseFile(file: string, factory: BlockFactory, opts: ParserOptio
   try {
     data = fs.readFileSync(file, 'utf8');
   } catch (e) {
-    throw new Error(`Cannot read JSX entrypoint file ${file}`);
+    throw new JSXParseError(`Cannot read JSX entrypoint file ${file}`, { filename: file });
   }
 
   // Return promise for parsed analysis object.
@@ -214,7 +215,7 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer<Template> {
   }
   analyze(): Promise<MetaAnalysis> {
     if ( !this.entrypoint || !this.name ) {
-      throw new Error('CSS Blocks JSX Analyzer must be passed an entrypoint and name.');
+      throw new JSXParseError('CSS Blocks JSX Analyzer must be passed an entrypoint and name.');
     }
     return parseFile(this.entrypoint, this.blockFactory);
   }
