@@ -156,6 +156,9 @@ export default function importer(file: Template, analysis: Analysis, blockFactor
 
     // Ensure no Class Declarations in this file override an imported Block name.
     ClassDeclaration(path: NodePath<ClassDeclaration>){
+      if (!isIdentifier(path.node.id)) {
+        return;
+      }
       throwIfRegistered(path.node.id.name, _localBlocks, {
         filename: analysis.template.identifier,
         line: path.node.loc.start.line,
