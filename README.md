@@ -457,6 +457,54 @@ The second form creates a locally scoped alias for the styles in the referenced 
 @block-reference icons from "../../shared/styles/icons/dark.block.css";
 ```
 
+### Conflicting Block Names
+
+If two blocks are defined with conflicting names, CSS Blocks will
+automatically generate a unique name for BEM output mode.
+
+`shared.block.css`
+
+```css
+.root {
+  block-name: my-block;
+  color: blue;
+}
+.item {
+  color: red;
+}
+```
+
+`my-component/styles.block.css`
+
+```css
+@block-reference shared from "../shared.block.css";
+
+.root {
+  block-name: my-block;
+  background-color: blue;
+}
+.item {
+  background-color: red;
+}
+```
+
+`my-component/template.hbs`
+```hbs
+<div class="shared">
+  <div class="item">Styles Item</div>
+  <div class="shared.item">Shared Item</div>
+</div>
+```
+
+In BEM output mode this would compile to:
+
+```hbs
+<div class="my-block my-block-2">
+  <div class="my-block__item"></div>
+  <div class="my-block-2__item"></div>
+</div>
+```
+
 Global (application) States
 ---------------------------
 

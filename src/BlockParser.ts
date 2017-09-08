@@ -151,6 +151,9 @@ export default class BlockParser {
       return Promise.reject(e);
     }
 
+    // Ensure this block name is unique.
+    defaultName = this.factory.getUniqueBlockName(defaultName);
+
     // Create our new Block object and save reference to the raw AST
     let block = new Block(defaultName, identifier);
     block.root = root;
@@ -364,15 +367,20 @@ export default class BlockParser {
 
     // For each `@block-reference` expression, read in the block file, parse and
     // push to block references Promise array.
-    root.walkAtRules("block-reference", (atRule) => {
-      let md = atRule.params.match(/^\s*(([-\w]+)\s+from\s+)?\s*("|')([^\3]+)\3\s*$/);
+    root.walkAtRules("block-reference", (atRule: any) => {
+      let md = atRule.params.match(/^\s*((("|')?[-\w]+\3?)\s+from\s+)\s*("|')([^\4]+)\4\s*$/);
       if (!md) {
         throw new errors.InvalidBlockSyntax(
           `Malformed block reference: \`@block-reference ${atRule.params}\``,
           sourceLocation(sourceFile, atRule));
       }
-      let importPath = md[4];
+      let importPath = md[5];
       let localName = md[2];
+
+      // Validate our imported block name is a valid CSS identifier.
+      if ( !CLASS_NAME_IDENT.test(localName) ) {
+        throw new errors.InvalidBlockSyntax(`Illegal block name in import. ${localName} is not a legal CSS identifier.`, sourceLocation(sourceFile, atRule));
+      }
 
       // Import file, then parse file, then save block reference.
 

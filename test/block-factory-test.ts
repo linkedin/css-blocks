@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { suite, test, only } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import cssBlocks = require("../src/cssBlocks");
@@ -41,7 +41,7 @@ export class BlockFactoryTests extends BEMProcessor {
 
     let extendsFilename = "foo/bar/extends.css";
     imports.registerSource(extendsFilename,
-      `@block-reference "./base.css";
+      `@block-reference base from "./base.css";
        .root { extends: base; color: red; }`
     );
     let importer = imports.importer();
@@ -54,4 +54,39 @@ export class BlockFactoryTests extends BEMProcessor {
       assert.strictEqual(extendsBlock.base, baseBlock);
     });
   }
+
+  @test "handles blocks with the same name"() {
+    let imports = new MockImportRegistry();
+
+    let block1_filename = "foo/bar/block_1.css";
+    imports.registerSource(block1_filename,
+      `.root {
+         block-name: block;
+         color: red;
+       }`
+    );
+
+    let block2_filename = "foo/bar/block_2.css";
+    imports.registerSource(block2_filename,
+    ` @block-reference external from "./block_1.css";
+      .root {
+        block-name: block;
+        color: red;
+      }
+    `);
+
+    let importer = imports.importer();
+    let options: PluginOptions = {importer: importer};
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(options, postcss);
+
+    let block1_promise = factory.getBlock(importer.identifier(null, block1_filename, reader));
+    let block2_promise = factory.getBlock(importer.identifier(null, block2_filename, reader));
+    return Promise.all([block1_promise, block2_promise]).then(([block1, block2]) => {
+      assert.equal(block1.name, 'block');
+      assert.equal(block2.name, 'block-2');
+    });
+
+  }
+
 }

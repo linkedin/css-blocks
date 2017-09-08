@@ -105,7 +105,7 @@ export class StateContainerTest extends BEMProcessor {
        .foo[state|mode=expanded] { display: block; }`
     );
     imports.registerSource(filename,
-      `@block-reference "base-block.block.css";
+      `@block-reference base-block from "base-block.block.css";
        .root { extends: base-block; }
        [state|size=tiny] { font-size: 6px; }
        .foo[state|mode=minimized] { display: block; max-height: 200px; }`

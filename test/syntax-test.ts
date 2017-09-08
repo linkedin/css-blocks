@@ -397,7 +397,7 @@ export class BlockReferences extends BEMProcessor {
     );
 
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block-reference "./imported.css";
+    let inputCSS = `@block-reference imported from "./imported.css";
                     @block-debug imported to comment;
                     .root { color: red; }
                     .b[state|big] {color: blue;}`;
@@ -419,15 +419,15 @@ export class BlockReferences extends BEMProcessor {
     });
   }
 
-  @test "allow referenced block to specify name independently of filename"() {
+  @test "if blocks specify name independently of filename, imported name is still used"() {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/imported.css",
       `.root { block-name: snow-flake; }`
     );
 
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block-reference "./imported.css";
-                    @block-debug snow-flake to comment;`;
+    let inputCSS = `@block-reference foobar from "./imported.css";
+                    @block-debug foobar to comment;`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/imported.css");
@@ -446,8 +446,8 @@ export class BlockReferences extends BEMProcessor {
     );
 
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block-reference "./imported.css";
-                    @block-debug snow-flake to comment;`;
+    let inputCSS = `@block-reference block from "./imported.css";
+                    @block-debug block to comment;`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).catch((err) => {
       assert.equal(err.message, "[css-blocks] BlockSyntaxError: Illegal block name. '\"snow-flake\"' is not a legal CSS identifier. (foo/bar/imported.css:1:9)");
@@ -461,12 +461,47 @@ export class BlockReferences extends BEMProcessor {
     );
 
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block-reference "./imported.css";
+    let inputCSS = `@block-reference imported from "./imported.css";
                     @block-debug snow-flake to comment;`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).catch((err) => {
       assert.equal(err.message, "[css-blocks] BlockSyntaxError: Illegal block name. ''snow-flake'' is not a legal CSS identifier. (foo/bar/imported.css:1:9)");
     });
+  }
+
+  @test "block names in double quotes in @block-reference fail parse with helpful error"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `.root { block-name: block; }`
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference "snow-flake" from "./imported.css";
+                    @block-debug block to comment;`;
+
+    return assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Illegal block name in import. \"snow-flake\" is not a legal CSS identifier. (foo/bar/test-block.css:1:1)",
+      this.process(filename, inputCSS, {importer: imports.importer()})
+    );
+  }
+
+  @test "block names in single quotes in @block-reference fail parse with helpful error"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `.root { block-name: block; }`
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference 'snow-flake' from "./imported.css";
+                    @block-debug snow-flake to comment;`;
+
+    return assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Illegal block name in import. 'snow-flake' is not a legal CSS identifier. (foo/bar/test-block.css:1:1)",
+      this.process(filename, inputCSS, {importer: imports.importer()})
+    );
+
   }
 
   @test "block-name property only works in the root ruleset"() {
@@ -476,7 +511,7 @@ export class BlockReferences extends BEMProcessor {
     );
 
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block-reference "./imported.css";
+    let inputCSS = `@block-reference imported from "./imported.css";
                     @block-debug imported to comment;`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
@@ -498,10 +533,40 @@ export class BlockReferences extends BEMProcessor {
   @test "cannot combine .root with a class as a descendant"() {
   }
 
-  @test "doesn't allow poorly formed names"() {
+  @test "doesn't allow poorly formed names in block-name property"() {
     let imports = new MockImportRegistry();
     imports.registerSource("foo/bar/imported.css",
       `.root { block-name: 123; }`
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference block from "./imported.css";`;
+
+    return assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Illegal block name. '123' is not a legal CSS identifier. (foo/bar/imported.css:1:9)",
+      this.process(filename, inputCSS, {importer: imports.importer()}));
+  }
+
+  @test "doesn't allow poorly formed names in import"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `.root { block-name: block; }`
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block-reference 123 from "./imported.css";`;
+
+    return assertError(
+      cssBlocks.InvalidBlockSyntax,
+      "Illegal block name in import. 123 is not a legal CSS identifier. (foo/bar/test-block.css:1:1)",
+      this.process(filename, inputCSS, {importer: imports.importer()}));
+  }
+
+  @test "requires from statement in @block-reference"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource("foo/bar/imported.css",
+      `.root { block-name: block; }`
     );
 
     let filename = "foo/bar/test-block.css";
@@ -509,7 +574,7 @@ export class BlockReferences extends BEMProcessor {
 
     return assertError(
       cssBlocks.InvalidBlockSyntax,
-      "Illegal block name. '123' is not a legal CSS identifier. (foo/bar/imported.css:1:9)",
+      'Malformed block reference: `@block-reference "./imported.css"` (foo/bar/test-block.css:1:1)',
       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 

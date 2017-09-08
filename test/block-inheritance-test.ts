@@ -16,7 +16,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "foo/bar/inherits.css";
-    let inputCSS = `@block-reference "./base.css";
+    let inputCSS = `@block-reference base from "./base.css";
                     .root { extends: base; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}`;
@@ -52,7 +52,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "foo/bar/inherits.css";
-    let inputCSS = `@block-reference "./base.css";
+    let inputCSS = `@block-reference base from "./base.css";
                     .root { extends: base; color: red; }
                     .foo { clear: both; width: unset(); }`;
 
@@ -77,7 +77,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference "./base.css";
+    let inputCSS = `@block-reference base from "./base.css";
                     .root {
                       extends: base;
                       width: 80%;
@@ -100,7 +100,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference "./base.css";
+    let inputCSS = `@block-reference base from "./base.css";
                     .root {
                       extends: base;
                     }
@@ -126,7 +126,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference "./base.css";
+    let inputCSS = `@block-reference base from "./base.css";
                     .root { extends: base; }
                     .nav { margin: 15px; }
                     .nav + .nav { margin-bottom: 5px; }`;
@@ -150,7 +150,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference "./base.css";
+    let inputCSS = `@block-reference base from "./base.css";
                     .root { extends: base; }
                     .nav:active, .nav:hover { color: blue; }`;
 
@@ -174,7 +174,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference "./base.css";
+    let inputCSS = `@block-reference base from "./base.css";
                     .root {
                       extends: base;
                       border-color: green;
