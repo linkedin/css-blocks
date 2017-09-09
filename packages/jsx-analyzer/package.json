@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/jsx",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Statically analyzes JSX files for CSS Blocks use.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
