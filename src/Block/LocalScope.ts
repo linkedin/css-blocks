@@ -37,7 +37,7 @@ export abstract class LocalScope {
     // Otherwise, find the sub-block in the default block.
     let defaultBlock = this.defaultBlock();
     if (defaultBlock) {
-      return defaultBlock.all(false).find((o) => o.asSource() === reference); // <-- Super ineffecient algorithm. Better to parse the string and traverse directly.
+      return defaultBlock.all().find((o) => o.asSource() === reference); // <-- Super ineffecient algorithm. Better to parse the string and traverse directly.
     } else {
       return undefined;
     }

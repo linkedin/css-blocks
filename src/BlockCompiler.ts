@@ -1,6 +1,5 @@
 import * as postcss from "postcss";
-import { PluginOptions } from "./options";
-import { OptionsReader } from "./OptionsReader";
+import { PluginOptions, OptionsReader } from "./options";
 import { MergedObjectMap, Block } from "./Block";
 import ConflictResolver from "./ConflictResolver";
 import { StyleAnalysis } from "./TemplateAnalysis/StyleAnalysis";

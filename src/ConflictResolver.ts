@@ -3,10 +3,10 @@ import selectorParser = require("postcss-selector-parser");
 import { Block, BlockObject } from "./Block";
 import BlockParser from "./BlockParser";
 import * as errors from "./errors";
-import { OptionsReader } from "./OptionsReader";
-import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
+import { OptionsReader } from "./options";
+import parseSelector, { ParsedSelector, CompoundSelector } from "./SelectorParser";
 import { QueryKeySelector } from "./query";
-import { SourceLocation, sourceLocation } from "./SourceLocation";
+import { SourceLocation, sourceLocation } from "./util/SourceLocation";
 import * as conflictDetection from "./conflictDetection";
 
 enum ConflictType {

@@ -29,16 +29,13 @@ export {
 } from "./errors";
 export {
  SourceLocation
-} from "./SourceLocation";
+} from "./util/SourceLocation";
 export {
   PluginOptions,
-} from "./options";
-export {
   OptionsReader as PluginOptionsReader,
-} from "./OptionsReader";
-export {
-  OutputMode
-} from "./OutputMode";
+  OutputMode,
+  TypesMode
+} from "./options";
 export {
   ParsedSelectorAndRule,
   ClassifiedParsedSelectors,
@@ -48,7 +45,7 @@ export {
   default as parseSelector,
   ParsedSelector,
   CompoundSelector
-} from "./parseSelector";
+} from "./SelectorParser";
 export {
   ImporterData,
   ImportedFile,

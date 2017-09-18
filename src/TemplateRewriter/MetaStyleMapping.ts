@@ -3,7 +3,7 @@ import * as debugGenerator from "debug";
 import { StyleMapping } from "./StyleMapping";
 import { MetaTemplateAnalysis } from "../TemplateAnalysis/MetaAnalysis";
 import { TemplateInfo } from "../TemplateAnalysis";
-import { OptionsReader } from "../OptionsReader";
+import { OptionsReader } from "../options";
 
 let debug = debugGenerator("css-blocks");
 

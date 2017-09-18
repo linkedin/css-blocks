@@ -1,6 +1,8 @@
 /**
  * Supported output mode types
  */
-export enum OutputMode {
+enum OutputMode {
   BEM = "BEM"
 }
+
+export default OutputMode;

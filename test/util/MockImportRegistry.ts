@@ -2,7 +2,7 @@ import * as path from "path";
 import { assert } from "chai";
 
 import { ImportedFile, Importer, PathBasedImporter } from "../../src/importing";
-import { OptionsReader } from "../../src/OptionsReader";
+import { OptionsReader } from "../../src/options";
 import { Syntax } from "../../src/preprocessing";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");

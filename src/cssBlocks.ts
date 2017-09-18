@@ -1,7 +1,6 @@
 import * as postcss from "postcss";
-import { CssBlockOptions } from "./options";
+import { CssBlockOptions, OutputMode, TypesMode } from "./options";
 import { Plugin } from "./Plugin";
-import { OutputMode } from "./OutputMode";
 import { CssBlockError, InvalidBlockSyntax, MissingSourcePath } from "./errors";
 
 // This is ugly but it's the only thing I have been able to make work.
@@ -10,6 +9,7 @@ import { CssBlockError, InvalidBlockSyntax, MissingSourcePath } from "./errors";
 function makeApi(): {
   (postcssImpl: typeof postcss): (opts?: Partial<Readonly<CssBlockOptions>>) => any;
   OutputMode: typeof OutputMode;
+  TypesMode: typeof TypesMode;
   CssBlockError: typeof CssBlockError;
   InvalidBlockSyntax: typeof InvalidBlockSyntax;
   MissingSourcePath: typeof MissingSourcePath;
@@ -17,6 +17,7 @@ function makeApi(): {
   type temp = {
     (postcssImpl: typeof postcss): (opts?: Partial<Readonly<CssBlockOptions>>) => any;
     OutputMode: typeof OutputMode;
+    TypesMode: typeof TypesMode;
     CssBlockError: typeof CssBlockError;
     InvalidBlockSyntax: typeof InvalidBlockSyntax;
     MissingSourcePath: typeof MissingSourcePath;
@@ -30,6 +31,7 @@ function makeApi(): {
     };
   };
   cssBlocks.OutputMode = OutputMode;
+  cssBlocks.TypesMode = TypesMode;
   cssBlocks.CssBlockError = CssBlockError;
   cssBlocks.InvalidBlockSyntax = InvalidBlockSyntax;
   cssBlocks.MissingSourcePath = MissingSourcePath;

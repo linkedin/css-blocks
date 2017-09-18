@@ -22,16 +22,12 @@ import {
   Syntax
 } from "../src/preprocessing";
 import {
-  OutputMode
-} from "../src/OutputMode";
-import {
   CssBlockOptions,
   CssBlockOptionsReadonly,
-  PluginOptions
-} from "../src/options";
-import {
+  PluginOptions,
+  OutputMode,
   OptionsReader
-} from "../src/OptionsReader";
+} from "../src/options";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.resolve(FIXTURES, "filesystemImporter");

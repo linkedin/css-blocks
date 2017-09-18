@@ -1,6 +1,6 @@
 import { Block, BlockObject } from "./Block";
 import postcss = require("postcss");
-import parseSelector, { ParsedSelector } from "./parseSelector";
+import parseSelector, { ParsedSelector } from "./SelectorParser";
 
 export interface Query {
   execute(container: postcss.Container): ClassifiedParsedSelectors;

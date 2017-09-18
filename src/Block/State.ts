@@ -1,7 +1,6 @@
 import selectorParser = require("postcss-selector-parser");
-import { OptionsReader } from "../OptionsReader";
-import { OutputMode } from "../OutputMode";
-import { CompoundSelector } from "../parseSelector";
+import { OptionsReader, OutputMode } from "../options";
+import { CompoundSelector } from "../SelectorParser";
 import { stateParser, isState } from "../BlockParser";
 import { Block, BlockClass } from "./index";
 import { BlockObject, StateInfo } from "./BlockObject";

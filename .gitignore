@@ -4,3 +4,4 @@ docs/
 coverage/
 build/
 .DS_Store
+.cssblocks

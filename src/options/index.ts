@@ -1,4 +1,6 @@
-import { OutputMode } from "./OutputMode";
+import OutputMode from "./OutputMode";
+import TypesMode from "./TypesMode";
+import OptionsReader from "./OptionsReader";
 
 /**
  * Options used by css-blocks for compilation and analysis.
@@ -12,6 +14,8 @@ export interface CssBlockOptions {
    * Defaults to: 4
    */
   maxConcurrentCompiles: number;
+  generateTypes: TypesMode;
+  typesPath: string;
 }
 
 /**
@@ -20,3 +24,9 @@ export interface CssBlockOptions {
 export type PluginOptions = Partial<Readonly<CssBlockOptions>>;
 
 export type CssBlockOptionsReadonly = Readonly<CssBlockOptions>;
+
+export {
+  OptionsReader,
+  OutputMode,
+  TypesMode
+};

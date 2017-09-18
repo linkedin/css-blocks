@@ -3,7 +3,7 @@ import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import cssBlocks = require("../src/cssBlocks");
-import { OptionsReader } from "../src/OptionsReader";
+import { OptionsReader } from "../src/options";
 
 @suite("Setting up")
 export class SetupTests {

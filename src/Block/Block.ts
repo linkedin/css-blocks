@@ -1,11 +1,10 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
-import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
+import parseSelector, { ParsedSelector, CompoundSelector } from "../SelectorParser";
 import { stateParser, isClass, isState, isRoot, NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockClass } from "./index";
-import { OptionsReader } from "../OptionsReader";
-import { OutputMode } from "../OutputMode";
+import { OptionsReader, OutputMode } from "../options";
 import { BlockObject, StateContainer } from "./BlockObject";
 import { BlockScope } from "./LocalScope";
 import { FileIdentifier } from "../importing";
@@ -211,17 +210,17 @@ export class Block extends BlockObject {
 
   /**
    * Return array self and all children.
-   * @param shallow Pass false to not include inherited objects.
+   * @param deep Pass false to not include inherited objects.
    * @returns Array of BlockObjects.
    */
-  all(shallow?: boolean): BlockObject[] {
+  all(deep = true): BlockObject[] {
     let result: BlockObject[] = [this];
-    result = result.concat(this.states.all());
+    result = result.concat(this.states.all(false));
     this.classes.forEach((blockClass) => {
-      result = result.concat(blockClass.all());
+      result = result.concat(blockClass.all(false));
     });
-    if (!shallow && this.base) {
-      result = result.concat(this.base.all(shallow));
+    if (deep && this.base) {
+      result = result.concat(this.base.all(deep));
     }
     return result;
   }

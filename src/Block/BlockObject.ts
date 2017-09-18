@@ -1,6 +1,6 @@
 import * as postcss from "postcss";
-import { OptionsReader } from "../OptionsReader";
-import { CompoundSelector } from "../parseSelector";
+import { OptionsReader } from "../options";
+import { CompoundSelector } from "../SelectorParser";
 import { State, Block, BlockClass } from "./index";
 
 // `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
@@ -264,16 +264,26 @@ export class StateContainer {
 
   /**
    * Returns all states contained in this Container
+   * @param deep Pass false to not include inherited states.
    * @return Array of all State objects
    */
-  all(): BlockObject[] {
+  all(deep = true): BlockObject[] {
     let result: BlockObject[] = [];
     Object.keys(this._groups).forEach((group) => {
       result = result.concat((<any>Object).values(this._groups[group]));
     });
     result = result.concat((<any>Object).values(this._states));
+    if ( deep && this.base ) {
+      result = result.concat(this.base.all());
+    }
     return result;
   }
+
+  get base(): StateContainer | undefined  {
+    let base = this.parent.base;
+    return base ? base.states : undefined;
+  }
+
 }
 
 /**
