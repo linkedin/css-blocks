@@ -220,7 +220,9 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer<Template> {
     return parseFile(this.entrypoint, this.blockFactory);
   }
 
-  reset() { return; }
+  reset() {
+    this._blockFactory.reset();
+  }
 
   get blockFactory() {
     return this._blockFactory;

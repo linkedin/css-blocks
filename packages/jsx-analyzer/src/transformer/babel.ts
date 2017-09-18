@@ -3,6 +3,7 @@ import { NodePath, Binding } from 'babel-traverse';
 import {
   CallExpression,
   ImportDeclaration,
+  Identifier,
   JSXOpeningElement,
   JSXAttribute,
   ObjectExpression,
@@ -14,14 +15,18 @@ import {
   isJSXExpressionContainer,
   isJSXIdentifier,
   isJSXNamespacedName,
+  isBooleanLiteral,
   isMemberExpression,
   isObjectExpression,
   isObjectProperty,
+  isStringLiteral,
   isSpreadElement,
   binaryExpression,
   logicalExpression,
   objectProperty,
   stringLiteral,
+  variableDeclarator,
+  variableDeclaration
 } from 'babel-types';
 
 import { ExpressionReader } from '../utils/ExpressionReader';
@@ -56,8 +61,7 @@ function getBlockObjectClassnames(mapping: StyleMapping<Template>, test: BlockOb
  * Given a well formed Object String `CallExpression`, replace all BlockObject expressions
  * with the style mapping. If input is not a well formed Object String, skip silently.
  * @param mapping The current StyleMapping we are observing for access to scope.
- * @param path The JSX Element's path object.
- * @param func The Object String `CallExpression` to process.
+ * @param path The Object String call's path object.
  * @returns The array of `Property` values passed to Object String
  */
 function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
@@ -128,6 +132,26 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
       let condition1 = (prop.key as CallExpression).arguments[0];
       let condition2 = prop.value;
 
+      if ( isSpreadElement(condition1) ) {
+        throw new TemplateRewriteError(`The spread operator is not allowed in CSS Block states.`, {
+          filename: mapping.template.identifier,
+          line: condition1.loc.start.line,
+          column: condition1.loc.start.column
+        });
+      }
+
+      // If the condition inside our state call is more complicated than a simple
+      // identifier, assign it to a new variable in scope and use it to construct
+      // our binary expressions
+      let conditionId: Identifier;
+      if ( !isIdentifier(condition1) ) {
+        conditionId = path.scope.generateUidIdentifier('condition');
+        path.getStatementParent().insertBefore(variableDeclaration('const', [ variableDeclarator(conditionId, condition1) ]));
+      }
+      else {
+        conditionId = condition1;
+      }
+
       parts.concerns.forEach( (state) => {
         let className = getBlockObjectClassnames(mapping, state);
 
@@ -139,18 +163,17 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
           });
         }
 
-        if ( isSpreadElement(condition1) ) {
-          throw new TemplateRewriteError(`The spread operator is not allowed in CSS Block states.`, {
-            filename: mapping.template.identifier,
-            line: condition1.loc.start.line,
-            column: condition1.loc.start.column
-          });
-        }
+        let expr1 = binaryExpression('===', conditionId, stringLiteral(state.name));
 
-        let propKey = stringLiteral(className);
-        let expr1 = binaryExpression('===', condition1, stringLiteral(state.name));
-        let expr2 = logicalExpression('&&', expr1, condition2);
-        obj.properties.push(objectProperty(propKey, expr2));
+        // If the current objstr value expression is a simple, truthy, string or boolean,
+        // we can skip adding it to our boolean expression.
+        if ( ( isBooleanLiteral(condition2) || isStringLiteral(condition2) ) && condition2.value ){
+          obj.properties.push(objectProperty( stringLiteral(className), expr1 ));
+        }
+        else {
+          let expr2 = logicalExpression('&&', expr1, condition2);
+          obj.properties.push(objectProperty( stringLiteral(className), expr2 ));
+        }
 
       });
     }

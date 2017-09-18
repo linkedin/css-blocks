@@ -179,7 +179,6 @@ export class Test {
       mock.restore();
 
       let res = transform(code, analysis);
-
       assert.equal(minify(res.code), minify(`
         import objstr from 'obj-str';
 
@@ -239,6 +238,54 @@ export class Test {
           'bar__pretty': true,
           'bar__pretty--bool': true,
           'bar__pretty--color-yellow': dynamic === 'yellow' && ohgod
+        });
+
+        <div class="bar"><div class={style}></div></div>;`));
+    });
+  }
+
+  @test 'States with dynamic substates containing complex expression are transformed to the simplest possible output'(){
+    mock({
+      'bar.block.css': `
+        .root { color: blue; }
+        .pretty { color: red; }
+        .pretty[state|color=yellowColor] {
+          color: yellow;
+        }
+        .pretty[state|color=greenColor] {
+          color: green;
+        }
+      `
+    });
+
+    let code = `
+      import bar from 'bar.block.css';
+      import objstr from 'obj-str';
+
+      let dynamic = 'yellow';
+
+      let style = objstr({
+        [bar.pretty]: true,
+        [bar.pretty.color(\`\${dynamic}Color\`)]: true
+      });
+
+      <div class={bar.root}><div class={style}></div></div>;
+    `;
+
+    return parse(code).then((analysis: MetaAnalysis) => {
+      mock.restore();
+
+      let res = transform(code, analysis);
+      assert.equal(minify(res.code), minify(`
+        import objstr from 'obj-str';
+
+        let dynamic = 'yellow';
+
+        const _condition = \`\${dynamic}Color\`;
+        let style = objstr({
+          'bar__pretty': true,
+          'bar__pretty--color-yellowColor': _condition === 'yellowColor',
+          'bar__pretty--color-greenColor': _condition === 'greenColor'
         });
 
         <div class="bar"><div class={style}></div></div>;`));
