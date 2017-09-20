@@ -1,8 +1,6 @@
 import * as debugGenerator from "debug";
 import {
   AST,
-  ASTPlugin,
-  ASTPluginEnvironment,
   Syntax,
   NodeVisitor
 } from '@glimmer/syntax';
@@ -14,7 +12,6 @@ import {
   PluginOptionsReader as CssBlocksOptionsReader,
   PluginOptions as CssBlocksOpts,
   TemplateRewriter,
-  MetaStyleMapping,
   StyleMapping
 } from "css-blocks";
 
@@ -22,101 +19,12 @@ import { ResolvedFile } from "./GlimmerProject";
 import { cssBlockError } from "./utils";
 
 type StateContainer = Block | BlockClass;
+type ConcatParts    = (AST.MustacheStatement | AST.TextNode)[];
 
-const debug = debugGenerator("css-blocks:glimmer");
-
-interface MappingAndBlock {
-  mapping: StyleMapping<ResolvedFile>;
-  block: Block;
-}
-const STATE = /state:(.*)/;
-const STYLE_IF = 'style-if';
+const STATE        = /state:(.*)/;
+const STYLE_IF     = 'style-if';
 const STYLE_UNLESS = 'style-unless';
-
-type LoaderContext = {
-  dependency(dep: string): void;
-};
-
-type ConcatParts = (AST.MustacheStatement | AST.TextNode)[];
-
-function trackBlockDependencies(loaderContext: LoaderContext, block: Block, options: CssBlocksOptionsReader) {
-  let sourceFile = options.importer.filesystemPath(block.identifier, options);
-  if (sourceFile !== null) {
-    loaderContext.dependency(sourceFile);
-  }
-  block.dependencies.forEach(dep => {
-    loaderContext.dependency(dep);
-  });
-}
-
-export function loaderAdapter(loaderContext: any): Promise<ASTPlugin> {
-  debug(`loader adapter for:`, loaderContext.resourcePath);
-  // debug(`loader adapter. Got loader context for css-blocks:`, loaderContext.cssBlocks);
-  let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
-  let options = new CssBlocksOptionsReader(loaderContext.cssBlocks.compilationOptions);
-  let metaMappingPromises = new Array<Promise<MetaStyleMapping<ResolvedFile>>>();
-  cssFileNames.forEach(filename => {
-    metaMappingPromises.push(loaderContext.cssBlocks.mappings[filename]);
-  });
-  let thisMappingPromise: Promise<MappingAndBlock | undefined> = Promise.all(metaMappingPromises).then(metaMappings => {
-    let mappingAndBlock: MappingAndBlock | undefined = undefined;
-    metaMappings.forEach(metaMapping => {
-      debug("Templates with StyleMappings:", ...metaMapping.templates.keys());
-      let mapping: StyleMapping<ResolvedFile> | undefined;
-      metaMapping.templates.forEach(aMapping => {
-        if (aMapping && aMapping.template.fullPath === loaderContext.resourcePath) {
-          debug("Found mapping.");
-          mapping = aMapping;
-        }
-      });
-      if (mapping) {
-        if (mappingAndBlock) {
-          throw Error("Multiple css blocks outputs use this template and I don't know how to handle that yet.");
-        }
-        let blockNames = Object.keys(mapping.blocks);
-        blockNames.forEach(n => {
-          let block = (<StyleMapping<ResolvedFile>>mapping).blocks[n];
-          if (n === "" && mapping && block) {
-            mappingAndBlock = {
-              block,
-              mapping
-            };
-          }
-          trackBlockDependencies(loaderContext, block, options);
-          block.transitiveBlockDependencies().forEach(blockDep => {
-            trackBlockDependencies(loaderContext, blockDep, options);
-          });
-        });
-      }
-    });
-    return mappingAndBlock;
-  });
-  let pluginPromise: Promise<ASTPlugin> = thisMappingPromise.then(mappingAndBlock => {
-    let astPlugin: ASTPlugin;
-    if (mappingAndBlock) {
-        astPlugin = (env: ASTPluginEnvironment) => {
-          let rewriter = new Rewriter(env.syntax, mappingAndBlock.mapping, mappingAndBlock.block, loaderContext.cssBlocks.compilationOptions);
-          return {
-            name: "css-blocks",
-            visitors: {
-              ElementNode(node) {
-                rewriter.ElementNode(node);
-              }
-            }
-          };
-        };
-    } else {
-      astPlugin = (_env: ASTPluginEnvironment) => {
-        return {
-          name: "css-blocks-noop",
-          visitors: {}
-        };
-      };
-    }
-    return astPlugin;
-  });
-  return pluginPromise;
-}
+const DEBUG        = debugGenerator("css-blocks:glimmer");
 
 export class Rewriter implements TemplateRewriter, NodeVisitor {
   elementCount: number;
@@ -124,16 +32,19 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
   block: Block;
   styleMapping: StyleMapping<ResolvedFile>;
   cssBlocksOpts: CssBlocksOptionsReader;
+
   constructor(syntax: Syntax, styleMapping: StyleMapping<ResolvedFile>, defaultBlock: Block, cssBlocksOpts: CssBlocksOpts) {
-    this.syntax = syntax;
-    this.styleMapping = styleMapping;
+    this.syntax        = syntax;
+    this.styleMapping  = styleMapping;
     this.cssBlocksOpts = new CssBlocksOptionsReader(cssBlocksOpts);
-    this.block = defaultBlock;
-    this.elementCount = 0;
+    this.block         = defaultBlock;
+    this.elementCount  = 0;
   }
+
   debug(message: string, ...args: any[]): void {
-    debug(`${this.styleMapping.template.fullPath}: ${message}`, ...args);
+    DEBUG(`${this.styleMapping.template.fullPath}: ${message}`, ...args);
   }
+
   ElementNode(node: AST.ElementNode) {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
@@ -187,11 +98,11 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     // Get our new class...classes
     let classSet = new Set<BlockObject>([...classObjects]);
     let staticClassNames: string[] | undefined;
-    if (debug.enabled) {
+    if (DEBUG.enabled) {
       staticClassNames = classObjects.map(o => `${o.block.name}${o.asSource()}`);
     }
     let newClassValue: string = this.styleMapping.mapObjects(...classSet).join(' ');
-    if (debug.enabled && staticClassNames) {
+    if (DEBUG.enabled && staticClassNames) {
       this.debug(`Rewriting static classes "${staticClassNames.join(' ')}" to "${newClassValue}"`);
     }
 

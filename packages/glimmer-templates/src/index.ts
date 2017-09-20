@@ -4,10 +4,8 @@ export {
   BaseStyleAnalyzer,
   StateContainer
 } from "./HandlebarsStyleAnalyzer";
-export {
-  Rewriter,
-  loaderAdapter
-} from "./HandlebarsStyleRewriter";
+export { loaderAdapter } from "./webpackLoader";
+export { Rewriter } from "./Rewriter";
 export {
   ResolvedFile,
 } from "./GlimmerProject";

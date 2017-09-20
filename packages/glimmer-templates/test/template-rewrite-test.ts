@@ -49,7 +49,6 @@ describe('Template Rewriting', function() {
           </div>`));
       });
     }).catch((error) => {
-      console.error(error);
       throw error;
     });
   });
