@@ -60,50 +60,92 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
     this.compilationOptions = options.compilationOptions || {};
     this.projectDir = process.cwd();
   }
+
   apply(compiler: WebpackCompiler) {
     this.projectDir = compiler.options.context || this.projectDir;
     let outputPath = compiler.options.output && compiler.options.output.path || this.projectDir; // TODO What is the webpack default output directory?
+
     compiler.plugin("make", (compilation: any, cb: (error?: Error) => void) => {
-      this.analyzer.reset();
+
+      // Start analysis with a clean analysis object
       this.trace(`starting analysis.`);
-      let pendingResult: Promise<BlockCompilationComplete<Template>> =
-        this.analyzer.analyze().catch((err) => {
-          this.trace(`Error during analysis. Draining queue.`);
-          return this.analyzer.blockFactory.prepareForExit().then(() => {
-            this.trace(`Drained. Raising error.`);
-            throw err;
-          });
-        }).then(analysis => {
-          return this.compileBlocks(<MetaTemplateAnalysis<Template>>analysis, path.join(outputPath, this.outputCssFile));
-        }).then(result => {
-          this.trace(`setting css asset: ${this.outputCssFile}`);
-          compilation.assets[this.outputCssFile] = result.css;
-          let completion: BlockCompilationComplete<Template> = {
-            compilation: compilation,
-            assetPath: this.outputCssFile,
-            mapping: result.mapping
-          };
-          return completion;
-        }).then<BlockCompilationComplete<Template>>((completion) => {
-          this.trace(`notifying of completion`);
-          this.notifyComplete(completion, cb);
-          this.trace(`notified of completion`);
-          return completion;
-        }, <any>cb);
+      this.analyzer.reset();
+
+      // Try to run our analysis.
+      let pendingResult: Promise<MetaStyleMapping<Template>> = this.analyzer.analyze()
+
+      // If analysis fails, drain our BlockFactory, add error to compilation error list and propagate.
+      .catch((err) => {
+        this.trace(`Error during analysis. Draining queue.`);
+        return this.analyzer.blockFactory.prepareForExit().then(() => {
+          this.trace(`Drained. Raising error.`);
+          throw err; // We're done, throw to skip the rest of the plugin steps below.
+        });
+      })
+
+      // If analysis finished successfully, compile our blocks to output.
+      .then(analysis => {
+        return this.compileBlocks(<MetaTemplateAnalysis<Template>>analysis, path.join(outputPath, this.outputCssFile));
+      })
+
+      // Add the resulting css output to our build.
+      .then(result => {
+        this.trace(`setting css asset: ${this.outputCssFile}`);
+        compilation.assets[this.outputCssFile] = result.css;
+        let completion: BlockCompilationComplete<Template> = {
+          compilation: compilation,
+          assetPath: this.outputCssFile,
+          mapping: result.mapping
+        };
+        return completion;
+      })
+
+      // Notify the world when complete.
+      .then<BlockCompilationComplete<Template>>((completion) => {
+        this.trace(`notifying of completion`);
+        this.notifyComplete(completion, cb);
+        this.trace(`notified of completion`);
+        return completion;
+      })
+
+      // Return just the mapping object from this promise.
+      .then(compilationResult => {
+        return compilationResult.mapping;
+      })
+
+      // If something bad happened, log the error and pretend like nothing happened
+      // by notifying deps of completion and returning an empty MetaStyleMapping
+      // so compilation can continue.
+      .catch((err) => {
+        this.trace(`notifying of compilation failure`);
+        compilation.errors.push(err);
+        let mapping = new MetaStyleMapping<Template>();
+        this.notifyComplete({
+          compilation: compilation,
+          assetPath: this.outputCssFile,
+          mapping: mapping
+        }, cb);
+        this.trace(`notified of compilation failure`);
+        return mapping;
+      });
+
       compilation.plugin("normal-module-loader", (context: any, mod: any) => {
         this.trace(`preparing normal-module-loader for ${mod.resource}`);
         context.cssBlocks = context.cssBlocks || {mappings: {}, compilationOptions: this.compilationOptions};
+
+        // If we're already waiting for a css file of this name to finish compiling, throw.
         if (context.cssBlocks.mappings[this.outputCssFile]) {
           throw new Error(`css conflict detected. Multiple compiles writing to ${this.outputCssFile}`);
-        } else {
-          context.cssBlocks.mappings[this.outputCssFile] = pendingResult.then(compilationResult => {
-            return compilationResult.mapping;
-          });
         }
+
+        context.cssBlocks.mappings[this.outputCssFile] = pendingResult;
+
       });
+
       this.trace(`notifying of pending compilation`);
       this.notifyPendingCompilation(pendingResult);
       this.trace(`notified of pending compilation`);
+
     });
   }
   private compileBlocks(analysis: MetaTemplateAnalysis<Template>, cssOutputName: string): CompilationResult<Template> {
@@ -120,8 +162,7 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
         let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
         // TODO: handle a sourcemap from compiling the block file via a preprocessor.
         let filename = reader.importer.filesystemPath(block.identifier, reader) || reader.importer.debugIdentifier(block.identifier, reader);
-        let source = new SourceMapSource(result.css, filename,
-                                          result.map.toJSON(), originalSource);
+        let source = new SourceMapSource(result.css, filename, result.map.toJSON(), originalSource);
         cssBundle.add(source);
         numBlocks++;
       }
@@ -137,10 +178,10 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
     message = message.replace(this.projectDir + "/", "");
     this.debug(`[${this.name}] ${message}`);
   }
-  onPendingCompilation(handler: (pendingResult: Promise<BlockCompilationComplete<Template>>) => void) {
+  onPendingCompilation(handler: (pendingResult: Promise<MetaStyleMapping<Template>>) => void) {
     this.plugin("block-compilation-pending", handler);
   }
-  notifyPendingCompilation(pendingResult: Promise<BlockCompilationComplete<Template>>) {
+  notifyPendingCompilation(pendingResult: Promise<MetaStyleMapping<Template>>) {
     this.applyPlugins("block-compilation-pending", pendingResult);
   }
   onComplete(handler: (result: BlockCompilationComplete<Template>, cb: (err: Error) => void) => void) {
