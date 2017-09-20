@@ -74,7 +74,7 @@ export function stateParser(attr: selectorParser.Attribute): StateInfo {
   };
   if (attr.value) {
     info.group = info.name;
-    info.name = attr.value;
+    info.name = attr.value.replace(/^(["'])(.+(?=\1$))\1$/, '$2'); // Strip quotes from value
   }
   return info;
 }

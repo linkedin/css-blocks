@@ -47,7 +47,7 @@ export class PromiseQueue<WorkItem, Result> {
   private queueId: number;
   private jobId: number;
   private queue: AsyncQueue<PendingWork<WorkItem, Result>>;
-  private draining: Promise<void>;
+  private draining: Promise<void> | undefined;
   private promiseProcessor: (item: WorkItem) => Promise<Result>;
   constructor(concurrency: number, processor: (item: WorkItem) => Promise<Result>) {
     this.promiseProcessor = processor;
@@ -82,11 +82,11 @@ export class PromiseQueue<WorkItem, Result> {
 
   drain(): Promise<void> {
     if (!this.draining) {
-      this.queue.pause();
       this.draining = new Promise<void>((resolve, _reject) => {
         this.debug(`Starting to drain current work queue.`);
         this.queue.drain = () => {
           this.debug(`queue is drained`);
+          this.draining = undefined;
           resolve();
         };
       });
@@ -97,9 +97,15 @@ export class PromiseQueue<WorkItem, Result> {
   restart() {
     this.queue.resume();
   }
+
   enqueue(item: WorkItem): Promise<Result> {
     let id = this.jobId++;
     return new Promise<Result>((resolve, reject) => {
+      if ( this.draining ) {
+        let message = 'Queue is draining, cannot enqueue job.';
+        this.debug(`[Job:${id}] ${message}`);
+        return reject(new Error(message));
+      }
       this.debug(`[Job:${id}] Added to queue.`);
       let work: PendingWork<WorkItem, Result> = {id, item};
       this.queue.push(work, (err) => {

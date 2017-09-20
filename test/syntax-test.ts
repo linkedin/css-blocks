@@ -108,6 +108,32 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
+  @test "handles exclusive states with single quotes"() {
+    let filename = "foo/bar/test-state.css";
+    let inputCSS = `.root {color: #111;}
+                    [state|size='1dp'] { transform: scale(2); }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        ".test-state { color: #111; }\n" +
+        ".test-state--size-1dp { transform: scale( 2 ); }\n"
+      );
+    });
+  }
+
+  @test "handles exclusive states with double quotes"() {
+    let filename = "foo/bar/test-state.css";
+    let inputCSS = `.root {color: #111;}
+                    [state|size="1dp"] { transform: scale(2); }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        ".test-state { color: #111; }\n" +
+        ".test-state--size-1dp { transform: scale( 2 ); }\n"
+      );
+    });
+  }
+
   @test "handles comma-delimited exclusive states"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `[state|font=big], [state|font=really-big] { transform: scale(2); }`;

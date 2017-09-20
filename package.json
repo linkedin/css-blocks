@@ -11,7 +11,8 @@
     "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "docs": "typedoc --out ./docs ."
+    "docs": "typedoc --out ./docs .",
+    "watch": "watch 'npm run test' './src' './test' --wait=3"
   },
   "repository": {
     "type": "git",
@@ -62,7 +63,8 @@
     "object.values": "^1.0.4",
     "postcss-selector-parser": "^2.2.3",
     "regexpu-core": "^4.0.11",
-    "source-map": "^0.5.6"
+    "source-map": "^0.5.7",
+    "watch": "^1.0.2"
   },
   "engines": {
     "node": ">=8.0.0"
