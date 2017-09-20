@@ -36,7 +36,7 @@ export class Element {
   locInfo:      errors.ErrorLocation;
 
   /**
-   * Construct a new ElemnetAnalysis.
+   * Construct a new ElementAnalysis.
    * @param locInfo The location info in the template for this element.
    */
   constructor( id: string, locInfo: errors.ErrorLocation ) {
