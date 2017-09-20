@@ -15,9 +15,12 @@ function trackBlockDependencies(loaderContext: LoaderContext, block: Block, opti
   block.dependencies.forEach(dep => {
     loaderContext.dependency(dep);
   });
+  block.transitiveBlockDependencies().forEach(blockDep => {
+    trackBlockDependencies(loaderContext, blockDep, options);
+  });
 }
 
-export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any){
+export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void {
 
   let callback = this.async();
   let thisLoader = this.loaders[this.loaderIndex];
@@ -33,19 +36,23 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
   let rewriter = options.rewriter;
   rewriter.blocks = (rewriter.blocks || {});
 
+  this.dependency(path);
+
   if (!~path.indexOf('.tsx') && !~path.indexOf('.jsx')) {
     return callback(null, source, map);
   }
 
   let cssFileNames = Object.keys(this.cssBlocks.mappings);
   let cssBlockOpts: PluginOptionsReader = new PluginOptionsReader(this.cssBlocks.compilationOptions);
-  let metaMappingPromises = new Array<Promise<MetaStyleMapping<Template>>>();
+  let metaMappingPromises: Promise<MetaStyleMapping<Template>>[] = [];
 
   cssFileNames.forEach(filename => {
     metaMappingPromises.push(this.cssBlocks.mappings[filename]);
   });
 
-  return Promise.all(metaMappingPromises).then((mappings: MetaStyleMapping<Template>[]) => {
+  Promise.all(metaMappingPromises)
+
+  .then((mappings: MetaStyleMapping<Template>[]) => {
     mappings.forEach((mapping: MetaStyleMapping<Template>) => {
       let styleMapping: StyleMapping<Template> | undefined = mapping.templates.get(path);
       if ( !styleMapping ) {
@@ -54,14 +61,15 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
       for ( let key in styleMapping.blocks ) {
         let block = styleMapping.blocks[key];
         trackBlockDependencies(this, block, cssBlockOpts);
-        block.transitiveBlockDependencies().forEach(b => {
-          trackBlockDependencies(this, b, cssBlockOpts);
-        });
       }
       rewriter.blocks[path] = styleMapping;
     });
 
     callback(null, source, map);
+  })
+
+  .catch((err) => {
+    callback(err);
   });
 
 }

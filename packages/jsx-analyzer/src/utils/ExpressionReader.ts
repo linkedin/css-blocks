@@ -2,12 +2,15 @@ import * as debugGenerator from 'debug';
 import { BlockObject, Block, BlockClass, State, StyleMapping } from 'css-blocks';
 import { Node } from 'babel-traverse';
 import {
+  isCallExpression,
   isJSXIdentifier,
   isJSXMemberExpression,
   isMemberExpression,
   isStringLiteral,
+  isBooleanLiteral,
   isIdentifier,
-  isCallExpression
+  isNumericLiteral,
+  StringLiteral
 } from 'babel-types';
 
 import Analysis, { Template } from './Analysis';
@@ -25,6 +28,10 @@ const CALL_END      = Symbol('call-start');
 export const DYNAMIC_STATE_ID = '*';
 
 export type PathExpression = (string|symbol)[];
+
+function isLiteralPart(part: Node) {
+  return isStringLiteral(part) || isNumericLiteral(part) || isBooleanLiteral(part);
+}
 
 export class ExpressionReader {
   private expression: PathExpression;
@@ -51,7 +58,7 @@ export class ExpressionReader {
     this.expression = getExpressionParts(expression, loc);
 
     // Register if this expression's substate is dynamic or static.
-    if ( isCallExpression(expression) && expression.arguments[0] && !isStringLiteral(expression.arguments[0]) ) {
+    if ( isCallExpression(expression) && expression.arguments[0] && !isLiteralPart(expression.arguments[0])) {
       this.isDynamic = true;
     }
     else {
@@ -269,8 +276,8 @@ function getExpressionParts(expression: Node, loc: ErrorLocation): PathExpressio
   if ( args ) {
     parts.push(CALL_START);
     args.forEach((part) => {
-      if ( isStringLiteral(part) ) {
-        parts.push(part.value);
+      if ( isLiteralPart(part) ) {
+        parts.push(String((part as StringLiteral).value));
       }
       else {
         parts.push(DYNAMIC_STATE_ID);

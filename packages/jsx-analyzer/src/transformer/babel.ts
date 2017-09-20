@@ -215,13 +215,8 @@ export default function transform(): any {
         shouldProcess = !!(mapping && Object.keys(mapping.blocks).length);
       },
 
-      // If this is a CSS Blocks import, remove it.
+      // If this is a CSS Blocks import, always remove it.
       ImportDeclaration(nodepath: NodePath<ImportDeclaration>) {
-
-        if ( !shouldProcess ) {
-          return;
-        }
-
         if ( isBlockFilename(nodepath.node.source.value) ) {
           nodepath.remove();
         }

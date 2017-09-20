@@ -106,7 +106,7 @@ export class Test {
     });
   }
 
-  @test 'States with substates are transformed'(){
+  @test 'States with substates are transformed using string input'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -140,6 +140,86 @@ export class Test {
         let style = objstr({
           'bar__pretty': true,
           'bar__pretty--color-yellow': true
+        });
+
+        <div class={style}></div>;`));
+    });
+  }
+
+  @test 'States with substates are transformed using boolean input'(){
+    mock({
+      'bar.block.css': `
+        .root { color: blue; }
+        .pretty { color: red; }
+        .pretty[state|color=true] {
+          color: yellow;
+        }
+      `
+    });
+
+    let code = `
+      import bar from 'bar.block.css';
+      import objstr from 'obj-str';
+
+      let style = objstr({
+        [bar.pretty]: true,
+        [bar.pretty.color(true)]: true
+      });
+
+      <div class={style}></div>;
+    `;
+
+    return parse(code).then((analysis: MetaAnalysis) => {
+      mock.restore();
+
+      let res = transform(code, analysis);
+
+      assert.equal(minify(res.code), minify(`
+        import objstr from 'obj-str';
+
+        let style = objstr({
+          'bar__pretty': true,
+          'bar__pretty--color-true': true
+        });
+
+        <div class={style}></div>;`));
+    });
+  }
+
+  @test 'States with substates are transformed using numerical input'(){
+    mock({
+      'bar.block.css': `
+        .root { color: blue; }
+        .pretty { color: red; }
+        .pretty[state|color=100] {
+          color: yellow;
+        }
+      `
+    });
+
+    let code = `
+      import bar from 'bar.block.css';
+      import objstr from 'obj-str';
+
+      let style = objstr({
+        [bar.pretty]: true,
+        [bar.pretty.color(100)]: true
+      });
+
+      <div class={style}></div>;
+    `;
+
+    return parse(code).then((analysis: MetaAnalysis) => {
+      mock.restore();
+
+      let res = transform(code, analysis);
+
+      assert.equal(minify(res.code), minify(`
+        import objstr from 'obj-str';
+
+        let style = objstr({
+          'bar__pretty': true,
+          'bar__pretty--color-100': true
         });
 
         <div class={style}></div>;`));
