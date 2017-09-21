@@ -20,8 +20,8 @@ function makeMethodDef(type: FuncType) : string{
   }
   return `
     interface ${type.name} {
-      (substate: '${type.args[0].sort().join(' | ')}'): Style;
-      (substate: string): Style;
+      (substate: '${Array.from(type.args[0]).sort().join(' | ')}'): Style;
+      (substate: string | number | boolean): Style;
     }
   `;
 }
@@ -57,8 +57,8 @@ function makeObjectDef(type: ObjType){
   Object.keys(type.methods).sort().forEach((key) =>{
     let safeKey = isValidIdent.test(key) ? key : `'${key}'`;
     if (type.methods[key][0]) {
-      properties.push(`${safeKey}(substate: ${type.methods[key][0].map((s) => { return `'${s}'`; }).join(' | ')}): Style;`);
-      properties.push(`${safeKey}(substate: string): Style;`);
+      properties.push(`${safeKey}(substate: ${Array.from(type.methods[key][0]).map((s) => { return `'${s}'`; }).join(' | ')}): Style;`);
+      properties.push(`${safeKey}(substate: string | number | boolean): Style;`);
     }
     else {
       properties.push(`${safeKey}(enabled?: any): Style;`);

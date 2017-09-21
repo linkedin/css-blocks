@@ -7,8 +7,8 @@ export class TypeASTTests {
 
   @test "Registers simple class"() {
     let ast = new TypeGenerator('root');
-    ast.addClass('test');
-    ast.finish();
+    ast.addProp('test');
+    ast.prune();
     assert.deepEqual(ast.toJSON(), {
       "name": "Root",
       "children": {},
@@ -21,8 +21,8 @@ export class TypeASTTests {
 
   @test "Registers root state"() {
     let ast = new TypeGenerator('root');
-    ast.addState('test');
-    ast.finish();
+    ast.addMethod('test');
+    ast.prune();
     assert.deepEqual(ast.toJSON(), {
       "name": "Root",
       "children": {},
@@ -36,11 +36,11 @@ export class TypeASTTests {
   @test "Registers states with substates"() {
     let ast = new TypeGenerator('root');
 
-    ast.addState('test1', 'foo');
-    ast.addState('test1', 'bar');
-    ast.addState('test2', 'biz');
-    ast.addState('test2', 'baz', 1);
-    ast.finish();
+    ast.addMethod('test1', 'foo');
+    ast.addMethod('test1', 'bar');
+    ast.addMethod('test2', 'biz');
+    ast.addMethod('test2', 'baz', 1);
+    ast.prune();
 
     assert.deepEqual(ast.toJSON(), {
       "name": "Root",
@@ -55,9 +55,9 @@ export class TypeASTTests {
 
   @test "Registers root state and class of same name"() {
     let ast = new TypeGenerator('root');
-    ast.addState('test');
-    ast.addClass('test');
-    ast.finish();
+    ast.addMethod('test');
+    ast.addProp('test');
+    ast.prune();
     assert.deepEqual(ast.toJSON(), {
       "name": "Root",
       "children": {
@@ -75,9 +75,9 @@ export class TypeASTTests {
 
   @test "Registers class with state"() {
     let ast = new TypeGenerator('root');
-    let klass = ast.addClass('test');
-    klass.addState('foo');
-    ast.finish();
+    let klass = ast.addProp('test');
+    klass.addMethod('foo');
+    ast.prune();
     assert.deepEqual(ast.toJSON(), {
       "name": "Root",
       "children": {
@@ -99,10 +99,10 @@ export class TypeASTTests {
 
   @test "Type idents in same file are guarenteed unique"() {
     let ast = new TypeGenerator('root');
-    let klass1 = ast.addClass('test');
-    let klass2 = klass1.addClass('test');
-    klass2.addState('test');
-    ast.finish();
+    let klass1 = ast.addProp('test');
+    let klass2 = klass1.addProp('test');
+    klass2.addMethod('test');
+    ast.prune();
     assert.deepEqual(ast.toJSON(), {
       "children": {
         "TestClass": {
@@ -133,10 +133,10 @@ export class TypeASTTests {
 
   @test "Registers root state and class of same name and preserves state args"() {
     let ast = new TypeGenerator('root');
-    ast.addState('test', 'foo');
-    let klass = ast.addClass('test');
-    klass.addState('test');
-    ast.finish();
+    ast.addMethod('test', 'foo');
+    let klass = ast.addProp('test');
+    klass.addMethod('test');
+    ast.prune();
     assert.deepEqual(ast.toJSON(), {
       "name": "Root",
       "children": {
