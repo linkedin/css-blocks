@@ -1,6 +1,5 @@
 import * as postcss from "postcss";
-import { PluginOptions } from "./options";
-import { OptionsReader } from "./OptionsReader";
+import { PluginOptions, OptionsReader } from "./options";
 import { BlockFactory } from "./Block/BlockFactory";
 import BlockParser from "./BlockParser";
 import BlockCompiler from "./BlockCompiler";

@@ -1,15 +1,16 @@
 import * as postcss from "postcss";
 import * as path from "path";
+import * as fs from 'fs-extra';
 import * as debugGenerator from "debug";
 import { Block } from "./Block";
 import { IBlockFactory } from "./IBlockFactory";
 import BlockParser, { ParsedSource } from "../BlockParser";
-import { PluginOptions, CssBlockOptionsReadonly } from "../options";
-import { OptionsReader } from "../OptionsReader";
+import { PluginOptions, CssBlockOptionsReadonly, OptionsReader, TypesMode } from "../options";
 import { Importer, FileIdentifier, ImportedFile } from "../importing";
 import { annotateCssContentWithSourceMap, Preprocessors, Preprocessor, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
 import { RawSourceMap } from "source-map";
 import { PromiseQueue } from "../util/PromiseQueue";
+import TypeGenerator from "../TypeGenerator";
 
 const debug = debugGenerator("css-blocks:BlockFactory");
 
@@ -37,12 +38,15 @@ interface PreprocessJob {
  * This also ensures that importers and preprocessors are correctly used when loading a block file.
  */
 export class BlockFactory implements IBlockFactory {
+
   postcssImpl: typeof postcss;
   importer: Importer;
   options: CssBlockOptionsReadonly;
   blockNames: {[name: string]: number};
   parser: BlockParser;
   preprocessors: Preprocessors;
+
+  private _generatesTypes: boolean;
   private promises: {
     [identifier: string]: Promise<Block>
   };
@@ -61,19 +65,20 @@ export class BlockFactory implements IBlockFactory {
     this.importer = this.options.importer;
     this.preprocessors = this.options.preprocessors;
     this.parser = new BlockParser(this.postcssImpl, options, this);
-    this.blocks = {};
-    this.blockNames = {};
-    this.promises = {};
-    this.paths = {};
     this.preprocessQueue = new PromiseQueue(this.options.maxConcurrentCompiles, (item: PreprocessJob) => {
       return item.preprocessor(item.filename, item.contents, this.options);
     });
+    this._generatesTypes = this.options.generateTypes !==  TypesMode.NONE;
+    this.reset();
   }
   reset() {
     this.blocks = {};
     this.paths = {};
     this.promises = {};
     this.blockNames = {};
+    if ( this._generatesTypes ) {
+      fs.removeSync(this.options.typesPath);
+    }
   }
   /**
    * In some cases (like when using preprocessors with native bindings), it may
@@ -162,7 +167,12 @@ export class BlockFactory implements IBlockFactory {
           originalSyntax: file.syntax,
           dependencies: preprocessedResult.dependencies || []
         };
-        return this.parser.parseSource(source).then(block => {
+        return this.parser.parseSource(source).then( (block: Block) => {
+          if ( this._generatesTypes ) {
+            let types = new TypeGenerator(block)[this.options.generateTypes]();
+            let dest = path.join(this.options.typesPath, block.identifier.replace(process.cwd(), '')) + '.d.ts';
+            fs.outputFileSync(dest, types);
+          }
           return block;
         });
       });

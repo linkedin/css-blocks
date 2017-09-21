@@ -8,7 +8,7 @@ import {
 } from "../src/options";
 import {
   OptionsReader,
-} from "../src/OptionsReader";
+} from "../src/options";
 import {
   BlockFactory
 } from "../src/Block/BlockFactory";

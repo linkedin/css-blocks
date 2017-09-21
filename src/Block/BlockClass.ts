@@ -1,7 +1,6 @@
 import selectorParser = require("postcss-selector-parser");
-import { OptionsReader } from "../OptionsReader";
-import { OutputMode } from "../OutputMode";
-import { CompoundSelector } from "../parseSelector";
+import { OptionsReader, OutputMode } from "../options";
+import { CompoundSelector } from "../SelectorParser";
 import { isState } from "../BlockParser";
 import { BlockObject, StateContainer } from "./BlockObject";
 import { Block } from "./index";
@@ -73,13 +72,14 @@ export class BlockClass extends BlockObject {
 
   /**
    * Return array self and all children.
-   * @param shallow Pass false to not include children.
+   * @param deep Pass false to not include inherited children.
    * @returns Array of BlockObjects.
    */
-  all(shallow?: boolean): BlockObject[] {
+  all(deep = true): BlockObject[] {
     let result: BlockObject[] = [this];
-    if (!shallow) {
-      result = result.concat(this.states.all());
+    result = result.concat(this.states.all(false));
+    if (deep && this.base) {
+      result = result.concat(this.base.all());
     }
     return result;
   }

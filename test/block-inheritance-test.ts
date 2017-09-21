@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { suite, test, skip } from "mocha-typescript";
+import { suite, test, skip, only } from "mocha-typescript";
 
 import BEMProcessor from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";

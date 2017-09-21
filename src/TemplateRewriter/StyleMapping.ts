@@ -1,6 +1,6 @@
 import { ClassName } from "./ClassName";
 import { Block, BlockObject } from "../Block";
-import { OptionsReader } from "../OptionsReader";
+import { OptionsReader } from "../options";
 import { TemplateAnalysis, TemplateInfo } from "../TemplateAnalysis";
 
 export class StyleMapping<Template extends TemplateInfo> {

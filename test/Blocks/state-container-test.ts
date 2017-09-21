@@ -1,21 +1,19 @@
 import { assert } from "chai";
-import * as typedAssert from "./util/typedAssert";
+import * as typedAssert from "../util/typedAssert";
 import { suite, test, only } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import cssBlocks = require("../src/cssBlocks");
+import cssBlocks = require("../../src/cssBlocks");
 import {
   PluginOptions,
-} from "../src/options";
-import {
-  OptionsReader,
-} from "../src/OptionsReader";
+  OptionsReader
+} from "../../src/options";
 import {
   BlockFactory
-} from "../src/Block/BlockFactory";
+} from "../../src/Block/BlockFactory";
 
-import BEMProcessor from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
+import BEMProcessor from "../util/BEMProcessor";
+import { MockImportRegistry } from "../util/MockImportRegistry";
 
 @suite("State container")
 export class StateContainerTest extends BEMProcessor {

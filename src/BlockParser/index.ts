@@ -1,24 +1,23 @@
 import * as postcss from "postcss";
-import selectorParser = require("postcss-selector-parser");
-import { PluginOptions } from "./options";
-import { OptionsReader } from "./OptionsReader";
-import { Block, StateInfo } from "./Block";
-import { IBlockFactory } from "./Block/IBlockFactory";
-import * as errors from "./errors";
-export { PluginOptions } from "./options";
-import { sourceLocation, selectorSourceLocation, SourceLocation } from "./SourceLocation";
-import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
+import * as selectorParser from "postcss-selector-parser";
 import regexpu = require("regexpu-core");
-import { FileIdentifier } from "./importing";
-import { Syntax } from "./preprocessing";
-import parseBlockDebug from "./parseBlockDebug";
+
+import * as errors from "../errors";
+import { PluginOptions, OptionsReader } from "../options";
+import { Block, StateInfo } from "../Block";
+import { IBlockFactory } from "../Block/IBlockFactory";
+import { sourceLocation, selectorSourceLocation, SourceLocation } from "../util/SourceLocation";
+import parseSelector, { ParsedSelector, CompoundSelector } from "../SelectorParser";
+import { FileIdentifier } from "../importing";
+import { Syntax } from "../preprocessing";
+import parseBlockDebug from "../parseBlockDebug";
+
+// CSS <ident-token> Defined: https://www.w3.org/TR/css-syntax-3/#typedef-ident-token
+export const CLASS_NAME_IDENT = new RegExp(regexpu("^(-?(?:\\\\.|[A-Za-z_\\u{0080}-\\u{10ffff}])(?:\\\\.|[A-Za-z0-9_\\-\\u{0080}-\\u{10ffff}])*)$", "u"));
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
 const LEGAL_COMBINATORS = new Set(["+", "~", " ", ">"]);
-
-// CSS <ident-token> Defined: https://www.w3.org/TR/css-syntax-3/#typedef-ident-token
-export const CLASS_NAME_IDENT = new RegExp(regexpu("^(-?(?:\\\\.|[A-Za-z_\\u{0080}-\\u{10ffff}])(?:\\\\.|[A-Za-z0-9_\\-\\u{0080}-\\u{10ffff}])*)$", "u"));
 
 export enum BlockType {
   root = 1,

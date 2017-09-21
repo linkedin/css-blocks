@@ -15,4 +15,3 @@ declare namespace perfectionist {
     }
 
 }
-

@@ -6,7 +6,7 @@ import {
 } from "./Block";
 import {
   sourceLocation,
-} from "./SourceLocation";
+} from "./util/SourceLocation";
 import * as errors from "./errors";
 
 export type DebugChannel = 'comment' | 'stderr' | 'stdout';
