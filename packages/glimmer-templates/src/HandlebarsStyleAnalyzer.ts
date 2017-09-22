@@ -107,11 +107,7 @@ export class BaseStyleAnalyzer {
               if (atRootElement) {
                 stateContainers.unshift(block);
               }
-              if (stateContainers.length > 0) {
-                self.processState(RegExp.$1, n, block, stateContainers, analysis, blockDebugPath, template);
-              } else {
-                throw cssBlockError(`Cannot apply a block state without a block class or root`, n, template);
-              }
+              self.processState(RegExp.$1, n, block, stateContainers, analysis, blockDebugPath, template);
             }
           });
         },
@@ -152,9 +148,15 @@ export class BaseStyleAnalyzer {
 
         classNames.forEach((name) => {
           let found = block.lookup(name) || block.lookup(`.${name}`);
+          if ( !name.trim() ) {
+            return;
+          }
           if (found) {
             blockObjects.push(<Block | BlockClass>found);
             analysis.addStyle(found);
+          }
+          else {
+            throw cssBlockError(`No class "${name}" found in block ${block.name} at ${debugPath}.`, node, template);
           }
         });
       }
