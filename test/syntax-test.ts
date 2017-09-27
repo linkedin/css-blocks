@@ -95,6 +95,21 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
+  @test "checkbox with sibling label"() {
+    let filename = "foo/bar/checkbox.block.css";
+    let inputCSS = `
+      .root:checked + [state|when-checked] {
+        color: green;
+      }
+    `;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        ".checkbox:checked + .checkbox--when-checked { color: green; }\n"
+      );
+    });
+  }
+
   @test "handles exclusive states"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `.root {color: #111;}
