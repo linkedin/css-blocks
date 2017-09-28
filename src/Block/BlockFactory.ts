@@ -167,11 +167,14 @@ export class BlockFactory implements IBlockFactory {
         });
       });
     }).then(block => {
+
       // last check  to make sure we don't return a new instance
       if (this.blocks[block.identifier]) {
         return this.blocks[block.identifier];
       } else {
-        return block;
+        // Ensure this block name is unique.
+        block.name = this.getUniqueBlockName(block.name);
+        return this.blocks[block.identifier] = block;
       }
     }).catch((error) => {
       if (this.preprocessQueue.activeJobCount > 0) {

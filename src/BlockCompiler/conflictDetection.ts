@@ -1,5 +1,5 @@
-import { BlockObject } from "./Block";
-import { shorthandsFor, longhandsFor } from "./shortHandProps";
+import { BlockObject } from "../Block";
+import { shorthandsFor, longhandsFor } from "../shortHandProps";
 
 export type Conflict = [string, string];
 
