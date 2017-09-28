@@ -1,12 +1,12 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
-import { Block, BlockObject } from "./Block";
-import BlockParser from "./BlockParser";
-import * as errors from "./errors";
-import { OptionsReader } from "./OptionsReader";
-import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
-import { QueryKeySelector } from "./query";
-import { SourceLocation, sourceLocation } from "./SourceLocation";
+import { Block, BlockObject } from "../Block";
+import BlockParser from "../BlockParser";
+import * as errors from "../errors";
+import { OptionsReader } from "../OptionsReader";
+import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
+import { QueryKeySelector } from "../query";
+import { SourceLocation, sourceLocation } from "../SourceLocation";
 import * as conflictDetection from "./conflictDetection";
 
 enum ConflictType {
@@ -294,6 +294,12 @@ export default class ConflictResolver {
     return foundConflict;
   }
 
+  /**
+   * Splits a CompoundSelector linked list into an array of [ CompoundSelector, Combinator, CompoundSelector ],
+   * where the first CompoundSelector is all but the last selector segment.
+   * @param s The compound selector to split.
+   * @returns [ CompoundSelector, Combinator, CompoundSelector ]
+   */
   private splitSelector(s: CompoundSelector): [CompoundSelector | undefined, selectorParser.Combinator | undefined, CompoundSelector] {
     s = s.clone();
     let last = s.removeLast();
@@ -304,49 +310,100 @@ export default class ConflictResolver {
     }
   }
 
+  /**
+   * Given two conflicting ParsedSelectors, return a list of selector rules that
+   * select elements with both rules present.
+   * @param s1 Conflicting ParsedSelector 1.
+   * @param s2 Conflicting ParsedSelector 1.
+   * @returns A list of ParsedSelector rules that select all possible elements that can have both styles applied.
+   */
   private mergeKeySelectors(s1: ParsedSelector, s2: ParsedSelector): ParsedSelector[] {
-   if (s1.length > 2 && s2.length > 2) {
-      throw new errors.InvalidBlockSyntax(
-        `Cannot resolve selectors with more than 1 combinator at this time [FIXME].`);
+
+    // We can not currently handle selectors with more than one combinator.
+    if ( s1.length > 2 && s2.length > 2 ) {
+      throw new errors.InvalidBlockSyntax(`Cannot resolve selectors with more than 1 combinator at this time [FIXME].`);
     }
+
+    // Split the two combinators into constituent parts.
     let [context1, combinator1, key1] = this.splitSelector(s1.selector);
     let [context2, combinator2, key2] = this.splitSelector(s2.selector);
 
+    // Create the new merged key selector. Ex: ``.foo ~ .bar && .biz > .baz => .bar.baz`
     let mergedKey = key1.clone().mergeNodes(key2);
 
+    // Construct our new conflict-free selector list.
     let mergedSels: CompoundSelector[] = [];
-    if (context1 && context2 && combinator1 && combinator2) {
-      if (CONTIGUOUS_COMBINATORS.has(combinator1.value) && combinator1.value === combinator2.value) { // >, >; +, +
+
+    // If both selectors have contexts, we need to do some CSS magic.
+    if ( context1 && context2 && combinator1 && combinator2 ) {
+
+      // >, >; +, +
+      if ( CONTIGUOUS_COMBINATORS.has(combinator1.value) && combinator1.value === combinator2.value ) {
         mergedSels.push(context1.clone().mergeNodes(context2).append(combinator1, mergedKey));
-      } else if (SIBLING_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value)) { // +,>; ~,>; +," "; ~," "
+      }
+
+      // +,>; ~,>; +," "; ~," "
+      else if ( SIBLING_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value) ) {
         mergedSels.push(context2.clone().append(combinator2, context1).append(combinator1, mergedKey));
-      } else if (HIERARCHICAL_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value)) { // >,+; " ",+; >,~; " ",~
+      }
+
+      // >,+; " ",+; >,~; " ",~
+      else if ( HIERARCHICAL_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value) ) {
         mergedSels.push(context1.clone().append(combinator1, context2).append(combinator2, mergedKey));
-      } else if (NONCONTIGUOUS_COMBINATORS.has(combinator1.value) && NONCONTIGUOUS_COMBINATORS.has(combinator2.value)) { // " "," "; ~,~
+      }
+
+      // " "," "; ~,~
+      else if ( NONCONTIGUOUS_COMBINATORS.has(combinator1.value) && NONCONTIGUOUS_COMBINATORS.has(combinator2.value) ) {
         mergedSels.push(context1.clone().mergeNodes(context2).append(combinator2, mergedKey));
         mergedSels.push(context1.clone().append(combinator1, context2.clone()).append(combinator2, mergedKey.clone()));
         mergedSels.push(context2.clone().append(combinator1, context1.clone()).append(combinator2, mergedKey.clone()));
-      } else if (NONCONTIGUOUS_COMBINATORS.has(combinator1.value) && CONTIGUOUS_COMBINATORS.has(combinator2.value) &&
-                 ((HIERARCHICAL_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value)) ||
-                  (SIBLING_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value)))) { // " ", >; ~,+
+      }
+
+      // " ", >; ~,+
+      else if (
+           NONCONTIGUOUS_COMBINATORS.has(combinator1.value) && CONTIGUOUS_COMBINATORS.has(combinator2.value)    &&
+        (( HIERARCHICAL_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value) ) ||
+         ( SIBLING_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value) ))
+      ) {
         mergedSels.push(context1.clone().mergeNodes(context2).append(combinator2, mergedKey));
         mergedSels.push(context1.clone().append(combinator1, context2.clone()).append(combinator2, mergedKey.clone()));
-      } else if (NONCONTIGUOUS_COMBINATORS.has(combinator2.value) && CONTIGUOUS_COMBINATORS.has(combinator1.value) &&
-                 ((HIERARCHICAL_COMBINATORS.has(combinator2.value) && HIERARCHICAL_COMBINATORS.has(combinator1.value)) ||
-                  (SIBLING_COMBINATORS.has(combinator2.value) && SIBLING_COMBINATORS.has(combinator1.value)))) { // >, " "; +,~
+      }
+
+      // >, " "; +,~
+      else if (
+           NONCONTIGUOUS_COMBINATORS.has(combinator2.value) && CONTIGUOUS_COMBINATORS.has(combinator1.value)    &&
+        (( HIERARCHICAL_COMBINATORS.has(combinator2.value) && HIERARCHICAL_COMBINATORS.has(combinator1.value) ) ||
+         ( SIBLING_COMBINATORS.has(combinator2.value) && SIBLING_COMBINATORS.has(combinator1.value) ))
+      ){
         mergedSels.push(context1.clone().mergeNodes(context2).append(combinator1, mergedKey));
         mergedSels.push(context2.clone().append(combinator2, context1.clone()).append(combinator1, mergedKey.clone()));
-      } else {
-        throw new errors.InvalidBlockSyntax(
-          `Cannot merge selectors with combinators: '${combinator1.value}' and '${combinator2.value}' [FIXME?].`);
       }
-    } else if (context1 && combinator1) {
+
+      // We've encountered a use case we don't recognize...
+      else {
+        throw new errors.InvalidBlockSyntax(`Cannot merge selectors with combinators: '${combinator1.value}' and '${combinator2.value}' [FIXME?].`);
+      }
+    }
+
+    // If selector 1 has a context, use it as the context for our merged key.
+    // Ex: .foo  && .context > .bar => .context > .foo.bar
+    else if (context1 && combinator1) {
       mergedSels.push(context1.clone().append(combinator1, mergedKey));
-    } else if (context2 && combinator2) {
+    }
+
+    // If selector 2 has a context, use it as the context for our merged key.
+    // Ex: .context ~ .foo  && .bar => .context ~ .foo.bar
+    else if (context2 && combinator2) {
       mergedSels.push(context2.clone().append(combinator2, mergedKey));
-    } else {
+    }
+
+    // Otherwise, our merged key *is* our conflict-free selector.
+    // Ex: .foo && .bar => .foo.bar
+    else {
       mergedSels.push(mergedKey);
     }
+
+    // Wrap our list of CompoundSelectors in ParsedSelector containers and return.
     return mergedSels.map(sel => new ParsedSelector(sel));
   }
   sourceLocation(block: Block, node: postcss.Node): SourceLocation | undefined {

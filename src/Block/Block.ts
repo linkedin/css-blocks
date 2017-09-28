@@ -42,6 +42,8 @@ export class Block extends BlockObject {
   public readonly states: StateContainer;
   public readonly parsedRuleSelectors: WeakMap<postcss.Rule,ParsedSelector[]>;
 
+  private hasHadNameReset = false;
+
   constructor(name: string, identifier: FileIdentifier) {
     super(name);
     this._identifier = identifier;
@@ -49,6 +51,18 @@ export class Block extends BlockObject {
     this.states = new StateContainer(this);
     this._localScope = new BlockScope(this);
     this._dependencies = new Set<string>();
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  set name(name: string) {
+    if ( this.hasHadNameReset ) {
+      throw new CssBlockError('Can not set block name more than once.');
+    }
+    this._name = name;
+    this.hasHadNameReset = true;
   }
 
   /**

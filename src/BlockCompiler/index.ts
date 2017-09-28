@@ -1,10 +1,10 @@
 import * as postcss from "postcss";
-import { PluginOptions } from "./options";
-import { OptionsReader } from "./OptionsReader";
-import { MergedObjectMap, Block } from "./Block";
+import { OptionsReader } from "../OptionsReader";
+import { PluginOptions } from "../options";
+import { MergedObjectMap, Block } from "../Block";
 import ConflictResolver from "./ConflictResolver";
-import { StyleAnalysis } from "./TemplateAnalysis/StyleAnalysis";
-import parseBlockDebug from "./parseBlockDebug";
+import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
+import parseBlockDebug from "../parseBlockDebug";
 /**
  * Compiler that, given a Block will return a transformed AST
  * interface is `BlockParser.parse`.

@@ -151,9 +151,6 @@ export default class BlockParser {
       return Promise.reject(e);
     }
 
-    // Ensure this block name is unique.
-    defaultName = this.factory.getUniqueBlockName(defaultName);
-
     // Create our new Block object and save reference to the raw AST
     let block = new Block(defaultName, identifier);
     block.root = root;
@@ -386,7 +383,7 @@ export default class BlockParser {
 
       let blockPromise: Promise<Block> = this.factory.getBlockRelative(block.identifier, importPath);
       let namedResult: Promise<[string, string, postcss.AtRule, Block]> = blockPromise.then((referencedBlock: Block): [string, string, postcss.AtRule, Block] => {
-        return [localName || referencedBlock.name, importPath, atRule, referencedBlock];
+        return [localName, importPath, atRule, referencedBlock];
       });
       namedBlockReferences.push(namedResult);
     });
