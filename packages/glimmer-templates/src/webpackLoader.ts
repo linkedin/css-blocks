@@ -1,6 +1,5 @@
 import * as debugGenerator from "debug";
 import {
-  ASTPlugin,
   ASTPluginEnvironment,
   ASTPluginBuilder
 } from "@glimmer/syntax";
