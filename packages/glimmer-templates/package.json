@@ -61,14 +61,14 @@
     "watch": "^1.0.2"
   },
   "dependencies": {
-    "@glimmer/compiler": "^0.25.1",
+    "@glimmer/compiler": "^0.29.1",
     "@glimmer/resolution-map-builder": "0.5.1",
     "@glimmer/resolver": "^0.3.0",
-    "@glimmer/syntax": "^0.25.1",
+    "@glimmer/syntax": "^0.29.1",
     "@types/glob": "^5.0.30",
     "css-blocks": "^0.12.1",
     "debug": "^2.6.8",
-    "glimmer-analyzer": "^0.1.2",
+    "glimmer-analyzer": "^0.2.0",
     "glob": "^7.1.2",
     "object.values": "^1.0.4",
     "postcss": "^6.0.1",

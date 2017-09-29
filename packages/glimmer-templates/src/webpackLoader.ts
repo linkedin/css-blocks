@@ -1,5 +1,9 @@
 import * as debugGenerator from "debug";
-import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import {
+  ASTPlugin,
+  ASTPluginEnvironment,
+  ASTPluginBuilder
+} from "@glimmer/syntax";
 import {
   Block,
   PluginOptionsReader as CssBlocksOptionsReader,
@@ -34,7 +38,7 @@ function trackBlockDependencies(loaderContext: LoaderContext, block: Block, opti
   });
 }
 
-export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPlugin> {
+export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginBuilder> {
   debug(`loader adapter for:`, loaderContext.resourcePath);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
   let options = new CssBlocksOptionsReader(loaderContext.cssBlocks.compilationOptions);
@@ -85,14 +89,15 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPlugin>
   })
 
   // Now that we have this template's block mapping, rewrite it.
-  .then( (mappingAndBlock): ASTPlugin => {
-    let astPlugin: ASTPlugin;
+  .then( (mappingAndBlock): ASTPluginBuilder => {
+    let astPlugin: ASTPluginBuilder;
+
     if (mappingAndBlock) {
         astPlugin = (env: ASTPluginEnvironment) => {
           let rewriter = new Rewriter(env.syntax, mappingAndBlock.mapping, mappingAndBlock.block, loaderContext.cssBlocks.compilationOptions);
           return {
             name: "css-blocks",
-            visitors: {
+            visitor: {
               ElementNode(node) {
                 rewriter.ElementNode(node);
               }
@@ -103,7 +108,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPlugin>
       astPlugin = (_env: ASTPluginEnvironment) => {
         return {
           name: "css-blocks-noop",
-          visitors: {}
+          visitor: {}
         };
       };
     }
