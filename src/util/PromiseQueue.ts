@@ -8,11 +8,11 @@ interface AsyncQueue<T> {
     running(): number;
     idle(): boolean;
     concurrency: number;
-    push<E>(task: T, callback?: ErrorCallback<E>): void;
-    push<E>(task: T, callback?: AsyncResultCallback<T, E>): void;
-    push<E>(task: T[], callback?: ErrorCallback<E>): void;
-    unshift<E>(task: T, callback?: ErrorCallback<E>): void;
-    unshift<E>(task: T[], callback?: ErrorCallback<E>): void;
+    push<E>(task: T, callback?: Async.ErrorCallback<E>): void;
+    push<E>(task: T, callback?: Async.AsyncResultCallback<T, E>): void;
+    push<E>(task: T[], callback?: Async.ErrorCallback<E>): void;
+    unshift<E>(task: T, callback?: Async.ErrorCallback<E>): void;
+    unshift<E>(task: T[], callback?: Async.ErrorCallback<E>): void;
     saturated: () => any;
     empty: () => any;
     drain: () => any;
@@ -38,7 +38,7 @@ interface PendingWork<WorkItem, Result> {
 
 let queueInstanceId = 1;
 /**
- * This queue ensures a max conconcurrency and that, on error, all concurrent
+ * This queue ensures a max concurrency and that, on error, all concurrent
  * work is completed before the error is propagated. New work can be added as
  * needed.
  */
