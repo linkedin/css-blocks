@@ -1,9 +1,10 @@
 import { ClassName } from "./ClassName";
 import { Block, BlockObject } from "../Block";
 import { OptionsReader } from "../OptionsReader";
-import { TemplateAnalysis, TemplateInfo } from "../TemplateAnalysis";
+import { TemplateAnalysis } from "../TemplateAnalysis";
+import { TemplateInfo, TemplateTypes } from "@opticss/template-api";
 
-export class StyleMapping<Template extends TemplateInfo> {
+export class StyleMapping<K extends keyof TemplateTypes, Template extends TemplateInfo<K>> {
   template: Template;
   blocks: {
     [localName: string]: Block;
@@ -40,8 +41,8 @@ export class StyleMapping<Template extends TemplateInfo> {
       this.blockMappings.set(o, o.cssClass(options).split(/\s+/));
     });
   }
-  static fromAnalysis<Template extends TemplateInfo>(analysis: TemplateAnalysis<Template>, options: OptionsReader): StyleMapping<Template> {
-    let mapping = new StyleMapping<Template>(analysis.template);
+  static fromAnalysis<K extends keyof TemplateTypes, Template extends TemplateInfo<K>>(analysis: TemplateAnalysis<Template>, options: OptionsReader): StyleMapping<K, Template> {
+    let mapping = new StyleMapping<K, Template>(analysis.template);
     Object.keys(analysis.blocks).forEach(name => {
       mapping.addBlockReference(name, analysis.blocks[name]);
     });

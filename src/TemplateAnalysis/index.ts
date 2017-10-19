@@ -9,94 +9,23 @@ import { StyleAnalysis } from "./StyleAnalysis";
 import { BlockObject, Block } from "../Block";
 import * as errors from "../errors";
 import TemplateValidator, { TemplateValidatorOptions } from "./validations";
+import {
+  TemplateTypes,
+  SerializedTemplateInfo,
+  TemplateInfo,
+  TemplateInfoFactory,
+} from "@opticss/template-api";
 import { Element, SerializedElement, StyleMapping } from "./ElementAnalysis";
 import IDGenerator from "../util/IDGenerator";
 
 const ELEMENT_ID_PREFIX = "el_";
 
 /**
- * Responsible for creating instances of a template info of the correct type
- * given an identifier and an array of arbitrary data from the result of
- * serializing an instance of the same class.
- */
-export interface TemplateInfoConstructor {
-    deserialize<Template extends TemplateInfo>(identifier: string, ...data: any[]): Template;
-}
-
-/**
- * Subclasses of TemplateInfo must be registered onto the static class factory.
- * it is important for the registered name of the template info to be unique
- * from all other possible names for other types of template info.
- */
-export class TemplateInfoFactory {
-  static constructors: Map<Symbol, TemplateInfoConstructor> = new Map();
-  static register(name: string, constructor: TemplateInfoConstructor) {
-    TemplateInfoFactory.constructors.set(Symbol.for(name), constructor);
-  }
-  static create<Template extends TemplateInfo>(name: string, identifier: string, ...data: any[]): Template {
-    let constructor: TemplateInfoConstructor | undefined = TemplateInfoFactory.constructors.get(Symbol.for(name));
-    if (constructor) {
-      return constructor.deserialize<Template>(identifier, ...data);
-    } else {
-      throw new Error(`No template info registered for ${name}`);
-    }
-  }
-  static deserialize<Template extends TemplateInfo>(obj: SerializedTemplateInfo): Template {
-    let data: any[] = obj.data || [];
-    return TemplateInfoFactory.create<Template>(obj.type, obj.identifier, ...data);
-  }
-}
-
-/**
- * This type is used to serialize arbitrary template info instances to JSON and back.
- */
-export interface SerializedTemplateInfo {
-  /** This is the type string for the template info class as it's registered with TemplateInfoFactory. */
-  type: string;
-
-  /**
-   * Any identifier that can be used to look up a template by the templateinfo.
-   * Usually a relative path to a file.
-   */
-  identifier: string;
-
-  /** the values stored in here must be JSON-friendly. */
-  data?: any[];
-}
-
-/**
- * Base class for template information for an analyzed template.
- */
-export class TemplateInfo {
-  static typeName = "CssBlocks.TemplateInfo";
-  identifier: string;
-
-  constructor(identifier: string) {
-    this.identifier = identifier;
-  }
-
-  static deserialize(identifier: string, ..._data: any[]): TemplateInfo {
-    return new TemplateInfo(identifier);
-  }
-
-  // Subclasses should override this and set type to the string value that their class is registered as.
-  // any additional data for serialization
-  serialize(): SerializedTemplateInfo {
-    return {
-      type: TemplateInfo.typeName,
-      identifier: this.identifier,
-    };
-  }
-}
-
-TemplateInfoFactory.register(TemplateInfo.typeName, TemplateInfo as TemplateInfoConstructor);
-
-/**
  * This interface defines a JSON friendly serialization
  * of a {TemplateAnalysis}.
  */
-export interface SerializedTemplateAnalysis {
-  template: SerializedTemplateInfo;
+export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
+  template: SerializedTemplateInfo<K>;
   blocks: {
     [localName: string]: string;
   };
@@ -114,7 +43,7 @@ export interface SerializedTemplateAnalysis {
  * 2. Call [[addExclusiveStyle addExclusiveStyle(alwaysPresent, ...blockObject)]] for all the styles used that are mutually exclusive on the current html element.
  * 3. Call [[endElement endElement()]] when done adding styles for the current element.
  */
-export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAnalysis {
+export class TemplateAnalysis<Template extends TemplateInfo<keyof TemplateTypes>> implements StyleAnalysis {
 
   template: Template;
   idGenerator: IDGenerator;
@@ -391,7 +320,7 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
   /**
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
    */
-  serialize(): SerializedTemplateAnalysis {
+  serialize(): SerializedTemplateAnalysis<keyof TemplateTypes> {
     let blocks = {};
     let stylesFound: string[] =  [];
     let elements: { [id: string]: SerializedElement } = {};
@@ -427,9 +356,12 @@ export class TemplateAnalysis<Template extends TemplateInfo> implements StyleAna
    * @param options The plugin options that are used to parse the blocks.
    * @param postcssImpl The instance of postcss that should be used to parse the block's css.
    */
-  static deserialize<Template extends TemplateInfo>(serializedAnalysis: SerializedTemplateAnalysis, blockFactory: BlockFactory): Promise<TemplateAnalysis<Template>> {
+  static deserialize<K extends keyof TemplateTypes, Template extends TemplateInfo<K>>(
+    serializedAnalysis: SerializedTemplateAnalysis<K>,
+    blockFactory: BlockFactory
+  ): Promise<TemplateAnalysis<Template>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
-    let info = TemplateInfoFactory.deserialize<Template>(serializedAnalysis.template) as Template;
+    let info = TemplateInfoFactory.deserialize<K>(serializedAnalysis.template) as Template;
     let analysis = new TemplateAnalysis(info);
     let blockPromises = new Array<Promise<{name: string, block: Block}>>();
     blockNames.forEach(n => {

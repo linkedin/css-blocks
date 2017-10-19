@@ -4,5 +4,8 @@
       "**/dist/**/*": true,
       "**/*.lock": true
     },
-    "editor.tabSize": 2
-}
+    "editor.tabSize": 2,
+    "cSpell.words": [
+      "Opticss"
+    ]
+  }

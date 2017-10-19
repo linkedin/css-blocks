@@ -1,6 +1,7 @@
 import { assert } from "chai";
 import { suite, test, only } from "mocha-typescript";
 import * as postcss from "postcss";
+import { TemplateInfo, Template } from "@opticss/template-api";
 
 import * as cssBlocks from "../src/errors";
 import BlockParser from "../src/BlockParser";
@@ -9,7 +10,8 @@ import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockObject, BlockClass, State } from "../src/Block";
 import { PluginOptions } from "../src/options";
 import { OptionsReader } from "../src/OptionsReader";
-import { SerializedTemplateAnalysis, TemplateInfo, TemplateAnalysis } from "../src/TemplateAnalysis";
+import { SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAnalysis";
+
 import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertParseError } from "./util/assertError";
 
@@ -29,7 +31,7 @@ export class KeyQueryTests {
   @test "can add styles from a block"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -43,9 +45,9 @@ export class KeyQueryTests {
       analysis.addStyle(block);
       analysis.endElement();
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
         elements: {
           "el_a": {
@@ -62,7 +64,7 @@ export class KeyQueryTests {
   @test "can add dynamic styles from a block"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -76,9 +78,9 @@ export class KeyQueryTests {
       analysis.addStyle(block, true);
       analysis.endElement();
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
         elements: {
           el_a: {
@@ -96,7 +98,7 @@ export class KeyQueryTests {
   @test "can correlate styles"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -117,9 +119,9 @@ export class KeyQueryTests {
       }
       analysis.endElement();
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]"],
         elements: {
           el_a: {
@@ -136,7 +138,7 @@ export class KeyQueryTests {
   @test "can add styles from two blocks"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -156,7 +158,7 @@ export class KeyQueryTests {
         analysis.addStyle(block2);
         analysis.endElement();
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis = {
+        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css", "ref": "blocks/bar.block.css"},
           elements: {
             el_a: {
@@ -172,7 +174,7 @@ export class KeyQueryTests {
               loc: {}
             }
           },
-          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "ref.root"],
         };
         assert.deepEqual(result, expectedResult);
@@ -181,7 +183,7 @@ export class KeyQueryTests {
   }
 
   @test "adding dynamic styles enumerates correlation in analysis"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -211,9 +213,9 @@ export class KeyQueryTests {
       analysis.addStyle( aBlock.getClass('foo') as BlockClass, true );
       analysis.endElement();
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
         elements: {
           el_a: {
@@ -229,7 +231,7 @@ export class KeyQueryTests {
   }
 
   @test "multiple dynamic values added using `addExclusiveStyles` enumerate correlations correctly in analysis"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -249,9 +251,9 @@ export class KeyQueryTests {
         analysis.endElement();
 
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis = {
+        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css"},
-          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "[state|bgcolor]", "[state|color]"],
           elements: {
             el_a: {
@@ -267,7 +269,7 @@ export class KeyQueryTests {
   }
 
   @test "multiple exclusive dynamic values added using enumerate correlations correctly in analysis"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -289,9 +291,9 @@ export class KeyQueryTests {
         analysis.endElement();
 
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis = {
+        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css"},
-          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "[state|bgcolor=blue]", "[state|bgcolor=red]", "[state|color=blue]", "[state|color=red]"],
           elements: {
             el_a: {
@@ -308,7 +310,7 @@ export class KeyQueryTests {
   }
 
   @test "adding an array of non dynamic styles adds all styles to correlations"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -337,9 +339,9 @@ export class KeyQueryTests {
       analysis.addExclusiveStyles(false, klass.states.getState('larger') as State, aBlock.getClass('foo') as BlockClass );
       analysis.endElement();
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
         elements: {
           el_a: {
@@ -355,7 +357,7 @@ export class KeyQueryTests {
   }
 
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is true"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -385,9 +387,9 @@ export class KeyQueryTests {
       analysis.addExclusiveStyles(true, block.getClass('asdf') as BlockClass,  block.getClass('fdsa') as BlockClass);
       analysis.endElement();
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
         elements: {
           el_a: {
@@ -403,7 +405,7 @@ export class KeyQueryTests {
   }
 
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is false"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -433,9 +435,9 @@ export class KeyQueryTests {
       analysis.addExclusiveStyles(false, block.getClass('asdf') as BlockClass,  block.getClass('fdsa') as BlockClass);
       analysis.endElement();
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
         elements: {
           el_a: {
@@ -451,7 +453,7 @@ export class KeyQueryTests {
   }
 
   @test "correlating two classes from the same block on the same elment throws an error"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -480,7 +482,7 @@ export class KeyQueryTests {
   }
 
   @test "built-in template validators may be configured with boolean values"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { "no-class-pairs": false });
     let imports = new MockImportRegistry();
 
@@ -505,7 +507,7 @@ export class KeyQueryTests {
   }
 
   @test "custom template validators may be passed to analysis"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { customValidator(data, err){ if (data) err('CUSTOM ERROR'); } });
     let imports = new MockImportRegistry();
 
@@ -527,7 +529,7 @@ export class KeyQueryTests {
   }
 
   @test "adding both root and a class from the same block to the same elment throws an error"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -557,7 +559,7 @@ export class KeyQueryTests {
   }
 
   @test "adding both root and a state from the same block to the same elment is allowed"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -583,7 +585,7 @@ export class KeyQueryTests {
   }
 
   @test "classes from other blocks may be added to the root element"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -607,9 +609,9 @@ export class KeyQueryTests {
         analysis.endElement();
 
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis = {
+        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "a.foo"],
           elements: {
             el_a: {
@@ -625,7 +627,7 @@ export class KeyQueryTests {
   }
 
   @test "throws when states are applied without their parent root"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
@@ -648,7 +650,7 @@ export class KeyQueryTests {
   }
 
   @test "throws when states are applied without their parent BlockClass"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
@@ -674,7 +676,7 @@ export class KeyQueryTests {
   }
 
   @test 'Throws when inherited states are applied without their root'(){
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
@@ -716,7 +718,7 @@ export class KeyQueryTests {
   }
 
   @test 'Inherited states pass validation when applied with their root'(){
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
@@ -783,7 +785,7 @@ export class KeyQueryTests {
       }
     });
     let analysisPromise = blockPromise.then(block => {
-      let template = new TemplateInfo("my-template.html");
+      let template = new Template("my-template.html");
       let analysis = new TemplateAnalysis(template);
       analysis.blocks["a"] = block;
       analysis.startElement({});
@@ -803,9 +805,9 @@ export class KeyQueryTests {
     });
     let testPromise = analysisPromise.then(analysis => {
       let serialization = analysis.serialize();
-      assert.deepEqual(serialization.template, {type: TemplateInfo.typeName, identifier: "my-template.html"});
+      assert.deepEqual(serialization.template, {type: "Opticss.Template", identifier: "my-template.html"});
       let factory = new BlockFactory(options, postcss);
-      return TemplateAnalysis.deserialize<TemplateInfo>(serialization, factory).then(analysis => {
+      return TemplateAnalysis.deserialize<"Opticss.Template", Template>(serialization, factory).then(analysis => {
         let reserialization = analysis.serialize();
         assert.deepEqual(serialization, reserialization);
       });

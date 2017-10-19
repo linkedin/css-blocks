@@ -70,11 +70,7 @@ export {
 } from "./preprocessing";
 export {
   SerializedTemplateAnalysis,
-  SerializedTemplateInfo,
-  TemplateInfo,
   TemplateAnalysis,
-  TemplateInfoConstructor,
-  TemplateInfoFactory
 } from "./TemplateAnalysis";
 export {
   MetaTemplateAnalysis

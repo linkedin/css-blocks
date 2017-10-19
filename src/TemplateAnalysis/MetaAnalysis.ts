@@ -1,16 +1,20 @@
 import * as debugGenerator from "debug";
 
 import { Block, BlockObject } from "../Block";
-import { TemplateAnalysis, SerializedTemplateAnalysis, TemplateInfo } from "./index";
+import { TemplateAnalysis, SerializedTemplateAnalysis } from "./index";
+import {
+  TemplateInfo,
+  TemplateTypes,
+} from "@opticss/template-api";
 import { StyleAnalysis } from "./StyleAnalysis";
 
 let debug = debugGenerator("css-blocks");
 
 export class SerializedMetaTemplateAnalysis {
-  analyses: SerializedTemplateAnalysis[];
+  analyses: SerializedTemplateAnalysis<keyof TemplateTypes>[];
 }
 
-export class MetaTemplateAnalysis<Template extends TemplateInfo> implements StyleAnalysis {
+export class MetaTemplateAnalysis<Template extends TemplateInfo<keyof TemplateTypes>> implements StyleAnalysis {
   protected analyses: TemplateAnalysis<Template>[];
   protected stylesFound: Map<BlockObject, TemplateAnalysis<Template>[]>;
   protected dynamicStyles: Map<BlockObject, TemplateAnalysis<Template>[]>;
@@ -100,7 +104,7 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo> implements Styl
   }
 
   serialize(): SerializedMetaTemplateAnalysis {
-    let analyses: SerializedTemplateAnalysis[] = [];
+    let analyses: SerializedTemplateAnalysis<keyof TemplateTypes>[] = [];
     this.eachAnalysis(a => {
       analyses.push(a.serialize());
     });
