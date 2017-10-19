@@ -444,14 +444,7 @@ they are like an ES6 `import` statement -- they make it possible to refer to
 the public interface of another block from within the current block and to
 resolve any namespace collisions with locally preferred identifiers.
 
-A `@block-reference` can take two forms. In the first form, the preferred name of the
-block (based on the declared `block-name` for the `.root` or the file's path).
-
-```css
-@block-reference "./other.block.css";
-```
-
-The second form creates a locally scoped alias for the styles in the referenced block:
+A `@block-reference` creates a locally scoped alias for the styles in the referenced block:
 
 ```css
 @block-reference icons from "../../shared/styles/icons/dark.block.css";
@@ -602,21 +595,99 @@ best to avoid this.
 }
 ```
 
+### Block Composition
+
+In some cases a block class is logically the root of another block.
+Rather than having to specify the block root, a block class can declare itself to be the root of another block in a specific state or set of states.
+
+```css
+// tab.block.css
+.root {
+  background-color: gray;
+  color: black;
+  flex: 1 1 content;
+}
+[state|selected] {
+  background-color: blue;
+  color: white;
+}
+[state|permanent] {
+  font-weight: bold;
+}
+
+.button {
+  background-image: url(close-button.svg);
+  cursor: hand;
+}
+
+[state|permanent] .button {
+  background-image: url(pin.svg);
+  cursor: pointer;
+  pointer-events: none;
+}
+```
+
+```
+
+// tabs.block.css
+@block-reference tab from "tab.block.css";
+.root {
+  display: flex;
+}
+
+.main-tab {
+  text-decoration: underline;
+}
+```
+
+Without the `@is-block` directive the markup would look like this:
+
+```html
+<div class="tabs">
+  <span class="tab main-tab" state:tab.permanent>
+    <a href="/main.html">
+      Home
+      <img class="tab.button"></img>
+  </span>
+</div>
+```
+
+But in this example, the very concept of the "main tab" implies that it is a
+tab and also that it's permanent so this feels redundant. So we augement
+the `.main-tab` class:
+
+```css
+.main-tab {
+  @is-block tab[state|permanent];
+}
+```
+
+And now, with the `@is-block` directive we can just write this instead:
+
+```html
+<div class="tabs">
+  <span class="main-tab">
+    <a href="/main.html">
+      Home
+      <img class="tab.close">x</img>
+  </span>
+</div>
+```
+
+All the same output classes are implied in both of these cases for the resulting re-written markup.
+
+Because the `main-tab` class implies the `tab` root class, it is now
+also legal to apply the `state:tab.selected` state to that element.
+
+
+
 ### Block Inheritance
 
 To inherit from another block you must first define a reference to the
 other block:
 
 ```css
-@block-reference "./another-block.block.css";
-```
-
-By default the block can be referenced by it's natural name which would
-be `another-block` in this case based on the filename. However you can
-assign a local alias for the block:
-
-```css
-@block-refererence another from "./another-block.block.css";
+@block-reference another from "./another-block.block.css";
 ```
 
 And now that block can be referenced within this file by the name
@@ -654,8 +725,8 @@ implementation of that interface. To accomplish this, you can declare
 a block `implements` one or more blocks.
 
 ```css
-@block-reference "./base.block.css";
-@block-reference "./other.block.css";
+@block-reference base from "./base.block.css";
+@block-reference other from "./other.block.css";
 .root { implements: base, other; color: red; }
 ```
 
@@ -710,7 +781,7 @@ that conflict in another block object's selectors.
 
 ```css
 /* header.block.css */
-@block-reference "./other.css";
+@block-reference other from "./other.css";
 .header {
   border: none;
   border: resolve("other.nav");
@@ -764,7 +835,7 @@ local values to take precedence.
 
 ```css
 /* header.block.css */
-@block-reference "./other.css";
+@block-reference other from "./other.css";
 .header {
   border: resolve("other.nav");
   border: none;
@@ -796,7 +867,7 @@ selectors of that same pseudo-element are resolved.
 
 ```css
 /* lists.block.css */
-@block-reference "./links.block.css";
+@block-reference links from "./links.block.css";
 .list-item::before {
   content: "*";
   content: resolve("links.external");
@@ -835,7 +906,7 @@ Example:
 
 ```css
 /* lists.block.css */
-@block-reference "./links.block.css";
+@block-reference links from "./links.block.css";
 .list-item {
   color: purple;
   color: resolve("links.external");
@@ -909,8 +980,8 @@ same local identifier for the block with the global state. Example:
 
 ```css
 /* icons.block.css */
-@block-reference "./article.block.css";
-@block-reference "./app.block.css";
+@block-reference article from "./article.block.css";
+@block-reference app from "./app.block.css";
 .icon {
   color: white;
   color: resolve("app[state|is-loading] article.link");
@@ -968,7 +1039,7 @@ Example:
 
 ```css
 /* icons.block.css */
-@block-reference "./article.block.css";
+@block-reference article from "./article.block.css";
 .icon {
   color: white;
   color: resolve-all("article.link");
@@ -1053,7 +1124,7 @@ local values to take precedence.
 
 ```css
 /* header.block.css */
-@block-reference "./other.css";
+@block-reference other from "./other.css";
 .header {
   font-size: 16px;
   font-size: 1rem;
@@ -1107,7 +1178,7 @@ Consider the following conflicts when `target.main` and `conflicts.article` are 
 
 ```css
 /* conflicts.block.css */
-@block-reference "./target.css";
+@block-reference target from "./target.css";
 [state|happy] .article {
   color: green;
   color: resolve("target.main");
@@ -1151,7 +1222,7 @@ Specifically for any property that has a conflict with the super block element
 of the same value in the key selector the following resolution is created:
 
 ```css
-@block-reference "./base.block.css";
+@block-reference base from "./base.block.css";
 .root { extends: base; }
 .foo {
   color: resolve("base.foo");
@@ -1169,8 +1240,8 @@ composition of the necessary styles as it's own class.
 File: `navigation.block.scss`
 
 ```scss
-@block-reference "super-grid-system.block.css";
-@block-reference "drop-down.block.css";
+@block-reference super-grid-system from "super-grid-system.block.css";
+@block-reference drop-down from "drop-down.block.css";
 
 .profile {
   float: --unset;
