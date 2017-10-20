@@ -2,18 +2,26 @@
  * @module "TemplateAnalysis"
  */
  // tslint:disable-next-line:no-unused-variable Imported for Documentation link
+import { OptionsReader } from '../OptionsReader';
 import BlockParser, { CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockFactory } from "../Block/BlockFactory";
 import { CustomBlockScope } from "../Block/LocalScope";
 import { StyleAnalysis } from "./StyleAnalysis";
 import { BlockObject, Block } from "../Block";
-import * as errors from "../errors";
+import * as errors from '../errors';
 import TemplateValidator, { TemplateValidatorOptions } from "./validations";
 import {
   TemplateTypes,
   SerializedTemplateInfo,
   TemplateInfo,
   TemplateInfoFactory,
+  TemplateAnalysis as OptimizationTemplateAnalysis,
+  Tagname,
+  POSITION_UNKNOWN,
+  SourcePosition,
+  AttributeValueSet,
+  AttributeValueChoice,
+  Attribute,
 } from "@opticss/template-api";
 import { Element, SerializedElement, StyleMapping } from "./ElementAnalysis";
 import IDGenerator from "../util/IDGenerator";
@@ -43,9 +51,9 @@ export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
  * 2. Call [[addExclusiveStyle addExclusiveStyle(alwaysPresent, ...blockObject)]] for all the styles used that are mutually exclusive on the current html element.
  * 3. Call [[endElement endElement()]] when done adding styles for the current element.
  */
-export class TemplateAnalysis<Template extends TemplateInfo<keyof TemplateTypes>> implements StyleAnalysis {
+export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAnalysis {
 
-  template: Template;
+  template: TemplateInfo<keyof TemplateTypes>;
   idGenerator: IDGenerator;
 
   /**
@@ -136,7 +144,7 @@ export class TemplateAnalysis<Template extends TemplateInfo<keyof TemplateTypes>
   /**
    * @param template The template being analyzed.
    */
-  constructor(template: Template, options: TemplateValidatorOptions = {}) {
+  constructor(template: TemplateInfo<K>, options: TemplateValidatorOptions = {}) {
     this.idGenerator = new IDGenerator(ELEMENT_ID_PREFIX);
     this.template = template;
     this.blocks = {};
@@ -356,13 +364,13 @@ export class TemplateAnalysis<Template extends TemplateInfo<keyof TemplateTypes>
    * @param options The plugin options that are used to parse the blocks.
    * @param postcssImpl The instance of postcss that should be used to parse the block's css.
    */
-  static deserialize<K extends keyof TemplateTypes, Template extends TemplateInfo<K>>(
+  static deserialize<K extends keyof TemplateTypes>(
     serializedAnalysis: SerializedTemplateAnalysis<K>,
     blockFactory: BlockFactory
-  ): Promise<TemplateAnalysis<Template>> {
+  ): Promise<TemplateAnalysis<K>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
-    let info = TemplateInfoFactory.deserialize<K>(serializedAnalysis.template) as Template;
-    let analysis = new TemplateAnalysis(info);
+    let info = TemplateInfoFactory.deserialize<K>(serializedAnalysis.template);
+    let analysis = new TemplateAnalysis<K>(info as TemplateInfo<K>);
     let blockPromises = new Array<Promise<{name: string, block: Block}>>();
     blockNames.forEach(n => {
       let blockIdentifier = serializedAnalysis.blocks[n];
@@ -397,7 +405,6 @@ export class TemplateAnalysis<Template extends TemplateInfo<keyof TemplateTypes>
         let data = serializedAnalysis.elements[elID];
         let element = new Element(elID, data.loc || {});
         data.static.forEach( (idx) => element.addStyle(objects[idx], false) );
-        data.dynamic.forEach( (idx) => element.addStyle(objects[idx], true) );
         data.correlations.forEach( (correlation) => {
           let objs: BlockObject[] = [];
           let alwaysPresent = true;
@@ -414,5 +421,49 @@ export class TemplateAnalysis<Template extends TemplateInfo<keyof TemplateTypes>
 
       return analysis;
     });
+  }
+
+  forOptimizer(opts: OptionsReader): OptimizationTemplateAnalysis<K> {
+    let optAnalysis = new OptimizationTemplateAnalysis<K>(this.template);
+    for (let [elementId, element] of this.elements.entries()) {
+      let position: SourcePosition;
+      let { filename, line, column } = element.locInfo;
+      if (line) {
+        position = { filename, line, column };
+      } else {
+        position = POSITION_UNKNOWN;
+      }
+      optAnalysis.startElement(new Tagname({unknown: true}), position);
+      optAnalysis.setId(elementId);
+      let value: AttributeValueSet = {allOf: []};
+      for (let style of element.static) {
+        for (let className of style.cssClasses(opts)) {
+          value.allOf.push({constant: className});
+        }
+      }
+      for (let correlation of element.correlations) {
+        let choice: AttributeValueChoice = {oneOf: []};
+        for (let style of correlation) {
+          if (style) {
+            let classes = style.cssClasses(opts);
+            if (classes.length > 1) {
+              let set: AttributeValueSet = {allOf: []};
+              for (let className of classes) {
+                set.allOf.push({constant: className});
+              }
+              choice.oneOf.push(set);
+            } else {
+              choice.oneOf.push({constant: classes[0]});
+            }
+          } else {
+            choice.oneOf.push({absent: true});
+          }
+        }
+        value.allOf.push(choice);
+      }
+      optAnalysis.addAttribute(new Attribute("class", value));
+      optAnalysis.endElement(POSITION_UNKNOWN);
+    }
+    return optAnalysis;
   }
 }

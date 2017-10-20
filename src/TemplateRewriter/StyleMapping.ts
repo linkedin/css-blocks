@@ -4,14 +4,14 @@ import { OptionsReader } from "../OptionsReader";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { TemplateInfo, TemplateTypes } from "@opticss/template-api";
 
-export class StyleMapping<K extends keyof TemplateTypes, Template extends TemplateInfo<K>> {
-  template: Template;
+export class StyleMapping<K extends keyof TemplateTypes> {
+  template: TemplateInfo<K>;
   blocks: {
     [localName: string]: Block;
   };
   blockMappings: Map<BlockObject,ClassName[]>;
 
-  constructor(template: Template) {
+  constructor(template: TemplateInfo<K>) {
     this.template = template;
     this.blocks = {};
     this.blockMappings = new Map();
@@ -41,8 +41,11 @@ export class StyleMapping<K extends keyof TemplateTypes, Template extends Templa
       this.blockMappings.set(o, o.cssClass(options).split(/\s+/));
     });
   }
-  static fromAnalysis<K extends keyof TemplateTypes, Template extends TemplateInfo<K>>(analysis: TemplateAnalysis<Template>, options: OptionsReader): StyleMapping<K, Template> {
-    let mapping = new StyleMapping<K, Template>(analysis.template);
+  static fromAnalysis<K extends keyof TemplateTypes>(
+    analysis: TemplateAnalysis<K>,
+    options: OptionsReader
+  ): StyleMapping<K> {
+    let mapping = new StyleMapping<K>(analysis.template as TemplateInfo<K>);
     Object.keys(analysis.blocks).forEach(name => {
       mapping.addBlockReference(name, analysis.blocks[name]);
     });

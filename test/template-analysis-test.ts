@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test, only } from "mocha-typescript";
 import * as postcss from "postcss";
-import { TemplateInfo, Template } from "@opticss/template-api";
+import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimizedAnalysis } from "@opticss/template-api";
 
 import * as cssBlocks from "../src/errors";
 import BlockParser from "../src/BlockParser";
@@ -52,7 +52,6 @@ export class KeyQueryTests {
         elements: {
           "el_a": {
             correlations: [],
-            dynamic: [],
             static: [ 0 ],
             loc: {}
           }
@@ -84,8 +83,7 @@ export class KeyQueryTests {
         stylesFound: [".root"],
         elements: {
           el_a: {
-            correlations: [],
-            dynamic: [ 0 ],
+            correlations: [ [ -1, 0 ] ],
             static: [ ],
             loc: {}
           }
@@ -126,7 +124,6 @@ export class KeyQueryTests {
         elements: {
           el_a: {
             correlations: [],
-            dynamic: [],
             static: [ 0, 1 ],
             loc: {}
           }
@@ -163,13 +160,11 @@ export class KeyQueryTests {
           elements: {
             el_a: {
               correlations: [],
-              dynamic: [],
               static: [ 0 ],
               loc: {}
             },
             el_b: {
               correlations: [],
-              dynamic: [],
               static: [ 1 ],
               loc: {}
             }
@@ -219,8 +214,7 @@ export class KeyQueryTests {
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
         elements: {
           el_a: {
-            correlations: [],
-            dynamic: [ 1, 2],
+            correlations: [ [ -1, 1 ], [ -1, 2 ]],
             static: [ 0 ],
             loc: {}
           }
@@ -257,8 +251,7 @@ export class KeyQueryTests {
           stylesFound: [".root", "[state|bgcolor]", "[state|color]"],
           elements: {
             el_a: {
-              correlations: [ [ -1, 1], [-1, 2]],
-              dynamic: [ ],
+              correlations: [ [ -1, 2 ], [ -1, 1 ]],
               static: [ 0 ],
               loc: {}
             }
@@ -297,8 +290,7 @@ export class KeyQueryTests {
           stylesFound: [".root", "[state|bgcolor=blue]", "[state|bgcolor=red]", "[state|color=blue]", "[state|color=red]"],
           elements: {
             el_a: {
-              correlations: [ [ -1, 1, 2], [-1, 3, 4]],
-              dynamic: [ ],
+              correlations: [ [-1, 3, 4], [ -1, 1, 2] ],
               static: [ 0 ],
               loc: {}
             }
@@ -346,7 +338,6 @@ export class KeyQueryTests {
         elements: {
           el_a: {
             correlations: [ [ -1, 1, 2 ] ],
-            dynamic: [ ],
             static: [ 0 ],
             loc: {}
           }
@@ -394,7 +385,6 @@ export class KeyQueryTests {
         elements: {
           el_a: {
             correlations: [ [ 0, 1 ] ],
-            dynamic: [ ],
             static: [ 2, 3 ],
             loc: {}
           }
@@ -442,7 +432,6 @@ export class KeyQueryTests {
         elements: {
           el_a: {
             correlations: [ [ -1, 0, 1 ]],
-            dynamic: [ ],
             static: [ 2, 3 ],
             loc: {}
           }
@@ -451,8 +440,88 @@ export class KeyQueryTests {
       assert.deepEqual(result, expectedResult);
     });
   }
+  @test "can generate an analysis for the optimizer"() {
+    let info = new Template("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    imports.registerSource("blocks/a.css",
+      `.foo { border: 3px; }
+       .foo[state|bar] { font-size: 26px; }
+      `
+    );
 
-  @test "correlating two classes from the same block on the same elment throws an error"() {
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      @block-reference a from "a.css";
+
+      .root { color: blue; }
+      [state|foo] { color: red; }
+      .asdf { font-size: 20px; }
+      .fdsa { font-size: 22px; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      analysis.blocks[""] = block;
+      let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
+      analysis.startElement({});
+      let klass = aBlock.getClass('foo') as BlockClass;
+      analysis.addStyle( klass, false );
+      analysis.addStyle( klass.states.getState('bar') as State, false );
+      analysis.addExclusiveStyles(false, block.getClass('asdf') as BlockClass,  block.getClass('fdsa') as BlockClass);
+      analysis.endElement();
+      let options: PluginOptions = {};
+      let reader = new OptionsReader(options);
+      let optimizerAnalysis = analysis.forOptimizer(reader);
+      let result = optimizerAnalysis.serialize();
+      let expectedResult: SerializedOptimizedAnalysis<"Opticss.Template"> = {
+        template: {
+          type: "Opticss.Template",
+          identifier: "templates/my-template.hbs"
+        },
+        elements: [
+          {
+            "attributes": [
+              {
+                "name": "class",
+                "value": {
+                  "allOf": [
+                    {
+                      "constant": "a__foo"
+                    },
+                    {
+                      "constant": "a__foo--bar"
+                    },
+                    {
+                      "oneOf": [
+                        {
+                          "constant": "query-test__asdf"
+                        },
+                        {
+                          "constant": "query-test__fdsa"
+                        },
+                        {
+                          "absent": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "tagname": {
+              "value": {
+                "unknown": true
+              }
+            }
+          }
+        ]
+      };
+      assert.deepEqual(result, expectedResult);
+    });
+  }
+
+  @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
@@ -558,7 +627,7 @@ export class KeyQueryTests {
     );
   }
 
-  @test "adding both root and a state from the same block to the same elment is allowed"() {
+  @test "adding both root and a state from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
@@ -616,7 +685,6 @@ export class KeyQueryTests {
           elements: {
             el_a: {
               correlations: [ ],
-              dynamic: [ ],
               static: [ 0, 1 ],
               loc: {}
             }
@@ -807,7 +875,7 @@ export class KeyQueryTests {
       let serialization = analysis.serialize();
       assert.deepEqual(serialization.template, {type: "Opticss.Template", identifier: "my-template.html"});
       let factory = new BlockFactory(options, postcss);
-      return TemplateAnalysis.deserialize<"Opticss.Template", Template>(serialization, factory).then(analysis => {
+      return TemplateAnalysis.deserialize<"Opticss.Template">(serialization, factory).then(analysis => {
         let reserialization = analysis.serialize();
         assert.deepEqual(serialization, reserialization);
       });

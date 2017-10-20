@@ -1,10 +1,11 @@
-import * as debugGenerator from "debug";
+import { OptionsReader } from '../OptionsReader';
+import * as debugGenerator from 'debug';
 
 import { Block, BlockObject } from "../Block";
 import { TemplateAnalysis, SerializedTemplateAnalysis } from "./index";
 import {
-  TemplateInfo,
   TemplateTypes,
+  TemplateAnalysis as OptimizedTemplateAnalysis,
 } from "@opticss/template-api";
 import { StyleAnalysis } from "./StyleAnalysis";
 
@@ -14,10 +15,10 @@ export class SerializedMetaTemplateAnalysis {
   analyses: SerializedTemplateAnalysis<keyof TemplateTypes>[];
 }
 
-export class MetaTemplateAnalysis<Template extends TemplateInfo<keyof TemplateTypes>> implements StyleAnalysis {
-  protected analyses: TemplateAnalysis<Template>[];
-  protected stylesFound: Map<BlockObject, TemplateAnalysis<Template>[]>;
-  protected dynamicStyles: Map<BlockObject, TemplateAnalysis<Template>[]>;
+export class MetaTemplateAnalysis implements StyleAnalysis {
+  protected analyses: TemplateAnalysis<keyof TemplateTypes>[];
+  protected stylesFound: Map<BlockObject, TemplateAnalysis<keyof TemplateTypes>[]>;
+  protected dynamicStyles: Map<BlockObject, TemplateAnalysis<keyof TemplateTypes>[]>;
 
   constructor() {
     this.analyses = [];
@@ -25,13 +26,13 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo<keyof TemplateTy
     this.dynamicStyles = new Map();
   }
 
-  addAllAnalyses(analyses: TemplateAnalysis<Template>[]) {
+  addAllAnalyses(analyses: TemplateAnalysis<keyof TemplateTypes>[]) {
     analyses.forEach((analysis) => {
       this.addAnalysis(analysis);
     });
   }
 
-  addAnalysis(analysis: TemplateAnalysis<Template>) {
+  addAnalysis(analysis: TemplateAnalysis<keyof TemplateTypes>) {
     debug(`MetaAnalysis: Adding analysis for ${analysis.template.identifier}`);
     this.analyses.push(analysis);
     analysis.stylesFound.forEach((style) => {
@@ -46,7 +47,7 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo<keyof TemplateTy
     return Object.keys(this.analyses).length;
   }
 
-  eachAnalysis(cb: (v: TemplateAnalysis<Template>) => any) {
+  eachAnalysis(cb: (v: TemplateAnalysis<keyof TemplateTypes>) => any) {
     this.analyses.forEach(a => {
       cb(a);
     });
@@ -70,7 +71,7 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo<keyof TemplateTy
 
   areCorrelated(...styles: BlockObject[]): boolean {
     if (styles.length < 2) return false;
-    let possibleAnalyses: TemplateAnalysis<Template>[] = this.stylesFound.get(styles[0]) || [];
+    let possibleAnalyses: TemplateAnalysis<keyof TemplateTypes>[] = this.stylesFound.get(styles[0]) || [];
     for (let si = 1; si < styles.length && possibleAnalyses.length > 1; si++) {
       possibleAnalyses = possibleAnalyses.filter(a => a.stylesFound.has(styles[si]));
     }
@@ -111,7 +112,15 @@ export class MetaTemplateAnalysis<Template extends TemplateInfo<keyof TemplateTy
     return { analyses };
   }
 
-  private addAnalysisToStyleMap(map: Map<BlockObject, TemplateAnalysis<Template>[]>, style: BlockObject, analysis: TemplateAnalysis<Template>) {
+  forOptimizer(opts: OptionsReader): Array<OptimizedTemplateAnalysis<keyof TemplateTypes>> {
+    let analyses = new Array<OptimizedTemplateAnalysis<keyof TemplateTypes>>();
+    this.eachAnalysis(a => {
+      analyses.push(a.forOptimizer(opts));
+    });
+    return analyses;
+  }
+
+  private addAnalysisToStyleMap(map: Map<BlockObject, TemplateAnalysis<keyof TemplateTypes>[]>, style: BlockObject, analysis: TemplateAnalysis<keyof TemplateTypes>) {
     let analyses = map.get(style);
     if (analyses) {
       analyses.push(analysis);

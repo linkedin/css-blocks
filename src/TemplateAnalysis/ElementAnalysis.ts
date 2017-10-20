@@ -12,7 +12,6 @@ export interface StyleMapping {
  */
 export interface SerializedElement {
   static: number[];
-  dynamic: number[];
   correlations: number[][];
   loc?: errors.ErrorLocation;
 }
@@ -22,7 +21,7 @@ export interface SerializedElement {
  * individual element. It is designed to be used internally by TemplateAnalysis.
  *
  * The unique id generated in the constructor is returned by `TemplateAnalysis.startElement()`.
- * This token can later be used to retreive rewritten classes and binary expressions
+ * This token can later be used to retrieve rewritten classes and binary expressions
  * for that specific element via `TemplateAnalysis.getElementStyles()`.
  */
 export class Element {
@@ -31,7 +30,6 @@ export class Element {
   mapping:      StyleMapping;
   stylesFound:  Set<BlockObject>;
   static:       Set<BlockObject>;
-  dynamic:      Set<BlockObject>;
   correlations: Set<BlockObject | undefined>[];
   locInfo:      errors.ErrorLocation;
 
@@ -43,17 +41,8 @@ export class Element {
     this.id = id;
     this.stylesFound = new Set;
     this.static = new Set;
-    this.dynamic = new Set;
     this.correlations = [];
     this.locInfo = locInfo;
-  }
-
-  /**
-   * Checks whether a block object is used in a dynamic expression in a template.
-   * @param style The block object that might be dynamic.
-   */
-  isDynamic(style: BlockObject): boolean {
-    return this.dynamic.has(style);
   }
 
   /**
@@ -65,18 +54,17 @@ export class Element {
   }
 
   /**
-   * Add a single style to the analysis object. Dynamic styles will also be added
-   * to the dynamic styles set.
-   * ex: f(a, false); f(b, true); f(c, true) => [[a], [b], [b]]
+   * Add a single style to the analysis object.
+   * ex: f(a, false); f(b, true); f(c, true) => [[a], [b, undefined], [c, undefined]]
    * @param obj The block object referenced on the current element.
-   * @param isDynamic If this style is dynamically applied.
+   * @param isDynamic If this style is conditionally applied.
    */
   addStyle( obj: BlockObject, isDynamic = false ) {
 
     this.stylesFound.add(obj);
 
     if ( isDynamic ) {
-      this.dynamic.add(obj);
+      this.correlations.push(new Set([obj, undefined]));
     }
     else {
       this.static.add(obj);
@@ -95,10 +83,6 @@ export class Element {
    */
   addExclusiveStyles( alwaysPresent: boolean, ...objs: BlockObject[] ){
 
-    if ( !this.correlations.length ) {
-      this.correlations.push(new Set());
-    }
-
     let toAdd: Set<BlockObject | undefined> = new Set();
     objs.forEach( ( obj: BlockObject ) => {
       this.stylesFound.add(obj);
@@ -108,23 +92,17 @@ export class Element {
       toAdd.add(undefined);
     }
 
-    this.correlations.unshift(toAdd);
+    this.correlations.push(toAdd);
   }
 
   serialize( parentStyles: BlockObject[] ): SerializedElement {
     let staticStyles: number[] = [];
-    let dynamic: number[] = [];
     let correlations: number[][] = [];
 
     this.static.forEach((s) => {
       staticStyles.push(parentStyles.indexOf(s));
     });
     staticStyles.sort();
-
-    this.dynamic.forEach((dynamicStyle) => {
-      dynamic.push(parentStyles.indexOf(dynamicStyle));
-    });
-    dynamic.sort();
 
     this.correlations.forEach((correlation) => {
       if (correlation.size > 1) {
@@ -139,7 +117,6 @@ export class Element {
 
     return {
       static: staticStyles,
-      dynamic,
       correlations,
       loc: {}
     };
