@@ -27,7 +27,7 @@ export class State extends BlockObject {
   }
 
   /**
-   * Retreive the BlockClass that this state belongs to, if applicable.
+   * Retrieve the BlockClass that this state belongs to, if applicable.
    * @returns The parent block class, or null.
    */
   get blockClass(): BlockClass | null {
@@ -39,7 +39,7 @@ export class State extends BlockObject {
   }
 
   /**
-   * Retreive this state's group name, if applicable.
+   * Retrieve this state's group name, if applicable.
    * @returns The parent group name, or null.
    */
   get group(): string | null {
@@ -56,7 +56,7 @@ export class State extends BlockObject {
   }
 
   /**
-   * Retreive this State's selector as it appears in the Block source code.
+   * Retrieve this State's selector as it appears in the Block source code.
    * @returns The State's attribute selector
    */
   asSource(): string {
@@ -68,7 +68,7 @@ export class State extends BlockObject {
   }
 
   /**
-   * Retreive this State's local name, including the optional BlockClass and group designators.
+   * Retrieve this State's local name, including the optional BlockClass and group designators.
    * @returns The State's local name.
    */
   localName(): string {
@@ -109,7 +109,7 @@ export class State extends BlockObject {
   }
 
   /**
-   * Given a StateInfo object, return weather this State object has the same group and name.
+   * Given a StateInfo object, return whether this State object has the same group and name.
    * @param info StateInfo to compare against
    * @returns True or false.
    */
