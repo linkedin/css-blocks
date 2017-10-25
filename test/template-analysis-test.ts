@@ -50,7 +50,7 @@ export class TemplateAnalysisTests {
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
         elements: {
-          "el_a": {
+          "a": {
             correlations: [],
             static: [ 0 ],
             loc: {}
@@ -82,7 +82,7 @@ export class TemplateAnalysisTests {
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
         elements: {
-          el_a: {
+          a: {
             correlations: [ [ -1, 0 ] ],
             static: [ ],
             loc: {}
@@ -122,7 +122,7 @@ export class TemplateAnalysisTests {
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]"],
         elements: {
-          el_a: {
+          a: {
             correlations: [],
             static: [ 0, 1 ],
             loc: {}
@@ -158,12 +158,12 @@ export class TemplateAnalysisTests {
         let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css", "ref": "blocks/bar.block.css"},
           elements: {
-            el_a: {
+            a: {
               correlations: [],
               static: [ 0 ],
               loc: {}
             },
-            el_b: {
+            b: {
               correlations: [],
               static: [ 1 ],
               loc: {}
@@ -213,7 +213,7 @@ export class TemplateAnalysisTests {
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
         elements: {
-          el_a: {
+          a: {
             correlations: [ [ -1, 1 ], [ -1, 2 ]],
             static: [ 0 ],
             loc: {}
@@ -250,7 +250,7 @@ export class TemplateAnalysisTests {
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "[state|bgcolor]", "[state|color]"],
           elements: {
-            el_a: {
+            a: {
               correlations: [ [ -1, 2 ], [ -1, 1 ]],
               static: [ 0 ],
               loc: {}
@@ -289,7 +289,7 @@ export class TemplateAnalysisTests {
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "[state|bgcolor=blue]", "[state|bgcolor=red]", "[state|color=blue]", "[state|color=red]"],
           elements: {
-            el_a: {
+            a: {
               correlations: [ [-1, 3, 4], [ -1, 1, 2] ],
               static: [ 0 ],
               loc: {}
@@ -336,7 +336,7 @@ export class TemplateAnalysisTests {
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
         elements: {
-          el_a: {
+          a: {
             correlations: [ [ -1, 1, 2 ] ],
             static: [ 0 ],
             loc: {}
@@ -383,7 +383,7 @@ export class TemplateAnalysisTests {
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
         elements: {
-          el_a: {
+          a: {
             correlations: [ [ 0, 1 ] ],
             static: [ 2, 3 ],
             loc: {}
@@ -430,7 +430,7 @@ export class TemplateAnalysisTests {
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
         elements: {
-          el_a: {
+          a: {
             correlations: [ [ -1, 0, 1 ]],
             static: [ 2, 3 ],
             loc: {}
@@ -683,7 +683,7 @@ export class TemplateAnalysisTests {
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "a.foo"],
           elements: {
-            el_a: {
+            a: {
               correlations: [ ],
               static: [ 0, 1 ],
               loc: {}

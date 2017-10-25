@@ -24,9 +24,7 @@ import {
   Attribute,
 } from "@opticss/template-api";
 import { Element, SerializedElement, StyleMapping } from "./ElementAnalysis";
-import IDGenerator from "../util/IDGenerator";
-
-const ELEMENT_ID_PREFIX = "el_";
+import { IdentGenerator } from "opticss";
 
 /**
  * This interface defines a JSON friendly serialization
@@ -54,7 +52,7 @@ export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
 export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAnalysis {
 
   template: TemplateInfo<keyof TemplateTypes>;
-  idGenerator: IDGenerator;
+  idGenerator: IdentGenerator;
 
   /**
    * A map from a local name for the block to the [[Block]].
@@ -145,7 +143,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    * @param template The template being analyzed.
    */
   constructor(template: TemplateInfo<K>, options: TemplateValidatorOptions = {}) {
-    this.idGenerator = new IDGenerator(ELEMENT_ID_PREFIX);
+    this.idGenerator = new IdentGenerator();
     this.template = template;
     this.blocks = {};
     this.stylesFound = new Set();
@@ -169,15 +167,17 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   }
 
   /**
-   * Indicates a new element found in a template. no allocations are performed until a style is added
-   * so it is safe to call before you know whether there are any syles on the current element.
-   * Allways call [[endElement]] before calling the next [[startElement]], even if the elements are nested in the document.
+   * Indicates a new element found in a template. no allocations are performed
+   * until a style is added so it is safe to call before you know whether there
+   * are any styles on the current element. Always call [[endElement]] before
+   * calling the next [[startElement]], even if the elements are nested in the
+   * document.
    */
   startElement( locInfo: errors.ErrorLocation, id?: string ): string {
     if ( this.currentElement ) {
       throw new errors.CssBlockError(`endElement wasn't called after a previous call to startElement. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.`, locInfo);
     }
-    this.currentElement = new Element(id || this.idGenerator.next(), locInfo);
+    this.currentElement = new Element(id || this.idGenerator.nextIdent(), locInfo);
     locInfo.filename = this.template.identifier;
     return this.currentElement.id;
   }
