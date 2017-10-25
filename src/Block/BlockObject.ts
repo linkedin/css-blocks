@@ -1,6 +1,6 @@
 import * as postcss from "postcss";
 import { OptionsReader } from "../OptionsReader";
-import { CompoundSelector } from "../parseSelector";
+import { CompoundSelector } from "opticss";
 import { State, Block, BlockClass } from "./index";
 
 // `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
@@ -266,12 +266,21 @@ export class StateContainer {
    * Returns all states contained in this Container
    * @return Array of all State objects
    */
-  all(): BlockObject[] {
-    let result: BlockObject[] = [];
+  all(): State[] {
+    let result: State[] = [];
     Object.keys(this._groups).forEach((group) => {
       result = result.concat((<any>Object).values(this._groups[group]));
     });
     result = result.concat((<any>Object).values(this._states));
+    return result;
+  }
+
+  groupsOfStates(): State[][] {
+    let result: State[][] = [];
+    Object.keys(this._groups).forEach((group) => {
+      result.push((<any>Object).values(this._groups[group]));
+    });
+    result.push((<any>Object).values(this._states));
     return result;
   }
 }

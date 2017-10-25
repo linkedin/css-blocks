@@ -1,14 +1,14 @@
-import * as postcss from "postcss";
-import selectorParser = require("postcss-selector-parser");
+import * as postcss from 'postcss';
+import selectorParser = require('postcss-selector-parser');
 import { PluginOptions } from "./options";
 import { OptionsReader } from "./OptionsReader";
 import { Block, StateInfo } from "./Block";
 import { IBlockFactory } from "./Block/IBlockFactory";
-import * as errors from "./errors";
+import * as errors from './errors';
 export { PluginOptions } from "./options";
 import { sourceLocation, selectorSourceLocation, SourceLocation } from "./SourceLocation";
-import parseSelector, { ParsedSelector, CompoundSelector } from "./parseSelector";
-import regexpu = require("regexpu-core");
+import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
+import regexpu = require('regexpu-core');
 import { FileIdentifier } from "./importing";
 import { Syntax } from "./preprocessing";
 import parseBlockDebug from "./parseBlockDebug";
@@ -190,7 +190,12 @@ export default class BlockParser {
         }
         // Fetch and iterate over the parsed selectors list for this rule – one
         // for each comma seperated selector.
-        let parsedSelectors = block.getParsedSelectors(rule);
+        let parsedSelectors;
+        try {
+          parsedSelectors = block.getParsedSelectors(rule);
+        } catch (e) {
+           throw new errors.InvalidBlockSyntax(e.message, sourceLocation(sourceFile, rule));
+        }
         parsedSelectors.forEach((iSel) => {
 
           let keySel = iSel.key;
@@ -243,7 +248,7 @@ export default class BlockParser {
                 // If a class selector, ensure this class is registered with the
                 // parent block and track all property concerns from this ruleset.
                 case BlockType.class:
-                  let blockClass = block.ensureClass(obj.node.value);
+                  let blockClass = block.ensureClass(obj.node.value!);
                   if (isKey) {
                     blockClass.propertyConcerns.addProperties(rule, block);
                   }
@@ -254,7 +259,7 @@ export default class BlockParser {
                 // Track all property concerns from this ruleset.
                 case BlockType.classState:
                   let classNode = obj.node.prev();
-                  let classObj = block.ensureClass(classNode.value);
+                  let classObj = block.ensureClass(classNode.value!);
                   let classState = classObj.states._ensureState(stateParser(<selectorParser.Attribute>obj.node));
                   if (isKey) {
                     classState.propertyConcerns.addProperties(rule, block);
@@ -477,7 +482,7 @@ export default class BlockParser {
     // Otherwise, referencing a tag name is not allowd in blocks, throw an error.
     let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
     if (blockName) {
-      let refBlock = block.getReferencedBlock(blockName.value);
+      let refBlock = block.getReferencedBlock(blockName.value!);
       if (!refBlock) {
         throw new errors.InvalidBlockSyntax(
           `Tag name selectors are not allowed: ${rule.selector}`,
@@ -488,15 +493,9 @@ export default class BlockParser {
     // Targeting attributes that are not state selectors is not allowd in blocks, throw.
     let nonStateAttribute = sel.nodes.find(n => n.type === selectorParser.ATTRIBUTE && !isState(n));
     if (nonStateAttribute) {
-      if ((<selectorParser.Attribute>nonStateAttribute).attribute.match(/state:/)) {
-        throw new errors.InvalidBlockSyntax(
-          `State attribute selctors use a \`|\`, not a \`:\` which is illegal CSS syntax and won't work in other parsers: ${rule.selector}`,
-          this.selectorSourceLocation(block, rule, nonStateAttribute));
-      } else {
-        throw new errors.InvalidBlockSyntax(
-          `Cannot select attributes other than states: ${rule.selector}`,
-          this.selectorSourceLocation(block, rule, nonStateAttribute));
-      }
+      throw new errors.InvalidBlockSyntax(
+        `Cannot select attributes other than states: ${rule.selector}`,
+        this.selectorSourceLocation(block, rule, nonStateAttribute));
     }
 
     // Disallow pseudoclasses that take selectors as arguments.

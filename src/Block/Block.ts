@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
-import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
+import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import { stateParser, isClass, isState, isRoot, NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockClass } from "./index";
 import { OptionsReader } from "../OptionsReader";
@@ -276,10 +276,10 @@ export class Block extends BlockObject {
       case BlockType.state:
         return this.states._getState(stateParser(<selectorParser.Attribute>obj.node));
       case BlockType.class:
-        return this.getClass(obj.node.value);
+        return this.getClass(obj.node.value!);
       case BlockType.classState:
         let classNode = obj.node.prev();
-        let classObj = this.getClass(classNode.value);
+        let classObj = this.getClass(classNode.value!);
         if (classObj) {
           return classObj.states._getState(stateParser(<selectorParser.Attribute>obj.node));
         }
@@ -291,11 +291,11 @@ export class Block extends BlockObject {
     if (node.type === selectorParser.CLASS && node.value === "root") {
       return [this, 0];
     } else if (node.type === selectorParser.TAG) {
-      let otherBlock = this.getReferencedBlock(node.value);
+      let otherBlock = this.getReferencedBlock(node.value!);
       if (otherBlock) {
         let next = node.next();
         if (next && isClass(next)) {
-          let klass = otherBlock.getClass(next.value);
+          let klass = otherBlock.getClass(next.value!);
           if (klass) {
             let another = next.next();
             if (another && isState(another)) {
@@ -328,7 +328,7 @@ export class Block extends BlockObject {
         return null;
       }
     } else if (node.type === selectorParser.CLASS) {
-      let klass = this.getClass(node.value);
+      let klass = this.getClass(node.value!);
       if (klass === undefined) {
         return null;
       }
@@ -394,7 +394,8 @@ export class Block extends BlockObject {
   rewriteSelector(selector: ParsedSelector, opts: OptionsReader): ParsedSelector {
     // generating a string and reparsing ensures the internal structure is consistent
     // otherwise the parent/next/prev relationships will be wonky with the new nodes.
-    return parseSelector(this.rewriteSelectorToString(selector, opts))[0];
+    let s = this.rewriteSelectorToString(selector, opts);
+    return parseSelector(s)[0];
   }
 
   matches(compoundSel: CompoundSelector): boolean {
@@ -446,7 +447,7 @@ export class Block extends BlockObject {
   getParsedSelectors(rule: postcss.Rule): ParsedSelector[] {
     let sels = this.parsedRuleSelectors.get(rule);
     if (!sels) {
-      sels = parseSelector(rule.selector);
+      sels = parseSelector(rule);
       this.parsedRuleSelectors.set(rule, sels);
     }
     return sels;

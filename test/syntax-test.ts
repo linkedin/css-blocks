@@ -1,10 +1,13 @@
 import { suite, test, skip, only } from "mocha-typescript";
 import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
+import * as nodeAssert from "assert";
 
 import BEMProcessor from "./util/BEMProcessor";
 import assertError from "./util/assertError";
 import { MockImportRegistry } from "./util/MockImportRegistry";
+
+const { AssertionError } = nodeAssert;
 
 @suite("In BEM output mode")
 export class BEMOutputMode extends BEMProcessor {
@@ -248,8 +251,7 @@ export class StraightJacket extends BEMProcessor {
                     [state:asdf=foo] { transform: scale(2); }`;
     return assertError(
       cssBlocks.InvalidBlockSyntax,
-      "State attribute selctors use a `|`, not a `:` which is illegal CSS syntax and won't work in other parsers: [state:asdf=foo]" +
-      " (foo/bar/test-state.css:2:21)",
+      'Unexpected ":" found. (foo/bar/test-state.css:2:21)',
       this.process(filename, inputCSS));
   }
 

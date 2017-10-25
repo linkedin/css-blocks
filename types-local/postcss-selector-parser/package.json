@@ -1,7 +1,0 @@
-{
-  "dependencies": {},
-  "description": "TypeScript definitions for postcss-selector-parser 2.2.3",
-  "name": "@types/postcss-selector-parser",
-  "typings": "index.d.ts",
-  "version": "2.2.3"
-}

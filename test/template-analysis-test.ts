@@ -18,13 +18,13 @@ import { assertParseError } from "./util/assertError";
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Template Analysis")
-export class KeyQueryTests {
-  private parseBlock(css: string, filename: string, opts?: PluginOptions): Promise<BlockAndRoot> {
+export class TemplateAnalysisTests {
+  private parseBlock(css: string, filename: string, opts?: PluginOptions, blockName = "analysis"): Promise<BlockAndRoot> {
     let options: PluginOptions = opts || {};
     let factory = new BlockFactory(options, postcss);
     let blockParser = new BlockParser(postcss, options, factory);
     let root = postcss.parse(css, {from: filename});
-    return blockParser.parse(root, filename, "query-test").then((block) => {
+    return blockParser.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
     });
   }
@@ -461,7 +461,7 @@ export class KeyQueryTests {
       .asdf { font-size: 20px; }
       .fdsa { font-size: 22px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", reader, "main").then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       analysis.startElement({});
@@ -495,10 +495,10 @@ export class KeyQueryTests {
                     {
                       "oneOf": [
                         {
-                          "constant": "query-test__asdf"
+                          "constant": "main__asdf"
                         },
                         {
-                          "constant": "query-test__fdsa"
+                          "constant": "main__fdsa"
                         },
                         {
                           "absent": true

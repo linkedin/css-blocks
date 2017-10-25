@@ -45,11 +45,6 @@ export {
   QueryKeySelector
 } from "./query";
 export {
-  default as parseSelector,
-  ParsedSelector,
-  CompoundSelector
-} from "./parseSelector";
-export {
   ImporterData,
   ImportedFile,
   Importer,
