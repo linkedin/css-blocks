@@ -36,14 +36,8 @@ export {
 export {
   OptionsReader as PluginOptionsReader,
 } from "./OptionsReader";
-export {
-  OutputMode
-} from "./OutputMode";
-export {
-  ParsedSelectorAndRule,
-  ClassifiedParsedSelectors,
-  QueryKeySelector
-} from "./query";
+export * from "./OutputMode";
+export * from "./query";
 export {
   ImporterData,
   ImportedFile,

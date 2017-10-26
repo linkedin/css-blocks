@@ -1,49 +1,29 @@
 import { Block, BlockObject } from "./Block";
 import postcss = require("postcss");
-import { parseSelector, ParsedSelector } from "opticss";
+import {
+  ClassifiedParsedSelectors,
+  QueryKeySelector as QueryKeySelectorImpl
+} from "opticss";
+import {
+  Element,
+  Tagname,
+} from "@opticss/template-api";
 
 export interface Query {
   execute(container: postcss.Container): ClassifiedParsedSelectors;
 }
 
-export interface ParsedSelectorAndRule {
-  parsedSelector: ParsedSelector;
-  rule: postcss.Rule;
-}
-
-export interface ClassifiedParsedSelectors {
-  main: ParsedSelectorAndRule[];
-  other: {
-    [classification: string]: ParsedSelectorAndRule[];
-  };
-}
-
 export class QueryKeySelector implements Query {
   target: BlockObject;
+  impl: QueryKeySelectorImpl;
   constructor(obj: BlockObject) {
     this.target = obj;
+    let tag = new Tagname({unknown: true});
+    let attrs = obj.asSourceAttributes();
+    this.impl = new QueryKeySelectorImpl(new Element(tag, attrs));
   }
 
   execute(container: postcss.Container, block?: Block): ClassifiedParsedSelectors {
-    let matchedSelectors: ClassifiedParsedSelectors = {
-      main: [],
-      other: {}
-    };
-    container.walkRules((node) => {
-      let parsedSelectors = block && block.getParsedSelectors(node) || parseSelector(node);
-      let found = parsedSelectors.filter((value: ParsedSelector) => this.target.matches(value.key));
-      found.forEach((sel) => {
-        let key = sel.key;
-        if (key.pseudoelement !== undefined) {
-          if (matchedSelectors.other[key.pseudoelement.value] === undefined) {
-            matchedSelectors.other[key.pseudoelement.value] = [];
-          }
-          matchedSelectors.other[key.pseudoelement.value].push({parsedSelector: sel, rule: node});
-        } else {
-          matchedSelectors.main.push({parsedSelector: sel, rule: node});
-        }
-      });
-    });
-    return matchedSelectors;
+    return this.impl.execute(container, block);
   }
 }

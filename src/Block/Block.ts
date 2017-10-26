@@ -1,7 +1,8 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
-import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
+import { SelectorFactory, parseSelector, ParsedSelector, CompoundSelector } from "opticss";
+import { Attribute } from "@opticss/template-api";
 import { stateParser, isClass, isState, isRoot, NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockClass } from "./index";
 import { OptionsReader } from "../OptionsReader";
@@ -22,7 +23,8 @@ export interface MergedObjectMap {
   [sourceName: string]: BlockObject[];
 }
 
-export class Block extends BlockObject {
+export class Block extends BlockObject implements SelectorFactory {
+  private _sourceAttribute: Attribute;
   private _classes: BlockClassMap = {};
   private _blockReferences: BlockReferenceMap = {};
   private _identifier: FileIdentifier;
@@ -63,6 +65,13 @@ export class Block extends BlockObject {
     }
     this._name = name;
     this.hasHadNameReset = true;
+  }
+
+  asSourceAttributes(): Attribute[] {
+    if (!this._sourceAttribute) {
+      this._sourceAttribute = new Attribute("class", {constant: "root"});
+    }
+    return [this._sourceAttribute];
   }
 
   /**

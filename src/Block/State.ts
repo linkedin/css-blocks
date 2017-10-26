@@ -1,4 +1,5 @@
 import selectorParser = require("postcss-selector-parser");
+import { AttributeNS, ValueAbsent, ValueConstant, Attr } from "@opticss/template-api";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 import { CompoundSelector } from "opticss";
@@ -11,6 +12,7 @@ import { BlockObject, StateInfo } from "./BlockObject";
  * optionally be a member of a group of states, and or designated "global".
  */
 export class State extends BlockObject {
+  private _sourceAttributes: Attr[];
   private _group: string | null;
   isGlobal = false;
 
@@ -65,6 +67,27 @@ export class State extends BlockObject {
     } else {
       return this.blockClass.asSource() + this.unqualifiedSource();
     }
+  }
+
+  asSourceAttributes(): Attr[] {
+    if (!this._sourceAttributes) {
+      this._sourceAttributes = [];
+      let value: ValueConstant | ValueAbsent;
+      let name: string;
+      if (this.group) {
+        name = this.group;
+        value = {constant: this.name};
+      } else {
+        name = this.name;
+        value = {absent: true};
+      }
+      if (this.blockClass) {
+        let classAttr = this.blockClass.asSourceAttributes();
+        this._sourceAttributes.push(...classAttr);
+      }
+      this._sourceAttributes.push(new AttributeNS("state", name, value));
+    }
+    return this._sourceAttributes;
   }
 
   /**

@@ -1,6 +1,7 @@
 import * as postcss from "postcss";
 import { OptionsReader } from "../OptionsReader";
 import { CompoundSelector } from "opticss";
+import { Attr } from "@opticss/template-api";
 import { State, Block, BlockClass } from "./index";
 
 // `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
@@ -343,6 +344,11 @@ export abstract class BlockObject {
    * @returns The local name.
    */
   public abstract localName(): string;
+
+  /**
+   * Return an attribute for analysis using the authored source syntax.
+   */
+  public abstract asSourceAttributes(): Attr[];
 
   /**
    * Return the source selector this `BlockObject` was read from.

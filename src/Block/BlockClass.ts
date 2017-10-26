@@ -1,4 +1,5 @@
 import selectorParser = require("postcss-selector-parser");
+import { Attribute } from "@opticss/template-api";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 import { CompoundSelector } from "opticss";
@@ -10,6 +11,7 @@ import { Block } from "./index";
  * Represents a Class present in the Block.
  */
 export class BlockClass extends BlockObject {
+  private _sourceAttribute: Attribute;
 
   public readonly states: StateContainer;
 
@@ -45,6 +47,13 @@ export class BlockClass extends BlockObject {
    */
   asSource(): string {
     return `.${this.name}`;
+  }
+
+  asSourceAttributes(): Attribute[] {
+    if (!this._sourceAttribute) {
+      this._sourceAttribute = new Attribute("class", {constant: this.name});
+    }
+    return [this._sourceAttribute];
   }
 
   /**
