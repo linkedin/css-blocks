@@ -78,8 +78,8 @@ export {
   ClassName
 } from "./TemplateRewriter/ClassName";
 export {
-  StyleMapping
-} from "./TemplateRewriter/StyleMapping";
+  StyledTemplateMapping
+} from "./TemplateRewriter/StyledTemplateMapping";
 export {
   MetaStyleMapping
 } from "./TemplateRewriter/MetaStyleMapping";

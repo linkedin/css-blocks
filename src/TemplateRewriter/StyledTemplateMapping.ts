@@ -4,7 +4,7 @@ import { OptionsReader } from "../OptionsReader";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { TemplateInfo, TemplateTypes } from "@opticss/template-api";
 
-export class StyleMapping<K extends keyof TemplateTypes> {
+export class StyledTemplateMapping<K extends keyof TemplateTypes> {
   template: TemplateInfo<K>;
   blocks: {
     [localName: string]: Block;
@@ -44,8 +44,8 @@ export class StyleMapping<K extends keyof TemplateTypes> {
   static fromAnalysis<K extends keyof TemplateTypes>(
     analysis: TemplateAnalysis<K>,
     options: OptionsReader
-  ): StyleMapping<K> {
-    let mapping = new StyleMapping<K>(analysis.template as TemplateInfo<K>);
+  ): StyledTemplateMapping<K> {
+    let mapping = new StyledTemplateMapping<K>(analysis.template as TemplateInfo<K>);
     Object.keys(analysis.blocks).forEach(name => {
       mapping.addBlockReference(name, analysis.blocks[name]);
     });
