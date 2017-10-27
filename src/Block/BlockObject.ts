@@ -1,7 +1,8 @@
-import * as postcss from "postcss";
+import { unionInto } from '../util/unionInto';
+import * as postcss from 'postcss';
 import { OptionsReader } from "../OptionsReader";
 import { CompoundSelector } from "opticss";
-import { Attr } from "@opticss/template-api";
+import { Attr, Attribute } from "@opticss/template-api";
 import { State, Block, BlockClass } from "./index";
 
 // `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
@@ -304,9 +305,9 @@ export type BlockParent = Block | BlockClass | undefined;
  * properties and abstract methods that extenders must implement.
  */
 export abstract class BlockObject {
-
   protected _name: string;
   protected _container: BlockParent;
+  protected _compiledAttribute: any;
 
   public readonly propertyConcerns: PropertyContainer;
 
@@ -393,13 +394,53 @@ export abstract class BlockObject {
    * @returns this object's css class and all inherited classes.
    */
   cssClasses(opts: OptionsReader): string[] {
-    let classes = [this.cssClass(opts)];
-    let base = this.base;
-    while (base) {
-      classes.push(base.cssClass(opts));
-      base = base.base;
+    let classes = new Array<string>();
+    for (let style of this.resolveStyles()) {
+      classes.push(style.cssClass(opts));
     }
     return classes;
+  }
+
+  /**
+   * Return all Block Objects that are implied by this object.
+   * This takes inheritance, state/class correlations, and any
+   * other declared links between styles into account.
+   *
+   * This block object is included in the returned result so the
+   * resolved value's size is always 1 or greater.
+   */
+  public resolveStyles(): Set<BlockObject> {
+    let styles = this.resolveInheritance();
+    styles.add(this);
+    return styles;
+  }
+
+  /**
+   * Compute all block objects that are implied by this block object through
+   * inheritance. Does not include this object or the styles it implies through
+   * other relationships to this object but it does include all resolved styles
+   * for inherited objects.
+   *
+   * If nothing is inherited, this returns an empty set.
+   */
+  resolveInheritance(): Set<BlockObject> {
+    let inherited = new Set<BlockObject>();
+    inherited.add(this);
+    if (this.base) {
+      unionInto(inherited, this.base.resolveStyles());
+    }
+    return inherited;
+  }
+
+  asCompiledAttributes(opts: OptionsReader): Attribute[] {
+    if (!this._compiledAttribute) {
+      let classNames = this.cssClasses(opts);
+      let classValue = (classNames.length > 1) ?
+        {allOf: classNames.map(c => ({constant: c}))} :
+        {constant: classNames[0]};
+      this._compiledAttribute = new Attribute("class", classValue);
+    }
+    return [this._compiledAttribute];
   }
 
   /**

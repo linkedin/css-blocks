@@ -16,12 +16,6 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
   TemplateAnalysis as OptimizationTemplateAnalysis,
-  Tagname,
-  POSITION_UNKNOWN,
-  SourcePosition,
-  AttributeValueSet,
-  AttributeValueChoice,
-  Attribute,
 } from "@opticss/template-api";
 import { Element, SerializedElement, StyleMapping } from "./ElementAnalysis";
 import { IdentGenerator } from "opticss";
@@ -425,44 +419,9 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
 
   forOptimizer(opts: OptionsReader): OptimizationTemplateAnalysis<K> {
     let optAnalysis = new OptimizationTemplateAnalysis<K>(this.template);
-    for (let [elementId, element] of this.elements.entries()) {
-      let position: SourcePosition;
-      let { filename, line, column } = element.locInfo;
-      if (line) {
-        position = { filename, line, column };
-      } else {
-        position = POSITION_UNKNOWN;
-      }
-      optAnalysis.startElement(new Tagname({unknown: true}), position);
-      optAnalysis.setId(elementId);
-      let value: AttributeValueSet = {allOf: []};
-      for (let style of element.static) {
-        for (let className of style.cssClasses(opts)) {
-          value.allOf.push({constant: className});
-        }
-      }
-      for (let correlation of element.correlations) {
-        let choice: AttributeValueChoice = {oneOf: []};
-        for (let style of correlation) {
-          if (style) {
-            let classes = style.cssClasses(opts);
-            if (classes.length > 1) {
-              let set: AttributeValueSet = {allOf: []};
-              for (let className of classes) {
-                set.allOf.push({constant: className});
-              }
-              choice.oneOf.push(set);
-            } else {
-              choice.oneOf.push({constant: classes[0]});
-            }
-          } else {
-            choice.oneOf.push({absent: true});
-          }
-        }
-        value.allOf.push(choice);
-      }
-      optAnalysis.addAttribute(new Attribute("class", value));
-      optAnalysis.endElement(POSITION_UNKNOWN);
+    for (let element of this.elements.values()) {
+      let result = element.forOptimizer(opts);
+      optAnalysis.elements.push(result[0]);
     }
     return optAnalysis;
   }

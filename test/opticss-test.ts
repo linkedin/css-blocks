@@ -1,4 +1,5 @@
 import BlockCompiler from '../src/BlockCompiler';
+import { StyleMapping } from '../src/TemplateRewriter/StyleMapping';
 import { assert } from "chai";
 import { suite, test, only } from "mocha-typescript";
 import * as postcss from 'postcss';
@@ -7,10 +8,11 @@ import {
   SerializedTemplateAnalysis as SerializedOptimizedAnalysis,
   Template,
   TemplateInfo,
-  TemplateIntegrationOptions
+  TemplateIntegrationOptions,
+  isAndExpression
 } from "@opticss/template-api";
 import {
-  clean
+  clean, isType as assertType
 } from "@opticss/util";
 
 import * as cssBlocks from '../src/errors';
@@ -94,6 +96,21 @@ export class TemplateAnalysisTests {
           .e { color: red; }
           .f { font-size: 26px; }
         `);
+        let blockMapping = new StyleMapping(optimized.styleMapping, reader);
+        let it = analysis.elements.values();
+        let element1 = it.next().value;
+        let rewrite1 = blockMapping.rewriteMapping(element1);
+        assert.deepEqual(rewrite1.staticClasses, []);
+        assert.deepEqual([...rewrite1.dynamicClasses.keys()].sort(), ['c', 'd', 'e']);
+        let element2 = it.next().value;
+        let rewrite2 = blockMapping.rewriteMapping(element2);
+        assert.deepEqual(rewrite2.staticClasses, []);
+        assert.deepEqual([...rewrite2.dynamicClasses.keys()].sort(), ['c', 'e', 'f']);
+        let expr = rewrite2.dynamicClasses.get('c')!;
+        assertType(isAndExpression, expr).and(andExpr => {
+          assert.deepEqual(andExpr.and.length, 1);
+          assert.deepEqual(andExpr.and[0], block.find(".asdf")!);
+        });
       });
     });
   }

@@ -1,5 +1,16 @@
+import { OptionsReader } from '../OptionsReader';
 import { BlockObject } from "../Block";
-import * as errors from "../errors";
+import * as errors from '../errors';
+import {
+  Element as OptimizerElement,
+  Tagname,
+  POSITION_UNKNOWN,
+  SourcePosition,
+  AttributeValueSet,
+  AttributeValueChoice,
+  Attribute,
+} from "@opticss/template-api";
+import { unionInto } from '../util/unionInto';
 
 export interface StyleMapping {
   static: string;
@@ -26,15 +37,15 @@ export interface SerializedElement {
  */
 export class Element {
 
-  id:           string;
-  mapping:      StyleMapping;
-  stylesFound:  Set<BlockObject>;
-  static:       Set<BlockObject>;
-  correlations: Set<BlockObject | undefined>[];
-  locInfo:      errors.ErrorLocation;
+  id:            string;
+  mapping:       StyleMapping;
+  stylesFound:   Set<BlockObject>;
+  static:        Set<BlockObject>;
+  correlations:  Set<BlockObject | undefined>[];
+  locInfo:       errors.ErrorLocation;
 
   /**
-   * Construct a new ElementAnalysis.
+   * Construct a new Element.
    * @param locInfo The location info in the template for this element.
    */
   constructor( id: string, locInfo: errors.ErrorLocation ) {
@@ -120,5 +131,92 @@ export class Element {
       correlations,
       loc: {}
     };
+  }
+
+  forOptimizer(opts: OptionsReader): [OptimizerElement, Map<string, BlockObject>] {
+    let classMap = new Map<string, BlockObject>();
+    let startPosition: SourcePosition;
+    let { filename, line, column } = this.locInfo;
+    if (line) {
+      startPosition = { filename, line, column };
+    } else {
+      startPosition = POSITION_UNKNOWN;
+    }
+    let tagName = new Tagname({unknown: true});
+    let value: AttributeValueSet = {allOf: []};
+    let staticStyles = new Set<BlockObject>();
+    for (let style of this.static) {
+      unionInto(staticStyles, style.resolveStyles());
+    }
+
+    let commonStyles: Set<BlockObject> | undefined = undefined;
+    let resolvedCorrelations = new Array<Array<Set<BlockObject> | undefined>>();
+    for (let correlation of this.correlations) {
+      let resolvedCorrelation = new Array<Set<BlockObject> | undefined>();
+      commonStyles = correlation.has(undefined) ? new Set() : undefined;
+      for (let style of correlation) {
+        if (style) {
+          let resolved = style.resolveStyles();
+          if (!commonStyles) {
+            commonStyles = new Set();
+            unionInto(commonStyles, resolved);
+          } else {
+            for (let style of commonStyles) {
+              if (!resolved.has(style)) commonStyles.delete(style);
+            }
+          }
+          resolvedCorrelation.push(resolved);
+        } else {
+          resolvedCorrelation.push(undefined);
+        }
+      }
+      if (commonStyles && commonStyles.size > 0) {
+        for (let style of commonStyles) {
+          for (let resolved of resolvedCorrelation) {
+            if (resolved) resolved.delete(style);
+          }
+        }
+        unionInto(staticStyles, commonStyles);
+      }
+      resolvedCorrelations.push(resolvedCorrelation);
+    }
+
+    for (let style of staticStyles) {
+      let className = style.cssClass(opts);
+      classMap.set(className, style);
+      value.allOf.push({constant: className});
+    }
+
+    for (let correlation of resolvedCorrelations) {
+      if (correlation.length === 0) {
+        continue;
+      }
+      if (correlation.length === 1) { throw new Error("internal error: this should have been converted to a static style"); }
+
+      let choice: AttributeValueChoice = {oneOf: []};
+      for (let styles of correlation) {
+        if (styles) {
+          let classes = new Array<string>();
+          for (let style of styles) {
+            let className = style.cssClass(opts);
+            classMap.set(className, style);
+            classes.push(className);
+          }
+          if (classes.length > 1) {
+            choice.oneOf.push({allOf: classes.map(c => ({constant: c}))});
+          } else {
+            choice.oneOf.push({constant: classes[0]});
+          }
+        } else {
+          choice.oneOf.push({absent: true});
+        }
+      }
+      value.allOf.push(choice);
+    }
+    let classAttr = new Attribute("class", value);
+    return [
+      new OptimizerElement(tagName, [classAttr], {start: startPosition}, this.id),
+      classMap
+    ];
   }
 }
