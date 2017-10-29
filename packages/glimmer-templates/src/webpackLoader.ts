@@ -7,8 +7,11 @@ import {
   Block,
   PluginOptionsReader as CssBlocksOptionsReader,
   MetaStyleMapping,
-  StyleMapping
+  StyledTemplateMapping as StyleMapping
 } from "css-blocks";
+import {
+  isTemplateType
+} from "@opticss/template-api"
 
 import { ResolvedFile } from "./GlimmerProject";
 import { Rewriter } from "./Rewriter";
@@ -16,7 +19,7 @@ import { Rewriter } from "./Rewriter";
 const debug = debugGenerator("css-blocks:glimmer");
 
 interface MappingAndBlock {
-  mapping: StyleMapping<ResolvedFile>;
+  mapping: StyleMapping<"GlimmerTemplates.ResolvedFile">;
   block: Block;
 }
 
@@ -41,7 +44,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
   debug(`loader adapter for:`, loaderContext.resourcePath);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
   let options = new CssBlocksOptionsReader(loaderContext.cssBlocks.compilationOptions);
-  let metaMappingPromises = new Array<Promise<MetaStyleMapping<ResolvedFile>>>();
+  let metaMappingPromises = new Array<Promise<MetaStyleMapping>>();
   cssFileNames.forEach(filename => {
     metaMappingPromises.push(loaderContext.cssBlocks.mappings[filename]);
   });
@@ -50,17 +53,17 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
   return Promise.all(metaMappingPromises)
 
   // Once done, find mapping for this template, and add this plugin as a dependency.
-  .then( (metaMappings: MetaStyleMapping<ResolvedFile>[]): MappingAndBlock | undefined => {
+  .then( (metaMappings: MetaStyleMapping[]): MappingAndBlock | undefined => {
     let mappingAndBlock: MappingAndBlock | undefined = undefined;
 
     metaMappings.forEach(metaMapping => {
 
       debug("Templates with StyleMappings:", ...metaMapping.templates.keys());
-      let mapping: StyleMapping<ResolvedFile> | undefined;
+      let mapping: StyleMapping<"GlimmerTemplates.ResolvedFile"> | undefined;
 
       // Discover this template's mapping
       metaMapping.templates.forEach(aMapping => {
-        if (aMapping && aMapping.template.fullPath === loaderContext.resourcePath) {
+        if (aMapping && isTemplateType("GlimmerTemplates.ResolvedFile", aMapping.template) && aMapping.template.fullPath === loaderContext.resourcePath) {
           debug("Found mapping.");
           mapping = aMapping;
         }
@@ -73,7 +76,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
         }
         let blockNames = Object.keys(mapping.blocks);
         blockNames.forEach(n => {
-          let block = (<StyleMapping<ResolvedFile>>mapping).blocks[n];
+          let block = (<StyleMapping<"GlimmerTemplates.ResolvedFile">>mapping).blocks[n];
           if (n === "" && mapping && block) {
             mappingAndBlock = {
               block,

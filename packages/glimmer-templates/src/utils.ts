@@ -1,6 +1,8 @@
 import { AST } from '@glimmer/syntax';
 import { ResolvedFile } from "./GlimmerProject";
-import { ClassifiedParsedSelectors, CssBlockError } from "css-blocks";
+import { CssBlockError } from "css-blocks";
+import { TemplateInfo } from "@opticss/template-api";
+import { ClassifiedParsedSelectors } from "opticss";
 
 export function pathFromSpecifier(specifier: string) {
   return specifier.split(':')[1];
@@ -25,7 +27,7 @@ export function parseSpecifier(specifier: string): { componentType: string; comp
   }
 }
 
-export function cssBlockError(message: string, node: AST.Node, template: ResolvedFile) {
+export function cssBlockError(message: string, node: AST.Node, template: TemplateInfo<"GlimmerTemplates.ResolvedFile">) {
   return new CssBlockError(message, {
     filename: node.loc.source || template.identifier,
     line: node.loc.start.line,

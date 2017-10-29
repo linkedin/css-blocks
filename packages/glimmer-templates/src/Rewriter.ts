@@ -12,8 +12,11 @@ import {
   PluginOptionsReader as CssBlocksOptionsReader,
   PluginOptions as CssBlocksOpts,
   TemplateRewriter,
-  StyleMapping
+  StyledTemplateMapping as StyleMapping
 } from "css-blocks";
+import {
+  TemplateInfo
+} from "@opticss/template-api";
 
 import { ResolvedFile } from "./GlimmerProject";
 import { cssBlockError } from "./utils";
@@ -30,10 +33,10 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
   elementCount: number;
   syntax: Syntax;
   block: Block;
-  styleMapping: StyleMapping<ResolvedFile>;
+  styleMapping: StyleMapping<"GlimmerTemplates.ResolvedFile">;
   cssBlocksOpts: CssBlocksOptionsReader;
 
-  constructor(syntax: Syntax, styleMapping: StyleMapping<ResolvedFile>, defaultBlock: Block, cssBlocksOpts: CssBlocksOpts) {
+  constructor(syntax: Syntax, styleMapping: StyleMapping<"GlimmerTemplates.ResolvedFile">, defaultBlock: Block, cssBlocksOpts: CssBlocksOpts) {
     this.syntax        = syntax;
     this.styleMapping  = styleMapping;
     this.cssBlocksOpts = new CssBlocksOptionsReader(cssBlocksOpts);
@@ -42,7 +45,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
   }
 
   debug(message: string, ...args: any[]): void {
-    DEBUG(`${this.styleMapping.template.fullPath}: ${message}`, ...args);
+    DEBUG(`${this.styleMapping.template.identifier}: ${message}`, ...args);
   }
 
   ElementNode(node: AST.ElementNode) {
@@ -186,7 +189,7 @@ export class Rewriter implements TemplateRewriter, NodeVisitor {
     return parts[0];
   }
 
-  private processClass(node: AST.AttrNode, block: Block, parts: ConcatParts, template: ResolvedFile): StateContainer[] {
+  private processClass(node: AST.AttrNode, block: Block, parts: ConcatParts, template: TemplateInfo<"GlimmerTemplates.ResolvedFile">): StateContainer[] {
     let blockObjects: StateContainer[] = [];
     let statements: (AST.TextNode | AST.MustacheStatement)[];
 

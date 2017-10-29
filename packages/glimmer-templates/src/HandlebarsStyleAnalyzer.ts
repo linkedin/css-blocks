@@ -40,7 +40,7 @@ export class BaseStyleAnalyzer {
     this.options = new PluginOptionsReader(this.project.cssBlocksOpts);
   }
 
-  protected analyzeTemplate(componentName: string): Promise<SingleTemplateStyleAnalysis<ResolvedFile> | null> {
+  protected analyzeTemplate(componentName: string): Promise<SingleTemplateStyleAnalysis<"GlimmerTemplates.ResolvedFile"> | null> {
     this.debug("Analyzing template: ", componentName);
     let template: ResolvedFile;
     try {
@@ -136,7 +136,7 @@ export class BaseStyleAnalyzer {
     return parts[0];
   }
 
-  private processClass(node: AST.AttrNode, block: Block, analysis: SingleTemplateStyleAnalysis<ResolvedFile>, debugPath: string, template: ResolvedFile): StateContainer[] {
+  private processClass(node: AST.AttrNode, block: Block, analysis: SingleTemplateStyleAnalysis<"GlimmerTemplates.ResolvedFile">, debugPath: string, template: ResolvedFile): StateContainer[] {
     let blockObjects: StateContainer[] = [];
     let statements: (AST.TextNode | AST.MustacheStatement)[];
 
@@ -213,7 +213,7 @@ export class BaseStyleAnalyzer {
     }
   }
 
-  private processState(qualifiedStateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: SingleTemplateStyleAnalysis<ResolvedFile>, stylesheetPath: string, template: ResolvedFile) {
+  private processState(qualifiedStateName: string, node: AST.AttrNode, block: Block, stateContainers: StateContainer[], analysis: SingleTemplateStyleAnalysis<"GlimmerTemplates.ResolvedFile">, stylesheetPath: string, template: ResolvedFile) {
     let blockName: string | undefined;
     let stateName: string;
     let md = qualifiedStateName.match(/^([^\.]+)\.([^\.]+)$/);
@@ -272,7 +272,7 @@ export class BaseStyleAnalyzer {
 
 }
 
-export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements TemplateAnalyzer<ResolvedFile> {
+export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements TemplateAnalyzer<"GlimmerTemplates.ResolvedFile"> {
   project: Project;
   templateName: string;
 
@@ -281,7 +281,7 @@ export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements Templa
     this.templateName = templateName;
   }
 
-  analyze(): Promise<SingleTemplateStyleAnalysis<ResolvedFile>> {
+  analyze(): Promise<SingleTemplateStyleAnalysis<"GlimmerTemplates.ResolvedFile">> {
     return this.analyzeTemplate(this.templateName).then(result => {
       if (result === null) {
         throw new Error(`No stylesheet for ${this.templateName}`);
@@ -300,7 +300,7 @@ export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements Templa
   }
 }
 
-export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer implements MultiTemplateAnalyzer<ResolvedFile> {
+export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer implements MultiTemplateAnalyzer {
   project: Project;
   templateNames: string[];
 
@@ -317,11 +317,11 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer impleme
     return this.project.blockFactory;
   }
 
-  analyze(): Promise<MetaStyleAnalysis<ResolvedFile>> {
+  analyze(): Promise<MetaStyleAnalysis> {
     let depAnalyzer = new DependencyAnalyzer(this.project.projectDir); // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
 
     let components = new Set<string>();
-    let analysisPromises: Promise<SingleTemplateStyleAnalysis<ResolvedFile> | null>[] = [];
+    let analysisPromises: Promise<SingleTemplateStyleAnalysis<"GlimmerTemplates.ResolvedFile"> | null>[] = [];
     this.debug(`Analyzing all templates starting with: ${this.templateNames}`);
 
     this.templateNames.forEach(templateName => {
@@ -337,7 +337,7 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer impleme
     });
 
     return Promise.all(analysisPromises).then((analyses)=> {
-      let metaAnalysis = new MetaStyleAnalysis<ResolvedFile>();
+      let metaAnalysis = new MetaStyleAnalysis();
       analyses.forEach(a => {
         if (a !== null) {
           metaAnalysis.addAnalysis(a);

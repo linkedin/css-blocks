@@ -1,12 +1,13 @@
 import {
   PluginOptions,
-  TemplateInfo,
-  TemplateInfoConstructor,
-  TemplateInfoFactory,
-  SerializedTemplateInfo,
   BlockFactory,
   Importer,
 } from "css-blocks";
+import {
+  TemplateInfo,
+  TemplateInfoFactory,
+  SerializedTemplateInfo,
+} from "@opticss/template-api";
 import Resolver, {
   BasicModuleRegistry
 } from '@glimmer/resolver';
@@ -14,24 +15,31 @@ import {
   ResolutionMap
 } from '@glimmer/resolution-map-builder';
 
+declare module "@opticss/template-api" {
+  interface TemplateTypes {
+    "GlimmerTemplates.ResolvedFile": ResolvedFile;
+  }
+}
+
 export interface ResolvedPath {
   specifier: string;
   fullPath: string;
 }
 
-export class ResolvedFile extends TemplateInfo {
+export class ResolvedFile implements TemplateInfo<"GlimmerTemplates.ResolvedFile"> {
+  identifier: string;
   string: string;
   fullPath: string;
-  static typeName = "GlimmerTemplates.ResolvedFile";
+  type: "GlimmerTemplates.ResolvedFile" = "GlimmerTemplates.ResolvedFile";
 
   constructor(templateString: string, specifier: string, fullPath: string) {
-    super(specifier);
+    this.identifier = specifier;
     this.string = templateString;
     this.fullPath = fullPath;
   }
-  serialize(): SerializedTemplateInfo {
+  serialize(): SerializedTemplateInfo<"GlimmerTemplates.ResolvedFile"> {
     return {
-      type: ResolvedFile.typeName,
+      type: this.type,
       identifier: this.identifier,
       data: [
         this.string,
@@ -44,7 +52,7 @@ export class ResolvedFile extends TemplateInfo {
   }
 }
 
-TemplateInfoFactory.register(ResolvedFile.typeName, ResolvedFile as TemplateInfoConstructor);
+TemplateInfoFactory.constructors["GlimmerTemplates.ResolvedFile"] = ResolvedFile.deserialize;
 
 export interface GlimmerProject {
   projectDir: string;

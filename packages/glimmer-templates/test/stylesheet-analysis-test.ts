@@ -13,7 +13,7 @@ describe('Stylesheet analysis', function() {
     let projectDir = fixture('styled-app');
     let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'my-app');
     return analyzer.analyze().then((richAnalysis) => {
-      let analysis: TemplateAnalysis<ResolvedFile> = richAnalysis;
+      let analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile"> = richAnalysis;
       let serializedAnalysis = analysis.serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/my-app");
       assert.deepEqual(serializedAnalysis.blocks, {
@@ -21,14 +21,14 @@ describe('Stylesheet analysis', function() {
       });
       assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" ,".root", "[state|is-loading]"]);
       assert.deepEqual(serializedAnalysis.elements, {
-        el_a: { static: [ 2, 3 ], dynamic: [], correlations: [], loc: {} },
+        el_a: { static: [ 2, 3 ], correlations: [], loc: {} },
         /* el_b has no styles, so isn't added to analysis */
-        el_c: { static: [ 0, 1 ], dynamic: [], correlations: [], loc: {} }
+        el_c: { static: [ 0, 1 ], correlations: [], loc: {} }
       });
 
       // deserialize and re-serialize to make sure it creates the same representation.
       let factory = new BlockFactory(analyzer.project.cssBlocksOpts, postcss);
-      return TemplateAnalysis.deserialize<ResolvedFile>(serializedAnalysis, factory).then(recreatedAnalysis => {
+      return TemplateAnalysis.deserialize<"GlimmerTemplates.ResolvedFile">(serializedAnalysis, factory).then(recreatedAnalysis => {
         let reserializedAnalysis = recreatedAnalysis.serialize();
         assert.deepEqual(reserializedAnalysis, serializedAnalysis);
       });
@@ -50,9 +50,9 @@ describe('Stylesheet analysis', function() {
       });
       assert.deepEqual(analysis.stylesFound, [".root", ".world", ".world[state|thick]", "h.emphasis", "h.emphasis[state|extra]", "h.root"]);
       assert.deepEqual(analysis.elements, {
-        el_a: { static: [ 0 ], dynamic: [], correlations: [], loc: {} },
-        el_b: { static: [ 5 ], dynamic: [], correlations: [], loc: {} },
-        el_c: { static: [ 1, 2, 3, 4 ], dynamic: [], correlations: [], loc: {} }
+        el_a: { static: [ 0 ], correlations: [], loc: {} },
+        el_b: { static: [ 5 ], correlations: [], loc: {} },
+        el_c: { static: [ 1, 2, 3, 4 ], correlations: [], loc: {} }
       });
     }).catch((error) => {
       console.error(error);
@@ -80,9 +80,9 @@ describe('Stylesheet analysis', function() {
          'h.root'
       ]);
       assert.deepEqual(analysis.elements, {
-        el_a: { static: [ 0 ], dynamic: [], correlations: [], loc: {} },
-        el_b: { static: [ 6 ], dynamic: [], correlations: [], loc: {} },
-        el_c: { static: [ 1, 3 ], dynamic: [], correlations: [ [ -1, 4, 5 ], [ -1, 2 ] ], loc: {} }
+        el_a: { static: [ 0 ], correlations: [], loc: {} },
+        el_b: { static: [ 6 ], correlations: [], loc: {} },
+        el_c: { static: [ 1, 3 ], correlations: [ [ -1, 4, 5 ], [ -1, 2 ] ], loc: {} }
       });
     }).catch((error) => {
       console.error(error);
@@ -111,12 +111,12 @@ describe('Stylesheet analysis', function() {
          'h.root',
          't.underline'
       ]);
-      assert.deepEqual(analysis.elements, { el_a: { static: [ 0 ], dynamic: [], correlations: [], loc: {} },
-        el_b: { static: [ 6 ], dynamic: [], correlations: [], loc: {} },
-        el_c: { static: [ 3, 7 ], dynamic: [ 1 ], correlations: [ [ -1, 4, 5 ], [ -1, 2 ] ], loc: {} },
-        el_d: { static: [], dynamic: [], correlations: [ [ 1, 3 ] ], loc: {} },
-        el_e: { static: [], dynamic: [], correlations: [ [ 1, 3 ] ], loc: {} },
-        el_f: { static: [], dynamic: [ 1 ], correlations: [], loc: {} }
+      assert.deepEqual(analysis.elements, { el_a: { static: [ 0 ], correlations: [], loc: {} },
+        el_b: { static: [ 6 ], correlations: [], loc: {} },
+        el_c: { static: [ 3, 7 ], correlations: [ [ -1, 4, 5 ], [ -1, 2 ] ], loc: {} },
+        el_d: { static: [], correlations: [ [ 1, 3 ] ], loc: {} },
+        el_e: { static: [], correlations: [ [ 1, 3 ] ], loc: {} },
+        el_f: { static: [], correlations: [], loc: {} }
       });
     }).catch((error) => {
       console.error(error);

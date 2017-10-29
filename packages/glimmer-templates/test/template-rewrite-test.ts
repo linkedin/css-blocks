@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import { fixture } from "./fixtures";
 import { PreprocessOptions, ASTPlugin, print, preprocess } from "@glimmer/syntax";
 import { precompile, PrecompileOptions } from "@glimmer/compiler";
-import { StyleMapping, PluginOptionsReader, Block, MetaStyleMapping } from "css-blocks";
+import { StyledTemplateMapping as StyleMapping, PluginOptionsReader, Block, MetaStyleMapping } from "css-blocks";
 
 // Reduce whitespace.
 function minify(s) {
