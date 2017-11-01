@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import { OptionsReader } from "../OptionsReader";
 import { PluginOptions } from "../options";
-import { MergedObjectMap, Block } from "../Block";
+import { Block } from "../Block";
 import ConflictResolver from "./ConflictResolver";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
 import parseBlockDebug from "../parseBlockDebug";
@@ -76,13 +76,13 @@ export default class BlockCompiler {
   private injectExports(root: postcss.Root, block: Block) {
     let exportsRule = this.postcss.rule({selector: ":export"});
     root.prepend(exportsRule);
-    let objsMap: MergedObjectMap = block.merged();
-    Object.keys(objsMap).forEach((name) => {
-      let objs = objsMap[name];
+    let objsMap = block.merged();
+    for (let name of objsMap.keys()) {
+      let objs = objsMap.get(name);
       exportsRule.append(this.postcss.decl({
         prop: objs[0].localName(),
         value: objs.map(obj => obj.cssClass(this.opts)).join(" ")
       }));
-    });
+    }
   }
 }

@@ -3,7 +3,7 @@ import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
 import { SelectorFactory, parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import { Attribute } from "@opticss/template-api";
-import { ObjectDictionary, assertNever } from "@opticss/util";
+import { ObjectDictionary, MultiMap, assertNever } from "@opticss/util";
 
 import { stateParser, isClassNode, isStateNode, isRootNode,
          NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
@@ -299,15 +299,11 @@ export class Block extends BlockObject
     return result;
   }
 
-  merged(): MergedObjectMap {
-    let map: MergedObjectMap = {};
-    this.all().forEach((obj: BlockObject) => {
-      let sourceName = obj.asSource();
-      if (!map[sourceName]) {
-        map[sourceName] = [];
-      }
-      map[sourceName].push(obj);
-    });
+  merged(): MultiMap<string, BlockObject>{
+    let map = new MultiMap<string, BlockObject>();
+    for (let obj of this.all()) {
+      map.set(obj.asSource(), obj);
+    }
     return map;
   }
 
