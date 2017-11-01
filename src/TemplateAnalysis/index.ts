@@ -190,7 +190,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     }
     this.currentElement = new Element(id || this.idGenerator.nextIdent(), locInfo);
     locInfo.filename = this.template.identifier;
-    return this.currentElement.id;
+    return this.currentElement.id!;
   }
 
   /**
@@ -207,7 +207,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     this.validator.validate( this.currentElement, this.currentElement.locInfo);
 
     if ( this.currentElement.stylesFound.size !== 0 ) {
-      eid = this.currentElement.id;
+      eid = this.currentElement.id!;
       this.elements.set(eid, this.currentElement);
     }
 
