@@ -114,7 +114,7 @@ export class StateContainer {
    * Parent accessor.
    * @returns The parent object that contains these States
    */
-  get parent(): Block | BlockClass {
+  get parent(): StateParent {
     return this._parent;
   }
 
@@ -294,10 +294,14 @@ export interface Export {
   value: string;
 }
 
+/** Parent types for a state */
+export type StateParent = Block | BlockClass;
+
 /**
  * Valid parent types for a BlockObject
  */
-export type BlockParent = Block | BlockClass | undefined;
+export type BlockParent = StateParent | undefined;
+
 
 /**
  * Abstract class that serves as the base for all BlockObjects. Contains basic
