@@ -5,9 +5,9 @@
 import { OptionsReader } from '../OptionsReader';
 import BlockParser, { CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockFactory } from "../BlockFactory";
-import { CustomBlockScope } from "../Block/LocalScope";
+import { CustomLocalScope } from "../util/LocalScope";
 import { StyleAnalysis } from "./StyleAnalysis";
-import { BlockObject, Block } from "../Block";
+import { BlockObject, Block, OBJ_REF_SPLITTER } from "../Block";
 import * as errors from '../errors';
 import TemplateValidator, { TemplateValidatorOptions } from "./validations";
 import {
@@ -374,14 +374,10 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       blockPromises.push(promise);
     });
     return Promise.all(blockPromises).then(values => {
-      let localScope = new CustomBlockScope();
+      let localScope = new CustomLocalScope<Block, BlockObject>(OBJ_REF_SPLITTER);
       values.forEach(o => {
         analysis.blocks[o.name] = o.block;
-        if (o.name === "") {
-          localScope.setDefaultBlock(o.block);
-        } else {
-          localScope.setBlockReference(o.name, o.block);
-        }
+        localScope.setSubScope(o.name, o.block);
       });
       let objects = new Array<BlockObject>();
       serializedAnalysis.stylesFound.forEach(s => {

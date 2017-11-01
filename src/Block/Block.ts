@@ -8,22 +8,35 @@ import { BlockClass } from "./index";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 import { BlockObject, StateContainer } from "./BlockObject";
-import { BlockScope } from "./LocalScope";
 import { FileIdentifier } from "../importing";
 
 export interface BlockReferenceMap {
   [blockName: string]: Block;
 }
+import { LocalScopedContext, HasLocalScope, HasScopeLookup } from "../util/LocalScope";
 
 interface BlockClassMap {
   [className: string]: BlockClass;
 }
 
+export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
+  let index = s.indexOf('.');
+  if (index < 0) index = s.indexOf('[');
+  if (index >= 0) {
+    return [s.substr(0, index), s.substring(index)];
+  }
+  return;
+};
+
 export interface MergedObjectMap {
   [sourceName: string]: BlockObject[];
 }
 
-export class Block extends BlockObject implements SelectorFactory {
+export class Block extends BlockObject
+  implements SelectorFactory,
+             HasLocalScope<Block, BlockObject>,
+             HasScopeLookup<BlockObject>
+{
   private _sourceAttribute: Attribute;
   private _classes: BlockClassMap = {};
   private _blockReferences: BlockReferenceMap = {};
@@ -31,7 +44,7 @@ export class Block extends BlockObject implements SelectorFactory {
   private _base?: Block;
   private _baseName?: string;
   private _implements: Block[] = [];
-  private _localScope: BlockScope;
+  private _localScope: LocalScopedContext<Block, BlockObject>;
   /**
    * array of paths that this block depends on and, if changed, would
    * invalidate the compiled css of this block. This is usually only useful in
@@ -51,7 +64,7 @@ export class Block extends BlockObject implements SelectorFactory {
     this._identifier = identifier;
     this.parsedRuleSelectors = new WeakMap();
     this.states = new StateContainer(this);
-    this._localScope = new BlockScope(this);
+    this._localScope = new LocalScopedContext<Block, BlockObject>(OBJ_REF_SPLITTER, this);
     this._dependencies = new Set<string>();
   }
 
@@ -66,6 +79,49 @@ export class Block extends BlockObject implements SelectorFactory {
     this._name = name;
     this.hasHadNameReset = true;
   }
+
+  /// Start of methods to implement LocalScope<Block, BlockObject>
+  subScope(name: string): LocalScopedContext<Block, BlockObject> | undefined {
+    let block = this._blockReferences[name];
+    if (block) {
+      return block._localScope;
+    } else {
+      return;
+    }
+  }
+  lookupLocal(name: string): BlockObject | undefined {
+    return this._blockReferences[name] ||
+           this.all(false).find(o => o.asSource() === name);
+  }
+  /// End of methods to implement LocalScope<Block, BlockObject>
+
+  /// Start of methods to implement LocalScope<Block, BlockObject>
+  /**
+   * Lookup a sub-block either locally, or on a referenced foreign block.
+   * @param reference
+   *   A reference to a block object adhering to the following grammar:
+   *     reference -> <ident> '.' <sub-reference>  // reference through sub-block <ident>
+   *                | <ident>                      // reference to sub-block <ident>
+   *                | '.' <class-selector>         // reference to class in this block
+   *                | <state-selector>             // reference to state in this block
+   *                | '.'                          // reference to this block
+   *     sub-reference -> <ident> '.' <sub-reference> // reference through sub-sub-block
+   *                    | <object-selector>        // reference to object in sub-block
+   *     object-selector -> <block-selector>       // reference to this sub-block
+   *                      | <class-selector>       // reference to class in sub-block
+   *                      | <state-selector>       // reference to state in this sub-block
+   *     block-selector -> 'root'
+   *     class-selector -> <ident>
+   *     state-selector -> '[state|' <ident> ']'
+   *     ident -> regex:[a-zA-Z_-][a-zA-Z0-9]*
+   *   A single dot by itself returns the current block.
+   * @returns The BlockObject referenced at the supplied path.
+   */
+  lookup(reference: string): BlockObject | undefined {
+    return this._localScope.lookup(reference);
+  }
+
+  /// End of methods to implement LocalScope<Block, BlockObject>
 
   asSourceAttributes(): Attribute[] {
     if (!this._sourceAttribute) {
