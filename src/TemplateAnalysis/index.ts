@@ -17,7 +17,7 @@ import {
   TemplateInfoFactory,
   TemplateAnalysis as OptimizationTemplateAnalysis,
 } from "@opticss/template-api";
-import { Element, SerializedElement, StyleMapping } from "./ElementAnalysis";
+import { Element, SerializedElement } from "./ElementAnalysis";
 import { IdentGenerator } from "opticss";
 
 /**
@@ -196,23 +196,6 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
 
     this.currentElement = undefined;
     return eid;
-  }
-
-  /**
-   * Generates a [[StyleMapping]] for this analysis.
-   */
-  getElementStyles( elementId: string ): StyleMapping {
-    let element = this.elements.get(elementId);
-
-    if ( !element ) {
-      throw new errors.CssBlockError(`Can not find an element with the identifier ${elementId}. This is most likely a problem with your css-blocks analyzer library. Please open an issue with that project.`);
-    }
-
-    // TODO: Actual implementation of StyleMapping with boolean values here.
-    return {
-      static: '',
-      dynamic: { }
-    };
   }
 
   /**

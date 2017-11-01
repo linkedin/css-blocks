@@ -10,12 +10,10 @@ import {
   AttributeValueChoice,
   Attribute,
 } from "@opticss/template-api";
+import {
+  ObjectDictionary
+} from "@opticss/util";
 import { unionInto } from '../util/unionInto';
-
-export interface StyleMapping {
-  static: string;
-  dynamic: { [className: string]: object | string };
-}
 
 /**
  * This interface defines a JSON friendly serialization
@@ -37,8 +35,12 @@ export interface SerializedElement {
  */
 export class Element {
 
-  id:            string;
-  mapping:       StyleMapping;
+  mapping: {
+    static: string;
+    dynamic: ObjectDictionary<object | string>;
+  };
+
+  id:            string | undefined;
   stylesFound:   Set<BlockObject>;
   static:        Set<BlockObject>;
   correlations:  Set<BlockObject | undefined>[];

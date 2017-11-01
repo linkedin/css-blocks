@@ -93,7 +93,7 @@ export class TemplateAnalysisTests {
           .e { color: red; }
           .f { font-size: 26px; }
         `);
-        let blockMapping = new StyleMapping(optimized.styleMapping, reader);
+        let blockMapping = new StyleMapping(optimized.styleMapping, [block], reader, [analysis]);
         let it = analysis.elements.values();
         let element1 = it.next().value;
         let rewrite1 = blockMapping.rewriteMapping(element1);
