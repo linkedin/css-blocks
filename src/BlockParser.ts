@@ -94,12 +94,10 @@ export interface ParsedSource {
  */
 export default class BlockParser {
   private opts: OptionsReader;
-  private postcss: typeof postcss;
   private factory: IBlockFactory;
 
-  constructor(postcssImpl: typeof postcss, opts: PluginOptions, factory: IBlockFactory) {
+  constructor(opts: PluginOptions, factory: IBlockFactory) {
     this.opts = new OptionsReader(opts);
-    this.postcss = postcssImpl;
     this.factory = factory;
   }
 

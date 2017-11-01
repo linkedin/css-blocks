@@ -17,7 +17,7 @@ export class KeyQueryTests {
     let options: PluginOptions = opts || {};
     let reader = new OptionsReader(options);
     let factory = new BlockFactory(reader, postcss);
-    let blockParser = new BlockParser(postcss, options, factory);
+    let blockParser = new BlockParser(options, factory);
     let root = postcss.parse(css, {from: filename});
     return blockParser.parse(root, filename, "query-test").then((block) => {
       return <BlockAndRoot>[block, root];

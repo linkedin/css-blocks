@@ -23,7 +23,7 @@ export class TemplateAnalysisTests {
     let options: PluginOptions = opts || {};
     let reader = new OptionsReader(options);
     let factory = new BlockFactory(reader, postcss);
-    let blockParser = new BlockParser(postcss, options, factory);
+    let blockParser = new BlockParser(options, factory);
     let root = postcss.parse(css, {from: filename});
     return blockParser.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
@@ -844,7 +844,7 @@ export class TemplateAnalysisTests {
     let factory = new BlockFactory(reader, postcss);
     let blockPromise = <Promise<Block>>processPromise.then(result => {
       if (result.root) {
-        let parser = new BlockParser(postcss, options, factory);
+        let parser = new BlockParser(options, factory);
         try {
           return parser.parse(result.root, "test.css", "a-block");
         } catch (e) {
