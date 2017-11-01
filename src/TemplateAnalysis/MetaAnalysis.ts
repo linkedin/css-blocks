@@ -86,25 +86,6 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     return this.dynamicStyles.has(style);
   }
 
-  areCorrelated(...styles: BlockObject[]): boolean {
-    if (styles.length < 2) return false;
-    let possibleAnalyses: TemplateAnalysis<keyof TemplateTypes>[] = this.stylesFound.get(styles[0]) || [];
-    for (let si = 1; si < styles.length && possibleAnalyses.length > 1; si++) {
-      possibleAnalyses = possibleAnalyses.filter(a => a.stylesFound.has(styles[si]));
-    }
-    // TODO: Make work again.
-    // for (let pai = 0; pai < possibleAnalyses.length; pai++) {
-    //   let analysis = possibleAnalyses[pai];
-    //   for (let ci = 0; ci < analysis.styleCorrelations.length; ci++) {
-    //     let c = analysis.styleCorrelations[ci];
-    //     if (styles.every(s => c.has(s))) {
-    //       return true;
-    //     }
-    //   }
-    // }
-    return false;
-  }
-
   blockDependencies(): Set<Block> {
     let allBlocks = new Set<Block>();
     this.analyses.forEach(analysis => {

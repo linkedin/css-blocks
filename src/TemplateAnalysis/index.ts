@@ -300,26 +300,6 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   }
 
   /**
-   * Return whether the styles are correlated by this analysis.
-   * @param styles the styles that might be correlated
-   */
-  areCorrelated(...styles: BlockObject[]): boolean {
-    let mapIter = this.elements.entries();
-    let item = mapIter.next();
-    while ( !item.done ) {
-      let el: Element = item.value[1];
-      for (let i = 0; i < el.correlations.length; i++) {
-        let c = el.correlations[i];
-        if (styles.every(s => c.has(s))) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
    */
   serialize(): SerializedTemplateAnalysis<keyof TemplateTypes> {
