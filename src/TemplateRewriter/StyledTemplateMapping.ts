@@ -1,4 +1,3 @@
-import { ClassName } from "./ClassName";
 import { Block, BlockObject } from "../Block";
 import { OptionsReader } from "../OptionsReader";
 import { TemplateAnalysis } from "../TemplateAnalysis";
@@ -9,7 +8,7 @@ export class StyledTemplateMapping<K extends keyof TemplateTypes> {
   blocks: {
     [localName: string]: Block;
   };
-  blockMappings: Map<BlockObject,ClassName[]>;
+  blockMappings: Map<BlockObject, string[]>;
 
   constructor(template: TemplateInfo<K>) {
     this.template = template;
@@ -31,8 +30,8 @@ export class StyledTemplateMapping<K extends keyof TemplateTypes> {
     });
   }
 
-  mapObjects(...objects: BlockObject[]): ClassName[] {
-    return objects.reduce<ClassName[]>((classes, o) => classes.concat(this.blockMappings.get(o) || []), []);
+  mapObjects(...objects: BlockObject[]): string[] {
+    return objects.reduce<string[]>((classes, o) => classes.concat(this.blockMappings.get(o) || []), []);
   }
 
   addBlock(localName: string | null, block: Block, options: OptionsReader) {

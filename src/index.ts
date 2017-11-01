@@ -75,9 +75,6 @@ export {
  TemplateRewriter
 } from "./TemplateRewriter";
 export {
-  ClassName
-} from "./TemplateRewriter/ClassName";
-export {
   StyledTemplateMapping
 } from "./TemplateRewriter/StyledTemplateMapping";
 export {
