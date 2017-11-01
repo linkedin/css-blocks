@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { BlockObject } from '../Block/BlockObject';
+import { BlockObject } from '../Block';
 import { assertNever } from "@opticss/util";
 import {
   BooleanExpression,

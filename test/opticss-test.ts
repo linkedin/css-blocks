@@ -1,3 +1,4 @@
+import { StateContainer } from '../src/Block';
 import BlockCompiler from '../src/BlockCompiler';
 import { StyleMapping } from '../src/TemplateRewriter/StyleMapping';
 import { assert } from "chai";

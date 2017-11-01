@@ -1,17 +1,12 @@
 import { assert } from "chai";
-import { suite, test, only } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import cssBlocks = require("../src/cssBlocks");
-import {
+import cssBlocks, {
   PluginOptions,
-} from "../src/options";
-import {
-  OptionsReader,
-} from "../src/OptionsReader";
-import {
+  PluginOptionsReader,
   BlockFactory
-} from "../src/index";
+} from "../src";
 
 import BEMProcessor from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
