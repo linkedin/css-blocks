@@ -43,29 +43,25 @@ export class TemplateAnalysisTests {
       return <BlockAndRoot>[block, root];
     });
   }
+  private useStates(analysis: Analysis, stateContainer: StateContainer) {
+    for (let groupName of stateContainer.getGroups()) {
+      analysis.addExclusiveStyles(false, ...stateContainer.getStates(groupName)!);
+    }
+    for (let state of stateContainer.getStates()!) {
+      analysis.addStyle(state, true);
+    }
+  }
   private useBlockStyles(analysis: Analysis, block: Block, blockName: string) {
     analysis.blocks[blockName] = block;
     analysis.startElement({});
     analysis.addStyle(block);
-    for (let states of block.states.groupsOfStates()) {
-      if (states.length > 1) {
-        analysis.addExclusiveStyles(false, ...states);
-      } else {
-        analysis.addStyle(states[0], true);
-      }
-    }
+    this.useStates(analysis, block.states);
     analysis.endElement();
 
     for (let c of block.classes) {
       analysis.startElement({});
       analysis.addStyle(c);
-      for (let states of c.states.groupsOfStates()) {
-        if (states.length > 1) {
-          analysis.addExclusiveStyles(false, ...states);
-        } else {
-          analysis.addStyle(states[0], true);
-        }
-      }
+      this.useStates(analysis, c.states);
       analysis.endElement();
     }
   }

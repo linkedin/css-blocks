@@ -5,11 +5,6 @@ import { CompoundSelector } from "opticss";
 import { Attr, Attribute } from "@opticss/template-api";
 import { State, Block, BlockClass } from "./index";
 
-// `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
-if (!(<any>Object).values) {
-  require('object.values').shim();
-}
-
 type Properties = Set<string>;
 
 /**
@@ -84,16 +79,12 @@ export class PropertyContainer {
 /**
  * A Map of State objects
  */
-interface StateMap {
-  [stateName: string]: State;
-}
+type StateMap = ObjectDictionary<State>;
 
 /**
  * A Map of State maps, holds groups of States
  */
-interface GroupMap {
-  [groupName: string]: StateMap;
-}
+type GroupMap = ObjectDictionary<StateMap>;
 
 /**
  * Holds state values to be passed to the StateContainer.
@@ -159,7 +150,7 @@ export class StateContainer {
         return [];
       }
       else {
-        return (<any>Object).values(group);
+        return objectValues(group);
       }
     }
     else if (substate) {
@@ -197,6 +188,23 @@ export class StateContainer {
       return undefined;
     } else {
       return resolution;
+    }
+  }
+
+  getGroups(): string[] {
+    return Object.keys(this._groups);
+  }
+
+  getStates(group?: string): Array<State> | undefined {
+    if (group) {
+      let groupValue = this._groups[group];
+      if (groupValue) {
+        return objectValues(groupValue);
+      } else {
+        return undefined;
+      }
+    } else {
+      return objectValues(this._states);
     }
   }
 
@@ -270,19 +278,10 @@ export class StateContainer {
    */
   all(): State[] {
     let result: State[] = [];
-    Object.keys(this._groups).forEach((group) => {
-      result = result.concat((<any>Object).values(this._groups[group]));
-    });
-    result = result.concat((<any>Object).values(this._states));
-    return result;
-  }
-
-  groupsOfStates(): State[][] {
-    let result: State[][] = [];
-    Object.keys(this._groups).forEach((group) => {
-      result.push((<any>Object).values(this._groups[group]));
-    });
-    result.push((<any>Object).values(this._states));
+    for (let group of objectValues(this._groups)) {
+      result.push(...objectValues(group));
+    }
+    result.push(...objectValues(this._states));
     return result;
   }
 }

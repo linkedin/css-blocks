@@ -3,6 +3,8 @@ import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
 import { SelectorFactory, parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import { Attribute } from "@opticss/template-api";
+import { ObjectDictionary } from "@opticss/util";
+
 import { stateParser, isClassNode, isStateNode, isRootNode,
          NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockClass } from "./index";
@@ -11,14 +13,7 @@ import { OutputMode } from "../OutputMode";
 import { BlockObject, StateContainer } from "./BlockObject";
 import { FileIdentifier } from "../importing";
 
-export interface BlockReferenceMap {
-  [blockName: string]: Block;
-}
 import { LocalScopedContext, HasLocalScope, HasScopeLookup } from "../util/LocalScope";
-
-interface BlockClassMap {
-  [className: string]: BlockClass;
-}
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
   let index = s.indexOf('.');
@@ -29,9 +24,7 @@ export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
   return;
 };
 
-export interface MergedObjectMap {
-  [sourceName: string]: BlockObject[];
-}
+type BlockClassMap = ObjectDictionary<BlockClass>;
 
 export class Block extends BlockObject
   implements SelectorFactory,
@@ -40,7 +33,7 @@ export class Block extends BlockObject
 {
   private _sourceAttribute: Attribute;
   private _classes: BlockClassMap = {};
-  private _blockReferences: BlockReferenceMap = {};
+  private _blockReferences: ObjectDictionary<Block> = {};
   private _identifier: FileIdentifier;
   private _base?: Block;
   private _baseName?: string;
