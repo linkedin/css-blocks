@@ -299,15 +299,6 @@ export class Block extends BlockObject
     return result;
   }
 
-  /**
-   * Lookup a sub-block either locally, or on a referenced foreign block.
-   * @param reference A reference to a sub-block of the form `(<block-name>.)<sub-block-selector>`
-   * @returns The BlockObject referenced at the supplied path.
-   */
-  lookup(reference: string): BlockObject | undefined {
-    return this._localScope.lookup(reference);
-  }
-
   merged(): MergedObjectMap {
     let map: MergedObjectMap = {};
     this.all().forEach((obj: BlockObject) => {
@@ -320,8 +311,8 @@ export class Block extends BlockObject
     return map;
   }
 
-  asSource():string {
-    return `.root`;
+  asSource(): string {
+    return '.root';
   }
 
   /**
