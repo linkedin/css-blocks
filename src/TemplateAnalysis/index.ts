@@ -16,6 +16,7 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
   TemplateAnalysis as OptimizationTemplateAnalysis,
+  TemplateIntegrationOptions,
 } from "@opticss/template-api";
 import { Element, SerializedElement } from "./ElementAnalysis";
 import { IdentGenerator } from "opticss";
@@ -119,6 +120,22 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       el = mapIter.next().value;
     }
     return el[1];
+  }
+
+  optimizationOptions(): TemplateIntegrationOptions {
+    // TODO: take this as an argument from the template integration.
+    return {
+      rewriteIdents: {
+        id: false,
+        class: true,
+        omitIdents: {
+          id: [],
+          class: [],
+        }
+      },
+      analyzedAttributes: ["class"],
+      analyzedTagnames: false,
+    };
   }
 
   /**

@@ -6,6 +6,7 @@ import { TemplateAnalysis, SerializedTemplateAnalysis } from "./index";
 import {
   TemplateTypes,
   TemplateAnalysis as OptimizedTemplateAnalysis,
+  TemplateIntegrationOptions
 } from "@opticss/template-api";
 import { StyleAnalysis } from "./StyleAnalysis";
 
@@ -24,6 +25,22 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     this.analyses = [];
     this.stylesFound = new Map();
     this.dynamicStyles = new Map();
+  }
+
+  optimizationOptions(): TemplateIntegrationOptions {
+    // TODO: take this as an argument from the template integration.
+    return {
+      rewriteIdents: {
+        id: false,
+        class: true,
+        omitIdents: {
+          id: [],
+          class: [],
+        }
+      },
+      analyzedAttributes: ["class"],
+      analyzedTagnames: false,
+    };
   }
 
   addAllAnalyses(analyses: TemplateAnalysis<keyof TemplateTypes>[]) {
