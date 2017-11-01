@@ -3,7 +3,7 @@ import { Plugin as WebpackPlugin, Compiler as WebpackCompiler } from "webpack";
 import * as debugGenerator from "debug";
 import * as postcss from "postcss";
 import * as path from "path";
-import { SourceMapSource, ConcatSource } from 'webpack-sources';
+import { SourceMapSource, ConcatSource, Source } from 'webpack-sources';
 
 import {
   MultiTemplateAnalyzer,
@@ -39,6 +39,10 @@ export interface BlockCompilationComplete<Template extends TemplateInfo> {
   mapping: MetaStyleMapping<Template>;
 }
 
+interface Assets {
+  [key: string]: Source;
+}
+
 export class CssBlocksPlugin<Template extends TemplateInfo>
   extends Tapable
   implements WebpackPlugin
@@ -64,6 +68,7 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
   apply(compiler: WebpackCompiler) {
     this.projectDir = compiler.options.context || this.projectDir;
     let outputPath = compiler.options.output && compiler.options.output.path || this.projectDir; // TODO What is the webpack default output directory?
+    let assets: Assets = {};
 
     compiler.plugin("make", (compilation: any, cb: (error?: Error) => void) => {
 
@@ -91,7 +96,7 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
       // Add the resulting css output to our build.
       .then(result => {
         this.trace(`setting css asset: ${this.outputCssFile}`);
-        compilation.assets[this.outputCssFile] = result.css;
+        assets[this.outputCssFile] = result.css;
         let completion: BlockCompilationComplete<Template> = {
           compilation: compilation,
           assetPath: this.outputCssFile,
@@ -140,6 +145,11 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
 
         context.cssBlocks.mappings[this.outputCssFile] = pendingResult;
 
+      });
+
+      compilation.plugin('additional-assets', (cb: () => void) => {
+        Object.assign(compilation.assets, assets);
+        cb();
       });
 
       this.trace(`notifying of pending compilation`);
