@@ -46,7 +46,7 @@ export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
  */
 export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAnalysis {
 
-  template: TemplateInfo<keyof TemplateTypes>;
+  template: TemplateInfo<K>;
   idGenerator: IdentGenerator;
 
   /**
@@ -302,7 +302,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   /**
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
    */
-  serialize(): SerializedTemplateAnalysis<keyof TemplateTypes> {
+  serialize(): SerializedTemplateAnalysis<K> {
     let blocks = {};
     let stylesFound: string[] =  [];
     let elements: { [id: string]: SerializedElement } = {};
