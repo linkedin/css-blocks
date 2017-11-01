@@ -306,7 +306,7 @@ export type BlockParent = Block | BlockClass | undefined;
 export abstract class BlockObject {
   protected _name: string;
   protected _container: BlockParent;
-  protected _compiledAttribute: any;
+  protected _compiledAttribute: Attribute;
 
   public readonly propertyConcerns: PropertyContainer;
 
