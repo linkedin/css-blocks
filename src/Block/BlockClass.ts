@@ -77,7 +77,7 @@ export class BlockClass extends BlockObject {
     let srcVal = this.name;
     let found = compoundSel.nodes.some(node => node.type === selectorParser.CLASS && node.value === srcVal);
     if (!found) return false;
-    return !compoundSel.nodes.some(node => isState(node));
+    return !compoundSel.nodes.some(node => isStateNode(node));
   }
 
   /**

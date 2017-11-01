@@ -39,7 +39,7 @@ export interface BlockNodeAndType extends NodeAndType {
 /**
  * Check if given selector node is targeting the root block node
  */
-export function isRoot(node: selectorParser.Node) {
+export function isRootNode(node: selectorParser.Node) {
   return node.type === selectorParser.CLASS &&
          node.value === "root";
 }
@@ -49,7 +49,7 @@ export function isRoot(node: selectorParser.Node) {
  * @param  node The selector to test.
  * @return True if state selector, false if not.
  */
-export function isState(node: selectorParser.Node) {
+export function isStateNode(node: selectorParser.Node) {
   return node.type === selectorParser.ATTRIBUTE &&
          (<selectorParser.Attribute>node).namespace === "state";
 }
@@ -59,7 +59,7 @@ export function isState(node: selectorParser.Node) {
  * @param  node The selector to test.
  * @return True if class selector, false if not.
  */
-export function isClass(node: selectorParser.Node) {
+export function isClassNode(node: selectorParser.Node) {
   return node.type === selectorParser.CLASS;
 }
 
@@ -431,7 +431,7 @@ export default class BlockParser {
    */
   static getBlockNode(sel: CompoundSelector): BlockNodeAndType | null {
     let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
-    let n = sel.nodes.find(n => isRoot(n));
+    let n = sel.nodes.find(n => isRootNode(n));
     if (n) {
       return {
         blockName: blockName && blockName.value,
@@ -439,10 +439,10 @@ export default class BlockParser {
         node: n
       };
     }
-    n = sel.nodes.find(n => isState(n));
+    n = sel.nodes.find(n => isStateNode(n));
     if (n) {
       let prev = n.prev();
-      if (prev && isClass(prev)) {
+      if (prev && isClassNode(prev)) {
         return {
           blockName: blockName && blockName.value,
           blockType: BlockType.classState,
@@ -456,7 +456,7 @@ export default class BlockParser {
         };
       }
     }
-    n = sel.nodes.find(n => isClass(n));
+    n = sel.nodes.find(n => isClassNode(n));
     if (n) {
       return {
         blockName: blockName && blockName.value,
@@ -491,7 +491,7 @@ export default class BlockParser {
     }
 
     // Targeting attributes that are not state selectors is not allowd in blocks, throw.
-    let nonStateAttribute = sel.nodes.find(n => n.type === selectorParser.ATTRIBUTE && !isState(n));
+    let nonStateAttribute = sel.nodes.find(n => n.type === selectorParser.ATTRIBUTE && !isStateNode(n));
     if (nonStateAttribute) {
       throw new errors.InvalidBlockSyntax(
         `Cannot select attributes other than states: ${rule.selector}`,
@@ -515,7 +515,7 @@ export default class BlockParser {
 
       // If selecting the root element, indicate we have encountered it. If this
       // is not the first BlockType encountered, throw the appropriate error
-      if (isRoot(n)) {
+      if (isRootNode(n)) {
         if (found === null) {
           found = {
             blockType: BlockType.root,
@@ -536,7 +536,7 @@ export default class BlockParser {
 
       // If selecting a state attribute, assert it is valid, save the found state,
       // and throw the appropriate error if conflicting selectors are found.
-      else if (isState(n)) {
+      else if (isStateNode(n)) {
         this.assertValidState(block, rule, <selectorParser.Attribute>n);
         if (!found) {
           found = {
@@ -557,7 +557,7 @@ export default class BlockParser {
 
       // If selecting a class, save the found state, and throw the appropriate
       // error if conflicting selectors are found.
-      else if (isClass(n)) {
+      else if (isClassNode(n)) {
         if (!found) {
           found = {
             node: n,

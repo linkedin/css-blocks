@@ -158,10 +158,10 @@ export class State extends BlockObject {
       if (!compoundSel.nodes.some(node => node.type === "class" && node.value === classVal)) {
         return false;
       }
-      return compoundSel.nodes.some(node => isState(node) &&
+      return compoundSel.nodes.some(node => isStateNode(node) &&
         this.sameNameAndGroup(stateParser(<selectorParser.Attribute>node)));
     } else {
-      return compoundSel.nodes.some(node => isState(node) &&
+      return compoundSel.nodes.some(node => isStateNode(node) &&
         this.sameNameAndGroup(stateParser(<selectorParser.Attribute>node)));
     }
   }

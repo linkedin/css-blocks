@@ -3,7 +3,8 @@ import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
 import { SelectorFactory, parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import { Attribute } from "@opticss/template-api";
-import { stateParser, isClass, isState, isRoot, NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
+import { stateParser, isClassNode, isStateNode, isRootNode,
+         NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { BlockClass } from "./index";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
@@ -359,11 +360,11 @@ export class Block extends BlockObject
       let otherBlock = this.getReferencedBlock(node.value!);
       if (otherBlock) {
         let next = node.next();
-        if (next && isClass(next)) {
+        if (next && isClassNode(next)) {
           let klass = otherBlock.getClass(next.value!);
           if (klass) {
             let another = next.next();
-            if (another && isState(another)) {
+            if (another && isStateNode(another)) {
               let info = stateParser(<selectorParser.Attribute>another);
               let state = klass.states._getState(info);
               if (state) {
@@ -378,7 +379,7 @@ export class Block extends BlockObject
           } else {
             return null;
           }
-        } else if (next && isState(next)) {
+        } else if (next && isStateNode(next)) {
           let info = stateParser(<selectorParser.Attribute>next);
           let state = otherBlock.states._getState(info);
           if (state) {
@@ -398,7 +399,7 @@ export class Block extends BlockObject
         return null;
       }
       let next = node.next();
-      if (next && isState(next)) {
+      if (next && isStateNode(next)) {
         let info = stateParser(<selectorParser.Attribute>next);
         let state = klass.states._getState(info);
         if (state === undefined) {
@@ -409,7 +410,7 @@ export class Block extends BlockObject
       } else {
         return [klass, 0];
       }
-    } else if (isState(node)) {
+    } else if (isStateNode(node)) {
       let info = stateParser(<selectorParser.Attribute>node);
       let state = this.states._ensureState(info);
       if (state) {
@@ -464,7 +465,7 @@ export class Block extends BlockObject
   }
 
   matches(compoundSel: CompoundSelector): boolean {
-    return compoundSel.nodes.some(node => isRoot(node));
+    return compoundSel.nodes.some(node => isRootNode(node));
   }
 
   debug(opts: OptionsReader): string[] {
