@@ -3,7 +3,7 @@ import selectorParser = require("postcss-selector-parser");
 import { CssBlockError } from "../errors";
 import { SelectorFactory, parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import { Attribute } from "@opticss/template-api";
-import { ObjectDictionary } from "@opticss/util";
+import { ObjectDictionary, assertNever } from "@opticss/util";
 
 import { stateParser, isClassNode, isStateNode, isRootNode,
          NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
@@ -239,7 +239,7 @@ export class Block extends BlockObject
       case OutputMode.BEM:
         return this.name;
       default:
-        throw "this never happens";
+        return assertNever(opts.outputMode);
     }
   }
 
@@ -333,8 +333,10 @@ export class Block extends BlockObject
         if (classObj) {
           return classObj.states._getState(stateParser(<selectorParser.Attribute>obj.node));
         }
+        return undefined;
+      default:
+        return assertNever(obj.blockType);
     }
-    return undefined;
   }
 
   nodeAsBlockObject(node: selectorParser.Node): [BlockObject, number] | null {
