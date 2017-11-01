@@ -218,13 +218,13 @@ export class BlockFactory implements IBlockFactory {
 
   preprocessor(file: ImportedFile): Preprocessor {
     let syntax = file.syntax;
-    let firstPreprocessor: Preprocessor = this.preprocessors[syntax];
+    let firstPreprocessor: Preprocessor | undefined = this.preprocessors[syntax];
     let preprocessor: Preprocessor | null = null;
     if (firstPreprocessor) {
       if (syntax !== Syntax.css && this.preprocessors.css && !this.options.disablePreprocessChaining) {
         let cssProcessor = this.preprocessors.css;
         preprocessor = (fullPath: string, content: string, options: CssBlockOptionsReadonly): Promise<ProcessedFile> => {
-          return firstPreprocessor(fullPath, content, options).then(result => {
+          return firstPreprocessor!(fullPath, content, options).then(result => {
             let content = result.content.toString();
             return cssProcessor(fullPath, content, options, sourceMapFromProcessedFile(result)).then(result2 => {
               return {
