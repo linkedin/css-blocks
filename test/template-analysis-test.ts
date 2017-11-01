@@ -5,7 +5,7 @@ import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimiz
 
 import * as cssBlocks from "../src/errors";
 import BlockParser from "../src/BlockParser";
-import { BlockFactory } from "../src/Block/BlockFactory";
+import { BlockFactory } from "../src/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockObject, BlockClass, State } from "../src/Block";
 import { PluginOptions } from "../src/options";
@@ -21,7 +21,8 @@ type BlockAndRoot = [Block, postcss.Container];
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: PluginOptions, blockName = "analysis"): Promise<BlockAndRoot> {
     let options: PluginOptions = opts || {};
-    let factory = new BlockFactory(options, postcss);
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
     let blockParser = new BlockParser(postcss, options, factory);
     let root = postcss.parse(css, {from: filename});
     return blockParser.parse(root, filename, blockName).then((block) => {
@@ -839,7 +840,8 @@ export class TemplateAnalysisTests {
     let options: PluginOptions =  {
       importer: testImporter
     };
-    let factory = new BlockFactory(options, postcss);
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
     let blockPromise = <Promise<Block>>processPromise.then(result => {
       if (result.root) {
         let parser = new BlockParser(postcss, options, factory);
@@ -874,7 +876,8 @@ export class TemplateAnalysisTests {
     let testPromise = analysisPromise.then(analysis => {
       let serialization = analysis.serialize();
       assert.deepEqual(serialization.template, {type: "Opticss.Template", identifier: "my-template.html"});
-      let factory = new BlockFactory(options, postcss);
+      let reader = new OptionsReader(options);
+      let factory = new BlockFactory(reader, postcss);
       return TemplateAnalysis.deserialize<"Opticss.Template">(serialization, factory).then(analysis => {
         let reserialization = analysis.serialize();
         assert.deepEqual(serialization, reserialization);

@@ -11,7 +11,7 @@ import {
 } from "../src/OptionsReader";
 import {
   BlockFactory
-} from "../src/Block/BlockFactory";
+} from "../src/index";
 
 import BEMProcessor from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
@@ -46,8 +46,8 @@ export class BlockFactoryTests extends BEMProcessor {
     );
     let importer = imports.importer();
     let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(options, postcss);
+    let reader = new PluginOptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
     let extendsBlockPromise = factory.getBlock(importer.identifier(null, extendsFilename, reader));
     let baseBlockPromise = factory.getBlock(importer.identifier(null, baseFilename, reader));
     return Promise.all([extendsBlockPromise, baseBlockPromise]).then(([extendsBlock, baseBlock]) => {
@@ -77,8 +77,8 @@ export class BlockFactoryTests extends BEMProcessor {
 
     let importer = imports.importer();
     let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(options, postcss);
+    let reader = new PluginOptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
 
     let block1_promise = factory.getBlock(importer.identifier(null, block1_filename, reader));
     let block2_promise = factory.getBlock(importer.identifier(null, block2_filename, reader));

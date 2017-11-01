@@ -3,7 +3,7 @@ import selectorParser = require('postcss-selector-parser');
 import { PluginOptions } from "./options";
 import { OptionsReader } from "./OptionsReader";
 import { Block, StateInfo } from "./Block";
-import { IBlockFactory } from "./Block/IBlockFactory";
+import { IBlockFactory } from "./BlockFactory/IBlockFactory";
 import * as errors from './errors';
 export { PluginOptions } from "./options";
 import { sourceLocation, selectorSourceLocation, SourceLocation } from "./SourceLocation";

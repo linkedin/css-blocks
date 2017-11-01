@@ -3,7 +3,7 @@ import {
   TemplateTypes
 } from "@opticss/template-api";
 import { MetaTemplateAnalysis }  from "./MetaAnalysis";
-import { BlockFactory } from "../Block/BlockFactory";
+import { BlockFactory } from "../BlockFactory";
 
 export interface AnalyzerBase {
   /** Access the block factory that this analyzer is using to load blocks. */

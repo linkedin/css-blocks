@@ -11,7 +11,7 @@ import {
 } from "../src/OptionsReader";
 import {
   BlockFactory
-} from "../src/Block/BlockFactory";
+} from "../src";
 
 import BEMProcessor from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
@@ -41,8 +41,8 @@ export class LocalScopeLookupTest extends BEMProcessor {
 
     let importer = imports.importer();
     let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(options, postcss);
+    let reader = new PluginOptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
       assert.equal(block.lookup(".root"), block);
@@ -76,8 +76,8 @@ export class LocalScopeLookupTest extends BEMProcessor {
 
     let importer = imports.importer();
     let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(options, postcss);
+    let reader = new PluginOptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(refblock => {
       let block = refblock.getReferencedBlock("a-block");
@@ -116,8 +116,8 @@ export class LocalScopeLookupTest extends BEMProcessor {
 
     let importer = imports.importer();
     let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(options, postcss);
+    let reader = new PluginOptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(refblock => {
       let block = refblock.getReferencedBlock("my-block");

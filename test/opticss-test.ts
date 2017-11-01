@@ -17,7 +17,7 @@ import {
 
 import * as cssBlocks from '../src/errors';
 import BlockParser from "../src/BlockParser";
-import { BlockFactory } from "../src/Block/BlockFactory";
+import { BlockFactory } from "../src/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockObject, BlockClass, State } from "../src/Block";
 import { PluginOptions } from "../src/options";
@@ -35,7 +35,8 @@ type Analysis = TemplateAnalysis<"Opticss.Template">;
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: PluginOptions, blockName = "optimized"): Promise<BlockAndRoot> {
     let options: PluginOptions = opts || {};
-    let factory = new BlockFactory(options, postcss);
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
     let blockParser = new BlockParser(postcss, options, factory);
     let root = postcss.parse(css, {from: filename});
     return blockParser.parse(root, filename, blockName).then((block) => {

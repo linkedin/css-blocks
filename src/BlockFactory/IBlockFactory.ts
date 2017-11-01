@@ -1,5 +1,5 @@
 import { FileIdentifier } from "../importing";
-import { Block } from "./Block";
+import { Block } from "../Block";
 
 export interface IBlockFactory {
   getUniqueBlockName(name: string): string;

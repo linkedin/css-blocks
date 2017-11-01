@@ -4,7 +4,7 @@
  // tslint:disable-next-line:no-unused-variable Imported for Documentation link
 import { OptionsReader } from '../OptionsReader';
 import BlockParser, { CLASS_NAME_IDENT } from "../BlockParser";
-import { BlockFactory } from "../Block/BlockFactory";
+import { BlockFactory } from "../BlockFactory";
 import { CustomBlockScope } from "../Block/LocalScope";
 import { StyleAnalysis } from "./StyleAnalysis";
 import { BlockObject, Block } from "../Block";
