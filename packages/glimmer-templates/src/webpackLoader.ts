@@ -6,97 +6,82 @@ import {
 import {
   Block,
   PluginOptionsReader as CssBlocksOptionsReader,
-  MetaStyleMapping,
-  StyledTemplateMapping as StyleMapping
+  StyleMapping,
+  TemplateAnalysis,
 } from "css-blocks";
 import {
   isTemplateType
-} from "@opticss/template-api"
+} from "@opticss/template-api";
 
 import { ResolvedFile } from "./GlimmerProject";
 import { Rewriter } from "./Rewriter";
 
 const debug = debugGenerator("css-blocks:glimmer");
 
-interface MappingAndBlock {
-  mapping: StyleMapping<"GlimmerTemplates.ResolvedFile">;
-  block: Block;
+interface MappingAndAnalysis {
+  mapping: StyleMapping;
+  analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile">;
 }
 
 type LoaderContext = {
   dependency(dep: string): void;
 };
 
-function trackBlockDependencies(loaderContext: LoaderContext, block: Block, options: CssBlocksOptionsReader) {
-  let sourceFile = options.importer.filesystemPath(block.identifier, options);
-  if (sourceFile !== null) {
-    loaderContext.dependency(sourceFile);
+function trackBlockDependencies(loaderContext: LoaderContext, blocks: Set<Block>, options: CssBlocksOptionsReader) {
+  for (let block of blocks) {
+    let sourceFile = options.importer.filesystemPath(block.identifier, options);
+    if (sourceFile !== null) {
+      loaderContext.dependency(sourceFile);
+    }
   }
-  block.dependencies.forEach(dep => {
-    loaderContext.dependency(dep);
-  });
-  block.transitiveBlockDependencies().forEach(blockDep => {
-    trackBlockDependencies(loaderContext, blockDep, options);
-  });
 }
 
 export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginBuilder> {
   debug(`loader adapter for:`, loaderContext.resourcePath);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
   let options = new CssBlocksOptionsReader(loaderContext.cssBlocks.compilationOptions);
-  let metaMappingPromises = new Array<Promise<MetaStyleMapping>>();
+  let mappingPromises = new Array<Promise<StyleMapping | void>>();
   cssFileNames.forEach(filename => {
-    metaMappingPromises.push(loaderContext.cssBlocks.mappings[filename]);
+    mappingPromises.push(loaderContext.cssBlocks.mappings[filename]);
   });
 
   // Wait for all mapping promises to finish.
-  return Promise.all(metaMappingPromises)
+  return Promise.all(mappingPromises)
 
   // Once done, find mapping for this template, and add this plugin as a dependency.
-  .then( (metaMappings: MetaStyleMapping[]): MappingAndBlock | undefined => {
-    let mappingAndBlock: MappingAndBlock | undefined = undefined;
+  .then( (styleMappings: Array<StyleMapping | void>): MappingAndAnalysis | undefined => {
+    for (let mapping of styleMappings) {
+      if (!mapping) continue; // there was an error for that one.
+      if (!mapping.analyses) continue; // the mapping wasn't analyzed. (doesn't happen in this integration)
 
-    metaMappings.forEach(metaMapping => {
-
-      debug("Templates with StyleMappings:", ...metaMapping.templates.keys());
-      let mapping: StyleMapping<"GlimmerTemplates.ResolvedFile"> | undefined;
-
-      // Discover this template's mapping
-      metaMapping.templates.forEach(aMapping => {
-        if (aMapping && isTemplateType("GlimmerTemplates.ResolvedFile", aMapping.template) && aMapping.template.fullPath === loaderContext.resourcePath) {
-          debug("Found mapping.");
-          mapping = aMapping;
-        }
-      });
-
-      // If mapping found, track dependencies so rebuilds work.
-      if (mapping) {
-        if (mappingAndBlock) {
-          throw Error("Multiple css blocks outputs use this template and I don't know how to handle that yet.");
-        }
-        let blockNames = Object.keys(mapping.blocks);
-        blockNames.forEach(n => {
-          let block = (<StyleMapping<"GlimmerTemplates.ResolvedFile">>mapping).blocks[n];
-          if (n === "" && mapping && block) {
-            mappingAndBlock = {
-              block,
-              mapping
-            };
+      let analysis = mapping.analyses.find(a => {
+        if (isTemplateType("GlimmerTemplates.ResolvedFile", a.template)) {
+          let t = <ResolvedFile>a.template;
+          if (t.fullPath === loaderContext.resourcePath) {
+            return true;
           }
-          trackBlockDependencies(loaderContext, block, options);
-        });
+        }
+        return false;
+      });
+      if (analysis) {
+        let a = <TemplateAnalysis<"GlimmerTemplates.ResolvedFile">>analysis;
+        trackBlockDependencies(loaderContext, a.transitiveBlockDependencies(), options);
+        return {
+          mapping,
+          analysis: a
+        };
       }
-    });
-    return mappingAndBlock;
+    }
+    return undefined;
   })
 
   // Now that we have this template's block mapping, rewrite it.
-  .then( (mappingAndBlock): ASTPluginBuilder => {
+  .then( (mappingAndAnalysis): ASTPluginBuilder => {
     let astPlugin: ASTPluginBuilder;
 
-    if (mappingAndBlock) {
+    if (mappingAndAnalysis) {
         astPlugin = (env: ASTPluginEnvironment) => {
-          let rewriter = new Rewriter(env.syntax, mappingAndBlock.mapping, mappingAndBlock.block, loaderContext.cssBlocks.compilationOptions);
+          let rewriter = new Rewriter(env.syntax, mappingAndAnalysis.mapping, mappingAndAnalysis.analysis, loaderContext.cssBlocks.compilationOptions);
           return {
             name: "css-blocks",
             visitor: {

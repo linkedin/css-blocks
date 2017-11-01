@@ -66,6 +66,7 @@
     "@glimmer/resolver": "^0.3.0",
     "@glimmer/syntax": "^0.29.1",
     "@opticss/template-api": "^0.1.0",
+    "@opticss/util": "^0.1.0",
     "@types/glob": "^5.0.30",
     "css-blocks": "^0.12.2",
     "debug": "^2.6.8",

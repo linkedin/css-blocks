@@ -4,6 +4,7 @@ import * as glob from 'glob';
 import * as postcss from "postcss";
 import {
   PluginOptions,
+  PluginOptionsReader,
   BlockFactory
 } from "css-blocks";
 
@@ -23,11 +24,11 @@ export default class Project implements GlimmerProject {
   registry: BasicModuleRegistry;
   blockImporter: GlimmerImporter;
   blockFactory: BlockFactory;
-  cssBlocksOpts: PluginOptions;
+  cssBlocksOpts: PluginOptionsReader;
 
   constructor(projectDir: string, moduleConfig?: any, blockOpts?: PluginOptions) {
     this.projectDir = projectDir;
-    this.cssBlocksOpts = blockOpts || {};
+    this.cssBlocksOpts = new PluginOptionsReader(blockOpts || {});
     this.blockImporter = new GlimmerImporter(this, this.cssBlocksOpts.importer);
     this.cssBlocksOpts = Object.assign({}, this.cssBlocksOpts, { importer: this.blockImporter });
     this.blockFactory = new BlockFactory(this.cssBlocksOpts, postcss);

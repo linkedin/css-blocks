@@ -1,5 +1,4 @@
 import { AST } from '@glimmer/syntax';
-import { ResolvedFile } from "./GlimmerProject";
 import { CssBlockError } from "css-blocks";
 import { TemplateInfo } from "@opticss/template-api";
 import { ClassifiedParsedSelectors } from "opticss";
