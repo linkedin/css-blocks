@@ -17,6 +17,10 @@ const DEFAULT_VALIDATORS = {
   "no-state-orphans": true
 };
 
+export * from "./classPairsValidator";
+export * from "./rootClassValidator";
+export * from "./stateParentValidator";
+
 export type Validator = (analysis: Element, err: (str: string) => void) => void;
 export type TemplateValidatorOptions = { [key: string] : Validator | boolean };
 
