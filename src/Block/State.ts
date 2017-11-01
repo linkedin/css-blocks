@@ -205,3 +205,11 @@ export class State extends BlockObject {
   }
 
 }
+
+export function isState(o: object): o is State {
+  return o instanceof State;
+}
+
+export function isSubState(o: object): o is State {
+  return o instanceof State && o.group !== null;
+}

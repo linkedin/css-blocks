@@ -513,3 +513,7 @@ export class Block extends BlockObject
     return this._name;
   }
 }
+
+export function isBlock(o: object): o is Block {
+  return o instanceof Block;
+}

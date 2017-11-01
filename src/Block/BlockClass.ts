@@ -94,3 +94,7 @@ export class BlockClass extends BlockObject {
   }
 
 }
+
+export function isBlockClass(o: object): o is BlockClass {
+  return o instanceof BlockClass;
+}
