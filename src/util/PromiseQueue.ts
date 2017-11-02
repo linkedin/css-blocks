@@ -43,7 +43,6 @@ let queueInstanceId = 1;
  * needed.
  */
 export class PromiseQueue<WorkItem, Result> {
-  private _concurrency: number;
   private queueId: number;
   private jobId: number;
   private queue: AsyncQueue<PendingWork<WorkItem, Result>>;
@@ -53,7 +52,6 @@ export class PromiseQueue<WorkItem, Result> {
     this.promiseProcessor = processor;
     this.queue = Async.queue<PendingWork<WorkItem, Result>, Error>(this.processWork.bind(this), concurrency);
     this.queueId = queueInstanceId++;
-    this._concurrency = concurrency;
     this.jobId = 0;
   }
 
