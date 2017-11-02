@@ -1,3 +1,4 @@
+import { ElementAnalysis } from '../src/TemplateAnalysis/ElementAnalysis';
 import { StateContainer } from '../src/Block';
 import BlockCompiler from '../src/BlockCompiler';
 import { StyleMapping } from '../src/TemplateRewriter/StyleMapping';
@@ -10,7 +11,8 @@ import {
   Template,
   TemplateInfo,
   TemplateIntegrationOptions,
-  isAndExpression
+  isAndExpression,
+  POSITION_UNKNOWN
 } from "@opticss/template-api";
 import {
   clean, isType as assertType
@@ -44,33 +46,33 @@ export class TemplateAnalysisTests {
       return <BlockAndRoot>[block, root];
     });
   }
-  private useStates(analysis: Analysis, stateContainer: StateContainer) {
+  private useStates(element: ElementAnalysis<any, any, any>, stateContainer: StateContainer) {
     for (let groupName of stateContainer.getGroups()) {
-      analysis.addExclusiveStyles(false, ...stateContainer.getStates(groupName)!);
+      element.addDynamicGroup(stateContainer.parent, stateContainer.resolveGroup(groupName)!, null);
     }
     for (let state of stateContainer.getStates()!) {
-      analysis.addStyle(state, true);
+      element.addStaticState(state);
     }
   }
   private useBlockStyles(analysis: Analysis, block: Block, blockName: string) {
     analysis.blocks[blockName] = block;
-    analysis.startElement({});
-    analysis.addStyle(block);
-    this.useStates(analysis, block.states);
-    analysis.endElement();
+    let element = analysis.startElement(POSITION_UNKNOWN);
+    element.addStaticClass(block);
+    this.useStates(element, block.states);
+    analysis.endElement(element);
 
     for (let c of block.classes) {
-      analysis.startElement({});
-      analysis.addStyle(c);
-      this.useStates(analysis, c.states);
-      analysis.endElement();
+      let element = analysis.startElement(POSITION_UNKNOWN);
+      element.addStaticClass(c);
+      this.useStates(element, c.states);
+      analysis.endElement(element);
     }
   }
   @test "optimizes css"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis<"Opticss.Template">(info);
+    let analysis = new TemplateAnalysis(info);
     let css = clean`
       .root { color: blue; font-size: 20px; }
       [state|foo] { color: red; }

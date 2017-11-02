@@ -2,7 +2,7 @@ import { TemplateAnalysis } from '../TemplateAnalysis';
 import { Block } from '../Block';
 import { OptionsReader } from '../OptionsReader';
 import { RewriteMapping } from './RewriteMapping';
-import { Element } from '../TemplateAnalysis/ElementAnalysis';
+import { ElementAnalysis } from '../TemplateAnalysis/ElementAnalysis';
 import { TemplateTypes, StyleMapping as OptimizedMapping } from "@opticss/template-api";
 export class StyleMapping {
   /** The analyses that were used to create this mapping. */
@@ -19,7 +19,7 @@ export class StyleMapping {
     this.analyses = analyses;
   }
 
-  rewriteMapping(element: Element): RewriteMapping {
+  rewriteMapping(element: ElementAnalysis<any, any, any>): RewriteMapping {
     let [optimizedElementInfo, classMap] = element.forOptimizer(this.options);
     let classRewrite = this.optimizedMap.rewriteMapping(optimizedElementInfo);
     return RewriteMapping.fromOptimizer(classRewrite, classMap);

@@ -1,28 +1,39 @@
-import * as errors from "../../errors";
-import { Element } from "../ElementAnalysis";
+import { StyleAnalysis } from "../StyleAnalysis";
+import * as errors from '../../errors';
+import { ElementAnalysis } from "../ElementAnalysis";
+
+import { Validator } from "./Validator";
 
 import rootClassValidator from "./rootClassValidator";
 import classPairsValidator from "./classPairsValidator";
 import stateParentValidator from "./stateParentValidator";
 
-const VALIDATORS = {
+export * from "./classPairsValidator";
+export * from "./rootClassValidator";
+export * from "./stateParentValidator";
+
+export interface TemplateValidators {
+  "no-root-classes": Validator;
+  "no-class-pairs": Validator;
+  "no-state-orphans": Validator;
+  [name: string]: Validator;
+}
+
+export type TemplateValidatorOptions = {
+  [K in keyof TemplateValidators]?: boolean | Validator;
+};
+
+const VALIDATORS: TemplateValidators = {
   "no-root-classes": rootClassValidator,
   "no-class-pairs": classPairsValidator,
   "no-state-orphans": stateParentValidator
 };
 
-const DEFAULT_VALIDATORS = {
+const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
   "no-root-classes": true,
   "no-class-pairs": true,
   "no-state-orphans": true
 };
-
-export * from "./classPairsValidator";
-export * from "./rootClassValidator";
-export * from "./stateParentValidator";
-
-export type Validator = (analysis: Element, err: (str: string) => void) => void;
-export type TemplateValidatorOptions = { [key: string] : Validator | boolean };
 
 /**
  * Template validator with a single method `validate` that, given a set of
@@ -45,12 +56,12 @@ export type TemplateValidatorOptions = { [key: string] : Validator | boolean };
 export default class TemplateValidator {
 
   private validators: Validator[] = [];
-  private opts: TemplateValidatorOptions = {};
+  private opts: TemplateValidatorOptions;
 
-  constructor(options: TemplateValidatorOptions={}) {
+  constructor(options?: Partial<TemplateValidatorOptions>) {
 
     // Merge our default settings with user provided options.
-    let opts = this.opts = Object.assign({}, DEFAULT_VALIDATORS, options);
+    let opts = this.opts = Object.assign({}, DEFAULT_VALIDATORS, options || {});
 
     // For each item in options, push all built-in and user-provided validators
     // to our validators list to await template processing.
@@ -73,14 +84,15 @@ export default class TemplateValidator {
    * @param correlations The correlations object for a given element.
    * @param locInfo Location info for the elements being validated.
    */
-  validate( analysis: Element, locInfo: errors.ErrorLocation ) {
+  validate( templateAnalysis: StyleAnalysis, element: ElementAnalysis<any, any, any> ) {
 
-    function err ( message: string ) {
-      throw new errors.TemplateAnalysisError(message, locInfo);
+    function err ( message: string, locInfo?: errors.ErrorLocation | undefined | null ) {
+      throw new errors.TemplateAnalysisError(
+        message, locInfo || element.sourceLocation.start);
     }
 
     this.validators.forEach(( func ) => {
-      func(analysis, err);
+      func(element, templateAnalysis, err);
     });
 
   }

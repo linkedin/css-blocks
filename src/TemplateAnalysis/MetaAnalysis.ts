@@ -52,12 +52,12 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
   addAnalysis(analysis: TemplateAnalysis<keyof TemplateTypes>) {
     debug(`MetaAnalysis: Adding analysis for ${analysis.template.identifier}`);
     this.analyses.push(analysis);
-    analysis.stylesFound.forEach((style) => {
+    for (let style of analysis.stylesFound()) {
       this.addAnalysisToStyleMap(this.stylesFound, style, analysis);
-    });
-    analysis.dynamicStyles.forEach((style) => {
+    }
+    for (let style of analysis.stylesFound(true)) {
       this.addAnalysisToStyleMap(this.dynamicStyles, style, analysis);
-    });
+    }
   }
 
   analysisCount(): number {
@@ -72,10 +72,6 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
 
   styleCount(): number {
     return this.stylesFound.size;
-  }
-
-  wasFound(style: BlockObject): boolean {
-    return this.stylesFound.has(style);
   }
 
   dynamicCount(): number {
@@ -118,7 +114,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     return analyses;
   }
 
-  private addAnalysisToStyleMap(map: Map<BlockObject, TemplateAnalysis<keyof TemplateTypes>[]>, style: BlockObject, analysis: TemplateAnalysis<keyof TemplateTypes>) {
+  private addAnalysisToStyleMap(map: Map<BlockObject, TemplateAnalysis<keyof TemplateTypes>[]>, style: BlockObject, analysis: TemplateAnalysis< keyof TemplateTypes>) {
     let analyses = map.get(style);
     if (analyses) {
       analyses.push(analysis);
