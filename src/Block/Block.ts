@@ -853,7 +853,7 @@ export class StateContainer {
    * @param substate Optional substate to filter states by.
    * @returns A map of resolved state names to their states for all States that were requested.
    */
-  resolveGroup(groupName: string, substate?: string|undefined): {[name: string]: State} | undefined {
+  resolveGroup(groupName: string, substate?: string|undefined): ObjectDictionary<State> | undefined {
     let resolution: {[name: string]: State} = {};
     this.getGroup(groupName, substate).forEach(state => {
       resolution[state.name] = state;
