@@ -402,6 +402,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     for (let style of this.allStaticStyles) {
       staticStyles.push(styleIndexes.get(style)!);
     }
+    staticStyles.sort();
     let dynamicClasses = this.dynamicClasses.map(c => serializeDynamicContainer(c, styleIndexes));
     let dynamicStates = this.dynamicStates.map(s => serializeDynamicStates(s, styleIndexes));
     let serialization: SerializedElementAnalysis = {
@@ -413,7 +414,26 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       serialization.tagName = this.tagName;
     }
     if (this.sourceLocation.start.line !== POSITION_UNKNOWN.line) {
-      serialization.sourceLocation = this.sourceLocation;
+      serialization.sourceLocation = {
+        start: { line: this.sourceLocation.start.line }
+      };
+      if (this.sourceLocation.start.column) {
+        serialization.sourceLocation.start.column = this.sourceLocation.start.column;
+      }
+      if (this.sourceLocation.start.filename) {
+        serialization.sourceLocation.start.filename = this.sourceLocation.start.filename;
+      }
+      if (this.sourceLocation.end) {
+        serialization.sourceLocation.end = {
+          line: this.sourceLocation.end.line
+        };
+        if (this.sourceLocation.end.column) {
+          serialization.sourceLocation.end.column = this.sourceLocation.end.column;
+        }
+        if (this.sourceLocation.end.filename) {
+          serialization.sourceLocation.end.filename = this.sourceLocation.end.filename;
+        }
+      }
     }
     return serialization;
   }
@@ -638,12 +658,12 @@ function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Blo
     whenTrue: []
   };
   if (isTrueCondition(c)) {
-    classes.whenTrue = c.whenTrue.map(s => styleIndexes.get(s)!);
+    classes.whenTrue = c.whenTrue.map(s => styleIndexes.get(s)!).sort();
   } else {
     delete classes.whenTrue;
   }
   if (isFalseCondition(c)) {
-    classes.whenFalse = c.whenFalse.map(s => styleIndexes.get(s)!);
+    classes.whenFalse = c.whenFalse.map(s => styleIndexes.get(s)!).sort();
   } else {
     delete classes.whenFalse;
   }
