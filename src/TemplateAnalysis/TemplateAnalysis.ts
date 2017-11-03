@@ -243,11 +243,16 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   }
 
   *stylesFound(dynamic?: boolean): IterableIterator<BlockObject> {
+    let found = new Set<BlockObject>();
     for (let el of this.elements.values()) {
       for (let s of el.classesFound(dynamic)) {
+        if (found.has(s)) continue;
+        found.add(s);
         yield s;
       }
       for (let s of el.statesFound(dynamic)) {
+        if (found.has(s)) continue;
+        found.add(s);
         yield s;
       }
     }
