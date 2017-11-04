@@ -1,15 +1,12 @@
-import { default as block  } from './style-if';
-import { default as state } from './state';
+import { default as classnames  } from './classnames';
 import { default as concat } from './concat';
 
 export {
-  block as block,
-  state as state,
+  classnames as classnames,
   concat as concat
 };
 
 export default {
-  [block.name]: block.func,
-  [state.name]: state.func,
+  [classnames.name]: classnames.func,
   [concat.name]: concat.func,
 };

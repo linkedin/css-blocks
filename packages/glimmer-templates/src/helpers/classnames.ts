@@ -91,9 +91,123 @@ export enum BooleanExpr {
   and = -3,
 }
 
+const e = (m: string): any => { throw new Error(m); };
+const number = (v: any[]): number => typeof v[0] === "number" ? v.shift() : e("not a number: " + (v[0] || "undefined") );
+const string = (v: any[]): string => v.shift().toString();
+const truthyString = (v: any[]): string | undefined => {
+  let s = v.shift();
+  if (!s && s !== 0) return;
+  return s.toString();
+};
+const bool = (v: any[]): boolean => !!v.shift();
+
+type IsSourceSet = (n: number) => boolean;
+type SetSource = (n: number) => void;
+type Abort = () => false;
+
 export default {
   name: 'helper:/css-blocks/components/classnames',
-  func: function _classnames(args: any[]) {
-    return args.join('');
+  func: function _classnames(stack: any[]): string {
+    let sources: boolean[] = [];
+    let classes: string[] = [];
+    let nSources = number(stack);
+    let nOutputs = number(stack);
+    let canSetSource = true;
+    let abort: Abort = () => canSetSource = false;
+    let isSourceSet: IsSourceSet = (n) => sources[n];
+    let setSource: SetSource = (n) => { if(canSetSource) sources[n] = true; };
+    while (nSources-- > 0) {
+      sourceExpr(stack, isSourceSet, setSource, abort);
+      canSetSource = true;
+    }
+    while (nOutputs-- > 0) {
+      let c = string(stack);
+      if (boolExpr(stack, isSourceSet)) classes.push(c);
+    }
+    return classes.join(" ");
   }
 };
+
+function sourceExpr(stack: any[],
+  isSourceSet: IsSourceSet, setSource: SetSource,
+  abort: Abort
+): void {
+  let type = number(stack);
+  if (type & SourceExpression.dependency) {
+    let numDeps = number(stack);
+    while (numDeps-- > 0) {
+      let depIndex = number(stack);
+      if (!isSourceSet(depIndex)) abort();
+    }
+  }
+  if (type & SourceExpression.boolean) {
+    if (!bool(stack)) abort();
+  }
+  if (type & SourceExpression.switch) {
+    let nValues = number(stack);
+    let ifFalsy = number(stack);
+    let value = truthyString(stack);
+    if (value === undefined) {
+      switch(ifFalsy) {
+        case FalsySwitchBehavior.default:
+          value = string(stack);
+          break;
+        case FalsySwitchBehavior.error:
+          e("string expected"); // TODO: error message
+          break;
+        case FalsySwitchBehavior.unset:
+          abort();
+          break;
+        default:
+          e("wtf");
+      }
+    }
+    while (nValues-- > 0) {
+      let matchValue = string(stack);
+      let nSources = number(stack);
+      while (nSources-- > 0) {
+        value === matchValue ? setSource(number(stack)) : number(stack);
+      }
+    }
+  } else if (type === SourceExpression.ternary) {
+    let condition = bool(stack);
+    let nTrue = number(stack);
+    while (nTrue-- > 0) {
+      condition ? setSource(number(stack)) : number(stack);
+    }
+    let nFalse = number(stack);
+    while (nFalse-- > 0) {
+      condition ? number(stack) : setSource(number(stack));
+    }
+  } else {
+    let nSources = number(stack);
+    while (nSources-- > 0) {
+      setSource(number(stack));
+    }
+  }
+}
+
+function boolExpr(stack: any[], isSourceSet: IsSourceSet): boolean {
+  let result: boolean;
+  let type = number(stack);
+  switch (type) {
+    case BooleanExpr.not:
+      return !boolExpr(stack, isSourceSet);
+    case BooleanExpr.and:
+      let nAnds = number(stack);
+      result = true;
+      while (nAnds-- > 0) {
+        result = result && boolExpr(stack, isSourceSet);
+      }
+      return result;
+    case BooleanExpr.or:
+      let nOrs = number(stack);
+      result = false;
+      while (nOrs-- > 0) {
+        result = result || boolExpr(stack, isSourceSet);
+      }
+      return result;
+    default:
+      return isSourceSet(type);
+  }
+}
