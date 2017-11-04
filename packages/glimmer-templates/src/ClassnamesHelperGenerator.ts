@@ -17,17 +17,30 @@ import {
   HasState,
   HasGroup,
   Switch,
+  BooleanExpression,
+  OrExpression,
+  NotExpression,
+  AndExpression
 } from "css-blocks";
 import {
   TemplateElement,
-  TernaryExpression,
-  BooleanExpression,
-  StringExpression,
+  TernaryExpression as TernaryAST,
+  BooleanExpression as BooleanAST,
+  StringExpression as StringAST,
 } from './ElementAnalyzer';
 import {
   SourceExpression,
   FalsySwitchBehavior,
+  BooleanExpr,
 } from "./helpers/classnames";
+import {
+  isAndExpression,
+  isOrExpression,
+  isNotExpression,
+} from "@opticss/template-api";
+import {
+  assertNever
+} from "@opticss/util";
 
 export type Builders = typeof builders;
 
@@ -43,7 +56,7 @@ function constructArgs(rewrite: IndexedClassRewrite<any>, element: TemplateEleme
   expr.push(builders.number(element.dynamicClasses.length + element.dynamicStates.length));
   expr.push(builders.number(rewrite.dynamicClasses.length));
   expr.push(...constructSourceArgs(rewrite, element));
-  expr.push(...constructOutputArgs(rewrite, element));
+  expr.push(...constructOutputArgs(rewrite));
   return expr;
 }
 
@@ -76,7 +89,7 @@ function constructSourceArgs(rewrite: IndexedClassRewrite<any>, element: Templat
         expr.push(...constructDependency(stateExpr, rewrite));
       }
       if (isConditional(stateExpr)) {
-        expr.push(...constructBoolean(stateExpr, rewrite));
+        expr.push(...constructConditional(stateExpr, rewrite));
       }
       expr.push(...constructStateReferences(stateExpr, rewrite));
     }
@@ -92,7 +105,7 @@ function constructSourceArgs(rewrite: IndexedClassRewrite<any>, element: Templat
  * (3+t): number (f) of source styles set if false
  * (4+t)..(4+t+f-1): indexes of source styles set if false
  */
-function constructTernary(classes: DynamicClasses<TernaryExpression>, rewrite: IndexedClassRewrite<BlockObject>): AST.Expression[] {
+function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedClassRewrite<BlockObject>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   // The boolean expression
   expr.push(classes.condition);
@@ -127,7 +140,7 @@ function constructDependency(stateExpr: Dependency, rewrite: IndexedClassRewrite
   return expr;
 }
 
-function constructBoolean(stateExpr: Conditional<BooleanExpression> & HasState, _rewrite: IndexedClassRewrite<BlockObject>): AST.Expression[] {
+function constructConditional(stateExpr: Conditional<BooleanAST> & HasState, _rewrite: IndexedClassRewrite<BlockObject>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   expr.push(stateExpr.condition);
   return expr;
@@ -156,7 +169,7 @@ function constructStateReferences(stateExpr: HasState, rewrite: IndexedClassRewr
  *   2: number (s) of source styles set. s >= 1
  *   3..3+s-1: indexes of source styles set
  */
-function constructSwitch(stateExpr: Switch<StringExpression> & HasGroup, rewrite: IndexedClassRewrite<BlockObject>): AST.Expression[] {
+function constructSwitch(stateExpr: Switch<StringAST> & HasGroup, rewrite: IndexedClassRewrite<BlockObject>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   let values = Object.keys(stateExpr.group);
   expr.push(builders.number(values.length));
@@ -175,7 +188,7 @@ function constructSwitch(stateExpr: Switch<StringExpression> & HasGroup, rewrite
   return expr;
 }
 
-function moustacheToStringExpression(stringExpression: StringExpression): AST.Expression {
+function moustacheToStringExpression(stringExpression: StringAST): AST.Expression {
   if (stringExpression.type === "ConcatStatement") {
     return builders.sexpr(builders.path("/css-blocks/components/concat"),
       stringExpression.parts.reduce( (arr, val) => {
@@ -200,7 +213,59 @@ function moustacheToStringExpression(stringExpression: StringExpression): AST.Ex
   }
 }
 
-function constructOutputArgs(_rewrite: IndexedClassRewrite<any>, _element: TemplateElement): AST.Expression[] {
+function constructOutputArgs(rewrite: IndexedClassRewrite<any>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
+  for (let out of rewrite.dynamicClasses) {
+    expr.push(builders.string(out));
+    expr.push(...constructBoolean(rewrite.dynamicClass(out)!));
+  }
+  return expr;
+}
+
+type ConditionalArg = number | BooleanExpression<number>;
+
+function constructBoolean(bool: ConditionalArg): AST.Expression[] {
+  if (typeof bool === "number") {
+    return [builders.number(bool)];
+  } else if (isAndExpression(bool)) {
+    return constructAndExpression(bool);
+  } else if (isOrExpression(bool)) {
+    return constructOrExpression(bool);
+  } else if (isNotExpression(bool)) {
+    return constructNotExpression(bool);
+  } else {
+    assertNever(bool);
+    return [builders.null()];
+  }
+}
+
+function constructAndExpression(bool: AndExpression<number>): AST.Expression[] {
+  return constructConditionalExpression(BooleanExpr.and, bool.and);
+}
+function constructOrExpression(bool: OrExpression<number>): AST.Expression[] {
+  return constructConditionalExpression(BooleanExpr.or, bool.or);
+}
+
+function constructNotExpression(bool: NotExpression<number>): AST.Expression[] {
+  return [builders.number(BooleanExpr.not), ...constructBoolean(bool.not)];
+}
+function constructConditionalExpression(type: BooleanExpr, args: Array<ConditionalArg>): AST.Expression[] {
+  let expr = new Array<AST.Expression>();
+  if (args.length === 1) {
+    let n = args[0];
+    if (typeof n === "number") {
+      expr.push(builders.number(n));
+      return expr;
+    }
+  }
+  expr.push(builders.number(type));
+  expr.push(builders.number(args.length));
+  for (let e of args) {
+    if (typeof e === "number") {
+      expr.push(builders.number(e));
+    } else {
+      expr.push(...constructBoolean(e));
+    }
+  }
   return expr;
 }
