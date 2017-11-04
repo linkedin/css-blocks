@@ -70,7 +70,7 @@
  *   - switch statements where the value is not the same as the subState names
  */
 
-export const enum SourceExpression {
+const enum SourceExpression {
   ternary = 0,
   dependency = 1,
   boolean = 2,
@@ -79,13 +79,13 @@ export const enum SourceExpression {
   switchWithDep = 4 | 1,
 }
 
-export const enum FalsySwitchBehavior {
+const enum FalsySwitchBehavior {
   error = 0,
   unset = 1,
   default = 2,
 }
 
-export const enum BooleanExpr {
+const enum BooleanExpr {
   not = -1,
   or = -2,
   and = -3,

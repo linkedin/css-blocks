@@ -11,5 +11,5 @@
 }
 
 .emphasis[state|style=italic] {
-    text-decoration: italic;
+    font-style: italic;
 }
