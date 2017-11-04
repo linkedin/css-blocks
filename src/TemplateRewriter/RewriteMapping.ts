@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { BlockObject } from '../Block';
-import { assertNever } from "@opticss/util";
+import { assertNever, objectValues } from "@opticss/util";
 import {
   BooleanExpression,
   isAndExpression,
@@ -12,8 +12,72 @@ import {
   SimpleTagname,
   isSimpleTagname
 } from "@opticss/template-api";
+import { ClassRewrite, IndexedClassRewrite } from './ClassRewrite';
 
-export class RewriteMapping {
+export class IndexedClassMapping implements IndexedClassRewrite<BlockObject> {
+  inputs: BlockObject[];
+  staticClasses: string[];
+  private map: { [k: string]: BooleanExpression<number> | undefined; };
+  private _inputMap: Map<BlockObject, number>;
+  constructor(inputs: BlockObject[], staticClasses: string[], map: {[k: string]: BooleanExpression<number> | undefined}) {
+    this.inputs = inputs;
+    this.staticClasses = staticClasses;
+    this._inputMap = new Map<BlockObject, number>();
+    inputs.forEach((i, n) => this._inputMap.set(i, n));
+    this.map = map;
+  }
+  dynamicClass(name: string): BooleanExpression<number> | undefined {
+    return this.map[name];
+  }
+  get dynamicClasses(): string[] {
+    return Object.keys(this.map);
+  }
+
+  public indexOf(input: BlockObject): number {
+    let index = this._inputMap.get(input);
+    if (index !== undefined) {
+      return index;
+    } else {
+      throw new Error("internal error: block object not found");
+    }
+  }
+
+  static fromOptimizer(
+    classRewrite: OptimizedMapping,
+    classMap: Map<string, BlockObject>
+  ): IndexedClassMapping {
+    // TODO: move this renumbering to opticss?
+    let indexSet = new Set<number>();
+    let dynClasses = classRewrite.dynamicAttributes.class!;
+    objectValues(dynClasses).forEach(expr => indexesUsed(indexSet, expr!));
+    let usedIndexes = [...indexSet].sort((a, b) => a < b ? -1 : 1);
+    let adjustments = new Array<number>();
+    usedIndexes.reduce(([missing, last], n) => {
+      missing = missing + (n - last - 1);
+      adjustments[n] = missing;
+      return [missing, n];
+    }, [0, -1]);
+
+    function renumberer(i: number | BooleanExpression<number>, n: number, arr: number[]) {
+      if (typeof i === "number") {
+        arr[n] = i - adjustments[i];
+      } else {
+        renumber(renumberer, i);
+      }
+    }
+
+    let inputs = classRewrite.inputs.filter((_,n) => indexSet.has(n)).map((_,n, inputs) => processExpressionLiteral(n, inputs, classMap));
+    objectValues(classRewrite.dynamicAttributes.class!).forEach(expr => renumber(renumberer, expr!));
+    return new IndexedClassMapping(
+      inputs,
+      classRewrite.staticAttributes.class!,
+      classRewrite.dynamicAttributes.class!
+    );
+  }
+
+}
+
+export class RewriteMapping implements ClassRewrite<BlockObject> {
   /**
    * output attributes that are always on the element independent of any dynamic changes.
    */
@@ -22,11 +86,19 @@ export class RewriteMapping {
   /**
    * The numbers in the boolean expressions represents indexes into the inputAttributes array.
    */
-  dynamicClasses: Map<string, BooleanExpression<BlockObject>>;
+  private _dynamicClasses: Map<string, BooleanExpression<BlockObject>>;
 
   constructor(staticClasses?: string[], dynamicClasses?: Map<string, BooleanExpression<BlockObject>>) {
     this.staticClasses = staticClasses || [];
-    this.dynamicClasses = dynamicClasses || new Map<string, BooleanExpression<BlockObject>>();
+    this._dynamicClasses = dynamicClasses || new Map<string, BooleanExpression<BlockObject>>();
+  }
+
+  get dynamicClasses(): Array<string> {
+    return [...this._dynamicClasses.keys()];
+  }
+
+  dynamicClass(name: string): BooleanExpression<BlockObject> {
+    return this._dynamicClasses.get(name)!;
   }
 
   static fromOptimizer(
@@ -34,19 +106,48 @@ export class RewriteMapping {
     classMap: Map<string, BlockObject>
   ): RewriteMapping {
     let staticClasses = classRewrite.staticAttributes.class;
-    let styleRewrite = new RewriteMapping(staticClasses || []);
     let dynamicClasses = classRewrite.dynamicAttributes.class;
+    let dynMap = new Map<string, BooleanExpression<BlockObject>>();
     if (dynamicClasses) {
       for (let className of Object.keys(dynamicClasses)) {
         let expression = dynamicClasses[className];
         if (expression) {
-          styleRewrite.dynamicClasses.set(
+          dynMap.set(
             className,
             processExpression(expression, classRewrite.inputs, classMap));
         }
       }
     }
+    let styleRewrite = new RewriteMapping(staticClasses || [], dynMap);
     return styleRewrite;
+  }
+}
+
+function indexesUsed(indexes: Set<number>, expression: BooleanExpression<number> | number) {
+  if (typeof expression === "number") {
+    indexes.add(expression);
+  } else if (isAndExpression(expression)) {
+    expression.and.forEach(e =>  indexesUsed(indexes, e));
+  } else if (isOrExpression(expression)) {
+    expression.or.forEach(e =>  indexesUsed(indexes, e));
+  } else if (isNotExpression(expression)) {
+    indexesUsed(indexes, expression.not);
+  } else {
+    assertNever(expression);
+  }
+}
+
+function renumber(renumberer: any, expression: BooleanExpression<number>) {
+  if (isAndExpression(expression)) {
+    expression.and.forEach(renumberer);
+  } else if (isOrExpression(expression)) {
+    expression.or.forEach(renumberer);
+  } else if (isNotExpression(expression)) {
+    let not = [expression.not];
+    not.forEach(renumberer);
+    expression.not = not[0];
+  } else {
+    assertNever(expression);
   }
 }
 
@@ -69,7 +170,7 @@ function processExpression(
 function processExpressionLiteral(
   expression: number,
   inputs: Array<SimpleTagname | SimpleAttribute>,
-  classMap: Map<string, BlockObject>
+  classMap: Map<string, BlockObject>,
 ): BlockObject {
   let input = inputs[expression];
   if (isSimpleTagname(input)) {

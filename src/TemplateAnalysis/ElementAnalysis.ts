@@ -123,12 +123,10 @@ export type DynamicState<BooleanExpression> = ConditionalState<BooleanExpression
 
 /** A group of states where one is set conditionally */
 export type ConditionalStateGroup<StringExpression> = Switch<StringExpression> & HasGroup;
-/** A group of states that are only set when its dynamic class is set */
-export type DependentStateGroup = Dependency & HasGroup;
 /** A group of states that are only set when its dynamic class is set and where one (or none) is selected at runtime. */
 export type ConditionalDependentStateGroup<StringExpression> = Switch<StringExpression> & Dependency & HasGroup;
 /** A group of states that are dynamic for any reason */
-export type DynamicStateGroup<StringExpression> = ConditionalStateGroup<StringExpression> | DependentStateGroup | ConditionalDependentStateGroup<StringExpression>;
+export type DynamicStateGroup<StringExpression> = ConditionalStateGroup<StringExpression> | ConditionalDependentStateGroup<StringExpression>;
 
 /** Any type of dynamic state or group of states. */
 export type DynamicStates<BooleanExpression, StringExpression> = DynamicState<BooleanExpression> | DynamicStateGroup<StringExpression>;
@@ -398,6 +396,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    *   it in the template analysis serialization.
    */
   serialize(styleIndexes: Map<BlockObject, number>): SerializedElementAnalysis {
+    this.prepareForStates();
     let staticStyles = new Array<number>();
     for (let style of this.allStaticStyles) {
       staticStyles.push(styleIndexes.get(style)!);
@@ -447,6 +446,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * maps can be merged safely.
    */
   forOptimizer(options: CssBlocksOptionsReader): [Element, Map<string, BlockObject>] {
+    this.prepareForStates();
     let tagValue = this.tagName ? Value.constant(this.tagName) : Value.unknown();
     let tagName = new Tagname(tagValue);
     let classes = new Array<AttributeValueSetItem>();

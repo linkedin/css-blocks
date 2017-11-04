@@ -101,12 +101,12 @@ export class TemplateAnalysisTests {
         let element1 = it.next().value;
         let rewrite1 = blockMapping.rewriteMapping(element1);
         assert.deepEqual(rewrite1.staticClasses, []);
-        assert.deepEqual([...rewrite1.dynamicClasses.keys()].sort(), ['c', 'd', 'e']);
+        assert.deepEqual([...rewrite1.dynamicClasses].sort(), ['c', 'd', 'e']);
         let element2 = it.next().value;
         let rewrite2 = blockMapping.rewriteMapping(element2);
         assert.deepEqual(rewrite2.staticClasses, []);
-        assert.deepEqual([...rewrite2.dynamicClasses.keys()].sort(), ['c', 'e', 'f']);
-        let expr = rewrite2.dynamicClasses.get('c')!;
+        assert.deepEqual([...rewrite2.dynamicClasses].sort(), ['c', 'e', 'f']);
+        let expr = rewrite2.dynamicClass('c')!;
         assertType(isAndExpression, expr).and(andExpr => {
           assert.deepEqual(andExpr.and.length, 1);
           assert.deepEqual(andExpr.and[0], block.find(".asdf")!);
