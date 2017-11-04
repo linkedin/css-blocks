@@ -14,6 +14,7 @@ import {
 
 import { ResolvedFile } from "./GlimmerProject";
 import { ElementAnalyzer } from "./ElementAnalyzer";
+import { classnamesHelper } from "./ClassnamesHelperGenerator";
 
 const DEBUG = debugGenerator("css-blocks:glimmer");
 
@@ -49,12 +50,12 @@ export class Rewriter implements NodeVisitor {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
     let element = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
-    let rewrite = this.styleMapping.rewriteMapping(element);
+    let rewrite = this.styleMapping.simpleRewriteMapping(element);
 
     // Remove all the source attributes for styles.
     node.attributes = node.attributes.filter(a => !STYLE_ATTR.test(a.name));
 
-    if (rewrite.dynamicClasses.size === 0) {
+    if (rewrite.dynamicClasses.length === 0) {
       if (rewrite.staticClasses.length === 0) {
         // there's no styles. we're done.
         return;
@@ -67,11 +68,18 @@ export class Rewriter implements NodeVisitor {
       return;
     }
 
-    let staticClasses = this.syntax.builders.text(rewrite.staticClasses.join(' '));
-    let value = new Array<AST.MustacheStatement | AST.TextNode>(staticClasses);
-    let concatStatement = this.syntax.builders.concat(value);
-    let classAttr = this.syntax.builders.attr("class", concatStatement);
-    node.attributes.unshift(classAttr);
+    let dynamicNode = classnamesHelper(rewrite, element);
+    let classValue: AST.MustacheStatement | AST.ConcatStatement;
+    let staticNode: AST.TextNode | undefined = undefined;
+    if (rewrite.staticClasses.length > 0) {
+      staticNode = this.syntax.builders.text(rewrite.staticClasses.join(' ') + ' ');
+      classValue = this.syntax.builders.concat([staticNode, dynamicNode]);
+    } else {
+      classValue = dynamicNode;
+    }
+
+    node.attributes.unshift(this.syntax.builders.attr("class", classValue));
+
     return;
   }
 

@@ -1,4 +1,4 @@
-import { AST } from '@glimmer/syntax';
+import { AST, builders} from '@glimmer/syntax';
 import {
   Block,
   QueryKeySelector,
@@ -14,7 +14,7 @@ import { objectValues, assertNever } from "@opticss/util";
 
 export type TernaryExpression = AST.Expression;
 export type StringExpression = AST.MustacheStatement | AST.ConcatStatement;
-export type BooleanExpression = AST.MustacheStatement | AST.ConcatStatement;
+export type BooleanExpression = AST.Expression;
 export type TemplateElement  = ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>;
 export type AnalysisElement  = ElementAnalysis<null, null, null>;
 
@@ -227,8 +227,21 @@ export class ElementAnalyzer {
             throw new Error("internal error, please file a bug.");
           }
           if (dynamicSubState) {
+            if (dynamicSubState.type === "ConcatStatement") {
+              throw cssBlockError(`The dynamic statement for a boolean state must be set to a mustache statement with no additional text surrounding it.`, dynamicSubState, this.template);
+            }
             if (analysis.storeConditionals) {
-              analysis.element.addDynamicState(states[0], dynamicSubState);
+              let expr: AST.Expression;
+              let {path, params, hash} = dynamicSubState;
+              if (path.type === "PathExpression") {
+                expr = builders.sexpr(path, params, hash);
+              } else {
+                if (params.length > 0) {
+                  throw cssBlockError(`Unsure how to handle this node.`, dynamicSubState, this.template);
+                }
+                expr = path;
+              }
+              analysis.element.addDynamicState(states[0], expr);
             } else {
               analysis.element.addDynamicState(states[0], null);
             }
