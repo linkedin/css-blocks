@@ -343,6 +343,20 @@ export class StraightJacket extends BEMProcessor {
     });
   }
 
+  @skip // this is harder than it looks
+  @test "allows combining class states without a combinator"() {
+    let filename = "foo/bar/multi-class-state.css";
+    let inputCSS = `.foo {color: #111;}
+                    .foo[state|first][state|second] { display: block; }`;
+    return this.process(filename, inputCSS).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        ".multi-class-state__foo { color: #111; }\n" +
+        ".multi-class-state__foo--first.multi-class-state__foo--second { display: block; }\n"
+      );
+    });
+  }
+
   @test "disallows pseudos not attached to a block object."() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `.root :hover { display: block; }`;
