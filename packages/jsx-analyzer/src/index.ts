@@ -4,12 +4,18 @@ import * as path from 'path';
 import * as babylon from 'babylon';
 import * as typescript from 'typescript';
 import traverse from 'babel-traverse';
-import { Block, MultiTemplateAnalyzer, PluginOptions as CssBlocksOptions, BlockFactory } from 'css-blocks';
+import {
+  Block,
+  MultiTemplateAnalyzer,
+  PluginOptions as CssBlocksOptions,
+  BlockFactory,
+  PluginOptionsReader as CssBlocksOptionsReader
+} from 'css-blocks';
 
 import importer from './importer';
 import analyzer from './analyzer';
 import CSSBlocksJSXTransformer from './transformer';
-import Analysis, { Template, MetaAnalysis } from './utils/Analysis';
+import Analysis, { JSXTemplate, MetaAnalysis } from './utils/Analysis';
 import { JSXParseError } from './utils/Errors';
 
 // `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
@@ -47,7 +53,7 @@ const defaultOptions: JSXAnalyzerOptions = {
   aliases: {}
 };
 
-export function parseWith(template: Template, metaAnalysis: MetaAnalysis, factory: BlockFactory, opts: JSXAnalyzerOptions = defaultOptions): Promise<Analysis> {
+export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, factory: BlockFactory, opts: JSXAnalyzerOptions = defaultOptions): Promise<Analysis> {
 
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
@@ -124,7 +130,7 @@ export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory:
   }
 
   // Return promise for parsed analysis object.
-  let template: Template = new Template(file, data);
+  let template: JSXTemplate = new JSXTemplate(file, data);
 
   return parseWith(template, metaAnalysis, factory, opts);
 }
@@ -138,13 +144,13 @@ export function parse(data: string, factory: BlockFactory, opts: JSXAnalyzerOpti
   // Ensure default options.
   opts = Object.assign({}, defaultOptions, opts);
 
-  let template: Template = new Template('', data);
+  let template: JSXTemplate = new JSXTemplate('', data);
   let metaAnalysis: MetaAnalysis = new MetaAnalysis();
 
   return Promise.resolve().then(() => {
     parseWith(template, metaAnalysis, factory, opts);
-    return Promise.all(metaAnalysis.analysisPromises).then((analyses: Analysis[]) => {
-      analyses.forEach((analysis: Analysis) => {
+    return Promise.all(metaAnalysis.analysisPromises).then((analyses) => {
+      analyses.forEach((analysis) => {
         traverse(analysis.template.ast, analyzer(analysis));
         metaAnalysis.addAnalysis(analysis);
         // No need to keep detailed template data anymore!
@@ -181,13 +187,13 @@ export function parseFile(file: string, factory: BlockFactory, opts: JSXAnalyzer
   }
 
   // Return promise for parsed analysis object.
-  let template: Template = new Template(file, data);
+  let template: JSXTemplate = new JSXTemplate(file, data);
   let metaAnalysis: MetaAnalysis = new MetaAnalysis();
 
   return Promise.resolve().then(() => {
     parseWith(template, metaAnalysis, factory, opts);
-    return Promise.all(metaAnalysis.analysisPromises).then((analyses: Analysis[]) => {
-      analyses.forEach((analysis: Analysis) => {
+    return Promise.all(metaAnalysis.analysisPromises).then((analyses) => {
+      analyses.forEach((analysis) => {
         traverse(analysis.template.ast, analyzer(analysis));
         metaAnalysis.addAnalysis(analysis);
         // No need to keep detailed template data anymore!
@@ -199,18 +205,18 @@ export function parseFile(file: string, factory: BlockFactory, opts: JSXAnalyzer
   });
 }
 
-export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer<Template> {
+export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
   private _blockFactory: BlockFactory;
   private entrypoint: string;
   private name: string;
   private options: JSXAnalyzerOptions;
-  private cssBlocksOptions: CssBlocksOptions;
+  private cssBlocksOptions: CssBlocksOptionsReader;
 
   constructor(entrypoint: string, name: string, options: JSXAnalyzerOptions){
     this.entrypoint = entrypoint;
     this.name = name;
     this.options = options;
-    this.cssBlocksOptions = options.compilationOptions || {};
+    this.cssBlocksOptions = new CssBlocksOptionsReader(options.compilationOptions || {});
     this._blockFactory = this.cssBlocksOptions.factory || new BlockFactory(this.cssBlocksOptions);
   }
   analyze(): Promise<MetaAnalysis> {

@@ -1,12 +1,14 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
 import * as babel from 'babel-core';
-import { MetaStyleMapping, PluginOptionsReader } from 'css-blocks';
+import { StyleMapping, PluginOptionsReader, CssBlockOptions, TemplateAnalysis } from 'css-blocks';
 
 import { MetaAnalysis } from '../../src/utils/Analysis';
 import analyzer from '../../src/analyzer';
 import Transformer from '../../src';
 import { testParse as parse } from '../util';
+import { Optimizer, OptiCSSOptions } from 'opticss';
+import { TemplateIntegrationOptions, TemplateTypes } from '@opticss/template-api';
 
 const mock = require('mock-fs');
 
@@ -15,20 +17,33 @@ function minify(s: string) {
   return s ? s.replace(/^[\s\n]+|[\s\n]+$/gm, '') : '';
 }
 
-function transform(code: string, analysis: MetaAnalysis): any {
-  let rewriter = new Transformer.Rewriter();
-  let mappings = MetaStyleMapping.fromMetaAnalysis(analysis, new PluginOptionsReader);
-  mappings.templates.forEach((styleMapping) => {
-    rewriter.blocks['test.tsx'] = styleMapping;
+function transform(code: string, analysis: MetaAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<babel.BabelFileResult> {
+
+  let optimizer = new Optimizer(optimizationOpts, templateOpts);
+  let reader = new PluginOptionsReader(cssBlocksOptions);
+  let analyses = new Array<TemplateAnalysis<keyof TemplateTypes>>();
+  analysis.eachAnalysis(a => {
+    analyses.push(<TemplateAnalysis<'Opticss.JSXTemplate'>>a);
+    optimizer.addAnalysis(a.forOptimizer(reader));
+  });
+  let blocks = analysis.transitiveBlockDependencies();
+  for (let block of blocks) {
+    optimizer.addSource({
+      content: block.root!.toResult({to: reader.importer.filesystemPath(block.identifier, reader) || undefined}),
+    });
+  }
+  return optimizer.optimize('optimized.css').then(result => {
+    let rewriter = new Transformer.Rewriter();
+    rewriter.blocks['test.tsx'] = new StyleMapping(result.styleMapping, blocks, reader, analyses);
+    return babel.transform(code, {
+      filename: 'test.tsx',
+      plugins: [
+        [ require('../../src/transformer/babel').default, { rewriter } ]
+      ],
+      parserOpts: { plugins: [ 'jsx' ] }
+    });
   });
 
-  return babel.transform(code, {
-    filename: 'test.tsx',
-    plugins: [
-      [ require('../../src/transformer/babel').default, { rewriter } ]
-    ],
-    parserOpts: { plugins: [ 'jsx' ] }
-  });
 }
 
 @suite('Transformer | External Objstr Class States')
@@ -57,13 +72,13 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
+      return transform(code, analysis).then(res => {
+        assert.equal(minify(res.code!), minify(`
+          import objstr from 'obj-str';
 
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
-
-        <div class="bar"></div>;
-        <div class="bar"></div>;`));
+          <div class="bar"></div>;
+          <div class="bar"></div>;`));
+        });
     });
   }
 
@@ -91,18 +106,19 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
+      return transform(code, analysis).then(res =>{
+        assert.equal(minify(res.code!), minify(`
+          import objstr from 'obj-str';
 
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
+          let style = objstr({
+            'bar__pretty': true
+          });
 
-        let style = objstr({
-          'bar__pretty': true
-        });
-
-        let rootStyle = objstr({
-          'bar': true
-        });`));
+          let rootStyle = objstr({
+            'bar': true
+          });`
+        ));
+      });
     });
   }
 
@@ -132,17 +148,18 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
+      return transform(code, analysis).then(res => {
+        assert.equal(minify(res.code!), minify(`
+          import objstr from 'obj-str';
 
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
+          let style = objstr({
+            'bar__pretty': true,
+            'bar__pretty--color-yellow': true
+          });
 
-        let style = objstr({
-          'bar__pretty': true,
-          'bar__pretty--color-yellow': true
-        });
-
-        <div class={style}></div>;`));
+          <div class={style}></div>;`
+        ));
+      });
     });
   }
 
@@ -172,17 +189,18 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
+      return transform(code, analysis).then(res => {
+        assert.equal(minify(res.code!), minify(`
+          import objstr from 'obj-str';
 
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
+          let style = objstr({
+            'bar__pretty': true,
+            'bar__pretty--color-true': true
+          });
 
-        let style = objstr({
-          'bar__pretty': true,
-          'bar__pretty--color-true': true
-        });
-
-        <div class={style}></div>;`));
+          <div class={style}></div>;`)
+        );
+      });
     });
   }
 
@@ -212,17 +230,18 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
+      return transform(code, analysis).then(res => {
+        assert.equal(minify(res.code!), minify(`
+          import objstr from 'obj-str';
 
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
+          let style = objstr({
+            'bar__pretty': true,
+            'bar__pretty--color-100': true
+          });
 
-        let style = objstr({
-          'bar__pretty': true,
-          'bar__pretty--color-100': true
-        });
+          <div class={style}></div>;`));
+      });
 
-        <div class={style}></div>;`));
     });
   }
 
@@ -258,20 +277,22 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
+      return transform(code, analysis).then(res => {
+        assert.equal(minify(res.code!), minify(`
+          import objstr from 'obj-str';
 
-        let dynamic = 'yellow';
-        let ohgod = true;
+          let dynamic = 'yellow';
+          let ohgod = true;
 
-        let style = objstr({
-          'bar__pretty': true,
-          'bar__pretty--color-yellow': dynamic === 'yellow' && ohgod,
-          'bar__pretty--color-green': dynamic === 'green' && ohgod
-        });
+          let style = objstr({
+            'bar__pretty': true,
+            'bar__pretty--color-yellow': dynamic === 'yellow' && ohgod,
+            'bar__pretty--color-green': dynamic === 'green' && ohgod
+          });
 
-        <div class="bar"><div class={style}></div></div>;`));
+          <div class="bar"><div class={style}></div></div>;`)
+        );
+      });
     });
   }
 
@@ -306,21 +327,22 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
+      return transform(code, analysis).then(res => {
+        assert.equal(minify(res.code!), minify(`
+          import objstr from 'obj-str';
 
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
+          let dynamic = 'yellow';
+          let ohgod = true;
 
-        let dynamic = 'yellow';
-        let ohgod = true;
+          let style = objstr({
+            'bar__pretty': true,
+            'bar__pretty--bool': true,
+            'bar__pretty--color-yellow': dynamic === 'yellow' && ohgod
+          });
 
-        let style = objstr({
-          'bar__pretty': true,
-          'bar__pretty--bool': true,
-          'bar__pretty--color-yellow': dynamic === 'yellow' && ohgod
-        });
-
-        <div class="bar"><div class={style}></div></div>;`));
+          <div class="bar"><div class={style}></div></div>;`)
+        );
+      });
     });
   }
 
@@ -355,20 +377,22 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
+      return transform(code, analysis).then(res => {
+        assert.equal(minify(res.code!), minify(`
+          import objstr from 'obj-str';
 
-        let dynamic = 'yellow';
+          let dynamic = 'yellow';
 
-        const _condition = \`\${dynamic}Color\`;
-        let style = objstr({
-          'bar__pretty': true,
-          'bar__pretty--color-yellowColor': _condition === 'yellowColor',
-          'bar__pretty--color-greenColor': _condition === 'greenColor'
-        });
+          const _condition = \`\${dynamic}Color\`;
+          let style = objstr({
+            'bar__pretty': true,
+            'bar__pretty--color-yellowColor': _condition === 'yellowColor',
+            'bar__pretty--color-greenColor': _condition === 'greenColor'
+          });
 
-        <div class="bar"><div class={style}></div></div>;`));
+          <div class="bar"><div class={style}></div></div>;`)
+        );
+      });
     });
   }
 
@@ -395,12 +419,12 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
-
-      assert.equal(minify(res.code), minify(`
-        <div class="bar__pretty"></div>;
-        <div class="foo__pretty"></div>;
-      `));
+      return transform(code, analysis).then(res => {
+        assert.equal(minify(res.code!), minify(`
+          <div class="bar__pretty"></div>;
+          <div class="foo__pretty"></div>;
+        `));
+      });
     });
   }
 
@@ -425,17 +449,17 @@ export class Test {
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
 
-      let res = transform(code, analysis);
+      return transform(code, analysis).then(res => {
+        assert.equal(minify(res.code!), minify(`
+          import objstr from 'obj-str';
 
-      assert.equal(minify(res.code), minify(`
-        import objstr from 'obj-str';
-
-        let styles = objstr({
-          'foo': true,
-          'foo--cool': true
-        });
-        <div class={styles}></div>;
-      `));
+          let styles = objstr({
+            'foo': true,
+            'foo--cool': true
+          });
+          <div class={styles}></div>;
+        `));
+      });
     });
   }
 
@@ -468,5 +492,4 @@ export class Test {
       assert.equal(e.message, 'test.tsx: [css-blocks] RewriteError: The spread operator is not allowed in CSS Block states. (9:18)');
     });
   }
-
 }

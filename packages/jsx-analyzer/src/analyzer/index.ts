@@ -1,5 +1,6 @@
+import { objectValues } from '@opticss/util/dist/src';
 import { NodePath, Binding } from 'babel-traverse';
-import { Block, BlockClass, State } from 'css-blocks';
+import { Block, BlockClass, State, isBlockClass, isBlock, isState } from 'css-blocks';
 import {
   CallExpression,
   JSXOpeningElement,
@@ -72,7 +73,7 @@ function saveObjstrProps(analysis: Analysis, path: any) {
   };
 
   // We consider every `objstr` call a single element's styles. Start a new element.
-  analysis.startElement(loc);
+  let element = analysis.startElement(loc);
 
   // Ensure the first argument passed to suspected `objstr` call is an object.
   let obj: any = func.arguments[0];
@@ -93,12 +94,30 @@ function saveObjstrProps(analysis: Analysis, path: any) {
 
     // Save all discovered BlockObjects to analysis
     parts.concerns.forEach( (style) => {
-      analysis.addStyle(style, !isLiteral(prop.value));
+      if (isLiteral(prop.value)) {
+        if (isBlockClass(style)) {
+          element.addStaticClass(style);
+        } else if (isBlock(style)) {
+          element.addStaticClass(style);
+        } else if (isState(style)) {
+          element.addStaticState(style);
+        }
+      } else {
+        if (isBlockClass(style) || isBlock(style)) {
+          element.addDynamicClasses({condition: prop.value, whenTrue: [style]});
+        } else if (isState(style)) {
+          // TODO
+          // element.addDynamicGroup(parent, style.group, prop.value, true);
+        } else if (isState(style)) {
+          element.addDynamicState(style, prop.value);
+        }
+
+      }
     });
 
   });
 
-  analysis.endElement();
+  analysis.endElement(element);
 }
 
 /**
@@ -133,7 +152,7 @@ export default function visitors(analysis: Analysis): object {
         column: path.node.loc.start.column,
       };
 
-      analysis.startElement(loc);
+      let element = analysis.startElement(loc);
 
       el.attributes.forEach((attr: JSXAttribute) => {
 
@@ -155,7 +174,7 @@ export default function visitors(analysis: Analysis): object {
               // Check if there is a block of this name imported. If so, save style and exit.
               let block: Block | undefined = analysis.blocks[name];
               if ( block ) {
-                analysis.addStyle(block);
+                element.addStaticClass(block);
                 return;
               }
             }
@@ -166,7 +185,13 @@ export default function visitors(analysis: Analysis): object {
               let expression: any = value.expression;
               let parts: ExpressionReader = new ExpressionReader(expression, analysis);
               parts.concerns.forEach( (style) => {
-                analysis.addStyle(style, false);
+                if (isBlockClass(style)) {
+                  element.addStaticClass(style);
+                } else if (isBlock(style)) {
+                  element.addStaticClass(style);
+                } else if (isState(style)) {
+                  element.addStaticState(style);
+                }
               });
             }
           }
@@ -230,15 +255,20 @@ export default function visitors(analysis: Analysis): object {
 
           // Register all states with our analysis
           if (states) {
-            let statesDef = states;
-            Object.keys(statesDef).forEach((k) => {
-              analysis.addStyle(statesDef[k], isDynamic);
-            });
+            if (isDynamic) {
+              element.addDynamicGroup((classBlock || block), states, value, true);
+            } else {
+              let values = objectValues(states);
+              if (values.length > 1) throw new Error('Internal Error.');
+              for (let state of values) {
+                element.addStaticState(state);
+              }
+            }
           }
         }
       });
 
-      analysis.endElement();
+      analysis.endElement(element);
     }
   };
 }

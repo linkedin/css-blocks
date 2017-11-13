@@ -1,10 +1,9 @@
-import { TemplateRewriter, MetaStyleMapping, StyleMapping, PluginOptions } from 'css-blocks';
-import { Template } from '../utils/Analysis';
+import { StyleMapping, PluginOptions } from 'css-blocks';
 
 export interface RewriterOptions {
   meta?: { [metaprop: string]: any };
   cssBlocks: {
-    styleMapping: MetaStyleMapping<Template> | null;
+    styleMapping: StyleMapping | null;
     compilationOptions: PluginOptions;
   };
 }
@@ -19,10 +18,10 @@ export interface RewriterOutput {
 //       be replaced by searalizing the Mapping to JSON in the loader, appending
 //       it in a comment sourcemaps style to the file, and hydrating/removing it
 //       in the transformer. Remove this when that is added.
-export default class CSSBlocksJSXTransformer implements TemplateRewriter {
+export default class CSSBlocksJSXTransformer {
 
-  private styleMapping: MetaStyleMapping<Template> | null;
-  blocks: { [path: string]: StyleMapping<Template> } = {};
+  private styleMapping: StyleMapping | null;
+  blocks: { [path: string]: StyleMapping } = {};
 
   constructor(opts?: RewriterOptions) {
     this.styleMapping = opts && opts.cssBlocks && opts.cssBlocks.styleMapping || null;

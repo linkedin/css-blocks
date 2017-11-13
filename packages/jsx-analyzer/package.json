@@ -60,13 +60,16 @@
     "watch": "^1.0.2"
   },
   "dependencies": {
+    "@opticss/template-api": "^0.1.0",
+    "@opticss/util": "^0.1.0",
     "babel-traverse": "^6.24.1",
     "babel-types": "^6.24.1",
     "babylon": "^6.17.4",
-    "css-blocks": "^0.12.1",
+    "css-blocks": "^0.12.2",
     "debug": "^2.6.8",
     "minimatch": "^3.0.4",
     "object.values": "^1.0.4",
+    "opticss": "^0.1.0",
     "postcss": "^6.0.1",
     "typescript": "^2.3.4"
   }

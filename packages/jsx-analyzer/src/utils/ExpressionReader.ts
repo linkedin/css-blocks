@@ -13,7 +13,7 @@ import {
   StringLiteral
 } from 'babel-types';
 
-import Analysis, { Template } from './Analysis';
+import Analysis from './Analysis';
 import { MalformedBlockPath, ErrorLocation } from '../utils/Errors';
 
 const debug = debugGenerator('css-blocks:jsx');
@@ -46,11 +46,11 @@ export class ExpressionReader {
   concerns: BlockObject[] = [];
   err: null | string = null;
 
-  constructor(expression: Node, analysis: Analysis | StyleMapping<Template>){
+  constructor(expression: Node, analysis: Analysis | StyleMapping){
 
     // Expression location info object for error reporting.
     let loc: ErrorLocation = {
-      filename: analysis.template.identifier,
+      filename: 'TODO',
       line: expression.loc.start.line,
       column: expression.loc.start.line
     };

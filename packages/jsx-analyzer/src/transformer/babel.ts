@@ -30,7 +30,6 @@ import {
 } from 'babel-types';
 
 import { ExpressionReader } from '../utils/ExpressionReader';
-import { Template } from '../utils/Analysis';
 import isBlockFilename from '../utils/isBlockFilename';
 import { TemplateRewriteError } from '../utils/Errors';
 
@@ -44,16 +43,17 @@ const CLASS_PROPERTIES = {
   'className': 1
 };
 
-function getBlockObjectClassnames(mapping: StyleMapping<Template>, test: BlockObject | undefined) : string {
+function getBlockObjectClassnames(mapping: StyleMapping, test: BlockObject | undefined) : string {
   // Depending on the final block object we found, replace the property with the appropreate class.
   // TODO: Babel, in some transform modes, will deep clone all options passed in.
   //       This means we can't do a simple `blockMappings.get` on the mappings object and instead have to
   //       test unique identifiers all the way up the block chain.
   //       The deep clone issue passing mapping in through plugin options feels avoidable.
   let list: string[] = [];
-  mapping.blockMappings.forEach((l, o) => {
-    if ( test && o.asSource() === test.asSource() && o.block.name === test.block.name ) { list = l; }
-  });
+  // TODO
+  // mapping.blockMappings.forEach((l, o) => {
+  //   if ( test && o.asSource() === test.asSource() && o.block.name === test.block.name ) { list = l; }
+  // });
   return list.join(' ');
 }
 
@@ -64,7 +64,7 @@ function getBlockObjectClassnames(mapping: StyleMapping<Template>, test: BlockOb
  * @param path The Object String call's path object.
  * @returns The array of `Property` values passed to Object String
  */
-function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
+function swapObjstrProps(mapping: StyleMapping, path: NodePath<any>) {
 
   // If this node is not a call expression (ex: `objstr({})`), or is a complex
   // call expression that we'll have trouble analyzing (ex: `(true && objstr)({})`)
@@ -134,7 +134,7 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
 
       if ( isSpreadElement(condition1) ) {
         throw new TemplateRewriteError(`The spread operator is not allowed in CSS Block states.`, {
-          filename: mapping.template.identifier,
+          filename: 'TODO',
           line: condition1.loc.start.line,
           column: condition1.loc.start.column
         });
@@ -157,7 +157,7 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
 
         if ( !className ) {
           throw new TemplateRewriteError(`No class name found for state "${state.asSource()}".`, {
-            filename: mapping.template.identifier,
+            filename: 'TODO',
             line: prop.loc.start.line,
             column: prop.loc.start.column
           });
@@ -192,7 +192,7 @@ function swapObjstrProps(mapping: StyleMapping<Template>, path: NodePath<any>) {
 
 export default function transform(): any {
   let filename = '';
-  let mapping: StyleMapping<Template>;
+  let mapping: StyleMapping;
   let cssBlockOptions: PluginOptionsReader;
   let shouldProcess = true;
 
