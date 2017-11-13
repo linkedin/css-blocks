@@ -44,7 +44,7 @@ const CLASS_PROPERTIES = {
 };
 
 function getBlockObjectClassnames(mapping: StyleMapping, test: BlockObject | undefined) : string {
-  // Depending on the final block object we found, replace the property with the appropreate class.
+  // Depending on the final block object we found, replace the property with the appropriate class.
   // TODO: Babel, in some transform modes, will deep clone all options passed in.
   //       This means we can't do a simple `blockMappings.get` on the mappings object and instead have to
   //       test unique identifiers all the way up the block chain.
@@ -108,7 +108,7 @@ function swapObjstrProps(mapping: StyleMapping, path: NodePath<any>) {
     let parts: ExpressionReader = new ExpressionReader(prop.key, mapping);
     if ( !parts.concerns.length ) { return; }
 
-    // If there is more than one BlockObject concern related to this expresison,
+    // If there is more than one BlockObject concern related to this expression,
     // start the one to many objstr rewrite.
     // For each state in this state group, construct the logic expression using
     // the value passed into the CSS Block State "function" and the value of
@@ -121,8 +121,8 @@ function swapObjstrProps(mapping: StyleMapping, path: NodePath<any>) {
     //     transforms to
     //
     //     objstr({
-    //       'block--state-substate1': expr1 === 'substate1' && expr2,
-    //       'block--state-substate2': expr1 === 'substate2' && expr2
+    //       'block--state-subState1': expr1 === 'subState1' && expr2,
+    //       'block--state-subState2': expr1 === 'subState2' && expr2
     //     })
     if ( parts.isDynamic ) {
 
@@ -178,7 +178,7 @@ function swapObjstrProps(mapping: StyleMapping, path: NodePath<any>) {
       });
     }
 
-    // If not a dynamic substate, simply replace with new string.
+    // If not a dynamic sub-state, simply replace with new string.
     else {
       let className = getBlockObjectClassnames(mapping, parts.concerns[0]);
       if ( className ) {
@@ -216,9 +216,9 @@ export default function transform(): any {
       },
 
       // If this is a CSS Blocks import, always remove it.
-      ImportDeclaration(nodepath: NodePath<ImportDeclaration>) {
-        if ( isBlockFilename(nodepath.node.source.value) ) {
-          nodepath.remove();
+      ImportDeclaration(nodePath: NodePath<ImportDeclaration>) {
+        if ( isBlockFilename(nodePath.node.source.value) ) {
+          nodePath.remove();
         }
       },
 
@@ -259,7 +259,7 @@ export default function transform(): any {
 
             // Discover identifiers we are concerned with. These include Block root
             // references and `objstr` references in scope that contain block objects.
-            // ex: `blockname` || `objstrVar`
+            // ex: `blockName` || `objstrVar`
             if ( isIdentifier(value.expression) ) {
 
               let name = value.expression.name;
@@ -275,7 +275,7 @@ export default function transform(): any {
             }
 
             // Discover direct references to an imported block.
-            // Ex: `blockName.foo` || `blockname['bar']` || blockname.foo()
+            // Ex: `blockName.foo` || `blockName['bar']` || blockName.foo()
             if ( isMemberExpression(value.expression) || isCallExpression(value.expression) ) {
               let expression: any = value.expression;
               let parts: ExpressionReader = new ExpressionReader(expression, mapping);

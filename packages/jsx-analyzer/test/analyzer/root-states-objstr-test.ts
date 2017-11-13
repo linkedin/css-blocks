@@ -8,7 +8,7 @@ const mock = require('mock-fs');
 @suite('Analyzer | External Objstr Root States')
 export class Test {
 
-  @test 'Root states with substates are tracked'(){
+  @test 'Root states with sub-states are tracked'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -52,10 +52,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohgod = true;
+      let ohGod = true;
       let style = objstr({
         [bar]: true,
-        [bar.color('yellow')]: ohgod
+        [bar.color('yellow')]: ohGod
       });
 
       <div class={style}></div>;
@@ -80,10 +80,10 @@ export class Test {
     return parse(`
       import bar, { states } from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohgod = true;
+      let ohGod = true;
       let style = objstr({
         [bar]: true,
-        [bar.awesome()]: ohgod
+        [bar.awesome()]: ohGod
       });
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
@@ -107,10 +107,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohgod = true;
+      let ohGod = true;
       let style = objstr({
         [bar]: true,
-        [bar.awesome()]: ohgod
+        [bar.awesome()]: ohGod
       });
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
@@ -121,7 +121,7 @@ export class Test {
     });
   }
 
-  @test 'Accessing substate on boolean state throws'(){
+  @test 'Accessing sub-state on boolean state throws'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -134,10 +134,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohgod = true;
+      let ohGod = true;
       let style = objstr({
         [bar]: true,
-        [bar.awesome('wat')]: ohgod
+        [bar.awesome('wat')]: ohGod
       });
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
@@ -166,7 +166,7 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohgod = true;
+      let ohGod = true;
       let style1 = objstr({
         [bar.pretty]: true,
         [bar.pretty.awesome()]: true

@@ -13,7 +13,7 @@ export class Test {
     assert.equal(typeof analyzer, 'function');
   }
 
-  @test 'States with substates are tracked'(){
+  @test 'States with sub-states are tracked'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -59,10 +59,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohgod = true;
+      let ohGod = true;
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color("yellow")]: ohgod
+        [bar.pretty.color("yellow")]: ohGod
       });
 
       <div class={style}></div>;
@@ -98,11 +98,11 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohgod = true;
+      let ohGod = true;
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color('yellow')]: ohgod,
-        [bar.pretty.color('black')]: !ohgod
+        [bar.pretty.color('yellow')]: ohGod,
+        [bar.pretty.color('black')]: !ohGod
       });
 
       <div class={style}></div>;
@@ -139,12 +139,12 @@ export class Test {
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
 
-      let ohgod = true;
+      let ohGod = true;
       let state = 'yellow';
 
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color(state)]: ohgod,
+        [bar.pretty.color(state)]: ohGod,
       });
 
       <div class={style}></div>;
@@ -156,7 +156,7 @@ export class Test {
     });
   }
 
-  @test 'Throws error when no substate passed'(){
+  @test 'Throws error when no sub-state passed'(){
     mock({
       'bar.block.css': `
         @block-reference foo from "./foo.block.css";
@@ -181,11 +181,11 @@ export class Test {
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
 
-      let ohgod = true;
+      let ohGod = true;
 
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color()]: ohgod,
+        [bar.pretty.color()]: ohGod,
       });
 
       <div class={style}></div>;
@@ -193,7 +193,7 @@ export class Test {
       mock.restore();
       assert.ok(false, 'Should never get here');
     }).catch((err) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: State bar.pretty.color() expects a substate. (9:9)');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: State bar.pretty.color() expects a sub-state. (9:9)');
     });
   }
 
@@ -211,10 +211,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohgod = true;
+      let ohGod = true;
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.awesome()]: ohgod
+        [bar.pretty.awesome()]: ohGod
       });
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
@@ -225,7 +225,7 @@ export class Test {
     });
   }
 
-  @test 'Accessing substate on boolean state throws'(){
+  @test 'Accessing sub-state on boolean state throws'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -239,10 +239,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohgod = true;
+      let ohGod = true;
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.awesome('wat')]: ohgod
+        [bar.pretty.awesome('wat')]: ohGod
       });
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {

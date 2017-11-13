@@ -76,7 +76,7 @@ export class Test {
     });
   }
 
-  @test 'Throw when referencing non-existant substate'() {
+  @test 'Throw when referencing non-existent sub-state'() {
     mock({
       'bar.block.css': `
         .root { color: red; }

@@ -122,7 +122,7 @@ export class Test {
     });
   }
 
-  @test 'States with substates are transformed using string input'(){
+  @test 'States with sub-states are transformed using string input'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -163,7 +163,7 @@ export class Test {
     });
   }
 
-  @test 'States with substates are transformed using boolean input'(){
+  @test 'States with sub-states are transformed using boolean input'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -204,7 +204,7 @@ export class Test {
     });
   }
 
-  @test 'States with substates are transformed using numerical input'(){
+  @test 'States with sub-states are transformed using numerical input'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -245,7 +245,7 @@ export class Test {
     });
   }
 
-  @test 'States with dynamic substates are transformed'(){
+  @test 'States with dynamic sub-states are transformed'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -264,11 +264,11 @@ export class Test {
       import objstr from 'obj-str';
 
       let dynamic = 'yellow';
-      let ohgod = true;
+      let ohGod = true;
 
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color(dynamic)]: ohgod
+        [bar.pretty.color(dynamic)]: ohGod
       });
 
       <div class={bar.root}><div class={style}></div></div>;
@@ -282,12 +282,12 @@ export class Test {
           import objstr from 'obj-str';
 
           let dynamic = 'yellow';
-          let ohgod = true;
+          let ohGod = true;
 
           let style = objstr({
             'bar__pretty': true,
-            'bar__pretty--color-yellow': dynamic === 'yellow' && ohgod,
-            'bar__pretty--color-green': dynamic === 'green' && ohgod
+            'bar__pretty--color-yellow': dynamic === 'yellow' && ohGod,
+            'bar__pretty--color-green': dynamic === 'green' && ohGod
           });
 
           <div class="bar"><div class={style}></div></div>;`)
@@ -296,7 +296,7 @@ export class Test {
     });
   }
 
-  @test 'States with dynamic substates are transformed when only a single substate exists'(){
+  @test 'States with dynamic sub-states are transformed when only a single sub-state exists'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -313,12 +313,12 @@ export class Test {
       import objstr from 'obj-str';
 
       let dynamic = 'yellow';
-      let ohgod = true;
+      let ohGod = true;
 
       let style = objstr({
         [bar.pretty]: true,
         [bar.pretty.bool()]: true,
-        [bar.pretty.color(dynamic)]: ohgod
+        [bar.pretty.color(dynamic)]: ohGod
       });
 
       <div class={bar.root}><div class={style}></div></div>;
@@ -332,12 +332,12 @@ export class Test {
           import objstr from 'obj-str';
 
           let dynamic = 'yellow';
-          let ohgod = true;
+          let ohGod = true;
 
           let style = objstr({
             'bar__pretty': true,
             'bar__pretty--bool': true,
-            'bar__pretty--color-yellow': dynamic === 'yellow' && ohgod
+            'bar__pretty--color-yellow': dynamic === 'yellow' && ohGod
           });
 
           <div class="bar"><div class={style}></div></div>;`)
@@ -346,7 +346,7 @@ export class Test {
     });
   }
 
-  @test 'States with dynamic substates containing complex expression are transformed to the simplest possible output'(){
+  @test 'States with dynamic sub-states containing complex expression are transformed to the simplest possible output'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -486,8 +486,9 @@ export class Test {
 
     return parse(code).then((analysis: MetaAnalysis) => {
       mock.restore();
-      transform(code, analysis);
-      assert.ok(false, 'Should never get here.');
+      return transform(code, analysis).then(_res => {
+        assert.fail('Should never get here.');
+      });
     }).catch((e) => {
       assert.equal(e.message, 'test.tsx: [css-blocks] RewriteError: The spread operator is not allowed in CSS Block states. (9:18)');
     });

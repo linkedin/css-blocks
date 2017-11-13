@@ -39,7 +39,7 @@ type Property = ObjectProperty | SpreadProperty | ObjectMethod;
 /**
  * Given a well formed Object String `CallExpression`, add all Block style references
  * to the given analysis object.
- * @param analysis Theis template's analysis object.
+ * @param analysis This template's analysis object.
  * @param path The objstr CallExpression Path.
  */
 function saveObjstrProps(analysis: Analysis, path: any) {
@@ -180,7 +180,7 @@ export default function visitors(analysis: Analysis): object {
             }
 
             // Discover direct references to an imported block.
-            // Ex: `blockName.foo` || `blockname['bar']` || `blockname.bar()`
+            // Ex: `blockName.foo` || `blockName['bar']` || `blockName.bar()`
             if ( isMemberExpression(value.expression) || isCallExpression(value.expression) ) {
               let expression: any = value.expression;
               let parts: ExpressionReader = new ExpressionReader(expression, analysis);
@@ -250,7 +250,7 @@ export default function visitors(analysis: Analysis): object {
           // a namespace other than a class or root, throw.
           if ( !states ) {
             // TODO: Add location data in error message.
-            throw new TemplateAnalysisError(`Attempted to access non-existant state "${stateName}" on block class namespace "${reader.toString()}"`, loc);
+            throw new TemplateAnalysisError(`Attempted to access non-existent state "${stateName}" on block class namespace "${reader.toString()}"`, loc);
           }
 
           // Register all states with our analysis

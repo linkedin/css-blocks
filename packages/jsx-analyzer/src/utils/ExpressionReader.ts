@@ -41,7 +41,7 @@ export class ExpressionReader {
   block: string | undefined;
   class: string | undefined;
   state: string | undefined;
-  substate: string | undefined;
+  subState: string | undefined;
   isDynamic: boolean;
   concerns: BlockObject[] = [];
   err: null | string = null;
@@ -57,7 +57,7 @@ export class ExpressionReader {
 
     this.expression = getExpressionParts(expression, loc);
 
-    // Register if this expression's substate is dynamic or static.
+    // Register if this expression's sub-state is dynamic or static.
     if ( isCallExpression(expression) && expression.arguments[0] && !isLiteralPart(expression.arguments[0])) {
       this.isDynamic = true;
     }
@@ -67,11 +67,11 @@ export class ExpressionReader {
 
     let len = this.expression.length;
 
-    // Discover block expression identifiers of the form `block[.class][.state([substate])]`
+    // Discover block expression identifiers of the form `block[.class][.state([subState])]`
     for ( let i=0; i<len; i++ ) {
 
       if ( this.err ) {
-        this.block = this.class = this.state = this.substate = undefined;
+        this.block = this.class = this.state = this.subState = undefined;
         break;
       }
 
@@ -87,7 +87,7 @@ export class ExpressionReader {
         this.err = 'Can not select state without a block or class.';
       }
       else if ( typeof token === 'string' ) {
-        if      ( this.state ) { this.substate = token; }
+        if      ( this.state ) { this.subState = token; }
         else if ( this.class ) { this.state = token; }
         else if ( this.block && next === CALL_START ) { this.state = token; }
         else if ( this.block ) { this.class = token; }
@@ -122,24 +122,24 @@ export class ExpressionReader {
       return;
     }
 
-    // Throw an error if this state expects a substate and nothing has been provided.
+    // Throw an error if this state expects a sub-state and nothing has been provided.
     let states = blockObj.states.resolveGroup(this.state) || {};
-    if (  Object.keys(states).length > 1 && this.substate === undefined ) {
-      throw new MalformedBlockPath(`State ${this.toString()} expects a substate.`, loc);
+    if (  Object.keys(states).length > 1 && this.subState === undefined ) {
+      throw new MalformedBlockPath(`State ${this.toString()} expects a sub-state.`, loc);
     }
 
     // Fetch all matching state objects.
-    let stateObjs = blockObj.states.resolveGroup(this.state, this.substate !== DYNAMIC_STATE_ID ? this.substate : undefined) || {};
+    let stateObjects = blockObj.states.resolveGroup(this.state, this.subState !== DYNAMIC_STATE_ID ? this.subState : undefined) || {};
 
-    // Throw a helpful error if this state / substate does not exist.
-    if ( !Object.keys(stateObjs).length ) {
+    // Throw a helpful error if this state / sub-state does not exist.
+    if ( !Object.keys(stateObjects).length ) {
       let knownStates: State[] | undefined;
-      let allSubstates = blockObj.states.resolveGroup(this.state) || {};
-      if (allSubstates) {
-        let ass = allSubstates;
-        knownStates = Object.keys(allSubstates).map(k => ass[k]);
+      let allSubStates = blockObj.states.resolveGroup(this.state) || {};
+      if (allSubStates) {
+        let ass = allSubStates;
+        knownStates = Object.keys(allSubStates).map(k => ass[k]);
       }
-      let message = `No state [state|${this.state}${this.substate ? '='+this.substate : ''}] found on block "${this.block}".`;
+      let message = `No state [state|${this.state}${this.subState ? '='+this.subState : ''}] found on block "${this.block}".`;
       if (knownStates) {
         if (knownStates.length === 1) {
           message += `\n  Did you mean: ${knownStates[0].asSource()}?`;
@@ -152,8 +152,8 @@ export class ExpressionReader {
 
     debug(`Discovered ${this.class ? 'class-level' : 'block-level'} state ${this.state} from expression ${this.toString()}`);
 
-    // Push all discovered state / substate objects to BlockObject concerns list.
-    ([]).push.apply(this.concerns, (<any>Object).values(stateObjs));
+    // Push all discovered state / sub-state objects to BlockObject concerns list.
+    ([]).push.apply(this.concerns, (<any>Object).values(stateObjects));
   }
 
   get length() {
@@ -193,7 +193,7 @@ export class ExpressionReader {
         out += (!out || out[out.length-1] === '[' || out[out.length-1] === '(') ? <string>part : '.'+<string>part;
       }
 
-      // Else print with brack syntax
+      // Else print with bracket syntax
       else {
         out += `['${<string>part}]`;
       }
@@ -245,7 +245,7 @@ function getExpressionParts(expression: Node, loc: ErrorLocation): PathExpressio
       parts.unshift(prop.value);
     }
 
-    // If we encounter anoter member expression (Ex: foo[bar.baz])
+    // If we encounter another member expression (Ex: foo[bar.baz])
     // Because Typescript has issues with recursively nested types, we use booleans
     // to denote the boundaries between nested expressions.
     else if ( expression.computed && (

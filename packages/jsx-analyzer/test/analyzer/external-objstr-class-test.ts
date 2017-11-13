@@ -9,7 +9,7 @@ const mock = require('mock-fs');
 export class Test {
 
   @skip
-  @test 'Classes on objstrs are tracked when applied'(){
+  @test 'Classes on objstr calls are tracked when applied'(){
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -76,7 +76,7 @@ export class Test {
   }
 
   @skip
-  @test 'Multiple classes from the same block on objstrs are tracked when applied'(){
+  @test 'Multiple classes from the same block on objstr calls are tracked when applied'(){
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; } .baz { color: red; }'
     });
@@ -108,7 +108,7 @@ export class Test {
   }
 
   @skip
-  @test 'Multiple classes from differnet blocks on objstrs are tracked when applied'(){
+  @test 'Multiple classes from different blocks on objstr calls are tracked when applied'(){
     mock({
       'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
       'bar.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }'

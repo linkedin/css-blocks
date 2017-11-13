@@ -8,7 +8,7 @@ const mock = require('mock-fs');
 @suite('Analyzer | State Attributes')
 export class Test {
 
-  @skip @test 'States with substates are tracked'(){
+  @skip @test 'States with sub-states are tracked'(){
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -71,7 +71,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} state:bar.pretty.color={ohgod}></div>;
+      <div class={bar.pretty} state:bar.pretty.color={ohGod}></div>;
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
@@ -137,7 +137,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} state:bar.pretty.awesome={ohmy}></div>;
+      <div class={bar.pretty} state:bar.pretty.awesome={ohMy}></div>;
     `).then((analysis: MetaAnalysis) => {
       mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);

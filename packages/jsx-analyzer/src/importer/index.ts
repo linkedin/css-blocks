@@ -22,7 +22,7 @@ import isBlockFilename from '../utils/isBlockFilename';
 import { TemplateImportError, ErrorLocation } from '../utils/Errors';
 
 const DEFAULT_IDENTIFIER = 'default';
-const VALID_FILE_EXTS = {
+const VALID_FILE_EXTENSIONS = {
   '.jsx': 1, '.tsx': 1
 };
 
@@ -64,28 +64,28 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
 
     // For each Block import declaration, try to read the block file from disk,
     // compile its contents, and save the Block promises in the passed Blocks array.
-    ImportDeclaration(nodepath: NodePath<ImportDeclaration>) {
-      let filepath = nodepath.node.source.value;
-      let specifiers = nodepath.node.specifiers;
+    ImportDeclaration(nodePath: NodePath<ImportDeclaration>) {
+      let filePath = nodePath.node.source.value;
+      let specifiers = nodePath.node.specifiers;
 
       for ( let key in aliases ) {
-        if ( filepath.indexOf(key) === 0 ) {
-          filepath = filepath.replace(key, aliases[key]);
+        if ( filePath.indexOf(key) === 0 ) {
+          filePath = filePath.replace(key, aliases[key]);
           break;
         }
       }
-      let absoluteFilepath = path.isAbsolute(filepath) ? filepath : path.resolve(dirname, filepath);
+      let absoluteFilePath = path.isAbsolute(filePath) ? filePath : path.resolve(dirname, filePath);
 
       // TODO: Handle blocks / components delivered through node_modules
 
       // Check if this is a jsx or tsx file on disk. If yes, this is a potential
       // part of the CSS Blocks dependency tree. We need to test all valid jsx
       // and typescript file extensions – require.resolve will not pick them up.
-      let parsedPath = path.parse(absoluteFilepath);
+      let parsedPath = path.parse(absoluteFilePath);
       delete parsedPath.base;
       if ( !parsedPath.ext ) {
         let exists = false;
-        for (let key in VALID_FILE_EXTS) {
+        for (let key in VALID_FILE_EXTENSIONS) {
           parsedPath.ext = key;
           if ( fs.existsSync(path.format(parsedPath)) ){
             exists = true;
@@ -94,29 +94,29 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
           delete parsedPath.ext;
         }
       }
-      absoluteFilepath = path.format(parsedPath);
+      absoluteFilePath = path.format(parsedPath);
 
       // If this is a jsx or tsx file, parse it with the same analysis object.
-      if ( fs.existsSync(absoluteFilepath) && VALID_FILE_EXTS[parsedPath.ext] ) {
-        parseFileWith(absoluteFilepath, analysis.parent, blockFactory, options);
+      if ( fs.existsSync(absoluteFilePath) && VALID_FILE_EXTENSIONS[parsedPath.ext] ) {
+        parseFileWith(absoluteFilePath, analysis.parent, blockFactory, options);
         return;
       }
 
       // If this is not a CSS Blocks file, return.
-      if (!isBlockFilename(filepath)) {
+      if (!isBlockFilename(filePath)) {
         return;
       }
 
       // TODO: Make import prefix configurable
-      filepath = filepath.replace('cssblock!', '');
+      filePath = filePath.replace('cssblock!', '');
 
       // For each specifier in this block import statement:
       let localName = '';
-      let blockPath = path.resolve(dirname, filepath);
+      let blockPath = path.resolve(dirname, filePath);
 
       specifiers.forEach((specifier) => {
 
-        // TODO: For namespaced imports, the parser needs to be smart enougn to
+        // TODO: For namespaced imports, the parser needs to be smart enough to
         //       recognize `namespace.default` and `namespace.states` as block references.
         let isNamespace = isImportNamespaceSpecifier(specifier);
 
@@ -134,10 +134,10 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
       let res: Promise<Block> = analysis.parent.blockPromises[blockPath];
       if ( !res ) {
         res = blockFactory.getBlockFromPath(blockPath).catch((err) => {
-          throw new TemplateImportError(`Error parsing block import "${filepath}". Failed with:\n\n"${err.message}"\n\n`, {
+          throw new TemplateImportError(`Error parsing block import "${filePath}". Failed with:\n\n"${err.message}"\n\n`, {
             filename: file.identifier,
-            line: nodepath.node.loc.start.line,
-            column: nodepath.node.loc.start.column
+            line: nodePath.node.loc.start.line,
+            column: nodePath.node.loc.start.column
           });
         });
         analysis.parent.blockPromises[blockPath] = res;

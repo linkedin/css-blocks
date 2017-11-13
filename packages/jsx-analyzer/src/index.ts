@@ -18,11 +18,6 @@ import CSSBlocksJSXTransformer from './transformer';
 import Analysis, { JSXTemplate, MetaAnalysis } from './utils/Analysis';
 import { JSXParseError } from './utils/Errors';
 
-// `Object.values` does not exist in node<=7.0.0, load a polyfill if needed.
-if (!(<any>Object).values) {
-  require('object.values').shim();
-}
-
 /**
  * Default parser options.
  */
@@ -126,7 +121,7 @@ export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory:
   try {
     data = fs.readFileSync(file, 'utf8');
   } catch (e) {
-    throw new JSXParseError(`Cannot read JSX entrypoint file ${file}`, { filename: file });
+    throw new JSXParseError(`Cannot read JSX entry point file ${file}`, { filename: file });
   }
 
   // Return promise for parsed analysis object.
@@ -183,7 +178,7 @@ export function parseFile(file: string, factory: BlockFactory, opts: JSXAnalyzer
   try {
     data = fs.readFileSync(file, 'utf8');
   } catch (e) {
-    throw new JSXParseError(`Cannot read JSX entrypoint file ${file}`, { filename: file });
+    throw new JSXParseError(`Cannot read JSX entry point file ${file}`, { filename: file });
   }
 
   // Return promise for parsed analysis object.
@@ -207,23 +202,23 @@ export function parseFile(file: string, factory: BlockFactory, opts: JSXAnalyzer
 
 export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
   private _blockFactory: BlockFactory;
-  private entrypoint: string;
+  private entryPoint: string;
   private name: string;
   private options: JSXAnalyzerOptions;
   private cssBlocksOptions: CssBlocksOptionsReader;
 
-  constructor(entrypoint: string, name: string, options: JSXAnalyzerOptions){
-    this.entrypoint = entrypoint;
+  constructor(entryPoint: string, name: string, options: JSXAnalyzerOptions){
+    this.entryPoint = entryPoint;
     this.name = name;
     this.options = options;
     this.cssBlocksOptions = new CssBlocksOptionsReader(options.compilationOptions || {});
     this._blockFactory = this.cssBlocksOptions.factory || new BlockFactory(this.cssBlocksOptions);
   }
   analyze(): Promise<MetaAnalysis> {
-    if ( !this.entrypoint || !this.name ) {
-      throw new JSXParseError('CSS Blocks JSX Analyzer must be passed an entrypoint and name.');
+    if ( !this.entryPoint || !this.name ) {
+      throw new JSXParseError('CSS Blocks JSX Analyzer must be passed an entry point and name.');
     }
-    return parseFile(this.entrypoint, this.blockFactory, this.options);
+    return parseFile(this.entryPoint, this.blockFactory, this.options);
   }
 
   reset() {
