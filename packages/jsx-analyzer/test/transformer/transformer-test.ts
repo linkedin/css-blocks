@@ -1,10 +1,9 @@
 import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
+import { suite, test, skip } from 'mocha-typescript';
 import * as babel from 'babel-core';
 import { StyleMapping, PluginOptionsReader, CssBlockOptions, TemplateAnalysis } from 'css-blocks';
 
 import { MetaAnalysis } from '../../src/utils/Analysis';
-import analyzer from '../../src/analyzer';
 import Transformer from '../../src';
 import { testParse as parse } from '../util';
 import { Optimizer, OptiCSSOptions } from 'opticss';
@@ -48,11 +47,11 @@ function transform(code: string, analysis: MetaAnalysis, cssBlocksOptions: Parti
 
 @suite('Transformer | External Objstr Class States')
 export class Test {
-
-  @test 'exists'() {
-    assert.equal(typeof analyzer, 'function');
+  after() {
+    mock.restore();
   }
 
+  @skip
   @test 'Root styles with and without .root are rewritten correctly.'(){
     mock({
       'bar.block.css': `
@@ -70,7 +69,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res => {
         assert.equal(minify(res.code!), minify(`
@@ -82,6 +80,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'Discovers multiple objstr, even if not obviously used on an element.'(){
     mock({
       'bar.block.css': `
@@ -104,7 +103,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res =>{
         assert.equal(minify(res.code!), minify(`
@@ -122,6 +120,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'States with sub-states are transformed using string input'(){
     mock({
       'bar.block.css': `
@@ -146,7 +145,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res => {
         assert.equal(minify(res.code!), minify(`
@@ -163,6 +161,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'States with sub-states are transformed using boolean input'(){
     mock({
       'bar.block.css': `
@@ -187,7 +186,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res => {
         assert.equal(minify(res.code!), minify(`
@@ -204,6 +202,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'States with sub-states are transformed using numerical input'(){
     mock({
       'bar.block.css': `
@@ -228,7 +227,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res => {
         assert.equal(minify(res.code!), minify(`
@@ -245,6 +243,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'States with dynamic sub-states are transformed'(){
     mock({
       'bar.block.css': `
@@ -275,7 +274,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res => {
         assert.equal(minify(res.code!), minify(`
@@ -296,6 +294,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'States with dynamic sub-states are transformed when only a single sub-state exists'(){
     mock({
       'bar.block.css': `
@@ -325,7 +324,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res => {
         assert.equal(minify(res.code!), minify(`
@@ -346,6 +344,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'States with dynamic sub-states containing complex expression are transformed to the simplest possible output'(){
     mock({
       'bar.block.css': `
@@ -375,7 +374,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res => {
         assert.equal(minify(res.code!), minify(`
@@ -396,6 +394,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'Gracefully handles conflicting BlockObject names.'(){
     mock({
       'bar.block.css': `
@@ -417,7 +416,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res => {
         assert.equal(minify(res.code!), minify(`
@@ -428,6 +426,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'Doesn\'t explode with empty blocks.'(){
     mock({
       'foo.block.css': `
@@ -447,7 +446,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
 
       return transform(code, analysis).then(res => {
         assert.equal(minify(res.code!), minify(`
@@ -463,6 +461,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'Throws when spread operator used in states.'(){
     mock({
       'foo.block.css': `
@@ -485,7 +484,6 @@ export class Test {
     `;
 
     return parse(code).then((analysis: MetaAnalysis) => {
-      mock.restore();
       return transform(code, analysis).then(_res => {
         assert.fail('Should never get here.');
       });

@@ -8,10 +8,12 @@ const mock = require('mock-fs');
 
 @suite('Block Importer')
 export class Test {
+  after() {
+    mock.restore();
+  }
 
   @test 'imports for non-css-block related files are ignored'(){
     return parse(`import foo from 'bar';`).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 0);
     });
   }
@@ -21,7 +23,6 @@ export class Test {
       'bar.block.css': '.root { color: red; }',
     });
     return parse(`import bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
     });
@@ -32,7 +33,6 @@ export class Test {
       'bar.block.css': '.root { color: red; }',
     });
     return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
     });
@@ -43,7 +43,6 @@ export class Test {
       'bar.block.css': '.root { color: red; }',
     });
     return parse(`import bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
     });
@@ -54,7 +53,6 @@ export class Test {
       'bar.block.css': '.root { color: red; }',
     });
     return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
     });
@@ -65,7 +63,6 @@ export class Test {
       'bar.block.css': '.root { color: red; }',
     });
     return parse(`import * as bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
     });
@@ -80,7 +77,6 @@ export class Test {
       import * as bar from 'bar.block.css';
       import baz from 'baz.block.css';
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 2);
       assert.equal(analysis.getAnalysis(0).blocks['bar'].constructor, Block);
       assert.equal(analysis.getAnalysis(0).blocks['baz'].constructor, Block);
@@ -96,7 +92,6 @@ export class Test {
       import * as foo from 'bar.block.css';
       import biz from 'baz.block.css';
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 2);
       assert.ok(analysis.getAnalysis(0).blocks['foo']);
       assert.ok(analysis.getAnalysis(0).blocks['biz']);

@@ -5,8 +5,13 @@ import { testParse as parse } from '../util';
 
 const mock = require('mock-fs');
 
+// This suite is skipped because we don't currently support state attributes because jsx parser doesn't support it
+// and we don't want to use a fork.
 @suite('Analyzer | State Attributes')
 export class Test {
+  after() {
+    mock.restore();
+  }
 
   @skip @test 'States with sub-states are tracked'(){
     mock({
@@ -23,7 +28,6 @@ export class Test {
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.color='yellow'></div>;
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 0);
@@ -48,7 +52,6 @@ export class Test {
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.color='green'></div>;
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 0);
@@ -73,7 +76,6 @@ export class Test {
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.color={ohGod}></div>;
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 3);
       assert.equal(analysis.dynamicCount(), 2);
@@ -95,7 +97,6 @@ export class Test {
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.awesome ></div>;
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 0);
@@ -117,7 +118,6 @@ export class Test {
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.awesome='true'></div>;
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 0);
@@ -139,7 +139,6 @@ export class Test {
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.awesome={ohMy}></div>;
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 1);

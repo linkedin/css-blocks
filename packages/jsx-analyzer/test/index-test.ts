@@ -6,6 +6,9 @@ const mock = require('mock-fs');
 
 @suite('Parser Test')
 export class Test {
+  after() {
+    mock.restore();
+  }
 
   @test 'parses when provided a string'(){
     return parse(`
@@ -15,7 +18,6 @@ export class Test {
         }
       }
     `).then((analysis) => {
-      mock.restore();
       assert.ok(analysis);
     });
   }
@@ -29,7 +31,6 @@ export class Test {
       }`,
     });
     return parseFile('bar.js').then((analysis) => {
-      mock.restore();
       assert.ok(analysis);
     });
   }
@@ -43,7 +44,6 @@ export class Test {
       }`,
     });
     return parseFile('bar.js', { baseDir: '/foo/baz'}).then((analysis) => {
-      mock.restore();
       assert.ok(analysis);
     });
   }

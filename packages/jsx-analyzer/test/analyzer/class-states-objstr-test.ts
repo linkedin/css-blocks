@@ -1,16 +1,14 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
 import { MetaAnalysis } from '../../src/utils/Analysis';
-import analyzer from '../../src/analyzer';
 import { testParse as parse } from '../util';
 
 const mock = require('mock-fs');
 
 @suite('Analyzer | External Objstr Class States')
 export class Test {
-
-  @test 'exists'() {
-    assert.equal(typeof analyzer, 'function');
+  after() {
+    mock.restore();
   }
 
   @test 'States with sub-states are tracked'(){
@@ -33,12 +31,15 @@ export class Test {
         [bar.pretty.color('yellow')]: true
       });
 
-      <div class={style}></div>;
-    `).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
-      assert.equal(analysis.dynamicCount(), 0);
+      <div class={style}></div>;`
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
+      assert.deepEqual(analysis.stylesFound, ['bar.pretty', 'bar.pretty[state|color=yellow]']);
     });
   }
 
@@ -65,12 +66,15 @@ export class Test {
         [bar.pretty.color("yellow")]: ohGod
       });
 
-      <div class={style}></div>;
-    `).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
-      assert.equal(analysis.dynamicCount(), 1);
+      <div class={style}></div>;`
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, [{condition: true, state: 1}]);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
+      assert.deepEqual(analysis.stylesFound, ['bar.pretty', 'bar.pretty[state|color=yellow]']);
     });
   }
 
@@ -105,12 +109,15 @@ export class Test {
         [bar.pretty.color('black')]: !ohGod
       });
 
-      <div class={style}></div>;
-    `).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 3);
-      assert.equal(analysis.dynamicCount(), 2);
+      <div class={style}></div>;`
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(analysis.stylesFound, ['bar.pretty', 'bar.pretty[state|color=black]', 'bar.pretty[state|color=yellow]']);
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, [{condition: true, state: 2}, {condition: true, state: 1}]);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
 
@@ -148,11 +155,15 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 4);
-      assert.equal(analysis.dynamicCount(), 3);
+    `
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(analysis.stylesFound, ['bar.pretty', 'bar.pretty[state|color=black]', 'bar.pretty[state|color=green]', 'bar.pretty[state|color=yellow]']);
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, [{stringExpression: true, group: {black: 1, green: 2, yellow: 3}}]);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
 
@@ -190,7 +201,6 @@ export class Test {
 
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.ok(false, 'Should never get here');
     }).catch((err) => {
       assert.equal(err.message, '[css-blocks] MalformedBlockPath: State bar.pretty.color() expects a sub-state. (9:9)');
@@ -217,11 +227,15 @@ export class Test {
         [bar.pretty.awesome()]: ohGod
       });
       <div class={style}></div>;
-    `).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
-      assert.equal(analysis.dynamicCount(), 1);
+    `
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(analysis.stylesFound, ['bar.pretty', 'bar.pretty[state|awesome]']);
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, [{condition: true, state: 1}]);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
 
@@ -246,10 +260,9 @@ export class Test {
       });
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.ok(false, 'Should never get here');
     }).catch((err) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|awesome=wat] found on block "bar".\n  Did you mean: .pretty[state|awesome]? (7:7)');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|awesome=wat] found on block "bar".\n  Did you mean: .pretty[state|awesome]? (7:9)');
     });
   }
 

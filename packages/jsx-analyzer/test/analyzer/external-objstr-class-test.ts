@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { suite, test, skip } from 'mocha-typescript';
+import { suite, test } from 'mocha-typescript';
 import { MetaAnalysis } from '../../src/utils/Analysis';
 import { testParse as parse } from '../util';
 
@@ -7,9 +7,11 @@ const mock = require('mock-fs');
 
 @suite('Analyzer | External Objstr Class Styles')
 export class Test {
+  after() {
+    mock.restore();
+  }
 
-  @skip
-  @test 'Classes on objstr calls are tracked when applied'(){
+  @test 'Classes on objstr calls are tracked when applied'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -19,21 +21,19 @@ export class Test {
       import objstr from 'obj-str';
 
       let style = objstr({
-        [bar.foo]: 'bar',
-        biz: 'baz'
+        [bar.foo]: true,
       });
 
       <div class={style}></div>;
     `
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
-      // TODO
-      // let styleIter = analysis.getAnalysis(0).stylesFound.entries();
-      // assert.equal(styleIter.next().value[0].asSource(), '.foo');
-      assert.equal(analysis.getAnalysis(0).elementCount(), 1);
-      assert.equal(analysis.getAnalysis(0).getElement(0).static.size, 1);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
+      assert.deepEqual(analysis.stylesFound, ['bar.foo']);
     });
   }
 
@@ -51,12 +51,11 @@ export class Test {
       <div class={style}></div>;
     `
     ).catch((err: Error) => {
-      mock.restore();
       assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
     });
   }
 
-  @test 'Objstr calls with non-object-literal input throw'(){
+  @test 'Objstr calls with non-object-literal input throw'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -69,14 +68,14 @@ export class Test {
 
       <div class={style}></div>;
     `
-    ).catch((err: Error) => {
-      mock.restore();
+    ).then((analysis: MetaAnalysis) => {
+      assert.ok(false, 'should not have succeeded.');
+    }, (err) => {
       assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
     });
   }
 
-  @skip
-  @test 'Multiple classes from the same block on objstr calls are tracked when applied'(){
+  @test 'Multiple classes from the same block on objstr calls are an error.'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; } .baz { color: red; }'
     });
@@ -86,28 +85,19 @@ export class Test {
       import objstr from 'obj-str';
 
       let style = objstr({
-        [bar.foo]: 'bar',
-        [bar.baz]: 'baz',
-        biz: 'baz'
+        [bar.foo]: true,
+        [bar.baz]: true,
       });
 
       <div class={style}></div>;
     `
     ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 2);
-      // TODO
-      // let styleIter = analysis.getAnalysis(0).stylesFound.entries();
-      // assert.equal(styleIter.next().value[0].asSource(), '.foo');
-      // assert.equal(styleIter.next().value[0].asSource(), '.baz');
-      assert.equal(analysis.getAnalysis(0).elementCount(), 1);
-      assert.equal(analysis.getAnalysis(0).getElement(0).static.size, 2);
+      assert.ok(false, 'should not have succeeded.');
+    }, (err) => {
+      assert.equal(err.message, '[css-blocks] TemplateError: Classes "baz" and "foo" from the same block are not allowed on the same element at the same time. (:10:6)');
     });
   }
 
-  @skip
   @test 'Multiple classes from different blocks on objstr calls are tracked when applied'(){
     mock({
       'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
@@ -120,32 +110,24 @@ export class Test {
       import objstr from 'obj-str';
 
       let style = objstr({
-        [foo.biz]: 'bar',
-        [bar.baz]: 'baz',
-        [foo.baz]: 'baz',
-        [bar.biz]: 'baz',
-        biz: 'baz'
+        [foo.biz]: true,
+        [bar.biz]: true,
       });
 
       <div class={style}></div>;
     `
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 2);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 4);
-      // TODO
-      // let styleIter = analysis.getAnalysis(0).stylesFound.entries();
-      // assert.equal(styleIter.next().value[0].asSource(), '.biz');
-      // assert.equal(styleIter.next().value[0].asSource(), '.baz');
-      // assert.equal(styleIter.next().value[0].asSource(), '.baz');
-      // assert.equal(styleIter.next().value[0].asSource(), '.biz');
-      assert.equal(analysis.getAnalysis(0).elementCount(), 1);
-      assert.equal(analysis.getAnalysis(0).getElement(0).static.size, 4);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
+      assert.deepEqual(analysis.stylesFound, ['bar.biz', 'foo.biz']);
     });
   }
 
-  @test 'Non-computed properties on objstr calls are ignored'(){
+  @test 'An objstr call with no css-block styles are allowed'(){
     mock({
       'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
     });
@@ -155,15 +137,20 @@ export class Test {
       import objstr from 'obj-str';
 
       let style = objstr({
-        'foo.biz': 'bar'
+        'abc': 'bar',
+        'def': true,
       });
 
       <div class={style}></div>;
     `
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 0);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, []);
+      assert.deepEqual(analysis.stylesFound, []);
     });
   }
 
@@ -174,17 +161,15 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css'
-      import * as foobar from 'obj-str';
+      import foobar from 'obj-str';
 
       let style = foobar({
-        [bar.foo]: 'bar',
-        biz: 'baz'
+        [bar.foo]: true,
       });
 
       <div class={style}></div>;
     `
   ).then((analysis: MetaAnalysis) => {
-      mock.restore();
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 1);
     });
@@ -199,15 +184,39 @@ export class Test {
       import bar from 'bar.block.css'
 
       let style = objstr({
-        [bar.foo]: 'bar',
-        biz: 'baz'
+        [bar.foo]: true,
       });
 
       <div class={style}></div>;
     `
-  ).catch((err: Error) => {
-      mock.restore();
-      assert.equal(err.message, `Variable "objstr" is undefined`);
+    ).then((analysis: MetaAnalysis) => {
+      assert.ok(false, 'should not have succeeded.');
+    }, (err) => {
+      assert.equal(err.message, `[css-blocks] AnalysisError: Undefined function for styling: objstr (4:18)`);
+    });
+  }
+
+  @test 'cannot set objstr to a new function'(){
+    mock({
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+    });
+
+    return parse(`
+      import objstr from 'obj-str';
+      import bar from 'bar.block.css'
+
+      objstr = (obj) => '';
+
+      let style = objstr({
+        [bar.foo]: true,
+      });
+
+      <div class={style}></div>;
+    `
+    ).then((analysis: MetaAnalysis) => {
+      assert.ok(false, 'should not have succeeded.');
+    }, (err) => {
+      assert.equal(err.message, `[css-blocks] AnalysisError: Cannot override the objstr import of 'obj-str' (5:6)`);
     });
   }
 
@@ -229,9 +238,10 @@ export class Test {
 
       <div class={style}></div>;
     `
-  ).catch((err: Error) => {
-      mock.restore();
-      assert.equal(err.message, `Cannot parse overly complex expression to reference a CSS Block.`);
+    ).then((analysis: MetaAnalysis) => {
+      assert.ok(false, 'should not have succeeded.');
+    }, (err) => {
+      assert.equal(err.message, `[css-blocks] MalformedBlockPath: Nested expressions are not allowed in block expressions. (8:9)`);
     });
   }
 
@@ -245,8 +255,7 @@ export class Test {
       import objstr from 'obj-str';
 
       let style = objstr({
-        [bar.foo]: 'bar',
-        biz: 'baz'
+        [bar.foo]: true,
       });
 
       () => {
@@ -254,10 +263,14 @@ export class Test {
         <div class={style}></div>;
       }
     `
-  ).catch((err: Error) => {
-      mock.restore();
-      assert.equal(err.message, 'Class attribute value "style" must be either an "objstr" call, or a Block reference');
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, []);
+      assert.deepEqual(analysis.stylesFound, []);
     });
   }
-
 }

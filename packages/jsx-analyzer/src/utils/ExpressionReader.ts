@@ -1,5 +1,6 @@
+import { ObjectDictionary, objectValues } from '@opticss/util';
 import * as debugGenerator from 'debug';
-import { BlockObject, Block, BlockClass, State, StyleMapping } from 'css-blocks';
+import { Block, BlockClass, State, isBlockClass } from 'css-blocks';
 import { Node } from 'babel-traverse';
 import {
   isCallExpression,
@@ -10,10 +11,13 @@ import {
   isBooleanLiteral,
   isIdentifier,
   isNumericLiteral,
-  StringLiteral
+  StringLiteral,
+  NumericLiteral,
+  BooleanLiteral,
+  Expression,
+  CallExpression,
 } from 'babel-types';
 
-import Analysis from './Analysis';
 import { MalformedBlockPath, ErrorLocation } from '../utils/Errors';
 
 const debug = debugGenerator('css-blocks:jsx');
@@ -23,19 +27,45 @@ const isValidSegment = /^[a-z|A-Z|_|$][a-z|A-Z|_|$|1-9]*$/;
 const PATH_START    = Symbol('path-start');
 const PATH_END      = Symbol('path-end');
 const CALL_START    = Symbol('call-start');
-const CALL_END      = Symbol('call-start');
+const CALL_END      = Symbol('call-end');
 
 export const DYNAMIC_STATE_ID = '*';
 
 export type PathExpression = (string|symbol)[];
 
-function isLiteralPart(part: Node) {
-  return isStringLiteral(part) || isNumericLiteral(part) || isBooleanLiteral(part);
+function isLiteral(node: Node): node is StringLiteral | NumericLiteral | BooleanLiteral  {
+  return isStringLiteral(node) || isNumericLiteral(node) || isBooleanLiteral(node);
+}
+
+function hasLiteralArguments(args: Array<Node>, length: number): boolean {
+  return args.length === length && args.every(a => isLiteral(a));
+}
+
+export type BlockClassResult = {
+  block: Block;
+  blockClass?: BlockClass;
+};
+export type BlockStateResult = BlockClassResult & {
+  state: State;
+};
+export type BlockStateGroupResult = BlockClassResult & {
+  stateGroup: ObjectDictionary<State>;
+  dynamicStateExpression: Expression;
+};
+export type BlockExpressionResult = BlockClassResult
+                                  | BlockStateResult
+                                  | BlockStateGroupResult;
+
+export function isBlockStateResult(result: BlockExpressionResult): result is BlockStateResult {
+  return !!((<BlockStateResult>result).state);
+}
+export function isBlockStateGroupResult(result: BlockExpressionResult): result is BlockStateGroupResult {
+  return !!((<BlockStateGroupResult>result).stateGroup);
 }
 
 export class ExpressionReader {
-  private expression: PathExpression;
-  private index = 0;
+  private pathExpression: PathExpression;
+  private callExpression: CallExpression | undefined;
 
   isBlockExpression: boolean;
   block: string | undefined;
@@ -43,46 +73,55 @@ export class ExpressionReader {
   state: string | undefined;
   subState: string | undefined;
   isDynamic: boolean;
-  concerns: BlockObject[] = [];
   err: null | string = null;
+  loc: ErrorLocation;
 
-  constructor(expression: Node, analysis: Analysis | StyleMapping){
+  constructor(expression: Node, filename: string){
 
     // Expression location info object for error reporting.
-    let loc: ErrorLocation = {
-      filename: 'TODO',
+    this.loc = {
+      filename,
       line: expression.loc.start.line,
-      column: expression.loc.start.line
+      column: expression.loc.start.column
     };
 
-    this.expression = getExpressionParts(expression, loc);
+    this.pathExpression = parsePathExpression(expression, this.loc);
 
     // Register if this expression's sub-state is dynamic or static.
-    if ( isCallExpression(expression) && expression.arguments[0] && !isLiteralPart(expression.arguments[0])) {
-      this.isDynamic = true;
-    }
-    else {
-      this.isDynamic = false;
+    if (isCallExpression(expression)) {
+      this.callExpression = expression;
+      this.isDynamic = !hasLiteralArguments(expression.arguments, 1);
+      if (expression.arguments.length > 1) {
+        this.isBlockExpression = false;
+        this.isDynamic = false;
+        this.err = 'Only one argument can be supplied to a dynamic state';
+        return;
+      }
     }
 
-    let len = this.expression.length;
+    if (this.pathExpression.length < 3) {
+      this.isBlockExpression = false;
+      return;
+    }
 
     // Discover block expression identifiers of the form `block[.class][.state([subState])]`
-    for ( let i=0; i<len; i++ ) {
+    for ( let i = 0; i < this.pathExpression.length; i++ ) {
 
       if ( this.err ) {
         this.block = this.class = this.state = this.subState = undefined;
         break;
       }
 
-      let token = this.expression[i];
-      let next = this.expression[i+1];
+      let token = this.pathExpression[i];
+      let next = this.pathExpression[i+1];
 
       if ( token === PATH_START && this.block ) {
+        // XXX This err appears to be completely swallowed?
         debug(`Discovered invalid block expression ${this.toString()} in objstr`);
         this.err = 'Nested expressions are not allowed in block expressions.';
       }
       else if ( token === CALL_START && !this.state ) {
+        // XXX This err appears to be completely swallowed?
         debug(`Discovered invalid block expression ${this.toString()} in objstr`);
         this.err = 'Can not select state without a block or class.';
       }
@@ -95,88 +134,73 @@ export class ExpressionReader {
       }
     }
 
-    this.isBlockExpression = !!len && !this.err && !!this.block;
+    this.isBlockExpression = !this.err && !!this.block;
+  }
 
-    // Fetch the specified block. If no block found, fail silently.
-    if ( !this.block ) { return; }
-    let blockObj: Block | BlockClass = analysis.blocks[this.block];
-    if ( !blockObj ) {
-      debug(`Discovered Block ${this.block} from expression ${this.toString()}`);
-      return;
+  getResult(blocks: ObjectDictionary<Block>): BlockExpressionResult {
+    if (!this.isBlockExpression) {
+      if (this.err) {
+          throw new MalformedBlockPath(this.err, this.loc);
+      } else {
+          throw new MalformedBlockPath('No block name specified.', this.loc);
+      }
+    }
+    let block = blocks[this.block!];
+    let blockClass: BlockClass | undefined = undefined;
+    if (!block) {
+      throw new MalformedBlockPath(`No block named ${this.block} exists in this scope.`, this.loc);
     }
 
     // Fetch the class referenced in this selector, if it exists.
     if ( this.class && this.class !== 'root' ) {
-      let classObj: BlockClass | undefined;
-      classObj = (blockObj as Block).getClass(this.class);
-      if ( !classObj ) {
-        throw new MalformedBlockPath(`No class named "${this.class}" found on block "${this.block}"`, loc);
+      blockClass = block.lookup(`.${this.class}`) as BlockClass | undefined;
+      if ( !blockClass ) {
+        let knownClasses = block.all(false).filter(s => isBlockClass(s)).map(c => c.asSource());
+        throw new MalformedBlockPath(`No class named "${this.class}" found on block "${this.block}". ` +
+          `Did you mean one of: ${knownClasses.join(', ')}`, this.loc);
       }
-      blockObj = classObj;
     }
 
     // If no state, we're done!
     if ( !this.state ) {
       debug(`Discovered BlockClass ${this.class} from expression ${this.toString()}`);
-      this.concerns.push(blockObj);
-      return;
+      return { block, blockClass };
     }
-
-    // Throw an error if this state expects a sub-state and nothing has been provided.
-    let states = blockObj.states.resolveGroup(this.state) || {};
-    if (  Object.keys(states).length > 1 && this.subState === undefined ) {
-      throw new MalformedBlockPath(`State ${this.toString()} expects a sub-state.`, loc);
-    }
+    let statesContainer = (blockClass || block).states;
 
     // Fetch all matching state objects.
-    let stateObjects = blockObj.states.resolveGroup(this.state, this.subState !== DYNAMIC_STATE_ID ? this.subState : undefined) || {};
+    let stateGroup = statesContainer.resolveGroup(this.state, this.subState !== DYNAMIC_STATE_ID ? this.subState : undefined) || {};
+    let stateNames = Object.keys(stateGroup);
+    if (stateNames.length > 1 && this.subState !== DYNAMIC_STATE_ID) {
+      throw new MalformedBlockPath(`State ${this.toString()} expects a sub-state.`, this.loc);
+    }
 
     // Throw a helpful error if this state / sub-state does not exist.
-    if ( !Object.keys(stateObjects).length ) {
-      let knownStates: State[] | undefined;
-      let allSubStates = blockObj.states.resolveGroup(this.state) || {};
-      if (allSubStates) {
-        let ass = allSubStates;
-        knownStates = Object.keys(allSubStates).map(k => ass[k]);
-      }
+    if ( stateNames.length === 0 ) {
+      let allSubStates = statesContainer.resolveGroup(this.state) || {};
+      let knownStates = objectValues(allSubStates);
       let message = `No state [state|${this.state}${this.subState ? '='+this.subState : ''}] found on block "${this.block}".`;
-      if (knownStates) {
-        if (knownStates.length === 1) {
-          message += `\n  Did you mean: ${knownStates[0].asSource()}?`;
-        } else {
-          message += `\n  Did you mean one of: ${knownStates.map(s => s.asSource()).join(', ')}?`;
-        }
+      if (knownStates.length === 1) {
+        message += `\n  Did you mean: ${knownStates[0].asSource()}?`;
+      } else if (knownStates.length > 0) {
+        message += `\n  Did you mean one of: ${knownStates.map(s => s.asSource()).join(', ')}?`;
       }
-      throw new MalformedBlockPath(message, loc);
+      throw new MalformedBlockPath(message, this.loc);
     }
 
     debug(`Discovered ${this.class ? 'class-level' : 'block-level'} state ${this.state} from expression ${this.toString()}`);
 
-    // Push all discovered state / sub-state objects to BlockObject concerns list.
-    ([]).push.apply(this.concerns, (<any>Object).values(stateObjects));
-  }
-
-  get length() {
-    return this.expression.length;
-  }
-
-  next(): string | undefined {
-    let next = this.expression[this.index++];
-    if (next === PATH_START) return this.next();
-    if (next === PATH_END) return this.next();
-    if (next === CALL_START) return this.next();
-    if (next === CALL_END) return this.next();
-    return <string>next;
-  }
-
-  reset(): void {
-    this.index = 0;
+    if (this.subState === DYNAMIC_STATE_ID) {
+      return { block, blockClass, stateGroup, dynamicStateExpression: this.callExpression!.arguments[0] };
+    } else {
+      return { block, blockClass, state: objectValues(stateGroup)[0] };
+    }
   }
 
   toString() {
     let out = '';
-    let len = this.expression.length;
-    this.expression.forEach((part, idx) => {
+    let len = this.pathExpression.length;
+    this.pathExpression.forEach((part, idx) => {
 
       // If the first or last character, skip. These will always be path start/end symbols.
       if ( idx === 0 || idx === len-1 ) { return; }
@@ -206,14 +230,13 @@ export class ExpressionReader {
 /**
  * Given a `MemberExpression`, `Identifier`, or `CallExpression`, return an array
  * of all expression identifiers.
- * Ex: `foo.bar['baz']` => ['foo', 'bar', 'baz']
- * EX: `foo.bar[biz.baz].bar` => ['foo', 'bar', ['biz', 'baz'], 'bar']
+ * Ex: `foo.bar['baz']` => [Symbol('path-start'), 'foo', 'bar', 'baz', Symbol('path-end')]
+ * EX: `foo.bar[biz.baz].bar` => [Symbol('path-start'), 'foo', 'bar', Symbol('path-start'), 'biz', 'baz', Symbol('path-end'), 'bar', Symbol('path-end']
  * Return empty array if input is invalid nested expression.
- * @param expression The expression in question. Yes, any. We're about to do some
- * very explicit type checking here.
+ * @param expression The expression node to be parsed
  * @returns An array of strings representing the expression parts.
  */
-function getExpressionParts(expression: Node, loc: ErrorLocation): PathExpression {
+function parsePathExpression(expression: Node, loc: ErrorLocation): PathExpression {
 
   let parts: PathExpression = [];
   let args: Node[] | undefined;
@@ -246,7 +269,7 @@ function getExpressionParts(expression: Node, loc: ErrorLocation): PathExpressio
     }
 
     // If we encounter another member expression (Ex: foo[bar.baz])
-    // Because Typescript has issues with recursively nested types, we use booleans
+    // Because Typescript has issues with recursively nested types, we use symbols
     // to denote the boundaries between nested expressions.
     else if ( expression.computed && (
               isCallExpression(prop)      ||
@@ -255,7 +278,7 @@ function getExpressionParts(expression: Node, loc: ErrorLocation): PathExpressio
               isJSXIdentifier(prop)       ||
               isIdentifier(prop)
             )) {
-      parts.unshift.apply(parts, getExpressionParts(prop, loc));
+      parts.unshift(...parsePathExpression(prop, loc));
     }
 
     else {
@@ -276,7 +299,7 @@ function getExpressionParts(expression: Node, loc: ErrorLocation): PathExpressio
   if ( args ) {
     parts.push(CALL_START);
     args.forEach((part) => {
-      if ( isLiteralPart(part) ) {
+      if ( isLiteral(part) ) {
         parts.push(String((part as StringLiteral).value));
       }
       else {

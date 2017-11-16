@@ -7,40 +7,8 @@ const mock = require('mock-fs');
 
 @suite('Analyzer | Dynamic Styles')
 export class Test {
-
-  @test 'Objstr where value is a literal are not marked dynamic'(){
-    mock({
-      'bar.block.css': `
-        .str { color: red; }
-        .int { color: blue; }
-        .bool { color: blue; }
-        .null { color: blue; }
-        .regexp { color: blue; }
-        .template { color: blue; }
-      `
-    });
-
-    return parse(`
-      import bar from 'bar.block.css';
-      import objstr from 'obj-str';
-      let val = 'test';
-      function render(){
-        let style = objstr({
-          [bar.str]: 'str',
-          [bar.int]: 1,
-          [bar.bool]: true,
-          [bar.null]: null,
-          [bar.regexp]: /regexp/,
-          [bar.template]: \`template\`
-        });
-        return ( <div class={style}></div> );
-      }`
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 6);
-      assert.equal(analysis.dynamicCount(), 0);
-    });
+  after() {
+    mock.restore();
   }
 
   @test 'Objstr where value is a not a literal are marked dynamic'(){
@@ -59,48 +27,27 @@ export class Test {
       import objstr from 'obj-str';
       let val = 'test';
       function render(){
-        let style = objstr({
-          [bar.func]: alert(),
-          [bar.expr]: val,
-          [bar.equality]: val === test,
-          [bar.bool]: val && val,
-          [bar.new]: new Object()
-        });
-        return ( <div class={style}></div> );
+        let funcStyle = objstr({ [bar.func]: alert() });
+        let exprStyle = objstr({ [bar.expr]: val });
+        let equalityStyle = objstr({ [bar.equality]: val === test });
+        let boolStyle = objstr({ [bar.bool]: val && val });
+        let newStyle = objstr({ [bar.new]: new Object() });
+        return ( <div><div class={funcStyle}></div>
+                 <div class={exprStyle}></div>
+                 <div class={equalityStyle}></div>
+                 <div class={boolStyle}></div>
+                 <div class={newStyle}></div></div>
+               );
       }`
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 5);
-      // TODO
-      // assert.equal(analysis.getAnalysis(0).getElement(0).dynamic.size, 5);
-    });
-  }
-
-  @test 'Inline objstr where value is a literal are not marked dynamic'(){
-    mock({
-      'bar.block.css': `
-        .str { color: red; }
-        .int { color: blue; }
-        .bool { color: blue; }
-        .null { color: blue; }
-        .regexp { color: blue; }
-        .template { color: blue; }
-      `
-    });
-
-    return parse(`
-      import bar from 'bar.block.css';
-      import objstr from 'obj-str';
-      let val = 'test';
-      function render(){
-        return ( <div class={objstr( { [bar.str]: 'str', [bar.int]: 1, [bar.bool]: true, [bar.null]: null, [bar.regexp]: /regexp/, [bar.template]: \`template\` })}></div> );
-      }`
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 6);
-      assert.equal(analysis.dynamicCount(), 0);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      assert.deepEqual(analysis.stylesFound, ['bar.bool', 'bar.equality', 'bar.expr', 'bar.func', 'bar.new']);
+      assert.deepEqual(analysis.elements.a.dynamicClasses, [{condition: true, whenTrue: [3]}]);
+      assert.deepEqual(analysis.elements.b.dynamicClasses, [{condition: true, whenTrue: [2]}]);
+      assert.deepEqual(analysis.elements.c.dynamicClasses, [{condition: true, whenTrue: [1]}]);
+      assert.deepEqual(analysis.elements.d.dynamicClasses, [{condition: true, whenTrue: [0]}]);
+      assert.deepEqual(analysis.elements.e.dynamicClasses, [{condition: true, whenTrue: [4]}]);
     });
   }
 
@@ -120,13 +67,22 @@ export class Test {
       import objstr from 'obj-str';
       let val = 'test';
       function render(){
-        return ( <div class={ objstr({ [bar.func]: alert(), [bar.expr]: val, [bar.equality]: val === test, [bar.bool]: val && val, [bar.new]: new Object() }) }></div> );
+        return ( <div><div class={objstr({ [bar.func]: alert() })}></div>
+                 <div class={objstr({ [bar.expr]: val })}></div>
+                 <div class={objstr({ [bar.equality]: val === test })}></div>
+                 <div class={objstr({ [bar.bool]: val && val })}></div>
+                 <div class={objstr({ [bar.new]: new Object() })}></div></div>
+               );
       }`
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 5);
-      assert.equal(analysis.dynamicCount(), 5);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      assert.deepEqual(analysis.stylesFound, ['bar.bool', 'bar.equality', 'bar.expr', 'bar.func', 'bar.new']);
+      assert.deepEqual(analysis.elements.a.dynamicClasses, [{condition: true, whenTrue: [3]}]);
+      assert.deepEqual(analysis.elements.b.dynamicClasses, [{condition: true, whenTrue: [2]}]);
+      assert.deepEqual(analysis.elements.c.dynamicClasses, [{condition: true, whenTrue: [1]}]);
+      assert.deepEqual(analysis.elements.d.dynamicClasses, [{condition: true, whenTrue: [0]}]);
+      assert.deepEqual(analysis.elements.e.dynamicClasses, [{condition: true, whenTrue: [4]}]);
     });
   }
 }

@@ -7,6 +7,9 @@ const mock = require('mock-fs');
 
 @suite('Analyzer | Inline Root Styles')
 export class Test {
+  after() {
+    mock.restore();
+  }
 
   @test 'Elements with root applied are tracked on attribute `class`'(){
     mock({
@@ -18,10 +21,14 @@ export class Test {
       function render(){
         return ( <div class={bar}></div> );
       }`
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
 
@@ -35,11 +42,14 @@ export class Test {
       function render(){
         return ( <div class={bar.root}></div> );
       }`
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
-      assert.equal(analysis.dynamicCount(), 0);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
 
@@ -53,11 +63,14 @@ export class Test {
       function render(){
         return ( <div className={bar}></div> );
       }`
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
-      assert.equal(analysis.dynamicCount(), 0);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
 
@@ -71,10 +84,14 @@ export class Test {
       function render(){
         return ( <div className={bar.root}></div> );
       }`
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
 
@@ -88,10 +105,14 @@ export class Test {
       function render(){
         return ( <div class={bar} className={bar}></div> );
       }`
-    ).then((analysis: MetaAnalysis) => {
-      mock.restore();
-      assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).styleCount(), 1);
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      let elementAnalysis = analysis.elements.a;
+      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(elementAnalysis.dynamicClasses, []);
+      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
 

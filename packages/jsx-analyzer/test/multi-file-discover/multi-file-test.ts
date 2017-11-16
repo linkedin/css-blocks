@@ -1,13 +1,14 @@
 import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
+import { suite, test, skip } from 'mocha-typescript';
 import { MetaAnalysis } from '../../src/utils/Analysis';
 import { testParseFile as parseFile } from '../util';
 
 const path = require('path');
 
-@suite('Dependnecy Tree Crawling')
+@suite('Dependency Tree Crawling')
 export class Test {
 
+  @skip
   @test 'All blocks are discovered in multi-file app from entrypoint'(){
     let base = path.resolve(__dirname, '../../../test/fixtures/basic-multifile');
     return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
@@ -18,6 +19,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'Duplicate blocks are only parsed once'(){
     let base = path.resolve(__dirname, '../../../test/fixtures/duplicate-blocks-multifile');
     return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
@@ -28,6 +30,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'Dependency Tree Crawling finds dependents of dependents'(){
     let base = path.resolve(__dirname, '../../../test/fixtures/deep-multifile');
     return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
@@ -38,6 +41,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'Conflicting local import names don\'t interfere with each other'(){
     let base = path.resolve(__dirname, '../../../test/fixtures/conflicting-local-multifile');
     return parseFile('index.tsx', { baseDir: base }).then((analysis: MetaAnalysis) => {
