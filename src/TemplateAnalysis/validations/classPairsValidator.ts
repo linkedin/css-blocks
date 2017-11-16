@@ -53,7 +53,7 @@ function checkExisting(classPerBlock: Map<Block, BlockClass>, tmpClassPerBlock: 
   for (let block of blockHierarchy) {
     let otherClass = classPerBlock.get(block) || tmpClassPerBlock.get(block);
     if (otherClass) {
-      err(`Classes "${container.name}" and "${otherClass.name}" from the same block${block !== mainBlock ? ' hierarchy' : ''} are not allowed on the same element.`);
+      err(`Classes "${container.name}" and "${otherClass.name}" from the same block${block !== mainBlock ? ' hierarchy' : ''} are not allowed on the same element at the same time.`);
     } else {
       blocks.push(block);
     }

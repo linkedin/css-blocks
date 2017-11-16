@@ -651,7 +651,7 @@ export class TemplateAnalysisTests {
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      `Classes "fdsa" and "asdf" from the same block are not allowed on the same element. (templates/my-template.hbs:10:11)`,
+      `Classes "fdsa" and "asdf" from the same block are not allowed on the same element at the same time. (templates/my-template.hbs:10:11)`,
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 11});
