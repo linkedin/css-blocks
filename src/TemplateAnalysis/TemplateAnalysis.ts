@@ -157,9 +157,16 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    */
   getBlockName(block: Block): string | null {
     let names = Object.keys(this.blocks);
-    for (let i = 0; i < names.length; i++) {
-      if (this.blocks[names[i]] === block) {
-        return names[i];
+    for (let name of names) {
+      if (this.blocks[name] === block) {
+        return name;
+      }
+    }
+    for (let name of names) {
+      let superBlock = this.blocks[name].base;
+      while (superBlock) {
+        if (superBlock === block) return name;
+        superBlock = superBlock.base;
       }
     }
     return null;

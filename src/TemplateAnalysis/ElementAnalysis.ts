@@ -406,7 +406,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   serialize(styleIndexes: Map<BlockObject, number>): SerializedElementAnalysis {
     this.prepareForStates();
     let staticStyles = new Array<number>();
-    for (let style of this.allStaticStyles) {
+    for (let style of this.static) {
       staticStyles.push(styleIndexes.get(style)!);
     }
     staticStyles.sort();
