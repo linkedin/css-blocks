@@ -8,7 +8,8 @@
     "dist"
   ],
   "scripts": {
-    "test": "npm run build && npm run tslint && mocha dist/test --recursive --opts test/mocha.opts",
+    "pretest": "npm run build && npm run tslint",
+    "test": "mocha dist/test --recursive --opts test/mocha.opts",
     "build": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
     "watch": "watch 'npm run test' './src' './test' --wait=3",
     "tslint": "tslint --project tsconfig.json --type-check"

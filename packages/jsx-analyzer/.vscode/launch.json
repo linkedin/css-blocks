@@ -12,6 +12,7 @@
       "program": "${workspaceRoot}/node_modules/.bin/_mocha",
       "args": [
         "dist/test",
+        "--recursive",
         "--opts",
         "test/mocha.opts"
       ],
