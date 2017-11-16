@@ -218,7 +218,7 @@ export class ElementAnalyzer {
               analysis.element.addDynamicGroup(container, allStates, null);
             }
           } else if (states.length === 1 && staticSubStateName) {
-            analysis.element.addStaticState(states[0]);
+            analysis.element.addStaticState(container, states[0]);
           } else {
             throw cssBlockError(`No expression found to select from ${states.map(s => s.asSource()).join(', ')} on ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
           }
@@ -241,12 +241,12 @@ export class ElementAnalyzer {
                 }
                 expr = path;
               }
-              analysis.element.addDynamicState(states[0], expr);
+              analysis.element.addDynamicState(container, states[0], expr);
             } else {
-              analysis.element.addDynamicState(states[0], null);
+              analysis.element.addDynamicState(container, states[0], null);
             }
           } else {
-            analysis.element.addStaticState(states[0]);
+            analysis.element.addStaticState(container, states[0]);
           }
         }
       } else {

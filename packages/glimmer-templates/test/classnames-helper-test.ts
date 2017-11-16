@@ -86,7 +86,7 @@ describe('Classnames Helper', () => {
       condition: builders.boolean(true),
       whenTrue: [b],
     });
-    element.addStaticState(s1);
+    element.addStaticState(b, s1);
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       "{{/css-blocks/components/classnames 2 0 0 true 1 0 0 1 1 0 1 3}}"
@@ -105,7 +105,7 @@ describe('Classnames Helper', () => {
       condition: builders.boolean(true),
       whenTrue: [b],
     });
-    element.addDynamicState(s1, builders.boolean(false));
+    element.addDynamicState(b, s1, builders.boolean(false));
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       "{{/css-blocks/components/classnames 2 0 0 true 1 0 0 3 1 0 false 1 3}}"
