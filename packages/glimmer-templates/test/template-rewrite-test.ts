@@ -71,7 +71,7 @@ function pipeline(analyzer: HandlebarsStyleAnalyzer, templatePath: string) {
 
 describe('Template Rewriting', function() {
 
-  it.only('rewrites styles from dynamic attributes', function() {
+  it('rewrites styles from dynamic attributes', function() {
     let projectDir = fixture('styled-app');
     let project = new Project(projectDir);
     let analyzer = new HandlebarsStyleAnalyzer(project, 'with-dynamic-states');
@@ -95,7 +95,7 @@ describe('Template Rewriting', function() {
     });
   });
 
-  it.only('rewrites styles from dynamic classes', function() {
+  it('rewrites styles from dynamic classes', function() {
     let projectDir = fixture('styled-app');
     let project = new Project(projectDir);
     let analyzer = new HandlebarsStyleAnalyzer(project, 'with-dynamic-classes');
@@ -111,6 +111,35 @@ describe('Template Rewriting', function() {
           <div class={{/css-blocks/components/classnames 1 1 0 isWorld 0 1 0 "c" 0}}>World</div>
         </div>
       `));
+    });
+  });
+
+  it('rewrites styles from dynamic attributes from readme', function() {
+    let projectDir = fixture('readme-app');
+    let project = new Project(projectDir);
+    let analyzer = new HandlebarsStyleAnalyzer(project, 'page-layout');
+    let templatePath = fixture('readme-app/src/ui/components/page-layout/template.hbs');
+    return pipeline(analyzer, templatePath).then((result) => {
+      let { css, ast } = result;
+      let res = print(ast);
+      assert.deepEqual(minify(res), minify(`
+      <div class={{/css-blocks/components/classnames 1 2 2 (isLoading) 1 1 "a" 0 "b" 1}}>
+        <aside class={{/css-blocks/components/classnames 0 4 "g" 0 "h" 1 "c" 2 "d" 3}}> </aside>
+        <article class={{/css-blocks/components/classnames 1 3 0 isRecommended 1 2 1 1 "i" 0 "e" 1 "f" 2}}> </article>
+      </div>
+          `));
+      assert.deepEqual(minify(result.css), minify(`
+      .a { color: red; width: 100vw; }
+      .b { color: blue }
+      .c { float: left; }
+      .d { display: none; }
+      .e { border-right: 2px groove gray; }
+      .f { background-color: orange }
+      .g { width: 20%; }
+      .h { width: calc(20% - 20px); margin-right: 20px; }
+      .i { width: 80%; }
+        `)
+      );
     });
   });
 });

@@ -1,0 +1,7 @@
+@block-reference grid from "./grid.css";
+.root { color: red; width: 100vw; }
+[state|loading] { color: blue }
+.sidebar { float: left; }
+.sidebar[state|collapsed] { display: none; }
+.main { border-right: 2px groove gray; }
+.recommended { background-color: orange }
