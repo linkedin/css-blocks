@@ -51,7 +51,7 @@ export class TemplateAnalysisTests {
       element.addDynamicGroup(stateContainer.parent, stateContainer.resolveGroup(groupName)!, null);
     }
     for (let state of stateContainer.getStates()!) {
-      element.addStaticState(state);
+      element.addStaticState(stateContainer.parent, state);
     }
   }
   private useBlockStyles(analysis: Analysis, block: Block, blockName: string) {

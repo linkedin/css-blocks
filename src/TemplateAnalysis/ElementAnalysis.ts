@@ -13,6 +13,7 @@ import {
   isState,
   State,
   StateParent,
+  BlockClass,
 } from "../Block";
 
 import {
@@ -318,14 +319,21 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * The state is added as dynamic and conditional on its class if that
    * class is dynamic.
    */
-  addStaticState(state: State) {
+  addStaticState(container: Block | BlockClass, state: State) {
     if (!this.inStateMode) this.prepareForStates();
-    let container = state.parent!;
+    this.assertValidContainer(container, state);
     if (this.dynamicClassExpressions.has(container)) {
       this.dynamicStates.push({state, container});
     } else {
       this.static.add(state);
       unionInto(this.allStaticStyles, state.resolveStyles());
+    }
+  }
+  private assertValidContainer(container: Block | BlockClass, state: State) {
+    if (container !== state.parent) {
+      if (!container.resolveStyles().has(state.parent!)) {
+        throw new Error("container is not a valid container for the given state");
+      }
     }
   }
 
@@ -335,9 +343,9 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * @param state the state that is dynamic.
    * @param condition The AST node(s) representing this boolean expression.
    */
-  addDynamicState(state: State, condition: BooleanExpression) {
+  addDynamicState(container: Block | BlockClass, state: State, condition: BooleanExpression) {
     if (!this.inStateMode) this.prepareForStates();
-    let container = state.parent!;
+    this.assertValidContainer(container, state);
     if (this.dynamicClassExpressions.has(container)) {
       this.dynamicStates.push({ state, container, condition });
     } else {
