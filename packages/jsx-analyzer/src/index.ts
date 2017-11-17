@@ -18,6 +18,21 @@ import CSSBlocksJSXTransformer from './transformer';
 import Analysis, { JSXTemplate, MetaAnalysis } from './utils/Analysis';
 import { JSXParseError } from './utils/Errors';
 
+function readFile(filename: string, encoding: string): Promise<string>;
+function readFile(filename: string, encoding: null): Promise<Buffer>;
+function readFile(filename: string): Promise<Buffer>;
+function readFile(filename: string, encoding?: string | null): Promise<string | Buffer> {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filename, encoding || null, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
+
 /**
  * Default parser options.
  */
@@ -48,14 +63,12 @@ const defaultOptions: JSXAnalyzerOptions = {
   aliases: {}
 };
 
-export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, factory: BlockFactory, opts: JSXAnalyzerOptions = defaultOptions): Promise<Analysis> {
-
-  // Ensure default options.
-  opts = Object.assign({}, defaultOptions, opts);
+export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, factory: BlockFactory, opts: Partial<JSXAnalyzerOptions> = {}): Promise<Analysis> {
+  let resolvedOpts = {...defaultOptions, ...opts};
 
   // Change our process working directory so relative node resolves work.
   let oldDir = process.cwd();
-  process.chdir(opts.baseDir);
+  process.chdir(resolvedOpts.baseDir);
 
   let analysis: Analysis = new Analysis(template, metaAnalysis);
 
@@ -76,14 +89,15 @@ export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, fac
       template.data = wat.outputText;
     }
 
-    analysis.template.ast = babylon.parse(template.data, opts.parserOptions);
+    analysis.template.ast = babylon.parse(template.data, resolvedOpts.parserOptions);
   } catch (e) {
-    throw new JSXParseError(`Error parsing '${template.identifier}'\n${e.message}\n\n${template.data}.`, { filename: template.identifier });
+    process.chdir(oldDir);
+    throw new JSXParseError(`Error parsing '${template.identifier}'\n${e.message}\n\n${template.data}: ${e.message}`, { filename: template.identifier });
   }
 
   // The blocks importer will insert a promise that resolves to a `ResolvedBlock`
   // for each CSS Blocks import it encounters.
-  traverse(analysis.template.ast, importer(template, analysis, factory, opts));
+  traverse(analysis.template.ast, importer(template, analysis, factory, resolvedOpts));
 
   // Once all blocks this file is waiting for resolve, resolve with the File object.
   let analysisPromise = Promise.all(analysis.blockPromises)
@@ -106,44 +120,32 @@ export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, fac
  * @param file The file path to read in and parse.
  * @param opts Optional analytics parser options.
  */
-export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory: BlockFactory, opts: JSXAnalyzerOptions = defaultOptions): Promise<Analysis> {
+export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory: BlockFactory, opts: Partial<JSXAnalyzerOptions> = {}): Promise<Analysis> {
+  let resolvedOpts = {...defaultOptions, ...opts};
+  file = path.resolve(resolvedOpts.baseDir, file);
 
-  // Ensure default options.
-  opts = Object.assign({}, defaultOptions, opts);
-
-  // If requesting the file at a relative path, resolve to provided `opts.baseDir`.
-  if ( file && !path.isAbsolute(file) ) {
-    file = path.resolve(opts.baseDir, file);
-  }
-
-  // Fetch file contents from the now absolute path.
-  let data: string;
-  try {
-    data = fs.readFileSync(file, 'utf8');
-  } catch (e) {
-    throw new JSXParseError(`Cannot read JSX entry point file ${file}`, { filename: file });
-  }
-
-  // Return promise for parsed analysis object.
-  let template: JSXTemplate = new JSXTemplate(file, data);
-
-  return parseWith(template, metaAnalysis, factory, opts);
+  return readFile(file, 'utf8').then(data =>{
+    // Return promise for parsed analysis object.
+    let template: JSXTemplate = new JSXTemplate(file, data);
+    return parseWith(template, metaAnalysis, factory,resolvedOpts);
+  }, (err) => {
+    throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
+  });
 }
+
 /**
  * Provided a code string, return a promise for the fully parsed analytics object.
  * @param data The code string to parse.
  * @param opts Optional analytics parser options.
  */
-export function parse(data: string, factory: BlockFactory, opts: JSXAnalyzerOptions = defaultOptions): Promise<MetaAnalysis> {
+export function parse(filename: string, data: string, factory: BlockFactory, opts: Partial<JSXAnalyzerOptions> = {}): Promise<MetaAnalysis> {
+  let resolvedOpts = {...defaultOptions, ...opts};
 
-  // Ensure default options.
-  opts = Object.assign({}, defaultOptions, opts);
-
-  let template: JSXTemplate = new JSXTemplate('', data);
+  let template: JSXTemplate = new JSXTemplate(filename, data);
   let metaAnalysis: MetaAnalysis = new MetaAnalysis();
 
   return Promise.resolve().then(() => {
-    parseWith(template, metaAnalysis, factory, opts);
+    parseWith(template, metaAnalysis, factory, resolvedOpts);
     return Promise.all(metaAnalysis.analysisPromises).then((analyses) => {
       analyses.forEach((analysis) => {
         traverse(analysis.template.ast, analyzer(analysis));
@@ -163,40 +165,13 @@ export function parse(data: string, factory: BlockFactory, opts: JSXAnalyzerOpti
  * @param file The file path to read in and parse.
  * @param opts Optional analytics parser options.
  */
-export function parseFile(file: string, factory: BlockFactory, opts: JSXAnalyzerOptions = defaultOptions): Promise<MetaAnalysis> {
+export function parseFile(file: string, factory: BlockFactory, opts: Partial<JSXAnalyzerOptions> = {}): Promise<MetaAnalysis> {
+  let resolvedOpts = {...defaultOptions, ...opts};
 
-  // Ensure default options.
-  opts = Object.assign({}, defaultOptions, opts);
-
-  // If requesting the file at a relative path, resolve to provided `opts.baseDir`.
-  if ( file && !path.isAbsolute(file) ) {
-    file = path.resolve(opts.baseDir, file);
-  }
-
-  // Fetch file contents from the now absolute path.
-  let data: string;
-  try {
-    data = fs.readFileSync(file, 'utf8');
-  } catch (e) {
-    throw new JSXParseError(`Cannot read JSX entry point file ${file}`, { filename: file });
-  }
-
-  // Return promise for parsed analysis object.
-  let template: JSXTemplate = new JSXTemplate(file, data);
-  let metaAnalysis: MetaAnalysis = new MetaAnalysis();
-
-  return Promise.resolve().then(() => {
-    parseWith(template, metaAnalysis, factory, opts);
-    return Promise.all(metaAnalysis.analysisPromises).then((analyses) => {
-      analyses.forEach((analysis) => {
-        traverse(analysis.template.ast, analyzer(analysis));
-        metaAnalysis.addAnalysis(analysis);
-        // No need to keep detailed template data anymore!
-        delete analysis.template.ast;
-        delete analysis.template.data;
-      });
-      return metaAnalysis;
-    });
+  return readFile(path.resolve(resolvedOpts.baseDir, file), 'utf8').then(data => {
+    return parse(file, data, factory, resolvedOpts);
+  }, err => {
+    throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
   });
 }
 

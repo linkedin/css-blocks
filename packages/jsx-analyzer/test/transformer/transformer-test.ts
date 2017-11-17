@@ -460,35 +460,4 @@ export class Test {
       });
     });
   }
-
-  @skip
-  @test 'Throws when spread operator used in states.'(){
-    mock({
-      'foo.block.css': `
-        .root { }
-        [state|cool=foo] { }
-      `
-    });
-
-    let code = `
-      import objstr from 'obj-str';
-      import foo from 'foo.block.css';
-
-      let args = [ 'foo' ];
-
-      let styles = objstr({
-        [foo]: true,
-        [foo.cool(...args)]: true
-      });
-      <div class={styles}></div>;
-    `;
-
-    return parse(code).then((analysis: MetaAnalysis) => {
-      return transform(code, analysis).then(_res => {
-        assert.fail('Should never get here.');
-      });
-    }).catch((e) => {
-      assert.equal(e.message, 'test.tsx: [css-blocks] RewriteError: The spread operator is not allowed in CSS Block states. (9:18)');
-    });
-  }
 }

@@ -5,7 +5,7 @@ import { MetaAnalysis } from '../src/utils/Analysis';
 export function testParse(data: string, opts?: JSXAnalyzerOptions, cssBlocksOpts?: CssBlocksOptions): Promise<MetaAnalysis> {
    let defaultOpts = new CssBlocksOptionsReader(cssBlocksOpts);
    let factory = new BlockFactory(defaultOpts);
-   return parse(data, factory, opts);
+   return parse('', data, factory, opts);
 }
 
 export function testParseFile(file: string, opts?: JSXAnalyzerOptions, cssBlocksOpts?: CssBlocksOptions): Promise<MetaAnalysis> {

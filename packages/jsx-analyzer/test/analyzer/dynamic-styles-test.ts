@@ -85,4 +85,32 @@ export class Test {
       assert.deepEqual(analysis.elements.e.dynamicClasses, [{condition: true, whenTrue: [4]}]);
     });
   }
+
+  @test 'Throws when spread operator used in states.'(){
+    mock({
+      'foo.block.css': `
+        .root { }
+        [state|cool=foo] { }
+      `
+    });
+
+    let code = `
+      import objstr from 'obj-str';
+      import foo from 'foo.block.css';
+
+      let args = [ 'foo' ];
+
+      let styles = objstr({
+        [foo]: true,
+        [foo.cool(...args)]: true
+      });
+      <div class={styles}></div>;
+    `;
+
+    return parse(code).then((analysis: MetaAnalysis) => {
+      assert.ok(false, 'should not get here.');
+    }, (e) => {
+      assert.equal(e.message, '[css-blocks] AnalysisError: The spread operator is not allowed in CSS Block states. (9:18)');
+    });
+  }
 }

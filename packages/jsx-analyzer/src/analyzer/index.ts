@@ -20,6 +20,7 @@ import {
   isBooleanLiteral,
   Node,
   isVariableDeclarator,
+  isSpreadElement,
 } from 'babel-types';
 
 import Analysis from '../utils/Analysis';
@@ -114,7 +115,7 @@ function addDynamicStyles(blocks: ObjectDictionary<Block>, element: ElementAnaly
       if (isBooleanLiteral(rightHandExpr)) {
         rightHandLiteral = rightHandExpr;
       } else {
-        throw new TemplateAnalysisError('Right hand side of an objstr style must be a boolean literal or an expression.');
+        throw new TemplateAnalysisError('Right hand side of an objstr style must be a boolean literal or an expression.', {filename, ...rightHandExpr.loc.start});
       }
     }
 
@@ -122,8 +123,12 @@ function addDynamicStyles(blocks: ObjectDictionary<Block>, element: ElementAnaly
       if (rightHandLiteral) {
         // It's set to true or false
         if (rightHandLiteral.value) {
-          // if truthy, the only dynamic expr is from the state selector.
-          element.addDynamicGroup(result.blockClass || result.block, result.stateGroup, result.dynamicStateExpression, true);
+          if ( isSpreadElement(result.dynamicStateExpression) ) {
+            throw new TemplateAnalysisError('The spread operator is not allowed in CSS Block states.', {filename, ...result.dynamicStateExpression.loc.start});
+          } else {
+            // if truthy, the only dynamic expr is from the state selector.
+            element.addDynamicGroup(result.blockClass || result.block, result.stateGroup, result.dynamicStateExpression, true);
+          }
         } // else ignore
       } else {
         let orExpression = logicalExpression('||', prop.value, result.dynamicStateExpression);
