@@ -1,46 +1,52 @@
 import { assert } from 'chai';
 import { suite, test, skip } from 'mocha-typescript';
 import * as babel from 'babel-core';
-import { StyleMapping, PluginOptionsReader, CssBlockOptions, TemplateAnalysis } from 'css-blocks';
+import { StyleMapping, PluginOptionsReader, CssBlockOptions, BlockCompiler } from 'css-blocks';
+import * as postcss from 'postcss';
+import * as prettier from 'prettier';
 
-import { MetaAnalysis } from '../../src/utils/Analysis';
+import JSXAnalysis, { MetaAnalysis } from '../../src/utils/Analysis';
 import Transformer from '../../src';
 import { testParse as parse } from '../util';
-import { Optimizer, OptiCSSOptions } from 'opticss';
-import { TemplateIntegrationOptions, TemplateTypes } from '@opticss/template-api';
+import { Optimizer, OptiCSSOptions, OptimizationResult  } from 'opticss';
+import { TemplateIntegrationOptions } from '@opticss/template-api';
 
 const mock = require('mock-fs');
 
 // Reduce whitespace.
 function minify(s: string) {
-  return s ? s.replace(/^[\s\n]+|[\s\n]+$/gm, '') : '';
+  mock.restore();
+  return prettier.format(s).replace(/\n\n/mg, '\n');
 }
 
-function transform(code: string, analysis: MetaAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<babel.BabelFileResult> {
+const mkPlugin = require('../../src/transformer/babel').default;
 
+function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult, css: OptimizationResult}> {
+  let filename = analysis.template.identifier;
   let optimizer = new Optimizer(optimizationOpts, templateOpts);
   let reader = new PluginOptionsReader(cssBlocksOptions);
-  let analyses = new Array<TemplateAnalysis<keyof TemplateTypes>>();
-  analysis.eachAnalysis(a => {
-    analyses.push(<TemplateAnalysis<'Opticss.JSXTemplate'>>a);
-    optimizer.addAnalysis(a.forOptimizer(reader));
-  });
+  optimizer.addAnalysis(analysis.forOptimizer(reader));
   let blocks = analysis.transitiveBlockDependencies();
+  let compiler = new BlockCompiler(postcss, reader);
   for (let block of blocks) {
     optimizer.addSource({
-      content: block.root!.toResult({to: reader.importer.filesystemPath(block.identifier, reader) || undefined}),
+      content: compiler.compile(block, block.root!).toResult({to: reader.importer.filesystemPath(block.identifier, reader) || undefined}),
     });
   }
   return optimizer.optimize('optimized.css').then(result => {
     let rewriter = new Transformer.Rewriter();
-    rewriter.blocks['test.tsx'] = new StyleMapping(result.styleMapping, blocks, reader, analyses);
-    return babel.transform(code, {
-      filename: 'test.tsx',
+    rewriter.blocks[filename] = new StyleMapping(result.styleMapping, blocks, reader, [analysis]);
+    let babelResult = babel.transform(code, {
+      filename: filename,
       plugins: [
-        [ require('../../src/transformer/babel').default, { rewriter } ]
+        mkPlugin({rewriter})
       ],
       parserOpts: { plugins: [ 'jsx' ] }
     });
+    return {
+      jsx: babelResult,
+      css: result
+    };
   });
 
 }
@@ -51,7 +57,6 @@ export class Test {
     mock.restore();
   }
 
-  @skip
   @test 'Root styles with and without .root are rewritten correctly.'(){
     mock({
       'bar.block.css': `
@@ -68,59 +73,18 @@ export class Test {
 
     `;
 
-    return parse(code).then((analysis: MetaAnalysis) => {
-
-      return transform(code, analysis).then(res => {
-        assert.equal(minify(res.code!), minify(`
+    return parse(code, 'test.tsx').then((meta: MetaAnalysis) => {
+      return transform(code, meta.getAnalysis(0)).then(res => {
+        assert.deepEqual(minify(res.jsx.code!), minify(`
+          import { classNameHelper as cla$$ } from '@css-blocks/jsx';
           import objstr from 'obj-str';
-
-          <div class="bar"></div>;
-          <div class="bar"></div>;`));
-        });
-    });
-  }
-
-  @skip
-  @test 'Discovers multiple objstr, even if not obviously used on an element.'(){
-    mock({
-      'bar.block.css': `
-        .root { color: blue; }
-        .pretty { color: red; }
-      `
-    });
-
-    let code = `
-      import bar from 'bar.block.css';
-      import objstr from 'obj-str';
-
-      let style = objstr({
-        [bar.pretty]: true
-      });
-
-      let rootStyle = objstr({
-        [bar]: true
-      });
-    `;
-
-    return parse(code).then((analysis: MetaAnalysis) => {
-
-      return transform(code, analysis).then(res =>{
-        assert.equal(minify(res.code!), minify(`
-          import objstr from 'obj-str';
-
-          let style = objstr({
-            'bar__pretty': true
-          });
-
-          let rootStyle = objstr({
-            'bar': true
-          });`
-        ));
+          <div class={cla$$([1, 1, 6, 0, 'a', 0])}></div>;
+          <div class={cla$$([1, 1, 6, 0, 'a', 0])}></div>;
+          `));
       });
     });
   }
 
-  @skip
   @test 'States with sub-states are transformed using string input'(){
     mock({
       'bar.block.css': `
@@ -144,18 +108,14 @@ export class Test {
       <div class={style}></div>;
     `;
 
-    return parse(code).then((analysis: MetaAnalysis) => {
+    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
 
-      return transform(code, analysis).then(res => {
-        assert.equal(minify(res.code!), minify(`
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        assert.deepEqual(minify(res.jsx.code!), minify(`
+          import { classNameHelper as cla$$ } from '@css-blocks/jsx';
           import objstr from 'obj-str';
 
-          let style = objstr({
-            'bar__pretty': true,
-            'bar__pretty--color-yellow': true
-          });
-
-          <div class={style}></div>;`
+          <div class={cla$$([2, 2, 6, 0, 6, 1, 'a', 0, 'b', 1])}></div>;`
         ));
       });
     });
@@ -187,8 +147,8 @@ export class Test {
 
     return parse(code).then((analysis: MetaAnalysis) => {
 
-      return transform(code, analysis).then(res => {
-        assert.equal(minify(res.code!), minify(`
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        assert.equal(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
           let style = objstr({
@@ -228,8 +188,8 @@ export class Test {
 
     return parse(code).then((analysis: MetaAnalysis) => {
 
-      return transform(code, analysis).then(res => {
-        assert.equal(minify(res.code!), minify(`
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        assert.equal(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
           let style = objstr({
@@ -275,8 +235,8 @@ export class Test {
 
     return parse(code).then((analysis: MetaAnalysis) => {
 
-      return transform(code, analysis).then(res => {
-        assert.equal(minify(res.code!), minify(`
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        assert.equal(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
           let dynamic = 'yellow';
@@ -325,8 +285,8 @@ export class Test {
 
     return parse(code).then((analysis: MetaAnalysis) => {
 
-      return transform(code, analysis).then(res => {
-        assert.equal(minify(res.code!), minify(`
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        assert.equal(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
           let dynamic = 'yellow';
@@ -375,8 +335,8 @@ export class Test {
 
     return parse(code).then((analysis: MetaAnalysis) => {
 
-      return transform(code, analysis).then(res => {
-        assert.equal(minify(res.code!), minify(`
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        assert.equal(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
           let dynamic = 'yellow';
@@ -417,8 +377,8 @@ export class Test {
 
     return parse(code).then((analysis: MetaAnalysis) => {
 
-      return transform(code, analysis).then(res => {
-        assert.equal(minify(res.code!), minify(`
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        assert.equal(minify(res.jsx.code!), minify(`
           <div class="bar__pretty"></div>;
           <div class="foo__pretty"></div>;
         `));
@@ -447,8 +407,8 @@ export class Test {
 
     return parse(code).then((analysis: MetaAnalysis) => {
 
-      return transform(code, analysis).then(res => {
-        assert.equal(minify(res.code!), minify(`
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        assert.equal(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
           let styles = objstr({

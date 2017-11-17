@@ -20,7 +20,7 @@ export interface RewriterOutput {
 //       in the transformer. Remove this when that is added.
 export default class CSSBlocksJSXTransformer {
 
-  private styleMapping: StyleMapping | null;
+  styleMapping: StyleMapping | null;
   cssBlockOptions: CssBlockOptionsReadonly;
   blocks: { [path: string]: StyleMapping } = {};
 

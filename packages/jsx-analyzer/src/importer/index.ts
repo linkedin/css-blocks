@@ -84,11 +84,9 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
       let parsedPath = path.parse(absoluteFilePath);
       delete parsedPath.base;
       if ( !parsedPath.ext ) {
-        let exists = false;
         for (let key in VALID_FILE_EXTENSIONS) {
           parsedPath.ext = key;
           if ( fs.existsSync(path.format(parsedPath)) ){
-            exists = true;
             break;
           }
           delete parsedPath.ext;

@@ -1,6 +1,6 @@
 import { Block } from 'css-blocks';
 import { ObjectDictionary, } from '@opticss/util';
-import { NodePath } from 'babel-traverse';
+import { NodePath, Binding } from 'babel-traverse';
 import {
   CallExpression,
   JSXOpeningElement,
@@ -13,6 +13,7 @@ import {
   Node,
   isVariableDeclarator,
   JSXAttribute,
+  Identifier,
 } from 'babel-types';
 
 import { MalformedBlockPath, TemplateAnalysisError, ErrorLocation } from '../utils/Errors';
@@ -35,6 +36,24 @@ export class JSXElementAnalyzer {
       className: true
     };
   }
+
+  isClassAttribute(attr: JSXAttribute): boolean {
+    return isJSXIdentifier(attr.name) && this.classProperties[attr.name.name];
+  }
+
+  classAttributePaths(path: NodePath<JSXOpeningElement>): Array<NodePath<JSXAttribute>> {
+    let attrPath = path.get('attributes.0') as NodePath<JSXAttribute> | undefined;
+    let found = new Array<NodePath<JSXAttribute>>();
+    while (attrPath && attrPath.node) {
+      if (this.isClassAttribute(attrPath.node)) {
+        found.push(attrPath);
+      }
+      // Any because the type def is incomplete
+      attrPath = (<any>attrPath).getNextSibling() as NodePath<JSXAttribute> | undefined;
+    }
+    return found;
+  }
+
   analyze(filename: string, path: NodePath<JSXOpeningElement>): JSXElementAnalysis | undefined {
     let el = path.node;
 
@@ -45,14 +64,14 @@ export class JSXElementAnalyzer {
 
     let loc = { filename, ...path.node.loc };
 
-    let classAttrs = el.attributes.filter(attr => isJSXIdentifier(attr.name) && this.classProperties[attr.name.name]);
+    let classAttrs = this.classAttributePaths(path);
     // If/When we add state attributes, we should throw an error if those are set before exiting.
     if (classAttrs.length === 0) return;
 
     let element = newJSXElementAnalysis(loc, htmlTagName(el));
 
     for (let classAttr of classAttrs) {
-      this.analyzeClassAttribute(path, classAttr.value, element);
+      this.analyzeClassAttribute(classAttr, element);
     }
 
     // el.attributes.forEach((attr: JSXAttribute) => {
@@ -69,7 +88,24 @@ export class JSXElementAnalyzer {
     return { filename: this.filename, ...n.loc.start };
   }
 
-  private analyzeClassAttribute(path: NodePath<Node>, value: JSXAttribute['value'], element: JSXElementAnalysis): void {
+  styleVariableBinding(path: NodePath<JSXAttribute>): Binding | undefined {
+    let valuePath = path.get('value');
+    if (!isJSXExpressionContainer(valuePath.node)) return; // should this be an error?
+    if (isIdentifier(valuePath.node.expression)) {
+      let identPath = valuePath.get('expression') as NodePath<Identifier>;
+      let identBinding = path.scope.getBinding(identPath.node.name);
+      if (identBinding && identBinding.kind === 'module' || !identBinding) {
+        return;
+      }
+      if (isVariableDeclarator(identBinding.path.node)) {
+        return identBinding;
+      }
+    }
+    return;
+  }
+
+  private analyzeClassAttribute(path: NodePath<JSXAttribute>, element: JSXElementAnalysis): void {
+    let value = path.node.value;
     if (!isJSXExpressionContainer(value)) return; // should this be an error?
     // If this attribute's value is an expression, evaluate it for block references.
     // Discover block root identifiers.
