@@ -58,10 +58,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohGod = true;
+      let leSigh = true;
       let style = objstr({
         [bar]: true,
-        [bar.color('yellow')]: ohGod
+        [bar.color('yellow')]: leSigh
       });
 
       <div class={style}></div>;`
@@ -89,9 +89,9 @@ export class Test {
     return parse(`
       import bar, { states } from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohGod = true;
+      let leSigh = true;
       let style = objstr({
-        [bar]: ohGod,
+        [bar]: leSigh,
         [bar.awesome()]: true
       });
       <div class={style}></div>;`
@@ -119,10 +119,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohGod = true;
+      let leSigh = true;
       let style = objstr({
         [bar]: true,
-        [bar.awesome()]: ohGod
+        [bar.awesome()]: leSigh
       });
       <div class={style}></div>;`
     ).then((metaAnalysis: MetaAnalysis) => {
@@ -149,10 +149,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohGod = true;
+      let leSigh = true;
       let style = objstr({
         [bar]: true,
-        [bar.awesome('wat')]: ohGod
+        [bar.awesome('wat')]: leSigh
       });
       <div class={style}></div>;`
     ).then((analysis: MetaAnalysis) => {
@@ -178,7 +178,7 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohGod = true;
+      let leSigh = true;
       let style1 = objstr({
         [bar.pretty]: true,
         [bar.pretty.awesome()]: true

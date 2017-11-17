@@ -60,10 +60,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohGod = true;
+      let leSigh = true;
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color("yellow")]: ohGod
+        [bar.pretty.color("yellow")]: leSigh
       });
 
       <div class={style}></div>;`
@@ -102,11 +102,11 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohGod = true;
+      let leSigh = true;
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color('yellow')]: ohGod,
-        [bar.pretty.color('black')]: !ohGod
+        [bar.pretty.color('yellow')]: leSigh,
+        [bar.pretty.color('black')]: !leSigh
       });
 
       <div class={style}></div>;`
@@ -146,12 +146,12 @@ export class Test {
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
 
-      let ohGod = true;
+      let leSigh = true;
       let state = 'yellow';
 
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color(state)]: ohGod,
+        [bar.pretty.color(state)]: leSigh,
       });
 
       <div class={style}></div>;
@@ -192,11 +192,11 @@ export class Test {
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
 
-      let ohGod = true;
+      let leSigh = true;
 
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color()]: ohGod,
+        [bar.pretty.color()]: leSigh,
       });
 
       <div class={style}></div>;
@@ -221,10 +221,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohGod = true;
+      let leSigh = true;
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.awesome()]: ohGod
+        [bar.pretty.awesome()]: leSigh
       });
       <div class={style}></div>;
     `
@@ -253,10 +253,10 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       import objstr from 'obj-str';
-      let ohGod = true;
+      let leSigh = true;
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.awesome('wat')]: ohGod
+        [bar.pretty.awesome('wat')]: leSigh
       });
       <div class={style}></div>;
     `).then((analysis: MetaAnalysis) => {

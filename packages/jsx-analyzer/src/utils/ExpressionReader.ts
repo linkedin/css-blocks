@@ -63,6 +63,11 @@ export function isBlockStateGroupResult(result: BlockExpressionResult): result i
   return !!((<BlockStateGroupResult>result).stateGroup);
 }
 
+/**
+ * The reader does a first pass at construction time to decide if the expression is of the correct syntactic form to be
+ * a block expression. Checking `isBlockExpression` after construction lets the caller decide if
+ * she wants to go on to convert to a block object by calling `getResult(localBlocks)`.
+ */
 export class ExpressionReader {
   private pathExpression: PathExpression;
   private callExpression: CallExpression | undefined;
@@ -137,7 +142,14 @@ export class ExpressionReader {
     this.isBlockExpression = !this.err && !!this.block;
   }
 
-  getResult(blocks: ObjectDictionary<Block>): BlockExpressionResult {
+  /**
+   * This turns the strings that represent the block, class, state and substate
+   * into a BlockObject. It is only valid to call when `isBlockExpression`
+   * is true.
+   *
+   * localBlocks is a dictionary of local block names to the Block.
+   */
+  getResult(localBlocks: ObjectDictionary<Block>): BlockExpressionResult {
     if (!this.isBlockExpression) {
       if (this.err) {
           throw new MalformedBlockPath(this.err, this.loc);
@@ -145,7 +157,7 @@ export class ExpressionReader {
           throw new MalformedBlockPath('No block name specified.', this.loc);
       }
     }
-    let block = blocks[this.block!];
+    let block = localBlocks[this.block!];
     let blockClass: BlockClass | undefined = undefined;
     if (!block) {
       throw new MalformedBlockPath(`No block named ${this.block} exists in this scope.`, this.loc);
@@ -231,7 +243,7 @@ export class ExpressionReader {
  * Given a `MemberExpression`, `Identifier`, or `CallExpression`, return an array
  * of all expression identifiers.
  * Ex: `foo.bar['baz']` => [Symbol('path-start'), 'foo', 'bar', 'baz', Symbol('path-end')]
- * EX: `foo.bar[biz.baz].bar` => [Symbol('path-start'), 'foo', 'bar', Symbol('path-start'), 'biz', 'baz', Symbol('path-end'), 'bar', Symbol('path-end']
+ * EX: `foo.bar[biz.baz].bar` => [Symbol('path-start'), 'foo', 'bar', Symbol('path-start'), 'biz', 'baz', Symbol('path-end'), 'bar', Symbol('path-end')]
  * Return empty array if input is invalid nested expression.
  * @param expression The expression node to be parsed
  * @returns An array of strings representing the expression parts.

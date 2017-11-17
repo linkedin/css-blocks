@@ -74,7 +74,7 @@ export class Test {
 
     return parse(`
       import bar from 'bar.block.css';
-      <div class={bar.pretty} state:bar.pretty.color={ohGod}></div>;
+      <div class={bar.pretty} state:bar.pretty.color={leSigh}></div>;
     `).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 3);

@@ -223,11 +223,11 @@ export class Test {
       import objstr from 'obj-str';
 
       let dynamic = 'yellow';
-      let ohGod = true;
+      let leSigh = true;
 
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color(dynamic)]: ohGod
+        [bar.pretty.color(dynamic)]: leSigh
       });
 
       <div class={bar.root}><div class={style}></div></div>;
@@ -240,12 +240,12 @@ export class Test {
           import objstr from 'obj-str';
 
           let dynamic = 'yellow';
-          let ohGod = true;
+          let leSigh = true;
 
           let style = objstr({
             'bar__pretty': true,
-            'bar__pretty--color-yellow': dynamic === 'yellow' && ohGod,
-            'bar__pretty--color-green': dynamic === 'green' && ohGod
+            'bar__pretty--color-yellow': dynamic === 'yellow' && leSigh,
+            'bar__pretty--color-green': dynamic === 'green' && leSigh
           });
 
           <div class="bar"><div class={style}></div></div>;`)
@@ -272,12 +272,12 @@ export class Test {
       import objstr from 'obj-str';
 
       let dynamic = 'yellow';
-      let ohGod = true;
+      let leSigh = true;
 
       let style = objstr({
         [bar.pretty]: true,
         [bar.pretty.bool()]: true,
-        [bar.pretty.color(dynamic)]: ohGod
+        [bar.pretty.color(dynamic)]: leSigh
       });
 
       <div class={bar.root}><div class={style}></div></div>;
@@ -290,12 +290,12 @@ export class Test {
           import objstr from 'obj-str';
 
           let dynamic = 'yellow';
-          let ohGod = true;
+          let leSigh = true;
 
           let style = objstr({
             'bar__pretty': true,
             'bar__pretty--bool': true,
-            'bar__pretty--color-yellow': dynamic === 'yellow' && ohGod
+            'bar__pretty--color-yellow': dynamic === 'yellow' && leSigh
           });
 
           <div class="bar"><div class={style}></div></div>;`)

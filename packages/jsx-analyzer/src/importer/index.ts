@@ -114,8 +114,6 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
 
       specifiers.forEach((specifier) => {
 
-        // TODO: For namespaced imports, the parser needs to be smart enough to
-        //       recognize `namespace.default` and `namespace.states` as block references.
         let isNamespace = isImportNamespaceSpecifier(specifier);
 
         // If is default import specifier, then fetch local name for block.
