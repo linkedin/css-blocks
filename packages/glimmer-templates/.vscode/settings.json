@@ -4,5 +4,7 @@
       "**/dist/**/*": true,
       "**/*.lock": true
     },
-    "editor.tabSize": 2
-}
+    "editor.tabSize": 2,
+    "tslint.packageManager": "yarn",
+    "npm.packageManager": "yarn"
+  }
