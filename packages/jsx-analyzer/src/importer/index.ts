@@ -96,7 +96,7 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
 
       // If this is a jsx or tsx file, parse it with the same analysis object.
       if ( fs.existsSync(absoluteFilePath) && VALID_FILE_EXTENSIONS[parsedPath.ext] ) {
-        parseFileWith(absoluteFilePath, analysis.parent, blockFactory, options);
+        analysis.parent.analysisPromises.push(parseFileWith(absoluteFilePath, analysis.parent, blockFactory, options));
         return;
       }
 

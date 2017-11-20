@@ -145,16 +145,17 @@ export function parse(filename: string, data: string, factory: BlockFactory, opt
   let metaAnalysis: MetaAnalysis = new MetaAnalysis();
 
   return Promise.resolve().then(() => {
-    parseWith(template, metaAnalysis, factory, resolvedOpts);
-    return Promise.all(metaAnalysis.analysisPromises).then((analyses) => {
-      analyses.forEach((analysis) => {
-        traverse(analysis.template.ast, analyzer(analysis));
-        metaAnalysis.addAnalysis(analysis);
-        // No need to keep detailed template data anymore!
-        delete analysis.template.ast;
-        delete analysis.template.data;
+    return parseWith(template, metaAnalysis, factory, resolvedOpts).then(analysis => {
+      return Promise.all(metaAnalysis.analysisPromises).then((analyses) => {
+        for (let analysis of (new Set(analyses))) {
+          traverse(analysis.template.ast, analyzer(analysis));
+          metaAnalysis.addAnalysis(analysis);
+          // No need to keep detailed template data anymore!
+          delete analysis.template.ast;
+          delete analysis.template.data;
+        }
+        return metaAnalysis;
       });
-      return metaAnalysis;
     });
   });
 }
