@@ -81,6 +81,8 @@ export class TemplateAnalysisTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       this.useBlockStyles(analysis, block, "");
+      let el = analysis.getElement(1);
+      el.addDynamicState(block.find(".asdf") as BlockClass, block.find(".asdf[state|larger]") as State, true);
       let optimizerAnalysis = analysis.forOptimizer(reader);
       let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
       let compiler = new BlockCompiler(postcss, reader);
@@ -100,16 +102,16 @@ export class TemplateAnalysisTests {
         let it = analysis.elements.values();
         let element1 = it.next().value;
         let rewrite1 = blockMapping.rewriteMapping(element1);
-        assert.deepEqual(rewrite1.staticClasses, []);
-        assert.deepEqual([...rewrite1.dynamicClasses].sort(), ['c', 'd', 'e']);
+        assert.deepEqual([...rewrite1.staticClasses].sort(), ['c', 'd', 'e']);
+        assert.deepEqual(rewrite1.dynamicClasses, []);
         let element2 = it.next().value;
         let rewrite2 = blockMapping.rewriteMapping(element2);
-        assert.deepEqual(rewrite2.staticClasses, []);
-        assert.deepEqual([...rewrite2.dynamicClasses].sort(), ['c', 'e', 'f']);
-        let expr = rewrite2.dynamicClass('c')!;
+        assert.deepEqual([...rewrite2.staticClasses].sort(), ['c']);
+        assert.deepEqual([...rewrite2.dynamicClasses].sort(), ['e', 'f']);
+        let expr = rewrite2.dynamicClass('e')!;
         assertType(isAndExpression, expr).and(andExpr => {
           assert.deepEqual(andExpr.and.length, 1);
-          assert.deepEqual(andExpr.and[0], block.find(".asdf")!);
+          assert.deepEqual(andExpr.and[0], block.find(".asdf[state|larger]")!);
         });
       });
     });

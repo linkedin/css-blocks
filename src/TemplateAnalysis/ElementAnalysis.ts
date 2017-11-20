@@ -396,6 +396,18 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     this.dynamicClasses.push(classes);
   }
 
+  countAllStaticStyles(): number {
+    return this.allStaticStyles.size;
+  }
+  *getAllStaticStyles() {
+    this.prepareForStates();
+    let s;
+    for (s of this.allStaticStyles) {
+      yield s;
+    }
+    return;
+  }
+
   /**
    * Get a simple object with no circular references that is possible to
    * emit and restore as JSON.
