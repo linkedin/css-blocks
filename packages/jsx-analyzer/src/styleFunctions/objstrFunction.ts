@@ -99,7 +99,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
           }
         } // else ignore
       } else {
-        let orExpression = logicalExpression('||', prop.value, result.dynamicStateExpression);
+        let orExpression = logicalExpression('&&', prop.value, result.dynamicStateExpression);
         element.addDynamicGroup(result.blockClass || result.block, result.stateGroup, orExpression, false);
       }
 

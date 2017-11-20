@@ -17,13 +17,15 @@ import {
   JSXOpeningElement,
   Statement,
   isJSXExpressionContainer,
+  JSXAttribute,
 } from 'babel-types';
 
 import isBlockFilename from '../utils/isBlockFilename';
-import { classnamesHelper as generateClassName} from './classNameGenerator';
+import { classnamesHelper as generateClassName, HELPER_FN_NAME } from './classNameGenerator';
 let { parse } = require('path');
 
 export interface CssBlocksVisitor {
+  dynamicStylesFound: boolean;
   importsToRemove: Array<NodePath<ImportDeclaration>>;
   statementsToRemove: Array<NodePath<Statement>>;
   elementAnalyzer: JSXElementAnalyzer;
@@ -46,6 +48,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
 
     return {
       pre(file: any) {
+        this.dynamicStylesFound = false;
         this.importsToRemove = new Array<NodePath<ImportDeclaration>>();
         this.statementsToRemove = new Array<NodePath<Statement>>();
         this.filename = file.opts.filename;
@@ -63,8 +66,13 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
         }
       },
       post(state: any) {
-        let firstImport = this.importsToRemove.shift()!;
-        firstImport.replaceWith(importDeclaration([importSpecifier(identifier('cla$$'), identifier('classNameHelper'))], stringLiteral('@css-blocks/jsx')));
+        if (this.dynamicStylesFound) {
+          let firstImport = this.importsToRemove.shift()!;
+          let importDecl = importDeclaration(
+            [importSpecifier(identifier(HELPER_FN_NAME.localName), identifier(HELPER_FN_NAME.moduleName))],
+            stringLiteral('@css-blocks/jsx'));
+          firstImport.replaceWith(importDecl);
+        }
         for (let nodePath of this.importsToRemove) {
           nodePath.remove();
         }
@@ -88,7 +96,19 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
           let elementAnalysis = this.elementAnalyzer.analyze(this.filename, path);
           if (elementAnalysis) {
             let classMapping = this.mapping.simpleRewriteMapping(elementAnalysis);
-            let newClassAttr = jSXAttribute(jSXIdentifier('class'), jSXExpressionContainer(generateClassName(classMapping, elementAnalysis, true)));
+            let attributeValue: JSXAttribute['value'] | undefined = undefined;
+            let newClassAttr: JSXAttribute | undefined = undefined;
+            if (classMapping.dynamicClasses.length > 0) {
+              this.dynamicStylesFound = true;
+              attributeValue = jSXExpressionContainer(
+                generateClassName(classMapping, elementAnalysis,
+                                  HELPER_FN_NAME.localName, true));
+            } else if (classMapping.staticClasses.length > 0) {
+              attributeValue = stringLiteral(classMapping.staticClasses.join(' '));
+            }
+            if (attributeValue) {
+              newClassAttr = jSXAttribute(jSXIdentifier('class'), attributeValue);
+            }
 
             let classAttrs = this.elementAnalyzer.classAttributePaths(path);
             for (let attrPath of classAttrs) {
@@ -102,8 +122,10 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
                 }
               }
             }
-            let firstClass = classAttrs.shift()!;
-            firstClass.replaceWith(newClassAttr);
+            if (newClassAttr) {
+              let firstClass = classAttrs.shift()!;
+              firstClass.replaceWith(newClassAttr);
+            }
             for (let attrPath of classAttrs) {
                 attrPath.remove();
             }

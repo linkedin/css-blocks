@@ -1,4 +1,3 @@
-
 import {
   IndexedClassRewrite,
   DynamicClasses,
@@ -30,7 +29,8 @@ import {
   isNotExpression,
 } from '@opticss/template-api';
 import {
-  assertNever
+  assertNever,
+  unwrap,
 } from '@opticss/util';
 import {
   arrayExpression,
@@ -42,6 +42,11 @@ import {
   CallExpression,
   Expression,
 } from 'babel-types';
+
+export const HELPER_FN_NAME = {
+  moduleName: 'c',
+  localName: 'c$$',
+};
 
 const enum SourceExpression {
   ternary,
@@ -71,27 +76,26 @@ const enum BooleanExpr {
   and = -3,
 }
 
-export function classnamesHelper(rewrite: IndexedClassRewrite<BlockObject>, element: JSXElementAnalysis, includeStaticClasses = false): CallExpression {
-  return callExpression(identifier('cla$$'), [arrayExpression(constructArgs(rewrite, element, includeStaticClasses))]);
+export function classnamesHelper(rewrite: IndexedClassRewrite<BlockObject>, element: JSXElementAnalysis, helpFnName = HELPER_FN_NAME.localName, includeStaticClasses = false): CallExpression {
+  let args: Expression[] = [ arrayExpression(constructArgs(rewrite, element)) ];
+  let staticClassnames = rewrite.staticClasses;
+  if (includeStaticClasses && staticClassnames.length > 0) {
+    args.unshift(stringLiteral(staticClassnames.join(' ')));
+  }
+  return callExpression(identifier(helpFnName), args);
 }
 
-function constructArgs(rewrite: IndexedClassRewrite<BlockObject>, element: JSXElementAnalysis, includeStaticClasses: boolean): Array<Expression> {
+function constructArgs(rewrite: IndexedClassRewrite<BlockObject>, element: JSXElementAnalysis): Array<Expression> {
   let expr = new Array<Expression>();
-  expr.push(builders.number(element.dynamicClasses.length + element.dynamicStates.length + (includeStaticClasses ? element.static.size : 0)));
+  expr.push(builders.number(element.dynamicClasses.length + element.dynamicStates.length));
   expr.push(builders.number(rewrite.dynamicClasses.length));
-  expr.push(...constructSourceArgs(rewrite, element, includeStaticClasses));
-  expr.push(...constructOutputArgs(rewrite, includeStaticClasses));
+  expr.push(...constructSourceArgs(rewrite, element));
+  expr.push(...constructOutputArgs(rewrite));
   return expr;
 }
 
-function constructSourceArgs(rewrite: IndexedClassRewrite<BlockObject>, element: JSXElementAnalysis, includeStaticClasses: boolean): Array<Expression> {
+function constructSourceArgs(rewrite: IndexedClassRewrite<BlockObject>, element: JSXElementAnalysis): Array<Expression> {
   let expr = new Array<Expression>();
-  if (includeStaticClasses) {
-    for (let style of element.static) {
-      expr.push(builders.number(SourceExpression.static));
-      expr.push(builders.number(rewrite.indexOf(style)));
-    }
-  }
   for (let classes of element.dynamicClasses) {
     // type of expression
     expr.push(builders.number(SourceExpression.ternary));
@@ -143,7 +147,7 @@ function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedC
   if (isTrueCondition(classes)) {
     expr.push(builders.number(classes.whenTrue.length));
     // TODO: inheritance
-    expr.push(...classes.whenTrue.map(style => builders.number(rewrite.indexOf(style))));
+    expr.push(...classes.whenTrue.map(style => builders.number(unwrap(rewrite.indexOf(style)))));
   } else {
     expr.push(builders.number(0));
   }
@@ -151,7 +155,7 @@ function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedC
   if (isFalseCondition(classes)) {
     expr.push(builders.number(classes.whenFalse.length));
     // TODO: inheritance
-    expr.push(...classes.whenFalse.map(style => builders.number(rewrite.indexOf(style))));
+    expr.push(...classes.whenFalse.map(style => builders.number(unwrap(rewrite.indexOf(style)))));
   } else {
     expr.push(builders.number(0));
   }
@@ -166,7 +170,7 @@ function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedC
 function constructDependency(stateExpr: Dependency, rewrite: IndexedClassRewrite<BlockObject>): Array<Expression> {
   let expr = new Array<Expression>();
   expr.push(builders.number(1));
-  expr.push(builders.number(rewrite.indexOf(stateExpr.container)));
+  expr.push(builders.number(unwrap(rewrite.indexOf(stateExpr.container))));
   return expr;
 }
 
@@ -180,7 +184,7 @@ function constructStateReferences(stateExpr: HasState, rewrite: IndexedClassRewr
   let expr = new Array<Expression>();
   // TODO: inheritance
   expr.push(builders.number(1));
-  expr.push(builders.number(rewrite.indexOf(stateExpr.state)));
+  expr.push(builders.number(unwrap(rewrite.indexOf(stateExpr.state))));
   return expr;
 }
 /*
@@ -213,12 +217,12 @@ function constructSwitch(stateExpr: Switch<StringAST> & HasGroup, rewrite: Index
     let obj = stateExpr.group[value];
     expr.push(builders.string(value));
     expr.push(builders.number(1));
-    expr.push(builders.number(rewrite.indexOf(obj)));
+    expr.push(builders.number(unwrap(rewrite.indexOf(obj))));
   }
   return expr;
 }
 
-function constructOutputArgs(rewrite: IndexedClassRewrite<any>, includeStaticClasses: boolean): Array<Expression> {
+function constructOutputArgs(rewrite: IndexedClassRewrite<any>): Array<Expression> {
   let expr = new Array<Expression>();
   for (let out of rewrite.dynamicClasses) {
     expr.push(builders.string(out));
