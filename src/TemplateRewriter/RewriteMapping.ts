@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { BlockObject } from '../Block';
-import { assertNever, objectValues } from "@opticss/util";
+import { assertNever, objectValues, Maybe, maybe} from "@opticss/util";
 import {
   BooleanExpression,
   isAndExpression,
@@ -33,13 +33,9 @@ export class IndexedClassMapping implements IndexedClassRewrite<BlockObject> {
     return Object.keys(this.map);
   }
 
-  public indexOf(input: BlockObject): number {
+  public indexOf(input: BlockObject): Maybe<number> {
     let index = this._inputMap.get(input);
-    if (index !== undefined) {
-      return index;
-    } else {
-      throw new Error("internal error: block object not found");
-    }
+    return maybe(index, "internal error: block object not found");
   }
 
   static fromOptimizer(

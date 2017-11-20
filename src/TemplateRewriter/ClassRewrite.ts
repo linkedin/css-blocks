@@ -1,3 +1,7 @@
+import {
+  Maybe,
+} from "@opticss/util";
+
 // These boolean expression types are copied from opticss to avoid pulling that dependency in.
 
 export type BooleanExpression<V> = AndExpression<V> | OrExpression<V> | NotExpression<V>;
@@ -19,5 +23,5 @@ export interface ClassRewrite<BooleanType> {
 
 export interface IndexedClassRewrite<SourceType> extends ClassRewrite<number> {
   inputs: Array<SourceType>;
-  indexOf(input: SourceType): number;
+  indexOf(input: SourceType): Maybe<number>;
 }
