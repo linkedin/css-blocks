@@ -8,5 +8,7 @@
     "objstr",
     "opticss",
     "truthy"
-  ]
+  ],
+  "tslint.packageManager": "yarn",
+  "npm.packageManager": "yarn"
 }
