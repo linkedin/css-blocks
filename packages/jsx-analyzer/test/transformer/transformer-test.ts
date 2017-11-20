@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { suite, test, skip } from 'mocha-typescript';
+import { suite, test } from 'mocha-typescript';
 import * as babel from 'babel-core';
 import { StyleMapping, PluginOptionsReader, CssBlockOptions, BlockCompiler } from 'css-blocks';
 import * as postcss from 'postcss';
@@ -239,7 +239,6 @@ export class Test {
     });
   }
 
-  @skip
   @test 'States with dynamic sub-states are transformed when only a single sub-state exists'(){
     mock({
       'bar.block.css': `
@@ -260,36 +259,34 @@ export class Test {
       let leSigh = true;
 
       let style = objstr({
-        [bar.pretty]: true,
+        [bar.pretty]: leSigh,
         [bar.pretty.bool()]: true,
-        [bar.pretty.color(dynamic)]: leSigh
+        [bar.pretty.color(dynamic)]: true
       });
 
       <div class={bar.root}><div class={style}></div></div>;
     `;
 
-    return parse(code).then((analysis: MetaAnalysis) => {
-
+    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
-          import objstr from 'obj-str';
-
-          let dynamic = 'yellow';
-          let leSigh = true;
-
-          let style = objstr({
-            'bar__pretty': true,
-            'bar__pretty--bool': true,
-            'bar__pretty--color-yellow': dynamic === 'yellow' && leSigh
-          });
-
-          <div class="bar"><div class={style}></div></div>;`)
+        import { c as c$$ } from "@css-blocks/jsx";
+        import objstr from "obj-str";
+        let dynamic = "yellow";
+        let leSigh = true;
+        <div class="b">
+          <div
+            class={c$$([ 3, 2, 0, leSigh, 1, 0, 0, 1, 1, 0, 1, 1, 5, 1, 0, 1,
+              0, dynamic, "yellow", 1, 2, "c", -2, 2, 0, 1, "d", 2
+            ])}
+          />
+        </div>;
+          `)
         );
       });
     });
   }
 
-  @skip
   @test 'States with dynamic sub-states containing complex expression are transformed to the simplest possible output'(){
     mock({
       'bar.block.css': `
@@ -309,31 +306,32 @@ export class Test {
       import objstr from 'obj-str';
 
       let dynamic = 'yellow';
+      function conditional() {
+        return true;
+      }
 
       let style = objstr({
         [bar.pretty]: true,
-        [bar.pretty.color(\`\${dynamic}Color\`)]: true
+        [bar.pretty.color(\`\${dynamic}Color\`)]: conditional()
       });
 
       <div class={bar.root}><div class={style}></div></div>;
     `;
 
-    return parse(code).then((analysis: MetaAnalysis) => {
+    return parse(code, 'test.jsx').then((analysis: MetaAnalysis) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
-          import objstr from 'obj-str';
-
-          let dynamic = 'yellow';
-
-          const _condition = \`\${dynamic}Color\`;
-          let style = objstr({
-            'bar__pretty': true,
-            'bar__pretty--color-yellowColor': _condition === 'yellowColor',
-            'bar__pretty--color-greenColor': _condition === 'greenColor'
-          });
-
-          <div class="bar"><div class={style}></div></div>;`)
+        import { c as c$$ } from "@css-blocks/jsx";
+        import objstr from "obj-str";
+        let dynamic = "yellow";
+        function conditional() {
+          return true;
+        }
+        <div class="a">
+          <div class={c$$("b", [1,2,4,2,1,conditional() && \`\${dynamic}Color\`,
+                                "yellowColor",1,1,"greenColor",1,0,"d",0,"c",1])} />
+        </div>;`)
         );
       });
     });
