@@ -410,4 +410,34 @@ export class Test {
       });
     });
   }
+
+  @test 'Left over references to the block are an error'(){
+    mock({
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      'foo.block.css': '.root { font-family: sans-serif; } .big { font-size: 28px; }'
+    });
+
+    let code = `
+      import foo from 'foo.block.css'
+      import objstr from 'obj-str';
+
+      function render(){
+        let style = objstr({
+          [foo]: true,
+        });
+        let unusedStyle = objstr({
+          [foo.big]: true,
+        });
+        return ( <div class={style}></div> );
+      }`;
+
+    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        console.log(res.jsx.code);
+        assert.ok(false, 'should not have succeeded.');
+      }, e => {
+        assert.equal(e.message, 'test.tsx: [css-blocks] AnalysisError: Stray reference to block import. Imports are removed during rewrite. (test.tsx:10:11)');
+      });
+    });
+  }
 }

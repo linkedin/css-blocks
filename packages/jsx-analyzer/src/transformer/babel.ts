@@ -18,10 +18,12 @@ import {
   Statement,
   isJSXExpressionContainer,
   JSXAttribute,
+  Node,
 } from 'babel-types';
 
 import isBlockFilename from '../utils/isBlockFilename';
 import { classnamesHelper as generateClassName, HELPER_FN_NAME } from './classNameGenerator';
+import { TemplateAnalysisError } from '../utils/Errors';
 let { parse } = require('path');
 
 export interface CssBlocksVisitor {
@@ -66,17 +68,19 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
         }
       },
       post(state: any) {
+        for (let nodePath of this.statementsToRemove) {
+          nodePath.remove();
+        }
         if (this.dynamicStylesFound) {
           let firstImport = this.importsToRemove.shift()!;
+          detectStrayReferenceToImport(firstImport, this.filename);
           let importDecl = importDeclaration(
             [importSpecifier(identifier(HELPER_FN_NAME.localName), identifier(HELPER_FN_NAME.moduleName))],
             stringLiteral('@css-blocks/jsx'));
           firstImport.replaceWith(importDecl);
         }
         for (let nodePath of this.importsToRemove) {
-          nodePath.remove();
-        }
-        for (let nodePath of this.statementsToRemove) {
+          detectStrayReferenceToImport(nodePath, this.filename);
           nodePath.remove();
         }
       },
@@ -124,7 +128,10 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
             }
             if (newClassAttr) {
               let firstClass = classAttrs.shift()!;
-              firstClass.replaceWith(newClassAttr);
+              //insert and remove instead of replace or else it's hard to
+              //detect if the old node was removed or is a stray reference.
+              firstClass.insertAfter(newClassAttr);
+              firstClass.remove();
             }
             for (let attrPath of classAttrs) {
                 attrPath.remove();
@@ -134,4 +141,30 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
       }
     };
   };
+}
+
+function detectStrayReferenceToImport(
+  importDeclPath: NodePath<ImportDeclaration>,
+  filename: string
+): void {
+  for (let specifier of importDeclPath.node.specifiers) {
+    let binding = importDeclPath.scope.getBinding(specifier.local.name);
+    if (binding) {
+      for (let ref of binding.referencePaths) {
+        if (!isRemoved(ref)) {
+          throw new TemplateAnalysisError('Stray reference to block import. Imports are removed during rewrite.', {filename, ...ref.node.loc.start});
+        }
+      }
+    }
+  }
+}
+
+function isRemoved(path: NodePath<Node>): boolean {
+  if (path.removed) return true;
+  let p = path.parentPath;
+  while (p && p.type !== 'Program') {
+    if (p.removed) return true;
+    p = p.parentPath;
+  }
+  return false;
 }
