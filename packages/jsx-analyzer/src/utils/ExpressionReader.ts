@@ -150,6 +150,9 @@ export class ExpressionReader {
    * localBlocks is a dictionary of local block names to the Block.
    */
   getResult(localBlocks: ObjectDictionary<Block>): BlockExpressionResult {
+    // TODO: Consider whether some parts of this lookup can be extracted to
+    // css-blocks proper so that errors and logic are consistent.
+
     if (!this.isBlockExpression) {
       if (this.err) {
           throw new MalformedBlockPath(this.err, this.loc);
