@@ -4,6 +4,7 @@ import * as babel from 'babel-core';
 import { StyleMapping, PluginOptionsReader, CssBlockOptions, BlockCompiler } from 'css-blocks';
 import * as postcss from 'postcss';
 import * as prettier from 'prettier';
+import { c as c$$ } from '../../src/helpers/classnames';
 
 import JSXAnalysis, { MetaAnalysis } from '../../src/utils/Analysis';
 import Transformer from '../../src';
@@ -118,6 +119,7 @@ export class Test {
           let isDynamic = true;
           <div class={c$$("a", [1, 1, 2, isDynamic, 1, 0, 'b', 0])}></div>;`
         ));
+        assert.deepEqual(c$$('a', [1, 1, 2, true, 1, 0, 'b', 0]), 'a b');
       });
     });
   }
@@ -235,6 +237,9 @@ export class Test {
           <div class="a">
           <div class={c$$("b",[1,2,4,2,1,leSigh&&dynamic,"yellow",1,1,"green",1,0,"d",0,"c",1])}></div></div>;`)
         );
+        let leSigh = true;
+        let dynamic = 'green';
+        assert.deepEqual(c$$('b',[1,2,4,2,1,leSigh&&dynamic,'yellow',1,1,'green',1,0,'d',0,'c',1]), 'b d');
       });
     });
   }
@@ -283,6 +288,10 @@ export class Test {
         </div>;
           `)
         );
+        let leSigh = true;
+        let dynamic = 'yellow';
+        assert.deepEqual(c$$([ 3, 2, 0, leSigh, 1, 0, 0, 1, 1, 0, 1, 1, 5, 1, 0, 1,
+              0, dynamic, 'yellow', 1, 2, 'c', -2, 2, 0, 1, 'd', 2]), 'c d');
       });
     });
   }
@@ -333,6 +342,10 @@ export class Test {
                                 "yellowColor",1,1,"greenColor",1,0,"d",0,"c",1])} />
         </div>;`)
         );
+        function conditional() { return true;}
+        let dynamic = 'yellow';
+        assert.deepEqual(c$$('b', [1,2,4,2,1,conditional() && `${dynamic}Color`,
+                                'yellowColor',1,1,'greenColor',1,0,'d',0,'c',1]), 'b c');
       });
     });
   }

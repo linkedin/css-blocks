@@ -55,7 +55,6 @@ const enum SourceExpression {
   booleanWithDep,
   switch,
   switchWithDep,
-  static,
 }
 
 const builders = {
