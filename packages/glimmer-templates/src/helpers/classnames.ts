@@ -197,14 +197,16 @@ function boolExpr(stack: any[], isSourceSet: IsSourceSet): boolean {
       let nAnds = number(stack);
       result = true;
       while (nAnds-- > 0) {
-        result = result && boolExpr(stack, isSourceSet);
+        let nextResult = boolExpr(stack, isSourceSet);
+        result = result && nextResult;
       }
       return result;
     case BooleanExpr.or:
       let nOrs = number(stack);
       result = false;
       while (nOrs-- > 0) {
-        result = result || boolExpr(stack, isSourceSet);
+        let nextResult = boolExpr(stack, isSourceSet);
+        result = result || nextResult;
       }
       return result;
     default:
