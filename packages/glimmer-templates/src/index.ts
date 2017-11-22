@@ -15,3 +15,4 @@ export {
 export {
   default as GlimmerImporter
 } from "./GlimmerImporter";
+export { cssBlocksHelpers } from './helpers';

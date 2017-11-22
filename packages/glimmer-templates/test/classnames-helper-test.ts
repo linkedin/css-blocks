@@ -28,7 +28,7 @@ import { inspect } from "util";
 
 function run(ast: AST.MustacheStatement, helper?: (name: string, params: any[]) => any) {
   let args = ast.params.map(p => astToLiterals(p, helper));
-  return classnamesHelper.func(args);
+  return classnamesHelper(args);
 }
 
 function astToLiterals(node: AST.Expression, helper?: (name: string, params: any[]) => any): any {

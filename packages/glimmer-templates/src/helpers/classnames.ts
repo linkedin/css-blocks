@@ -105,28 +105,25 @@ type IsSourceSet = (n: number) => boolean;
 type SetSource = (n: number) => void;
 type Abort = () => false;
 
-export default {
-  name: 'helper:/css-blocks/components/classnames',
-  func: function _classnames(stack: any[]): string {
-    let sources: boolean[] = [];
-    let classes: string[] = [];
-    let nSources = number(stack);
-    let nOutputs = number(stack);
-    let canSetSource = true;
-    let abort: Abort = () => canSetSource = false;
-    let isSourceSet: IsSourceSet = (n) => sources[n];
-    let setSource: SetSource = (n) => { if(canSetSource) sources[n] = true; };
-    while (nSources-- > 0) {
-      sourceExpr(stack, isSourceSet, setSource, abort);
-      canSetSource = true;
-    }
-    while (nOutputs-- > 0) {
-      let c = string(stack);
-      if (boolExpr(stack, isSourceSet)) classes.push(c);
-    }
-    return classes.join(" ");
+export default function classnames(stack: any[]): string {
+  let sources: boolean[] = [];
+  let classes: string[] = [];
+  let nSources = number(stack);
+  let nOutputs = number(stack);
+  let canSetSource = true;
+  let abort: Abort = () => canSetSource = false;
+  let isSourceSet: IsSourceSet = (n) => sources[n];
+  let setSource: SetSource = (n) => { if (canSetSource) sources[n] = true; };
+  while (nSources-- > 0) {
+    sourceExpr(stack, isSourceSet, setSource, abort);
+    canSetSource = true;
   }
-};
+  while (nOutputs-- > 0) {
+    let c = string(stack);
+    if (boolExpr(stack, isSourceSet)) classes.push(c);
+  }
+  return classes.join(" ");
+  }
 
 function sourceExpr(stack: any[],
   isSourceSet: IsSourceSet, setSource: SetSource,

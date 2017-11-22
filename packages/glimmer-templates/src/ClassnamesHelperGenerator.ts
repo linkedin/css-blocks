@@ -34,7 +34,8 @@ import {
   isNotExpression,
 } from "@opticss/template-api";
 import {
-  assertNever
+  assertNever,
+  unwrap,
 } from "@opticss/util";
 
 const enum SourceExpression {
@@ -128,7 +129,7 @@ function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedC
   if (isTrueCondition(classes)) {
     expr.push(builders.number(classes.whenTrue.length));
     // TODO: inheritance
-    expr.push(...classes.whenTrue.map(style => builders.number(rewrite.indexOf(style))));
+    expr.push(...classes.whenTrue.map(style => builders.number(unwrap(rewrite.indexOf(style)))));
   } else {
     expr.push(builders.number(0));
   }
@@ -136,7 +137,7 @@ function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedC
   if (isFalseCondition(classes)) {
     expr.push(builders.number(classes.whenFalse.length));
     // TODO: inheritance
-    expr.push(...classes.whenFalse.map(style => builders.number(rewrite.indexOf(style))));
+    expr.push(...classes.whenFalse.map(style => builders.number(unwrap(rewrite.indexOf(style)))));
   } else {
     expr.push(builders.number(0));
   }
@@ -151,7 +152,7 @@ function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedC
 function constructDependency(stateExpr: Dependency, rewrite: IndexedClassRewrite<BlockObject>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   expr.push(builders.number(1));
-  expr.push(builders.number(rewrite.indexOf(stateExpr.container)));
+  expr.push(builders.number(unwrap(rewrite.indexOf(stateExpr.container))));
   return expr;
 }
 
@@ -165,7 +166,7 @@ function constructStateReferences(stateExpr: HasState, rewrite: IndexedClassRewr
   let expr = new Array<AST.Expression>();
   // TODO: inheritance
   expr.push(builders.number(1));
-  expr.push(builders.number(rewrite.indexOf(stateExpr.state)));
+  expr.push(builders.number(unwrap(rewrite.indexOf(stateExpr.state))));
   return expr;
 }
 /*
@@ -198,7 +199,7 @@ function constructSwitch(stateExpr: Switch<StringAST> & HasGroup, rewrite: Index
     let obj = stateExpr.group[value];
     expr.push(builders.string(value));
     expr.push(builders.number(1));
-    expr.push(builders.number(rewrite.indexOf(obj)));
+    expr.push(builders.number(unwrap(rewrite.indexOf(obj))));
   }
   return expr;
 }

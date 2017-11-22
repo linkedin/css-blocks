@@ -1,5 +1,5 @@
 <div>
-  <h1 class="h">Hello, <span class="{{style-if isWorld 'world'}} h.emphasis t.underline" state:thick={{isThick}} state:h.style={{textStyle}}>World</span>!</h1>
+  <h1 class="h">Hello, <span class="{{style-if isWorld 'world'}} h.emphasis t.underline" state:thick={{eq isThick 1}} state:h.style={{textStyle}}>World</span>!</h1>
   <div class={{style-if isWorld 'world' 'h.emphasis'}}>World</div>
   <div class={{style-unless isWorld 'world' 'h.emphasis'}}>World</div>
   <div class={{style-unless isWorld 'world'}}>World</div>
