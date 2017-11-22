@@ -47,6 +47,7 @@ export class ElementAnalyzer {
   analyzeForRewrite(node: AST.ElementNode, atRootElement: boolean): TemplateElement {
     let element = new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), node.tag);
     this._analyze(node, atRootElement, {element, storeConditionals: true});
+    element.seal();
     return element;
   }
 

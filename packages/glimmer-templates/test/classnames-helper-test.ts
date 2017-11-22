@@ -68,6 +68,7 @@ describe('Classnames Helper', () => {
       whenTrue: [b, c2],
       whenFalse: [c1]
     });
+    element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       "{{/css-blocks/components/classnames 1 0 0 true 2 0 2 1 1}}"
@@ -87,6 +88,7 @@ describe('Classnames Helper', () => {
       whenTrue: [b],
     });
     element.addStaticState(b, s1);
+    element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       "{{/css-blocks/components/classnames 2 0 0 true 1 0 0 1 1 0 1 3}}"
@@ -106,6 +108,7 @@ describe('Classnames Helper', () => {
       whenTrue: [b],
     });
     element.addDynamicState(b, s1, builders.boolean(false));
+    element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       "{{/css-blocks/components/classnames 2 0 0 true 1 0 0 3 1 0 false 1 3}}"
@@ -122,6 +125,7 @@ describe('Classnames Helper', () => {
     let rewrite = new IndexedClassMapping(inputs, [], { });
     let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
     element.addDynamicGroup(b, {red, orange, blue}, builders.mustache(builders.string("blue")));
+    element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       '{{/css-blocks/components/classnames 1 0 4 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3}}'
@@ -142,6 +146,7 @@ describe('Classnames Helper', () => {
       whenTrue: [ b ]
     });
     element.addDynamicGroup(b, {red, orange, blue}, builders.mustache(builders.path("/app/foo/helperz"), [builders.string("blue")]));
+    element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       '{{/css-blocks/components/classnames 2 0 0 true 1 0 0 5 1 0 3 1 (/app/foo/helperz "blue") "red" 1 1 "orange" 1 2 "blue" 1 3}}'
@@ -163,6 +168,7 @@ describe('Classnames Helper', () => {
       whenTrue: [b, c2],
       whenFalse: [c1]
     });
+    element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       '{{/css-blocks/components/classnames 1 1 0 true 2 0 2 1 1 "a" -3 2 0 2}}'
@@ -184,6 +190,7 @@ describe('Classnames Helper', () => {
       whenTrue: [b, c2],
       whenFalse: [c1]
     });
+    element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       '{{/css-blocks/components/classnames 1 1 0 true 2 0 2 1 1 "a" -3 2 0 2}}'
@@ -205,6 +212,7 @@ describe('Classnames Helper', () => {
       whenTrue: [b, c2],
       whenFalse: [c1]
     });
+    element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       '{{/css-blocks/components/classnames 1 1 0 true 2 0 2 1 1 "a" -3 2 0 -1 2}}'
@@ -226,6 +234,7 @@ describe('Classnames Helper', () => {
       whenTrue: [b, c2],
       whenFalse: [c1]
     });
+    element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
       '{{/css-blocks/components/classnames 1 1 0 true 2 0 2 1 1 "a" -2 2 0 -1 2}}'
@@ -250,6 +259,7 @@ describe('Classnames Helper', () => {
       whenTrue: [b, c2],
       whenFalse: [c1]
     });
+    element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
       '{{/css-blocks/components/classnames 1 4 0 true 2 0 2 1 1 "a" 0 "b" 1 "c" 2 "d" 3}}');
@@ -274,6 +284,7 @@ describe('Classnames Helper', () => {
       whenTrue: [b, c2],
       whenFalse: [c1]
     });
+    element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
       '{{/css-blocks/components/classnames 1 4 0 false 2 0 2 1 1 "a" 0 "b" 1 "c" 2 "d" 3}}');
@@ -298,6 +309,7 @@ describe('Classnames Helper', () => {
       whenTrue: [ b ]
     });
     element.addDynamicGroup(b, {red, orange, blue}, builders.mustache(builders.string("blue")));
+    element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
       '{{/css-blocks/components/classnames 2 4 0 true 1 0 0 5 1 0 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3}}'
@@ -323,6 +335,7 @@ describe('Classnames Helper', () => {
       whenTrue: [ b ]
     });
     element.addDynamicGroup(b, {red, orange, blue}, builders.mustache(builders.string("blue")));
+    element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
       '{{/css-blocks/components/classnames 2 4 0 false 1 0 0 5 1 0 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3}}'
@@ -348,6 +361,7 @@ describe('Classnames Helper', () => {
       whenTrue: [ b ]
     });
     element.addDynamicGroup(b, {red, orange, blue}, builders.mustache(builders.undefined()));
+    element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
       '{{/css-blocks/components/classnames 2 4 0 true 1 0 0 5 1 0 3 1 undefined "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3}}'
@@ -373,10 +387,12 @@ describe('Classnames Helper', () => {
       whenTrue: [ b ]
     });
     element.addDynamicGroup(b, {red, orange, blue}, builders.mustache(builders.undefined()), true);
+    element.seal();
     expect(() => {
       run(helperGenerator(rewrite, element));
     }).throws("string expected");
   });
+
   it('handles complex boolean expressions', () => {
     let b = new Block("test", "test");
     let c1 = b.ensureClass("class-1");
@@ -404,6 +420,7 @@ describe('Classnames Helper', () => {
       whenTrue: [ c3 ]
     });
     element.addDynamicGroup(b, {red, orange, blue}, builders.mustache(builders.string("blue")));
+    element.seal();
     let inputs = [b, red, orange, blue, c1, c2, c3];
     let rewrite = new IndexedClassMapping(inputs, [], {
       a: {and: [ 0 ]},
