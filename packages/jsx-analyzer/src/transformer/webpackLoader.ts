@@ -32,7 +32,7 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
     options = loaderUtils.getOptions(this);
   }
 
-  let rewriter = options.rewriter;
+  let rewriter = options.getRewriter();
   rewriter.blocks = (rewriter.blocks || {});
 
   this.dependency(path);
