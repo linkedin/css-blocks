@@ -99,6 +99,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
 
           let elementAnalysis = this.elementAnalyzer.analyze(path);
           if (elementAnalysis) {
+            elementAnalysis.seal();
             let classMapping = this.mapping.simpleRewriteMapping(elementAnalysis);
             let attributeValue: JSXAttribute['value'] | undefined = undefined;
             let newClassAttr: JSXAttribute | undefined = undefined;
