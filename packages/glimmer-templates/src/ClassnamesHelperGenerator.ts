@@ -60,6 +60,9 @@ const enum BooleanExpr {
 }
 export type Builders = typeof builders;
 
+import * as debugGenerator from 'debug';
+const debug = debugGenerator("css-blocks:glimmer");
+
 export function classnamesHelper(rewrite: IndexedClassRewrite<BlockObject>, element: TemplateElement): AST.MustacheStatement {
   return builders.mustache(
     builders.path('/css-blocks/components/classnames'),

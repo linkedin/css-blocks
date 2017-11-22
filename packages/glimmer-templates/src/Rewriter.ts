@@ -50,6 +50,7 @@ export class Rewriter implements NodeVisitor {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
     let element = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
+    if (DEBUG.enabled) this.debug(element.forOptimizer(this.cssBlocksOpts)[0].toString());
     let rewrite = this.styleMapping.simpleRewriteMapping(element);
 
     // Remove all the source attributes for styles.
