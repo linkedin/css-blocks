@@ -97,7 +97,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
         JSXOpeningElement(path: NodePath<JSXOpeningElement>, state: any): void {
           if (!this.shouldProcess) return;
 
-          let elementAnalysis = this.elementAnalyzer.analyze(this.filename, path);
+          let elementAnalysis = this.elementAnalyzer.analyze(path);
           if (elementAnalysis) {
             let classMapping = this.mapping.simpleRewriteMapping(elementAnalysis);
             let attributeValue: JSXAttribute['value'] | undefined = undefined;

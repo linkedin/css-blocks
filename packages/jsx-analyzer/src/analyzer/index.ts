@@ -20,7 +20,7 @@ export default function visitors(analysis: Analysis): object {
      * @param path The JSXOpeningElement Babylon path we are processing.
      */
     JSXOpeningElement(path: NodePath<JSXOpeningElement>): void {
-      let element = elementAnalyzer.analyze(analysis.template.identifier, path);
+      let element = elementAnalyzer.analyze(path);
       if (element) analysis.addElement(element);
     }
   };

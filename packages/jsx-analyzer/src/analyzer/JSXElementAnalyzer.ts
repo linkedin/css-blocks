@@ -1,5 +1,9 @@
 import { Block } from 'css-blocks';
 import { ObjectDictionary, } from '@opticss/util';
+import {
+  SourceLocation as TemplateSourceLocation,
+  SourcePosition as TemplateSourcePosition
+} from '@opticss/template-api';
 import { NodePath, Binding } from 'babel-traverse';
 import {
   CallExpression,
@@ -14,9 +18,10 @@ import {
   isVariableDeclarator,
   JSXAttribute,
   Identifier,
+  SourceLocation,
 } from 'babel-types';
 
-import { MalformedBlockPath, TemplateAnalysisError, ErrorLocation } from '../utils/Errors';
+import { MalformedBlockPath, TemplateAnalysisError } from '../utils/Errors';
 import { isConsoleLogStatement } from '../utils/isConsoleLogStatement';
 
 import { JSXElementAnalysis, Flags, newJSXElementAnalysis } from './types';
@@ -54,7 +59,7 @@ export class JSXElementAnalyzer {
     return found;
   }
 
-  analyze(filename: string, path: NodePath<JSXOpeningElement>): JSXElementAnalysis | undefined {
+  analyze(path: NodePath<JSXOpeningElement>): JSXElementAnalysis | undefined {
     let el = path.node;
 
     // We don't care about elements with no attributes;
@@ -62,13 +67,11 @@ export class JSXElementAnalyzer {
       return;
     }
 
-    let loc = { filename, ...path.node.loc };
-
     let classAttrs = this.classAttributePaths(path);
     // If/When we add state attributes, we should throw an error if those are set before exiting.
     if (classAttrs.length === 0) return;
 
-    let element = newJSXElementAnalysis(loc, htmlTagName(el));
+    let element = newJSXElementAnalysis(this.location(path), htmlTagName(el));
 
     for (let classAttr of classAttrs) {
       this.analyzeClassAttribute(classAttr, element);
@@ -83,9 +86,23 @@ export class JSXElementAnalyzer {
     return element;
   }
 
-  private nodeLoc(node: Node | NodePath<Node>): ErrorLocation {
-    let n = isNodePath(node) ? node.node : node;
-    return { filename: this.filename, ...n.loc.start };
+  private location(loc: SourceLocation | Node | NodePath<Node>): TemplateSourceLocation {
+    if (isNodePath(loc)) {
+      loc = loc.node.loc;
+    } else if (!isLocation(loc)) {
+      loc = loc.loc;
+    }
+    let location: TemplateSourceLocation = {
+      start: {...loc.start},
+      end: {...loc.end},
+    };
+    location.start.filename = this.filename;
+    location.end!.filename = this.filename;
+    return location;
+  }
+
+  private nodeLoc(node: Node | NodePath<Node>): TemplateSourcePosition {
+    return this.location(node).start;
   }
 
   styleVariableBinding(path: NodePath<JSXAttribute>): Binding | undefined {
@@ -232,6 +249,13 @@ function htmlTagName(el: JSXOpeningElement): string | undefined {
   return;
 }
 
+function isLocation(n: object): n is SourceLocation {
+  if ((<SourceLocation>n).start && (<SourceLocation>n).end && typeof (<SourceLocation>n).start.line === 'number') {
+    return true;
+  } else {
+    return false;
+  }
+}
 function isNodePath(n: object): n is NodePath {
   if ((<NodePath>n).node) {
     return true;
