@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { suite, test, only, skip } from "mocha-typescript";
+import { suite, test, skip } from "mocha-typescript";
 import * as postcss from "postcss";
 import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimizedAnalysis, POSITION_UNKNOWN } from "@opticss/template-api";
 

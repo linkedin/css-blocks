@@ -190,8 +190,6 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     if (endPosition) {
       element.sourceLocation.end = endPosition;
     }
-    this.addFilename(element.sourceLocation.start);
-    this.addFilename(element.sourceLocation.end);
     this.addElement(element);
     this.currentElement = undefined;
   }
@@ -208,6 +206,11 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     }
     if (this.elements.get(element.id)) {
       throw new Error(`Internal Error: an element with id = ${element.id} already exists in this analysis`);
+    }
+    this.addFilename(element.sourceLocation.start);
+    this.addFilename(element.sourceLocation.end);
+    if (!element.sealed) {
+      element.seal();
     }
     this.validator.validate(this, element);
     this.elements.set(element.id, element);

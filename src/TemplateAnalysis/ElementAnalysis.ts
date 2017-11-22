@@ -113,6 +113,13 @@ export function isFalseCondition(o: object): o is FalseCondition<StateParent | n
   return !!(<FalseCondition>o).whenFalse;
 }
 
+interface StaticClass {
+  klass: StateParent;
+}
+function isStaticClass(o: object): o is StaticClass {
+  return !!((<StaticClass>o).klass);
+}
+
 /** A state that is conditionally set */
 export type ConditionalState<BooleanExpression> = Conditional<BooleanExpression> & HasState;
 /** A state that is only set when its dynamic class is set */
@@ -156,6 +163,7 @@ export interface SerializedElementAnalysis {
   dynamicClasses: Array<SerializedDynamicContainer>;
   dynamicStates: Array<SerializedDynamicStates>;
 }
+
 /**
  * This class is used to track the styles and dynamic expressions on an element
  * and produce a runtime class expression in conjunction with a style mapping.
@@ -195,6 +203,12 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   /** states set dynamically or depending on a dynamic class */
   dynamicStates: Array<DynamicStates<BooleanExpression, StringExpression>>;
 
+  private addedStyles: Array<DependentState
+                             | ConditionalDependentState<BooleanExpression>
+                             | ConditionalDependentStateGroup<StringExpression>
+                             | StaticClass
+                             | DynamicClasses<TernaryExpression>>;
+
   /** classes declared explicitly and found in at least one dynamic class expression. */
   private dynamicClassExpressions: Map<StateParent, DynamicClasses<TernaryExpression>>;
 
@@ -207,9 +221,12 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    */
   private allStaticStyles: Set<BlockObject>;
 
-  /** whether all blocks and classes have been added and
-   * the styles are in states mode now. */
-  private inStateMode: boolean;
+  private _sealed: boolean;
+
+  /** whether all styles have been added and the styles can be analyzed now. */
+  get sealed(): boolean {
+    return this._sealed;
+  }
 
   constructor(location: SourceLocation, tagName?: string, id?: string) {
     this.id = id;
@@ -219,38 +236,43 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     this.dynamicClasses = new Array();
     this.dynamicStates = new Array();
     this.dynamicClassExpressions = new Map();
-    this.allClasses = new MultiMap<Block, StateParent>();
+    this.allClasses = new MultiMap<Block, StateParent>(false);
     this.allStaticStyles = new Set();
-    this.inStateMode = false;
+    this.addedStyles = new Array();
+    this._sealed = false;
   }
 
   /**
    * Get a list of all possible block objects for the given block
    * on this element that can be used a parent for a state.
    *
-   * Calling this method puts the element into "state mode".
+   * This can be called before or after being sealed.
    */
   classesForBlock(block: Block): Array<StateParent> {
-    if (!this.inStateMode) this.prepareForStates();
     return this.allClasses.get(block);
   }
 
   /**
    * Checks if the given class or block is set on this element
    * of if it is implied by one of the other styles on this element.
+   *
+   * This can be called before or after being sealed.
    */
-  hasClass(klass: StateParent) {
+  hasClass(klass: StateParent): boolean {
     return this.allClasses.get(klass.block).indexOf(klass) >= 0;
   }
 
   /**
    * iterate over all static and dynamic States explicitly set on this element
+   *
+   * the analysis must be sealed to call this method.
    * @param dynamic
    *   * undefined - return all states,
    *   * true - return only dynamic states
    *   * false - return only static states
    */
   *statesFound(dynamic?: boolean) {
+    this.assertSealed();
     let found = new Set<State>();
     if (returnStatic(dynamic)) {
       for (let s of this.static) {
@@ -279,12 +301,15 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
   /**
    * iterate over all static and dynamic blocks and classes explicitly set on this element.
+   *
+   * the analysis must be sealed to call this method.
    * @param dynamic
    *   * undefined - return all classes,
    *   * true - return only dynamic classes
    *   * false - return only static classes
    */
   *classesFound(dynamic?: boolean) {
+    this.assertSealed();
     let found = new Set<StateParent>();
     if (returnStatic(dynamic)) {
       for (let s of this.static) {
@@ -313,6 +338,45 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       }
     }
   }
+  /**
+   * This method indicates that all styles have been added
+   * and can be analyzed and validated.
+   */
+  seal() {
+    this.assertSealed(false);
+    let styles: [
+      Array<StaticClass | DynamicClasses<TernaryExpression>>,
+      Array<DependentState | ConditionalDependentState<BooleanExpression> | ConditionalDependentStateGroup<StringExpression>>
+    ] = [[], []];
+    let [classStyles, stateStyles] = this.addedStyles.reduce((res, style) => {
+      if (isStaticClass(style) || isTrueCondition(style) || isFalseCondition(style)) {
+        res[0].push(style);
+      } else {
+        res[1].push(style);
+      }
+      return res;
+    }, styles);
+
+    for (let classStyle of classStyles) {
+      if (isStaticClass(classStyle)) {
+        this._addStaticClass(classStyle);
+      } else {
+        this._addDynamicClasses(classStyle);
+      }
+    }
+    this.prepareForStates();
+    for (let stateStyle of stateStyles) {
+      if (isStateGroup(stateStyle)) {
+        this._addDynamicGroup(stateStyle);
+      } else if (isConditional(stateStyle)) {
+        this._addDynamicState(stateStyle);
+      } else {
+        this._addStaticState(stateStyle);
+      }
+    }
+
+    this._sealed = true;
+  }
 
   /**
    * This is used to add any static state even if it is part of a group.
@@ -320,7 +384,11 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * class is dynamic.
    */
   addStaticState(container: Block | BlockClass, state: State) {
-    if (!this.inStateMode) this.prepareForStates();
+    this.assertSealed(false);
+    this.addedStyles.push({container, state});
+  }
+  private _addStaticState(style: DependentState) {
+    let {container, state} = style;
     this.assertValidContainer(container, state);
     if (this.dynamicClassExpressions.has(container)) {
       this.dynamicStates.push({state, container});
@@ -329,6 +397,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       unionInto(this.allStaticStyles, state.resolveStyles());
     }
   }
+
   private assertValidContainer(container: Block | BlockClass, state: State) {
     if (container !== state.parent) {
       if (!container.resolveStyles().has(state.parent!)) {
@@ -344,7 +413,11 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * @param condition The AST node(s) representing this boolean expression.
    */
   addDynamicState(container: Block | BlockClass, state: State, condition: BooleanExpression) {
-    if (!this.inStateMode) this.prepareForStates();
+    this.assertSealed(false);
+    this.addedStyles.push({state, container, condition});
+  }
+  private _addDynamicState(style: ConditionalDependentState<BooleanExpression>) {
+    let {container, state, condition} = style;
     this.assertValidContainer(container, state);
     if (this.dynamicClassExpressions.has(container)) {
       this.dynamicStates.push({ state, container, condition });
@@ -365,7 +438,11 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    *   a runtime error.
    */
   addDynamicGroup(container: StateParent, group: ObjectDictionary<State>, stringExpression: StringExpression, disallowFalsy = false) {
-    if (!this.inStateMode) this.prepareForStates();
+    this.assertSealed(false);
+    this.addedStyles.push({ container, group, stringExpression, disallowFalsy });
+  }
+  private _addDynamicGroup(style: ConditionalDependentStateGroup<StringExpression>) {
+    let { container, group, stringExpression, disallowFalsy } = style;
     if (this.dynamicClassExpressions.has(container)) {
       this.dynamicStates.push({ group, container, stringExpression, disallowFalsy });
     } else {
@@ -377,10 +454,43 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * Adds a state parent that is always set on this element.
    */
   addStaticClass(klass: StateParent) {
-    if (this.inStateMode) {
-      throw new Error("no classes can be added after a state.");
-    }
+    this.assertSealed(false);
+    this.addedStyles.push({klass});
+    // We have to record this information as we add classes so that the caller
+    // can use it to find classes for states that it encounters.
+    this.mapBlocksForClass(klass);
+  }
+  private _addStaticClass(style: StaticClass) {
+    let {klass} = style;
     this.static.add(klass);
+  }
+
+  /**
+   * this maps the class and all the classes that the explicit class implies
+   * to all the blocks those classes belong to via inheritance.
+   *
+   * These classes become valid containers for states even if they are not
+   * explicitly set on the element.
+   */
+  private mapBlocksForClass(klass: StateParent) {
+    let explicitBlock = klass.block;
+    let blockHierarchy = explicitBlock.resolveInheritance() as Set<Block>;
+    blockHierarchy.add(explicitBlock);
+    let resolvedStyles = klass.resolveStyles();
+    for (let style of resolvedStyles) {
+      if (!isBlock(style) && !isBlockClass(style)) continue;
+      let implicitBlock = style.block;
+      let hierarchy: Set<Block>;
+      if (implicitBlock.isAncestorOf(explicitBlock) || implicitBlock === explicitBlock) {
+        hierarchy = blockHierarchy;
+      } else {
+        hierarchy = implicitBlock.resolveInheritance() as Set<Block>;
+        hierarchy.add(implicitBlock);
+      }
+      for (let block of hierarchy) {
+        this.allClasses.set(block, style);
+      }
+    }
   }
 
   /**
@@ -389,18 +499,37 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    *
    * Nested ternaries are not supported at this time.
    */
-  addDynamicClasses(classes: DynamicClasses<TernaryExpression>) {
-    if (this.inStateMode) {
-      throw new Error("no classes can be added after a state.");
+  addDynamicClasses(dynClasses: DynamicClasses<TernaryExpression>) {
+    this.assertSealed(false);
+    this.addedStyles.push(dynClasses);
+    // We have to record this information as we add classes so that the caller
+    // can use it to find classes for states that it encounters.
+    if (isTrueCondition(dynClasses)) {
+      for (let klass of dynClasses.whenTrue) {
+        this.mapBlocksForClass(klass);
+      }
     }
-    this.dynamicClasses.push(classes);
+    if (isFalseCondition(dynClasses)) {
+      for (let klass of dynClasses.whenFalse) {
+        this.mapBlocksForClass(klass);
+      }
+    }
+  }
+  private _addDynamicClasses(dynClasses: DynamicClasses<TernaryExpression>) {
+    this.dynamicClasses.push(dynClasses);
+  }
+
+  assertSealed(isSealed = true) {
+    if (this._sealed === isSealed) return;
+    throw new Error(`Internal Error: The analysis is ${ this._sealed ? '' : 'not yet '}sealed.`);
   }
 
   countAllStaticStyles(): number {
+    this.assertSealed();
     return this.allStaticStyles.size;
   }
   *getAllStaticStyles() {
-    this.prepareForStates();
+    this.assertSealed();
     let s;
     for (s of this.allStaticStyles) {
       yield s;
@@ -416,7 +545,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    *   it in the template analysis serialization.
    */
   serialize(styleIndexes: Map<BlockObject, number>): SerializedElementAnalysis {
-    this.prepareForStates();
+    this.assertSealed();
     let staticStyles = new Array<number>();
     for (let style of this.static) {
       staticStyles.push(styleIndexes.get(style)!);
@@ -466,7 +595,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * maps can be merged safely.
    */
   forOptimizer(options: CssBlocksOptionsReader): [Element, Map<string, BlockObject>] {
-    this.prepareForStates();
+    this.assertSealed();
     let tagValue = this.tagName ? Value.constant(this.tagName) : Value.unknown();
     let tagName = new Tagname(tagValue);
     let classes = new Array<AttributeValueSetItem>();
@@ -533,15 +662,10 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * hoisted into dynamic expressions because of a class dependency.
    */
   private prepareForStates() {
-    this.inStateMode = true;
     let classesToKeep = new Set<DynamicClasses<TernaryExpression>>();
     for (let c of this.static) {
       for (let implied of c.resolveStyles()) {
         this.allStaticStyles.add(implied);
-        if (isBlock(implied) || isBlockClass(implied)) {
-          // TODO: remove this cast
-          this.allClasses.set(implied.block, <StateParent>implied);
-        }
       }
     }
     for (let klass of this.dynamicClasses) {
@@ -578,8 +702,6 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
         for (let implied of c.resolveStyles()) {
           if (isBlock(implied) || isBlockClass(implied)) {
             this.dynamicClassExpressions.set(<StateParent>implied, classes);
-            // TODO: remove this cast
-            this.allClasses.set(implied.block, <StateParent>implied);
           }
         }
       }

@@ -54,17 +54,27 @@ export class TemplateAnalysisTests {
       element.addStaticState(stateContainer.parent, state);
     }
   }
-  private useBlockStyles(analysis: Analysis, block: Block, blockName: string) {
+  private useBlockStyles(analysis: Analysis, block: Block, blockName: string,
+    useStatesCallback?: (container: Block | BlockClass, element: ElementAnalysis<any, any, any>) => void
+  ) {
     analysis.blocks[blockName] = block;
     let element = analysis.startElement(POSITION_UNKNOWN);
     element.addStaticClass(block);
-    this.useStates(element, block.states);
+    if (useStatesCallback) {
+      useStatesCallback(block, element);
+    } else {
+      this.useStates(element, block.states);
+    }
     analysis.endElement(element);
 
     for (let c of block.classes) {
       let element = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(c);
-      this.useStates(element, c.states);
+      if (useStatesCallback) {
+        useStatesCallback(c, element);
+      } else {
+        this.useStates(element, c.states);
+      }
       analysis.endElement(element);
     }
   }
@@ -80,9 +90,13 @@ export class TemplateAnalysisTests {
       .asdf[state|larger] { font-size: 26px; color: red; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      this.useBlockStyles(analysis, block, "");
-      let el = analysis.getElement(1);
-      el.addDynamicState(block.find(".asdf") as BlockClass, block.find(".asdf[state|larger]") as State, true);
+      this.useBlockStyles(analysis, block, "", (container, el) => {
+        if (container.asSource() === ".asdf") {
+          el.addDynamicState(container, block.find(".asdf[state|larger]") as State, true);
+        } else {
+          this.useStates(el, container.states);
+        }
+      });
       let optimizerAnalysis = analysis.forOptimizer(reader);
       let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
       let compiler = new BlockCompiler(postcss, reader);

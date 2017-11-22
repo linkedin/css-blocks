@@ -111,6 +111,7 @@ export class BlockFactory implements IBlockFactory {
   }
   _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
     let importPromise = this.importer.import(identifier, this.options);
+
     let blockPromise = importPromise.then(file => {
       let realFilename = this.importer.filesystemPath(file.identifier, this.options);
       if (realFilename) {
