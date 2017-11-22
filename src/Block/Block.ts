@@ -36,11 +36,14 @@ export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
  * properties and abstract methods that extenders must implement.
  */
 export abstract class BlockObject {
+  public readonly propertyConcerns: PropertyContainer;
+
   protected _name: string;
   protected _container: BlockParent;
   protected _compiledAttribute: Attribute;
 
-  public readonly propertyConcerns: PropertyContainer;
+  /** cache of resolveStyles() */
+  private _resolvedStyles: Set<BlockObject> | undefined;
 
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
@@ -141,24 +144,49 @@ export abstract class BlockObject {
    * resolved value's size is always 1 or greater.
    */
   public resolveStyles(): Set<BlockObject> {
-    let styles = this.resolveInheritance();
-    styles.add(this);
-    return styles;
+    if (this._resolvedStyles) {
+      return new Set(this._resolvedStyles);
+    }
+
+    let inheritedStyles = this.resolveInheritance();
+    this._resolvedStyles = new Set(inheritedStyles);
+    this._resolvedStyles.add(this);
+
+    for (let s of inheritedStyles) {
+      let implied = s.impliedStyles();
+      if (!implied) continue;
+      for (let i of implied) {
+        unionInto(this._resolvedStyles, i.resolveStyles());
+      }
+    }
+
+    return new Set(this._resolvedStyles);
+  }
+
+  /**
+   * Returns the styles that are directly implied by this style.
+   * Does not include the styles that this style inherits implied.
+   * Does not include the styles that this style implies inherits.
+   *
+   * returns undefined if no styles are implied.
+   */
+  impliedStyles(): Set<BlockObject> | undefined {
+    return undefined;
   }
 
   /**
    * Compute all block objects that are implied by this block object through
    * inheritance. Does not include this object or the styles it implies through
-   * other relationships to this object but it does include all resolved styles
-   * for inherited objects.
+   * other relationships to this object.
    *
    * If nothing is inherited, this returns an empty set.
    */
   resolveInheritance(): Set<BlockObject> {
     let inherited = new Set<BlockObject>();
-    inherited.add(this);
-    if (this.base) {
-      unionInto(inherited, this.base.resolveStyles());
+    let base = this.base;
+    while (base) {
+      inherited.add(base);
+      base = base.base;
     }
     return inherited;
   }
