@@ -27,9 +27,9 @@ describe('Stylesheet analysis', function() {
       });
       assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" ,".root", "[state|is-loading]"]);
       let expected: ElementsAnalysis = {
-        a: { tagName: 'div', staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1 }, end: { line: 1 } } },
-        b: { tagName: 'page-banner', staticStyles: [ ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2 }, end: { line: 2, column: 2 } } },
-        c: { tagName: 'text-editor', staticStyles: [ 0, 1 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 3, column: 2 }, end: { line: 3, column: 2 } }}
+        a: { tagName: 'div', staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
+        b: { tagName: 'page-banner', staticStyles: [ ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" } } },
+        c: { tagName: 'text-editor', staticStyles: [ 0, 1 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" } }}
       };
       assert.deepEqual(serializedAnalysis.elements, expected);
 
@@ -57,9 +57,9 @@ describe('Stylesheet analysis', function() {
       });
       assert.deepEqual(analysis.stylesFound, [".root", ".world", ".world[state|thick]", "h.emphasis", "h.emphasis[state|extra]", "h.root"]);
       assert.deepEqual(analysis.elements, {
-        a: { tagName: 'div', staticStyles: [ 0 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1 }, end: { line: 1 } } },
-        b: { tagName: 'h1', staticStyles: [ 5 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2 }, end: { line: 2, column: 2 } } },
-        c: { tagName: 'span', staticStyles: [ 1, 2, 3, 4 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 23 }, end: { line: 2, column: 23 } } }
+        a: { tagName: 'div', staticStyles: [ 0 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        b: { tagName: 'h1', staticStyles: [ 5 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        c: { tagName: 'span', staticStyles: [ 1, 2, 3, 4 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" } } }
       });
     }).catch((error) => {
       console.error(error);
@@ -92,14 +92,14 @@ describe('Stylesheet analysis', function() {
           staticStyles: [ 0 ],
           dynamicClasses: [],
           dynamicStates: [],
-          sourceLocation: { start: { line: 1 }, end: { line: 1 } }
+          sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" } }
         },
         b: {
           tagName: 'h1',
           staticStyles: [ 6 ],
           dynamicClasses: [],
           dynamicStates: [],
-          sourceLocation: { start: { line: 2, column: 2 }, end: { line: 2, column: 2 } }
+          sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" } }
         },
         c: {
           tagName: 'span',
@@ -109,7 +109,7 @@ describe('Stylesheet analysis', function() {
             { condition: true, state: 2 },
             { stringExpression: true, group: { bold: 4, italic: 5 } },
           ],
-          sourceLocation: { start: { line: 2, column: 23 }, end: { line: 2, column: 23 } }
+          sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" } }
         },
 
       });
@@ -146,14 +146,14 @@ describe('Stylesheet analysis', function() {
           staticStyles: [ 0 ],
           dynamicClasses: [],
           dynamicStates: [],
-          sourceLocation: { start: { line: 1 }, end: { line: 1 } }
+          sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" } }
         },
         b: {
           tagName: 'h1',
           staticStyles: [ 6 ],
           dynamicClasses: [],
           dynamicStates: [],
-          sourceLocation: { start: { line: 2, column: 2 }, end: { line: 2, column: 2 } }
+          sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } }
         },
         c: {
           tagName: 'span',
@@ -163,28 +163,28 @@ describe('Stylesheet analysis', function() {
             { condition: true, state: 2, container: 1 },
             { stringExpression: true, group: { bold: 4, italic: 5 } },
           ],
-          sourceLocation: { start: { line: 2, column: 23 }, end: { line: 2, column: 23 } }
+          sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" } }
         },
         d: {
           tagName: 'div',
           staticStyles: [],
           dynamicClasses: [ { condition: true, whenTrue: [ 1 ], whenFalse: [ 3 ]} ],
           dynamicStates: [],
-          sourceLocation: { start: { line: 3, column: 2 }, end: { line: 3, column: 2 } }
+          sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } }
         },
         e: {
           tagName: 'div',
           staticStyles: [],
           dynamicClasses: [ { condition: true, whenTrue: [ 3 ], whenFalse: [ 1 ]} ],
           dynamicStates: [],
-          sourceLocation: { start: { line: 4, column: 2 }, end: { line: 4, column: 2 } }
+          sourceLocation: { start: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } }
         },
         f: {
           tagName: 'div',
           staticStyles: [],
           dynamicClasses: [ { condition: true, whenFalse: [ 1 ]} ],
           dynamicStates: [],
-          sourceLocation: { start: { line: 5, column: 2 }, end: { line: 5, column: 2 } }
+          sourceLocation: { start: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } }
         }
       });
     }).catch((error) => {
