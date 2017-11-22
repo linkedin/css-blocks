@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
+import { suite, test, skip } from 'mocha-typescript';
 import * as babel from 'babel-core';
 import { StyleMapping, PluginOptionsReader, CssBlockOptions, BlockCompiler } from 'css-blocks';
 import * as postcss from 'postcss';
@@ -411,6 +411,7 @@ export class Test {
     });
   }
 
+  @skip
   @test 'Left over references to the block are an error'(){
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }',
@@ -436,7 +437,7 @@ export class Test {
         console.log(res.jsx.code);
         assert.ok(false, 'should not have succeeded.');
       }, e => {
-        assert.equal(e.message, 'test.tsx: [css-blocks] AnalysisError: Stray reference to block import. Imports are removed during rewrite. (test.tsx:10:11)');
+        assert.equal(e.message, 'test.tsx: [css-blocks] AnalysisError: Stray reference to block import (foo). Imports are removed during rewrite. (test.tsx:10:11)');
       });
     });
   }

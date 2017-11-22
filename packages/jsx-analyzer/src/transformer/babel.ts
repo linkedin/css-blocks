@@ -23,7 +23,7 @@ import {
 
 import isBlockFilename from '../utils/isBlockFilename';
 import { classnamesHelper as generateClassName, HELPER_FN_NAME } from './classNameGenerator';
-import { TemplateAnalysisError } from '../utils/Errors';
+// import { TemplateAnalysisError } from '../utils/Errors';
 let { parse } = require('path');
 
 export interface CssBlocksVisitor {
@@ -151,7 +151,8 @@ function detectStrayReferenceToImport(
     if (binding) {
       for (let ref of binding.referencePaths) {
         if (!isRemoved(ref)) {
-          throw new TemplateAnalysisError('Stray reference to block import. Imports are removed during rewrite.', {filename, ...ref.node.loc.start});
+          console.warn(`WARNING: Stray reference to block import (${specifier.local.name}). Imports are removed during rewrite so this will probably be a runtime error. (${filename}:${ref.node.loc.start.line}:${ref.node.loc.start.column}`);
+          // throw new TemplateAnalysisError(`Stray reference to block import (${specifier.local.name}). Imports are removed during rewrite.`, {filename, ...ref.node.loc.start});
         }
       }
     }
