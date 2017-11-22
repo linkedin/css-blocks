@@ -105,7 +105,7 @@ type IsSourceSet = (n: number) => boolean;
 type SetSource = (n: number) => void;
 type Abort = () => false;
 
-export function c(staticClasses: string | any[], stack?: any[]): string {
+export default function c(staticClasses: string | any[], stack?: any[]): string {
   if (Array.isArray(staticClasses)) {
     stack = staticClasses;
     staticClasses = '';

@@ -43,10 +43,8 @@ import {
   Expression,
 } from 'babel-types';
 
-export const HELPER_FN_NAME = {
-  moduleName: 'c',
-  localName: 'c$$',
-};
+// TODO: detect conflicts and pick an available name.
+export const HELPER_FN_NAME ='c$$';
 
 const enum SourceExpression {
   ternary,
@@ -75,7 +73,7 @@ const enum BooleanExpr {
   and = -3,
 }
 
-export function classnamesHelper(rewrite: IndexedClassRewrite<BlockObject>, element: JSXElementAnalysis, helpFnName = HELPER_FN_NAME.localName, includeStaticClasses = false): CallExpression {
+export function classnamesHelper(rewrite: IndexedClassRewrite<BlockObject>, element: JSXElementAnalysis, helpFnName = HELPER_FN_NAME, includeStaticClasses = false): CallExpression {
   let args: Expression[] = [ arrayExpression(constructArgs(rewrite, element)) ];
   let staticClassnames = rewrite.staticClasses;
   if (includeStaticClasses && staticClassnames.length > 0) {

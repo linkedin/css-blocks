@@ -7,10 +7,15 @@
   "files": [
     "dist"
   ],
+  "browser": {
+    "dist/src/index.js": "./runtime/classnames.js"
+  },
   "scripts": {
     "pretest": "npm run build && npm run tslint",
     "test": "mocha dist/test --recursive --opts test/mocha.opts",
-    "build": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
+    "build-runtime": "tsc -p tsconfig-runtime.json",
+    "build-buildtime": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
+    "build": "npm run build-runtime && npm run build-buildtime",
     "watch": "watch 'npm run test' './src' './test' --wait=3",
     "tslint": "tslint --project tsconfig.json --type-check"
   },

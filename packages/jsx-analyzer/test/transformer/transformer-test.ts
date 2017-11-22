@@ -4,7 +4,7 @@ import * as babel from 'babel-core';
 import { StyleMapping, PluginOptionsReader, CssBlockOptions, BlockCompiler } from 'css-blocks';
 import * as postcss from 'postcss';
 import * as prettier from 'prettier';
-import { c as c$$ } from '../../src/helpers/classnames';
+import c$$ from '../../runtime/classnames';
 
 import JSXAnalysis, { MetaAnalysis } from '../../src/utils/Analysis';
 import Transformer from '../../src';
@@ -114,7 +114,7 @@ export class Test {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
-          import { c as c$$ } from '@css-blocks/jsx';
+          import c$$ from '@css-blocks/jsx';
           import objstr from 'obj-str';
           let isDynamic = true;
           <div class={c$$("a", [1, 1, 2, isDynamic, 1, 0, 'b', 0])}></div>;`
@@ -228,7 +228,7 @@ export class Test {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
-          import { c as c$$ } from "@css-blocks/jsx";
+          import c$$ from "@css-blocks/jsx";
           import objstr from 'obj-str';
 
           let dynamic = 'yellow';
@@ -275,7 +275,7 @@ export class Test {
     return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
-        import { c as c$$ } from "@css-blocks/jsx";
+        import c$$ from "@css-blocks/jsx";
         import objstr from "obj-str";
         let dynamic = "yellow";
         let leSigh = true;
@@ -331,7 +331,7 @@ export class Test {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
-        import { c as c$$ } from "@css-blocks/jsx";
+        import c$$ from "@css-blocks/jsx";
         import objstr from "obj-str";
         let dynamic = "yellow";
         function conditional() {

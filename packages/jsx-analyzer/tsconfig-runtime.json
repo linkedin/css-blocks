@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    // Compilation Configuration
+    "target": "es5",
+    "inlineSources": false,
+    "inlineSourceMap": false,
+    "declaration": false,
+    "allowSyntheticDefaultImports": false,
+    "removeComments": true,
+
+    // Environment Configuration
+    "experimentalDecorators": false,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "allowUnreachableCode": false,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "preserveConstEnums": false,
+
+    // output options
+    "newLine": "LF",
+    "module": "commonjs",
+    "traceResolution": false,
+    "baseUrl": "."
+  },
+  "include": [
+    "runtime/*.ts"
+  ]
+}

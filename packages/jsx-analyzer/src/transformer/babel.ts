@@ -9,7 +9,7 @@ import {
   identifier,
   stringLiteral,
   importDeclaration,
-  importSpecifier,
+  importDefaultSpecifier,
   jSXAttribute,
   jSXExpressionContainer,
   jSXIdentifier,
@@ -75,7 +75,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
           let firstImport = this.importsToRemove.shift()!;
           detectStrayReferenceToImport(firstImport, this.filename);
           let importDecl = importDeclaration(
-            [importSpecifier(identifier(HELPER_FN_NAME.localName), identifier(HELPER_FN_NAME.moduleName))],
+            [importDefaultSpecifier(identifier(HELPER_FN_NAME))],
             stringLiteral('@css-blocks/jsx'));
           firstImport.replaceWith(importDecl);
         }
@@ -105,8 +105,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
             if (classMapping.dynamicClasses.length > 0) {
               this.dynamicStylesFound = true;
               attributeValue = jSXExpressionContainer(
-                generateClassName(classMapping, elementAnalysis,
-                                  HELPER_FN_NAME.localName, true));
+                generateClassName(classMapping, elementAnalysis, HELPER_FN_NAME, true));
             } else if (classMapping.staticClasses.length > 0) {
               attributeValue = stringLiteral(classMapping.staticClasses.join(' '));
             }
