@@ -161,7 +161,7 @@ function constructDependency(stateExpr: Dependency, rewrite: IndexedClassRewrite
 
 function constructConditional(stateExpr: Conditional<BooleanAST> & HasState, _rewrite: IndexedClassRewrite<BlockObject>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
-  expr.push(stateExpr.condition);
+  expr.push(moustacheToBooleanExpression(stateExpr.condition));
   return expr;
 }
 
@@ -207,6 +207,29 @@ function constructSwitch(stateExpr: Switch<StringAST> & HasGroup, rewrite: Index
   return expr;
 }
 
+function moustacheToBooleanExpression(booleanExpression: BooleanAST): AST.Expression {
+  if (booleanExpression.type === "MustacheStatement") {
+    return moustacheToExpression(booleanExpression);
+  } else {
+    return booleanExpression;
+  }
+}
+
+function moustacheToExpression(expr: AST.MustacheStatement): AST.Expression {
+  if (expr.path.type === "PathExpression") {
+    if (expr.params.length === 0 && expr.hash.pairs.length === 0) {
+      debug("converting", expr.path.original, "to path");
+      return expr.path;
+    } else {
+      debug("converting", expr.path.original, "to sexpr");
+      return builders.sexpr(expr.path, expr.params, expr.hash);
+    }
+  } else {
+    debug("preserving literal", expr.path.original, "as literal");
+    return expr.path;
+  }
+}
+
 function moustacheToStringExpression(stringExpression: StringAST): AST.Expression {
   if (stringExpression.type === "ConcatStatement") {
     return builders.sexpr(builders.path("/css-blocks/components/concat"),
@@ -214,21 +237,13 @@ function moustacheToStringExpression(stringExpression: StringAST): AST.Expressio
         if (val.type === 'TextNode') {
           arr.push(builders.string(val.chars));
         } else {
-          arr.push(moustacheToStringExpression(val));
+          arr.push(val.path);
         }
         return arr;
       }, new Array<AST.Expression>())
     );
   } else {
-    let { path, params, hash } = stringExpression;
-    if (path.type === "PathExpression") {
-      return builders.sexpr(path, params, hash);
-    } else {
-      if (params.length > 0) {
-        throw new Error("Unsure how to deal with this node.");
-      }
-      return path;
-    }
+    return moustacheToExpression(stringExpression);
   }
 }
 

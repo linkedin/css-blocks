@@ -82,7 +82,7 @@ describe('Template Rewriting', function() {
       // TODO why is `f` class both static and dynamic?
       assert.deepEqual(minify(res), minify(`
           <div class="b">
-            <h1 class="e">Hello, <span class="f c {{/css-blocks/components/classnames 2 3 2 (isThick) 1 2 4 2 1 (textStyle) "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2}}">World</span>!</h1>
+            <h1 class="e">Hello, <span class="f c {{/css-blocks/components/classnames 2 3 2 isThick 1 2 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2}}">World</span>!</h1>
           </div>`));
       assert.deepEqual(minify(result.css), minify(`
           .b { color: red; }
@@ -107,7 +107,7 @@ describe('Template Rewriting', function() {
       // TODO: why is `f` both static and dynamic on the same element
       assert.deepEqual(minify(res), minify(`
         <div class="b">
-          <h1 class="e">Hello, <span class="f h {{/css-blocks/components/classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 (textStyle) "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "c" 2 "d" 3}}">World</span>!</h1>
+          <h1 class="e">Hello, <span class="f h {{/css-blocks/components/classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "c" 2 "d" 3}}">World</span>!</h1>
           <div class={{/css-blocks/components/classnames 1 2 0 isWorld 1 1 1 0 "f" 0 "c" 1}}>World</div>
           <div class={{/css-blocks/components/classnames 1 2 0 isWorld 1 0 1 1 "f" 0 "c" 1}}>World</div>
           <div class={{/css-blocks/components/classnames 1 1 0 isWorld 0 1 0 "c" 0}}>World</div>
@@ -125,7 +125,7 @@ describe('Template Rewriting', function() {
       let { css, ast } = result;
       let res = print(ast);
       assert.deepEqual(minify(res), minify(`
-      <div class="a {{/css-blocks/components/classnames 1 1 2 (isLoading) 1 0 "b" 0}}">
+      <div class="a {{/css-blocks/components/classnames 1 1 2 isLoading 1 0 "b" 0}}">
         <aside class="g h c d"> </aside>
         <article class="i {{/css-blocks/components/classnames 1 2 0 isRecommended 1 1 1 0 "e" 0 "f" 1}}"> </article>
       </div>
