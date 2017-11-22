@@ -671,7 +671,7 @@ export class Block extends BlockObject
     return other && this.identifier === other.identifier;
   }
 
-  isAncestor(other: Block | undefined | null): boolean {
+  isAncestorOf(other: Block | undefined | null): boolean {
     let base: Block | undefined | null = other && other.base;
     while (base) {
       if (this.equal(base)) {

@@ -183,7 +183,7 @@ export default class ConflictResolver {
 
       // If trying to explicitly resolve (aka: not injected inheritance) from an
       // ancestor block, throw.
-      else if (!resolveInherited && other && other.block.isAncestor(block)) {
+      else if (!resolveInherited && other && other.block.isAncestorOf(block)) {
         throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with ancestors of your own block.`, this.sourceLocation(block, decl));
       }
 
