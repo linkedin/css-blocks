@@ -146,7 +146,7 @@ export function parse(filename: string, data: string, factory: BlockFactory, opt
 
   return Promise.resolve().then(() => {
     return parseWith(template, metaAnalysis, factory, resolvedOpts).then(analysis => {
-      return Promise.all(metaAnalysis.analysisPromises).then((analyses) => {
+      return resolveAllRecursively(metaAnalysis.analysisPromises).then((analyses) => {
         for (let analysis of (new Set(analyses))) {
           traverse(analysis.template.ast, analyzer(analysis));
           metaAnalysis.addAnalysis(analysis);
@@ -157,6 +157,25 @@ export function parse(filename: string, data: string, factory: BlockFactory, opt
         return metaAnalysis;
       });
     });
+  });
+}
+
+function resolveAllRecursively<T>(promiseArray: Array<Promise<T>>): Promise<Array<T>> {
+  return new Promise<Array<T>>((resolve, reject) => {
+    let currentLength = promiseArray.length;
+    let waitAgain = (promise: Promise<Array<T>>): void => {
+      promise.then((values) => {
+        if (promiseArray.length === currentLength) {
+          resolve(values);
+        } else {
+          currentLength = promiseArray.length;
+          waitAgain(Promise.all(promiseArray));
+        }
+      }, (error) => {
+        reject(error);
+      });
+    };
+    waitAgain(Promise.all(promiseArray));
   });
 }
 

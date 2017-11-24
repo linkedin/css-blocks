@@ -53,7 +53,8 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
 
   .then((mappings: StyleMapping[]) => {
     mappings.forEach((mapping: StyleMapping) => {
-      let styleMapping: StyleMapping | undefined = mapping.analyses && mapping.analyses.find(a => a.template.identifier === path ) && mapping;
+      // When an css or analysis error happens the mapping seems to be undefined and generates a confusing error.
+      let styleMapping: StyleMapping | undefined = mapping && mapping.analyses && mapping.analyses.find(a => a.template.identifier === path ) && mapping;
       if ( !styleMapping ) {
         return;
       }
