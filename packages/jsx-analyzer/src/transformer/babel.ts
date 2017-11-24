@@ -69,6 +69,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
       },
       post(state: any) {
         for (let nodePath of this.statementsToRemove) {
+          if (nodePath.removed) continue;
           nodePath.remove();
         }
         if (this.dynamicStylesFound) {
