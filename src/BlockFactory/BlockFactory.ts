@@ -1,4 +1,3 @@
-console.log("in block factory");
 import * as postcss from "postcss";
 import * as path from "path";
 import * as debugGenerator from "debug";
