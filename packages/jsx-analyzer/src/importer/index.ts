@@ -20,6 +20,9 @@ import Analysis, { JSXTemplate } from '../utils/Analysis';
 import { parseFileWith, JSXAnalyzerOptions } from '../index';
 import isBlockFilename from '../utils/isBlockFilename';
 import { TemplateImportError, ErrorLocation } from '../utils/Errors';
+import * as debugGenerator from 'debug';
+
+const debug = debugGenerator('css-blocks:jsx');
 
 const DEFAULT_IDENTIFIER = 'default';
 const VALID_FILE_EXTENSIONS = {
@@ -96,6 +99,7 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
 
       // If this is a jsx or tsx file, parse it with the same analysis object.
       if ( fs.existsSync(absoluteFilePath) && VALID_FILE_EXTENSIONS[parsedPath.ext] ) {
+        debug(`Analyzing discovered dependency: ${absoluteFilePath}`);
         analysis.parent.analysisPromises.push(parseFileWith(absoluteFilePath, analysis.parent, blockFactory, options));
         return;
       }
