@@ -5,18 +5,12 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "files": [
-    "dist",
-    "runtime"
+    "dist"
   ],
-  "browser": {
-    "dist/src/index.js": "./runtime/classnames.js"
-  },
   "scripts": {
     "pretest": "npm run build && npm run tslint",
     "test": "mocha dist/test --recursive --opts test/mocha.opts",
-    "build-runtime": "tsc -p tsconfig-runtime.json",
-    "build-buildtime": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
-    "build": "npm run build-runtime && npm run build-buildtime",
+    "build": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
     "prepublish": "npm run build",
     "watch": "watch 'npm run test' './src' './test' --wait=3",
     "tslint": "tslint --project tsconfig.json --type-check"
@@ -40,6 +34,7 @@
   },
   "homepage": "https://github.com/css-blocks/jsx-analyzer#readme",
   "devDependencies": {
+    "@css-blocks/runtime": "^0.15.0-rc.0",
     "@types/babel-core": "^6.25.2",
     "@types/babel-generator": "^6.25.0",
     "@types/babel-template": "^6.25.0",
@@ -69,6 +64,9 @@
     "ts-node": "^3.0.4",
     "tslint": "^5.5.0",
     "watch": "^1.0.2"
+  },
+  "peerDependencies": {
+    "@css-blocks/runtime": "^0.15.0-rc.0"
   },
   "dependencies": {
     "@opticss/template-api": "^0.1.0",

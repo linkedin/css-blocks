@@ -4,7 +4,7 @@ import * as babel from 'babel-core';
 import { StyleMapping, PluginOptionsReader, CssBlockOptions, BlockCompiler } from 'css-blocks';
 import * as postcss from 'postcss';
 import * as prettier from 'prettier';
-import c$$ from '../../runtime/classnames';
+import c$$ from '@css-blocks/runtime';
 
 import JSXAnalysis, { MetaAnalysis } from '../../src/utils/Analysis';
 import Transformer from '../../src';

@@ -77,7 +77,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
           detectStrayReferenceToImport(firstImport, this.filename);
           let importDecl = importDeclaration(
             [importDefaultSpecifier(identifier(HELPER_FN_NAME))],
-            stringLiteral('@css-blocks/jsx'));
+            stringLiteral('@css-blocks/runtime'));
           firstImport.replaceWith(importDecl);
         }
         for (let nodePath of this.importsToRemove) {

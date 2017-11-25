@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@css-blocks/runtime@^0.15.0-rc.0":
+  version "0.15.0-rc.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@css-blocks/runtime/-/@css-blocks/runtime-0.15.0-rc.0.tgz#dd898646b5cfb6c278127bb0c8b2bb7e6ed91260"
+
 "@opticss/element-analysis@^0.1.0", "@opticss/element-analysis@^0.1.1":
   version "0.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@opticss/element-analysis/-/@opticss/element-analysis-0.1.1.tgz#46979b2b029a15d2ea9b7ef2200db328722cebfc"
