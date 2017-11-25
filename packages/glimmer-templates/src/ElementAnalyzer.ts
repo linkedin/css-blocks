@@ -9,7 +9,7 @@ import {
 } from "css-blocks";
 import { ResolvedFile } from "./GlimmerProject";
 import { selectorCount, cssBlockError } from "./utils";
-import { SourceLocation, SourcePosition } from "@opticss/template-api";
+import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import { objectValues, assertNever } from "@opticss/util";
 
 export type TernaryExpression = AST.Expression;

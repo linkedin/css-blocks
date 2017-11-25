@@ -20,7 +20,7 @@ import {
 } from "../src/ElementAnalyzer";
 import {
   POSITION_UNKNOWN
-} from "@opticss/template-api";
+} from "@opticss/element-analysis";
 import {
   assertNever,
 } from "@opticss/util";
