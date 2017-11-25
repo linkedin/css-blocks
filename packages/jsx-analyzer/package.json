@@ -5,7 +5,8 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "runtime"
   ],
   "browser": {
     "dist/src/index.js": "./runtime/classnames.js"
@@ -16,6 +17,7 @@
     "build-runtime": "tsc -p tsconfig-runtime.json",
     "build-buildtime": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
     "build": "npm run build-runtime && npm run build-buildtime",
+    "prepublish": "npm run build",
     "watch": "watch 'npm run test' './src' './test' --wait=3",
     "tslint": "tslint --project tsconfig.json --type-check"
   },
