@@ -1,33 +1,5 @@
 import * as debugGenerator from "debug";
-import Async from "async";
-
-// The async type declaration uses this but doesn't export it :face_with_rolling_eyes:
-interface AsyncQueue<T> {
-    length(): number;
-    started: boolean;
-    running(): number;
-    idle(): boolean;
-    concurrency: number;
-    push<E>(task: T, callback?: Async.ErrorCallback<E>): void;
-    push<E>(task: T, callback?: Async.AsyncResultCallback<T, E>): void;
-    push<E>(task: T[], callback?: Async.ErrorCallback<E>): void;
-    unshift<E>(task: T, callback?: Async.ErrorCallback<E>): void;
-    unshift<E>(task: T[], callback?: Async.ErrorCallback<E>): void;
-    saturated: () => any;
-    empty: () => any;
-    drain: () => any;
-    paused: boolean;
-    pause(): void;
-    resume(): void;
-    kill(): void;
-    workersList(): {
-        data: T,
-        callback: Function
-    }[];
-    error(error: Error, data: any): void;
-    unsaturated(): void;
-    buffer: number;
-}
+import * as async from "async";
 
 const debug = debugGenerator("css-blocks");
 interface PendingWork<WorkItem, Result> {
@@ -43,14 +15,14 @@ let queueInstanceId = 1;
  * needed.
  */
 export class PromiseQueue<WorkItem, Result> {
+  private queue: AsyncQueue<PendingWork<WorkItem, Result>>;
   private queueId: number;
   private jobId: number;
-  private queue: AsyncQueue<PendingWork<WorkItem, Result>>;
   private draining: Promise<void> | undefined;
   private promiseProcessor: (item: WorkItem) => Promise<Result>;
   constructor(concurrency: number, processor: (item: WorkItem) => Promise<Result>) {
     this.promiseProcessor = processor;
-    this.queue = Async.queue<PendingWork<WorkItem, Result>, Error>(this.processWork.bind(this), concurrency);
+    this.queue = async.queue<PendingWork<WorkItem, Result>, Error>(this.processWork.bind(this), concurrency);
     this.queueId = queueInstanceId++;
     this.jobId = 0;
   }
