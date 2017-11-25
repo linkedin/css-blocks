@@ -56,6 +56,7 @@
     "typescript": "^2.4.1"
   },
   "dependencies": {
+    "@opticss/element-analysis": "^0.1.0",
     "@opticss/template-api": "^0.1.0",
     "@types/async": "^2.0.40",
     "@types/debug": "0.0.29",

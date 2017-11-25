@@ -12,11 +12,13 @@ import {
   TemplateInfoFactory,
   TemplateAnalysis as OptimizationTemplateAnalysis,
   TemplateIntegrationOptions,
+} from "@opticss/template-api";
+import {
   SourceLocation,
   SourcePosition,
   isSourcePosition,
   POSITION_UNKNOWN,
-} from "@opticss/template-api";
+} from "@opticss/element-analysis";
 import {
   ObjectDictionary,
   objectValues,

@@ -12,8 +12,10 @@ import {
   TemplateInfo,
   TemplateIntegrationOptions,
   isAndExpression,
-  POSITION_UNKNOWN
 } from "@opticss/template-api";
+import {
+  POSITION_UNKNOWN
+} from "@opticss/element-analysis";
 import {
   clean, isType as assertType
 } from "@opticss/util";

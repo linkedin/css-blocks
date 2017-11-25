@@ -7,7 +7,7 @@ import {
 import {
   Element,
   Tagname,
-} from "@opticss/template-api";
+} from "@opticss/element-analysis";
 
 export interface Query {
   execute(container: postcss.Container): ClassifiedParsedSelectors;

@@ -1,7 +1,8 @@
 import { assert } from "chai";
 import { suite, test, skip } from "mocha-typescript";
 import * as postcss from "postcss";
-import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimizedAnalysis, POSITION_UNKNOWN } from "@opticss/template-api";
+import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimizedAnalysis } from "@opticss/template-api";
+import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 
 import * as cssBlocks from "../src/errors";
 import BlockParser from "../src/BlockParser";

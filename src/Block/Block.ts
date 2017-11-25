@@ -2,7 +2,7 @@ import * as postcss from 'postcss';
 import selectorParser = require('postcss-selector-parser');
 import { SelectorFactory, parseSelector,
          ParsedSelector, CompoundSelector } from "opticss";
-import { Attribute } from "@opticss/template-api";
+import { Attribute, Attr, AttributeNS, ValueAbsent, ValueConstant } from "@opticss/element-analysis";
 import { ObjectDictionary, MultiMap, assertNever } from "@opticss/util";
 
 import { stateParser, isClassNode, isStateNode, isRootNode,
@@ -14,9 +14,7 @@ import { OutputMode } from "../OutputMode";
 
 import { LocalScopedContext, HasLocalScope, HasScopeLookup } from "../util/LocalScope";
 import { unionInto } from '../util/unionInto';
-import { Attr } from "@opticss/template-api";
 import { objectValues } from "@opticss/util";
-import { AttributeNS, ValueAbsent, ValueConstant } from "@opticss/template-api";
 
 // TODO: remove circular dependency between LocalScope and Block
 

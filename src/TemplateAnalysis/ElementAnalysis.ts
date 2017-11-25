@@ -27,7 +27,7 @@ import {
   Element,
   SourceLocation,
   Tagname,
-  Value,
+  attrValues,
   ValueConstant,
   ValueAbsent,
   AttributeValueSet,
@@ -35,7 +35,7 @@ import {
   AttributeValueChoiceOption,
   isConstant,
   POSITION_UNKNOWN,
-} from "@opticss/template-api";
+} from "@opticss/element-analysis";
 
 export interface HasState<Style extends State | number = State> {
   state: Style;
@@ -596,13 +596,13 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    */
   forOptimizer(options: CssBlocksOptionsReader): [Element, Map<string, BlockObject>] {
     this.assertSealed();
-    let tagValue = this.tagName ? Value.constant(this.tagName) : Value.unknown();
+    let tagValue = this.tagName ? attrValues.constant(this.tagName) : attrValues.unknown();
     let tagName = new Tagname(tagValue);
     let classes = new Array<AttributeValueSetItem>();
     let classMap = new Map<string, BlockObject>();
     for (let style of this.allStaticStyles) {
       let className = style.cssClass(options);
-      classes.push(Value.constant(className));
+      classes.push(attrValues.constant(className));
       classMap.set(className, style);
     }
 
@@ -619,8 +619,8 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     let dynStatesHandled = new Set<DynamicStates<BooleanExpression, StringExpression>>();
 
     for (let dynContainer of this.dynamicClasses) {
-      let trueClasses: AttributeValueSet | ValueConstant | ValueAbsent = Value.absent();
-      let falseClasses: AttributeValueSet | ValueConstant | ValueAbsent = Value.absent();
+      let trueClasses: AttributeValueSet | ValueConstant | ValueAbsent = attrValues.absent();
+      let falseClasses: AttributeValueSet | ValueConstant | ValueAbsent = attrValues.absent();
       if (isTrueCondition(dynContainer)) {
         trueClasses = dynamicClassAndDependentStates(
           dynContainer.whenTrue, depStatesMap, dynStatesHandled, mapper, choices);
@@ -629,7 +629,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
         falseClasses = dynamicClassAndDependentStates(
           dynContainer.whenFalse, depStatesMap, dynStatesHandled, mapper, choices);
       }
-      classes.push(Value.oneOf([trueClasses, falseClasses]));
+      classes.push(attrValues.oneOf([trueClasses, falseClasses]));
     }
 
     for (let dynState of this.dynamicStates) {
@@ -644,7 +644,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       }
     }
 
-    let classValue = Value.allOf(classes);
+    let classValue = attrValues.allOf(classes);
     let element = new Element(
       tagName,
       [new Attribute("class", classValue)],
@@ -741,7 +741,7 @@ function dynamicClassAndDependentStates(
     let v = classValues[0];
     if (isConstant(v)) return v;
   }
-  return Value.allOf(classValues);
+  return attrValues.allOf(classValues);
 }
 
 function addToSet(
@@ -770,9 +770,9 @@ function mapClasses(
     classes.push(cls);
   }
   if (classes.length === 1) {
-    return Value.constant(classes[0]);
+    return attrValues.constant(classes[0]);
   } else {
-    return Value.allOf(classes.map(c => Value.constant(c)));
+    return attrValues.allOf(classes.map(c => attrValues.constant(c)));
   }
 }
 
@@ -785,12 +785,12 @@ function mapChoiceClasses(
 ): AttributeValueChoice {
   let choices = new Array<AttributeValueChoiceOption>();
   if (includeAbsent) {
-    choices.push(Value.absent());
+    choices.push(attrValues.absent());
   }
   for (let style of styles) {
     choices.push(mapClasses(options, map, style));
   }
-  return Value.oneOf(choices);
+  return attrValues.oneOf(choices);
 }
 
 function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<BlockObject, number>): SerializedDynamicContainer {
