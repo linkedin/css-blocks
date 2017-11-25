@@ -385,10 +385,12 @@ core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
 
-css-blocks@^0.12.2:
-  version "0.12.2"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/css-blocks/-/css-blocks-0.12.2.tgz#952dcb626f79eeb3307bc2c6333f2ad978f77bbd"
+css-blocks@^0.15.0-rc.0:
+  version "0.15.0-rc.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/css-blocks/-/css-blocks-0.15.0-rc.0.tgz#edc519fdca7bfa0277f6e0846b3f70b429977519"
   dependencies:
+    "@opticss/element-analysis" "^0.1.0"
+    "@opticss/template-api" "^0.1.0"
     "@types/async" "^2.0.40"
     "@types/debug" "0.0.29"
     "@types/source-map" "^0.5.0"
@@ -396,7 +398,7 @@ css-blocks@^0.12.2:
     debug "^2.6.8"
     inline-source-map-comment "^1.0.5"
     object.values "^1.0.4"
-    postcss-selector-parser "^2.2.3"
+    postcss-selector-parser "3.1.1"
     regexpu-core "^4.0.11"
     source-map "^0.5.7"
     watch "^1.0.2"
@@ -578,10 +580,6 @@ findup-sync@~0.3.0:
   resolved "https://registry.yarnpkg.com/findup-sync/-/findup-sync-0.3.0.tgz#37930aa5d816b777c03445e1966cc6790a4c0b16"
   dependencies:
     glob "~5.0.0"
-
-flatten@^1.0.2:
-  version "1.0.2"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/flatten/-/flatten-1.0.2.tgz#45afce2e59e741fb3e572e51062b50e0644b5b37"
 
 foreach@^2.0.5:
   version "2.0.5"
@@ -1386,15 +1384,7 @@ pinkie@^2.0.0:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
 
-postcss-selector-parser@^2.2.3:
-  version "2.2.3"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/postcss-selector-parser/-/postcss-selector-parser-2.2.3.tgz#fa7caf11711b98c47c1864a24d37180535158504"
-  dependencies:
-    flatten "^1.0.2"
-    indexes-of "^1.0.1"
-    uniq "^1.0.1"
-
-postcss-selector-parser@^3.1.1:
+postcss-selector-parser@3.1.1, postcss-selector-parser@^3.1.1:
   version "3.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/postcss-selector-parser/-/postcss-selector-parser-3.1.1.tgz#70ed7774b823b6cdcbe61e54e73edc99c1a82073"
   dependencies:

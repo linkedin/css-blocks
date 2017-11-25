@@ -69,7 +69,7 @@
     "@opticss/element-analysis": "^0.1.0",
     "@opticss/util": "^0.1.0",
     "@types/glob": "^5.0.30",
-    "css-blocks": "^0.12.2",
+    "css-blocks": "^0.15.0-rc.0",
     "debug": "^2.6.8",
     "glimmer-analyzer": "^0.2.0",
     "glob": "^7.1.2",
