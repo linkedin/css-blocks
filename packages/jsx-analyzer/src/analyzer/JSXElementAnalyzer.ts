@@ -3,7 +3,7 @@ import { ObjectDictionary, } from '@opticss/util';
 import {
   SourceLocation as TemplateSourceLocation,
   SourcePosition as TemplateSourcePosition
-} from '@opticss/template-api';
+} from '@opticss/element-analysis';
 import { NodePath, Binding } from 'babel-traverse';
 import {
   CallExpression,
