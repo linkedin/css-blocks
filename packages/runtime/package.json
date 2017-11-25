@@ -1,0 +1,38 @@
+{
+  "name": "@css-blocks/runtime",
+  "version": "0.15.0-rc.0",
+  "description": "Browser runtime for computing dynamic classnames with css-blocks.",
+  "main": "dist/runtime.js",
+  "types": "dist/runtime.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "pretest": "npm run build && npm run tslint",
+    "test": "echo 'tested in @css-blocks/jsx'",
+    "build": "rm -rf dist && tsc",
+    "prepublish": "npm run build",
+    "tslint": "tslint --project tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/css-blocks/jsx-analyzer.git"
+  },
+  "keywords": [
+    "css-blocks"
+  ],
+  "author": "Chris Eppstein <chris@eppsteins.net>",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/css-blocks/css-blocks/issues"
+  },
+  "homepage": "https://github.com/css-blocks/css-blocks/packages/classnames/#readme",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-release": "^0.12.0",
+    "typescript": "^2.3.4",
+    "tslint": "^5.5.0"
+  },
+  "dependencies": {
+  }
+}
