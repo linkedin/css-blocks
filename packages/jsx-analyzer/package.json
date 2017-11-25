@@ -72,7 +72,7 @@
     "@opticss/template-api": "^0.1.0",
     "@opticss/util": "^0.1.0",
     "opticss": "^0.1.0",
-    "css-blocks": "^0.12.2",
+    "css-blocks": "^0.15.0-rc.0",
     "babel-traverse": "^6.24.1",
     "babel-types": "^6.24.1",
     "babylon": "^6.17.4",
