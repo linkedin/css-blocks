@@ -48,7 +48,7 @@
     "mocha-typescript": "^1.0.23",
     "opticss": "^0.1.0",
     "perfectionist": "^2.4.0",
-    "postcss": "6.0.13",
+    "postcss": "^6.0.14",
     "remap-istanbul": "^0.9.5",
     "source-map-support": "^0.4.15",
     "tslint": "^5.1.0",
