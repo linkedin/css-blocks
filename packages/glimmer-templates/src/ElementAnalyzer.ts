@@ -1,14 +1,7 @@
-import { AST } from '@glimmer/syntax';
-import {
-  Block,
-  QueryKeySelector,
-  ElementAnalysis,
-  StateParent,
-  PluginOptionsReader as CssBlocksOptionsReader,
-  DynamicClasses,
-} from "css-blocks";
+import { AST, print } from '@glimmer/syntax';
+import { Block, ElementAnalysis, StateParent, PluginOptionsReader as CssBlocksOptionsReader, DynamicClasses, } from "css-blocks";
 import { ResolvedFile } from "./GlimmerProject";
-import { selectorCount, cssBlockError } from "./utils";
+import { cssBlockError } from "./utils";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import { objectValues, assertNever } from "@opticss/util";
 
@@ -61,16 +54,9 @@ export class ElementAnalyzer {
     analysis: RewriteAnalysis,
   ) {
 
-    // If there are root styles, we add them on the root element implicitly.
+    // The root element gets the block's root class automatically.
     if (atRootElement) {
-      // TODO: don't
-      let query = new QueryKeySelector(this.block);
-      if (this.block.root) {
-        let res = query.execute(this.block.root, this.block);
-        if (selectorCount(res) > 0) {
-          analysis.element.addStaticClass(this.block);
-        }
-      }
+      analysis.element.addStaticClass(this.block);
     }
 
     // Find the class attribute and process.
