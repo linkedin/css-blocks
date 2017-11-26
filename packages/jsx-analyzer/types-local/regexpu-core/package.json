@@ -1,7 +1,0 @@
-{
-  "dependencies": {},
-  "description": "TypeScript definitions for regexpu-core 4.0.11",
-  "name": "@types/regexpu-core",
-  "typings": "index.d.ts",
-  "version": "4.0.11"
-}

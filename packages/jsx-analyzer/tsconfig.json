@@ -30,14 +30,10 @@
     "module": "commonjs",
     "traceResolution": false,
     "baseUrl": "dist/src",
-
-    "paths": {
-      // These are all required when css-blocks is npm linked locally...
-      "postcss": [ "../../node_modules/postcss" ],
-      "perfectionist": [ "../../../css-blocks/types-local/perfectionist" ],
-      "postcss-selector-parser": ["../../../css-blocks/types-local/postcss-selector-parser"],
-      "regexpu-core":  ["../../../css-blocks/types-local/regexpu-core"]
-    }
+    "typeRoots": [
+      "node_modules/@types",
+      "types-local"
+    ]
   },
   "include": [
     "src",

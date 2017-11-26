@@ -1,7 +1,0 @@
-{
-  "dependencies": {},
-  "description": "TypeScript definitions for perfectionist 2.4.0",
-  "name": "@types/perfectionist",
-  "typings": "index.d.ts",
-  "version": "2.4.0"
-}
