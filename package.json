@@ -35,7 +35,7 @@
   ],
   "homepage": "https://github.com/sailfishers/css-blocks#readme",
   "devDependencies": {
-    "@opticss/util": "^0.1.0",
+    "@opticss/util": "^0.1.1",
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.39",
@@ -46,7 +46,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
-    "opticss": "^0.1.0",
+    "opticss": "^0.2.0",
     "perfectionist": "^2.4.0",
     "postcss": "^6.0.14",
     "remap-istanbul": "^0.9.5",
@@ -56,8 +56,8 @@
     "typescript": "^2.4.1"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.1.0",
-    "@opticss/template-api": "^0.1.0",
+    "@opticss/element-analysis": "^0.2.0",
+    "@opticss/template-api": "^0.2.0",
     "@types/async": "^2.0.40",
     "@types/debug": "0.0.29",
     "@types/source-map": "^0.5.0",
