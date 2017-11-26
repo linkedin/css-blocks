@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import * as typedAssert from "./util/typedAssert";
+import * as typedAssert from "@opticss/util";
 import { suite, test, only } from "mocha-typescript";
 import * as postcss from "postcss";
 
@@ -12,7 +12,7 @@ import {
 } from "../src/OptionsReader";
 import {
   BlockFactory
-} from "../src/Block/BlockFactory";
+} from "../src/BlockFactory";
 
 import BEMProcessor from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
@@ -42,7 +42,7 @@ export class StateContainerTest extends BEMProcessor {
     let importer = imports.importer();
     let options: PluginOptions = {importer: importer};
     let reader = new OptionsReader(options);
-    let factory = new BlockFactory(options, postcss);
+    let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
       let state = block.states.getState("large");
@@ -73,7 +73,7 @@ export class StateContainerTest extends BEMProcessor {
     let importer = imports.importer();
     let options: PluginOptions = {importer: importer};
     let reader = new OptionsReader(options);
-    let factory = new BlockFactory(options, postcss);
+    let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
       let sizeGroup = block.states.getGroup("size");
@@ -114,7 +114,7 @@ export class StateContainerTest extends BEMProcessor {
     let importer = imports.importer();
     let options: PluginOptions = {importer: importer};
     let reader = new OptionsReader(options);
-    let factory = new BlockFactory(options, postcss);
+    let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
       let sizeGroup = block.states.resolveGroup("size") || {};

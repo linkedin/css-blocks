@@ -4,5 +4,12 @@
       "**/dist/**/*": true,
       "**/*.lock": true
     },
-    "editor.tabSize": 2
-}
+    "editor.tabSize": 2,
+    "cSpell.words": [
+      "Opticss",
+      "deserialize",
+      "klass"
+    ],
+    "tslint.packageManager": "yarn",
+    "npm.packageManager": "yarn"
+  }

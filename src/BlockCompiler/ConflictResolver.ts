@@ -4,7 +4,7 @@ import { Block, BlockObject } from "../Block";
 import BlockParser from "../BlockParser";
 import * as errors from "../errors";
 import { OptionsReader } from "../OptionsReader";
-import parseSelector, { ParsedSelector, CompoundSelector } from "../parseSelector";
+import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import { QueryKeySelector } from "../query";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
 import * as conflictDetection from "./conflictDetection";
@@ -183,7 +183,7 @@ export default class ConflictResolver {
 
       // If trying to explicitly resolve (aka: not injected inheritance) from an
       // ancestor block, throw.
-      else if (!resolveInherited && other && other.block.isAncestor(block)) {
+      else if (!resolveInherited && other && other.block.isAncestorOf(block)) {
         throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with ancestors of your own block.`, this.sourceLocation(block, decl));
       }
 
@@ -215,7 +215,7 @@ export default class ConflictResolver {
     otherDecls: postcss.Declaration[],
     isOverride: boolean
   ): ConflictType {
-    let curSel = parseSelector((<postcss.Rule>decl.parent).selector); // can't use the cache, it's already been rewritten.
+    let curSel = parseSelector((<postcss.Rule>decl.parent)); // can't use the cache, it's already been rewritten.
     let prop = decl.prop;
     let root = other.block.root;
 
@@ -287,7 +287,11 @@ export default class ConflictResolver {
         }
         // don't create an empty ruleset.
         if (newRule.nodes && newRule.nodes.length > 0) {
-          decl.parent.parent.insertAfter(decl.parent, newRule);
+          let parent = decl.parent.parent;
+          if (parent) {
+            let rule = decl.parent as postcss.Rule;
+            parent.insertAfter(rule, newRule);
+          }
         }
       });
     });

@@ -1,51 +1,36 @@
-import { ClassName } from "./ClassName";
-import { Block, BlockObject } from "../Block";
-import { OptionsReader } from "../OptionsReader";
-import { TemplateAnalysis, TemplateInfo } from "../TemplateAnalysis";
+import { TemplateAnalysis } from '../TemplateAnalysis';
+import { Block, BlockObject } from '../Block';
+import { OptionsReader } from '../OptionsReader';
+import { RewriteMapping, IndexedClassMapping } from './RewriteMapping';
+import { ElementAnalysis } from '../TemplateAnalysis/ElementAnalysis';
+import { TemplateTypes, StyleMapping as OptimizedMapping } from "@opticss/template-api";
+import {
+  IndexedClassRewrite
+} from "./ClassRewrite";
+export class StyleMapping {
+  /** The analyses that were used to create this mapping. */
+  analyses: Array<TemplateAnalysis<keyof TemplateTypes>> | undefined;
+  /** The blocks that were used to create this mapping. */
+  blocks: Set<Block>;
+  private options: OptionsReader;
+  private optimizedMap: OptimizedMapping;
 
-export class StyleMapping<Template extends TemplateInfo> {
-  template: Template;
-  blocks: {
-    [localName: string]: Block;
-  };
-  blockMappings: Map<BlockObject,ClassName[]>;
-
-  constructor(template: Template) {
-    this.template = template;
-    this.blocks = {};
-    this.blockMappings = new Map();
+  constructor(optimizedMap: OptimizedMapping, blocks: Iterable<Block>, options: OptionsReader, analyses?: Array<TemplateAnalysis<keyof TemplateTypes>>) {
+    this.options = options;
+    this.optimizedMap = optimizedMap;
+    this.blocks = new Set(blocks);
+    this.analyses = analyses;
   }
 
-  addBlockReference(name: string, block: Block) {
-    this.blocks[name] = block;
+  simpleRewriteMapping<B, S, T>(element: ElementAnalysis<B, S, T>): IndexedClassRewrite<BlockObject> {
+    let [optimizedElementInfo, classMap] = element.forOptimizer(this.options);
+    let classRewrite = this.optimizedMap.rewriteMapping(optimizedElementInfo);
+    return IndexedClassMapping.fromOptimizer(classRewrite, classMap);
   }
 
-  addObjects(options: OptionsReader, ...objects: BlockObject[]) {
-    objects.forEach(o => {
-      if (o) {
-        this.blockMappings.set(o, o.cssClasses(options));
-      } else {
-        console.error(new Error("FIXME: Undefined value passed as block object."));
-      }
-    });
-  }
-
-  mapObjects(...objects: BlockObject[]): ClassName[] {
-    return objects.reduce<ClassName[]>((classes, o) => classes.concat(this.blockMappings.get(o) || []), []);
-  }
-
-  addBlock(localName: string | null, block: Block, options: OptionsReader) {
-    this.blocks[localName || block.name] = block;
-    block.all().forEach(o => {
-      this.blockMappings.set(o, o.cssClass(options).split(/\s+/));
-    });
-  }
-  static fromAnalysis<Template extends TemplateInfo>(analysis: TemplateAnalysis<Template>, options: OptionsReader): StyleMapping<Template> {
-    let mapping = new StyleMapping<Template>(analysis.template);
-    Object.keys(analysis.blocks).forEach(name => {
-      mapping.addBlockReference(name, analysis.blocks[name]);
-    });
-    mapping.addObjects(options, ...analysis.stylesFound);
-    return mapping;
+  rewriteMapping<B, S, T>(element: ElementAnalysis<B, S, T>): RewriteMapping {
+    let [optimizedElementInfo, classMap] = element.forOptimizer(this.options);
+    let classRewrite = this.optimizedMap.rewriteMapping(optimizedElementInfo);
+    return RewriteMapping.fromOptimizer(classRewrite, classMap);
   }
 }

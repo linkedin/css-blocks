@@ -1082,7 +1082,7 @@ property that limit the legal overrides to ensure compatibility.
  ```css
  .icons {
    display: grid;
-   display: constrain-resolution(--self);
+   display: constrain(--self);
  }
  ```
 
@@ -1094,7 +1094,7 @@ You can also list legal values that it can be resolved to, separated by a comma.
  ```css
  .icons {
    border: 1px solid black;
-   border-style: constrain-resolution(--self, dashed, dotted);
+   border-style: constrain(--self, dashed, dotted);
  }
  ```
 
@@ -1103,6 +1103,14 @@ You can also list legal values that it can be resolved to, separated by a comma.
  property that is specified. This would allow the border to be resolved
  arbitrarily for the `border-width` and `border-color` as long as the
  `border-style` is matches the constraint.
+
+ ```css
+
+.column {
+   width: 300px;
+   width: constrain(range(200px, 400px));
+ }
+ ```
 
  TBD: syntax for range constraints and other possible constraint types.
 

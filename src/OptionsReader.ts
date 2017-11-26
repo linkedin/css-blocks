@@ -15,12 +15,12 @@ import {
 } from "./importing";
 
 import {
-  Preprocessors
-} from "./preprocessing";
+  BlockFactory
+} from "./BlockFactory";
 
 import {
-  BlockFactory
-} from "./Block/BlockFactory";
+  Preprocessors
+} from "./preprocessing";
 
 /**
  * Provides read-only access to options values. Provides default values if none

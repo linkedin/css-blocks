@@ -1,9 +1,10 @@
+import { OptionsReader } from '../src/OptionsReader';
 import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { suite, test, only } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import BlockParser from "../src/BlockParser";
-import { BlockFactory } from "../src/Block/BlockFactory";
+import { BlockFactory } from "../src/BlockFactory";
 import { Block } from "../src/Block";
 import { PluginOptions } from "../src/options";
 import { QueryKeySelector } from "../src/query";
@@ -14,8 +15,9 @@ type BlockAndRoot = [Block, postcss.Container];
 export class KeyQueryTests {
   private parseBlock(css: string, filename: string, opts?: PluginOptions): Promise<BlockAndRoot> {
     let options: PluginOptions = opts || {};
-    let factory = new BlockFactory(options, postcss);
-    let blockParser = new BlockParser(postcss, options, factory);
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
+    let blockParser = new BlockParser(options, factory);
     let root = postcss.parse(css, {from: filename});
     return blockParser.parse(root, filename, "query-test").then((block) => {
       return <BlockAndRoot>[block, root];

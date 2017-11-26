@@ -1,11 +1,10 @@
 import * as postcss from "postcss";
 import * as path from "path";
 import * as debugGenerator from "debug";
-import { Block } from "./Block";
+import { Block } from "../Block";
 import { IBlockFactory } from "./IBlockFactory";
 import BlockParser, { ParsedSource } from "../BlockParser";
-import { PluginOptions, CssBlockOptionsReadonly } from "../options";
-import { OptionsReader } from "../OptionsReader";
+import { CssBlockOptionsReadonly } from "../options";
 import { Importer, FileIdentifier, ImportedFile } from "../importing";
 import { annotateCssContentWithSourceMap, Preprocessors, Preprocessor, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
 import { RawSourceMap } from "source-map";
@@ -55,12 +54,12 @@ export class BlockFactory implements IBlockFactory {
 
   private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
-  constructor(options: PluginOptions, postcssImpl = postcss) {
+  constructor(options: CssBlockOptionsReadonly, postcssImpl = postcss) {
     this.postcssImpl = postcssImpl;
-    this.options = new OptionsReader(options);
+    this.options = options;
     this.importer = this.options.importer;
     this.preprocessors = this.options.preprocessors;
-    this.parser = new BlockParser(this.postcssImpl, options, this);
+    this.parser = new BlockParser(options, this);
     this.blocks = {};
     this.blockNames = {};
     this.promises = {};
@@ -111,6 +110,7 @@ export class BlockFactory implements IBlockFactory {
   }
   _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
     let importPromise = this.importer.import(identifier, this.options);
+
     let blockPromise = importPromise.then(file => {
       let realFilename = this.importer.filesystemPath(file.identifier, this.options);
       if (realFilename) {

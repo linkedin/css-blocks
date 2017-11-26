@@ -1,35 +1,41 @@
 import { assert } from "chai";
-import { suite, test, only } from "mocha-typescript";
+import { suite, test, skip } from "mocha-typescript";
 import * as postcss from "postcss";
+import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimizedAnalysis } from "@opticss/template-api";
+import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 
 import * as cssBlocks from "../src/errors";
 import BlockParser from "../src/BlockParser";
-import { BlockFactory } from "../src/Block/BlockFactory";
+import { BlockFactory } from "../src/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockObject, BlockClass, State } from "../src/Block";
 import { PluginOptions } from "../src/options";
 import { OptionsReader } from "../src/OptionsReader";
-import { SerializedTemplateAnalysis, TemplateInfo, TemplateAnalysis } from "../src/TemplateAnalysis";
+import { SerializedTemplateAnalysis, TemplateAnalysis, ElementAnalysis } from "../src/TemplateAnalysis";
+
 import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertParseError } from "./util/assertError";
+
+type TestElement = ElementAnalysis<null, null, null>;
 
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Template Analysis")
-export class KeyQueryTests {
-  private parseBlock(css: string, filename: string, opts?: PluginOptions): Promise<BlockAndRoot> {
+export class TemplateAnalysisTests {
+  private parseBlock(css: string, filename: string, opts?: PluginOptions, blockName = "analysis"): Promise<BlockAndRoot> {
     let options: PluginOptions = opts || {};
-    let factory = new BlockFactory(options, postcss);
-    let blockParser = new BlockParser(postcss, options, factory);
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
+    let blockParser = new BlockParser(options, factory);
     let root = postcss.parse(css, {from: filename});
-    return blockParser.parse(root, filename, "query-test").then((block) => {
+    return blockParser.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
     });
   }
   @test "can add styles from a block"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -39,20 +45,19 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
-      analysis.startElement({});
-      analysis.addStyle(block);
-      analysis.endElement();
+      let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
+      element.addStaticClass(block);
+      analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
         elements: {
-          "el_a": {
-            correlations: [],
-            dynamic: [],
-            static: [ 0 ],
-            loc: {}
+          "a": {
+            staticStyles: [ 0 ],
+            dynamicClasses: [ ],
+            dynamicStates: [ ],
           }
         }
       };
@@ -62,7 +67,7 @@ export class KeyQueryTests {
   @test "can add dynamic styles from a block"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -72,20 +77,20 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
-      analysis.startElement({});
-      analysis.addStyle(block, true);
-      analysis.endElement();
+      let element: TestElement = analysis.startElement(POSITION_UNKNOWN, "div");
+      element.addDynamicClasses({condition: null, whenTrue: [block]});
+      analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".root"],
         elements: {
-          el_a: {
-            correlations: [],
-            dynamic: [ 0 ],
-            static: [ ],
-            loc: {}
+          a: {
+            tagName: "div",
+            staticStyles: [ ],
+            dynamicClasses: [ { condition: true, whenTrue: [0]} ],
+            dynamicStates: [ ],
           }
         }
       };
@@ -96,7 +101,7 @@ export class KeyQueryTests {
   @test "can correlate styles"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -106,37 +111,38 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
-      analysis.startElement({});
+      let element = analysis.startElement(POSITION_UNKNOWN);
       let klass = block.getClass("asdf");
       if (klass) {
-        analysis.addStyle(klass);
+        element.addStaticClass(klass);
         let state = klass.states.getState("larger");
         if (state) {
-          analysis.addStyle(state);
+          element.addStaticState(klass, state);
         }
       }
-      analysis.endElement();
+      analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]"],
         elements: {
-          el_a: {
-            correlations: [],
-            dynamic: [],
-            static: [ 0, 1 ],
-            loc: {}
+          "a": {
+            staticStyles: [ 0, 1 ],
+            dynamicClasses: [ ],
+            dynamicStates: [ ],
           }
         }
       };
       assert.deepEqual(result, expectedResult);
     });
   }
+  @skip
+  @test "uncomment"() {}
   @test "can add styles from two blocks"() {
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
       .root { color: blue; }
@@ -147,32 +153,30 @@ export class KeyQueryTests {
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block1, _]) => {
       analysis.blocks[""] = block1;
-      analysis.startElement({});
-      analysis.addStyle(block1);
-      analysis.endElement();
+      let element = analysis.startElement(POSITION_UNKNOWN);
+      element.addStaticClass(block1);
+      analysis.endElement(element);
       return this.parseBlock(`.root { border: 1px solid black; }`, "blocks/bar.block.css").then(([block2, _]) => {
         analysis.blocks["ref"] = block2;
-        analysis.startElement({});
-        analysis.addStyle(block2);
-        analysis.endElement();
+        let element = analysis.startElement(POSITION_UNKNOWN);
+        element.addStaticClass(block2);
+        analysis.endElement(element);
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis = {
+        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css", "ref": "blocks/bar.block.css"},
           elements: {
-            el_a: {
-              correlations: [],
-              dynamic: [],
-              static: [ 0 ],
-              loc: {}
+            a: {
+              staticStyles: [ 0 ],
+              dynamicClasses: [ ],
+              dynamicStates: [ ],
             },
-            el_b: {
-              correlations: [],
-              dynamic: [],
-              static: [ 1 ],
-              loc: {}
+            b: {
+              staticStyles: [ 1 ],
+              dynamicClasses: [ ],
+              dynamicStates: [ ],
             }
           },
-          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "ref.root"],
         };
         assert.deepEqual(result, expectedResult);
@@ -181,7 +185,7 @@ export class KeyQueryTests {
   }
 
   @test "adding dynamic styles enumerates correlation in analysis"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -204,24 +208,27 @@ export class KeyQueryTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
-      analysis.startElement({});
+      let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       let klass = block.getClass('asdf') as BlockClass;
-      analysis.addStyle( klass, false );
-      analysis.addStyle( klass.states.getState('larger') as State, true );
-      analysis.addStyle( aBlock.getClass('foo') as BlockClass, true );
-      analysis.endElement();
+      element.addStaticClass(klass);
+      element.addDynamicClasses({ condition: null, whenTrue: [aBlock.getClass('foo')!] });
+      element.addDynamicState(klass, klass.states.getState('larger')!, null);
+      analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
         elements: {
-          el_a: {
-            correlations: [],
-            dynamic: [ 1, 2],
-            static: [ 0 ],
-            loc: {}
-          }
+          a: {
+            staticStyles: [0],
+            dynamicClasses: [
+              { condition: true, whenTrue: [ 2 ]}
+            ],
+            dynamicStates: [
+              { condition: true, state: 1 }
+            ],
+          },
         }
       };
       assert.deepEqual(result, expectedResult);
@@ -229,7 +236,7 @@ export class KeyQueryTests {
   }
 
   @test "multiple dynamic values added using `addExclusiveStyles` enumerate correlations correctly in analysis"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -242,32 +249,35 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         analysis.blocks[""] = block;
-        analysis.startElement({ line: 10, column: 32 });
-        analysis.addStyle(block);
-        analysis.addExclusiveStyles( false, ...block.states.getGroup('color') );
-        analysis.addExclusiveStyles( false, ...block.states.getGroup('bgcolor') );
-        analysis.endElement();
+        let element: TestElement = analysis.startElement({ line: 10, column: 32 });
+        element.addDynamicClasses({condition: null, whenTrue: [block]});
+        element.addDynamicGroup( block, block.states.resolveGroup('color')!, null );
+        element.addDynamicState( block, block.states.getState('bgcolor')!, null );
+        analysis.endElement(element);
 
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis = {
+        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css"},
-          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "[state|bgcolor]", "[state|color]"],
           elements: {
-            el_a: {
-              correlations: [ [ -1, 1], [-1, 2]],
-              dynamic: [ ],
-              static: [ 0 ],
-              loc: {}
-            }
+            a: {
+              sourceLocation: { start: { filename: "templates/my-template.hbs", line: 10, column: 32 } },
+              staticStyles: [ ],
+              dynamicClasses: [ {condition: true, whenTrue: [ 0 ] } ],
+              dynamicStates: [
+                { stringExpression: true, group: {'color': 2 }, container: 0 },
+                { condition: true, state: 1, container: 0 },
+              ],
+            },
           }
         };
         assert.deepEqual(result, expectedResult);
     });
   }
 
-  @test "multiple exclusive dynamic values added using enumerate correlations correctly in analysis"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+  @test "adding the same styles more than once doesn't duplicate the styles found"() {
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -282,23 +292,109 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         analysis.blocks[""] = block;
-        analysis.startElement({ line: 10, column: 32 });
-        analysis.addStyle(block);
-        analysis.addExclusiveStyles( false, ...block.states.getGroup('color') );
-        analysis.addExclusiveStyles( false, ...block.states.getGroup('bgcolor') );
-        analysis.endElement();
+        let element: TestElement = analysis.startElement({ line: 10, column: 32 });
+        element.addStaticClass(block);
+        element.addDynamicGroup( block, block.states.resolveGroup('color')!, null );
+        element.addDynamicGroup( block, block.states.resolveGroup('color')!, null, true );
+        analysis.endElement(element);
 
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis = {
+        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css"},
-          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
-          stylesFound: [".root", "[state|bgcolor=blue]", "[state|bgcolor=red]", "[state|color=blue]", "[state|color=red]"],
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
+          stylesFound: [
+            ".root",
+            "[state|color=blue]",
+            "[state|color=red]"
+          ],
           elements: {
-            el_a: {
-              correlations: [ [ -1, 1, 2], [-1, 3, 4]],
-              dynamic: [ ],
-              static: [ 0 ],
-              loc: {}
+            "a": {
+              "sourceLocation": {
+                "start": { filename: "templates/my-template.hbs", "column": 32, "line": 10 }
+              },
+              "staticStyles": [ 0 ],
+              "dynamicClasses": [],
+              "dynamicStates": [
+                {
+                  "stringExpression": true,
+                  "group": {
+                    "blue": 1,
+                    "red": 2
+                  }
+                },
+                {
+                  "stringExpression": true,
+                  "disallowFalsy": true,
+                  "group": {
+                    "blue": 1,
+                    "red": 2
+                  }
+                },
+              ],
+            }
+          }
+        };
+
+        assert.deepEqual(result, expectedResult);
+    });
+  }
+  @test "multiple exclusive dynamic values added using enumerate correlations correctly in analysis"() {
+    let info = new Template("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      [state|color=red]    { color: red; }
+      [state|color=blue]   { color: blue; }
+      [state|bgcolor=red]  { color: red; }
+      [state|bgcolor=blue] { color: blue; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        analysis.blocks[""] = block;
+        let element: TestElement = analysis.startElement({ line: 10, column: 32 });
+        element.addStaticClass(block);
+        element.addDynamicGroup( block, block.states.resolveGroup('color')!, null );
+        element.addDynamicGroup( block, block.states.resolveGroup('bgcolor')!, null, true );
+        analysis.endElement(element);
+
+        let result = analysis.serialize();
+        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+          blocks: {"": "blocks/foo.block.css"},
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
+          stylesFound: [
+            ".root",
+            "[state|bgcolor=blue]",
+            "[state|bgcolor=red]",
+            "[state|color=blue]",
+            "[state|color=red]"
+          ],
+          elements: {
+            "a": {
+              "sourceLocation": {
+                "start": { filename: "templates/my-template.hbs", "column": 32, "line": 10 }
+              },
+              "staticStyles": [ 0 ],
+              "dynamicClasses": [],
+              "dynamicStates": [
+                {
+                  "stringExpression": true,
+                  "group": {
+                    "blue": 3,
+                    "red": 4
+                  }
+                },
+                {
+                  "stringExpression": true,
+                  "disallowFalsy": true,
+                  "group": {
+                    "blue": 1,
+                    "red": 2
+                  }
+                },
+              ],
             }
           }
         };
@@ -307,8 +403,8 @@ export class KeyQueryTests {
     });
   }
 
-  @test "adding an array of non dynamic styles adds all styles to correlations"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+  @test "toggling between two classes with states of the same name"() {
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -331,23 +427,30 @@ export class KeyQueryTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
-      analysis.startElement({});
-      let klass = block.getClass('asdf') as BlockClass;
-      analysis.addStyle( klass, false );
-      analysis.addExclusiveStyles(false, klass.states.getState('larger') as State, aBlock.getClass('foo') as BlockClass );
-      analysis.endElement();
+      let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
+      let asdf = block.getClass('asdf')!;
+      let fdsa = block.getClass('fdsa')!;
+      let foo = aBlock.getClass('foo')!;
+      element.addDynamicClasses({condition: null, whenTrue: [asdf], whenFalse: [fdsa, foo]});
+      // This is what we do when the same state is in the template for two
+      // classes that have the states of the same name.
+      element.addStaticState(asdf, asdf.states.getState('larger')!);
+      element.addStaticState(fdsa, fdsa.states.getState('larger')!);
+      analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
-        stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
+        stylesFound: [".asdf", ".asdf[state|larger]", ".fdsa", ".fdsa[state|larger]", "a.foo"],
         elements: {
-          el_a: {
-            correlations: [ [ -1, 1, 2 ] ],
-            dynamic: [ ],
-            static: [ 0 ],
-            loc: {}
-          }
+          a: {
+            staticStyles: [ ],
+            dynamicClasses: [ {condition: true, whenTrue: [ 0 ], whenFalse: [ 2, 4 ] } ],
+            dynamicStates: [
+              { state: 1, container: 0 },
+              { state: 3, container: 2 },
+            ],
+          },
         }
       };
       assert.deepEqual(result, expectedResult);
@@ -355,7 +458,7 @@ export class KeyQueryTests {
   }
 
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is true"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -378,24 +481,27 @@ export class KeyQueryTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
-      analysis.startElement({});
-      let klass = aBlock.getClass('foo') as BlockClass;
-      analysis.addStyle( klass, false );
-      analysis.addStyle( klass.states.getState('bar') as State, false );
-      analysis.addExclusiveStyles(true, block.getClass('asdf') as BlockClass,  block.getClass('fdsa') as BlockClass);
-      analysis.endElement();
+      let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
+      let klass = aBlock.getClass('foo')!;
+      element.addStaticClass(klass);
+      element.addDynamicClasses({
+        condition: null,
+        whenTrue: [block.getClass('asdf')!],
+        whenFalse: [block.getClass('fdsa')!]
+      });
+      element.addStaticState(klass, klass.states.getState('bar')!);
+      analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
         elements: {
-          el_a: {
-            correlations: [ [ 0, 1 ] ],
-            dynamic: [ ],
-            static: [ 2, 3 ],
-            loc: {}
-          }
+          a: {
+            staticStyles: [ 2, 3 ],
+            dynamicClasses: [ {condition: true, whenTrue: [ 0 ], whenFalse: [ 1 ] } ],
+            dynamicStates: [ ],
+          },
         }
       };
       assert.deepEqual(result, expectedResult);
@@ -403,7 +509,55 @@ export class KeyQueryTests {
   }
 
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is false"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info);
+    let imports = new MockImportRegistry();
+    imports.registerSource("blocks/a.css",
+      `.foo { border: 3px; }
+       .foo[state|bar] { font-size: 26px; }
+      `
+    );
+
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    let css = `
+      @block-reference a from "a.css";
+
+      .root { color: blue; }
+      [state|foo=red] { color: red; }
+      [state|foo=purple] { color: purple; }
+      .asdf { font-size: 20px; }
+      .fdsa { font-size: 22px; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      analysis.blocks[""] = block;
+      let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
+      let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
+      element.addStaticClass( block );
+      element.addDynamicGroup(block, block.states.resolveGroup("foo")!, null, true);
+      analysis.endElement(element);
+      let result = analysis.serialize();
+      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+        blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
+        template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
+        stylesFound: [".root", "[state|foo=purple]", "[state|foo=red]"],
+        elements: {
+          a: {
+            staticStyles: [ 0 ],
+            dynamicClasses: [ ],
+
+            dynamicStates: [
+              { stringExpression: true, group: {"red": 2, "purple": 1}, disallowFalsy: true },
+            ],
+          }
+        }
+      };
+      assert.deepEqual(result, expectedResult);
+    });
+  }
+  @test "can generate an analysis for the optimizer"() {
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -423,35 +577,65 @@ export class KeyQueryTests {
       .asdf { font-size: 20px; }
       .fdsa { font-size: 22px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", reader, "main").then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
-      analysis.startElement({});
+      let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       let klass = aBlock.getClass('foo') as BlockClass;
-      analysis.addStyle( klass, false );
-      analysis.addStyle( klass.states.getState('bar') as State, false );
-      analysis.addExclusiveStyles(false, block.getClass('asdf') as BlockClass,  block.getClass('fdsa') as BlockClass);
-      analysis.endElement();
-      let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis = {
-        blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-        template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
-        stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
-        elements: {
-          el_a: {
-            correlations: [ [ -1, 0, 1 ]],
-            dynamic: [ ],
-            static: [ 2, 3 ],
-            loc: {}
+      element.addStaticClass( klass );
+      element.addDynamicClasses({condition: null, whenTrue: [block.getClass('asdf')!], whenFalse: [block.getClass('fdsa')!]});
+      element.addStaticState(klass, klass.states.getState('bar')! );
+      analysis.endElement(element);
+      let options: PluginOptions = {};
+      let reader = new OptionsReader(options);
+      let optimizerAnalysis = analysis.forOptimizer(reader);
+      let result = optimizerAnalysis.serialize();
+      let expectedResult: SerializedOptimizedAnalysis<"Opticss.Template"> = {
+        template: {
+          type: "Opticss.Template",
+          identifier: "templates/my-template.hbs"
+        },
+        elements: [
+          {
+            "attributes": [
+              {
+                "name": "class",
+                "value": {
+                  "allOf": [
+                    {
+                      "constant": "a__foo"
+                    },
+                    {
+                      "constant": "a__foo--bar"
+                    },
+                    {
+                      "oneOf": [
+                        {
+                          "constant": "main__asdf"
+                        },
+                        {
+                          "constant": "main__fdsa"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "tagname": {
+              "value": {
+                "unknown": true
+              }
+            }
           }
-        }
+        ]
       };
       assert.deepEqual(result, expectedResult);
     });
   }
 
-  @test "correlating two classes from the same block on the same elment throws an error"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+  @test "correlating two classes from the same block on the same element throws an error"() {
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -468,19 +652,19 @@ export class KeyQueryTests {
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      `Classes "fdsa" and "asdf" from the same block are not allowed on the same element. (templates/my-template.hbs:10:11)`,
+      `Classes "fdsa" and "asdf" from the same block are not allowed on the same element at the same time. (templates/my-template.hbs:10:11)`,
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
-          analysis.startElement({ line: 10, column: 11});
-          analysis.addStyle( block.getClass('asdf') as BlockClass, false );
-          analysis.addStyle( block.getClass('fdsa') as BlockClass, false );
-          analysis.endElement();
+          let element = analysis.startElement({ line: 10, column: 11});
+          element.addStaticClass( block.getClass('asdf')! );
+          element.addStaticClass( block.getClass('fdsa')!, );
+          analysis.endElement(element);
       })
     );
   }
 
   @test "built-in template validators may be configured with boolean values"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { "no-class-pairs": false });
     let imports = new MockImportRegistry();
 
@@ -497,16 +681,16 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
-          analysis.startElement({});
-          analysis.addStyle( block.getClass('asdf') as BlockClass, false );
-          analysis.addStyle( block.getClass('fdsa') as BlockClass, false );
-          analysis.endElement();
+          let element = analysis.startElement(POSITION_UNKNOWN);
+          element.addStaticClass( block.getClass('asdf')!);
+          element.addStaticClass( block.getClass('fdsa')!);
+          analysis.endElement(element);
       });
   }
 
   @test "custom template validators may be passed to analysis"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info, { customValidator(data, err){ if (data) err('CUSTOM ERROR'); } });
+    let info = new Template("templates/my-template.hbs");
+    let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err){ if (data) err('CUSTOM ERROR'); } });
     let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
@@ -520,14 +704,14 @@ export class KeyQueryTests {
       "CUSTOM ERROR (templates/my-template.hbs:1:2)",
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
-          analysis.startElement({ line: 1, column: 2 });
-          analysis.endElement();
+          let element = analysis.startElement({ line: 1, column: 2 });
+          analysis.endElement(element);
       })
     );
   }
 
   @test "adding both root and a class from the same block to the same elment throws an error"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -547,17 +731,17 @@ export class KeyQueryTests {
       "Cannot put block classes on the block's root element (templates/my-template.hbs:10:32)",
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]): [Block, postcss.Container] => {
           analysis.blocks[""] = block;
-          analysis.startElement({ line: 10, column: 32 });
-          analysis.addStyle( block as Block, false, );
-          analysis.addStyle( block.getClass('fdsa') as BlockClass, false);
-          analysis.endElement();
+          let element = analysis.startElement({ line: 10, column: 32 });
+          element.addStaticClass(block);
+          element.addStaticClass(block.getClass('fdsa')!);
+          analysis.endElement(element);
           return [block, _];
       })
     );
   }
 
-  @test "adding both root and a state from the same block to the same elment is allowed"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+  @test "adding both root and a state from the same block to the same element is allowed"() {
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
 
@@ -574,16 +758,16 @@ export class KeyQueryTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]): [Block, postcss.Container] => {
           analysis.blocks[""] = block;
-          analysis.startElement({ line: 10, column: 32 });
-          analysis.addStyle( block as Block, false, );
-          analysis.addStyle( block.states.getState("foo") as State, false);
-          analysis.endElement();
+          let element = analysis.startElement({ line: 10, column: 32 });
+          element.addStaticClass( block );
+          element.addStaticState(block, block.states.getState("foo")!);
+          analysis.endElement(element);
           return [block, _];
       });
   }
 
   @test "classes from other blocks may be added to the root element"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     imports.registerSource("blocks/a.css",
@@ -601,22 +785,28 @@ export class KeyQueryTests {
         let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
         analysis.blocks[""] = block;
         analysis.blocks["a"] = aBlock;
-        analysis.startElement({ line: 10, column: 32 });
-        analysis.addStyle( block as Block, false, );
-        analysis.addStyle( aBlock.getClass('foo') as BlockClass, false);
-        analysis.endElement();
+        let element = analysis.startElement({ line: 10, column: 32 });
+        element.addStaticClass( block );
+        element.addStaticClass( aBlock.getClass('foo')! );
+        analysis.endElement(element);
 
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis = {
+        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
-          template: { type: TemplateInfo.typeName, identifier: "templates/my-template.hbs"},
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "a.foo"],
           elements: {
-            el_a: {
-              correlations: [ ],
-              dynamic: [ ],
-              static: [ 0, 1 ],
-              loc: {}
+            a: {
+              dynamicClasses: [],
+              dynamicStates: [],
+              sourceLocation: {
+                start: {
+                  column: 32,
+                  filename: "templates/my-template.hbs",
+                  line: 10
+                }
+              },
+              staticStyles: [ 0, 1 ]
             }
           }
         };
@@ -625,7 +815,7 @@ export class KeyQueryTests {
   }
 
   @test "throws when states are applied without their parent root"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
@@ -637,18 +827,18 @@ export class KeyQueryTests {
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state "[state|test]" without parent block also applied. (templates/my-template.hbs:10:32)',
+      'Cannot use state "[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
-          analysis.startElement({ line: 10, column: 32 });
-          analysis.addStyle( block.states.getState('test') as State, false);
-          analysis.endElement();
+          let element = analysis.startElement({ line: 10, column: 32 });
+          element.addStaticState(block, block.states.getState('test')! );
+          analysis.endElement(element);
           assert.deepEqual(1, 1);
       }));
   }
 
   @test "throws when states are applied without their parent BlockClass"() {
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
@@ -661,20 +851,20 @@ export class KeyQueryTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state ".foo[state|test]" without parent class also applied. (templates/my-template.hbs:10:32)',
+      'Cannot use state ".foo[state|test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
-          analysis.startElement({ line: 10, column: 32 });
+          let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass('foo') as BlockClass;
-          analysis.addStyle( klass.states.getState('test') as State, false);
-          analysis.endElement();
+          element.addStaticState(klass, klass.states.getState('test')! );
+          analysis.endElement(element);
           assert.deepEqual(1, 1);
     }));
 
   }
 
   @test 'Throws when inherited states are applied without their root'(){
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
@@ -701,22 +891,22 @@ export class KeyQueryTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state ".pretty[state|color=yellow]" without parent class also applied. (templates/my-template.hbs:10:32)',
+      'Cannot use state ".pretty[state|color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
           analysis.blocks[""] = block;
           analysis.blocks["a"] = aBlock;
-          analysis.startElement({ line: 10, column: 32 });
+          let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass('pretty') as BlockClass;
           let group = klass.states.resolveGroup('color') as {[name: string]: State};
-          analysis.addStyle( group['yellow'], false);
-          analysis.endElement();
+          element.addStaticState(klass, group['yellow'] );
+          analysis.endElement(element);
           assert.deepEqual(1, 1);
     }));
   }
 
   @test 'Inherited states pass validation when applied with their root'(){
-    let info = new TemplateInfo("templates/my-template.hbs");
+    let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
@@ -745,16 +935,16 @@ export class KeyQueryTests {
           let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
           analysis.blocks[""] = block;
           analysis.blocks["a"] = aBlock;
-          analysis.startElement({ line: 10, column: 32 });
+          let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass('pretty') as BlockClass;
           let group = klass.states.resolveGroup('color') as {[name: string]: State};
-          analysis.addStyle( klass, false);
-          analysis.addStyle( group['yellow'], false);
-          analysis.endElement();
+          element.addStaticClass( klass );
+          element.addStaticState(klass, group['yellow'] );
+          analysis.endElement(element);
           assert.deepEqual(1, 1);
     });
   }
-
+  /*
   @test "analysis can be serialized and deserialized"() {
     let source = `
       .root {}
@@ -769,10 +959,11 @@ export class KeyQueryTests {
     let options: PluginOptions =  {
       importer: testImporter
     };
-    let factory = new BlockFactory(options, postcss);
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader, postcss);
     let blockPromise = <Promise<Block>>processPromise.then(result => {
       if (result.root) {
-        let parser = new BlockParser(postcss, options, factory);
+        let parser = new BlockParser(options, factory);
         try {
           return parser.parse(result.root, "test.css", "a-block");
         } catch (e) {
@@ -783,33 +974,37 @@ export class KeyQueryTests {
       }
     });
     let analysisPromise = blockPromise.then(block => {
-      let template = new TemplateInfo("my-template.html");
+      let template = new Template("my-template.html");
       let analysis = new TemplateAnalysis(template);
       analysis.blocks["a"] = block;
-      analysis.startElement({});
-      analysis.addStyle(block.find(".root") as BlockObject);
-      analysis.endElement();
-      analysis.startElement({});
-      analysis.addStyle(block.find(".myclass") as BlockObject, false);
-      analysis.addStyle(block.find(".myclass[state|a-sub-state]") as BlockObject, true);
-      analysis.endElement();
-      analysis.startElement({});
-      analysis.addExclusiveStyles(false, block.find(".myclass") as BlockObject, block.find(".myclass[state|a-sub-state]") as BlockObject);
-      analysis.endElement();
-      analysis.startElement({});
-      analysis.addExclusiveStyles(true, block.find(".myclass") as BlockObject, block.find(".myclass[state|a-sub-state]") as BlockObject);
-      analysis.endElement();
+      let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
+      element.addStaticClass(block.find(".root") as Block);
+      analysis.endElement(element);
+      element = analysis.startElement(POSITION_UNKNOWN);
+      element.addStaticClass(block.find(".myclass") as BlockClass);
+      element.addDynamicState(block.find(".myclass[state|a-sub-state]") as State, null);
+      analysis.endElement(element);
+      element = analysis.startElement(POSITION_UNKNOWN);
+      element.addDynamicClasses({condition: null, whenTrue: [block.find(".myclass") as BlockClass]});
+      element.addStaticState(block.find(".myclass[state|a-sub-state]") as State);
+      analysis.endElement(element);
+      element = analysis.startElement(POSITION_UNKNOWN);
+      element.addDynamicClasses({condition: null, whenFalse: [block.find(".myclass") as BlockClass]});
+      element.addStaticState(block.find(".myclass[state|a-sub-state]") as State);
+      analysis.endElement(element);
       return analysis;
     });
     let testPromise = analysisPromise.then(analysis => {
       let serialization = analysis.serialize();
-      assert.deepEqual(serialization.template, {type: TemplateInfo.typeName, identifier: "my-template.html"});
-      let factory = new BlockFactory(options, postcss);
-      return TemplateAnalysis.deserialize<TemplateInfo>(serialization, factory).then(analysis => {
+      assert.deepEqual(serialization.template, {type: "Opticss.Template", identifier: "my-template.html"});
+      let reader = new OptionsReader(options);
+      let factory = new BlockFactory(reader, postcss);
+      return TemplateAnalysis.deserialize<"Opticss.Template">(serialization, factory).then(analysis => {
         let reserialization = analysis.serialize();
         assert.deepEqual(serialization, reserialization);
       });
     });
     return testPromise;
   }
+  */
 }

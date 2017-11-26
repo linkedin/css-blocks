@@ -1,3 +1,4 @@
+import { OptionsReader } from '../src/OptionsReader';
 import { assert } from "chai";
 import { suite, test, skip } from "mocha-typescript";
 
@@ -9,6 +10,7 @@ import {
   ProcessedFile,
   annotateCssContentWithSourceMap,
   PluginOptions,
+  CssBlockOptionsReadonly,
 } from "../src/index";
 
 import {
@@ -16,7 +18,6 @@ import {
   MockImportRegistry
 } from "./util/MockImportRegistry";
 import { RawSourceMap } from "source-map";
-import { CssBlockOptionsReadonly } from "../src/options";
 
 @suite("Preprocessing")
 export class PreprocessorTest {
@@ -26,7 +27,8 @@ export class PreprocessorTest {
     let options: PluginOptions = {
       importer: registry.importer()
     };
-    let factory = new BlockFactory(options);
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader);
     return factory.getBlock("foo.block.styl").then((_block) => {
       throw new Error("exception not raised!");
     },(reason: Error) => {
@@ -49,7 +51,8 @@ export class PreprocessorTest {
       importer: registry.importer(),
       preprocessors
     };
-    let factory = new BlockFactory(options);
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
       assert.equal(block.name, "lolwtf");
@@ -77,7 +80,9 @@ export class PreprocessorTest {
       importer: registry.importer(),
       preprocessors
     };
-    let factory = new BlockFactory(options);
+
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
       assert.equal(block.name, "lolwtf");
@@ -108,7 +113,9 @@ export class PreprocessorTest {
       preprocessors,
       disablePreprocessChaining: true
     };
-    let factory = new BlockFactory(options);
+
+    let reader = new OptionsReader(options);
+    let factory = new BlockFactory(reader);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
       assert.equal(block.name, "lolwtf");
