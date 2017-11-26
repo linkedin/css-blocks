@@ -9,25 +9,40 @@ import {
   MultiTemplateAnalyzer,
   StyleAnalysis,
   BlockObject,
-  TemplateInfo,
   MetaTemplateAnalysis,
   TemplateAnalysis,
+  BlockFactory,
+  PluginOptionsReader
+} from "css-blocks";
+import {
+  TemplateInfo,
   SerializedTemplateInfo,
   TemplateInfoFactory,
-  TemplateInfoConstructor,
-  BlockFactory
-} from "css-blocks";
+} from "@opticss/template-api";
+import {
+  POSITION_UNKNOWN,
+} from "@opticss/element-analysis";
+
 import { BLOCK_FIXTURES_DIRECTORY } from "../util/testPaths";
 
-class TestTemplateInfo extends TemplateInfo {
+declare module "@opticss/template-api" {
+  interface TemplateTypes {
+    "WebpackPlugin.TestTemplate": TestTemplateInfo;
+  }
+}
+
+export class TestTemplateInfo implements TemplateInfo<"WebpackPlugin.TestTemplate"> {
+  type: "WebpackPlugin.TestTemplate";
+  identifier: string;
   index: number;
   constructor(identifier: string, index: number) {
-    super(identifier);
+    this.type = "WebpackPlugin.TestTemplate";
+    this.identifier = identifier;
     this.index = index;
   }
-  serialize(): SerializedTemplateInfo {
+  serialize(): SerializedTemplateInfo<"WebpackPlugin.TestTemplate"> {
     return {
-      type: TestTemplateInfo.typeName,
+      type: this.type,
       identifier: this.identifier,
       data: [ this.index ]
     };
@@ -35,12 +50,11 @@ class TestTemplateInfo extends TemplateInfo {
   static deserialize(identifier: string, index: number): TestTemplateInfo {
     return new TestTemplateInfo(identifier, index);
   }
-  static typeName = "WebpackPlugin.TestTemplateInfo";
 }
 
-TemplateInfoFactory.register(TestTemplateInfo.typeName, TestTemplateInfo as TemplateInfoConstructor);
+TemplateInfoFactory.constructors["WebpackPlugin.TestTemplate"] = TestTemplateInfo.deserialize;
 
-class TestAnalysis extends TemplateAnalysis<TestTemplateInfo> {
+class TestAnalysis extends TemplateAnalysis<"WebpackPlugin.TestTemplate"> {
   blocks: { [name: string]: Block } = {};
   constructor(template: TestTemplateInfo) {
     super(template);
@@ -72,22 +86,21 @@ class TestAnalysis extends TemplateAnalysis<TestTemplateInfo> {
   }
 }
 
-class TestMetaTemplateAnalysis extends MetaTemplateAnalysis<TestTemplateInfo> {
-  analyses: TemplateAnalysis<TestTemplateInfo>[];
+class TestMetaTemplateAnalysis extends MetaTemplateAnalysis {
   constructor() {
     super();
     this.analyses.push(new TestAnalysis(new TestTemplateInfo("test.html", 1)));
   }
 }
 
-class TestTemplateAnalyzer implements MultiTemplateAnalyzer<TemplateInfo> {
+class TestTemplateAnalyzer implements MultiTemplateAnalyzer {
   blockFactory: BlockFactory;
   analysis: TestMetaTemplateAnalysis;
   constructor(a: TestMetaTemplateAnalysis, factory: BlockFactory) {
     this.analysis = a;
     this.blockFactory = factory;
   }
-  analyze(): Promise<MetaTemplateAnalysis<TemplateInfo>> {
+  analyze(): Promise<MetaTemplateAnalysis> {
     return Promise.resolve(this.analysis);
   }
   reset() {
@@ -100,16 +113,23 @@ function fixture(name: string) {
 }
 
 export function config(): Promise<WebpackConfiguration> {
-  let factory = new BlockFactory({}, postcss);
+  let reader = new PluginOptionsReader({});
+  let factory = new BlockFactory(reader, postcss);
   let block1 = factory.getBlock(fixture("concat-1"));
   let block2 = factory.getBlock(fixture("concat-2"));
   return Promise.all([block1, block2]).then(blocks => {
     let analysis = new TestMetaTemplateAnalysis();
     blocks.forEach((b, i) => {
-      analysis.analyses[0].blocks[`concat-${i}`] = b;
+      analysis.eachAnalysis(a => {
+        a.blocks[`concat-${i}`] = b;
+        let el = a.startElement(POSITION_UNKNOWN);
+        el.addStaticClass(b);
+        a.endElement(el);
+      });
     });
 
     let cssBlocks = new CssBlocksPlugin({
+      outputCssFile: "css-blocks.css",
       analyzer: new TestTemplateAnalyzer(analysis, factory)
     });
 

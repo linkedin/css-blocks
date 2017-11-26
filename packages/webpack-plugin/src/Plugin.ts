@@ -1,60 +1,82 @@
-import Tapable = require("tapable");
+import Tapable = require('tapable');
 import { Plugin as WebpackPlugin, Compiler as WebpackCompiler } from "webpack";
-import * as debugGenerator from "debug";
-import * as postcss from "postcss";
-import * as path from "path";
-import { SourceMapSource, ConcatSource, Source } from 'webpack-sources';
+import * as debugGenerator from 'debug';
+import * as postcss from 'postcss';
+import * as path from 'path';
+import { SourceMapConsumer, SourceMapGenerator } from "source-map";
+import { SourceMapSource, Source, RawSource } from 'webpack-sources';
 
 import {
   MultiTemplateAnalyzer,
-  TemplateInfo,
   MetaTemplateAnalysis,
   Block,
   BlockCompiler,
   PluginOptions as CssBlocksOptions,
   PluginOptionsReader as CssBlocksOptionsReader,
-  // StyleMapping,
-  MetaStyleMapping,
+  StyleMapping,
+  TemplateAnalysis,
 } from "css-blocks";
+import {
+  TemplateTypes
+} from "@opticss/template-api";
+import {
+  Optimizer,
+  OptiCSSOptions,
+  DEFAULT_OPTIONS,
+  OptimizationResult,
+  Actions,
+} from "opticss";
 
-export interface CssBlocksWebpackOptions<Template extends TemplateInfo> {
+export interface CssBlocksWebpackOptions {
   /// The name of the instance of the plugin. Defaults to outputCssFile.
   name?: string;
   /// The analzyer that decides what templates are analyzed and what blocks will be compiled.
-  analyzer: MultiTemplateAnalyzer<Template>;
+  analyzer: MultiTemplateAnalyzer;
   /// The output css file for all compiled CSS Blocks. Defaults to "css-blocks.css"
   outputCssFile?: string;
   /// Compilation options pass to css-blocks
-  compilationOptions?: CssBlocksOptions;
+  compilationOptions?: Partial<CssBlocksOptions>;
+  /// Optimization options passed to opticss
+  optimization?: OptiCSSOptions;
 }
 
-interface CompilationResult<Template extends TemplateInfo> {
-  css: ConcatSource;
-  mapping: MetaStyleMapping<Template>;
-}
-
-export interface BlockCompilationComplete<Template extends TemplateInfo> {
+export interface BlockCompilationError {
   compilation: any;
   assetPath: string;
-  mapping: MetaStyleMapping<Template>;
+  error: Error;
+  mapping?: StyleMapping;
+  optimizerActions?: Actions;
+}
+export interface BlockCompilationComplete {
+  compilation: any;
+  assetPath: string;
+  mapping: StyleMapping;
+  optimizerActions: Actions;
 }
 
 interface Assets {
   [key: string]: Source;
 }
 
-export class CssBlocksPlugin<Template extends TemplateInfo>
+interface CompilationResult {
+  optimizationResult: OptimizationResult;
+  blocks: Set<Block>;
+  analyses: Array<TemplateAnalysis<keyof TemplateTypes>>;
+}
+
+export class CssBlocksPlugin
   extends Tapable
   implements WebpackPlugin
 {
+  optimizationOptions: OptiCSSOptions;
   name: string;
-  analyzer: MultiTemplateAnalyzer<Template>;
+  analyzer: MultiTemplateAnalyzer;
   projectDir: string;
   outputCssFile: string;
   compilationOptions: CssBlocksOptions;
   debug: (message: string) => void;
 
-  constructor(options: CssBlocksWebpackOptions<Template>) {
+  constructor(options: CssBlocksWebpackOptions) {
     super();
 
     this.debug = debugGenerator("css-blocks:webpack");
@@ -63,6 +85,8 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
     this.name = options.name || this.outputCssFile;
     this.compilationOptions = options.compilationOptions || {};
     this.projectDir = process.cwd();
+    this.optimizationOptions =
+      Object.assign({}, DEFAULT_OPTIONS, options.optimization);
   }
 
   apply(compiler: WebpackCompiler) {
@@ -77,7 +101,7 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
       this.analyzer.reset();
 
       // Try to run our analysis.
-      let pendingResult: Promise<MetaStyleMapping<Template>> = this.analyzer.analyze()
+      let pendingResult: Promise<StyleMapping | void> = this.analyzer.analyze()
 
       // If analysis fails, drain our BlockFactory, add error to compilation error list and propagate.
       .catch((err) => {
@@ -90,23 +114,36 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
 
       // If analysis finished successfully, compile our blocks to output.
       .then(analysis => {
-        return this.compileBlocks(<MetaTemplateAnalysis<Template>>analysis, path.join(outputPath, this.outputCssFile));
+        return this.compileBlocks(analysis, path.join(outputPath, this.outputCssFile));
       })
 
       // Add the resulting css output to our build.
       .then(result => {
         this.trace(`setting css asset: ${this.outputCssFile}`);
-        assets[this.outputCssFile] = result.css;
-        let completion: BlockCompilationComplete<Template> = {
+        let source: Source;
+        if (result.optimizationResult.output.sourceMap) {
+          let consumer = new SourceMapConsumer(result.optimizationResult.output.sourceMap);
+          let map = SourceMapGenerator.fromSourceMap(consumer);
+          source = new SourceMapSource(
+            result.optimizationResult.output.content.toString(),
+            "optimized css",
+            map.toJSON());
+        } else {
+          source = new RawSource(result.optimizationResult.output.content.toString());
+        }
+        assets[`${this.outputCssFile}.log`] = new RawSource(result.optimizationResult.actions.performed.map(a => a.logString()).join("\n"));
+        assets[this.outputCssFile] = source;
+        let completion: BlockCompilationComplete = {
           compilation: compilation,
           assetPath: this.outputCssFile,
-          mapping: result.mapping
+          mapping: new StyleMapping(result.optimizationResult.styleMapping, result.blocks, new CssBlocksOptionsReader(this.compilationOptions), result.analyses),
+          optimizerActions: result.optimizationResult.actions,
         };
         return completion;
       })
 
       // Notify the world when complete.
-      .then<BlockCompilationComplete<Template>>((completion) => {
+      .then<BlockCompilationComplete>((completion) => {
         this.trace(`notifying of completion`);
         this.notifyComplete(completion, cb);
         this.trace(`notified of completion`);
@@ -121,17 +158,15 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
       // If something bad happened, log the error and pretend like nothing happened
       // by notifying deps of completion and returning an empty MetaStyleMapping
       // so compilation can continue.
-      .catch((err) => {
+      .catch((error) => {
         this.trace(`notifying of compilation failure`);
-        compilation.errors.push(err);
-        let mapping = new MetaStyleMapping<Template>();
+        compilation.errors.push(error);
         this.notifyComplete({
-          compilation: compilation,
+          error,
+          compilation,
           assetPath: this.outputCssFile,
-          mapping: mapping
         }, cb);
         this.trace(`notified of compilation failure`);
-        return mapping;
       });
 
       compilation.plugin("normal-module-loader", (context: any, mod: any) => {
@@ -158,46 +193,59 @@ export class CssBlocksPlugin<Template extends TemplateInfo>
 
     });
   }
-  private compileBlocks(analysis: MetaTemplateAnalysis<Template>, cssOutputName: string): CompilationResult<Template> {
+  private compileBlocks(analysis: MetaTemplateAnalysis, cssOutputName: string): Promise<CompilationResult> {
     let options: CssBlocksOptions = this.compilationOptions;
     let reader = new CssBlocksOptionsReader(options);
     let blockCompiler = new BlockCompiler(postcss, options);
-    let cssBundle = new ConcatSource();
     let numBlocks = 0;
-    analysis.blockDependencies().forEach((block: Block) => {
+    let optimizer = new Optimizer(this.optimizationOptions, analysis.optimizationOptions());
+    let blocks = analysis.transitiveBlockDependencies();
+    for (let block of blocks) {
       if (block.root && block.identifier) {
+        blocks.add(block);
         this.trace(`compiling ${block.identifier}.`);
-        let originalSource = block.root.toString();
         let root = blockCompiler.compile(block, block.root, analysis);
         let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
         // TODO: handle a sourcemap from compiling the block file via a preprocessor.
         let filename = reader.importer.filesystemPath(block.identifier, reader) || reader.importer.debugIdentifier(block.identifier, reader);
-        let source = new SourceMapSource(result.css, filename, result.map.toJSON(), originalSource);
-        cssBundle.add(source);
+        optimizer.addSource({
+          content: result.css,
+          filename,
+          sourceMap: result.map.toJSON()
+        });
         numBlocks++;
       }
+    }
+    let analyses = new Array<TemplateAnalysis<keyof TemplateTypes>>();
+    analysis.eachAnalysis(a => {
+      this.trace(`Adding analysis for ${a.template.identifier} to optimizer.`);
+      this.trace(`Analysis for ${a.template.identifier} has ${a.elementCount()} elements.`);
+      analyses.push(a);
+      optimizer.addAnalysis(a.forOptimizer(reader));
     });
     this.trace(`compiled ${numBlocks} blocks.`);
-    let metaMapping = MetaStyleMapping.fromMetaAnalysis(analysis, reader);
-    return {
-      css: cssBundle,
-      mapping: metaMapping
-    };
+    return optimizer.optimize(cssOutputName).then(optimizationResult => {
+      return {
+        optimizationResult,
+        blocks,
+        analyses,
+      };
+    });
   }
   trace(message: string) {
     message = message.replace(this.projectDir + "/", "");
     this.debug(`[${this.name}] ${message}`);
   }
-  onPendingCompilation(handler: (pendingResult: Promise<MetaStyleMapping<Template>>) => void) {
+  onPendingCompilation(handler: (pendingResult: Promise<StyleMapping | void>) => void) {
     this.plugin("block-compilation-pending", handler);
   }
-  notifyPendingCompilation(pendingResult: Promise<MetaStyleMapping<Template>>) {
+  notifyPendingCompilation(pendingResult: Promise<StyleMapping | void>) {
     this.applyPlugins("block-compilation-pending", pendingResult);
   }
-  onComplete(handler: (result: BlockCompilationComplete<Template>, cb: (err: Error) => void) => void) {
+  onComplete(handler: (result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void) => void) {
     this.plugin("block-compilation-complete", handler);
   }
-  notifyComplete(result: BlockCompilationComplete<Template>, cb: (err: Error) => void) {
+  notifyComplete(result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void) {
     this.applyPluginsAsync("block-compilation-complete", result, cb);
   }
 }

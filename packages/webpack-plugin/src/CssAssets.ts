@@ -5,6 +5,9 @@ import * as fs from "fs";
 import { Source, RawSource, SourceMapSource, ConcatSource } from "webpack-sources";
 import { RawSourceMap } from "source-map";
 import * as convertSourceMap from "convert-source-map";
+import * as debugGenerator from 'debug';
+
+const debug = debugGenerator("css-blocks:webpack:assets");
 
 /**
  * Options for managing CSS assets without javascript imports.
@@ -117,6 +120,7 @@ export class CssAssets {
         // TODO: get the watcher to watch these files on disk
         // TODO: Use loaders to get these files into the assets -- which may help with the watching.
         compiler.plugin("emit", (compilation, cb) => {
+            debug("emitting assets");
             let assetPaths = Object.keys(this.options.cssFiles);
             async.forEach(assetPaths, (assetPath, outputCallback) => {
                 let asset = this.options.cssFiles[assetPath];
@@ -158,6 +162,7 @@ export class CssAssets {
         // strings of assets that should be in the asset.
         // TODO: maybe some glob or regex support
         compiler.plugin("emit", (compilation, cb) => {
+            debug("concatenating assets");
             if (!this.options.concat) return;
             let concatFiles = Object.keys(this.options.concat);
             concatFiles.forEach((concatFile) => {
@@ -192,9 +197,11 @@ export class CssAssets {
         // true (false by default)
         compiler.plugin("emit", (compilation, cb) => {
             if (!this.options.emitSourceMaps) {
+                debug("not adding sourcemaps");
                 cb();
                 return;
             }
+            debug("adding sourcemaps");
             let assetPaths = Object.keys(compilation.assets).filter(p => /\.css$/.test(p));
             assetPaths.forEach(assetPath => {
                 let asset = compilation.assets[assetPath];

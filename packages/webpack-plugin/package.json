@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/webpack-plugin",
-  "version": "0.12.2",
+  "version": "0.15.0",
   "description": "Webpack plugin for css-blocks.",
   "main": "dist/src/index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   },
   "types": "dist/src",
   "files": [
-    "dist",
+    "dist/src",
     "*.md",
     "test/mocha.opts"
   ],
@@ -40,6 +40,7 @@
     "@types/extract-text-webpack-plugin": "^2.1.0",
     "@types/glob": "^5.0.30",
     "@types/node": "^7.0.13",
+    "@types/webpack": "^3.0.14",
     "@types/webpack-merge": "0.0.4",
     "@types/webpack-sources": "^0.1.2",
     "chai": "^3.5.0",
@@ -64,16 +65,17 @@
     "webpack-merge": "^4.1.0"
   },
   "dependencies": {
-    "@types/webpack": "^3.0.14",
+    "@opticss/element-analysis": "^0.2.0",
+    "@opticss/template-api": "^0.2.0",
     "async": "^2.4.1",
     "convert-source-map": "^1.5.0",
-    "css-blocks": "^0.12.1",
+    "css-blocks": "^0.15.0",
     "debug": "^2.6.8",
     "install": "^0.10.1",
     "loader-utils": "^1.0.1",
+    "opticss": "^0.2.0",
     "postcss": "^5.2.17",
     "source-map": "^0.5.6",
-    "virtual-module-webpack-plugin": "^0.2.0",
     "webpack-sources": "^1.0.1"
   }
 }

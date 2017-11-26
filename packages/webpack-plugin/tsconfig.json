@@ -22,23 +22,14 @@
     "traceResolution": false,
     "baseUrl": ".",
     "paths": {
-      "perfectionist": [
-        "node_modules/css-blocks/types-local/perfectionist"
+      "webpack": [
+        "node_modules/@types/webpack"
       ],
       "postcss": [
         "node_modules/postcss"
       ],
-      "postcss-selector-parser": [
-        "node_modules/css-blocks/types-local/postcss-selector-parser"
-      ],
-      "regexpu-core": [
-        "node_modules/css-blocks/types-local/regexpu-core"
-      ],
       "loader-utils": [
         "types-local/loader-utils"
-      ],
-      "virtual-module-webpack-plugin": [
-        "types-local/virtual-module-webpack-plugin"
       ]
     }
   },

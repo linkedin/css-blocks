@@ -74,4 +74,8 @@ export class PluginTest {
       });
     });
   }
+  @skip
+  @test "figure out why the paths in sourcemap sources are wrong in prev test."(){
+    // there's an extra directory 'test/' in the paths.
+  }
 }
