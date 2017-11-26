@@ -4,6 +4,7 @@ import { ResolvedFile } from "./GlimmerProject";
 import { cssBlockError } from "./utils";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import { objectValues, assertNever } from "@opticss/util";
+import * as debugGenerator from "debug";
 
 export type TernaryExpression = AST.Expression;
 export type StringExpression = AST.MustacheStatement | AST.ConcatStatement;
@@ -23,6 +24,8 @@ const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
 const STYLE_IF: 'style-if' = 'style-if';
 const STYLE_UNLESS: 'style-unless' = 'style-unless';
 
+const debug = debugGenerator("css-blocks:glimmer:analyzer");
+
 export class ElementAnalyzer {
   template: ResolvedFile;
   cssBlocksOpts: CssBlocksOptionsReader;
@@ -40,10 +43,20 @@ export class ElementAnalyzer {
   analyzeForRewrite(node: AST.ElementNode, atRootElement: boolean): TemplateElement {
     let element = new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), node.tag);
     this._analyze(node, atRootElement, {element, storeConditionals: true});
-    element.seal();
     return element;
   }
 
+  private debugAnalysis(node: AST.ElementNode, atRootElement: boolean, element: ElementAnalysis<any, any, any>) {
+    if (!debug.enabled) return;
+    let startTag = `<${node.tag} ${node.attributes.map(a => print(a)).join(' ')}>`;
+    debug(`Element ${startTag} is ${atRootElement ? 'the root ' : 'a sub'}element at ${this.debugTemplateLocation(node)}`);
+    debug(`↳ Analyzed as: ${element.forOptimizer(this.cssBlocksOpts)[0].toString()}`);
+  }
+
+  private debugTemplateLocation(node: AST.ElementNode) {
+    let templatePath = this.cssBlocksOpts.importer.debugIdentifier(this.template.identifier, this.cssBlocksOpts);
+    return `${templatePath}:${node.loc.start.line}:${node.loc.start.column}`;
+  }
   private debugBlockPath() {
     return this.cssBlocksOpts.importer.debugIdentifier(this.block.identifier, this.cssBlocksOpts);
   }
@@ -70,6 +83,8 @@ export class ElementAnalyzer {
       this.processState(RegExp.$1, RegExp.$2, attribute, analysis);
     }
 
+    analysis.element.seal();
+    this.debugAnalysis(node, atRootElement, analysis.element);
     return;
   }
 
