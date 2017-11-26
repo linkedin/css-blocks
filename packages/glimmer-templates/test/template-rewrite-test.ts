@@ -64,7 +64,7 @@ function pretendToBeWebPack(result, templatePath, cssBlocksOpts) {
 function pipeline(analyzer: HandlebarsStyleAnalyzer, templatePath: string) {
   return analyzeAndCompile(analyzer).then(result => {
     return pretendToBeWebPack(result, templatePath, analyzer.project.cssBlocksOpts).then(ast => {
-      return { css: result.css, ast };
+      return { css: result.css, ast, styleMapping: result.styleMapping };
     });
   });
 }
