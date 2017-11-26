@@ -242,6 +242,10 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     this._sealed = false;
   }
 
+  hasStyles(): boolean {
+    return this.addedStyles.length > 0;
+  }
+
   /**
    * Get a list of all possible block objects for the given block
    * on this element that can be used a parent for a state.
