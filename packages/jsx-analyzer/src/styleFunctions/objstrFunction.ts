@@ -118,8 +118,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
             throw new TemplateAnalysisError('The spread operator is not allowed in CSS Block states.', {filename, ...result.dynamicStateExpression.loc.start});
           } else {
             // if truthy, the only dynamic expr is from the state selector.
-            // TODO: would like to force this to be an error if none provided.
-            element.addDynamicGroup(result.blockClass || result.block, result.stateGroup, result.dynamicStateExpression, false);
+            element.addDynamicGroup(result.blockClass || result.block, result.stateGroup, result.dynamicStateExpression, true);
           }
         } // else ignore
       } else {

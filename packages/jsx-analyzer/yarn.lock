@@ -1610,6 +1610,10 @@ supports-color@^4.0.0, supports-color@^4.4.0:
   dependencies:
     has-flag "^2.0.0"
 
+test-console@^1.1.0:
+  version "1.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/test-console/-/test-console-1.1.0.tgz#e541e7aa0d801475b8f11ea14e5bea637773cf48"
+
 to-fast-properties@^1.0.3:
   version "1.0.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/to-fast-properties/-/to-fast-properties-1.0.3.tgz#391933bfc76a05dbdcede271f56abef8ecc9a5df"

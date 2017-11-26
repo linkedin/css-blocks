@@ -61,6 +61,7 @@
     "preact": "^8.2.1",
     "prettier": "^1.8.2",
     "shelljs": "^0.7.8",
+    "test-console": "^1.1.0",
     "ts-node": "^3.0.4",
     "tslint": "^5.5.0",
     "watch": "^1.0.2"
@@ -71,14 +72,14 @@
   "dependencies": {
     "@opticss/template-api": "^0.1.0",
     "@opticss/util": "^0.1.0",
-    "opticss": "^0.1.0",
-    "css-blocks": "^0.15.0-rc.0",
     "babel-traverse": "^6.24.1",
     "babel-types": "^6.24.1",
     "babylon": "^6.17.4",
+    "css-blocks": "^0.15.0-rc.0",
     "debug": "^2.6.8",
     "minimatch": "^3.0.4",
     "object.values": "^1.0.4",
+    "opticss": "^0.1.0",
     "typescript": "^2.3.4"
   }
 }

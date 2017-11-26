@@ -19,6 +19,9 @@ import {
   isJSXExpressionContainer,
   JSXAttribute,
   Node,
+  AssignmentExpression,
+  Identifier,
+  Expression,
 } from 'babel-types';
 
 import isBlockFilename from '../utils/isBlockFilename';
@@ -95,10 +98,36 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
           }
         },
 
+        AssignmentExpression(path: NodePath<AssignmentExpression>): void {
+          if (!this.shouldProcess) return;
+
+          let elementAnalysis = this.elementAnalyzer.analyzeAssignment(path);
+          if (elementAnalysis) {
+            elementAnalysis.seal();
+            let classMapping = this.mapping.simpleRewriteMapping(elementAnalysis);
+            let className: Expression | undefined = undefined;
+            if (classMapping.dynamicClasses.length > 0) {
+              className = generateClassName(classMapping, elementAnalysis, HELPER_FN_NAME, true);
+            } else {
+              className = stringLiteral(classMapping.staticClasses.join(' '));
+            }
+            let right = path.get('right');
+            if (right.isIdentifier()) {
+              let binding = right.scope.getBinding((<Identifier>right.node).name);
+              if (binding && binding.path.isVariableDeclarator()) {
+                let init = binding.path.get('init');
+                init.replaceWith(className);
+                return;
+              }
+            }
+            right.replaceWith(className);
+          }
+        },
+
         JSXOpeningElement(path: NodePath<JSXOpeningElement>, state: any): void {
           if (!this.shouldProcess) return;
 
-          let elementAnalysis = this.elementAnalyzer.analyze(path);
+          let elementAnalysis = this.elementAnalyzer.analyzeJSXElement(path);
           if (elementAnalysis) {
             elementAnalysis.seal();
             let classMapping = this.mapping.simpleRewriteMapping(elementAnalysis);
@@ -152,8 +181,10 @@ function detectStrayReferenceToImport(
     let binding = importDeclPath.scope.getBinding(specifier.local.name);
     if (binding) {
       for (let ref of binding.referencePaths) {
-        if (!isRemoved(ref)) {
-          console.warn(`WARNING: Stray reference to block import (${specifier.local.name}). Imports are removed during rewrite so this will probably be a runtime error. (${filename}:${ref.node.loc.start.line}:${ref.node.loc.start.column}`);
+        if (ref.type === 'Identifier'
+            && (<Identifier>ref.node).name === specifier.local.name
+            && !isRemoved(ref)) {
+          console.warn(`WARNING: Stray reference to block import (${specifier.local.name}). Imports are removed during rewrite so this will probably be a runtime error. (${filename}:${ref.node.loc.start.line}:${ref.node.loc.start.column})`);
           // throw new TemplateAnalysisError(`Stray reference to block import (${specifier.local.name}). Imports are removed during rewrite.`, {filename, ...ref.node.loc.start});
         }
       }
@@ -162,10 +193,20 @@ function detectStrayReferenceToImport(
 }
 
 function isRemoved(path: NodePath<Node>): boolean {
-  if (path.removed) return true;
-  let p = path.parentPath;
+  let p = path;
   while (p && p.type !== 'Program') {
-    if (p.removed) return true;
+    if (p.removed || p.parentPath.removed) return true;
+    if (p.inList) {
+      let list = p.parentPath.get(p.listKey);
+      if (!Array.isArray(list)) return true;
+      let element = list[p.key];
+      if (!element) return true;
+      if (element.node !== p.node) return true;
+    } else {
+      if (p.parentPath.get(p.parentKey).node !== p.node) {
+        return true;
+      }
+    }
     p = p.parentPath;
   }
   return false;

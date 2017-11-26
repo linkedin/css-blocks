@@ -1,5 +1,5 @@
 import { NodePath } from 'babel-traverse';
-import { JSXOpeningElement, } from 'babel-types';
+import { JSXOpeningElement, AssignmentExpression } from 'babel-types';
 
 import Analysis from '../utils/Analysis';
 import { JSXElementAnalyzer } from './JSXElementAnalyzer';
@@ -12,6 +12,10 @@ export default function visitors(analysis: Analysis): object {
   let elementAnalyzer = new JSXElementAnalyzer(analysis.blocks, analysis.template.identifier);
 
   return {
+    AssignmentExpression(path: NodePath<AssignmentExpression>): void {
+      let element = elementAnalyzer.analyzeAssignment(path);
+      if (element) analysis.addElement(element);
+    },
     //  TODO: handle the `h()` function?
 
     /**
@@ -20,7 +24,7 @@ export default function visitors(analysis: Analysis): object {
      * @param path The JSXOpeningElement Babylon path we are processing.
      */
     JSXOpeningElement(path: NodePath<JSXOpeningElement>): void {
-      let element = elementAnalyzer.analyze(path);
+      let element = elementAnalyzer.analyzeJSXElement(path);
       if (element) analysis.addElement(element);
     }
   };

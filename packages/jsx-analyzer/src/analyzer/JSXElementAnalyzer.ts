@@ -19,6 +19,7 @@ import {
   JSXAttribute,
   Identifier,
   SourceLocation,
+  AssignmentExpression,
 } from 'babel-types';
 
 import { MalformedBlockPath, TemplateAnalysisError } from '../utils/Errors';
@@ -59,7 +60,24 @@ export class JSXElementAnalyzer {
     return found;
   }
 
-  analyze(path: NodePath<JSXOpeningElement>): JSXElementAnalysis | undefined {
+  analyzeAssignment(path: NodePath<AssignmentExpression>): JSXElementAnalysis | undefined {
+    let assignment = path.node as AssignmentExpression;
+    if (assignment.operator !== '=') return;
+    let lVal = assignment.left;
+    if (isMemberExpression(lVal)) {
+      let property = lVal.property;
+      if (!lVal.computed && isIdentifier(property) && property.name === 'className') {
+        let element = newJSXElementAnalysis(this.location(path));
+        this.analyzeClassExpression(path.get('right') as NodePath<Expression>, element);
+        if (element.hasStyles()) {
+          return element;
+        }
+      }
+    }
+    return;
+  }
+
+  analyzeJSXElement(path: NodePath<JSXOpeningElement>): JSXElementAnalysis | undefined {
     let el = path.node;
 
     // We don't care about elements with no attributes;
@@ -121,16 +139,13 @@ export class JSXElementAnalyzer {
     return;
   }
 
-  private analyzeClassAttribute(path: NodePath<JSXAttribute>, element: JSXElementAnalysis): void {
-    let value = path.node.value;
-    if (!isJSXExpressionContainer(value)) return; // should this be an error?
-    // If this attribute's value is an expression, evaluate it for block references.
-    // Discover block root identifiers.
-    if (isIdentifier(value.expression)) {
-      let identifier = value.expression;
-      let identBinding = path.scope.getBinding(identifier.name);
+  private analyzeClassExpression(expression: NodePath<Expression>, element: JSXElementAnalysis, suppressErrors = false): void {
+    if (expression.isIdentifier()) {
+      let identifier = expression.node as Identifier;
+      let identBinding = expression.scope.getBinding(identifier.name);
       if (identBinding) {
         if (identBinding.constantViolations.length > 0) {
+          if (suppressErrors) return;
           throw new TemplateAnalysisError(`illegal assignment to a style variable.`, this.nodeLoc(identBinding.constantViolations[0]));
         }
         if (identBinding.kind === 'module') {
@@ -140,7 +155,8 @@ export class JSXElementAnalyzer {
           if (block) {
             element.addStaticClass(block);
           } else {
-            throw new TemplateAnalysisError(`No block named ${name} was found`, this.nodeLoc(value));
+            if (suppressErrors) return;
+            throw new TemplateAnalysisError(`No block named ${name} was found`, this.nodeLoc(expression));
           }
         } else {
           let identPathNode = identBinding.path.node;
@@ -151,20 +167,22 @@ export class JSXElementAnalyzer {
               for (let refPath of identBinding.referencePaths.filter(p => p.parentPath.type !== 'JSXExpressionContainer')) {
                 let parentPath = refPath.parentPath;
                 if (!isConsoleLogStatement(parentPath.node)) {
+                  if (suppressErrors) return;
                   throw new TemplateAnalysisError(`illegal use of a style variable.`, this.nodeLoc(parentPath));
                 }
               }
             }
           } else {
-            throw new TemplateAnalysisError(`variable for class attributes must be initialized with a style expression.`, this.nodeLoc(value));
+            if (suppressErrors) return;
+            throw new TemplateAnalysisError(`variable for class attributes must be initialized with a style expression.`, this.nodeLoc(expression));
           }
           this.addPossibleDynamicStyles(element, initialValueOfIdent, identBinding.path);
         }
       }
-    } else if (isMemberExpression(value.expression)) {
+    } else if (expression.isMemberExpression()) {
       // Discover direct references to an imported block.
       // Ex: `blockName.foo` || `blockName['bar']` || `blockName.bar()`
-      let parts: ExpressionReader = new ExpressionReader(value.expression, this.filename);
+      let parts: ExpressionReader = new ExpressionReader(expression.node, this.filename);
       let expressionResult = parts.getResult(this.blocks);
       let blockOrClass = expressionResult.blockClass || expressionResult.block;
       if (isBlockStateGroupResult(expressionResult) || isBlockStateResult(expressionResult)) {
@@ -172,13 +190,14 @@ export class JSXElementAnalyzer {
       } else {
         element.addStaticClass(blockOrClass);
       }
-    } else if (isCallExpression(value.expression)) {
-      let styleFn = isStyleFunction(path, value.expression);
+    } else if (expression.isCallExpression()) {
+      let callExpr = expression.node as CallExpression;
+      let styleFn = isStyleFunction(expression, callExpr);
       if (styleFn.type === 'error') {
         if (styleFn.canIgnore) {
           // It's not a style helper function, assume it's a static reference to a state.
           try {
-            let parts: ExpressionReader = new ExpressionReader(value.expression, this.filename);
+            let parts: ExpressionReader = new ExpressionReader(callExpr, this.filename);
             let expressionResult = parts.getResult(this.blocks);
             let blockOrClass = expressionResult.blockClass || expressionResult.block;
             if (isBlockStateGroupResult(expressionResult)) {
@@ -190,26 +209,36 @@ export class JSXElementAnalyzer {
             }
           } catch (e) {
             if (e instanceof MalformedBlockPath) {
-              if (isIdentifier(value.expression.callee)) {
-                let fnName = value.expression.callee.name;
+              if (isIdentifier(callExpr.callee)) {
+                let fnName = callExpr.callee.name;
                 if (isCommonNameForStyling(fnName)) {
-                  throw new TemplateAnalysisError(`The call to style function '${fnName}' does not resolve to an import statement of a known style helper.`, this.nodeLoc(value.expression));
+                  throw new TemplateAnalysisError(`The call to style function '${fnName}' does not resolve to an import statement of a known style helper.`, this.nodeLoc(expression));
                 } else {
-                  throw new TemplateAnalysisError(`Function called within class attribute value '${fnName}' must be either an 'objstr' call, or a state reference`, this.nodeLoc(value.expression));
+                  throw new TemplateAnalysisError(`Function called within class attribute value '${fnName}' must be either an 'objstr' call, or a state reference`, this.nodeLoc(expression));
                 }
               }
             }
             throw e;
           }
         } else {
+          if (suppressErrors) return;
           throw new TemplateAnalysisError(styleFn.message, styleFn.location);
         }
       } else {
-        styleFn.analyze(this.blocks, element, this.filename, styleFn, value.expression);
+        styleFn.analyze(this.blocks, element, this.filename, styleFn, callExpr);
       }
     } else {
       // TODO handle ternary expressions like style-if in handlebars?
     }
+  }
+
+  private analyzeClassAttribute(path: NodePath<JSXAttribute>, element: JSXElementAnalysis): void {
+    let value = path.get('value');
+    if (!value.isJSXExpressionContainer()) return; // should this be an error?
+    // If this attribute's value is an expression, evaluate it for block references.
+    // Discover block root identifiers.
+    let expressionPath = value.get('expression') as NodePath<Expression>;
+    this.analyzeClassExpression(expressionPath, element);
   }
 
   /**

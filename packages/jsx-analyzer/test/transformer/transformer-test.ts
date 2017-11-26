@@ -4,6 +4,7 @@ import * as babel from 'babel-core';
 import { StyleMapping, PluginOptionsReader, CssBlockOptions, BlockCompiler } from 'css-blocks';
 import * as postcss from 'postcss';
 import * as prettier from 'prettier';
+import * as testConsole from 'test-console';
 import c$$ from '@css-blocks/runtime';
 
 import JSXAnalysis, { MetaAnalysis } from '../../src/utils/Analysis';
@@ -114,7 +115,7 @@ export class Test {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
-          import c$$ from '@css-blocks/jsx';
+          import c$$ from '@css-blocks/runtime';
           import objstr from 'obj-str';
           let isDynamic = true;
           <div class={c$$("a", [1, 1, 2, isDynamic, 1, 0, 'b', 0])}></div>;`
@@ -228,7 +229,7 @@ export class Test {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
-          import c$$ from "@css-blocks/jsx";
+          import c$$ from "@css-blocks/runtime";
           import objstr from 'obj-str';
 
           let dynamic = 'yellow';
@@ -274,8 +275,8 @@ export class Test {
 
     return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
       return transform(code, analysis.getAnalysis(0)).then(res => {
-        assert.equal(minify(res.jsx.code!), minify(`
-        import c$$ from "@css-blocks/jsx";
+        assert.deepEqual(minify(res.jsx.code!), minify(`
+        import c$$ from "@css-blocks/runtime";
         import objstr from "obj-str";
         let dynamic = "yellow";
         let leSigh = true;
@@ -331,7 +332,7 @@ export class Test {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
-        import c$$ from "@css-blocks/jsx";
+        import c$$ from "@css-blocks/runtime";
         import objstr from "obj-str";
         let dynamic = "yellow";
         function conditional() {
@@ -381,6 +382,50 @@ export class Test {
     });
   }
 
+  @test 'Can set className dynamically'() {
+    mock({
+      'bar.block.css': `
+        .root { color: red; }
+        .foo { color: blue; }
+        .foo[state|happy] { color: balloons; }
+      `
+    });
+
+    let code = `
+      import bar from 'bar.block.css'
+      import objstr from 'obj-str';
+
+      let style = objstr({
+        [bar.foo]: true,
+      });
+
+      function doesSomething(element, condition) {
+        element.className = objstr({
+          [bar.foo]: condition,
+          [bar.foo.happy()]: true
+        });
+        element.className = bar;
+        element.className = style;
+      }
+    `;
+
+    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+      return transform(code, analysis.getAnalysis(0)).then(res => {
+        assert.deepEqual(minify(res.jsx.code!), minify(`
+          import objstr from 'obj-str';
+
+          let style = 'b';
+
+          function doesSomething(element, condition) {
+            element.className = c$$([2,2,0,condition,1,0,0,1,1,0,1,1,"b",0,"c",1]);
+            element.className = 'a';
+            element.className = style;
+          }
+        `));
+      });
+    });
+  }
+
   @test "Doesn't explode with empty blocks."(){
     mock({
       'foo.block.css': `
@@ -411,7 +456,6 @@ export class Test {
     });
   }
 
-  @skip
   @test 'Left over references to the block are an error'(){
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }',
@@ -433,12 +477,19 @@ export class Test {
       }`;
 
     return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+      let stderr = testConsole.stderr.inspect();
       return transform(code, analysis.getAnalysis(0)).then(res => {
-        console.log(res.jsx.code);
-        assert.ok(false, 'should not have succeeded.');
-      }, e => {
-        assert.equal(e.message, 'test.tsx: [css-blocks] AnalysisError: Stray reference to block import (foo). Imports are removed during rewrite. (test.tsx:10:11)');
+        let result = stderr.output;
+        stderr.restore();
+        assert.deepEqual(result.length, 1);
+        assert.deepEqual(result[0].trim(), 'WARNING: Stray reference to block import (foo). Imports are removed during rewrite so this will probably be a runtime error. (test.tsx:10:11)');
       });
     });
+  }
+  @skip
+  @test 'invalid runtime expression'() {
+    let args = JSON.parse('[13,21,0,false,1,0,0,0,false,1,13,0,0,true,1,17,0,3,1,0,false,1,1,5,1,0,4,0,null,"small",1,12,"medium",1,11,"large",1,10,"extraLarge",1,9,3,1,0,true,1,5,5,1,0,2,1,null,"square",1,8,"round",1,7,5,1,0,3,1,false,"inverse",1,3,"muted",1,4,"active",1,2,3,1,0,false,1,6,5,1,13,3,1,false,"inverse",1,14,"muted",1,15,"active",1,2,3,1,13,false,1,16,5,1,17,3,1,"muted","inverse",1,18,"muted",1,19,"active",1,2,3,1,17,true,1,20,"primary-button",0,"primary-button--animating",1,"primary-button--color-active",2,"primary-button--color-inverse",3,"primary-button--color-muted",4,"primary-button--fullWidth",5,"primary-button--hoverable",6,"primary-button--shape-round",7,"primary-button--shape-square",8,"primary-button--size-extraLarge",9,"primary-button--size-large",10,"primary-button--size-medium",11,"primary-button--size-small",12,"secondary-button",13,"secondary-button--color-inverse",14,"secondary-button--color-muted",15,"secondary-button--hoverable",16,"tertiary-button",17,"tertiary-button--color-inverse",18,"tertiary-button--color-muted",19,"tertiary-button--hoverable",20]');
+    let result = c$$(args);
+    assert.deepEqual(result, 'tertiary-button tertiary-button--color-muted tertiary-button--hoverable');
   }
 }

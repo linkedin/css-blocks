@@ -11,6 +11,53 @@ export class Test {
     mock.restore();
   }
 
+  @test 'Can set className dynamically'() {
+    mock({
+      'bar.block.css': `
+        .root { color: red; }
+        .foo { color: blue; }
+        .foo[state|happy] { color: balloons; }
+      `
+    });
+
+    return parse(`
+      import bar from 'bar.block.css'
+      import objstr from 'obj-str';
+
+      function doesSomething(element) {
+        element.className = objstr({
+          [bar.foo]: true,
+        });
+        let style = objstr({
+          [bar.foo]: true,
+          [bar.foo.happy()]: true
+        });
+        element.className = bar;
+        element.className = style;
+      }
+    `
+    ).then((metaAnalysis: MetaAnalysis) => {
+      let result = metaAnalysis.serialize();
+      let analysis = result.analyses[0];
+      assert.deepEqual(analysis.stylesFound, ['bar.foo', 'bar.foo[state|happy]', 'bar.root']);
+
+      let aAnalysis = analysis.elements.a;
+      assert.deepEqual(aAnalysis.dynamicClasses, []);
+      assert.deepEqual(aAnalysis.dynamicStates, []);
+      assert.deepEqual(aAnalysis.staticStyles, [0]);
+
+      let bAnalysis = analysis.elements.b;
+      assert.deepEqual(bAnalysis.dynamicClasses, []);
+      assert.deepEqual(bAnalysis.dynamicStates, []);
+      assert.deepEqual(bAnalysis.staticStyles, [2]);
+
+      let cAnalysis = analysis.elements.c;
+      assert.deepEqual(cAnalysis.dynamicClasses, []);
+      assert.deepEqual(cAnalysis.dynamicStates, []);
+      assert.deepEqual(cAnalysis.staticStyles, [0, 1]);
+    });
+  }
+
   @test 'Classes on objstr calls are tracked when applied'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
