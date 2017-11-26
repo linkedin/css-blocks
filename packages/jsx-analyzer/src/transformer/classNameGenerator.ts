@@ -15,7 +15,9 @@ import {
   BooleanExpression,
   OrExpression,
   NotExpression,
-  AndExpression
+  AndExpression,
+  BlockClass,
+  Block
 } from 'css-blocks';
 import {
   JSXElementAnalysis,
@@ -31,6 +33,7 @@ import {
 import {
   assertNever,
   unwrap,
+  isSome,
 } from '@opticss/util';
 import {
   arrayExpression,
@@ -142,21 +145,29 @@ function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedC
   expr.push(classes.condition);
   // The true styles
   if (isTrueCondition(classes)) {
-    expr.push(builders.number(classes.whenTrue.length));
-    // TODO: inheritance
-    expr.push(...classes.whenTrue.map(style => builders.number(unwrap(rewrite.indexOf(style)))));
+    let trueClasses = resolveInheritance(classes.whenTrue, rewrite);
+    expr.push(builders.number(trueClasses.length));
+    expr.push(...trueClasses.map(style => builders.number(unwrap(rewrite.indexOf(style)))));
   } else {
     expr.push(builders.number(0));
   }
   // The false styles
   if (isFalseCondition(classes)) {
-    expr.push(builders.number(classes.whenFalse.length));
-    // TODO: inheritance
-    expr.push(...classes.whenFalse.map(style => builders.number(unwrap(rewrite.indexOf(style)))));
+    let falseClasses = resolveInheritance(classes.whenFalse, rewrite);
+    expr.push(builders.number(falseClasses.length));
+    expr.push(...falseClasses.map(style => builders.number(unwrap(rewrite.indexOf(style)))));
   } else {
     expr.push(builders.number(0));
   }
   return expr;
+}
+
+function resolveInheritance(classes: Array<BlockClass|Block>, rewrite: IndexedClassRewrite<BlockObject>) {
+  let allClasses = [...classes];
+  for (let c of classes) {
+    allClasses.push(...c.resolveInheritance() as Set<Block> | Set<BlockClass>);
+  }
+  return allClasses.filter(c => isSome(rewrite.indexOf(c)));
 }
 
 /*
