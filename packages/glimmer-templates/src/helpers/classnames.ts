@@ -129,12 +129,13 @@ function sourceExpr(stack: any[],
   isSourceSet: IsSourceSet, setSource: SetSource,
   abort: Abort
 ): void {
+  let enforceSwitch = true;
   let type = number(stack);
   if (type & SourceExpression.dependency) {
     let numDeps = number(stack);
     while (numDeps-- > 0) {
       let depIndex = number(stack);
-      if (!isSourceSet(depIndex)) abort();
+      if (!isSourceSet(depIndex)) enforceSwitch = abort();
     }
   }
   if (type & SourceExpression.boolean) {
@@ -150,7 +151,7 @@ function sourceExpr(stack: any[],
           value = string(stack);
           break;
         case FalsySwitchBehavior.error:
-          e("string expected"); // TODO: error message
+          if (enforceSwitch) e("string expected"); // TODO: error message
           break;
         case FalsySwitchBehavior.unset:
           abort();
