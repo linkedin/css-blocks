@@ -18,6 +18,28 @@ import { TemplateAnalysisError } from '../utils/Errors';
 import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from '../utils/ExpressionReader';
 import { StyleFunctionAnalyzer } from './common';
 
+/**
+ * objstr() is a preact idiom for expressing class names. It is similar to the classnames library
+ * but simpler and more performant.
+ *
+ * CSS Blocks builds on this to allow a css-block style to be used as a class name,
+ * in a way that is familiar to a preact developer.
+ *
+ * An objstr in css blocks takes the form of called with an object literal.
+ *
+ * The properties of the object literal are dynamic property expressions with the expression being
+ * a legal css-block style expression on an imported block.
+ *
+ * When a value of the object literal is truthy the style is set on the element to which the classes
+ * are eventually assigned.
+ *
+ * Both classes and states can be assigned to the element, however, the states associated
+ * with a class are automatically disabled if that class is not set on the element.
+ *
+ * styles that are set to a `true` literal value are treated as static styles and the
+ * rewriter will set them as static string values.
+ **/
+
 export const PACKAGE_NAME = 'obj-str';
 export const COMMON_NAMES = { 'objstr': true };
 
@@ -37,6 +59,7 @@ export function objstrFn(binding: Binding, funcDef: ImportDeclaration): ObjStrSt
   }
   return;
 }
+
 export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXElementAnalysis, filename: string, styleFn: ObjStrStyleFunction, func: CallExpression ) {
 
   // Location object for error reporting
@@ -95,7 +118,8 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
             throw new TemplateAnalysisError('The spread operator is not allowed in CSS Block states.', {filename, ...result.dynamicStateExpression.loc.start});
           } else {
             // if truthy, the only dynamic expr is from the state selector.
-            element.addDynamicGroup(result.blockClass || result.block, result.stateGroup, result.dynamicStateExpression, true);
+            // TODO: would like to force this to be an error if none provided.
+            element.addDynamicGroup(result.blockClass || result.block, result.stateGroup, result.dynamicStateExpression, false);
           }
         } // else ignore
       } else {
