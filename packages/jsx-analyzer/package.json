@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/jsx",
-  "version": "0.15.0-rc.2",
+  "version": "0.15.0",
   "description": "Statically analyzes JSX files for CSS Blocks use.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/css-blocks/jsx-analyzer#readme",
   "devDependencies": {
-    "@css-blocks/runtime": "^0.15.0-rc.0",
+    "@css-blocks/runtime": "^0.15.0",
     "@types/babel-core": "^6.25.2",
     "@types/babel-generator": "^6.25.0",
     "@types/babel-template": "^6.25.0",
@@ -67,19 +67,19 @@
     "watch": "^1.0.2"
   },
   "peerDependencies": {
-    "@css-blocks/runtime": "^0.15.0-rc.0"
+    "@css-blocks/runtime": "^0.15.0"
   },
   "dependencies": {
-    "@opticss/template-api": "^0.1.0",
-    "@opticss/util": "^0.1.0",
+    "@opticss/template-api": "^0.2.0",
+    "@opticss/util": "^0.1.1",
     "babel-traverse": "^6.24.1",
     "babel-types": "^6.24.1",
     "babylon": "^6.17.4",
-    "css-blocks": "^0.15.0-rc.0",
+    "css-blocks": "^0.15.0",
     "debug": "^2.6.8",
     "minimatch": "^3.0.4",
     "object.values": "^1.0.4",
-    "opticss": "^0.1.0",
+    "opticss": "^0.2.0",
     "typescript": "^2.3.4"
   }
 }
