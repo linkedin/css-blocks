@@ -3,7 +3,7 @@
 }
 
 .emphasis {
-    font-style: italic;
+    color: black;
 }
 
 .emphasis[state|style=bold] {

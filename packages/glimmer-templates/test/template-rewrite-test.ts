@@ -104,13 +104,12 @@ describe('Template Rewriting', function() {
     return pipeline(analyzer, templatePath).then((result) => {
       let { css, ast } = result;
       let res = print(ast);
-      // TODO: why is `f` both static and dynamic on the same element
       assert.deepEqual(minify(res), minify(`
-        <div class="b">
-          <h1 class="e">Hello, <span class="f h {{/css-blocks/components/classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "c" 2 "d" 3}}">World</span>!</h1>
-          <div class={{/css-blocks/components/classnames 1 2 0 isWorld 1 1 1 0 "f" 0 "c" 1}}>World</div>
-          <div class={{/css-blocks/components/classnames 1 2 0 isWorld 1 0 1 1 "f" 0 "c" 1}}>World</div>
-          <div class={{/css-blocks/components/classnames 1 1 0 isWorld 0 1 0 "c" 0}}>World</div>
+        <div class="a">
+          <h1 class="d">Hello, <span class="e h {{/css-blocks/components/classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "f" 0 "g" 1 "b" 2 "c" 3}}">World</span>!</h1>
+          <div class={{/css-blocks/components/classnames 1 2 0 isWorld 1 1 1 0 "e" 0 "b" 1}}>World</div>
+          <div class={{/css-blocks/components/classnames 1 2 0 isWorld 1 0 1 1 "e" 0 "b" 1}}>World</div>
+          <div class={{/css-blocks/components/classnames 1 1 0 isWorld 0 1 0 "b" 0}}>World</div>
         </div>
       `));
     });
