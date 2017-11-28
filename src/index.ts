@@ -17,7 +17,7 @@ export * from "./importing";
 export * from "./preprocessing";
 export * from "./TemplateAnalysis";
 export * from "./TemplateRewriter";
-export * from "./util/UnionInto";
+export * from "./util/unionInto";
 
 import cssBlocks = require('./cssBlocks');
 export default cssBlocks;
