@@ -10,6 +10,6 @@ module.exports = function(grunt) {
   });
   grunt.loadNpmTasks('grunt-release');
   grunt.registerTask('publish', "Publish to NPM", function() {
-    shell.exec('li-npm-publish --tag next');
+    shell.exec('li-npm-publish');
   });
 };
