@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/webpack-plugin",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "Webpack plugin for css-blocks.",
   "main": "dist/src/index.js",
   "scripts": {
