@@ -2,6 +2,7 @@ import { Compiler as WebpackCompiler } from "webpack";
 import * as path from "path";
 import * as  async from "async";
 import * as fs from "fs";
+import * as postcss from "postcss";
 import { Source, RawSource, SourceMapSource, ConcatSource } from "webpack-sources";
 import { RawSourceMap } from "source-map";
 import * as convertSourceMap from "convert-source-map";
@@ -9,18 +10,75 @@ import * as debugGenerator from 'debug';
 
 const debug = debugGenerator("css-blocks:webpack:assets");
 
+export type PostcssProcessor =
+    Array<postcss.Plugin<any>>
+        | ((assetPath: string) => Array<postcss.Plugin<any>>
+                                | Promise<Array<postcss.Plugin<any>>>);
+
+export type GenericProcessor =
+    (source: Source, assetPath: string) => Source | Promise<Source>;
+
+export interface PostcssProcessorOption {
+    postcss: PostcssProcessor;
+}
+
+export interface GenericProcessorOption {
+    processor: GenericProcessor;
+}
+
+export type PostProcessorOption = PostcssProcessorOption | GenericProcessorOption | (PostcssProcessorOption & GenericProcessorOption);
+
+function isPostcssProcessor(processor: PostProcessorOption): processor is PostcssProcessorOption {
+    return !!(<PostcssProcessorOption>processor).postcss;
+}
+
+function isGenericProcessor(processor: PostProcessorOption): processor is GenericProcessorOption {
+    return !!(<GenericProcessorOption>processor).processor;
+}
+
+export interface CssSourceOptions {
+    /**
+     * The name of the chunk to which the asset should belong.
+     * If omitted, the asset won't belong to a any chunk. */
+    chunk: string | undefined;
+
+    /** the source path to the css asset. */
+    source: string | string[];
+
+    /**
+     * Post-process the concatenated file with the specified postcss plugins.
+     */
+    // TODO: enable
+    // postProcess?: PostProcessorOption;
+}
+export interface ConcatenationOptions {
+    /**
+     * A list of assets to be concatenated.
+     */
+    sources: Array<string>;
+
+    /**
+     * When true, the files that are concatenated are left in the build.
+     * Defaults to false.
+     */
+    preserveSourceFiles?: boolean;
+
+    /**
+     * Post-process the concatenated file with the specified postcss plugins.
+     *
+     * If postcss plugins are provided in conjunction with a generic processor
+     * the postcss plugins will be ran first.
+     */
+    postProcess?: PostProcessorOption;
+}
+
 /**
  * Options for managing CSS assets without javascript imports.
  */
 export interface CssAssetsOptions {
     /** Maps css files from a source location to a webpack asset location. */
     cssFiles: {
-        [assetPath: string]: string | {
-            /** The name of the chunk to which the asset should belong. If omitted, the asset won't belong to a any chunk. */
-            chunk: string | undefined;
-            /** the source path to the css asset. */
-            source: string | string[];
-        };
+        [assetPath: string]: string | CssSourceOptions;
     };
     /**
      * Maps several webpack assets to a new concatenated asset and manages their
@@ -28,8 +86,9 @@ export interface CssAssetsOptions {
      * the assets belonged.
      */
     concat: {
-        [concatAssetPath: string]: string[];
+        [concatAssetPath: string]: string[] | ConcatenationOptions;
     };
+
     /**
      * When true, any source maps related to the assets are written out as
      * additional files or inline depending on the value of `inlineSourceMaps`.
@@ -42,66 +101,9 @@ export interface CssAssetsOptions {
     inlineSourceMaps: boolean; // defaults to false
 }
 
-function assetAsSource(contents: string, filename: string): Source {
-    let sourcemap: convertSourceMap.SourceMapConverter | undefined;
-    if (/sourceMappingURL/.test(contents)) {
-        sourcemap = convertSourceMap.fromSource(contents) ||
-            convertSourceMap.fromMapFileComment(contents, path.dirname(filename));
-    }
-    if (sourcemap) {
-        let sm: RawSourceMap = sourcemap.toObject();
-        contents = convertSourceMap.removeComments(contents);
-        contents = convertSourceMap.removeMapFileComments(contents);
-        return new SourceMapSource(contents, filename, sm);
-    } else {
-        return new RawSource(contents);
-    }
-}
-function assetFilesAsSource(filenames: string[], callback: (err: Error | undefined, source?: ConcatSource) => void) {
-    let assetSource = new ConcatSource();
-    let assetFiles = filenames.slice();
-    let eachAssetFile = (err?: Error) => {
-        if (err) {
-            callback(err);
-        } else {
-            const nextAssetFile = assetFiles.shift();
-            if (nextAssetFile) {
-                processAsset(nextAssetFile, eachAssetFile);
-            } else {
-                callback(undefined, assetSource);
-            }
-        }
-    };
-    const firstAssetFile = assetFiles.shift();
-    if (firstAssetFile) {
-        processAsset(firstAssetFile, eachAssetFile);
-    } else {
-        callback(new Error("No asset files provided."));
-    }
-    function processAsset(assetPath: string, assetCallback: (err?: Error) => void) {
-        fs.readFile(assetPath, "utf-8", (err, data) => {
-            if (err) {
-                assetCallback(err);
-            } else {
-              assetSource.add(assetAsSource(data, assetPath));
-              assetCallback();
-            }
-        });
-    }
-}
-
-function assetFileAsSource(sourcePath: string, callback: (err: Error | undefined, source?: Source) => void) {
-    fs.readFile(sourcePath, "utf-8", (err, contents) => {
-        if (err) {
-            callback(err);
-        } else {
-            try {
-                callback(undefined, assetAsSource(contents, sourcePath));
-            } catch (e) {
-                callback(e);
-            }
-        }
-    });
+interface SourceAndMap {
+    source: string;
+    map?: RawSourceMap;
 }
 
 export class CssAssets {
@@ -165,13 +167,16 @@ export class CssAssets {
             debug("concatenating assets");
             if (!this.options.concat) return;
             let concatFiles = Object.keys(this.options.concat);
-            concatFiles.forEach((concatFile) => {
+            let postProcessResults = new Array<Promise<void>>();
+            for (let concatFile of concatFiles) {
                 let concatSource = new ConcatSource();
-                let inputFiles = this.options.concat[concatFile];
+                let concatenation = this.options.concat[concatFile];
+                let inputFiles = Array.isArray(concatenation) ? concatenation : concatenation.sources;
+                let concatenationOptions = Array.isArray(concatenation) ? {sources: concatenation} : concatenation;
                 let missingFiles = inputFiles.filter(f => (!compilation.assets[f]));
                 let chunks = new Set<any>();
                 if (missingFiles.length === 0) {
-                    inputFiles.forEach(inputFile => {
+                    for (let inputFile of inputFiles) {
                         let asset = compilation.assets[inputFile];
                         concatSource.add(asset);
                         let chunksWithInputAsset = compilation.chunks.filter((chunk: any) => (<Array<string>>chunk.files).indexOf(inputFile) >= 0);
@@ -180,16 +185,35 @@ export class CssAssets {
                             let files: string[] = chunk.files;
                             chunk.files = files.filter(file => file !== inputFile);
                         });
-                        delete compilation.assets[inputFile];
-                    });
-                    compilation.assets[concatFile] = concatSource;
+                        if (!concatenationOptions.preserveSourceFiles) {
+                            delete compilation.assets[inputFile];
+                        }
+                    }
+                    if (concatenationOptions.postProcess) {
+                        postProcessResults.push(postProcess(concatenationOptions.postProcess, concatSource, concatFile).then(source => {
+                            compilation.assets[concatFile] = source;
+                        }));
+                    } else {
+                        compilation.assets[concatFile] = concatSource;
+                    }
                 }
-                chunks.forEach(chunk => {
-                    chunk.files.push(concatFile);
+                for (let chunk of chunks) {
+                    let files: Array<string> = chunk.files;
+                    if (files.indexOf(concatFile) >= 0) continue;
+                    files.push(concatFile);
+                }
+            }
+            if (postProcessResults.length > 0) {
+                Promise.all(postProcessResults).then(() => {
+                    cb();
+                }, error => {
+                    cb(error);
                 });
-            });
-            cb();
+            } else {
+                cb();
+            }
         });
+
         // sourcemap output for css files
         // Emit all css files with sourcemaps when the `emitSourceMaps` option
         // is set to true (default). By default source maps are generated as a
@@ -205,18 +229,7 @@ export class CssAssets {
             let assetPaths = Object.keys(compilation.assets).filter(p => /\.css$/.test(p));
             assetPaths.forEach(assetPath => {
                 let asset = compilation.assets[assetPath];
-                let source, map;
-                // sourceAndMap is supposedly more efficient when implemented.
-                if (asset.sourceAndMap) {
-                    let sourceAndMap = asset.sourceAndMap();
-                    source = sourceAndMap.source;
-                    map = sourceAndMap.map;
-                } else {
-                    source = asset.source();
-                    if (asset.map) {
-                        map = asset.map();
-                    }
-                }
+                let {source, map} = sourceAndMap(asset);
                 if (map) {
                     let comment;
                     if (this.options.inlineSourceMaps) {
@@ -232,4 +245,129 @@ export class CssAssets {
             cb();
         });
     }
+}
+
+function assetAsSource(contents: string, filename: string): Source {
+    let sourcemap: convertSourceMap.SourceMapConverter | undefined;
+    if (/sourceMappingURL/.test(contents)) {
+        sourcemap = convertSourceMap.fromSource(contents) ||
+            convertSourceMap.fromMapFileComment(contents, path.dirname(filename));
+    }
+    if (sourcemap) {
+        let sm: RawSourceMap = sourcemap.toObject();
+        contents = convertSourceMap.removeComments(contents);
+        contents = convertSourceMap.removeMapFileComments(contents);
+        return new SourceMapSource(contents, filename, sm);
+    } else {
+        return new RawSource(contents);
+    }
+}
+
+function assetFilesAsSource(filenames: string[], callback: (err: Error | undefined, source?: ConcatSource) => void) {
+    let assetSource = new ConcatSource();
+    let assetFiles = filenames.slice();
+    let eachAssetFile = (err?: Error) => {
+        if (err) {
+            callback(err);
+        } else {
+            const nextAssetFile = assetFiles.shift();
+            if (nextAssetFile) {
+                processAsset(nextAssetFile, eachAssetFile);
+            } else {
+                callback(undefined, assetSource);
+            }
+        }
+    };
+    const firstAssetFile = assetFiles.shift();
+    if (firstAssetFile) {
+        processAsset(firstAssetFile, eachAssetFile);
+    } else {
+        callback(new Error("No asset files provided."));
+    }
+    function processAsset(assetPath: string, assetCallback: (err?: Error) => void) {
+        fs.readFile(assetPath, "utf-8", (err, data) => {
+            if (err) {
+                assetCallback(err);
+            } else {
+              assetSource.add(assetAsSource(data, assetPath));
+              assetCallback();
+            }
+        });
+    }
+}
+
+function assetFileAsSource(sourcePath: string, callback: (err: Error | undefined, source?: Source) => void) {
+    fs.readFile(sourcePath, "utf-8", (err, contents) => {
+        if (err) {
+            callback(err);
+        } else {
+            try {
+                callback(undefined, assetAsSource(contents, sourcePath));
+            } catch (e) {
+                callback(e);
+            }
+        }
+    });
+}
+
+function sourceAndMap(asset: Source): SourceAndMap {
+    // sourceAndMap is supposedly more efficient when implemented.
+    if (asset.sourceAndMap) {
+        return asset.sourceAndMap();
+    } else {
+        let source = asset.source();
+        let map: RawSourceMap | undefined = undefined;
+        if (asset.map) {
+            map = asset.map();
+        }
+        return { source, map };
+    }
+}
+
+function makePostcssProcessor (
+    plugins: PostcssProcessor
+): GenericProcessor {
+    return (asset: Source, assetPath: string) => {
+        let { source, map } = sourceAndMap(asset);
+        let pluginsPromise: Promise<Array<postcss.Plugin<any>>>;
+        if (typeof plugins === "function") {
+            pluginsPromise = Promise.resolve(plugins(assetPath));
+        } else {
+            if (plugins.length > 0) {
+                pluginsPromise = Promise.resolve(plugins);
+            } else {
+                return Promise.resolve(asset);
+            }
+        }
+        return pluginsPromise.then(plugins => {
+            let processor = postcss(plugins);
+            let result = processor.process(source, {
+                to: assetPath,
+                map: { prev: map, inline: false, annotation: false }
+            });
+
+            return result.then((result) => {
+                return new SourceMapSource(result.css, assetPath, result.map.toJSON(), source, map);
+            });
+        });
+    };
+}
+
+function process(processor: GenericProcessor, asset: Source, assetPath: string) {
+    return Promise.resolve(processor(asset, assetPath));
+}
+
+function postProcess(option: PostProcessorOption, asset: Source, assetPath: string): Promise<Source> {
+    let promise: Promise<Source>;
+    if (isPostcssProcessor(option)) {
+        promise = process(makePostcssProcessor(option.postcss), asset, assetPath);
+    } else {
+        promise = Promise.resolve(asset);
+    }
+    if (isGenericProcessor(option)) {
+        promise = promise.then(asset => {
+            return process(option.processor, asset, assetPath);
+        });
+    }
+    return promise;
 }
