@@ -16,6 +16,7 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
     "newLine": "LF",
     "outDir": "dist",
     "module": "commonjs",
@@ -42,6 +43,5 @@
     "dist",
     "tsbuild",
     "node_modules",
-    "test"
   ]
 }
