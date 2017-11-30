@@ -1,0 +1,14 @@
+{
+  "version": "0.16.0",
+  "lerna": "2.5.1",
+  "packages": [
+    "packages/*"
+  ],
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "command": {
+    "bootstrap": {
+      "registry": "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/"
+    }
+  }
+}
