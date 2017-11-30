@@ -23,6 +23,7 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
 
     // output options
     "newLine": "LF",
