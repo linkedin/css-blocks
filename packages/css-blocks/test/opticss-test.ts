@@ -57,17 +57,9 @@ export class TemplateAnalysisTests {
     }
   }
   private useBlockStyles(analysis: Analysis, block: Block, blockName: string,
-    useStatesCallback?: (container: Block | BlockClass, element: ElementAnalysis<any, any, any>) => void
+    useStatesCallback?: (container: BlockClass, element: ElementAnalysis<any, any, any>) => void
   ) {
     analysis.blocks[blockName] = block;
-    let element = analysis.startElement(POSITION_UNKNOWN);
-    element.addStaticClass(block);
-    if (useStatesCallback) {
-      useStatesCallback(block, element);
-    } else {
-      this.useStates(element, block.states);
-    }
-    analysis.endElement(element);
 
     for (let c of block.classes) {
       let element = analysis.startElement(POSITION_UNKNOWN);
@@ -102,7 +94,7 @@ export class TemplateAnalysisTests {
       let optimizerAnalysis = analysis.forOptimizer(reader);
       let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
       let compiler = new BlockCompiler(postcss, reader);
-      let compiled = compiler.compile(block, block.root!, analysis);
+      let compiled = compiler.compile(block, block.stylesheet!, analysis);
       optimizer.addSource({
         content: compiled.toResult({to: "blocks/foo.block.css"})
       });

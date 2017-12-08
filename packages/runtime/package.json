@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/runtime",
-  "version": "0.15.0",
+  "version": "0.17.0",
   "description": "Browser runtime for computing dynamic classnames with css-blocks.",
   "main": "dist/runtime.js",
   "types": "dist/runtime.d.ts",

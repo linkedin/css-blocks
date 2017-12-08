@@ -1,6 +1,6 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
-import { Block, BlockObject } from "../Block";
+import { Block, Style } from "../Block";
 import BlockParser from "../BlockParser";
 import * as errors from "../errors";
 import { OptionsReader } from "../OptionsReader";
@@ -22,10 +22,10 @@ const NONCONTIGUOUS_COMBINATORS = new Set(["~", " "]);
 const RESOLVE_RE = /resolve(-inherited)?\(("|')([^\2]*)\2\)/;
 
 /**
- * Assert that `obj` is of type `BlockObject`. Throw if not.
- * @param obj BlockObject to test.
+ * Assert that `obj` is of type `Style`. Throw if not.
+ * @param obj Style to test.
  */
-function assertBlockObject(obj: BlockObject | undefined, key: string, source: SourceLocation | undefined): BlockObject {
+function assertStyle(obj: Style | undefined, key: string, source: SourceLocation | undefined): Style {
   if (obj === undefined) {
     // TODO: Better value source location for the bad block object reference.
     throw new errors.InvalidBlockSyntax(`Cannot find ${key}`, source);
@@ -77,28 +77,28 @@ export default class ConflictResolver {
       root.walkRules((rule) => {
 
         // These two conflicts caches persist between comma seperated selectors
-        // so we don't resolve the same Properties or BlockObject twice in a single pass.
+        // so we don't resolve the same Properties or Style twice in a single pass.
         let handledConflicts = new conflictDetection.Conflicts<string>();
-        let handledObjects = new conflictDetection.Conflicts<BlockObject>();
+        let handledObjects = new conflictDetection.Conflicts<Style>();
 
         // For each key selector:
         let parsedSelectors = block.getParsedSelectors(rule);
         parsedSelectors.forEach((sel) => {
           let key = sel.key;
 
-          // Fetch the associated `BlockObject`. If does not exist (ex: malformed selector), skip.
+          // Fetch the associated `Style`. If does not exist (ex: malformed selector), skip.
           let blockNode = BlockParser.getBlockNode(key);
           if ( !blockNode ) { return; }
-          let obj: BlockObject | undefined = block.nodeAndTypeToBlockObject(blockNode);
+          let obj: Style | undefined = block.nodeAndTypeToStyle(blockNode);
           if ( !obj ) { return; }
 
-          // Fetch the set of BlockObject conflicts. If the BlockObject has already
+          // Fetch the set of Style conflicts. If the Style has already
           // been handled, skip.
           let objectConflicts = handledObjects.getConflictSet(key.pseudoelement && key.pseudoelement.value);
           if ( objectConflicts.has(obj) ) { return; }
           objectConflicts.add(obj);
 
-          // Fetch the parent BlockObject this BlockObject inherits from. If none, skip.
+          // Fetch the parent Style this Style inherits from. If none, skip.
           let base = obj.base;
           if ( !base ) { return; }
 
@@ -173,8 +173,8 @@ export default class ConflictResolver {
       }
 
       // Look up the block that contains the asked resolution.
-      let other: BlockObject | undefined = block.lookup(referenceStr);
-      assertBlockObject(other, referenceStr, decl.source && decl.source.start);
+      let other: Style | undefined = block.lookup(referenceStr);
+      assertStyle(other, referenceStr, decl.source && decl.source.start);
 
       // If trying to resolve rule from the same block, throw.
       if (block.equal(other && other.block)) {
@@ -210,14 +210,14 @@ export default class ConflictResolver {
 
   private resolveConflictWith(
     referenceStr: string,
-    other: BlockObject,
+    other: Style,
     decl: postcss.Declaration,
     otherDecls: postcss.Declaration[],
     isOverride: boolean
   ): ConflictType {
     let curSel = parseSelector((<postcss.Rule>decl.parent)); // can't use the cache, it's already been rewritten.
     let prop = decl.prop;
-    let root = other.block.root;
+    let root = other.block.stylesheet;
 
     // This should never happen, but it satisfies the compiler.
     if (root === undefined) {

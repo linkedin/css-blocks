@@ -3,7 +3,7 @@ import { OptionsReader } from '../OptionsReader';
 import { BlockFactory } from "../BlockFactory";
 import { CustomLocalScope } from "../util/LocalScope";
 import { StyleAnalysis } from "./StyleAnalysis";
-import { BlockObject, Block, OBJ_REF_SPLITTER } from "../Block";
+import { Block, OBJ_REF_SPLITTER, Style } from "../Block";
 import TemplateValidator, { TemplateValidatorOptions } from "./validations";
 import {
   TemplateTypes,
@@ -43,8 +43,8 @@ export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
  * within a template. It is designed to be used as part of an AST walk over a template.
  *
  * 1. Call [[startElement startElement()]] at the beginning of an new html element.
- * 2. Call [[addStyle addStyle(blockObject, isDynamic)]] for all the styles used on the current html element.
- * 2. Call [[addExclusiveStyle addExclusiveStyle(alwaysPresent, ...blockObject)]] for all the styles used that are mutually exclusive on the current html element.
+ * 2. Call [[addStyle addStyle(style, isDynamic)]] for all the styles used on the current html element.
+ * 2. Call [[addExclusiveStyle addExclusiveStyle(alwaysPresent, ...style)]] for all the styles used that are mutually exclusive on the current html element.
  * 3. Call [[endElement endElement()]] when done adding styles for the current element.
  */
 export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAnalysis {
@@ -221,7 +221,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   /**
    * @return The local name for the block object using the local prefix for the block.
    */
-  serializedName(o: BlockObject): string {
+  serializedName(o: Style): string {
     return `${this.getBlockName(o.block) || ''}${o.asSource()}`;
   }
 
@@ -254,8 +254,8 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     return new Set<Block>(this.referencedBlocks());
   }
 
-  *stylesFound(dynamic?: boolean): IterableIterator<BlockObject> {
-    let found = new Set<BlockObject>();
+  *stylesFound(dynamic?: boolean): IterableIterator<Style> {
+    let found = new Set<Style>();
     for (let el of this.elements.values()) {
       for (let s of el.classesFound(dynamic)) {
         if (found.has(s)) continue;
@@ -278,8 +278,8 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     let stylesFound: string[] = [];
     let elements: { [id: string]: SerializedElementAnalysis } = {};
     let template = this.template.serialize();
-    let styleNameMap = new Map<BlockObject, string>();
-    let styleIndexes = new Map<BlockObject, number>();
+    let styleNameMap = new Map<Style, string>();
+    let styleIndexes = new Map<Style, number>();
 
     let styles = [...this.stylesFound()];
 
@@ -334,16 +334,16 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       blockPromises.push(promise);
     });
     return Promise.all(blockPromises).then(values => {
-      let localScope = new CustomLocalScope<Block, BlockObject>(OBJ_REF_SPLITTER);
+      let localScope = new CustomLocalScope<Block, Style>(OBJ_REF_SPLITTER);
       values.forEach(o => {
         analysis.blocks[o.name] = o.block;
         localScope.setSubScope(o.name, o.block);
       });
-      let objects = new Array<BlockObject>();
+      let objects = new Array<Style>();
       serializedAnalysis.stylesFound.forEach(s => {
-        let blockObject = localScope.lookup(s);
-        if (blockObject) {
-          objects.push(blockObject);
+        let style = localScope.lookup(s);
+        if (style) {
+          objects.push(style);
         } else {
           throw new Error(`Cannot resolve ${s} to a block style.`);
         }

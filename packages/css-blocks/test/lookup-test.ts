@@ -8,17 +8,17 @@ export class LookupTests {
   @test "finds the block"() {
     let block = new Block("test", "test.block.css");
     let found = block.lookup(".root");
-    assert.deepEqual(block, found);
+    assert.deepEqual(block.rootClass, found);
   }
   @test "finds a state"() {
     let block = new Block("test", "test.block.css");
-    let state = block.states._ensureState({name: "foo"});
+    let state = block.rootClass.states._ensureState({name: "foo"});
     let found = block.lookup("[state|foo]");
     assert.deepEqual(state, found);
   }
   @test "finds an exclusive state"() {
     let block = new Block("test", "test.block.css");
-    let state = block.states._ensureState({name: "bar", group: "foo"});
+    let state = block.rootClass.states._ensureState({name: "bar", group: "foo"});
     let found = block.lookup("[state|foo=bar]");
     assert.deepEqual(state, found);
   }
@@ -47,9 +47,9 @@ export class LookupTests {
     let block = new Block("test", "test.block.css");
     block.addBlockReference("asdf", otherBlock);
     let found = block.lookup("asdf");
-    assert.deepEqual(otherBlock, found);
+    assert.deepEqual(otherBlock.rootClass, found);
     found = block.lookup("asdf.root");
-    assert.deepEqual(otherBlock, found);
+    assert.deepEqual(otherBlock.rootClass, found);
   }
   @test "finds referenced block class"() {
     let otherBlock = new Block("other", "other.block.css");

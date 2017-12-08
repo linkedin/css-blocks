@@ -1,4 +1,4 @@
-import { Block, BlockObject } from "./Block";
+import { Block, Style } from "./Block";
 import postcss = require("postcss");
 import {
   ClassifiedParsedSelectors,
@@ -14,9 +14,9 @@ export interface Query {
 }
 
 export class QueryKeySelector implements Query {
-  target: BlockObject;
+  target: Style;
   impl: QueryKeySelectorImpl;
-  constructor(obj: BlockObject) {
+  constructor(obj: Style) {
     this.target = obj;
     let tag = new Tagname({unknown: true});
     let attrs = obj.asSourceAttributes();

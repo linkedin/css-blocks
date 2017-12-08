@@ -24,13 +24,13 @@ export class ICssAdapterTest {
   }
   @test "adapts simple state"() {
     let block = new Block("foo", "foo.css");
-    block.states._ensureState({name: "asdf"});
+    block.rootClass.states._ensureState({name: "asdf"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles("[state|asdf]"), "foo--asdf");
   }
   @test "adapts exclusive state"() {
     let block = new Block("foo", "foo.css");
-    block.states._ensureState({group: "theme", name: "fancy"});
+    block.rootClass.states._ensureState({group: "theme", name: "fancy"});
     let styles = iCssAdapter(this.asExportDictionary(block));
     assert.equal(styles("[state|theme=fancy]"), "foo--theme-fancy");
   }

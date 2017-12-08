@@ -7,13 +7,13 @@ import {
 
 import {
   Block,
-  BlockObject,
   isBlock,
   isBlockClass,
   isState,
   State,
   StateParent,
   BlockClass,
+  Style,
 } from "../Block";
 
 import {
@@ -37,16 +37,16 @@ import {
   POSITION_UNKNOWN,
 } from "@opticss/element-analysis";
 
-export interface HasState<Style extends State | number = State> {
-  state: Style;
+export interface HasState<StateType extends State | number = State> {
+  state: StateType;
 }
 
 export function isBooleanState(o: object): o is HasState<State | number> {
   return !!(<HasState>o).state;
 }
 
-export interface HasGroup<Style extends State | number = State> {
-  group: ObjectDictionary<Style>;
+export interface HasGroup<GroupType extends State | number = State> {
+  group: ObjectDictionary<GroupType>;
 }
 
 export function isStateGroup(o: object): o is HasGroup<State | number> {
@@ -195,7 +195,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   sourceLocation: SourceLocation;
 
   /** static styles explicitly declared on this element */
-  static: Set<BlockObject>;
+  static: Set<Style>;
 
   /** blocks/classes set conditionally */
   dynamicClasses: Array<DynamicClasses<TernaryExpression>>;
@@ -219,7 +219,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * All the static styles including styles implied by the explicitly specified
    * styles.
    */
-  private allStaticStyles: Set<BlockObject>;
+  private allStaticStyles: Set<Style>;
 
   private _sealed: boolean;
 
@@ -317,7 +317,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     let found = new Set<StateParent>();
     if (returnStatic(dynamic)) {
       for (let s of this.static) {
-        if (isBlock(s) || isBlockClass(s)) {
+        if (isBlockClass(s)) {
           found.add(s);
           yield s;
         }
@@ -387,7 +387,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * The state is added as dynamic and conditional on its class if that
    * class is dynamic.
    */
-  addStaticState(container: Block | BlockClass, state: State) {
+  addStaticState(container: BlockClass, state: State) {
     this.assertSealed(false);
     this.addedStyles.push({container, state});
   }
@@ -402,7 +402,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     }
   }
 
-  private assertValidContainer(container: Block | BlockClass, state: State) {
+  private assertValidContainer(container: BlockClass, state: State) {
     if (container !== state.parent) {
       if (!container.resolveStyles().has(state.parent!)) {
         throw new Error("container is not a valid container for the given state");
@@ -416,7 +416,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * @param state the state that is dynamic.
    * @param condition The AST node(s) representing this boolean expression.
    */
-  addDynamicState(container: Block | BlockClass, state: State, condition: BooleanExpression) {
+  addDynamicState(container: BlockClass, state: State, condition: BooleanExpression) {
     this.assertSealed(false);
     this.addedStyles.push({state, container, condition});
   }
@@ -478,17 +478,17 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    */
   private mapBlocksForClass(klass: StateParent) {
     let explicitBlock = klass.block;
-    let blockHierarchy = explicitBlock.resolveInheritance() as Set<Block>;
+    let blockHierarchy = new Set(explicitBlock.getAncestors());
     blockHierarchy.add(explicitBlock);
     let resolvedStyles = klass.resolveStyles();
     for (let style of resolvedStyles) {
-      if (!isBlock(style) && !isBlockClass(style)) continue;
+      if (!isBlockClass(style)) continue;
       let implicitBlock = style.block;
       let hierarchy: Set<Block>;
-      if (implicitBlock.isAncestorOf(explicitBlock) || implicitBlock === explicitBlock) {
+      if (blockHierarchy.has(implicitBlock)) {
         hierarchy = blockHierarchy;
       } else {
-        hierarchy = implicitBlock.resolveInheritance() as Set<Block>;
+        hierarchy = new Set(implicitBlock.getAncestors());
         hierarchy.add(implicitBlock);
       }
       for (let block of hierarchy) {
@@ -548,7 +548,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * @param styleIndexes a map of block objects to a number that represents
    *   it in the template analysis serialization.
    */
-  serialize(styleIndexes: Map<BlockObject, number>): SerializedElementAnalysis {
+  serialize(styleIndexes: Map<Style, number>): SerializedElementAnalysis {
     this.assertSealed();
     let staticStyles = new Array<number>();
     for (let style of this.static) {
@@ -595,15 +595,15 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * the block objects for use in re-writing.
    *
    * This mapping of classname to block object is stable and the keys can be
-   * assumed to be unique per BlockObject across all blocks -- so these
+   * assumed to be unique per Style across all blocks -- so these
    * maps can be merged safely.
    */
-  forOptimizer(options: CssBlocksOptionsReader): [Element, Map<string, BlockObject>] {
+  forOptimizer(options: CssBlocksOptionsReader): [Element, Map<string, Style>] {
     this.assertSealed();
     let tagValue = this.tagName ? attrValues.constant(this.tagName) : attrValues.unknown();
     let tagName = new Tagname(tagValue);
     let classes = new Array<AttributeValueSetItem>();
-    let classMap = new Map<string, BlockObject>();
+    let classMap = new Map<string, Style>();
     for (let style of this.allStaticStyles) {
       let className = style.cssClass(options);
       classes.push(attrValues.constant(className));
@@ -760,11 +760,11 @@ function addToSet(
   return setItems;
 }
 
-type ClassMapper = (style: BlockObject) => ValueConstant | AttributeValueSet;
+type ClassMapper = (style: Style) => ValueConstant | AttributeValueSet;
 function mapClasses(
   options: CssBlocksOptionsReader,
-  map: Map<string, BlockObject>,
-  style: BlockObject
+  map: Map<string, Style>,
+  style: Style
 ): ValueConstant | AttributeValueSet {
   let classes = new Array<string>();
   let resolvedStyles = style.resolveStyles();
@@ -780,12 +780,12 @@ function mapClasses(
   }
 }
 
-type ChoiceMapper = (includeAbsent: boolean, ...styles: BlockObject[]) => AttributeValueChoice;
+type ChoiceMapper = (includeAbsent: boolean, ...styles: Style[]) => AttributeValueChoice;
 function mapChoiceClasses(
   options: CssBlocksOptionsReader,
-  map: Map<string, BlockObject>,
+  map: Map<string, Style>,
   includeAbsent: boolean,
-  ...styles: BlockObject[]
+  ...styles: Style[]
 ): AttributeValueChoice {
   let choices = new Array<AttributeValueChoiceOption>();
   if (includeAbsent) {
@@ -797,7 +797,7 @@ function mapChoiceClasses(
   return attrValues.oneOf(choices);
 }
 
-function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<BlockObject, number>): SerializedDynamicContainer {
+function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Style, number>): SerializedDynamicContainer {
   let classes: SerializedDynamicContainer = {
     condition: true,
     whenFalse: [],
@@ -816,7 +816,7 @@ function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Blo
   return classes;
 }
 
-function serializeDynamicStates(c: DynamicStates<any, any>, styleIndexes: Map<BlockObject, number>): SerializedDynamicStates {
+function serializeDynamicStates(c: DynamicStates<any, any>, styleIndexes: Map<Style, number>): SerializedDynamicStates {
   let dynState = {
     stringExpression: true,
     condition: true,

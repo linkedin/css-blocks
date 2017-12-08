@@ -27,7 +27,7 @@ export class KeyQueryTests {
     let css = `.root { color: red; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
-        let q = new QueryKeySelector(block);
+        let q = new QueryKeySelector(block.rootClass);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
     });
@@ -37,7 +37,7 @@ export class KeyQueryTests {
                .root::before { content: 'b'; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
-        let q = new QueryKeySelector(block);
+        let q = new QueryKeySelector(block.rootClass);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
         assert.equal(result.other["::before"].length, 1);
@@ -48,7 +48,7 @@ export class KeyQueryTests {
                [state|foo] .a { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
-        let q = new QueryKeySelector(block.states.all()[0]);
+        let q = new QueryKeySelector(block.rootClass.states.all()[0]);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
     });
@@ -58,7 +58,7 @@ export class KeyQueryTests {
                [state|foo] .a { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
-        let q = new QueryKeySelector(block.classes[0]);
+        let q = new QueryKeySelector(block.classes[1]);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
     });
@@ -68,7 +68,7 @@ export class KeyQueryTests {
                .a[state|foo] { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
-        let q = new QueryKeySelector(block.classes[0]);
+        let q = new QueryKeySelector(block.classes[1]);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
     });
@@ -79,7 +79,7 @@ export class KeyQueryTests {
                .a[state|foo] { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
-        let q = new QueryKeySelector(block.classes[0].states.all()[0]);
+        let q = new QueryKeySelector(block.classes[1].states.all()[0]);
         let result = q.execute(root);
         assert.deepEqual(result.main.length, 1);
     });

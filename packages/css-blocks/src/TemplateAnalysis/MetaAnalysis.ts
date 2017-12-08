@@ -1,7 +1,7 @@
 import { OptionsReader } from '../OptionsReader';
 import * as debugGenerator from 'debug';
 
-import { Block, BlockObject } from "../Block";
+import { Block, Style } from "../Block";
 import { TemplateAnalysis, SerializedTemplateAnalysis } from "./index";
 import {
   TemplateTypes,
@@ -18,8 +18,8 @@ export class SerializedMetaTemplateAnalysis {
 
 export class MetaTemplateAnalysis implements StyleAnalysis {
   protected analyses: TemplateAnalysis<keyof TemplateTypes>[];
-  protected stylesFound: Map<BlockObject, TemplateAnalysis<keyof TemplateTypes>[]>;
-  protected dynamicStyles: Map<BlockObject, TemplateAnalysis<keyof TemplateTypes>[]>;
+  protected stylesFound: Map<Style, TemplateAnalysis<keyof TemplateTypes>[]>;
+  protected dynamicStyles: Map<Style, TemplateAnalysis<keyof TemplateTypes>[]>;
 
   constructor() {
     this.analyses = [];
@@ -78,7 +78,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     return this.dynamicStyles.size;
   }
 
-  isDynamic(style: BlockObject): boolean {
+  isDynamic(style: Style): boolean {
     return this.dynamicStyles.has(style);
   }
 
@@ -114,7 +114,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     return analyses;
   }
 
-  private addAnalysisToStyleMap(map: Map<BlockObject, TemplateAnalysis<keyof TemplateTypes>[]>, style: BlockObject, analysis: TemplateAnalysis< keyof TemplateTypes>) {
+  private addAnalysisToStyleMap(map: Map<Style, TemplateAnalysis<keyof TemplateTypes>[]>, style: Style, analysis: TemplateAnalysis< keyof TemplateTypes>) {
     let analyses = map.get(style);
     if (analyses) {
       analyses.push(analysis);

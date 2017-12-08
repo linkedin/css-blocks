@@ -151,7 +151,7 @@ export default class BlockParser {
 
     // Create our new Block object and save reference to the raw AST
     let block = new Block(defaultName, identifier);
-    block.root = root;
+    block.stylesheet = root;
 
     // Once all block references included by this block are resolved
     return this.resolveReferences(block).then((block) => {
@@ -168,7 +168,7 @@ export default class BlockParser {
           let nodes = selectors[0].key.nodes;
           if (nodes.length === 1 && nodes[0].type === selectorParser.ATTRIBUTE) {
             let info = stateParser(<selectorParser.Attribute>selectors[0].key.nodes[0]);
-            let state = block.states._ensureState(info);
+            let state = block.rootClass.states._ensureState(info);
             state.isGlobal = true;
           } else {
             throw new errors.InvalidBlockSyntax(
@@ -222,7 +222,7 @@ export default class BlockParser {
                   }
 
                   if (isKey) {
-                    block.propertyConcerns.addProperties(rule, block, (prop) => !/(extends|implements|block-name)/.test(prop));
+                    block.rootClass.propertyConcerns.addProperties(rule, block, (prop) => !/(extends|implements|block-name)/.test(prop));
                   }
                   break;
 
@@ -236,7 +236,7 @@ export default class BlockParser {
 
                     }
                   } else {
-                    let state = block.states._ensureState(stateParser(<selectorParser.Attribute>obj.node));
+                    let state = block.rootClass.states._ensureState(stateParser(<selectorParser.Attribute>obj.node));
                     if (isKey) {
                       state.propertyConcerns.addProperties(rule, block);
                     }
@@ -357,7 +357,7 @@ export default class BlockParser {
    */
   private resolveReferences(block: Block): Promise<Block> {
 
-    let root: postcss.Root | undefined = block.root;
+    let root: postcss.Root | undefined = block.stylesheet;
     let sourceFile: string = this.opts.importer.debugIdentifier(block.identifier, this.opts);
     let namedBlockReferences: Promise<[string, string, postcss.AtRule, Block]>[] = [];
 
@@ -667,7 +667,7 @@ export default class BlockParser {
 
     // If state referenced does not exist on external block, throw
     let stateInfo = stateParser(<selectorParser.Attribute>obj.node);
-    let otherState = otherBlock.states._getState(stateInfo);
+    let otherState = otherBlock.rootClass.states._getState(stateInfo);
     if (!otherState) {
       throw new errors.InvalidBlockSyntax(
         `No state ${obj.node.toString()} found in : ${rule.selector}`,

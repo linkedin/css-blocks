@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/webpack-plugin",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Webpack plugin for css-blocks.",
   "main": "dist/src/index.js",
   "scripts": {
@@ -69,7 +69,7 @@
     "@opticss/template-api": "^0.2.0",
     "async": "^2.4.1",
     "convert-source-map": "^1.5.0",
-    "css-blocks": "^0.15.1",
+    "css-blocks": "^0.17.0",
     "debug": "^2.6.8",
     "install": "^0.10.1",
     "loader-utils": "^1.0.1",

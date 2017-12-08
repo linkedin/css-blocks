@@ -5,13 +5,12 @@ import { SelectorFactory, parseSelector,
 import { Attribute, Attr, AttributeNS, ValueAbsent, ValueConstant } from "@opticss/element-analysis";
 import { ObjectDictionary, MultiMap, assertNever } from "@opticss/util";
 
-import { stateParser, isClassNode, isStateNode, isRootNode,
+import { stateParser, isClassNode, isStateNode,
          NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { CssBlockError } from "../errors";
 import { FileIdentifier } from "../importing";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
-
 import { LocalScopedContext, HasLocalScope, HasScopeLookup } from "../util/LocalScope";
 import { unionInto } from '../util/unionInto';
 import { objectValues } from "@opticss/util";
@@ -29,15 +28,18 @@ export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
   return;
 };
 
+export type Style = BlockClass | State;
+export type StyleContainer = Block | BlockClass | null;
+
 /**
- * Abstract class that serves as the base for all BlockObjects. Contains basic
+ * Abstract class that serves as the base for all Styles. Contains basic
  * properties and abstract methods that extenders must implement.
  */
-export abstract class BlockObject {
+export abstract class BlockObject<ContainerType extends StyleContainer = StyleContainer> {
   public readonly propertyConcerns: PropertyContainer;
 
   protected _name: string;
-  protected _container: BlockParent;
+  protected _container: ContainerType;
   protected _compiledAttribute: Attribute;
 
   /** cache of resolveStyles() */
@@ -46,7 +48,7 @@ export abstract class BlockObject {
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
    */
-  constructor(name: string, container?: BlockParent){
+  constructor(name: string, container: ContainerType){
     this._name = name;
     this._container = container;
     this.propertyConcerns = new PropertyContainer();
@@ -62,7 +64,7 @@ export abstract class BlockObject {
   /**
    * Block parent container.
    */
-  get parent(): BlockParent {
+  get parent(): ContainerType {
     return this._container;
   }
 
@@ -70,10 +72,10 @@ export abstract class BlockObject {
    * Get the inherited block object for this block object of the same name and type.
    * @returns The base inherited block object.
    */
-  public abstract get base(): BlockObject | undefined;
+  public abstract get base(): BlockClass | State | undefined;
 
   /**
-   * Return the local identifier for this `BlockObject`.
+   * Return the local identifier for this `Style`.
    * @returns The local name.
    */
   public abstract localName(): string;
@@ -84,13 +86,13 @@ export abstract class BlockObject {
   public abstract asSourceAttributes(): Attr[];
 
   /**
-   * Return the source selector this `BlockObject` was read from.
+   * Return the source selector this `Style` was read from.
    * @returns The source selector.
    */
   public abstract asSource(): string;
 
   /**
-   * Return the css selector for this `BlockObject`.
+   * Return the css selector for this `Style`.
    * @param opts Option hash configuring output mode.
    * @returns The CSS class.
    */
@@ -104,21 +106,10 @@ export abstract class BlockObject {
   public abstract matches(compoundSel: CompoundSelector): boolean;
 
   /**
-   * Returns the list of all `BlockObjects` that are ancestors of this block.
-   */
-  public abstract all(): BlockObject[];
-
-  /**
    * Crawl up the container tree and return the base block object.
    * @returns The base block in this container tree.
    */
-  get block(): Block {
-    let tmp: BlockObject | undefined = this;
-    while (tmp.parent) {
-      tmp = tmp.parent;
-    }
-    return <Block>tmp;
-  }
+  public abstract get block(): Block;
 
   /**
    * Returns all the classes needed to represent this block object
@@ -141,9 +132,9 @@ export abstract class BlockObject {
    * This block object is included in the returned result so the
    * resolved value's size is always 1 or greater.
    */
-  public resolveStyles(): Set<BlockObject> {
+  public resolveStyles(): Set<Style> {
     if (this._resolvedStyles) {
-      return new Set(this._resolvedStyles);
+      return new Set(<Set<Style>>this._resolvedStyles);
     }
 
     let inheritedStyles = this.resolveInheritance();
@@ -158,7 +149,7 @@ export abstract class BlockObject {
       }
     }
 
-    return new Set(this._resolvedStyles);
+    return new Set(<Set<Style>>this._resolvedStyles);
   }
 
   /**
@@ -168,7 +159,7 @@ export abstract class BlockObject {
    *
    * returns undefined if no styles are implied.
    */
-  impliedStyles(): Set<BlockObject> | undefined {
+  impliedStyles(): Set<Style> | undefined {
     return undefined;
   }
 
@@ -179,8 +170,8 @@ export abstract class BlockObject {
    *
    * If nothing is inherited, this returns an empty set.
    */
-  resolveInheritance(): Set<BlockObject> {
-    let inherited = new Set<BlockObject>();
+  resolveInheritance(): Set<Style> {
+    let inherited = new Set<Style>();
     let base = this.base;
     while (base) {
       inherited.add(base);
@@ -203,7 +194,7 @@ export abstract class BlockObject {
   /**
    * Standard export method for a given block.
    * @param opts  Options for rendering cssClass.
-   * @returns The Export object representing this BlockObject.
+   * @returns The Export object representing this Style.
    */
   asExport(opts: OptionsReader): Export {
     return {
@@ -213,7 +204,7 @@ export abstract class BlockObject {
   }
 
   /**
-   * Debug utility to help log BlockObjects
+   * Debug utility to help log Styles
    * @param opts  Options for rendering cssClass.
    * @returns A debug string.
    */
@@ -223,19 +214,21 @@ export abstract class BlockObject {
 
 }
 
-export class Block extends BlockObject
+export class Block
   implements SelectorFactory,
-             HasLocalScope<Block, BlockObject>,
-             HasScopeLookup<BlockObject>
+             HasLocalScope<Block, Style>,
+             HasScopeLookup<Style>
 {
-  private _sourceAttribute: Attribute;
+  private _name: string;
   private _classes: BlockClassMap = {};
+  private _rootClass: BlockClass;
   private _blockReferences: ObjectDictionary<Block> = {};
   private _identifier: FileIdentifier;
   private _base?: Block;
   private _baseName?: string;
   private _implements: Block[] = [];
-  private _localScope: LocalScopedContext<Block, BlockObject>;
+  private _localScope: LocalScopedContext<Block, Style>;
+  private hasHadNameReset = false;
   /**
    * array of paths that this block depends on and, if changed, would
    * invalidate the compiled css of this block. This is usually only useful in
@@ -243,24 +236,25 @@ export class Block extends BlockObject
    */
   private _dependencies: Set<string>;
 
-  root?: postcss.Root;
-
-  public readonly states: StateContainer;
+  public stylesheet?: postcss.Root;
   public readonly parsedRuleSelectors: WeakMap<postcss.Rule,ParsedSelector[]>;
 
-  private hasHadNameReset = false;
-
   constructor(name: string, identifier: FileIdentifier) {
-    super(name);
     this._identifier = identifier;
+    this._name = name;
     this.parsedRuleSelectors = new WeakMap();
-    this.states = new StateContainer(this);
-    this._localScope = new LocalScopedContext<Block, BlockObject>(OBJ_REF_SPLITTER, this);
+    this._localScope = new LocalScopedContext<Block, Style>(OBJ_REF_SPLITTER, this);
     this._dependencies = new Set<string>();
+    this._rootClass = new BlockClass('root', this);
+    this.addClass(this._rootClass);
   }
 
   get name() {
     return this._name;
+  }
+
+  get rootClass(): BlockClass {
+    return this._rootClass;
   }
 
   set name(name: string) {
@@ -271,8 +265,8 @@ export class Block extends BlockObject
     this.hasHadNameReset = true;
   }
 
-  /// Start of methods to implement LocalScope<Block, BlockObject>
-  subScope(name: string): LocalScopedContext<Block, BlockObject> | undefined {
+  /// Start of methods to implement LocalScope<Block, Style>
+  subScope(name: string): LocalScopedContext<Block, Style> | undefined {
     let block = this._blockReferences[name];
     if (block) {
       return block._localScope;
@@ -280,13 +274,17 @@ export class Block extends BlockObject
       return;
     }
   }
-  lookupLocal(name: string): BlockObject | undefined {
-    return this._blockReferences[name] ||
-           this.all(false).find(o => o.asSource() === name);
+  lookupLocal(name: string): Style | undefined {
+    let blockRef = this._blockReferences[name];
+    if (blockRef) {
+      return blockRef.rootClass;
+    } else {
+      return this.all(false).find(o => o.asSource() === name);
+    }
   }
-  /// End of methods to implement LocalScope<Block, BlockObject>
+  /// End of methods to implement LocalScope<Block, Style>
 
-  /// Start of methods to implement LocalScope<Block, BlockObject>
+  /// Start of methods to implement LocalScope<Block, Style>
   /**
    * Lookup a sub-block either locally, or on a referenced foreign block.
    * @param reference
@@ -306,20 +304,13 @@ export class Block extends BlockObject
    *     state-selector -> '[state|' <ident> ']'
    *     ident -> regex:[a-zA-Z_-][a-zA-Z0-9]*
    *   A single dot by itself returns the current block.
-   * @returns The BlockObject referenced at the supplied path.
+   * @returns The Style referenced at the supplied path.
    */
-  lookup(reference: string): BlockObject | undefined {
+  lookup(reference: string): Style | undefined {
     return this._localScope.lookup(reference);
   }
 
-  /// End of methods to implement LocalScope<Block, BlockObject>
-
-  asSourceAttributes(): Attribute[] {
-    if (!this._sourceAttribute) {
-      this._sourceAttribute = new Attribute("class", {constant: "root"});
-    }
-    return [this._sourceAttribute];
-  }
+  /// End of methods to implement LocalScope<Block, Style>
 
   /**
    * Add an absolute, normalized path as a compilation dependency. This is used
@@ -357,7 +348,7 @@ export class Block extends BlockObject
   }
 
   get implementsBlocks(): Block[] {
-    return this._implements.concat([]);
+    return this._implements.slice();
   }
 
   addImplementation(b: Block) {
@@ -367,11 +358,11 @@ export class Block extends BlockObject
   /**
    * Validate that this block implements all foreign selectors from blocks it impelemnts.
    * @param b The block to check implementation against.
-   * @returns The BlockObjects from b that are missing in the block.
+   * @returns The Styles from b that are missing in the block.
    */
-  checkImplementation(b: Block): BlockObject[] {
-    let missing: BlockObject[] = [];
-    b.all().forEach((o: BlockObject) => {
+  checkImplementation(b: Block): Style[] {
+    let missing: Style[] = [];
+    b.all().forEach((o: Style) => {
       if (!this.find(o.asSource())) {
         missing.push(o);
       }
@@ -384,7 +375,7 @@ export class Block extends BlockObject
    */
   checkImplementations(): void {
     this.implementsBlocks.forEach((b: Block) => {
-      let missingObjs: BlockObject[] = this.checkImplementation(b);
+      let missingObjs: Style[] = this.checkImplementation(b);
       let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
       if (missingObjs.length > 0) {
         let s = missingObjs.length > 1 ? 's' : '';
@@ -394,7 +385,7 @@ export class Block extends BlockObject
   }
 
   // This is a really dumb impl
-  find(sourceName: string): BlockObject | undefined {
+  find(sourceName: string): Style | undefined {
     let blockRefName: string | undefined;
      let md = sourceName.match(CLASS_NAME_IDENT);
      if (md && md.index === 0) {
@@ -407,7 +398,7 @@ export class Block extends BlockObject
        });
        if (blockRef) {
          if (md[0].length === sourceName.length) {
-           return blockRef;
+           return blockRef.rootClass;
          }
          return blockRef.find(sourceName.slice(md[0].length));
        } else {
@@ -429,19 +420,6 @@ export class Block extends BlockObject
       classes.push(this._classes[e]);
     });
     return classes;
-  }
-
-  cssClass(opts: OptionsReader) {
-    switch(opts.outputMode) {
-      case OutputMode.BEM:
-        return this.name;
-      default:
-        return assertNever(opts.outputMode);
-    }
-  }
-
-  localName(): string {
-    return "root";
   }
 
   addClass(blockClass: BlockClass) {
@@ -480,13 +458,28 @@ export class Block extends BlockObject
   }
 
   /**
+   * Returns a new array of ancestors in order of inheritance
+   * with the first one being the immediate super block.
+   *
+   * If this block doesn't inherit, the array is empty.
+   **/
+  getAncestors(): Array<Block> {
+    let inherited = new Array<Block>();
+    let base = this.base;
+    while (base) {
+      inherited.push(base);
+      base = base.base;
+    }
+    return inherited;
+  }
+
+  /**
    * Return array self and all children.
    * @param shallow Pass false to not include inherited objects.
-   * @returns Array of BlockObjects.
+   * @returns Array of Styles.
    */
-  all(shallow?: boolean): BlockObject[] {
-    let result: BlockObject[] = [this];
-    result = result.concat(this.states.all());
+  all(shallow?: boolean): Style[] {
+    let result = new Array<Style>();
     this.classes.forEach((blockClass) => {
       result = result.concat(blockClass.all());
     });
@@ -496,28 +489,24 @@ export class Block extends BlockObject
     return result;
   }
 
-  merged(): MultiMap<string, BlockObject>{
-    let map = new MultiMap<string, BlockObject>();
+  merged(): MultiMap<string, Style>{
+    let map = new MultiMap<string, Style>();
     for (let obj of this.all()) {
       map.set(obj.asSource(), obj);
     }
     return map;
   }
 
-  asSource(): string {
-    return '.root';
-  }
-
   /**
-   * Fetch a the cached `BlockObject` from `Block` given `NodeAndType`.
-   * @param obj The `NodeAndType` object to use for `BlockObject` lookup.
+   * Fetch a the cached `Style` from `Block` given `NodeAndType`.
+   * @param obj The `NodeAndType` object to use for `Style` lookup.
    */
-  nodeAndTypeToBlockObject(obj: NodeAndType): BlockObject | undefined {
+  nodeAndTypeToStyle(obj: NodeAndType): Style | undefined {
     switch (obj.blockType) {
       case BlockType.root:
-        return this;
+        return this.rootClass;
       case BlockType.state:
-        return this.states._getState(stateParser(<selectorParser.Attribute>obj.node));
+        return this.rootClass.states._getState(stateParser(<selectorParser.Attribute>obj.node));
       case BlockType.class:
         return this.getClass(obj.node.value!);
       case BlockType.classState:
@@ -532,9 +521,9 @@ export class Block extends BlockObject
     }
   }
 
-  nodeAsBlockObject(node: selectorParser.Node): [BlockObject, number] | null {
+  nodeAsStyle(node: selectorParser.Node): [Style, number] | null {
     if (node.type === selectorParser.CLASS && node.value === "root") {
-      return [this, 0];
+      return [this.rootClass, 0];
     } else if (node.type === selectorParser.TAG) {
       let otherBlock = this.getReferencedBlock(node.value!);
       if (otherBlock) {
@@ -560,7 +549,7 @@ export class Block extends BlockObject
           }
         } else if (next && isStateNode(next)) {
           let info = stateParser(<selectorParser.Attribute>next);
-          let state = otherBlock.states._getState(info);
+          let state = otherBlock.rootClass.states._getState(info);
           if (state) {
             return [state, 1];
           } else {
@@ -591,7 +580,7 @@ export class Block extends BlockObject
       }
     } else if (isStateNode(node)) {
       let info = stateParser(<selectorParser.Attribute>node);
-      let state = this.states._ensureState(info);
+      let state = this.rootClass.states._ensureState(info);
       if (state) {
         return [state, 0];
       } else {
@@ -605,7 +594,7 @@ export class Block extends BlockObject
     let newNodes: selectorParser.Node[] = [];
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
-      let result = this.nodeAsBlockObject(node);
+      let result = this.nodeAsStyle(node);
       if (result === null) {
         newNodes.push(node);
       } else {
@@ -643,17 +632,13 @@ export class Block extends BlockObject
     return parseSelector(s)[0];
   }
 
-  matches(compoundSel: CompoundSelector): boolean {
-    return compoundSel.nodes.some(node => isRootNode(node));
-  }
-
   debug(opts: OptionsReader): string[] {
-    let result: string[] = [`Source: ${this.identifier}`, this.asDebug(opts)];
-    let sourceNames = new Set<string>(this.all().map(o => o.asSource()));
+    let result: string[] = [`Source: ${this.identifier}`, this.rootClass.asDebug(opts)];
+    let sourceNames = new Set<string>(this.all().map(s => s.asSource()));
     let sortedNames = [...sourceNames].sort();
     sortedNames.forEach(n => {
       if (n !== ".root") {
-        let o = this.find(n) as BlockObject;
+        let o = this.find(n) as Style;
         result.push(o.asDebug(opts));
       }
     });
@@ -810,13 +795,13 @@ export interface StateInfo {
 export class StateContainer {
   private _states: StateMap = {};
   private _groups: GroupMap = {};
-  private _parent: Block | BlockClass;
+  private _parent: BlockClass;
 
   /**
    * Save a reference to our parent element on instantiation. Only Blocks and
    * BlockClasses can contain States.
    */
-  constructor(parent: Block | BlockClass){
+  constructor(parent: BlockClass){
     this._parent = parent;
   }
 
@@ -997,7 +982,7 @@ export class StateContainer {
 }
 
 /**
- * Interface used when exporting a BlockObject using `asExport`.
+ * Interface used when exporting a Style using `asExport`.
  */
 export interface Export {
   identifier: string;
@@ -1005,17 +990,17 @@ export interface Export {
 }
 
 /** Parent types for a state */
-export type StateParent = Block | BlockClass;
+export type StateParent = BlockClass;
 
 /**
- * Valid parent types for a BlockObject
+ * Valid parent types for a Style
  */
-export type BlockParent = StateParent | undefined;
+export type StyleParent = Block | BlockClass | undefined;
 
 /**
  * Represents a Class present in the Block.
  */
-export class BlockClass extends BlockObject {
+export class BlockClass extends BlockObject<Block> {
   private _sourceAttribute: Attribute;
 
   public readonly states: StateContainer;
@@ -1032,7 +1017,19 @@ export class BlockClass extends BlockObject {
     this.states = new StateContainer(this);
   }
 
-  get base() {
+  get block(): Block {
+    return this.parent;
+  }
+
+  get parent(): Block {
+    return <Block>super.parent;
+  }
+
+  get isRoot(): boolean {
+    return this.name === "root";
+  }
+
+  get base(): BlockClass | undefined {
     let base = this.block.base;
     while (base) {
       let cls = base.getClass(this.name);
@@ -1069,7 +1066,11 @@ export class BlockClass extends BlockObject {
   cssClass(opts: OptionsReader) {
     switch(opts.outputMode) {
       case OutputMode.BEM:
-        return `${this.block.name}__${this.name}`;
+        if (this.isRoot) {
+          return `${this.block.name}`;
+        } else {
+          return `${this.block.name}__${this.name}`;
+        }
       default:
         throw "this never happens";
     }
@@ -1088,10 +1089,10 @@ export class BlockClass extends BlockObject {
   /**
    * Return array self and all children.
    * @param shallow Pass false to not include children.
-   * @returns Array of BlockObjects.
+   * @returns Array of Styles.
    */
-  all(shallow?: boolean): BlockObject[] {
-    let result: BlockObject[] = [this];
+  all(shallow?: boolean): Style[] {
+    let result: Style[] = [this];
     if (!shallow) {
       result = result.concat(this.states.all());
     }
@@ -1108,7 +1109,7 @@ export function isBlockClass(o: object): o is BlockClass {
  * States represent a state attribute selector in a particular Block. States may
  * optionally be a member of a group of states, and or designated "global".
  */
-export class State extends BlockObject {
+export class State extends BlockObject<BlockClass> {
   private _sourceAttributes: Attr[];
   private _group: string | null;
   isGlobal = false;
@@ -1120,21 +1121,21 @@ export class State extends BlockObject {
    * @param group An optional parent group name.
    * @param container The parent container of this State.
    */
-  constructor(name: string, group: string | null | undefined = undefined, container: Block | BlockClass) {
+  constructor(name: string, group: string | null | undefined = undefined, container: BlockClass) {
     super(name, container);
     this._group = group || null;
+  }
+
+  get block(): Block {
+    return this.blockClass.block;
   }
 
   /**
    * Retrieve the BlockClass that this state belongs to, if applicable.
    * @returns The parent block class, or null.
    */
-  get blockClass(): BlockClass | null {
-    if (this._container instanceof BlockClass) {
-      return this._container;
-    } else {
-      return null;
-    }
+  get blockClass(): BlockClass {
+    return this._container;
   }
 
   /**
@@ -1159,7 +1160,7 @@ export class State extends BlockObject {
    * @returns The State's attribute selector
    */
   asSource(): string {
-    if (this.blockClass === null) {
+    if (this.blockClass.isRoot) {
       return this.unqualifiedSource();
     } else {
       return this.blockClass.asSource() + this.unqualifiedSource();
@@ -1178,10 +1179,7 @@ export class State extends BlockObject {
         name = this.name;
         value = {absent: true};
       }
-      if (this.blockClass) {
-        let classAttr = this.blockClass.asSourceAttributes();
-        this._sourceAttributes.push(...classAttr);
-      }
+      this._sourceAttributes.push(...this.blockClass.asSourceAttributes());
       this._sourceAttributes.push(new AttributeNS("state", name, value));
     }
     return this._sourceAttributes;
@@ -1193,7 +1191,7 @@ export class State extends BlockObject {
    */
   localName(): string {
     let localNames: string[] = [];
-    if (this.blockClass) {
+    if (!this.blockClass.isRoot) {
       localNames.push(this.blockClass.localName());
     }
     if (this.group) {
@@ -1212,12 +1210,7 @@ export class State extends BlockObject {
   cssClass(opts: OptionsReader) {
     switch(opts.outputMode) {
       case OutputMode.BEM:
-        let cssClassName: string;
-        if (this.blockClass) {
-          cssClassName = this.blockClass.cssClass(opts);
-        } else {
-          cssClassName = this.block.cssClass(opts);
-        }
+        let cssClassName = this.blockClass.cssClass(opts);
         if (this.group) {
           return `${cssClassName}--${this.group}-${this.name}`;
         } else {
@@ -1250,7 +1243,7 @@ export class State extends BlockObject {
    */
   matches(compoundSel: CompoundSelector): boolean {
     let classVal: null | string = null;
-    if (this.blockClass) {
+    if (!this.blockClass.isRoot) {
       classVal = this.blockClass.name;
       if (!compoundSel.nodes.some(node => node.type === "class" && node.value === classVal)) {
         return false;
@@ -1272,32 +1265,23 @@ export class State extends BlockObject {
     if (this.group) {
       info.group = this.group;
     }
-    if (this.blockClass) {
-      let base = this.block.base;
-      while (base) {
-        let cls = base.getClass(this.blockClass.name);
-        if (cls) {
-          let state = cls.states._getState(info);
-          if (state) return state;
-        }
-        base = base.base;
-      }
-    } else {
-      let base = this.block.base;
-      while (base) {
-        let state = base.states._getState(info);
+    let base = this.block.base;
+    while (base) {
+      let cls = base.getClass(this.blockClass.name);
+      if (cls) {
+        let state = cls.states._getState(info);
         if (state) return state;
-        base = base.base;
       }
+      base = base.base;
     }
     return undefined;
   }
 
   /**
    * Return array self and all children.
-   * @returns Array of BlockObjects.
+   * @returns Array of Styles.
    */
-  all(): BlockObject[] {
+  all(): Style[] {
     return [this];
   }
 
@@ -1309,4 +1293,8 @@ export function isState(o: object): o is State {
 
 export function isSubState(o: object): o is State {
   return o instanceof State && o.group !== null;
+}
+
+export function isStyle(o: Object): o is Style {
+  return isBlockClass(o) || isState(o);
 }

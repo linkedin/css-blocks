@@ -62,7 +62,7 @@ export class Test {
     ).then(() => {
       assert.equal('Should never get here', '');
     }).catch((err: Error) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No class named "baz" found on block "bar". Did you mean one of: .foo, .bar (4:47)');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No class named "baz" found on block "bar". Did you mean one of: .root, .foo, .bar (4:47)');
     });
   }
 

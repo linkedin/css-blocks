@@ -37,10 +37,10 @@ const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
 
 /**
  * Template validator with a single method `validate` that, given a set of
- * correlations for a given element, will throw errors for invalid BlockObject
+ * correlations for a given element, will throw errors for invalid Style
  * correlations. Validator is instantiated with tslint-style validations config.
  *
- * Validators take the form `(str: Set<BlockObject>[], err: (str: string)) => any`.
+ * Validators take the form `(str: Set<Style>[], err: (str: string)) => any`.
  * The first argument is the list of possible style correlations for an element.
  * The second argument is an error callback function that will throw using the
  * provided error message and include well-formatted location data.

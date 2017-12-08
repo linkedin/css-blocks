@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { BlockObject } from '../Block';
+import { Style } from '../Block';
 import { assertNever, objectValues, Maybe, maybe} from "@opticss/util";
 import {
   BooleanExpression,
@@ -14,15 +14,15 @@ import {
 } from "@opticss/template-api";
 import { ClassRewrite, IndexedClassRewrite } from './ClassRewrite';
 
-export class IndexedClassMapping implements IndexedClassRewrite<BlockObject> {
-  inputs: BlockObject[];
+export class IndexedClassMapping implements IndexedClassRewrite<Style> {
+  inputs: Style[];
   staticClasses: string[];
   private map: { [k: string]: BooleanExpression<number> | undefined; };
-  private _inputMap: Map<BlockObject, number>;
-  constructor(inputs: BlockObject[], staticClasses: string[], map: {[k: string]: BooleanExpression<number> | undefined}) {
+  private _inputMap: Map<Style, number>;
+  constructor(inputs: Style[], staticClasses: string[], map: {[k: string]: BooleanExpression<number> | undefined}) {
     this.inputs = inputs;
     this.staticClasses = staticClasses;
-    this._inputMap = new Map<BlockObject, number>();
+    this._inputMap = new Map<Style, number>();
     inputs.forEach((i, n) => this._inputMap.set(i, n));
     this.map = map;
   }
@@ -33,14 +33,14 @@ export class IndexedClassMapping implements IndexedClassRewrite<BlockObject> {
     return Object.keys(this.map);
   }
 
-  public indexOf(input: BlockObject): Maybe<number> {
+  public indexOf(input: Style): Maybe<number> {
     let index = this._inputMap.get(input);
     return maybe(index, "internal error: block object not found");
   }
 
   static fromOptimizer(
     classRewrite: OptimizedMapping,
-    classMap: Map<string, BlockObject>
+    classMap: Map<string, Style>
   ): IndexedClassMapping {
     // TODO: move this renumbering to opticss?
     let indexSet = new Set<number>();
@@ -73,7 +73,7 @@ export class IndexedClassMapping implements IndexedClassRewrite<BlockObject> {
 
 }
 
-export class RewriteMapping implements ClassRewrite<BlockObject> {
+export class RewriteMapping implements ClassRewrite<Style> {
   /**
    * output attributes that are always on the element independent of any dynamic changes.
    */
@@ -82,28 +82,28 @@ export class RewriteMapping implements ClassRewrite<BlockObject> {
   /**
    * The numbers in the boolean expressions represents indexes into the inputAttributes array.
    */
-  private _dynamicClasses: Map<string, BooleanExpression<BlockObject>>;
+  private _dynamicClasses: Map<string, BooleanExpression<Style>>;
 
-  constructor(staticClasses?: string[], dynamicClasses?: Map<string, BooleanExpression<BlockObject>>) {
+  constructor(staticClasses?: string[], dynamicClasses?: Map<string, BooleanExpression<Style>>) {
     this.staticClasses = staticClasses || [];
-    this._dynamicClasses = dynamicClasses || new Map<string, BooleanExpression<BlockObject>>();
+    this._dynamicClasses = dynamicClasses || new Map<string, BooleanExpression<Style>>();
   }
 
   get dynamicClasses(): Array<string> {
     return [...this._dynamicClasses.keys()];
   }
 
-  dynamicClass(name: string): BooleanExpression<BlockObject> {
+  dynamicClass(name: string): BooleanExpression<Style> {
     return this._dynamicClasses.get(name)!;
   }
 
   static fromOptimizer(
     classRewrite: OptimizedMapping,
-    classMap: Map<string, BlockObject>
+    classMap: Map<string, Style>
   ): RewriteMapping {
     let staticClasses = classRewrite.staticAttributes.class;
     let dynamicClasses = classRewrite.dynamicAttributes.class;
-    let dynMap = new Map<string, BooleanExpression<BlockObject>>();
+    let dynMap = new Map<string, BooleanExpression<Style>>();
     if (dynamicClasses) {
       for (let className of Object.keys(dynamicClasses)) {
         let expression = dynamicClasses[className];
@@ -150,8 +150,8 @@ function renumber(renumberer: any, expression: BooleanExpression<number>) {
 function processExpression(
   expression: BooleanExpression<number>,
   inputs: Array<SimpleTagname | SimpleAttribute>,
-  classMap: Map<string, BlockObject>
-): BooleanExpression<BlockObject> {
+  classMap: Map<string, Style>
+): BooleanExpression<Style> {
   if (isAndExpression(expression)) {
     return {and: expression.and.map(e =>  isBooleanExpression(e) ? processExpression(e, inputs, classMap) : processExpressionLiteral(e, inputs, classMap))};
   } else if (isOrExpression(expression)) {
@@ -166,8 +166,8 @@ function processExpression(
 function processExpressionLiteral(
   expression: number,
   inputs: Array<SimpleTagname | SimpleAttribute>,
-  classMap: Map<string, BlockObject>,
-): BlockObject {
+  classMap: Map<string, Style>,
+): Style {
   let input = inputs[expression];
   if (isSimpleTagname(input)) {
     throw new Error("i really just can't handle tag names rn thx");

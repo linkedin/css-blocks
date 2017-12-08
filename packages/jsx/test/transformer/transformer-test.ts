@@ -32,7 +32,7 @@ function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partia
   let compiler = new BlockCompiler(postcss, reader);
   for (let block of blocks) {
     optimizer.addSource({
-      content: compiler.compile(block, block.root!).toResult({to: reader.importer.filesystemPath(block.identifier, reader) || undefined}),
+      content: compiler.compile(block, block.stylesheet!).toResult({to: reader.importer.filesystemPath(block.identifier, reader) || undefined}),
     });
   }
   return optimizer.optimize('optimized.css').then(result => {

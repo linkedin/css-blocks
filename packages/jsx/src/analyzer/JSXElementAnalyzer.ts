@@ -153,7 +153,7 @@ export class JSXElementAnalyzer {
           // Check if there is a block of this name imported. If so, save style and exit.
           let block: Block | undefined = this.blocks[name];
           if (block) {
-            element.addStaticClass(block);
+            element.addStaticClass(block.rootClass);
           } else {
             if (suppressErrors) return;
             throw new TemplateAnalysisError(`No block named ${name} was found`, this.nodeLoc(expression));
@@ -184,11 +184,11 @@ export class JSXElementAnalyzer {
       // Ex: `blockName.foo` || `blockName['bar']` || `blockName.bar()`
       let parts: ExpressionReader = new ExpressionReader(expression.node, this.filename);
       let expressionResult = parts.getResult(this.blocks);
-      let blockOrClass = expressionResult.blockClass || expressionResult.block;
+      let blockClass = expressionResult.blockClass;
       if (isBlockStateGroupResult(expressionResult) || isBlockStateResult(expressionResult)) {
         throw new Error('internal error, not expected on a member expression');
       } else {
-        element.addStaticClass(blockOrClass);
+        element.addStaticClass(blockClass);
       }
     } else if (expression.isCallExpression()) {
       let callExpr = expression.node as CallExpression;
@@ -199,11 +199,11 @@ export class JSXElementAnalyzer {
           try {
             let parts: ExpressionReader = new ExpressionReader(callExpr, this.filename);
             let expressionResult = parts.getResult(this.blocks);
-            let blockOrClass = expressionResult.blockClass || expressionResult.block;
+            let blockClass = expressionResult.blockClass;
             if (isBlockStateGroupResult(expressionResult)) {
-              element.addDynamicGroup(blockOrClass, expressionResult.stateGroup, expressionResult.dynamicStateExpression, false);
+              element.addDynamicGroup(blockClass, expressionResult.stateGroup, expressionResult.dynamicStateExpression, false);
             } else if (isBlockStateResult(expressionResult)) {
-              element.addStaticState(blockOrClass, expressionResult.state);
+              element.addStaticState(blockClass, expressionResult.state);
             } else {
               throw new Error('internal error, not expected on a call expression');
             }

@@ -1484,13 +1484,13 @@ of CSS blocks in templates, this helper is a little cumbersome to use.
 It takes a helper expression and a list of block object expressions that might be returned
 from the helper. The helper should pass calls through one of the following methods:
 
-* `styles.classes(expression: string): BlockObject` - Depending on the expression,
+* `styles.classes(expression: string): Style[]` - Depending on the expression,
   returns the CSS classes for a given state, class, or block. The
   expression takes the form of a block object expression as defined in
   the Syntax section above.
 
 To return the styles of several elements together use the
-`cssBlocks.union(...expressions: (string | BlockObject)[]): BlockObject[]` method. This ensures that the
+`cssBlocks.union(...expressions: (string | Style)[]): Style[]` method. This ensures that the
 classes returned are correct, de-duplicated, resolved and legal to be used
 together, and can still provide hints correctly to the CSS optimizer.
 

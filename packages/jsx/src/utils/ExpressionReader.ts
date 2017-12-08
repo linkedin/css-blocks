@@ -43,7 +43,7 @@ function hasLiteralArguments(args: Array<Node>, length: number): boolean {
 
 export type BlockClassResult = {
   block: Block;
-  blockClass?: BlockClass;
+  blockClass: BlockClass;
 };
 export type BlockStateResult = BlockClassResult & {
   state: State;
@@ -161,27 +161,30 @@ export class ExpressionReader {
       }
     }
     let block = localBlocks[this.block!];
-    let blockClass: BlockClass | undefined = undefined;
+    let blockClass: BlockClass | undefined;
     if (!block) {
       throw new MalformedBlockPath(`No block named ${this.block} exists in this scope.`, this.loc);
     }
 
     // Fetch the class referenced in this selector, if it exists.
     if ( this.class && this.class !== 'root' ) {
-      blockClass = block.lookup(`.${this.class}`) as BlockClass | undefined;
-      if ( !blockClass ) {
+      let found = block.lookup(`.${this.class}`) as BlockClass | undefined;
+      if ( !found ) {
         let knownClasses = block.all(false).filter(s => isBlockClass(s)).map(c => c.asSource());
         throw new MalformedBlockPath(`No class named "${this.class}" found on block "${this.block}". ` +
           `Did you mean one of: ${knownClasses.join(', ')}`, this.loc);
+      } else {
+        blockClass = found;
       }
     }
+    blockClass = blockClass || block.rootClass;
 
     // If no state, we're done!
     if ( !this.state ) {
       debug(`Discovered BlockClass ${this.class} from expression ${this.toString()}`);
       return { block, blockClass };
     }
-    let statesContainer = (blockClass || block).states;
+    let statesContainer = blockClass.states;
 
     // Fetch all matching state objects.
     let stateGroup = statesContainer.resolveGroup(this.state, this.subState !== DYNAMIC_STATE_ID ? this.subState : undefined) || {};

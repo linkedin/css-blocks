@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/glimmer-templates",
-  "version": "0.15.0",
+  "version": "0.17.0",
   "description": "Statically analyze & rewrite the css-block styles in Handlebars templates.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -69,7 +69,7 @@
     "@opticss/template-api": "^0.2.0",
     "@opticss/util": "^0.1.1",
     "@types/glob": "^5.0.30",
-    "css-blocks": "^0.15.0",
+    "css-blocks": "^0.17.0",
     "debug": "^2.6.8",
     "glimmer-analyzer": "^0.2.0",
     "glob": "^7.1.2",

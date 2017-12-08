@@ -1,4 +1,3 @@
-import { isBlock, isBlockClass } from "../../Block";
 import { Validator } from "./Validator";
 
 /**
@@ -11,8 +10,8 @@ const rootClassValidator: Validator = (analysis, templateAnalysis, err) => {
     let foundRoot = false;
     let foundClass = false;
     for (let container of analysis.classesForBlock(block)) {
-      foundRoot = foundRoot || isBlock(container);
-      foundClass = foundClass || isBlockClass(container);
+      foundRoot = foundRoot || container.isRoot;
+      foundClass = foundClass || !container.isRoot;
     }
     if (foundRoot && foundClass) {
       err(`Cannot put block classes on the block's root element`);

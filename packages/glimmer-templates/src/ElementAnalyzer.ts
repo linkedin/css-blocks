@@ -69,7 +69,7 @@ export class ElementAnalyzer {
 
     // The root element gets the block's root class automatically.
     if (atRootElement) {
-      analysis.element.addStaticClass(this.block);
+      analysis.element.addStaticClass(this.block.rootClass);
     }
 
     // Find the class attribute and process.

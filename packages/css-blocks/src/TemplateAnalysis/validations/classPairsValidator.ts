@@ -48,8 +48,8 @@ const classPairsValidator: Validator = (analysis, _templateAnalysis, err) => {
 function checkExisting(classPerBlock: Map<Block, BlockClass>, tmpClassPerBlock: Map<Block, BlockClass>, container: BlockClass, err: ErrorCallback): Array<Block> {
   let blocks = new Array<Block>();
   let mainBlock = container.block;
-  let blockHierarchy = mainBlock.resolveInheritance() as Set<Block>;
-  blockHierarchy.add(mainBlock);
+  let blockHierarchy = mainBlock.getAncestors();
+  blockHierarchy.unshift(mainBlock);
   for (let block of blockHierarchy) {
     let otherClass = classPerBlock.get(block) || tmpClassPerBlock.get(block);
     if (otherClass) {

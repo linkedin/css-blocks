@@ -24,7 +24,7 @@ function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer) {
 
     optimizer.addAnalysis(optimizerAnalysis);
     for (let block of blocks) {
-      let compiled = compiler.compile(block, block.root!, analysis);
+      let compiled = compiler.compile(block, block.stylesheet!, analysis);
       optimizer.addSource({
         content: compiled.toResult({to: reader.importer.filesystemPath(block.identifier, reader)!})
       });

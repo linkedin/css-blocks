@@ -1,5 +1,5 @@
 import { TemplateAnalysis } from '../TemplateAnalysis';
-import { Block, BlockObject } from '../Block';
+import { Block, Style } from '../Block';
 import { OptionsReader } from '../OptionsReader';
 import { RewriteMapping, IndexedClassMapping } from './RewriteMapping';
 import { ElementAnalysis } from '../TemplateAnalysis/ElementAnalysis';
@@ -22,7 +22,7 @@ export class StyleMapping {
     this.analyses = analyses;
   }
 
-  simpleRewriteMapping<B, S, T>(element: ElementAnalysis<B, S, T>): IndexedClassRewrite<BlockObject> {
+  simpleRewriteMapping<B, S, T>(element: ElementAnalysis<B, S, T>): IndexedClassRewrite<Style> {
     let [optimizedElementInfo, classMap] = element.forOptimizer(this.options);
     let classRewrite = this.optimizedMap.rewriteMapping(optimizedElementInfo);
     return IndexedClassMapping.fromOptimizer(classRewrite, classMap);

@@ -252,10 +252,10 @@ export class CssBlocksPlugin
     let optimizer = new Optimizer(this.optimizationOptions, analysis.optimizationOptions());
     let blocks = analysis.transitiveBlockDependencies();
     for (let block of blocks) {
-      if (block.root && block.identifier) {
+      if (block.stylesheet && block.identifier) {
         blocks.add(block);
         this.trace(`compiling ${block.identifier}.`);
-        let root = blockCompiler.compile(block, block.root, analysis);
+        let root = blockCompiler.compile(block, block.stylesheet, analysis);
         let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
         // TODO: handle a sourcemap from compiling the block file via a preprocessor.
         let filename = reader.importer.filesystemPath(block.identifier, reader) || reader.importer.debugIdentifier(block.identifier, reader);
