@@ -64,6 +64,59 @@ interface CompilationResult {
   analyses: Array<TemplateAnalysis<keyof TemplateTypes>>;
 }
 
+export class CssBlocksRewriterPlugin
+  extends Tapable
+  implements WebpackPlugin
+{
+  parent: CssBlocksPlugin;
+  compilationOptions: CssBlocksOptions;
+  outputCssFile: string;
+  name: any;
+  debug: debugGenerator.IDebugger;
+  pendingResult: Promise<StyleMapping | void> | undefined;
+  constructor(parent: CssBlocksPlugin) {
+    super();
+    this.debug = parent.debug;
+    this.outputCssFile = parent.outputCssFile;
+    this.name = parent.name;
+    this.compilationOptions = parent.compilationOptions;
+    this.parent = parent;
+    parent.onCompilationExpiration(() => {
+      this.trace(`resetting pending compilation.`);
+      this.pendingResult = undefined;
+    });
+    parent.onPendingCompilation((pendingResult) => {
+      this.trace(`received pending compilation.`);
+      this.pendingResult = pendingResult;
+    });
+  }
+
+  apply(compiler: WebpackCompiler) {
+    compiler.plugin("compilation", (compilation: any) => {
+      compilation.plugin("normal-module-loader", (context: any, mod: any) => {
+        this.trace(`preparing normal-module-loader for ${mod.resource}`);
+        context.cssBlocks = context.cssBlocks || {mappings: {}, compilationOptions: this.compilationOptions};
+
+        // If we're already waiting for a css file of this name to finish compiling, throw.
+        if (context.cssBlocks.mappings[this.outputCssFile]) {
+          throw new Error(`css conflict detected. Multiple compiles writing to ${this.parent.outputCssFile}?`);
+        }
+
+        if (this.pendingResult === undefined) {
+          throw new Error(`No pending result is available yet.`);
+        }
+        context.cssBlocks.mappings[this.outputCssFile] = this.pendingResult;
+      });
+    });
+  }
+
+  trace(message: string) {
+    message = message.replace(this.parent.projectDir + "/", "");
+    this.debug(`[${this.name}] ${message}`);
+  }
+
+}
+
 export class CssBlocksPlugin
   extends Tapable
   implements WebpackPlugin
@@ -74,7 +127,7 @@ export class CssBlocksPlugin
   projectDir: string;
   outputCssFile: string;
   compilationOptions: CssBlocksOptions;
-  debug: (message: string) => void;
+  debug: debugGenerator.IDebugger;
 
   constructor(options: CssBlocksWebpackOptions) {
     super();
@@ -89,13 +142,11 @@ export class CssBlocksPlugin
       Object.assign({}, DEFAULT_OPTIONS, options.optimization);
   }
 
-  apply(compiler: WebpackCompiler) {
-    this.projectDir = compiler.options.context || this.projectDir;
-    let outputPath = compiler.options.output && compiler.options.output.path || this.projectDir; // TODO What is the webpack default output directory?
-    let assets: Assets = {};
+  getRewriterPlugin(): CssBlocksRewriterPlugin {
+    return new CssBlocksRewriterPlugin(this);
+  }
 
-    compiler.plugin("make", (compilation: any, cb: (error?: Error) => void) => {
-
+  private handleMake(outputPath: string, assets: Assets, compilation: any, cb: (error?: Error) => void) {
       // Start analysis with a clean analysis object
       this.trace(`starting analysis.`);
       this.analyzer.reset();
@@ -169,30 +220,30 @@ export class CssBlocksPlugin
         this.trace(`notified of compilation failure`);
       });
 
-      compilation.plugin("normal-module-loader", (context: any, mod: any) => {
-        this.trace(`preparing normal-module-loader for ${mod.resource}`);
-        context.cssBlocks = context.cssBlocks || {mappings: {}, compilationOptions: this.compilationOptions};
+      this.trace(`notifying of pending compilation`);
+      this.notifyPendingCompilation(pendingResult);
+      this.trace(`notified of pending compilation`);
+  }
 
-        // If we're already waiting for a css file of this name to finish compiling, throw.
-        if (context.cssBlocks.mappings[this.outputCssFile]) {
-          throw new Error(`css conflict detected. Multiple compiles writing to ${this.outputCssFile}`);
-        }
+  apply(compiler: WebpackCompiler) {
+    this.projectDir = compiler.options.context || this.projectDir;
+    let outputPath = compiler.options.output && compiler.options.output.path || this.projectDir; // TODO What is the webpack default output directory?
+    let assets: Assets = {};
 
-        context.cssBlocks.mappings[this.outputCssFile] = pendingResult;
-
-      });
+    compiler.plugin("this-compilation", (compilation) => {
+      this.notifyCompilationExpiration();
 
       compilation.plugin('additional-assets', (cb: () => void) => {
         Object.assign(compilation.assets, assets);
         cb();
       });
-
-      this.trace(`notifying of pending compilation`);
-      this.notifyPendingCompilation(pendingResult);
-      this.trace(`notified of pending compilation`);
-
     });
+
+    compiler.plugin("make", this.handleMake.bind(this, outputPath, assets));
+
+    this.getRewriterPlugin().apply(compiler);
   }
+
   private compileBlocks(analysis: MetaTemplateAnalysis, cssOutputName: string): Promise<CompilationResult> {
     let options: CssBlocksOptions = this.compilationOptions;
     let reader = new CssBlocksOptionsReader(options);
@@ -236,16 +287,32 @@ export class CssBlocksPlugin
     message = message.replace(this.projectDir + "/", "");
     this.debug(`[${this.name}] ${message}`);
   }
+  /**
+   * Fires when the compilation promise is available.
+   */
   onPendingCompilation(handler: (pendingResult: Promise<StyleMapping | void>) => void) {
     this.plugin("block-compilation-pending", handler);
   }
-  notifyPendingCompilation(pendingResult: Promise<StyleMapping | void>) {
+  private notifyPendingCompilation(pendingResult: Promise<StyleMapping | void>) {
     this.applyPlugins("block-compilation-pending", pendingResult);
   }
+  /**
+   * Fires when the compilation is first started to let any listeners know that
+   * their current promise is no longer valid.
+   */
+  onCompilationExpiration(handler: () => void) {
+    this.plugin("block-compilation-expired", handler);
+  }
+  private notifyCompilationExpiration() {
+    this.applyPlugins("block-compilation-expired");
+  }
+  /**
+   * Fires when the compilation is done.
+   */
   onComplete(handler: (result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void) => void) {
     this.plugin("block-compilation-complete", handler);
   }
-  notifyComplete(result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void) {
+  private notifyComplete(result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void) {
     this.applyPluginsAsync("block-compilation-complete", result, cb);
   }
 }
