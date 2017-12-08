@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sailfishers/css-blocks.git"
+    "url": "git+https://github.com/css-blocks/css-blocks.git"
   },
   "keywords": [
     "css"
@@ -24,7 +24,7 @@
   "author": "Chris Eppstein",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/sailfishers/css-blocks/issues"
+    "url": "https://github.com/css-blocks/css-blocks/issues"
   },
   "types": "dist/src",
   "files": [
@@ -33,7 +33,7 @@
     "*.md",
     "test/mocha.opts"
   ],
-  "homepage": "https://github.com/sailfishers/css-blocks#readme",
+  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/css-blocks#readme",
   "devDependencies": {
     "@opticss/util": "^0.1.1",
     "@types/chai": "^3.5.2",

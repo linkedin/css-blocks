@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-block/glimmer-analyzer.git"
+    "url": "git+https://github.com/css-blocks/css-blocks.git"
   },
   "keywords": [
     "glimmer",
@@ -39,9 +39,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/css-blocks/glimmer-analyzer/issues"
+    "url": "https://github.com/css-blocks/css-blocks/issues"
   },
-  "homepage": "https://github.com/css-blocks/glimmer-analyzer#readme",
+  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/glimmer-templates#readme",
   "devDependencies": {
     "@types/chai": "^3.5.2",
     "@types/debug": "0.0.29",
@@ -56,8 +56,8 @@
     "source-map-support": "^0.4.15",
     "ts-node": "^3.0.4",
     "tslint": "^5.4.3",
-    "typescript": "^2.6.1",
     "typedoc": "^0.7.1",
+    "typescript": "^2.6.1",
     "watch": "^1.0.2"
   },
   "dependencies": {
@@ -65,8 +65,8 @@
     "@glimmer/resolution-map-builder": "0.5.1",
     "@glimmer/resolver": "^0.3.0",
     "@glimmer/syntax": "^0.29.10",
-    "@opticss/template-api": "^0.2.0",
     "@opticss/element-analysis": "^0.2.0",
+    "@opticss/template-api": "^0.2.0",
     "@opticss/util": "^0.1.1",
     "@types/glob": "^5.0.30",
     "css-blocks": "^0.15.0",

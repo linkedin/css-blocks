@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-blocks/jsx-analyzer.git"
+    "url": "git+https://github.com/css-blocks/css-blocks.git"
   },
   "keywords": [
     "css-blocks"
@@ -26,12 +26,11 @@
   "bugs": {
     "url": "https://github.com/css-blocks/css-blocks/issues"
   },
-  "homepage": "https://github.com/css-blocks/css-blocks/packages/classnames/#readme",
+  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/runtime/#readme",
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-release": "^0.12.0",
-    "typescript": "^2.3.4",
-    "tslint": "^5.5.0"
-  },
-  "dependencies": {}
+    "tslint": "^5.5.0",
+    "typescript": "^2.3.4"
+  }
 }

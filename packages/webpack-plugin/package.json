@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-blocks/webpack-plugin-css-blocks.git"
+    "url": "git+https://github.com/css-blocks/css-blocks.git"
   },
   "keywords": [
     "css"
@@ -23,7 +23,7 @@
   "author": "Chris Eppstein",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/css-blocks/webpack-plugin-css-blocks/issues"
+    "url": "https://github.com/css-blocks/css-blocks/issues"
   },
   "types": "dist/src",
   "files": [
@@ -31,7 +31,7 @@
     "*.md",
     "test/mocha.opts"
   ],
-  "homepage": "https://github.com/css-blocks/webpack-plugin-css-blocks#readme",
+  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/webpack-plugin#readme",
   "devDependencies": {
     "@types/async": "^2.0.40",
     "@types/chai": "^3.5.2",

@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-blocks/jsx-analyzer.git"
+    "url": "git+https://github.com/css-blocks/css-blocks.git"
   },
   "keywords": [
     "jsx",
@@ -30,9 +30,9 @@
   "author": "Adam Miller <ammiller@linkedin.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/css-blocks/jsx-analyzer/issues"
+    "url": "https://github.com/css-blocks/css-blocks/issues"
   },
-  "homepage": "https://github.com/css-blocks/jsx-analyzer#readme",
+  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/jsx#readme",
   "devDependencies": {
     "@css-blocks/runtime": "^0.15.0",
     "@types/babel-core": "^6.25.2",
