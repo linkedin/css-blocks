@@ -184,7 +184,7 @@ export class ExpressionReader {
       debug(`Discovered BlockClass ${this.class} from expression ${this.toString()}`);
       return { block, blockClass };
     }
-    let statesContainer = blockClass.states;
+    let statesContainer = blockClass;
 
     // Fetch all matching state objects.
     let stateGroup = statesContainer.resolveGroup(this.state, this.subState !== DYNAMIC_STATE_ID ? this.subState : undefined) || {};

@@ -208,7 +208,7 @@ export class ElementAnalyzer {
       dynamicSubState = node.value;
     }
     for (let container of containers) {
-      let allStates = container.states.resolveGroup(stateName, staticSubStateName);
+      let allStates = container.resolveGroup(stateName, staticSubStateName);
       if (allStates) {
         // TODO: fix the tsd for object.values so it gets the type right.
         let states = objectValues(allStates);

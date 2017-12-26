@@ -1,5 +1,4 @@
 import { ElementAnalysis } from '../src/TemplateAnalysis/ElementAnalysis';
-import { StateContainer } from '../src/Block';
 import BlockCompiler from '../src/BlockCompiler';
 import { StyleMapping } from '../src/TemplateRewriter/StyleMapping';
 import { assert } from "chai";
@@ -24,7 +23,7 @@ import * as cssBlocks from '../src/errors';
 import BlockParser from "../src/BlockParser";
 import { BlockFactory } from "../src/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
-import { Block, BlockObject, BlockClass, State } from "../src/Block";
+import { Block, BlockClass, State } from "../src/Block";
 import { PluginOptions } from "../src/options";
 import { OptionsReader } from "../src/OptionsReader";
 import { SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAnalysis";
@@ -48,12 +47,12 @@ export class TemplateAnalysisTests {
       return <BlockAndRoot>[block, root];
     });
   }
-  private useStates(element: ElementAnalysis<any, any, any>, stateContainer: StateContainer) {
+  private useStates(element: ElementAnalysis<any, any, any>, stateContainer: BlockClass) {
     for (let groupName of stateContainer.getGroups()) {
-      element.addDynamicGroup(stateContainer.parent, stateContainer.resolveGroup(groupName)!, null);
+      element.addDynamicGroup(stateContainer, stateContainer.resolveGroup(groupName)!, null);
     }
     for (let state of stateContainer.getStates()!) {
-      element.addStaticState(stateContainer.parent, state);
+      element.addStaticState(stateContainer, state);
     }
   }
   private useBlockStyles(analysis: Analysis, block: Block, blockName: string,
@@ -67,7 +66,7 @@ export class TemplateAnalysisTests {
       if (useStatesCallback) {
         useStatesCallback(c, element);
       } else {
-        this.useStates(element, c.states);
+        this.useStates(element, c);
       }
       analysis.endElement(element);
     }
@@ -88,7 +87,7 @@ export class TemplateAnalysisTests {
         if (container.asSource() === ".asdf") {
           el.addDynamicState(container, block.find(".asdf[state|larger]") as State, true);
         } else {
-          this.useStates(el, container.states);
+          this.useStates(el, container);
         }
       });
       let optimizerAnalysis = analysis.forOptimizer(reader);

@@ -168,7 +168,7 @@ export default class BlockParser {
           let nodes = selectors[0].key.nodes;
           if (nodes.length === 1 && nodes[0].type === selectorParser.ATTRIBUTE) {
             let info = stateParser(<selectorParser.Attribute>selectors[0].key.nodes[0]);
-            let state = block.rootClass.states._ensureState(info);
+            let state = block.rootClass._ensureState(info);
             state.isGlobal = true;
           } else {
             throw new errors.InvalidBlockSyntax(
@@ -236,7 +236,7 @@ export default class BlockParser {
 
                     }
                   } else {
-                    let state = block.rootClass.states._ensureState(stateParser(<selectorParser.Attribute>obj.node));
+                    let state = block.rootClass._ensureState(stateParser(<selectorParser.Attribute>obj.node));
                     if (isKey) {
                       state.propertyConcerns.addProperties(rule, block);
                     }
@@ -258,7 +258,7 @@ export default class BlockParser {
                 case BlockType.classState:
                   let classNode = obj.node.prev();
                   let classObj = block.ensureClass(classNode.value!);
-                  let classState = classObj.states._ensureState(stateParser(<selectorParser.Attribute>obj.node));
+                  let classState = classObj._ensureState(stateParser(<selectorParser.Attribute>obj.node));
                   if (isKey) {
                     classState.propertyConcerns.addProperties(rule, block);
                   }
@@ -667,7 +667,7 @@ export default class BlockParser {
 
     // If state referenced does not exist on external block, throw
     let stateInfo = stateParser(<selectorParser.Attribute>obj.node);
-    let otherState = otherBlock.rootClass.states._getState(stateInfo);
+    let otherState = otherBlock.rootClass._getState(stateInfo);
     if (!otherState) {
       throw new errors.InvalidBlockSyntax(
         `No state ${obj.node.toString()} found in : ${rule.selector}`,

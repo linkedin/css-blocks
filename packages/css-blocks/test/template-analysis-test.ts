@@ -115,7 +115,7 @@ export class TemplateAnalysisTests {
       let klass = block.getClass("asdf");
       if (klass) {
         element.addStaticClass(klass);
-        let state = klass.states.getState("larger");
+        let state = klass.getState("larger");
         if (state) {
           element.addStaticState(klass, state);
         }
@@ -212,7 +212,7 @@ export class TemplateAnalysisTests {
       let klass = block.getClass('asdf') as BlockClass;
       element.addStaticClass(klass);
       element.addDynamicClasses({ condition: null, whenTrue: [aBlock.getClass('foo')!] });
-      element.addDynamicState(klass, klass.states.getState('larger')!, null);
+      element.addDynamicState(klass, klass.getState('larger')!, null);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -251,8 +251,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
-        element.addDynamicGroup( block.rootClass, block.rootClass.states.resolveGroup('color')!, null );
-        element.addDynamicState( block.rootClass, block.rootClass.states.getState('bgcolor')!, null );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color')!, null );
+        element.addDynamicState( block.rootClass, block.rootClass.getState('bgcolor')!, null );
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -294,8 +294,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup( block.rootClass, block.rootClass.states.resolveGroup('color')!, null );
-        element.addDynamicGroup( block.rootClass, block.rootClass.states.resolveGroup('color')!, null, true );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color')!, null );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color')!, null, true );
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -356,8 +356,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup( block.rootClass, block.rootClass.states.resolveGroup('color')!, null );
-        element.addDynamicGroup( block.rootClass, block.rootClass.states.resolveGroup('bgcolor')!, null, true );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color')!, null );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('bgcolor')!, null, true );
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -434,8 +434,8 @@ export class TemplateAnalysisTests {
       element.addDynamicClasses({condition: null, whenTrue: [asdf], whenFalse: [fdsa, foo]});
       // This is what we do when the same state is in the template for two
       // classes that have the states of the same name.
-      element.addStaticState(asdf, asdf.states.getState('larger')!);
-      element.addStaticState(fdsa, fdsa.states.getState('larger')!);
+      element.addStaticState(asdf, asdf.getState('larger')!);
+      element.addStaticState(fdsa, fdsa.getState('larger')!);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -489,7 +489,7 @@ export class TemplateAnalysisTests {
         whenTrue: [block.getClass('asdf')!],
         whenFalse: [block.getClass('fdsa')!]
       });
-      element.addStaticState(klass, klass.states.getState('bar')!);
+      element.addStaticState(klass, klass.getState('bar')!);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -535,7 +535,7 @@ export class TemplateAnalysisTests {
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass( block.rootClass );
-      element.addDynamicGroup(block.rootClass, block.rootClass.states.resolveGroup("foo")!, null, true);
+      element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("foo")!, null, true);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -584,7 +584,7 @@ export class TemplateAnalysisTests {
       let klass = aBlock.getClass('foo') as BlockClass;
       element.addStaticClass( klass );
       element.addDynamicClasses({condition: null, whenTrue: [block.getClass('asdf')!], whenFalse: [block.getClass('fdsa')!]});
-      element.addStaticState(klass, klass.states.getState('bar')! );
+      element.addStaticState(klass, klass.getState('bar')! );
       analysis.endElement(element);
       let options: PluginOptions = {};
       let reader = new OptionsReader(options);
@@ -760,7 +760,7 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticClass( block.rootClass );
-          element.addStaticState(block.rootClass, block.rootClass.states.getState("foo")!);
+          element.addStaticState(block.rootClass, block.rootClass.getState("foo")!);
           analysis.endElement(element);
           return [block, _];
       });
@@ -831,7 +831,7 @@ export class TemplateAnalysisTests {
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
-          element.addStaticState(block.rootClass, block.rootClass.states.getState('test')! );
+          element.addStaticState(block.rootClass, block.rootClass.getState('test')! );
           analysis.endElement(element);
           assert.deepEqual(1, 1);
       }));
@@ -856,7 +856,7 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass('foo') as BlockClass;
-          element.addStaticState(klass, klass.states.getState('test')! );
+          element.addStaticState(klass, klass.getState('test')! );
           analysis.endElement(element);
           assert.deepEqual(1, 1);
     }));
@@ -898,7 +898,7 @@ export class TemplateAnalysisTests {
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass('pretty') as BlockClass;
-          let group = klass.states.resolveGroup('color') as {[name: string]: State};
+          let group = klass.resolveGroup('color') as {[name: string]: State};
           element.addStaticState(klass, group['yellow'] );
           analysis.endElement(element);
           assert.deepEqual(1, 1);
@@ -937,7 +937,7 @@ export class TemplateAnalysisTests {
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass('pretty') as BlockClass;
-          let group = klass.states.resolveGroup('color') as {[name: string]: State};
+          let group = klass.resolveGroup('color') as {[name: string]: State};
           element.addStaticClass( klass );
           element.addStaticState(klass, group['yellow'] );
           analysis.endElement(element);

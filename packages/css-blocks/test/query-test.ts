@@ -48,7 +48,9 @@ export class KeyQueryTests {
                [state|foo] .a { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
-        let q = new QueryKeySelector(block.rootClass.states.all()[0]);
+        let state = block.rootClass.allStates()[0];
+        assert.equal(state.asSource(), "[state|foo]");
+        let q = new QueryKeySelector(state);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
     });
@@ -79,7 +81,9 @@ export class KeyQueryTests {
                .a[state|foo] { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
-        let q = new QueryKeySelector(block.classes[1].states.all()[0]);
+        let state = block.classes[1].getState("foo")!;
+        assert.equal(state.asSource(), ".b[state|foo]");
+        let q = new QueryKeySelector(state);
         let result = q.execute(root);
         assert.deepEqual(result.main.length, 1);
     });

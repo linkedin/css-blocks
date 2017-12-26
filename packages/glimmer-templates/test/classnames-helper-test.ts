@@ -59,7 +59,7 @@ describe('Classnames Helper', () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = b.rootClass.states.ensureState("enabled");
+    let s1 = b.rootClass.ensureState("enabled");
 
     let inputs: Style[] = [b.rootClass, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], { });
@@ -80,7 +80,7 @@ describe('Classnames Helper', () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = b.rootClass.states.ensureState("enabled");
+    let s1 = b.rootClass.ensureState("enabled");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], { });
@@ -101,7 +101,7 @@ describe('Classnames Helper', () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.states.ensureState("enabled");
+    let s1 = r.ensureState("enabled");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], { });
@@ -121,9 +121,9 @@ describe('Classnames Helper', () => {
   it('generates an ast fragment for a state group', () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.states.ensureState("red", "theme");
-    let orange = r.states.ensureState("orange", "theme");
-    let blue = r.states.ensureState("blue", "theme");
+    let red = r.ensureState("red", "theme");
+    let orange = r.ensureState("orange", "theme");
+    let blue = r.ensureState("blue", "theme");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], { });
@@ -139,9 +139,9 @@ describe('Classnames Helper', () => {
   it('generates an ast fragment for a dependent state group', () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.states.ensureState("red", "theme");
-    let orange = r.states.ensureState("orange", "theme");
-    let blue = r.states.ensureState("blue", "theme");
+    let red = r.ensureState("red", "theme");
+    let orange = r.ensureState("orange", "theme");
+    let blue = r.ensureState("blue", "theme");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], { });
@@ -162,7 +162,7 @@ describe('Classnames Helper', () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.states.ensureState("enabled");
+    let s1 = r.ensureState("enabled");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -185,7 +185,7 @@ describe('Classnames Helper', () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.states.ensureState("enabled");
+    let s1 = r.ensureState("enabled");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -208,7 +208,7 @@ describe('Classnames Helper', () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.states.ensureState("enabled");
+    let s1 = r.ensureState("enabled");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -231,7 +231,7 @@ describe('Classnames Helper', () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.states.ensureState("enabled");
+    let s1 = r.ensureState("enabled");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -254,7 +254,7 @@ describe('Classnames Helper', () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.states.ensureState("enabled");
+    let s1 = r.ensureState("enabled");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -280,7 +280,7 @@ describe('Classnames Helper', () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.states.ensureState("enabled");
+    let s1 = r.ensureState("enabled");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -304,9 +304,9 @@ describe('Classnames Helper', () => {
   it('dependent state group is allowed when class is set', () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.states.ensureState("red", "theme");
-    let orange = r.states.ensureState("orange", "theme");
-    let blue = r.states.ensureState("blue", "theme");
+    let red = r.ensureState("red", "theme");
+    let orange = r.ensureState("orange", "theme");
+    let blue = r.ensureState("blue", "theme");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -331,9 +331,9 @@ describe('Classnames Helper', () => {
   it('dependent state group is disabled when class is not set', () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.states.ensureState("red", "theme");
-    let orange = r.states.ensureState("orange", "theme");
-    let blue = r.states.ensureState("blue", "theme");
+    let red = r.ensureState("red", "theme");
+    let orange = r.ensureState("orange", "theme");
+    let blue = r.ensureState("blue", "theme");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -358,9 +358,9 @@ describe('Classnames Helper', () => {
   it('dependent state group is unset when falsy', () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.states.ensureState("red", "theme");
-    let orange = r.states.ensureState("orange", "theme");
-    let blue = r.states.ensureState("blue", "theme");
+    let red = r.ensureState("red", "theme");
+    let orange = r.ensureState("orange", "theme");
+    let blue = r.ensureState("blue", "theme");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -385,9 +385,9 @@ describe('Classnames Helper', () => {
   it('dependent state group errors when falsy', () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.states.ensureState("red", "theme");
-    let orange = r.states.ensureState("orange", "theme");
-    let blue = r.states.ensureState("blue", "theme");
+    let red = r.ensureState("red", "theme");
+    let orange = r.ensureState("orange", "theme");
+    let blue = r.ensureState("blue", "theme");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -414,9 +414,9 @@ describe('Classnames Helper', () => {
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
     let c3 = b.ensureClass("class-3");
-    let red = r.states.ensureState("red", "theme");
-    let orange = r.states.ensureState("orange", "theme");
-    let blue = r.states.ensureState("blue", "theme");
+    let red = r.ensureState("red", "theme");
+    let orange = r.ensureState("orange", "theme");
+    let blue = r.ensureState("blue", "theme");
 
     let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
     element.addDynamicClasses({

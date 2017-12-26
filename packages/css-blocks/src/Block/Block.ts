@@ -506,14 +506,14 @@ export class Block
       case BlockType.root:
         return this.rootClass;
       case BlockType.state:
-        return this.rootClass.states._getState(stateParser(<selectorParser.Attribute>obj.node));
+        return this.rootClass._getState(stateParser(<selectorParser.Attribute>obj.node));
       case BlockType.class:
         return this.getClass(obj.node.value!);
       case BlockType.classState:
         let classNode = obj.node.prev();
         let classObj = this.getClass(classNode.value!);
         if (classObj) {
-          return classObj.states._getState(stateParser(<selectorParser.Attribute>obj.node));
+          return classObj._getState(stateParser(<selectorParser.Attribute>obj.node));
         }
         return undefined;
       default:
@@ -534,7 +534,7 @@ export class Block
             let another = next.next();
             if (another && isStateNode(another)) {
               let info = stateParser(<selectorParser.Attribute>another);
-              let state = klass.states._getState(info);
+              let state = klass._getState(info);
               if (state) {
                 return [state, 2];
               } else {
@@ -549,7 +549,7 @@ export class Block
           }
         } else if (next && isStateNode(next)) {
           let info = stateParser(<selectorParser.Attribute>next);
-          let state = otherBlock.rootClass.states._getState(info);
+          let state = otherBlock.rootClass._getState(info);
           if (state) {
             return [state, 1];
           } else {
@@ -569,7 +569,7 @@ export class Block
       let next = node.next();
       if (next && isStateNode(next)) {
         let info = stateParser(<selectorParser.Attribute>next);
-        let state = klass.states._getState(info);
+        let state = klass._getState(info);
         if (state === undefined) {
           return null;
         } else {
@@ -580,7 +580,7 @@ export class Block
       }
     } else if (isStateNode(node)) {
       let info = stateParser(<selectorParser.Attribute>node);
-      let state = this.rootClass.states._ensureState(info);
+      let state = this.rootClass._ensureState(info);
       if (state) {
         return [state, 0];
       } else {
@@ -790,198 +790,6 @@ export interface StateInfo {
 }
 
 /**
- * Cache and interface methods for block states and state groups.
- */
-export class StateContainer {
-  private _states: StateMap = {};
-  private _groups: GroupMap = {};
-  private _parent: BlockClass;
-
-  /**
-   * Save a reference to our parent element on instantiation. Only Blocks and
-   * BlockClasses can contain States.
-   */
-  constructor(parent: BlockClass){
-    this._parent = parent;
-  }
-
-  /**
-   * Parent accessor.
-   * @returns The parent object that contains these States
-   */
-  get parent(): StateParent {
-    return this._parent;
-  }
-
-  /**
-   * Insert a state into this container
-   * @param state The State object to insert.
-   * @param group Optional group name for this state object.
-   * @returns The State that was just added
-   */
-  addState(state: State): State {
-    let group: string | null = state.group;
-    if (group) {
-      this._groups[group] = (this._groups[group] || {});
-      return this._groups[group][state.name] = state;
-    } else {
-      return this._states[state.name] = state;
-    }
-  }
-
-  /**
-   * Group getter. Returns a list of State objects in the requested group.
-   * @param group State group for lookup or a boolean state name if substate is not provided.
-   * @param substate Optional substate to filter states by.
-   * @returns An array of all States that were requested.
-   */
-  getGroup(groupName: string, substate?: string|undefined): State[] {
-    let group = this._groups[groupName];
-    if ( group ) {
-      if (substate && group[substate]) {
-        return [group[substate]];
-      }
-      else if (substate) {
-        return [];
-      }
-      else {
-        return objectValues(group);
-      }
-    }
-    else if (substate) {
-      return [];
-    }
-    else if (this._states[groupName]) {
-      return [this._states[groupName]];
-    } else {
-      return [];
-    }
-  }
-
-  /**
-   * like getGroup but includes the states from all super blocks for the group.
-   * @param group State group for lookup
-   * @param substate Optional substate to filter states by.
-   * @returns A map of resolved state names to their states for all States that were requested.
-   */
-  resolveGroup(groupName: string, substate?: string|undefined): ObjectDictionary<State> | undefined {
-    let resolution: {[name: string]: State} = {};
-    this.getGroup(groupName, substate).forEach(state => {
-      resolution[state.name] = state;
-    });
-    if (substate && resolution[substate]) {
-      return resolution;
-    }
-    let base = this._parent.base;
-    if (base) {
-      let baseResolution = base.states.resolveGroup(groupName, substate);
-      if (baseResolution) {
-        resolution = Object.assign(baseResolution, resolution); // overwrite any base definitions with their overrides.
-      }
-    }
-    if (Object.keys(resolution).length === 0) {
-      return undefined;
-    } else {
-      return resolution;
-    }
-  }
-
-  getGroups(): string[] {
-    return Object.keys(this._groups);
-  }
-
-  getStates(group?: string): Array<State> | undefined {
-    if (group) {
-      let groupValue = this._groups[group];
-      if (groupValue) {
-        return objectValues(groupValue);
-      } else {
-        return undefined;
-      }
-    } else {
-      return objectValues(this._states);
-    }
-  }
-
-  /**
-   * State getter
-   * @param name The State's name to lookup.
-   * @param group  Optional state group for lookup
-   * @returns The State that was requested, or undefined
-   */
-  getState(name: string, group?: string): State | undefined {
-    return group ? this._groups[group] && this._groups[group][name] : this._states[name];
-  }
-
-  /**
-   * Legacy State getter
-   * @param info The StateInfo type to lookup, contains `name` and `group`
-   * @returns The State that was requested, or undefined
-   */
-  _getState(info: StateInfo): State | undefined {
-    return info.group ? this._groups[info.group] && this._groups[info.group][info.name] : this._states[info.name];
-  }
-
-  /**
-   * Ensure that a `State` with the given `name` and `group` is registered with this Block.
-   * @param name The State's name to ensure.
-   * @param group  Optional state group for lookup/registration
-   * @return The `State` object on this `Block`
-   */
-  ensureState(name: string, group?: string): State {
-    let state = this.getState(name, group);
-    if (state) {
-      return state;
-    } else {
-      let state = new State(name, group, this.parent);
-      return this.addState(state);
-    }
-  }
-
-  /**
-   * Legacy state ensurer. Ensure that a `State` with the given `StateInfo` is
-   * registered with this Block.
-   * @param info  `StateInfo` to verify exists on this `Block`
-   * @return The `State` object on this `Block`
-   */
-  _ensureState(info: StateInfo): State {
-    // Could assert that the stateinfo group name matched but yolo.
-    if (this.getState(info.name, info.group)) {
-      return <State>this.getState(info.name, info.group);
-    } else {
-      let state = new State(info.name, info.group, this.parent);
-      return this.addState(state);
-    }
-  }
-
-  /**
-   * Debug utility to help test StateContainer.
-   * @param options  Options to pass to States' asDebug method.
-   * @return Array of debug strings for these states
-   */
-  debug(opts: OptionsReader): string[] {
-    let result: string[] = [];
-    this.all().forEach((state) => {
-      result.push(state.asDebug(opts));
-    });
-    return result;
-  }
-
-  /**
-   * Returns all states contained in this Container
-   * @return Array of all State objects
-   */
-  all(): State[] {
-    let result: State[] = [];
-    for (let group of objectValues(this._groups)) {
-      result.push(...objectValues(group));
-    }
-    result.push(...objectValues(this._states));
-    return result;
-  }
-}
-
-/**
  * Interface used when exporting a Style using `asExport`.
  */
 export interface Export {
@@ -1002,8 +810,8 @@ export type StyleParent = Block | BlockClass | undefined;
  */
 export class BlockClass extends BlockObject<Block> {
   private _sourceAttribute: Attribute;
-
-  public readonly states: StateContainer;
+  private _states: StateMap = {};
+  private _groups: GroupMap = {};
 
   /**
    * BlockClass constructor
@@ -1013,8 +821,6 @@ export class BlockClass extends BlockObject<Block> {
   constructor(name: string, parent: Block) {
     super(name, parent);
 
-    // BlockClases may contain states, provide it a place to put them.
-    this.states = new StateContainer(this);
   }
 
   get block(): Block {
@@ -1094,11 +900,177 @@ export class BlockClass extends BlockObject<Block> {
   all(shallow?: boolean): Style[] {
     let result: Style[] = [this];
     if (!shallow) {
-      result = result.concat(this.states.all());
+      result = result.concat(this.allStates());
     }
     return result;
   }
 
+  /**
+   * Insert a state into this container
+   * @param state The State object to insert.
+   * @param group Optional group name for this state object.
+   * @returns The State that was just added
+   */
+  addState(state: State): State {
+    let group: string | null = state.group;
+    if (group) {
+      this._groups[group] = (this._groups[group] || {});
+      return this._groups[group][state.name] = state;
+    } else {
+      return this._states[state.name] = state;
+    }
+  }
+
+  /**
+   * Group getter. Returns a list of State objects in the requested group.
+   * @param group State group for lookup or a boolean state name if substate is not provided.
+   * @param substate Optional substate to filter states by.
+   * @returns An array of all States that were requested.
+   */
+  getGroup(groupName: string, substate?: string|undefined): State[] {
+    let group = this._groups[groupName];
+    if ( group ) {
+      if (substate && group[substate]) {
+        return [group[substate]];
+      }
+      else if (substate) {
+        return [];
+      }
+      else {
+        return objectValues(group);
+      }
+    }
+    else if (substate) {
+      return [];
+    }
+    else if (this._states[groupName]) {
+      return [this._states[groupName]];
+    } else {
+      return [];
+    }
+  }
+
+  /**
+   * like getGroup but includes the states from all super blocks for the group.
+   * @param group State group for lookup
+   * @param substate Optional substate to filter states by.
+   * @returns A map of resolved state names to their states for all States that were requested.
+   */
+  resolveGroup(groupName: string, substate?: string|undefined): ObjectDictionary<State> | undefined {
+    let resolution: {[name: string]: State} = {};
+    this.getGroup(groupName, substate).forEach(state => {
+      resolution[state.name] = state;
+    });
+    if (substate && resolution[substate]) {
+      return resolution;
+    }
+    let base = this.base;
+    if (base) {
+      let baseResolution = base.resolveGroup(groupName, substate);
+      if (baseResolution) {
+        resolution = Object.assign(baseResolution, resolution); // overwrite any base definitions with their overrides.
+      }
+    }
+    if (Object.keys(resolution).length === 0) {
+      return undefined;
+    } else {
+      return resolution;
+    }
+  }
+
+  getGroups(): string[] {
+    return Object.keys(this._groups);
+  }
+
+  getStates(group?: string): Array<State> | undefined {
+    if (group) {
+      let groupValue = this._groups[group];
+      if (groupValue) {
+        return objectValues(groupValue);
+      } else {
+        return undefined;
+      }
+    } else {
+      return objectValues(this._states);
+    }
+  }
+
+  /**
+   * State getter
+   * @param name The State's name to lookup.
+   * @param group  Optional state group for lookup
+   * @returns The State that was requested, or undefined
+   */
+  getState(name: string, group?: string): State | undefined {
+    return group ? this._groups[group] && this._groups[group][name] : this._states[name];
+  }
+
+  /**
+   * Legacy State getter
+   * @param info The StateInfo type to lookup, contains `name` and `group`
+   * @returns The State that was requested, or undefined
+   */
+  _getState(info: StateInfo): State | undefined {
+    return info.group ? this._groups[info.group] && this._groups[info.group][info.name] : this._states[info.name];
+  }
+
+  /**
+   * Ensure that a `State` with the given `name` and `group` is registered with this Block.
+   * @param name The State's name to ensure.
+   * @param group  Optional state group for lookup/registration
+   * @return The `State` object on this `Block`
+   */
+  ensureState(name: string, group?: string): State {
+    let state = this.getState(name, group);
+    if (state) {
+      return state;
+    } else {
+      let state = new State(name, group, this);
+      return this.addState(state);
+    }
+  }
+
+  /**
+   * Legacy state ensurer. Ensure that a `State` with the given `StateInfo` is
+   * registered with this Block.
+   * @param info  `StateInfo` to verify exists on this `Block`
+   * @return The `State` object on this `Block`
+   */
+  _ensureState(info: StateInfo): State {
+    // Could assert that the stateinfo group name matched but yolo.
+    if (this.getState(info.name, info.group)) {
+      return <State>this.getState(info.name, info.group);
+    } else {
+      let state = new State(info.name, info.group, this);
+      return this.addState(state);
+    }
+  }
+
+  /**
+   * Debug utility to help test States.
+   * @param options  Options to pass to States' asDebug method.
+   * @return Array of debug strings for these states
+   */
+  debug(opts: OptionsReader): string[] {
+    let result: string[] = [];
+    this.all().forEach((state) => {
+      result.push(state.asDebug(opts));
+    });
+    return result;
+  }
+
+  /**
+   * Returns all states contained in this Container
+   * @return Array of all State objects
+   */
+  allStates(): State[] {
+    let result: State[] = [];
+    for (let group of objectValues(this._groups)) {
+      result.push(...objectValues(group));
+    }
+    result.push(...objectValues(this._states));
+    return result;
+  }
 }
 
 export function isBlockClass(o: object): o is BlockClass {
@@ -1269,7 +1241,7 @@ export class State extends BlockObject<BlockClass> {
     while (base) {
       let cls = base.getClass(this.blockClass.name);
       if (cls) {
-        let state = cls.states._getState(info);
+        let state = cls._getState(info);
         if (state) return state;
       }
       base = base.base;
