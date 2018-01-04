@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": "packages/css-blocks"
+		},
+		{
+			"path": "packages/glimmer-templates"
+		},
+		{
+			"path": "packages/jsx"
+		},
+		{
+			"path": "packages/runtime"
+		},
+		{
+			"path": "packages/webpack-plugin"
+		},
+		{
+			"path": "packages/webpack-plugin"
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"Stateful"
+		]
+	}
+}
