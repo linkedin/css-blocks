@@ -15,6 +15,8 @@ import { SerializedTemplateAnalysis, TemplateAnalysis, ElementAnalysis } from ".
 
 import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertParseError } from "./util/assertError";
+import { ObjectDictionary } from "@opticss/util";
+import { SubState } from "../src/index";
 
 type TestElement = ElementAnalysis<null, null, null>;
 
@@ -251,7 +253,7 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color')!, null );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as ObjectDictionary<SubState>, null );
         element.addDynamicState( block.rootClass, block.rootClass.getState('bgcolor')!, null );
         analysis.endElement(element);
 
@@ -294,8 +296,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color')!, null );
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color')!, null, true );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as ObjectDictionary<SubState>, null );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as ObjectDictionary<SubState>, null, true );
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -356,8 +358,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color')!, null );
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('bgcolor')!, null, true );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as ObjectDictionary<SubState>, null );
+        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('bgcolor') as ObjectDictionary<SubState>, null, true );
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -535,7 +537,7 @@ export class TemplateAnalysisTests {
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass( block.rootClass );
-      element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("foo")!, null, true);
+      element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("foo") as ObjectDictionary<SubState>, null, true);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -898,7 +900,7 @@ export class TemplateAnalysisTests {
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass('pretty') as BlockClass;
-          let group = klass.resolveGroup('color') as {[name: string]: State};
+          let group = klass.resolveGroup('color')!;
           element.addStaticState(klass, group['yellow'] );
           analysis.endElement(element);
           assert.deepEqual(1, 1);

@@ -8,7 +8,6 @@ import {
   Block,
   MultiTemplateAnalyzer,
   StyleAnalysis,
-  BlockObject,
   MetaTemplateAnalysis,
   TemplateAnalysis,
   BlockFactory,
@@ -64,15 +63,6 @@ class TestAnalysis extends TemplateAnalysis<"WebpackPlugin.TestTemplate"> {
   }
   eachAnalysis(cb: (a: StyleAnalysis) => void) {
     cb(this);
-  }
-  wasFound(_style: BlockObject) {
-    return false;
-  }
-  isDynamic(_style: BlockObject) {
-    return false;
-  }
-  areCorrelated(..._styles: BlockObject[]) {
-    return false;
   }
   blockDependencies() {
     let deps = new Set<Block>();

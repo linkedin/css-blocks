@@ -8,9 +8,9 @@ import { Validator } from "./Validator";
 
 const stateParentValidator: Validator = (analysis, _templateAnalysis, err) => {
   for (let state of analysis.statesFound()) {
-    if (!analysis.hasClass(state.parent!)) {
+    if (!analysis.hasClass(state.blockClass!)) {
       err(`Cannot use state "${state.asSource()}" without parent ` +
-          `${ state.parent.isRoot ? 'block' : 'class' } also applied or implied by another style.`);
+          `${ state.blockClass.isRoot ? 'block' : 'class' } also applied or implied by another style.`);
     }
   }
 };

@@ -45,7 +45,7 @@ export abstract class LocalScope<ScopeContext, ScopedType>
   /**
    * Lookup a sub-block either locally, or on a referenced foreign block.
    * @param expression A reference to a sub-block of the form `(<block-name>.)<sub-block-selector>`
-   * @returns The BlockObject referenced at the supplied path.
+   * @returns The Style referenced at the supplied path.
    */
   lookup(expression: string): ScopedType | undefined {
     // Try to split the reference string to find block name reference. If there

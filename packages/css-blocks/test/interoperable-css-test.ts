@@ -1,6 +1,6 @@
 //import { suite, test, slow, timeout, skip, only } from "mocha-typescript";
 //declare function require(name:string):any;
-import { suite, test } from "mocha-typescript";
+import { suite, test, only } from "mocha-typescript";
 import { assert } from "chai";
 import { Block, Style } from "../src/Block";
 import { OptionsReader } from "../src/OptionsReader";
@@ -76,7 +76,7 @@ export class InteroperableCSSOutput extends BEMProcessor {
     return this.process(filename, inputCSS, {interoperableCSS: true}).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ":export { root: test-block; theme-blue: test-block--theme-blue; red: test-block--red; }\n" +
+        ":export { root: test-block; red: test-block--red; theme-blue: test-block--theme-blue; }\n" +
         ".test-block--red { color: red; }\n" +
         ".test-block--theme-blue { color: blue; }\n"
       );

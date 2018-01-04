@@ -35,7 +35,7 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
 
   public indexOf(input: Style): Maybe<number> {
     let index = this._inputMap.get(input);
-    return maybe(index, "internal error: block object not found");
+    return maybe(index, "internal error: style not found");
   }
 
   static fromOptimizer(

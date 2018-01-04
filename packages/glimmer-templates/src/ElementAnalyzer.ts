@@ -1,9 +1,9 @@
 import { AST, print } from '@glimmer/syntax';
-import { Block, ElementAnalysis, StateParent, PluginOptionsReader as CssBlocksOptionsReader, DynamicClasses, } from "css-blocks";
+import { Block, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader, DynamicClasses, BlockClass, SubState, } from "css-blocks";
 import { ResolvedFile } from "./GlimmerProject";
 import { cssBlockError } from "./utils";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
-import { objectValues, assertNever } from "@opticss/util";
+import { assertNever, ObjectDictionary } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 export type TernaryExpression = AST.Expression;
@@ -88,22 +88,22 @@ export class ElementAnalyzer {
     return;
   }
 
-  private lookupClasses(classes: string, node: AST.Node): Array<StateParent> {
+  private lookupClasses(classes: string, node: AST.Node): Array<BlockClass> {
     let classNames = classes.trim().split(/\s+/);
-    let found = new Array<StateParent>();
+    let found = new Array<BlockClass>();
     for (let name of classNames) {
       found.push(this.lookupClass(name, node));
     }
     return found;
   }
 
-  private lookupClass(name: string, node: AST.Node): StateParent {
+  private lookupClass(name: string, node: AST.Node): BlockClass {
     let found = this.block.lookup(name);
     if (!found && !/\./.test(name)) {
       found = this.block.lookup('.' + name);
     }
     if (found) {
-      return <StateParent>found;
+      return <BlockClass>found;
     } else {
       if (/\./.test(name)) {
         throw cssBlockError(`No class or block named ${name} is referenced from ${this.debugBlockPath()}`, node, this.template);
@@ -135,8 +135,8 @@ export class ElementAnalyzer {
         // If this is a `{{style-if}}` or `{{style-unless}}` helper:
         if ( helperType ) {
           let condition = statement.params[0];
-          let whenTrue: Array<StateParent> | undefined = undefined;
-          let whenFalse: Array<StateParent> | undefined = undefined;
+          let whenTrue: Array<BlockClass> | undefined = undefined;
+          let whenFalse: Array<BlockClass> | undefined = undefined;
           let mainBranch = statement.params[1];
           let elseBranch = statement.params[2];
 
@@ -208,37 +208,41 @@ export class ElementAnalyzer {
       dynamicSubState = node.value;
     }
     for (let container of containers) {
-      let allStates = container.resolveGroup(stateName, staticSubStateName);
-      if (allStates) {
-        // TODO: fix the tsd for object.values so it gets the type right.
-        let states = objectValues(allStates);
-        if (states[0].group) {
+      let state = container.resolveState(stateName);
+      let subState: SubState | null | undefined = undefined;
+      let subStates: ObjectDictionary<SubState> | undefined = undefined;
+      if (state && staticSubStateName) {
+        subState = state.resolveSubState(staticSubStateName);
+        if (subState) {
+          analysis.element.addStaticState(container, subState);
+        } else {
+          throw cssBlockError(`No sub-state found named ${staticSubStateName} in state ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
+        }
+      } else if (state) {
+        if (state.hasResolvedSubStates()) {
           if (dynamicSubState) {
+            subStates = state.resolveSubStates();
             if (analysis.storeConditionals) {
-              analysis.element.addDynamicGroup(container, allStates, dynamicSubState);
+              analysis.element.addDynamicGroup(container, subStates, dynamicSubState);
             } else {
-              analysis.element.addDynamicGroup(container, allStates, null);
+              analysis.element.addDynamicGroup(container, subStates, null);
             }
-          } else if (states.length === 1 && staticSubStateName) {
-            analysis.element.addStaticState(container, states[0]);
           } else {
-            throw cssBlockError(`No expression found to select from ${states.map(s => s.asSource()).join(', ')} on ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
+            // TODO: when we add default sub states this is where that will go.
+            throw cssBlockError(`No sub-state specified for ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
           }
         } else {
-          if (states.length !== 1) {
-            throw new Error("internal error, please file a bug.");
-          }
           if (dynamicSubState) {
             if (dynamicSubState.type === "ConcatStatement") {
               throw cssBlockError(`The dynamic statement for a boolean state must be set to a mustache statement with no additional text surrounding it.`, dynamicSubState, this.template);
             }
             if (analysis.storeConditionals) {
-              analysis.element.addDynamicState(container, states[0], dynamicSubState);
+              analysis.element.addDynamicState(container, state, dynamicSubState);
             } else {
-              analysis.element.addDynamicState(container, states[0], null);
+              analysis.element.addDynamicState(container, state, null);
             }
           } else {
-            analysis.element.addStaticState(container, states[0]);
+            analysis.element.addStaticState(container, state);
           }
         }
       } else {
@@ -294,7 +298,7 @@ function nodeLocation(node: AST.Node): SourceLocation {
   return { start, end };
 }
 
-type BranchStyles = Array<StateParent> | undefined;
+type BranchStyles = Array<BlockClass> | undefined;
 
 function dynamicClasses( condition: null, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<null>;
 function dynamicClasses( condition: AST.Expression, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<TernaryExpression>;

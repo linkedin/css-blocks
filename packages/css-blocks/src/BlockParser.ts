@@ -39,7 +39,7 @@ export interface BlockNodeAndType extends NodeAndType {
 /**
  * Check if given selector node is targeting the root block node
  */
-export function isRootNode(node: selectorParser.Node) {
+export function isRootNode(node: selectorParser.Node): node is selectorParser.ClassName {
   return node.type === selectorParser.CLASS &&
          node.value === "root";
 }
@@ -49,7 +49,7 @@ export function isRootNode(node: selectorParser.Node) {
  * @param  node The selector to test.
  * @return True if state selector, false if not.
  */
-export function isStateNode(node: selectorParser.Node) {
+export function isStateNode(node: selectorParser.Node): node is selectorParser.Attribute {
   return node.type === selectorParser.ATTRIBUTE &&
          (<selectorParser.Attribute>node).namespace === "state";
 }
@@ -59,7 +59,7 @@ export function isStateNode(node: selectorParser.Node) {
  * @param  node The selector to test.
  * @return True if class selector, false if not.
  */
-export function isClassNode(node: selectorParser.Node) {
+export function isClassNode(node: selectorParser.Node): node is selectorParser.ClassName {
   return node.type === selectorParser.CLASS;
 }
 

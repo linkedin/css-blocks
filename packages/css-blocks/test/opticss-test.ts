@@ -16,7 +16,7 @@ import {
   POSITION_UNKNOWN
 } from "@opticss/element-analysis";
 import {
-  clean, isType as assertType
+  clean, isType as assertType, ObjectDictionary
 } from "@opticss/util";
 
 import * as cssBlocks from '../src/errors';
@@ -30,6 +30,7 @@ import { SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAna
 
 import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertParseError } from "./util/assertError";
+import { SubState } from '../src/index';
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -49,9 +50,9 @@ export class TemplateAnalysisTests {
   }
   private useStates(element: ElementAnalysis<any, any, any>, stateContainer: BlockClass) {
     for (let groupName of stateContainer.getGroups()) {
-      element.addDynamicGroup(stateContainer, stateContainer.resolveGroup(groupName)!, null);
+      element.addDynamicGroup(stateContainer, stateContainer.resolveGroup(groupName) as ObjectDictionary<SubState>, null);
     }
-    for (let state of stateContainer.getStates()!) {
+    for (let state of stateContainer.booleanStates) {
       element.addStaticState(stateContainer, state);
     }
   }

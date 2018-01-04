@@ -1,6 +1,6 @@
 import { ObjectDictionary, objectValues } from '@opticss/util';
 import * as debugGenerator from 'debug';
-import { Block, BlockClass, State, isBlockClass } from 'css-blocks';
+import { Block, BlockClass, State, isBlockClass, SubState } from 'css-blocks';
 import { Node } from 'babel-traverse';
 import {
   isCallExpression,
@@ -46,10 +46,10 @@ export type BlockClassResult = {
   blockClass: BlockClass;
 };
 export type BlockStateResult = BlockClassResult & {
-  state: State;
+  state: State | SubState;
 };
 export type BlockStateGroupResult = BlockClassResult & {
-  stateGroup: ObjectDictionary<State>;
+  stateGroup: ObjectDictionary<SubState>;
   dynamicStateExpression: Expression;
 };
 export type BlockExpressionResult = BlockClassResult

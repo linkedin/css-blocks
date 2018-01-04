@@ -155,7 +155,7 @@ function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedC
 function resolveInheritance(classes: Array<BlockClass>, rewrite: IndexedClassRewrite<Style>) {
   let allClasses = [...classes];
   for (let c of classes) {
-    allClasses.push(...c.resolveInheritance() as Set<BlockClass>);
+    allClasses.push(...c.resolveInheritance());
   }
   return allClasses.filter(c => isSome(rewrite.indexOf(c)));
 }

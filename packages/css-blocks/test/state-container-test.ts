@@ -16,6 +16,7 @@ import {
 
 import BEMProcessor from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
+import { SubState, State } from "../src/index";
 
 @suite("State container")
 export class StateContainerTest extends BEMProcessor {
@@ -46,13 +47,13 @@ export class StateContainerTest extends BEMProcessor {
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
       let state = block.rootClass.getState("large");
-      typedAssert.isDefined(state).and((state) => {
+      typedAssert.isNotNull(state).and((state) => {
         assert.equal(state.name, "large");
       });
       let classObj = block.getClass("foo");
       typedAssert.isDefined(classObj).and(classObj => {
         let classState = classObj.getState("small");
-        typedAssert.isDefined(classState).and(classState => {
+        typedAssert.isNotNull(classState).and(classState => {
           assert.equal(classState.name, "small");
         });
       });
@@ -76,18 +77,18 @@ export class StateContainerTest extends BEMProcessor {
     let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
-      let sizeGroup = block.rootClass.getGroup("size");
+      let sizeGroup: Array<State | SubState> = block.rootClass.getStateOrGroup("size");
       assert.equal(sizeGroup.length, 2);
       assert.includeMembers(sizeGroup.map(s => s.name), ["large", "small"]);
-      let subtateGroup = block.rootClass.getGroup("size", "large");
+      let subtateGroup: Array<State | SubState> = block.rootClass.getStateOrGroup("size", "large");
       assert.equal(subtateGroup.length, 1);
       assert.includeMembers(subtateGroup.map(s => s.name), ["large"]);
-      let missingGroup = block.rootClass.getGroup("asdf");
+      let missingGroup: Array<State | SubState> = block.rootClass.getStateOrGroup("asdf");
       assert.equal(missingGroup.length, 0);
-      let missingSubstate = block.rootClass.getGroup("size", "tiny");
+      let missingSubstate: Array<State | SubState> = block.rootClass.getStateOrGroup("size", "tiny");
       assert.equal(missingSubstate.length, 0);
       typedAssert.isDefined(block.getClass("foo")).and(classObj => {
-        let modeGroup = classObj.getGroup("mode");
+        let modeGroup: Array<State | SubState> = classObj.getStateOrGroup("mode");
         assert.equal(modeGroup.length, 3);
         assert.includeMembers(modeGroup.map(s => s.name), ["collapsed", "minimized", "expanded"]);
       });
