@@ -27,6 +27,10 @@ import {
 import isBlockFilename from '../utils/isBlockFilename';
 import { classnamesHelper as generateClassName, HELPER_FN_NAME } from './classNameGenerator';
 // import { TemplateAnalysisError } from '../utils/Errors';
+import * as debugGenerator from 'debug';
+
+const debug = debugGenerator('css-blocks:jsx');
+
 let { parse } = require('path');
 
 export interface CssBlocksVisitor {
@@ -57,6 +61,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
         this.importsToRemove = new Array<NodePath<ImportDeclaration>>();
         this.statementsToRemove = new Array<NodePath<Statement>>();
         this.filename = file.opts.filename;
+
         this.mapping = rewriter.blocks[this.filename];
         if (this.mapping && this.mapping.analyses) {
           let a = this.mapping.analyses.find(a => a.template.identifier === this.filename);
@@ -66,13 +71,15 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
         }
         let ext = parse(this.filename).ext;
         this.shouldProcess = CAN_PARSE_EXTENSIONS[ext] && this.analysis && this.analysis.blockCount() > 0;
+
         if (this.shouldProcess) {
+          debug(`Rewriting discovered dependency ${this.filename}`);
           this.elementAnalyzer = new JSXElementAnalyzer(this.analysis.blocks, this.filename);
         }
       },
       post(state: any) {
         for (let nodePath of this.statementsToRemove) {
-          if (nodePath.removed) continue;
+          if (nodePath.removed) { continue; }
           nodePath.remove();
         }
         if (this.dynamicStylesFound) {
@@ -84,6 +91,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
           firstImport.replaceWith(importDecl);
         }
         for (let nodePath of this.importsToRemove) {
+          if (nodePath.removed) { continue; }
           detectStrayReferenceToImport(nodePath, this.filename);
           nodePath.remove();
         }
@@ -125,8 +133,7 @@ export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () =>
         },
 
         JSXOpeningElement(path: NodePath<JSXOpeningElement>, state: any): void {
-          if (!this.shouldProcess) return;
-
+          if (!this.shouldProcess) { return; }
           let elementAnalysis = this.elementAnalyzer.analyzeJSXElement(path);
           if (elementAnalysis) {
             elementAnalysis.seal();
@@ -177,6 +184,7 @@ function detectStrayReferenceToImport(
   importDeclPath: NodePath<ImportDeclaration>,
   filename: string
 ): void {
+  if (!importDeclPath || !importDeclPath.node) { return; }
   for (let specifier of importDeclPath.node.specifiers) {
     let binding = importDeclPath.scope.getBinding(specifier.local.name);
     if (binding) {

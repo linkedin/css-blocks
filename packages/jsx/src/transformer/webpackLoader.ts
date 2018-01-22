@@ -1,5 +1,7 @@
 import { StyleMapping, PluginOptionsReader, Block } from 'css-blocks';
+import * as debugGenerator from 'debug';
 
+const debug = debugGenerator('css-blocks:jsx');
 const loaderUtils = require('loader-utils');
 
 type LoaderContext = {
@@ -49,6 +51,7 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
     metaMappingPromises.push(this.cssBlocks.mappings[filename]);
   });
 
+  debug(`Waiting for ${metaMappingPromises.length} block compilations to complete...`);
   Promise.all(metaMappingPromises)
 
   .then((mappings: StyleMapping[]) => {
@@ -64,6 +67,8 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
       }
       rewriter.blocks[path] = styleMapping;
     });
+
+    debug(`Completed ${metaMappingPromises.length} block compilations!`);
 
     callback(null, source, map);
   })
