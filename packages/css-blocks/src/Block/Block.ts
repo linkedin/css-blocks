@@ -169,17 +169,6 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
     return inherited;
   }
 
-  asCompiledAttributes(opts: OptionsReader): Attribute[] {
-    if (!this._compiledAttribute) {
-      let classNames = this.cssClasses(opts);
-      let classValue = (classNames.length > 1) ?
-        {allOf: classNames.map(c => ({constant: c}))} :
-        {constant: classNames[0]};
-      this._compiledAttribute = new Attribute("class", classValue);
-    }
-    return [this._compiledAttribute];
-  }
-
   /**
    * Standard export method for a given block.
    * @param opts  Options for rendering cssClass.
