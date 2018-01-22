@@ -328,7 +328,7 @@ export class Block
     return this._classes[name];
   }
 
-  get implementsBlocks(): Block[] {
+  getImplementedBlocks(): Block[] {
     return this._implements.slice();
   }
 
@@ -355,7 +355,7 @@ export class Block
    * Validate that all foreign blocks this block implements are fully...implemented.
    */
   checkImplementations(): void {
-    this.implementsBlocks.forEach((b: Block) => {
+    this.getImplementedBlocks().forEach((b: Block) => {
       let missingObjs: Style[] = this.checkImplementation(b);
       let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
       if (missingObjs.length > 0) {
