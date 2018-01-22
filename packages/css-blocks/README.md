@@ -1594,22 +1594,6 @@ Options
 * `outputMode`: type `cssBlocks.OutputMode`. Currently defaults to and
   must be `cssBlocks.OutputMode.BEM`. Other output modes will be
   defined soon.
-* `interoperableCSS`: type `boolean`. When set to true, an `:exports`
-  ruleset is generated providing local names that can be used from JS
-  or in other CSS files that are [InteroperableCSS](https://github.com/css-modules/icss) compatible.
-  The following names are exported:
-  * `block` is exported with the name of the block.
-  * State names: the name of the state. E.g. `[state|foo]` is exported
-    as `foo`.
-  * Exclusive State names: the name of the state group is prefixed to
-    the state name with a dash. E.g. `[state|theme=light]` is exported as
-    `theme-light`.
-  * Class names: The name of the classes. E.g. `.foo` is exported as
-    `foo`. Note that these can conflict with state names, it is left to
-    the developer to avoid collisions if using interoperable CSS.
-  * Class substates: The name of the class is prefixed to the state
-    name separated by a double dash. E.g. `.foo[state|visible]` is
-    exported as `foo--visible`.
 
 WIP: Detecting Unused Styles
 ----------------------------

@@ -28,7 +28,6 @@ import {
  */
 export class OptionsReader implements CssBlockOptionsReadonly {
   readonly outputMode: OutputMode;
-  readonly interoperableCSS: boolean;
   readonly importer: Importer;
   readonly rootDir: string;
   readonly data: ImporterData;
@@ -40,7 +39,6 @@ export class OptionsReader implements CssBlockOptionsReadonly {
   constructor(opts?: PluginOptions) {
     let defaults: CssBlockOptions = {
       outputMode: OutputMode.BEM,
-      interoperableCSS: false,
       importer: filesystemImporter,
       rootDir: process.cwd(),
       data: {},

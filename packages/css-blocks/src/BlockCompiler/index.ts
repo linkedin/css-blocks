@@ -48,9 +48,6 @@ export default class BlockCompiler {
       });
       resolver.resolve(root, block);
 
-      if (this.opts.interoperableCSS) {
-        this.injectExports(root, block);
-      }
       return root;
   }
 
@@ -71,18 +68,5 @@ export default class BlockCompiler {
         atRule.remove();
       }
     });
-  }
-
-  private injectExports(root: postcss.Root, block: Block) {
-    let exportsRule = this.postcss.rule({selector: ":export"});
-    root.prepend(exportsRule);
-    let objsMap = block.merged();
-    for (let name of objsMap.keys()) {
-      let objs = objsMap.get(name);
-      exportsRule.append(this.postcss.decl({
-        prop: objs[0].localName(),
-        value: objs.map(obj => obj.cssClass(this.opts)).join(" ")
-      }));
-    }
   }
 }

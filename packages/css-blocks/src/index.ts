@@ -1,6 +1,3 @@
-export {
-  iCssAdapter
-} from "./runtime";
 export * from "./Block";
 export * from "./BlockFactory";
 export { default as BlockParser } from "./BlockParser";

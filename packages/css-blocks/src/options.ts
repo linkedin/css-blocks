@@ -5,7 +5,6 @@ import { OutputMode } from "./OutputMode";
  */
 export interface CssBlockOptions {
   outputMode: OutputMode;
-  interoperableCSS: boolean;
   rootDir: string;
   /**
    * Limits block parsing and compilation to this number at any one time.

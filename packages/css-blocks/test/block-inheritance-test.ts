@@ -19,24 +19,24 @@ export class BlockInheritance extends BEMProcessor {
     let inputCSS = `@block-reference base from "./base.css";
                     .root { extends: base; color: red; }
                     .foo { clear: both; }
-                    .b[state|small] {color: blue;}`;
+                    .b[state|small] {color: blue;}
+                    @block-debug self to comment;`;
 
-    return this.process(filename, inputCSS, {interoperableCSS: true, importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/base.css");
       assert.deepEqual(
         result.css.toString(),
-        ":export {" +
-        " root: inherits base;" +
-        " foo: inherits__foo base__foo;" +
-        " b: inherits__b;" +
-        " b--small: inherits__b--small;" +
-        " large: base--large;" +
-        " foo--small: base__foo--small; " +
-        "}\n" +
         ".inherits { color: red; }\n" +
         ".base.inherits { color: red; }\n" +
         ".inherits__foo { clear: both; }\n" +
-        ".inherits__b--small { color: blue; }\n"
+        ".inherits__b--small { color: blue; }\n" +
+        "/* Source: foo/bar/inherits.css\n" +
+        "   .root => .base .inherits\n" +
+        "   .b => .inherits__b\n" +
+        "   .b[state|small] => .inherits__b--small\n" +
+        "   .foo => .base__foo .inherits__foo\n" +
+        "   .foo[state|small] => .base__foo--small\n" +
+        "   [state|large] => .base--large */\n"
       );
     });
   }
@@ -56,14 +56,10 @@ export class BlockInheritance extends BEMProcessor {
                     .root { extends: base; color: red; }
                     .foo { clear: both; width: unset(); }`;
 
-    return this.process(filename, inputCSS, {interoperableCSS: true, importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/base.css");
       assert.deepEqual(
         result.css.toString(),
-        ":export {" +
-        " block: inherits base;" +
-        " foo: inherits__foo base__foo--without-width;" +
-        "}\n" +
         ".inherits { color: red; }\n" +
         ".inherits__foo { clear: both; }\n"
       );
