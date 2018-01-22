@@ -123,7 +123,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
    */
   public resolveStyles(): Set<Style> {
     if (this._resolvedStyles) {
-      return new Set(<Set<Style>>this._resolvedStyles);
+      return new Set(this._resolvedStyles);
     }
 
     let inheritedStyles = this.resolveInheritance();
@@ -138,7 +138,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
       }
     }
 
-    return new Set(<Set<Style>>this._resolvedStyles);
+    return new Set(this._resolvedStyles);
   }
 
   /**
