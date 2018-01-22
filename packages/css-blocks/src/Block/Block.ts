@@ -170,18 +170,6 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   }
 
   /**
-   * Standard export method for a given block.
-   * @param opts  Options for rendering cssClass.
-   * @returns The Export object representing this Style.
-   */
-  asExport(opts: OptionsReader): Export {
-    return {
-      identifier: this.localName(),
-      value: this.cssClass(opts)
-    };
-  }
-
-  /**
    * Debug utility to help log Styles
    * @param opts  Options for rendering cssClass.
    * @returns A debug string.
@@ -763,14 +751,6 @@ type StateMap = ObjectDictionary<State>;
 export interface StateInfo {
   group?: string;
   name: string;
-}
-
-/**
- * Interface used when exporting a Style using `asExport`.
- */
-export interface Export {
-  identifier: string;
-  value: string;
 }
 
 /** Parent types for a state */
