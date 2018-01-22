@@ -234,16 +234,16 @@ export class Block
     return this._name;
   }
 
-  get rootClass(): BlockClass {
-    return this._rootClass;
-  }
-
   set name(name: string) {
     if ( this.hasHadNameReset ) {
       throw new CssBlockError('Can not set block name more than once.');
     }
     this._name = name;
     this.hasHadNameReset = true;
+  }
+
+  get rootClass(): BlockClass {
+    return this._rootClass;
   }
 
   /// Start of methods to implement LocalScope<Block, Style>
