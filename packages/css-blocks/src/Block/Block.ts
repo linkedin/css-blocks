@@ -25,7 +25,7 @@ export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
 };
 
 export type Style = BlockClass | State | SubState;
-export type StyleContainer = Block | BlockClass | State | null;
+export type StyleContainer = Block | BlockClass | State;
 
 /**
  * Abstract class that serves as the base for all Styles. Contains basic
@@ -40,6 +40,8 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
 
   /** cache of resolveStyles() */
   private _resolvedStyles: Set<Style> | undefined;
+  /** cache for the block getter. */
+  private _block: Block | undefined;
 
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
@@ -95,10 +97,20 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   public abstract cssClass(opts: OptionsReader): string;
 
   /**
-   * Crawl up the container tree and return the base block object.
+   * traverse parents and return the base block object.
    * @returns The base block in this container tree.
    */
-  public abstract get block(): Block;
+  public get block(): Block {
+    if (this._block !== undefined) {
+      return this._block;
+    }
+    let p: StyleContainer = this.parent;
+    if (isBlock(p)) {
+      return this._block = p;
+    } else {
+      return this._block = p.block;
+    }
+  }
 
   /**
    * Returns all the classes needed to represent this block object
@@ -178,6 +190,8 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
     return `${this.asSource()} => ${this.cssClasses(opts).map(n => `.${n}`).join(" ")}`;
   }
 
+  // TypeScript can't figure out that `this` is the `StyleType` so this private
+  // method casts it in a few places where it's needed.
   private asStyle(): StyleType {
     return <StyleType><any>this;
   }
@@ -778,10 +792,6 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
     super(name, parent);
   }
 
-  get block(): Block {
-    return this.parent;
-  }
-
   get parent(): Block {
     return <Block>super.parent;
   }
@@ -1142,10 +1152,6 @@ export class State extends BlockObject<State, BlockClass> {
     return this._subStates && this._subStates[name] || null;
   }
 
-  get block(): Block {
-    return this.blockClass.block;
-  }
-
   /**
    * Retrieve the BlockClass that this state belongs to, if applicable.
    * @returns The parent block class, or null.
@@ -1271,10 +1277,6 @@ export class SubState extends BlockObject<SubState, State> {
     }
     this._base = null;
     return undefined;
-  }
-
-  get block(): Block {
-    return this._container.block;
   }
 
   localName(): string {
