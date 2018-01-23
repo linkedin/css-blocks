@@ -42,6 +42,8 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   private _resolvedStyles: Set<Style> | undefined;
   /** cache for the block getter. */
   private _block: Block | undefined;
+  /** cache for the block getter. */
+  private _base: StyleType | null;
 
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
@@ -67,10 +69,36 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   }
 
   /**
-   * Get the inherited block object for this block object of the same name and type.
-   * @returns The base inherited block object.
+   * Given a parent that is a base class of this style, retrieve this style's
+   * base style from it, if it exists. This method does not traverse into base styles.
    */
-  public abstract get base(): StyleType | undefined;
+  protected abstract getBaseFromBaseParent(baseParent: ContainerType): StyleType | undefined;
+
+  /**
+   * Get the style that this style inherits from, if any.
+   *
+   * This walks down the declared styles of the parent's inheritance chain,
+   * and attempts to find a matching directly declared style on each.
+   *
+   * The result is cached because it never changes and is decidable as soon
+   * as the style is instantiated.
+   */
+  public get base(): StyleType | undefined {
+    if (this._base !== undefined) {
+      return this._base || undefined;
+    }
+    let baseParent: ContainerType | undefined = <ContainerType | undefined>this.parent.base;
+    while (baseParent) {
+      let cls = this.getBaseFromBaseParent(baseParent);
+      if (cls) {
+        this._base = cls;
+        return cls;
+      }
+      baseParent = <ContainerType | undefined>baseParent.base;
+    }
+    this._base = null;
+    return undefined;
+  }
 
   /**
    * Return the local identifier for this `Style`.
@@ -309,6 +337,9 @@ export class Block
     return new Array(...this._dependencies);
   }
 
+  /**
+   * Get the block that this block inherits from.
+   */
   get base(): Block | undefined {
     return this._base;
   }
@@ -339,7 +370,7 @@ export class Block
   }
 
   /**
-   * Validate that this block implements all foreign selectors from blocks it impelemnts.
+   * Validate that this block implements all foreign selectors from blocks it implements.
    * @param b The block to check implementation against.
    * @returns The Styles from b that are missing in the block.
    */
@@ -779,7 +810,6 @@ export type StyleParent = Block | BlockClass | State | undefined;
  * Represents a Class present in the Block.
  */
 export class BlockClass extends BlockObject<BlockClass, Block> {
-  private _base: BlockClass | null | undefined;
   private _sourceAttribute: Attribute;
   private _states: StateMap = {};
 
@@ -792,29 +822,12 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
     super(name, parent);
   }
 
-  get parent(): Block {
-    return <Block>super.parent;
-  }
-
   get isRoot(): boolean {
     return this.name === "root";
   }
 
-  get base(): BlockClass | undefined {
-    if (this._base !== undefined) {
-      return this._base || undefined;
-    }
-    let base = this.block.base;
-    while (base) {
-      let cls = base.getClass(this.name);
-      if (cls) {
-        this._base = cls;
-        return cls;
-      }
-      base = base.base;
-    }
-    this._base = null;
-    return undefined;
+  protected getBaseFromBaseParent(baseParent: Block): BlockClass | undefined {
+    return baseParent.getClass(this.name);
   }
 
   localName(): string {
@@ -1073,7 +1086,6 @@ export class State extends BlockObject<State, BlockClass> {
   isGlobal = false;
 
   private _hasSubStates: boolean;
-  private _base: State | null | undefined;
   private _subStates: undefined | ObjectDictionary<SubState>;
   private _sourceAttributes: Attr[];
 
@@ -1226,24 +1238,8 @@ export class State extends BlockObject<State, BlockClass> {
     }
   }
 
-  /**
-   * Get the state that this state inherits from.
-   */
-  get base(): State | undefined {
-    if (this._base !== undefined) {
-      return this._base || undefined;
-    }
-    let baseClass: BlockClass | undefined = this._container.base;
-    while (baseClass) {
-      let state = baseClass.getState(this._name);
-      if (state) {
-        this._base = state;
-        return state;
-      }
-      baseClass = baseClass.base;
-    }
-    this._base = null;
-    return undefined;
+  getBaseFromBaseParent(baseParent: BlockClass): State | undefined {
+    return baseParent.getState(this._name) || undefined;
   }
 
   /**
@@ -1253,30 +1249,14 @@ export class State extends BlockObject<State, BlockClass> {
   all(): Style[] {
     return [this];
   }
-
 }
 
 export class SubState extends BlockObject<SubState, State> {
-  private _base: SubState | null | undefined;
-
   _sourceAttributes: Array<AttributeNS>;
   isGlobal = false;
 
-  get base(): SubState | undefined {
-    if (this._base !== undefined) {
-      return this._base || undefined;
-    }
-    let baseState: State | undefined = this._container.base;
-    while (baseState) {
-      let subState = baseState.getSubState(this._name);
-      if (subState) {
-        this._base = subState;
-        return subState;
-      }
-      baseState = baseState.base;
-    }
-    this._base = null;
-    return undefined;
+  getBaseFromBaseParent(baseParent: State): SubState | undefined {
+    return baseParent.getSubState(this._name) || undefined;
   }
 
   localName(): string {
