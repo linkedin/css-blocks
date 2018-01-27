@@ -477,8 +477,8 @@ export class TemplateAnalysisTests {
 
       .root { color: blue; }
       [state|foo] { color: red; }
-      .asdf { font-size: 20px; }
-      .fdsa { font-size: 22px; }
+      .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
+      .fdsa { font-size: resolve('a.foo[state|bar]'); font-size: 22px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
@@ -576,8 +576,8 @@ export class TemplateAnalysisTests {
 
       .root { color: blue; }
       [state|foo] { color: red; }
-      .asdf { font-size: 20px; }
-      .fdsa { font-size: 22px; }
+      .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
+      .fdsa { font-size: 22px; font-size: resolve('a.foo[state|bar]'); }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader, "main").then(([block, _]) => {
       analysis.blocks[""] = block;
@@ -946,6 +946,7 @@ export class TemplateAnalysisTests {
           assert.deepEqual(1, 1);
     });
   }
+
   /*
   @test "analysis can be serialized and deserialized"() {
     let source = `

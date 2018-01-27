@@ -7,15 +7,18 @@ import { Validator } from "./Validator";
 import rootClassValidator from "./rootClassValidator";
 import classPairsValidator from "./classPairsValidator";
 import stateParentValidator from "./stateParentValidator";
+import propertyConflictValidator from "./propertyConflictValidator";
 
 export * from "./classPairsValidator";
 export * from "./rootClassValidator";
 export * from "./stateParentValidator";
+export * from "./propertyConflictValidator";
 
 export interface TemplateValidators {
   "no-root-classes": Validator;
   "no-class-pairs": Validator;
   "no-state-orphans": Validator;
+  "no-required-resolution": Validator;
   [name: string]: Validator;
 }
 
@@ -26,13 +29,15 @@ export type TemplateValidatorOptions = {
 const VALIDATORS: TemplateValidators = {
   "no-root-classes": rootClassValidator,
   "no-class-pairs": classPairsValidator,
-  "no-state-orphans": stateParentValidator
+  "no-state-orphans": stateParentValidator,
+  "no-required-resolution": propertyConflictValidator
 };
 
 const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
   "no-root-classes": true,
   "no-class-pairs": true,
-  "no-state-orphans": true
+  "no-state-orphans": true,
+  "no-required-resolution": true
 };
 
 /**
@@ -86,9 +91,9 @@ export default class TemplateValidator {
    */
   validate( templateAnalysis: StyleAnalysis, element: ElementAnalysis<any, any, any> ) {
 
-    function err ( message: string, locInfo?: errors.ErrorLocation | undefined | null ) {
+    function err ( message: string, locInfo?: errors.ErrorLocation | undefined | null, details?: string ) {
       throw new errors.TemplateAnalysisError(
-        message, locInfo || element.sourceLocation.start);
+        message, locInfo || element.sourceLocation.start, details);
     }
 
     this.validators.forEach(( func ) => {

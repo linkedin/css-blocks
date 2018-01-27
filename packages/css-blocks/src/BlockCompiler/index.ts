@@ -46,6 +46,7 @@ export default class BlockCompiler {
         let parsedSelectors = block.getParsedSelectors(rule);
         rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.opts)).join(",\n");
       });
+
       resolver.resolve(root, block);
 
       return root;

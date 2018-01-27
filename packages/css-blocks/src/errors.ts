@@ -43,8 +43,9 @@ export class CssBlockError extends Error {
  */
 export class TemplateAnalysisError extends CssBlockError {
   static prefix = "TemplateError";
-  constructor(message: string, location?: ErrorLocation) {
+  constructor(message: string, location?: ErrorLocation, details?: string) {
     super(message, location);
+    if (details) { this.message += `\n${details}`; }
   }
 }
 
