@@ -1,12 +1,5 @@
 import * as postcss from 'postcss';
 import selectorParser = require('postcss-selector-parser');
-import { SelectorFactory, parseSelector,
-         ParsedSelector, CompoundSelector } from "opticss";
-import { Attribute, Attr, AttributeNS, ValueAbsent, ValueConstant, AttributeValueChoice } from "@opticss/element-analysis";
-import { ObjectDictionary, MultiMap, assertNever } from "@opticss/util";
-
-import { stateParser, isClassNode, isStateNode,
-         NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
 import { CssBlockError } from "../errors";
 import { FileIdentifier } from "../importing";
 import { OptionsReader } from "../OptionsReader";
@@ -14,6 +7,29 @@ import { OutputMode } from "../OutputMode";
 import { LocalScopedContext, HasLocalScope, HasScopeLookup } from "../util/LocalScope";
 import { unionInto } from '../util/unionInto';
 import { objectValues } from "@opticss/util";
+import { ObjectDictionary, MultiMap, assertNever } from "@opticss/util";
+import {
+  SelectorFactory,
+  parseSelector,
+  ParsedSelector,
+  CompoundSelector
+} from "opticss";
+import {
+  Attribute,
+  Attr,
+  AttributeNS,
+  ValueAbsent,
+  ValueConstant,
+  AttributeValueChoice
+} from "@opticss/element-analysis";
+import {
+  stateParser,
+  isClassNode,
+  isStateNode,
+  NodeAndType,
+  BlockType,
+  CLASS_NAME_IDENT
+} from "../BlockParser";
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
   let index = s.indexOf('.');
@@ -48,7 +64,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
    */
-  constructor(name: string, container: ContainerType){
+  constructor(name: string, container: ContainerType) {
     this._name = name;
     this._container = container;
     this.propertyConcerns = new PropertyContainer();
@@ -210,6 +226,19 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   }
 
   /**
+   * Find the closest common ancester Block between two BlockObjects
+   * TODO: I think there is a more efficient way to do this.
+   * @param relative  BlockObject to compare ancestry with.
+   * @returns The BlockObjects' common ancester, or false.
+   */
+  commonAncester(relative: Style): Style | false {
+    let blockChain = new Set(...this.block.rootClass.resolveInheritance()); // lol
+    blockChain.add(this.block.rootClass);
+    let common = [relative.block.rootClass, ...relative.block.rootClass.resolveInheritance()].filter(b => blockChain.has(b));
+    return common.length ? common[0] as Style : false;
+  }
+
+  /**
    * Debug utility to help log Styles
    * @param opts  Options for rendering cssClass.
    * @returns A debug string.
@@ -227,8 +256,8 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
 
 export class Block
   implements SelectorFactory,
-             HasLocalScope<Block, Style>,
-             HasScopeLookup<Style>
+  HasLocalScope<Block, Style>,
+  HasScopeLookup<Style>
 {
   private _name: string;
   private _classes: ObjectDictionary<BlockClass> = {};
@@ -248,7 +277,7 @@ export class Block
   private _dependencies: Set<string>;
 
   public stylesheet?: postcss.Root;
-  public readonly parsedRuleSelectors: WeakMap<postcss.Rule,ParsedSelector[]>;
+  public readonly parsedRuleSelectors: WeakMap<postcss.Rule, ParsedSelector[]>;
 
   constructor(name: string, identifier: FileIdentifier) {
     this._identifier = identifier;
@@ -265,7 +294,7 @@ export class Block
   }
 
   set name(name: string) {
-    if ( this.hasHadNameReset ) {
+    if (this.hasHadNameReset) {
       throw new CssBlockError('Can not set block name more than once.');
     }
     this._name = name;
@@ -393,7 +422,7 @@ export class Block
       let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
       if (missingObjs.length > 0) {
         let s = missingObjs.length > 1 ? 's' : '';
-        throw new CssBlockError( `Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
+        throw new CssBlockError(`Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
       }
     });
   }
@@ -401,32 +430,32 @@ export class Block
   // This is a really dumb impl
   find(sourceName: string): Style | undefined {
     let blockRefName: string | undefined;
-     let md = sourceName.match(CLASS_NAME_IDENT);
-     if (md && md.index === 0) {
-       blockRefName = md[0];
-       let blockRef: Block | undefined;
-       this.eachBlockReference((name, block) => {
-         if (blockRefName === name) {
-           blockRef = block;
-         }
-       });
-       if (blockRef) {
-         if (md[0].length === sourceName.length) {
-           return blockRef.rootClass;
-         }
-         return blockRef.find(sourceName.slice(md[0].length));
-       } else {
-         return undefined;
-       }
-     }
+    let md = sourceName.match(CLASS_NAME_IDENT);
+    if (md && md.index === 0) {
+      blockRefName = md[0];
+      let blockRef: Block | undefined;
+      this.eachBlockReference((name, block) => {
+        if (blockRefName === name) {
+          blockRef = block;
+        }
+      });
+      if (blockRef) {
+        if (md[0].length === sourceName.length) {
+          return blockRef.rootClass;
+        }
+        return blockRef.find(sourceName.slice(md[0].length));
+      } else {
+        return undefined;
+      }
+    }
     return this.all().find(e => e.asSource() === sourceName);
   }
 
   eachBlockReference(callback: (name: string, block: Block) => any) {
-     Object.keys(this._blockReferences).forEach((name) => {
-       callback(name, this._blockReferences[name]);
-     });
-   }
+    Object.keys(this._blockReferences).forEach((name) => {
+      callback(name, this._blockReferences[name]);
+    });
+  }
 
   get classes(): BlockClass[] {
     let classes: BlockClass[] = [];
@@ -503,7 +532,7 @@ export class Block
     return result;
   }
 
-  merged(): MultiMap<string, Style>{
+  merged(): MultiMap<string, Style> {
     let map = new MultiMap<string, Style>();
     for (let obj of this.all()) {
       map.set(obj.asSource(), obj);
@@ -612,7 +641,7 @@ export class Block
       if (result === null) {
         newNodes.push(node);
       } else {
-        newNodes.push(selectorParser.className({value: result[0].cssClass(opts)}));
+        newNodes.push(selectorParser.className({ value: result[0].cssClass(opts) }));
         i += result[1];
       }
     }
@@ -705,7 +734,7 @@ export class Block
    * method so these libraries don't implode.
    * @return The name of the block.
    */
-  toJSON(){
+  toJSON() {
     return this._name;
   }
 }
@@ -715,18 +744,22 @@ export function isBlock(o: object): o is Block {
 }
 
 type Properties = Set<string>;
+type Resolutions = Map<string, Set<Style>>;
 
 /**
  * Cache and interface methods for block properties.
  */
+const RESERVED_PROP_NAMES = new Set(['block-name', 'extends', 'implements']);
 export class PropertyContainer {
   private props: Properties = new Set();
-  private pseudoProps = new Map<string,Properties>();
+  private pseudoProps = new Map<string, Properties>();
+  private resolutions: Resolutions = new Map<string, Set<Style>>();
+  private pseudoResolutions = new Map<string, Resolutions>();
 
   /**
    * Track a single property.
-   * @param	property	The property we're tracking
-   * @param	pseudo	The pseudo element this rule is styling, if applicable.
+   * @param  property  The property we're tracking
+   * @param  pseudo  The pseudo element this rule is styling, if applicable.
    */
   addProperty(property: string, pseudo?: string) {
     let props: Properties;
@@ -741,10 +774,11 @@ export class PropertyContainer {
 
   /**
    * Track all properties from a ruleset in this block's PropertyContainer.
-   * @param	rule	PostCSS ruleset
-   * @param	block	External block
+   * @param  rule  PostCSS ruleset
+   * @param  block  External block
    */
-  addProperties(rule: postcss.Rule, block: Block, filter?: (prop: string) => boolean) {
+  addProperties(rule: postcss.Rule, block: Block) {
+    const RESOLVE_RE = /resolve(-inherited)?\(("|')([^\2]*)\2\)/;
     let selectors = block.getParsedSelectors(rule);
     selectors.forEach((selector) => {
       let key = selector.key;
@@ -753,16 +787,45 @@ export class PropertyContainer {
         pseudo = key.pseudoelement.toString();
       }
       rule.walkDecls((decl) => {
-        if (!filter || filter && filter(decl.prop)) {
-          this.addProperty(decl.prop, pseudo);
+
+        // Ignore css-blocks specific prop names.
+        if (RESERVED_PROP_NAMES.has(decl.prop)) { return; }
+
+        // Add the property
+        this.addProperty(decl.prop, pseudo);
+
+        // If a resolution, track that this property has been resolved
+        let referenceStr = (decl.value.match(RESOLVE_RE) || [])[3];
+        if (referenceStr) {
+          let other = block.lookup(referenceStr);
+          if (other) {
+            this.addResolution(decl.prop, other, pseudo);
+          }
         }
       });
     });
   }
 
   /**
+   * Track a property's resolution against another block.
+   * @param  property  The property we're tracking
+   * @param  block  The block we're resolving against
+   * @param  pseudo  The pseudo element this rule is styling, if applicable.
+   */
+  addResolution(property: string, block: Style, pseudo ?: string) {
+    let resolutions: Resolutions = this.resolutions;
+    if (pseudo) {
+      resolutions = this.pseudoResolutions.get(pseudo) || new Map<string, Set<Style>>();
+      this.pseudoResolutions.set(pseudo, resolutions);
+    }
+    let blocks = resolutions.get(property) || new Set();
+    resolutions.set(property, blocks);
+    blocks.add(block);
+  }
+
+  /**
    * Retreive properties from all rulesets in this block.
-   * @param	pseudo	Optional pseudo element to get properties from
+   * @param  pseudo  Optional pseudo element to get properties from
    * @returns A set of property names.
    */
   getProperties(pseudo?: string): Set<string> {
@@ -782,6 +845,21 @@ export class PropertyContainer {
    */
   getPseudos(): Set<string> {
     return new Set(this.pseudoProps.keys());
+  }
+
+  /**
+ * Test if this block has a resolution against another block.
+ * @param  property  The property we're tracking
+ * @param  block  The block we're resolving against
+ * @param  pseudo  The pseudo element this rule is styling, if applicable.
+ */
+  hasResolutionFor(property: string, obj: Style, pseudo ?: string): boolean {
+    let resolutions: Resolutions = this.resolutions;
+    if (pseudo) {
+        resolutions = this.pseudoResolutions.get(pseudo) || new Map<string, Set<Style>>();
+      }
+    let blocks = resolutions.get(property) || new Set();
+    return blocks.has(obj);
   }
 }
 
@@ -844,7 +922,7 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
 
   asSourceAttributes(): Attribute[] {
     if (!this._sourceAttribute) {
-      this._sourceAttribute = new Attribute("class", {constant: this.name});
+      this._sourceAttribute = new Attribute("class", { constant: this.name });
     }
     return [this._sourceAttribute];
   }
@@ -855,7 +933,7 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
    * @returns String representing output class.
    */
   cssClass(opts: OptionsReader) {
-    switch(opts.outputMode) {
+    switch (opts.outputMode) {
       case OutputMode.BEM:
         if (this.isRoot) {
           return `${this.block.name}`;
@@ -887,7 +965,7 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
    * @param subStateName Optional substate to filter states by.
    * @returns An array of all States that were requested.
    */
-  getStateOrGroup(stateName: string, subStateName?: string|undefined): Array<State> | Array<SubState> {
+  getStateOrGroup(stateName: string, subStateName?: string | undefined): Array<State> | Array<SubState> {
     let state = this.getState(stateName);
     if (state) {
       if (subStateName) {
@@ -928,8 +1006,8 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
    * @param substate Optional substate to filter states by.
    * @returns A map of resolved state names to their states for all States that were requested.
    */
-  resolveGroup(groupName: string, substate?: string|undefined): ObjectDictionary<State | SubState> | undefined {
-    let resolution: {[name: string]: State | SubState } = {};
+  resolveGroup(groupName: string, substate?: string | undefined): ObjectDictionary<State | SubState> | undefined {
+    let resolution: { [name: string]: State | SubState } = {};
     let states = this.getStateOrGroup(groupName, substate);
     for (let state of states) {
       resolution[state.name] = state;
@@ -1200,11 +1278,11 @@ export class State extends BlockObject<State, BlockClass> {
       if (this.hasSubStates) {
         let values = new Array<ValueConstant>();
         for (let subState of this.subStates) {
-          values.push({constant: subState.name});
+          values.push({ constant: subState.name });
         }
-        value = {oneOf: values};
+        value = { oneOf: values };
       } else {
-        value = {absent: true};
+        value = { absent: true };
       }
       this._sourceAttributes.push(new AttributeNS("state", this.name, value));
     }
@@ -1229,7 +1307,7 @@ export class State extends BlockObject<State, BlockClass> {
    * @returns String representing output class.
    */
   cssClass(opts: OptionsReader) {
-    switch(opts.outputMode) {
+    switch (opts.outputMode) {
       case OutputMode.BEM:
         let cssClassName = this.blockClass.cssClass(opts);
         return `${cssClassName}--${this.name}`;
@@ -1266,7 +1344,7 @@ export class SubState extends BlockObject<SubState, State> {
   asSourceAttributes(): Attr[] {
     if (!this._sourceAttributes) {
       this._sourceAttributes = [];
-      this._sourceAttributes.push(new AttributeNS("state", this._container.name, {constant: this.name}));
+      this._sourceAttributes.push(new AttributeNS("state", this._container.name, { constant: this.name }));
     }
     return this._sourceAttributes.slice();
   }
@@ -1282,7 +1360,7 @@ export class SubState extends BlockObject<SubState, State> {
   }
 
   public cssClass(opts: OptionsReader): string {
-    switch(opts.outputMode) {
+    switch (opts.outputMode) {
       case OutputMode.BEM:
         return `${this._container.cssClass(opts)}-${this.name}`;
       default:

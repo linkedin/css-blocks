@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { Block, Style } from "../Block";
-import BlockParser from "../BlockParser";
+import { getBlockNode } from "../BlockParser";
 import * as errors from "../errors";
 import { OptionsReader } from "../OptionsReader";
 import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
@@ -87,7 +87,7 @@ export default class ConflictResolver {
           let key = sel.key;
 
           // Fetch the associated `Style`. If does not exist (ex: malformed selector), skip.
-          let blockNode = BlockParser.getBlockNode(key);
+          let blockNode = getBlockNode(key);
           if ( !blockNode ) { return; }
           let obj: Style | undefined = block.nodeAndTypeToStyle(blockNode);
           if ( !obj ) { return; }
