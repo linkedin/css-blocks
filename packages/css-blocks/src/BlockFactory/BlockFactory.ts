@@ -209,7 +209,7 @@ export class BlockFactory implements IBlockFactory {
    * @return True or false depending on success status.
    */
   getUniqueBlockName(name: string): string{
-    if ( !this.blockNames[name] ) {
+    if (!this.blockNames[name]) {
       this.blockNames[name] = 1;
       return name;
     }

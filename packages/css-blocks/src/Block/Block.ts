@@ -265,7 +265,7 @@ export class Block
   }
 
   set name(name: string) {
-    if ( this.hasHadNameReset ) {
+    if (this.hasHadNameReset) {
       throw new CssBlockError('Can not set block name more than once.');
     }
     this._name = name;
@@ -393,7 +393,7 @@ export class Block
       let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
       if (missingObjs.length > 0) {
         let s = missingObjs.length > 1 ? 's' : '';
-        throw new CssBlockError( `Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
+        throw new CssBlockError(`Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
       }
     });
   }

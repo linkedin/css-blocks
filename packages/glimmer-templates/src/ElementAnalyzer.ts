@@ -133,7 +133,7 @@ export class ElementAnalyzer {
         let helperType = isStyleIfHelper(statement);
 
         // If this is a `{{style-if}}` or `{{style-unless}}` helper:
-        if ( helperType ) {
+        if (helperType) {
           let condition = statement.params[0];
           let whenTrue: Array<BlockClass> | undefined = undefined;
           let whenFalse: Array<BlockClass> | undefined = undefined;
@@ -269,8 +269,8 @@ function isMustacheStatement(value: AST.TextNode | AST.MustacheStatement | AST.C
   return value.type === 'MustacheStatement';
 }
 
-function isStyleIfHelper( node: AST.MustacheStatement ): "style-if" | "style-unless" | undefined {
-  if ( node.path.type !== 'PathExpression' ) { return undefined; }
+function isStyleIfHelper(node: AST.MustacheStatement): "style-if" | "style-unless" | undefined {
+  if (node.path.type !== 'PathExpression') { return undefined; }
   let parts: string[] = (<AST.PathExpression>node.path).parts;
   if (parts.length > 0) {
     let name = parts[0];
@@ -300,9 +300,9 @@ function nodeLocation(node: AST.Node): SourceLocation {
 
 type BranchStyles = Array<BlockClass> | undefined;
 
-function dynamicClasses( condition: null, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<null>;
-function dynamicClasses( condition: AST.Expression, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<TernaryExpression>;
-function dynamicClasses( condition: AST.Expression | null, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<TernaryExpression | null> {
+function dynamicClasses(condition: null, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<null>;
+function dynamicClasses(condition: AST.Expression, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<TernaryExpression>;
+function dynamicClasses(condition: AST.Expression | null, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<TernaryExpression | null> {
   if (whenTrue && whenFalse) {
     return { condition, whenTrue, whenFalse };
   } else if (whenTrue) {

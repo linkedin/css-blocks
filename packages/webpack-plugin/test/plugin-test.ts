@@ -13,7 +13,7 @@ import { assert } from "chai";
 
 @suite("Plugin")
 export class PluginTest {
-  eachOutputFile(callback: (f:string) => void) {
+  eachOutputFile(callback: (f: string) => void) {
     let globPattern = path.join(DIST_DIRECTORY, 'test_output', "**", "*");
     glob.sync(globPattern).forEach((f) => {
       callback(f);

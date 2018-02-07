@@ -78,7 +78,7 @@ export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, fac
     // Babylon currently has...abysmal support for typescript. We need to transpile
     // it with the standard typescript library first.
     // TODO: When Typescript support lands in Babylon, remove this: https://github.com/babel/babylon/issues/320
-    if ( path.parse(template.identifier).ext === '.tsx') {
+    if (path.parse(template.identifier).ext === '.tsx') {
       let wat = typescript.transpileModule(template.data, {
         compilerOptions: {
           module: typescript.ModuleKind.ES2015,
@@ -210,7 +210,7 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
     this._blockFactory = this.cssBlocksOptions.factory || new BlockFactory(this.cssBlocksOptions);
   }
   analyze(): Promise<MetaAnalysis> {
-    if ( !this.entryPoint || !this.name ) {
+    if (!this.entryPoint || !this.name) {
       throw new JSXParseError('CSS Blocks JSX Analyzer must be passed an entry point and name.');
     }
     return parseFile(this.entryPoint, this.blockFactory, this.options);

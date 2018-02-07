@@ -49,7 +49,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
   return Promise.all(mappingPromises)
 
   // Once done, find mapping for this template, and add this plugin as a dependency.
-  .then( (styleMappings: Array<StyleMapping | void>): MappingAndAnalysis | undefined => {
+  .then((styleMappings: Array<StyleMapping | void>): MappingAndAnalysis | undefined => {
     for (let mapping of styleMappings) {
       if (!mapping) continue; // there was an error for that one.
       if (!mapping.analyses) continue; // the mapping wasn't analyzed. (doesn't happen in this integration)
@@ -76,7 +76,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
   })
 
   // Now that we have this template's block mapping, rewrite it.
-  .then( (mappingAndAnalysis): ASTPluginBuilder => {
+  .then((mappingAndAnalysis): ASTPluginBuilder => {
     let astPlugin: ASTPluginBuilder;
 
     if (mappingAndAnalysis) {

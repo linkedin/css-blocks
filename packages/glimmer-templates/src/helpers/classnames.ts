@@ -92,7 +92,7 @@ const enum BooleanExpr {
 }
 
 const e = (m: string): any => { throw new Error(m); };
-const number = (v: any[]): number => typeof v[0] === "number" ? v.shift() : e("not a number: " + (v[0] || "undefined") );
+const number = (v: any[]): number => typeof v[0] === "number" ? v.shift() : e("not a number: " + (v[0] || "undefined"));
 const string = (v: any[]): string => v.shift().toString();
 const truthyString = (v: any[]): string | undefined => {
   let s = v.shift();

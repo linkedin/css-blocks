@@ -108,7 +108,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   getElement<BooleanExpression, StringExpression, TernaryExpression>(idx: number): ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> {
     let mapIter = this.elements.entries();
     let el = mapIter.next().value;
-    for ( let i = 0; i < idx; i++) {
+    for (let i = 0; i < idx; i++) {
       el = mapIter.next().value;
     }
     return el[1];
@@ -303,7 +303,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     });
 
     // Serialize all discovered Elements.
-    this.elements.forEach( (el, key) => {
+    this.elements.forEach((el, key) => {
       elements[key] = el.serialize(styleIndexes);
     });
 
@@ -350,7 +350,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       });
 
       let elementNames = Object.keys(serializedAnalysis.elements);
-      elementNames.forEach( (elID) => {
+      elementNames.forEach((elID) => {
         let data = serializedAnalysis.elements[elID];
         let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, undefined, elID);
         analysis.elements.set(elID, element);

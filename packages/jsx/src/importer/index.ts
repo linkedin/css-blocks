@@ -40,7 +40,7 @@ interface BlockRegistry {
  */
 function throwIfRegistered(name: string, blockRegistry: BlockRegistry, loc: ErrorLocation){
   // TODO: Location reporting in errors.
-  if ( blockRegistry[name] ) {
+  if (blockRegistry[name]) {
     throw new TemplateImportError(`Block identifier "${name}" cannot be re-defined in any scope once imported.`, loc);
   }
 }
@@ -71,8 +71,8 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       let filePath = nodePath.node.source.value;
       let specifiers = nodePath.node.specifiers;
 
-      for ( let key in aliases ) {
-        if ( filePath.indexOf(key) === 0 ) {
+      for (let key in aliases) {
+        if (filePath.indexOf(key) === 0) {
           filePath = filePath.replace(key, aliases[key]);
           break;
         }
@@ -86,10 +86,10 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       // and typescript file extensions – require.resolve will not pick them up.
       let parsedPath = path.parse(absoluteFilePath);
       delete parsedPath.base;
-      if ( !parsedPath.ext ) {
+      if (!parsedPath.ext) {
         for (let key in VALID_FILE_EXTENSIONS) {
           parsedPath.ext = key;
-          if ( fs.existsSync(path.format(parsedPath)) ){
+          if (fs.existsSync(path.format(parsedPath))){
             break;
           }
           delete parsedPath.ext;
@@ -98,7 +98,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       absoluteFilePath = path.format(parsedPath);
 
       // If this is a jsx or tsx file, parse it with the same analysis object.
-      if ( fs.existsSync(absoluteFilePath) && VALID_FILE_EXTENSIONS[parsedPath.ext] ) {
+      if (fs.existsSync(absoluteFilePath) && VALID_FILE_EXTENSIONS[parsedPath.ext]) {
         debug(`Analyzing discovered dependency: ${absoluteFilePath}`);
         analysis.parent.analysisPromises.push(parseFileWith(absoluteFilePath, analysis.parent, blockFactory, options));
         return;
@@ -121,8 +121,8 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
         let isNamespace = isImportNamespaceSpecifier(specifier);
 
         // If is default import specifier, then fetch local name for block.
-        if (   isImportDefaultSpecifier(specifier) || isNamespace ||
-             ( isImportSpecifier(specifier) && specifier.imported.name === DEFAULT_IDENTIFIER ) ) {
+        if (isImportDefaultSpecifier(specifier) || isNamespace ||
+             (isImportSpecifier(specifier) && specifier.imported.name === DEFAULT_IDENTIFIER)) {
 
           localName = specifier.local.name;
           _localBlocks[localName] = 1;
@@ -132,7 +132,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
 
       // Try to fetch an existing Block Promise. If it does not exist, parse CSS Block.
       let res: Promise<Block> = analysis.parent.blockPromises[blockPath];
-      if ( !res ) {
+      if (!res) {
         res = blockFactory.getBlockFromPath(blockPath).catch((err) => {
           throw new TemplateImportError(`Error parsing block import "${filePath}". Failed with:\n\n"${err.message}"\n\n`, {
             filename: file.identifier,
@@ -144,7 +144,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       }
 
       // When block parsing is done, add to analysis object.
-      res.then((block) : Block => {
+      res.then((block): Block => {
         analysis.blocks[localName] = block;
         return block;
       })

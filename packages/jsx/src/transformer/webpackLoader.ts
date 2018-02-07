@@ -57,11 +57,11 @@ export function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void 
   .then((mappings: StyleMapping[]) => {
     mappings.forEach((mapping: StyleMapping) => {
       // When an css or analysis error happens the mapping seems to be undefined and generates a confusing error.
-      let styleMapping: StyleMapping | undefined = mapping && mapping.analyses && mapping.analyses.find(a => a.template.identifier === path ) && mapping;
-      if ( !styleMapping ) {
+      let styleMapping: StyleMapping | undefined = mapping && mapping.analyses && mapping.analyses.find(a => a.template.identifier === path) && mapping;
+      if (!styleMapping) {
         return;
       }
-      for ( let key in styleMapping.blocks ) {
+      for (let key in styleMapping.blocks) {
         let block = styleMapping.blocks[key];
         trackBlockDependencies(this, block, cssBlockOpts);
       }

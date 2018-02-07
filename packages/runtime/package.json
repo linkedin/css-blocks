@@ -12,7 +12,8 @@
     "test": "echo 'tested in @css-blocks/jsx'",
     "build": "rm -rf dist && tsc",
     "prepublish": "npm run build",
-    "lint": "tslint --project tsconfig.json"
+    "lint": "tslint --project tsconfig.json",
+    "lintfix": "tslint --project tsconfig.json --fix"
   },
   "repository": {
     "type": "git",

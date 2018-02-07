@@ -60,7 +60,7 @@ export function objstrFn(binding: Binding, funcDef: ImportDeclaration): ObjStrSt
   return;
 }
 
-export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXElementAnalysis, filename: string, styleFn: ObjStrStyleFunction, func: CallExpression ) {
+export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXElementAnalysis, filename: string, styleFn: ObjStrStyleFunction, func: CallExpression) {
 
   // Location object for error reporting
   let loc = {
@@ -71,7 +71,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
 
   // Ensure the first argument passed to suspected `objstr` call is an object.
   let obj: any = func.arguments[0];
-  if ( !isObjectExpression(obj) ) {
+  if (!isObjectExpression(obj)) {
     throw new TemplateAnalysisError(`First argument passed to "objstr" call must be an object literal.`, {filename, ...func.loc.start});
   }
 
@@ -82,7 +82,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
   for (let prop of obj.properties) {
 
     // Ignore non computed properties, they will never be blocks objects.
-    if ( !isObjectProperty(prop) || prop.computed === false ) {
+    if (!isObjectProperty(prop) || prop.computed === false) {
       foundNonBlockObj = true;
       if (foundBlockObj) {
         throw new TemplateAnalysisError(`Cannot mix class names with block styles.`, {filename, ...prop.loc.start});
@@ -114,7 +114,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
       if (rightHandLiteral) {
         // It's set to true or false
         if (rightHandLiteral.value) {
-          if ( isSpreadElement(result.dynamicStateExpression) ) {
+          if (isSpreadElement(result.dynamicStateExpression)) {
             throw new TemplateAnalysisError('The spread operator is not allowed in CSS Block states.', {filename, ...result.dynamicStateExpression.loc.start});
           } else {
             // if truthy, the only dynamic expr is from the state selector.

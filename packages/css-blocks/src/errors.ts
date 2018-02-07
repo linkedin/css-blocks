@@ -22,7 +22,7 @@ export class CssBlockError extends Error {
 
   private annotatedMessage() {
     let loc = this.location;
-    if ( !loc ) {
+    if (!loc) {
       return this.origMessage;
     }
     let filename = loc.filename || '';

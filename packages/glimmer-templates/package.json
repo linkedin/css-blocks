@@ -15,6 +15,7 @@
     "pretest": "npm run compile && npm run lint",
     "prepublish": "npm run compile",
     "lint": "tslint --project tsconfig.json",
+    "lintfix": "tslint --project tsconfig.json --fix",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs .",

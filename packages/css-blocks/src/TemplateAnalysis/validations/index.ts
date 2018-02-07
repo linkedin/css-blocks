@@ -65,14 +65,14 @@ export class TemplateValidator {
 
     // For each item in options, push all built-in and user-provided validators
     // to our validators list to await template processing.
-    for ( let key in opts ) {
-      if ( opts[key] instanceof Function) {
+    for (let key in opts) {
+      if (opts[key] instanceof Function) {
         this.validators.push(opts[key] as Validator);
       }
-      else if ( !VALIDATORS[key] ) {
+      else if (!VALIDATORS[key]) {
         throw new errors.CssBlockError(`Can not find template validator "${key}".`);
       }
-      else if ( opts[key] && VALIDATORS[key] ) {
+      else if (opts[key] && VALIDATORS[key]) {
         this.validators.push(VALIDATORS[key]);
       }
     }
@@ -84,14 +84,14 @@ export class TemplateValidator {
    * @param correlations The correlations object for a given element.
    * @param locInfo Location info for the elements being validated.
    */
-  validate( templateAnalysis: StyleAnalysis, element: ElementAnalysis<any, any, any> ) {
+  validate(templateAnalysis: StyleAnalysis, element: ElementAnalysis<any, any, any>) {
 
-    function err ( message: string, locInfo?: errors.ErrorLocation | undefined | null ) {
+    function err (message: string, locInfo?: errors.ErrorLocation | undefined | null) {
       throw new errors.TemplateAnalysisError(
         message, locInfo || element.sourceLocation.start);
     }
 
-    this.validators.forEach(( func ) => {
+    this.validators.forEach((func) => {
       func(element, templateAnalysis, err);
     });
 

@@ -378,7 +378,7 @@ export class BlockParser {
       let localName = md[2];
 
       // Validate our imported block name is a valid CSS identifier.
-      if ( !CLASS_NAME_IDENT.test(localName) ) {
+      if (!CLASS_NAME_IDENT.test(localName)) {
         throw new errors.InvalidBlockSyntax(`Illegal block name in import. ${localName} is not a legal CSS identifier.`, sourceLocation(sourceFile, atRule));
       }
 
@@ -737,7 +737,7 @@ export class BlockParser {
       }
 
       // Class level objects cannot be ancestors of root level objects
-      if (    this.isClassLevelObject(currentObject)
+      if (this.isClassLevelObject(currentObject)
            && this.isRootLevelObject(nextObject)
            && SIBLING_COMBINATORS.has(combinator)){
           throw new errors.InvalidBlockSyntax(
