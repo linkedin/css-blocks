@@ -69,6 +69,12 @@
       "check-type",
       "check-type-operator",
       "check-preblock"
+    ],
+    "variable-name": [
+      true,
+      "check-format",
+      "ban-keywords",
+      "allow-leading-underscore"
     ]
   }
 }

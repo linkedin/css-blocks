@@ -47,8 +47,8 @@ export class ResolvedFile implements TemplateInfo<"GlimmerTemplates.ResolvedFile
       ]
     };
   }
-  static deserialize(identifier, string, fullPath): ResolvedFile {
-    return new ResolvedFile(string, identifier, fullPath);
+  static deserialize(identifier, str, fullPath): ResolvedFile {
+    return new ResolvedFile(str, identifier, fullPath);
   }
 }
 
