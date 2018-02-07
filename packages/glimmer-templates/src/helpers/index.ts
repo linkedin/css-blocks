@@ -26,12 +26,12 @@ export const cssBlocksHelpers = {
     kind: 'helper',
     module: '@css-blocks/glimmer-templates/dist/src/helpers',
     name: 'concat',
-    meta: { factory: false }
+    meta: { factory: false },
   },
   '/css-blocks/components/classnames': {
     kind: 'helper',
     module: '@css-blocks/glimmer-templates/dist/src/helpers',
     name: 'classnames',
-    meta: { factory: false }
-  }
+    meta: { factory: false },
+  },
 };

@@ -36,7 +36,7 @@ export class MockImporter extends PathBasedImporter {
           syntax: Syntax.css,
           identifier: resolvedPath,
           defaultName: this.defaultName(resolvedPath, options),
-          contents: contents
+          contents: contents,
         });
       } else {
         let importedFiles = Object.keys(this.registry.sources).join(", ");

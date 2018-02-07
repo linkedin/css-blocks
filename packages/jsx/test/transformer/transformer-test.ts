@@ -32,13 +32,13 @@ function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partia
     let babelResult = babel.transform(code, {
       filename: filename,
       plugins: [
-        makePlugin({rewriter})
+        makePlugin({rewriter}),
       ],
-      parserOpts: { plugins: [ 'jsx' ] }
+      parserOpts: { plugins: [ 'jsx' ] },
     });
     return {
       jsx: babelResult,
-      css: result
+      css: result,
     };
   });
 
@@ -54,7 +54,7 @@ export class Test {
     mock({
       'bar.block.css': `
         .root { color: blue; }
-      `
+      `,
     });
 
     let code = `
@@ -85,7 +85,7 @@ export class Test {
         .pretty[state|color=yellow] {
           color: yellow;
         }
-      `
+      `,
     });
 
     let code = `
@@ -109,7 +109,7 @@ export class Test {
           import c$$ from '@css-blocks/runtime';
           import objstr from 'obj-str';
           let isDynamic = true;
-          <div class={c$$("a", [1, 1, 2, isDynamic, 1, 0, 'b', 0])}></div>;`
+          <div class={c$$("a", [1, 1, 2, isDynamic, 1, 0, 'b', 0])}></div>;`,
         ));
         assert.deepEqual(c$$('a', [1, 1, 2, true, 1, 0, 'b', 0]), 'a b');
       });
@@ -124,7 +124,7 @@ export class Test {
         .pretty[state|color=true] {
           color: yellow;
         }
-      `
+      `,
     });
 
     let code = `
@@ -145,7 +145,7 @@ export class Test {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
-          <div class="a b"></div>;`)
+          <div class="a b"></div>;`),
         );
       });
     });
@@ -159,7 +159,7 @@ export class Test {
         .pretty[state|color=100] {
           color: yellow;
         }
-      `
+      `,
     });
 
     let code = `
@@ -197,7 +197,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     let code = `
@@ -227,7 +227,7 @@ export class Test {
           let leSigh = true;
 
           <div class="a">
-          <div class={c$$("b",[1,2,4,2,1,leSigh&&dynamic,"yellow",1,1,"green",1,0,"d",0,"c",1])}></div></div>;`)
+          <div class={c$$("b",[1,2,4,2,1,leSigh&&dynamic,"yellow",1,1,"green",1,0,"d",0,"c",1])}></div></div>;`),
         );
         let leSigh = true;
         let dynamic = 'green';
@@ -245,7 +245,7 @@ export class Test {
         .pretty[state|color=yellow] {
           color: yellow;
         }
-      `
+      `,
     });
 
     let code = `
@@ -278,7 +278,7 @@ export class Test {
             ])}
           />
         </div>;
-          `)
+          `),
         );
         let leSigh = true;
         let dynamic = 'yellow';
@@ -300,7 +300,7 @@ export class Test {
         .pretty[state|color=greenColor] {
           color: green;
         }
-      `
+      `,
     });
 
     let code = `
@@ -333,7 +333,7 @@ export class Test {
         <div class="a">
           <div class={c$$("b", [1,2,4,2,1,conditional() && \`\${dynamic}Color\`,
                                 "yellowColor",1,1,"greenColor",1,0,"d",0,"c",1])} />
-        </div>;`)
+        </div>;`),
         );
         function conditional() { return true; }
         let dynamic = 'yellow';
@@ -353,7 +353,7 @@ export class Test {
       'foo.block.css': `
         .root { color: white; }
         .pretty { color: black; }
-      `
+      `,
     });
 
     let code = `
@@ -381,7 +381,7 @@ export class Test {
         .root { color: red; }
         .foo { color: blue; }
         .foo[state|happy] { color: balloons; }
-      `
+      `,
     });
 
     let code = `
@@ -424,7 +424,7 @@ export class Test {
       'foo.block.css': `
         .root { }
         [state|cool] { }
-      `
+      `,
     });
 
     let code = `
@@ -452,7 +452,7 @@ export class Test {
   @test 'Left over references to the block are an error'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }',
-      'foo.block.css': '.root { font-family: sans-serif; } .big { font-size: 28px; }'
+      'foo.block.css': '.root { font-family: sans-serif; } .big { font-size: 28px; }',
     });
 
     let code = `

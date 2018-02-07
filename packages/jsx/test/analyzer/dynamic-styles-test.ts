@@ -20,7 +20,7 @@ export class Test {
         .equality { color: blue; }
         .bool { color: blue; }
         .new { color: blue; }
-      `
+      `,
     });
 
     return parse(`
@@ -39,7 +39,7 @@ export class Test {
                  <div class={boolStyle}></div>
                  <div class={newStyle}></div></div>
                );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -60,7 +60,7 @@ export class Test {
         .equality { color: blue; }
         .bool { color: blue; }
         .new { color: blue; }
-      `
+      `,
     });
 
     return parse(`
@@ -74,7 +74,7 @@ export class Test {
                  <div class={objstr({ [bar.bool]: val && val })}></div>
                  <div class={objstr({ [bar.new]: new Object() })}></div></div>
                );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -92,7 +92,7 @@ export class Test {
       'foo.block.css': `
         .root { }
         [state|cool=foo] { }
-      `
+      `,
     });
 
     let code = `

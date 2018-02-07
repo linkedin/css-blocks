@@ -18,12 +18,12 @@ export function addSourceLocations(...locations: SourceLocation[]) {
     if (o.line === 1) {
       return {
         line: l.line,
-        column: l.column + o.column - 1
+        column: l.column + o.column - 1,
       };
     } else {
       return {
         line: l.line + o.line - 1,
-        column: o.column
+        column: o.column,
       };
     }
   });
@@ -42,7 +42,7 @@ export function sourceLocation(sourceFile: string, node: postcss.Node): SourceLo
     return {
       filename: sourceFile,
       line: loc.line,
-      column: loc.column
+      column: loc.column,
     };
   }
   return;
@@ -62,7 +62,7 @@ export function selectorSourceLocation(sourceFile: string, rule: postcss.Rule, s
     return {
       filename: sourceFile,
       line: loc.line,
-      column: loc.column
+      column: loc.column,
     };
   }
   return;

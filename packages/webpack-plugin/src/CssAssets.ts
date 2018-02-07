@@ -325,7 +325,7 @@ function sourceAndMap(asset: Source): SourceAndMap {
 }
 
 function makePostcssProcessor (
-    plugins: PostcssProcessor
+    plugins: PostcssProcessor,
 ): GenericProcessor {
     return (asset: Source, assetPath: string) => {
         let { source, map } = sourceAndMap(asset);
@@ -343,7 +343,7 @@ function makePostcssProcessor (
             let processor = postcss(plugins);
             let result = processor.process(source, {
                 to: assetPath,
-                map: { prev: map, inline: false, annotation: false }
+                map: { prev: map, inline: false, annotation: false },
             });
 
             return result.then((result) => {

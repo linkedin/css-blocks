@@ -8,7 +8,7 @@ import {
   BlockFactory,
   MultiTemplateAnalyzer,
   PluginOptions as CssBlocksOptions,
-  PluginOptionsReader as CssBlocksOptionsReader
+  PluginOptionsReader as CssBlocksOptionsReader,
 } from 'css-blocks';
 import * as typescript from 'typescript';
 
@@ -57,10 +57,10 @@ const defaultOptions: JSXAnalyzerOptions = {
       'asyncGenerators',
       'functionBind',
       'functionSent',
-      'dynamicImport'
-    ]
+      'dynamicImport',
+    ],
   },
-  aliases: {}
+  aliases: {},
 };
 
 export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, factory: BlockFactory, opts: Partial<JSXAnalyzerOptions> = {}): Promise<Analysis> {
@@ -83,8 +83,8 @@ export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, fac
         compilerOptions: {
           module: typescript.ModuleKind.ES2015,
           jsx: typescript.JsxEmit.Preserve,
-          target: typescript.ScriptTarget.Latest
-        }
+          target: typescript.ScriptTarget.Latest,
+        },
       });
       template.data = wat.outputText;
     }
@@ -233,5 +233,5 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
 // tslint:disable-next-line:no-default-export
 export default {
   Analyzer: CSSBlocksJSXAnalyzer,
-  Rewriter: CSSBlocksJSXTransformer
+  Rewriter: CSSBlocksJSXTransformer,
 };

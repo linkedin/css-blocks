@@ -6,7 +6,7 @@ import { TemplateAnalysis } from '../TemplateAnalysis';
 import { ElementAnalysis } from '../TemplateAnalysis/ElementAnalysis';
 
 import {
-  IndexedClassRewrite
+  IndexedClassRewrite,
 } from "./ClassRewrite";
 import { IndexedClassMapping, RewriteMapping } from './RewriteMapping';
 export class StyleMapping {

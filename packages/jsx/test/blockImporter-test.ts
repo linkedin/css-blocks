@@ -73,7 +73,7 @@ export class Test {
   @test 'imports for multiple css-block files are registered'() {
     mock({
       'bar.block.css': '.root { color: red; }',
-      'baz.block.css': '.root { color: blue; }'
+      'baz.block.css': '.root { color: blue; }',
     });
     return parse(`
       import * as bar from 'bar.block.css';
@@ -88,7 +88,7 @@ export class Test {
   @test 'imported blocks may be renamed locally'() {
     mock({
       'bar.block.css': '.root { color: red; }',
-      'baz.block.css': '.root { color: blue; }'
+      'baz.block.css': '.root { color: blue; }',
     });
     return parse(`
       import * as foo from 'bar.block.css';
@@ -102,7 +102,7 @@ export class Test {
 
   @test 'block identifiers may not be re-declaired elsewhere in the file – Function Declaration'() {
     mock({
-      'baz.block.css': '.root { color: blue; }'
+      'baz.block.css': '.root { color: blue; }',
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -118,7 +118,7 @@ export class Test {
 
   @test 'block identifiers may not be re-declaired elsewhere in the file – Variable Declaration'() {
     mock({
-      'baz.block.css': '.root { color: blue; }'
+      'baz.block.css': '.root { color: blue; }',
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -134,7 +134,7 @@ export class Test {
 
   @test 'block identifiers may not be re-declaired elsewhere in the file – Class Name'() {
     mock({
-      'baz.block.css': '.root { color: blue; }'
+      'baz.block.css': '.root { color: blue; }',
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -150,7 +150,7 @@ export class Test {
 
   @test 'block identifiers may not be re-declaired elsewhere in the file – Function Param'() {
     mock({
-      'baz.block.css': '.root { color: blue; }'
+      'baz.block.css': '.root { color: blue; }',
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -166,7 +166,7 @@ export class Test {
 
   @test 'block identifiers may not be re-declaired elsewhere in the file – Class Method Param'() {
     mock({
-      'baz.block.css': '.root { color: blue; }'
+      'baz.block.css': '.root { color: blue; }',
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -182,7 +182,7 @@ export class Test {
 
   @test 'block identifiers may not be re-declaired elsewhere in the file – Object Method Param'() {
     mock({
-      'baz.block.css': '.root { color: blue; }'
+      'baz.block.css': '.root { color: blue; }',
     });
     return parse(`
       import biz from 'baz.block.css';

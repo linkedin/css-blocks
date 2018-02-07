@@ -1,9 +1,9 @@
 import {
   ASTPluginBuilder,
-  ASTPluginEnvironment
+  ASTPluginEnvironment,
 } from "@glimmer/syntax";
 import {
-  isTemplateType
+  isTemplateType,
 } from "@opticss/template-api";
 import {
   Block,
@@ -68,7 +68,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
         trackBlockDependencies(loaderContext, a.transitiveBlockDependencies(), options);
         return {
           mapping,
-          analysis: a
+          analysis: a,
         };
       }
     }
@@ -87,15 +87,15 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
             visitor: {
               ElementNode(node) {
                 rewriter.ElementNode(node);
-              }
-            }
+              },
+            },
           };
         };
     } else {
       astPlugin = (_env: ASTPluginEnvironment) => {
         return {
           name: "css-blocks-noop",
-          visitor: {}
+          visitor: {},
         };
       };
     }

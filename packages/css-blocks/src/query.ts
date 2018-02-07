@@ -4,7 +4,7 @@ import {
 } from "@opticss/element-analysis";
 import {
   ClassifiedParsedSelectors,
-  QueryKeySelector as QueryKeySelectorImpl
+  QueryKeySelector as QueryKeySelectorImpl,
 } from "opticss";
 import postcss = require("postcss");
 

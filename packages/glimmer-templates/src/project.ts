@@ -1,7 +1,7 @@
 import {
   BlockFactory,
   PluginOptions,
-  PluginOptionsReader
+  PluginOptionsReader,
 } from "css-blocks";
 import * as fs from 'fs';
 import * as glob from 'glob';
@@ -39,14 +39,14 @@ export class Project implements GlimmerProject {
       ...(moduleConfig || MODULE_CONFIG),
       app: {
         name,
-        rootName: name
-      }
+        rootName: name,
+      },
     };
 
     let map = this.map = buildResolutionMap({
       projectDir,
       moduleConfig: config,
-      modulePrefix: name
+      modulePrefix: name,
     });
 
     this.registry = new BasicModuleRegistry(map);
@@ -83,7 +83,7 @@ export class Project implements GlimmerProject {
     if (paths.length > 0) {
       return {
         fullPath: paths[0],
-        specifier: specifier
+        specifier: specifier,
       };
     } else {
       return null;

@@ -10,16 +10,16 @@ export function config(entry: string, options?: LoaderOptions): WebpackConfigura
   const baseConfig: WebpackConfiguration = {
       entry: entry,
       output: {
-          filename: "bundle.block.css.js"
+          filename: "bundle.block.css.js",
       },
       module: {
           rules: [{
               test: /\.block\.css$/,
               use: [
                   { loader: "raw-loader" },
-                  { loader: BLOCK_LOADER_PATH, options }
-              ]
-          }]
+                  { loader: BLOCK_LOADER_PATH, options },
+              ],
+          }],
       },
   };
   return merge(defaultOutputConfig(), baseConfig);

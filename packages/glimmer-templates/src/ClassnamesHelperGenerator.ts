@@ -30,7 +30,7 @@ import {
   NotExpression,
   OrExpression,
   Style,
-  Switch
+  Switch,
 } from "css-blocks";
 import * as debugGenerator from 'debug';
 
@@ -45,7 +45,7 @@ const debug = debugGenerator("css-blocks:glimmer");
 export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: TemplateElement): AST.MustacheStatement {
   return builders.mustache(
     builders.path('/css-blocks/components/classnames'),
-    constructArgs(rewrite, element)
+    constructArgs(rewrite, element),
   );
 }
 

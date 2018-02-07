@@ -35,7 +35,7 @@ export class JSXTemplate implements TemplateInfo<'Opticss.JSXTemplate'> {
     return {
       type: this.type,
       identifier: this.identifier,
-      data: [ this.data ]
+      data: [ this.data ],
     };
   }
 }

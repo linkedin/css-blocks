@@ -9,7 +9,7 @@ export function config(outputPath?: string): WebpackConfiguration {
     output: {
             path: outputPath,
             filename: "bundle.js",
-            libraryTarget: "commonjs2"
-        }
+            libraryTarget: "commonjs2",
+        },
   };
 }

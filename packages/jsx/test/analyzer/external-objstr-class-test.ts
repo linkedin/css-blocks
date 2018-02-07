@@ -18,7 +18,7 @@ export class Test {
         .root { color: red; }
         .foo { color: blue; }
         .foo[state|happy] { color: balloons; }
-      `
+      `,
     });
 
     return parse(`
@@ -36,7 +36,7 @@ export class Test {
         element.className = bar;
         element.className = style;
       }
-    `
+    `,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -61,7 +61,7 @@ export class Test {
 
   @test 'Classes on objstr calls are tracked when applied'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -73,7 +73,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `
+    `,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -87,7 +87,7 @@ export class Test {
 
   @test 'Empty objstr calls throw'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -97,7 +97,7 @@ export class Test {
       let style = objstr();
 
       <div class={style}></div>;
-    `
+    `,
     ).catch((err: Error) => {
       assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
     });
@@ -105,7 +105,7 @@ export class Test {
 
   @test 'Objstr calls with non-object-literal input throw'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -115,7 +115,7 @@ export class Test {
       let style = objstr(foobar);
 
       <div class={style}></div>;
-    `
+    `,
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
     },     (err) => {
@@ -125,7 +125,7 @@ export class Test {
 
   @test 'Multiple classes from the same block on objstr calls are an error.'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; } .baz { color: red; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; } .baz { color: red; }',
     });
 
     return parse(`
@@ -138,7 +138,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `
+    `,
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
     },     (err) => {
@@ -149,7 +149,7 @@ export class Test {
   @test 'Multiple classes from different blocks on objstr calls are tracked when applied'() {
     mock({
       'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
-      'bar.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }'
+      'bar.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
     });
 
     return parse(`
@@ -163,7 +163,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `
+    `,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -190,7 +190,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `
+    `,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -204,7 +204,7 @@ export class Test {
 
   @test 'Objstr function name may be renamed at import'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -216,7 +216,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `
+    `,
   ).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 1);
@@ -225,7 +225,7 @@ export class Test {
 
   @test 'Objstr call throws if objstr is not imported'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -236,7 +236,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `
+    `,
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
     },     (err) => {
@@ -246,7 +246,7 @@ export class Test {
 
   @test 'cannot set objstr to a new function'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -260,7 +260,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `
+    `,
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
     },     (err) => {
@@ -270,7 +270,7 @@ export class Test {
 
   @test 'Overly complex expressions to reference a CSS Block throw'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -285,7 +285,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `
+    `,
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
     },     (err) => {
@@ -295,7 +295,7 @@ export class Test {
 
   @test 'Objstr lookup understands scope'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -310,7 +310,7 @@ export class Test {
         let style = 'foo';
         <div class={style}></div>;
       }
-    `
+    `,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];

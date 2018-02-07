@@ -87,7 +87,7 @@ export class ExpressionReader {
     this.loc = {
       filename,
       line: expression.loc.start.line,
-      column: expression.loc.start.column
+      column: expression.loc.start.column,
     };
 
     this.pathExpression = parsePathExpression(expression, this.loc);

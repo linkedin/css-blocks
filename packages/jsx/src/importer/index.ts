@@ -9,7 +9,7 @@ import {
   isImportNamespaceSpecifier,
   isImportSpecifier,
   VariableDeclaration,
-  VariableDeclarator
+  VariableDeclarator,
 } from 'babel-types';
 import { Block, BlockFactory } from 'css-blocks';
 import * as debugGenerator from 'debug';
@@ -25,7 +25,7 @@ const debug = debugGenerator('css-blocks:jsx');
 
 const DEFAULT_IDENTIFIER = 'default';
 const VALID_FILE_EXTENSIONS = {
-  '.jsx': 1, '.tsx': 1
+  '.jsx': 1, '.tsx': 1,
 };
 
 interface BlockRegistry {
@@ -136,7 +136,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
           throw new TemplateImportError(`Error parsing block import "${filePath}". Failed with:\n\n"${err.message}"\n\n`, {
             filename: file.identifier,
             line: nodePath.node.loc.start.line,
-            column: nodePath.node.loc.start.column
+            column: nodePath.node.loc.start.column,
           });
         });
         analysis.parent.blockPromises[blockPath] = res;
@@ -164,7 +164,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
         throwIfRegistered(decl.id.name, _localBlocks, {
           filename: analysis.template.identifier,
           line: path.node.loc.start.line,
-          column: path.node.loc.start.column
+          column: path.node.loc.start.column,
         });
       });
     },
@@ -177,7 +177,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       throwIfRegistered(path.node.id.name, _localBlocks, {
         filename: analysis.template.identifier,
         line: path.node.loc.start.line,
-        column: path.node.loc.start.column
+        column: path.node.loc.start.column,
       });
     },
 
@@ -189,7 +189,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
         throwIfRegistered(node.id.name, _localBlocks, {
           filename: analysis.template.identifier,
           line: path.node.loc.start.line,
-          column: path.node.loc.start.column
+          column: path.node.loc.start.column,
         });
       }
 
@@ -197,9 +197,9 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
         throwIfRegistered(param.name, _localBlocks, {
           filename: analysis.template.identifier,
           line: path.node.loc.start.line,
-          column: path.node.loc.start.column
+          column: path.node.loc.start.column,
         });
       });
-    }
+    },
   };
 }

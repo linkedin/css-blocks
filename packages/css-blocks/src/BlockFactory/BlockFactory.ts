@@ -162,7 +162,7 @@ export class BlockFactory implements IBlockFactory {
           parseResult: result,
           originalSource: file.contents,
           originalSyntax: file.syntax,
-          dependencies: preprocessedResult.dependencies || []
+          dependencies: preprocessedResult.dependencies || [],
         };
         return this.parser.parseSource(source).then(block => {
           return block;
@@ -232,7 +232,7 @@ export class BlockFactory implements IBlockFactory {
               return {
                 content: result2.content,
                 sourceMap: sourceMapFromProcessedFile(result2),
-                dependencies: (result.dependencies || []).concat(result2.dependencies || [])
+                dependencies: (result.dependencies || []).concat(result2.dependencies || []),
               };
             });
           });

@@ -24,7 +24,7 @@ export enum BlockType {
   root = 1,
   state,
   class,
-  classState
+  classState,
 }
 
 export interface NodeAndType {
@@ -70,7 +70,7 @@ export function isClassNode(node: selectorParser.Node): node is selectorParser.C
  */
 export function stateParser(attr: selectorParser.Attribute): StateInfo {
   let info: StateInfo = {
-    name: attr.attribute
+    name: attr.attribute,
   };
   if (attr.value) {
     info.group = info.name;
@@ -434,7 +434,7 @@ export class BlockParser {
       return {
         blockName: blockName && blockName.value,
         blockType: BlockType.root,
-        node: n
+        node: n,
       };
     }
     n = sel.nodes.find(n => isStateNode(n));
@@ -444,13 +444,13 @@ export class BlockParser {
         return {
           blockName: blockName && blockName.value,
           blockType: BlockType.classState,
-          node: n
+          node: n,
         };
       } else {
         return {
           blockName: blockName && blockName.value,
           blockType: BlockType.state,
-          node: n
+          node: n,
         };
       }
     }
@@ -459,7 +459,7 @@ export class BlockParser {
       return {
         blockName: blockName && blockName.value,
         blockType: BlockType.class,
-        node: n
+        node: n,
       };
     } else {
       return null;
@@ -516,7 +516,7 @@ export class BlockParser {
         if (found === null) {
           found = {
             blockType: BlockType.root,
-            node: n
+            node: n,
           };
         } else {
           if (found.blockType === BlockType.class || found.blockType === BlockType.classState) {
@@ -538,12 +538,12 @@ export class BlockParser {
         if (!found) {
           found = {
             node: n,
-            blockType: BlockType.state
+            blockType: BlockType.state,
           };
         } else if (found.blockType === BlockType.class) {
           found = {
             node: n,
-            blockType: BlockType.classState
+            blockType: BlockType.classState,
           };
         } else if (found.blockType === BlockType.root) {
             throw new errors.InvalidBlockSyntax(
@@ -558,7 +558,7 @@ export class BlockParser {
         if (!found) {
           found = {
             node: n,
-            blockType: BlockType.class
+            blockType: BlockType.class,
           };
         } else {
           if (found.blockType === BlockType.root) {
@@ -595,7 +595,7 @@ export class BlockParser {
       return {
         blockName: blockName && blockName.value,
         blockType: result.blockType,
-        node: result.node
+        node: result.node,
       };
     }
   }

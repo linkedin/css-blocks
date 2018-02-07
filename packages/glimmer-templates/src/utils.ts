@@ -19,7 +19,7 @@ export function parseSpecifier(specifier: string): { componentType: string; comp
   if (/^(component|template|stylesheet):(.*)$/.test(specifier)) {
     return {
       componentType: RegExp.$1,
-      componentName: RegExp.$2
+      componentName: RegExp.$2,
     };
   } else {
     return null;
@@ -30,6 +30,6 @@ export function cssBlockError(message: string, node: AST.Node, template: Templat
   return new CssBlockError(message, {
     filename: node.loc.source || template.identifier,
     line: node.loc.start.line,
-    column: node.loc.start.column
+    column: node.loc.start.column,
   });
 }

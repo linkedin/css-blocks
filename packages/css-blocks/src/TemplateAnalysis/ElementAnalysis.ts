@@ -561,14 +561,14 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     let serialization: SerializedElementAnalysis = {
       staticStyles,
       dynamicClasses,
-      dynamicStates
+      dynamicStates,
     };
     if (this.tagName) {
       serialization.tagName = this.tagName;
     }
     if (this.sourceLocation.start.line !== POSITION_UNKNOWN.line) {
       serialization.sourceLocation = {
-        start: { line: this.sourceLocation.start.line }
+        start: { line: this.sourceLocation.start.line },
       };
       if (this.sourceLocation.start.column) {
         serialization.sourceLocation.start.column = this.sourceLocation.start.column;
@@ -578,7 +578,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       }
       if (this.sourceLocation.end) {
         serialization.sourceLocation.end = {
-          line: this.sourceLocation.end.line
+          line: this.sourceLocation.end.line,
         };
         if (this.sourceLocation.end.column) {
           serialization.sourceLocation.end.column = this.sourceLocation.end.column;
@@ -654,7 +654,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       tagName,
       [new Attribute("class", classValue)],
       this.sourceLocation,
-      this.id
+      this.id,
     );
     return [element, classMap];
   }
@@ -722,7 +722,7 @@ function dynamicClassAndDependentStates(
   depStatesMap: MultiMap<BlockClass, DynamicStates<any, any>>,
   dynStatesHandled: Set<DynamicStates<any, any>>,
   mapper: ClassMapper,
-  choices: ChoiceMapper
+  choices: ChoiceMapper,
 ): AttributeValueSet | ValueConstant {
   let classValues = new Array<AttributeValueSetItem>();
   for (let klass of classes) {
@@ -751,7 +751,7 @@ function dynamicClassAndDependentStates(
 
 function addToSet(
   setItems: Array<AttributeValueSetItem>,
-  value: ValueConstant | AttributeValueSet
+  value: ValueConstant | AttributeValueSet,
 ): Array<AttributeValueSetItem> {
   if (isConstant(value)) {
     setItems.push(value);
@@ -765,7 +765,7 @@ type ClassMapper = (style: Style) => ValueConstant | AttributeValueSet;
 function mapClasses(
   options: CssBlocksOptionsReader,
   map: Map<string, Style>,
-  style: Style
+  style: Style,
 ): ValueConstant | AttributeValueSet {
   let classes = new Array<string>();
   let resolvedStyles = style.resolveStyles();
@@ -786,7 +786,7 @@ function mapChoiceClasses(
   options: CssBlocksOptionsReader,
   map: Map<string, Style>,
   includeAbsent: boolean,
-  ...styles: Style[]
+  ...styles: Style[],
 ): AttributeValueChoice {
   let choices = new Array<AttributeValueChoiceOption>();
   if (includeAbsent) {
@@ -802,7 +802,7 @@ function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Sty
   let classes: SerializedDynamicContainer = {
     condition: true,
     whenFalse: [],
-    whenTrue: []
+    whenTrue: [],
   };
   if (isTrueCondition(c)) {
     classes.whenTrue = c.whenTrue.map(s => styleIndexes.get(s)!).sort();

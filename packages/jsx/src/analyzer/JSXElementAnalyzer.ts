@@ -1,8 +1,8 @@
 import {
   SourceLocation as TemplateSourceLocation,
-  SourcePosition as TemplateSourcePosition
+  SourcePosition as TemplateSourcePosition,
 } from '@opticss/element-analysis';
-import { ObjectDictionary, } from '@opticss/util';
+import { ObjectDictionary } from '@opticss/util';
 import { Binding, NodePath } from 'babel-traverse';
 import {
   AssignmentExpression,
@@ -39,7 +39,7 @@ export class JSXElementAnalyzer {
     this.filename = filename;
     this.classProperties = {
       class: true,
-      className: true
+      className: true,
     };
   }
 

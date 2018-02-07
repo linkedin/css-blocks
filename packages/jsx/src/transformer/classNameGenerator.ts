@@ -36,7 +36,7 @@ import {
   NotExpression,
   OrExpression,
   Style,
-  Switch
+  Switch,
 } from 'css-blocks';
 
 import {

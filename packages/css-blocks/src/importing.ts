@@ -2,10 +2,10 @@ import * as fs from "fs";
 import * as path from "path";
 
 import {
-  CssBlockOptionsReadonly
+  CssBlockOptionsReadonly,
 } from "./options";
 import {
-  Syntax
+  Syntax,
 } from "./preprocessing";
 
 declare module "./options" {
@@ -153,7 +153,7 @@ export class FilesystemImporter extends PathBasedImporter {
             syntax: this.syntax(identifier, options),
             identifier: identifier,
             defaultName: this.defaultName(identifier, options),
-            contents: data
+            contents: data,
           });
         }
       });

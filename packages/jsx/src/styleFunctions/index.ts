@@ -40,7 +40,7 @@ export function isStyleFunction(path: NodePath<Node>, expression: CallExpression
         type: 'error',
         canIgnore: false,
         message: `Undefined function for styling: ${expression.callee.name}`,
-        location: expression.callee.loc.start
+        location: expression.callee.loc.start,
       };
     }
   }
@@ -49,7 +49,7 @@ export function isStyleFunction(path: NodePath<Node>, expression: CallExpression
       type: 'error',
       canIgnore: true,
       message: `unexpected function for styling`,
-      location: expression.callee.loc.start
+      location: expression.callee.loc.start,
     };
   }
   let funcDef = binding.path.parent;
@@ -61,14 +61,14 @@ export function isStyleFunction(path: NodePath<Node>, expression: CallExpression
         type: 'error',
         canIgnore: true,
         message: 'style function is not an import',
-        location: funcDef.loc.start
+        location: funcDef.loc.start,
       };
     } else if (binding.constantViolations.length > 0) {
       return {
         type: 'error',
         canIgnore: false,
         message: `Cannot override the ${fn.name} import of '${fn.type}'`,
-        location: binding.constantViolations[0].node.loc.start
+        location: binding.constantViolations[0].node.loc.start,
       };
     } else {
       return fn;
@@ -78,7 +78,7 @@ export function isStyleFunction(path: NodePath<Node>, expression: CallExpression
       type: 'error',
       canIgnore: true,
       message: 'style function is not an import',
-      location: funcDef.loc.start
+      location: funcDef.loc.start,
     };
   }
 }

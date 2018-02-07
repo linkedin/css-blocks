@@ -4,7 +4,7 @@ import {
   ImportedFile,
   Importer,
   PathBasedImporter,
-  PluginOptionsReader
+  PluginOptionsReader,
 } from "css-blocks";
 import * as path from 'path';
 
@@ -118,7 +118,7 @@ export class GlimmerImporter extends PathBasedImporter {
           syntax: this.syntax(identifier, options),
           identifier: identifier,
           contents: resolution.string,
-          defaultName: this.defaultName(identifier, options)
+          defaultName: this.defaultName(identifier, options),
         });
       } else {
         return Promise.reject(new Error(`File not found for ${specifier}`));

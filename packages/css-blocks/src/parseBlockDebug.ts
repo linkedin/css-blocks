@@ -1,9 +1,9 @@
 import {
-  AtRule
+  AtRule,
 } from "postcss";
 
 import {
-  Block
+  Block,
 } from "./Block";
 import {
   sourceLocation,
@@ -31,6 +31,6 @@ export function parseBlockDebug(atRule: AtRule, sourceFile: string, block: Block
   }
   return {
     block: ref,
-    channel: outputTo
+    channel: outputTo,
   };
 }

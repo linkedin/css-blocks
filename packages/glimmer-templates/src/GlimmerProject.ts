@@ -1,8 +1,8 @@
 import {
-  ResolutionMap
+  ResolutionMap,
 } from '@glimmer/resolution-map-builder';
 import Resolver, {
-  BasicModuleRegistry
+  BasicModuleRegistry,
 } from '@glimmer/resolver';
 import {
   SerializedTemplateInfo,
@@ -43,8 +43,8 @@ export class ResolvedFile implements TemplateInfo<"GlimmerTemplates.ResolvedFile
       identifier: this.identifier,
       data: [
         this.string,
-        this.fullPath
-      ]
+        this.fullPath,
+      ],
     };
   }
   static deserialize(identifier, str, fullPath): ResolvedFile {

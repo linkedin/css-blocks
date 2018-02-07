@@ -125,7 +125,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
         omitIdents: {
           id: [],
           class: [],
-        }
+        },
       },
       analyzedAttributes: ["class"],
       analyzedTagnames: false,
@@ -322,7 +322,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    */
   static deserialize<K extends keyof TemplateTypes>(
     serializedAnalysis: SerializedTemplateAnalysis<K>,
-    blockFactory: BlockFactory
+    blockFactory: BlockFactory,
   ): Promise<TemplateAnalysis<K>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
     let info = TemplateInfoFactory.deserialize<K>(serializedAnalysis.template);

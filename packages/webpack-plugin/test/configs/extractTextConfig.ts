@@ -11,13 +11,13 @@ import { config as defaultOutputConfig } from "./defaultOutputConfig";
 
 export function config(entry: string, options?: LoaderOptions): WebpackConfiguration {
   const extractText = new ExtractTextPlugin({
-      filename: "[name].[contenthash].css"
+      filename: "[name].[contenthash].css",
   });
 
   return merge(defaultOutputConfig(), {
     entry: entry,
     output: {
-      filename: "bundle.extractText.js"
+      filename: "bundle.extractText.js",
     },
     module: {
       rules: [
@@ -26,15 +26,15 @@ export function config(entry: string, options?: LoaderOptions): WebpackConfigura
           use: extractText.extract({
             use: [
               { loader: "css-loader" },
-              { loader: BLOCK_LOADER_PATH, options: options }
+              { loader: BLOCK_LOADER_PATH, options: options },
             ],
-            fallback: "style-loader"
-          })
-        }
-      ]
+            fallback: "style-loader",
+          }),
+        },
+      ],
     },
     plugins: [
-      extractText
-    ]
+      extractText,
+    ],
   });
 }

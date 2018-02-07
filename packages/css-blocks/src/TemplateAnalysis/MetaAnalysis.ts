@@ -1,7 +1,7 @@
 import {
   TemplateAnalysis as OptimizedTemplateAnalysis,
   TemplateIntegrationOptions,
-  TemplateTypes
+  TemplateTypes,
 } from "@opticss/template-api";
 import * as debugGenerator from 'debug';
 
@@ -37,7 +37,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
         omitIdents: {
           id: [],
           class: [],
-        }
+        },
       },
       analyzedAttributes: ["class"],
       analyzedTagnames: false,

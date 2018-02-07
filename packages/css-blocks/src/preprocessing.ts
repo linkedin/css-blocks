@@ -1,11 +1,11 @@
 import * as inlineSourceMapComment from 'inline-source-map-comment';
 import * as postcss from "postcss";
 import {
-  RawSourceMap
+  RawSourceMap,
 } from "source-map";
 
 import {
-  CssBlockOptionsReadonly
+  CssBlockOptionsReadonly,
 } from "./options";
 
 declare module "./options" {
@@ -29,7 +29,7 @@ export enum Syntax {
   css = "css",
   less = "less",
   stylus = "styl",
-  other = "other"
+  other = "other",
 }
 
 export function syntaxName(syntax: Syntax): string {

@@ -7,7 +7,7 @@ import {
   isSimpleTagname,
   RewriteMapping as OptimizedMapping,
   SimpleAttribute,
-  SimpleTagname
+  SimpleTagname,
 } from "@opticss/template-api";
 import { assertNever, Maybe, maybe, objectValues } from "@opticss/util";
 import { inspect } from 'util';
@@ -42,7 +42,7 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
 
   static fromOptimizer(
     classRewrite: OptimizedMapping,
-    classMap: Map<string, Style>
+    classMap: Map<string, Style>,
   ): IndexedClassMapping {
     // TODO: move this renumbering to opticss?
     let indexSet = new Set<number>();
@@ -69,7 +69,7 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
     return new IndexedClassMapping(
       inputs,
       classRewrite.staticAttributes.class!,
-      classRewrite.dynamicAttributes.class!
+      classRewrite.dynamicAttributes.class!,
     );
   }
 
@@ -101,7 +101,7 @@ export class RewriteMapping implements ClassRewrite<Style> {
 
   static fromOptimizer(
     classRewrite: OptimizedMapping,
-    classMap: Map<string, Style>
+    classMap: Map<string, Style>,
   ): RewriteMapping {
     let staticClasses = classRewrite.staticAttributes.class;
     let dynamicClasses = classRewrite.dynamicAttributes.class;
@@ -152,7 +152,7 @@ function renumber(renumberer: any, expression: BooleanExpression<number>) {
 function processExpression(
   expression: BooleanExpression<number>,
   inputs: Array<SimpleTagname | SimpleAttribute>,
-  classMap: Map<string, Style>
+  classMap: Map<string, Style>,
 ): BooleanExpression<Style> {
   if (isAndExpression(expression)) {
     return {and: expression.and.map(e =>  isBooleanExpression(e) ? processExpression(e, inputs, classMap) : processExpressionLiteral(e, inputs, classMap))};

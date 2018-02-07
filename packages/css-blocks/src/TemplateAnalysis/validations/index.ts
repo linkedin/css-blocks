@@ -26,13 +26,13 @@ export type TemplateValidatorOptions = {
 const VALIDATORS: TemplateValidators = {
   "no-root-classes": rootClassValidator,
   "no-class-pairs": classPairsValidator,
-  "no-state-orphans": stateParentValidator
+  "no-state-orphans": stateParentValidator,
 };
 
 const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
   "no-root-classes": true,
   "no-class-pairs": true,
-  "no-state-orphans": true
+  "no-state-orphans": true,
 };
 
 /**

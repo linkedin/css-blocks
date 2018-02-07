@@ -175,15 +175,15 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
                 attrPath.remove();
             }
           }
-        }
-      }
+        },
+      },
     };
   };
 }
 
 function detectStrayReferenceToImport(
   importDeclPath: NodePath<ImportDeclaration>,
-  filename: string
+  filename: string,
 ): void {
   if (!importDeclPath || !importDeclPath.node) { return; }
   for (let specifier of importDeclPath.node.specifiers) {

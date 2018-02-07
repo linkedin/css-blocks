@@ -1,25 +1,25 @@
 import {
   CssBlockOptions,
   CssBlockOptionsReadonly,
-  PluginOptions
+  PluginOptions,
 } from "./options";
 
 import {
-  OutputMode
+  OutputMode,
 } from "./OutputMode";
 
 import {
   filesystemImporter,
   Importer,
-  ImporterData
+  ImporterData,
 } from "./importing";
 
 import {
-  BlockFactory
+  BlockFactory,
 } from "./BlockFactory";
 
 import {
-  Preprocessors
+  Preprocessors,
 } from "./preprocessing";
 
 /**
@@ -44,7 +44,7 @@ export class OptionsReader implements CssBlockOptionsReadonly {
       data: {},
       preprocessors: {},
       disablePreprocessChaining: false,
-      maxConcurrentCompiles: 4
+      maxConcurrentCompiles: 4,
     };
     Object.assign(this, defaults, opts || {});
   }

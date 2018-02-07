@@ -7,7 +7,7 @@ import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
 import { RawSource, Source, SourceMapSource } from 'webpack-sources';
 
 import {
-  TemplateTypes
+  TemplateTypes,
 } from "@opticss/template-api";
 import {
   Block,
@@ -262,7 +262,7 @@ export class CssBlocksPlugin
         optimizer.addSource({
           content: result.css,
           filename,
-          sourceMap: result.map.toJSON()
+          sourceMap: result.map.toJSON(),
         });
         numBlocks++;
       }

@@ -27,6 +27,6 @@ export function analyzer(analysis: Analysis): object {
     JSXOpeningElement(path: NodePath<JSXOpeningElement>): void {
       let element = elementAnalyzer.analyzeJSXElement(path);
       if (element) analysis.addElement(element);
-    }
+    },
   };
 }

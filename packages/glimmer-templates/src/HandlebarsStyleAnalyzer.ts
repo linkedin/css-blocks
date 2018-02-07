@@ -73,7 +73,7 @@ export class BaseStyleAnalyzer {
           let element = elementAnalyzer.analyze(node, atRootElement);
           analysis.addElement(element);
           if (self.debug.enabled) self.debug("Element analyzed:", element.forOptimizer(self.options).toString());
-        }
+        },
       });
       return analysis;
     }).catch((error) => {

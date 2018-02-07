@@ -13,7 +13,7 @@ import {
   MultiTemplateAnalyzer,
   PluginOptionsReader,
   StyleAnalysis,
-  TemplateAnalysis
+  TemplateAnalysis,
 } from "css-blocks";
 import * as path from "path";
 import * as postcss from "postcss";
@@ -44,7 +44,7 @@ export class TestTemplateInfo implements TemplateInfo<"WebpackPlugin.TestTemplat
     return {
       type: this.type,
       identifier: this.identifier,
-      data: [ this.index ]
+      data: [ this.index ],
     };
   }
   static deserialize(identifier: string, index: number): TestTemplateInfo {
@@ -121,30 +121,30 @@ export function config(): Promise<WebpackConfiguration> {
 
     let cssBlocks = new CssBlocksPlugin({
       outputCssFile: "css-blocks.css",
-      analyzer: new TestTemplateAnalyzer(analysis, factory)
+      analyzer: new TestTemplateAnalyzer(analysis, factory),
     });
 
     return merge(defaultOutputConfig(), {
       entry: "./test/fixtures/javascripts/foo.js",
       output: {
-        filename: "bundle.template.js"
+        filename: "bundle.template.js",
       },
       module: {
         rules: [
           {
             test: /\.css$/,
             exclude: /\.block\.css$/,
-            use: { loader: "css-loader" }
-          }
-        ]
+            use: { loader: "css-loader" },
+          },
+        ],
       },
       plugins: [
         cssBlocks,
         new CssAssets({
           emitSourceMaps: true,
-          inlineSourceMaps: false
-        })
-      ]
+          inlineSourceMaps: false,
+        }),
+      ],
     });
   });
 }

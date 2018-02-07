@@ -14,7 +14,7 @@ import { Conflicts, detectConflicts } from "./conflictDetection";
 enum ConflictType {
   conflict,
   noconflict,
-  samevalues
+  samevalues,
 }
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
@@ -215,7 +215,7 @@ export class ConflictResolver {
     other: Style,
     decl: postcss.Declaration,
     otherDecls: postcss.Declaration[],
-    isOverride: boolean
+    isOverride: boolean,
   ): ConflictType {
     let curSel = parseSelector((<postcss.Rule>decl.parent)); // can't use the cache, it's already been rewritten.
     let prop = decl.prop;

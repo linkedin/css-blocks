@@ -77,6 +77,10 @@
       "allow-leading-underscore"
     ],
     "no-redundant-jsdoc": true,
-    "binary-expression-operand-order": true
+    "binary-expression-operand-order": true,
+    "trailing-comma": [
+      true,
+      {"multiline": "always", "singleline": "never"}
+    ]
   }
 }

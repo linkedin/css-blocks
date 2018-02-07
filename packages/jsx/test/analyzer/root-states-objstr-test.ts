@@ -19,7 +19,7 @@ export class Test {
         [state|color=yellow] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -31,7 +31,7 @@ export class Test {
         [bar.color('yellow')]: true
       });
 
-      <div class={style}></div>;`
+      <div class={style}></div>;`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -53,7 +53,7 @@ export class Test {
         [state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -65,7 +65,7 @@ export class Test {
         [bar.color('yellow')]: leSigh
       });
 
-      <div class={style}></div>;`
+      <div class={style}></div>;`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -84,7 +84,7 @@ export class Test {
         [state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -95,7 +95,7 @@ export class Test {
         [bar]: leSigh,
         [bar.awesome()]: true
       });
-      <div class={style}></div>;`
+      <div class={style}></div>;`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -114,7 +114,7 @@ export class Test {
         [state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -125,7 +125,7 @@ export class Test {
         [bar]: true,
         [bar.awesome()]: leSigh
       });
-      <div class={style}></div>;`
+      <div class={style}></div>;`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -144,7 +144,7 @@ export class Test {
         [state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -155,7 +155,7 @@ export class Test {
         [bar]: true,
         [bar.awesome('wat')]: leSigh
       });
-      <div class={style}></div>;`
+      <div class={style}></div>;`,
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
     },     (err) => {
@@ -173,7 +173,7 @@ export class Test {
         .pretty[state|awesome] {
           color: red;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -192,7 +192,7 @@ export class Test {
         <div class={style1}></div>
         <span class={style2}></span>
       </div>;
-      `
+      `,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];

@@ -1,7 +1,7 @@
 import { AST, print } from '@glimmer/syntax';
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import { assertNever, ObjectDictionary } from "@opticss/util";
-import { Block, BlockClass, DynamicClasses, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader, SubState, } from "css-blocks";
+import { Block, BlockClass, DynamicClasses, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader, SubState } from "css-blocks";
 import * as debugGenerator from "debug";
 
 import { ResolvedFile } from "./GlimmerProject";
@@ -188,7 +188,7 @@ export class ElementAnalyzer {
     blockName: string | undefined,
     stateName: string,
     node: AST.AttrNode,
-    analysis: RewriteAnalysis
+    analysis: RewriteAnalysis,
   ): void {
     let stateBlock = blockName ? this.block.getReferencedBlock(blockName) : this.block;
     if (stateBlock === null) {

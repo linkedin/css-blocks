@@ -14,7 +14,7 @@ export class Test {
 
   @test 'Elements can hand inline dynamic styles'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -23,7 +23,7 @@ export class Test {
 
       function render(){
         return ( <div class={objstr({ [bar]: true })}></div> );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -39,7 +39,7 @@ export class Test {
       'bar.block.css': `
         .root { color: red; }
         .foo { color: blue; }
-        .foo[state|always] { font-weight: bold; }`
+        .foo[state|always] { font-weight: bold; }`,
     });
 
     return parse(`
@@ -47,7 +47,7 @@ export class Test {
       import objstr from 'obj-str';
       function sometimes() { return true; }
       <div class={ objstr({ [bar.foo]: true, [bar.foo.always()]: sometimes() }) }></div>;
-    `
+    `,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -60,7 +60,7 @@ export class Test {
   }
   @test 'Objstr lookup understands scope'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -71,7 +71,7 @@ export class Test {
         let objstr = function(){};
         <div class={ objstr({ [bar.foo]: 'bar', biz: 'baz' }) }></div>;
       }
-    `
+    `,
   ).catch((err: Error) => {
       assert.equal(err.message, '[css-blocks] AnalysisError: The call to style function \'objstr\' does not resolve to an import statement of a known style helper. (7:21)');
     });
@@ -79,7 +79,7 @@ export class Test {
 
   @test 'handles unknown function call in class attribute'() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
 
     return parse(`
@@ -90,7 +90,7 @@ export class Test {
       }
 
       <div class={ wtf('nope') }></div>;
-    `
+    `,
   ).catch((err: Error) => {
       assert.equal(err.message, '[css-blocks] AnalysisError: Function called within class attribute value \'wtf\' must be either an \'objstr\' call, or a state reference (8:19)');
     });

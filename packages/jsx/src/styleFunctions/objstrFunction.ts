@@ -1,4 +1,4 @@
-import { ObjectDictionary, } from '@opticss/util';
+import { ObjectDictionary } from '@opticss/util';
 import { Binding } from 'babel-traverse';
 import { ImportDeclaration } from 'babel-types';
 import {
@@ -67,7 +67,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
   let loc = {
     filename,
     line: func.loc.start.line,
-    column: func.loc.start.column
+    column: func.loc.start.column,
   };
 
   // Ensure the first argument passed to suspected `objstr` call is an object.

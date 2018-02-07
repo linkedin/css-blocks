@@ -22,7 +22,7 @@ export class Test {
         .pretty[state|color=yellow] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -46,7 +46,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -70,7 +70,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -91,7 +91,7 @@ export class Test {
         .pretty[state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -112,7 +112,7 @@ export class Test {
         .pretty[state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -133,7 +133,7 @@ export class Test {
         .pretty[state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`

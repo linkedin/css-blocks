@@ -1,7 +1,7 @@
 import {
   AST,
   NodeVisitor,
-  Syntax
+  Syntax,
 } from '@glimmer/syntax';
 import {
   Block,

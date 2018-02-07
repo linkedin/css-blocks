@@ -6,20 +6,20 @@ export const MODULE_CONFIG = {
     "service": { "definitiveCollection": "services" },
     "template": { "definitiveCollection": "components" },
     "stylesheet": { "definitiveCollection": "components" },
-    "util": { "definitiveCollection": "utils" }
+    "util": { "definitiveCollection": "utils" },
   },
   "collections": {
     "main": {
-      "types": ["application", "renderer"]
+      "types": ["application", "renderer"],
     },
     "components": {
       "group": "ui",
       "types": ["component", "template", "stylesheet"],
       "defaultType": "component",
-      "privateCollections": ["utils"]
+      "privateCollections": ["utils"],
     },
     "utils": {
-      "unresolvable": true
-    }
-  }
+      "unresolvable": true,
+    },
+  },
 };

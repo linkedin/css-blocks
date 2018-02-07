@@ -20,7 +20,7 @@ export class Test {
         .pretty[state|color=yellow] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -32,7 +32,7 @@ export class Test {
         [bar.pretty.color('yellow')]: true
       });
 
-      <div class={style}></div>;`
+      <div class={style}></div>;`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -55,7 +55,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -67,7 +67,7 @@ export class Test {
         [bar.pretty.color("yellow")]: leSigh
       });
 
-      <div class={style}></div>;`
+      <div class={style}></div>;`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -97,7 +97,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -110,7 +110,7 @@ export class Test {
         [bar.pretty.color('black')]: !leSigh
       });
 
-      <div class={style}></div>;`
+      <div class={style}></div>;`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -140,7 +140,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -156,7 +156,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `
+    `,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -186,7 +186,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -216,7 +216,7 @@ export class Test {
         .pretty[state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -228,7 +228,7 @@ export class Test {
         [bar.pretty.awesome()]: leSigh
       });
       <div class={style}></div>;
-    `
+    `,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -248,7 +248,7 @@ export class Test {
         .pretty[state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
