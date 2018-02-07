@@ -57,6 +57,18 @@
         "grouped-imports": true
       }
     ],
-    "type-literal-delimiter": true
+    "type-literal-delimiter": true,
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-operator",
+      "check-decl",
+      "check-module",
+      "check-separator",
+      "check-rest-spread",
+      "check-type",
+      "check-type-operator",
+      "check-preblock"
+    ]
   }
 }

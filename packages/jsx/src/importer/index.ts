@@ -37,7 +37,7 @@ interface BlockRegistry {
  * @param name The Block name in question.
  * @param registry The registry to check.
  */
-function throwIfRegistered(name: string, blockRegistry: BlockRegistry, loc: ErrorLocation){
+function throwIfRegistered(name: string, blockRegistry: BlockRegistry, loc: ErrorLocation) {
   // TODO: Location reporting in errors.
   if (blockRegistry[name]) {
     throw new TemplateImportError(`Block identifier "${name}" cannot be re-defined in any scope once imported.`, loc);
@@ -88,7 +88,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       if (!parsedPath.ext) {
         for (let key in VALID_FILE_EXTENSIONS) {
           parsedPath.ext = key;
-          if (fs.existsSync(path.format(parsedPath))){
+          if (fs.existsSync(path.format(parsedPath))) {
             break;
           }
           delete parsedPath.ext;
@@ -149,14 +149,14 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       })
 
       // Failures handled upstream by Promise.all() in `parseWith` method. Swallow error.
-      .catch(()=>{});
+      .catch(() => {});
 
       analysis.blockPromises.push(res);
 
     },
 
     // Ensure no Variable Declarations in this file override an imported Block name.
-    VariableDeclaration(path: NodePath<VariableDeclaration>){
+    VariableDeclaration(path: NodePath<VariableDeclaration>) {
       path.node.declarations.forEach((decl: VariableDeclarator) => {
         if (!isIdentifier(decl.id)) {
           return;
@@ -170,7 +170,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
     },
 
     // Ensure no Class Declarations in this file override an imported Block name.
-    ClassDeclaration(path: NodePath<ClassDeclaration>){
+    ClassDeclaration(path: NodePath<ClassDeclaration>) {
       if (!isIdentifier(path.node.id)) {
         return;
       }
@@ -182,7 +182,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
     },
 
     // Ensure no Function Declarations in this file override an imported Block name.
-    Function(path: NodePath<Function>){
+    Function(path: NodePath<Function>) {
       let node = path.node;
 
       if (isIdentifier(node.id)) {

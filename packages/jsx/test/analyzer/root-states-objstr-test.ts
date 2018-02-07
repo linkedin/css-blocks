@@ -12,7 +12,7 @@ export class Test {
     mock.restore();
   }
 
-  @test 'Root states with sub-states are tracked'(){
+  @test 'Root states with sub-states are tracked'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -43,7 +43,7 @@ export class Test {
     });
   }
 
-  @test 'When provided state value is dynamic, state object is registered as dynamic'(){
+  @test 'When provided state value is dynamic, state object is registered as dynamic'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -77,7 +77,7 @@ export class Test {
     });
   }
 
-  @test 'static states can depend on dynamic classes'(){
+  @test 'static states can depend on dynamic classes'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -107,7 +107,7 @@ export class Test {
     });
   }
 
-  @test 'Boolean states register'(){
+  @test 'Boolean states register'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -137,7 +137,7 @@ export class Test {
     });
   }
 
-  @test 'Accessing sub-state on boolean state throws'(){
+  @test 'Accessing sub-state on boolean state throws'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -163,7 +163,7 @@ export class Test {
     });
   }
 
-  @test 'Conflicting state names on root and class are handled'(){
+  @test 'Conflicting state names on root and class are handled'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }

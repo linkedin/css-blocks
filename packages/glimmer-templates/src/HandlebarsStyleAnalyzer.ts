@@ -150,7 +150,7 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer impleme
       analysisPromises.push(this.analyzeTemplate(dep));
     });
 
-    return Promise.all(analysisPromises).then((analyses)=> {
+    return Promise.all(analysisPromises).then((analyses) => {
       let metaAnalysis = new MetaStyleAnalysis();
       analyses.forEach(a => {
         if (a !== null) {

@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
 
-import { testParse as parse, testParseFile as parseFile} from './util';
+import { testParse as parse, testParseFile as parseFile } from './util';
 
 const mock = require('mock-fs');
 
@@ -11,7 +11,7 @@ export class Test {
     mock.restore();
   }
 
-  @test 'parses when provided a string'(){
+  @test 'parses when provided a string'() {
     return parse(`
       class Foo {
         method(){
@@ -23,7 +23,7 @@ export class Test {
     });
   }
 
-  @test 'parses when provided a path'(){
+  @test 'parses when provided a path'() {
     mock({
       'bar.js': `class Foo {
         method(){
@@ -36,7 +36,7 @@ export class Test {
     });
   }
 
-  @test 'parser takes an optional options hash with baseDir'(){
+  @test 'parser takes an optional options hash with baseDir'() {
     mock({
       '/foo/baz/bar.js': `class Foo {
         method(){

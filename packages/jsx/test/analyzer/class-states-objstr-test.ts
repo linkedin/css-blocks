@@ -12,7 +12,7 @@ export class Test {
     mock.restore();
   }
 
-  @test 'States with sub-states are tracked'(){
+  @test 'States with sub-states are tracked'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -44,7 +44,7 @@ export class Test {
     });
   }
 
-  @test 'When provided state value is dynamic, state object is registered as dynamic'(){
+  @test 'When provided state value is dynamic, state object is registered as dynamic'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -79,7 +79,7 @@ export class Test {
     });
   }
 
-  @test 'Handles inherited states'(){
+  @test 'Handles inherited states'() {
     mock({
       'bar.block.css': `
         @block-reference foo from "./foo.block.css";
@@ -122,7 +122,7 @@ export class Test {
     });
   }
 
-  @test 'Handles dynamic states'(){
+  @test 'Handles dynamic states'() {
     mock({
       'bar.block.css': `
         @block-reference foo from "./foo.block.css";
@@ -168,7 +168,7 @@ export class Test {
     });
   }
 
-  @test 'Throws error when no sub-state passed'(){
+  @test 'Throws error when no sub-state passed'() {
     mock({
       'bar.block.css': `
         @block-reference foo from "./foo.block.css";
@@ -208,7 +208,7 @@ export class Test {
     });
   }
 
-  @test 'Boolean states register'(){
+  @test 'Boolean states register'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -240,7 +240,7 @@ export class Test {
     });
   }
 
-  @test 'Accessing sub-state on boolean state throws'(){
+  @test 'Accessing sub-state on boolean state throws'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }

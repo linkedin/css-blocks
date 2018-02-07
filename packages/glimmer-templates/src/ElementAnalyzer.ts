@@ -301,9 +301,9 @@ function nodeLocation(node: AST.Node): SourceLocation {
 
 type BranchStyles = Array<BlockClass> | undefined;
 
-function dynamicClasses(condition: null, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<null>;
-function dynamicClasses(condition: AST.Expression, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<TernaryExpression>;
-function dynamicClasses(condition: AST.Expression | null, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<TernaryExpression | null> {
+function dynamicClasses(condition: null, whenTrue: BranchStyles, whenFalse: BranchStyles): DynamicClasses<null>;
+function dynamicClasses(condition: AST.Expression, whenTrue: BranchStyles, whenFalse: BranchStyles): DynamicClasses<TernaryExpression>;
+function dynamicClasses(condition: AST.Expression | null, whenTrue: BranchStyles, whenFalse: BranchStyles): DynamicClasses<TernaryExpression | null> {
   if (whenTrue && whenFalse) {
     return { condition, whenTrue, whenFalse };
   } else if (whenTrue) {

@@ -48,7 +48,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
    */
-  constructor(name: string, container: ContainerType){
+  constructor(name: string, container: ContainerType) {
     this._name = name;
     this._container = container;
     this.propertyConcerns = new PropertyContainer();
@@ -248,7 +248,7 @@ export class Block
   private _dependencies: Set<string>;
 
   public stylesheet?: postcss.Root;
-  public readonly parsedRuleSelectors: WeakMap<postcss.Rule,ParsedSelector[]>;
+  public readonly parsedRuleSelectors: WeakMap<postcss.Rule, ParsedSelector[]>;
 
   constructor(name: string, identifier: FileIdentifier) {
     this._identifier = identifier;
@@ -503,7 +503,7 @@ export class Block
     return result;
   }
 
-  merged(): MultiMap<string, Style>{
+  merged(): MultiMap<string, Style> {
     let map = new MultiMap<string, Style>();
     for (let obj of this.all()) {
       map.set(obj.asSource(), obj);
@@ -705,7 +705,7 @@ export class Block
    * method so these libraries don't implode.
    * @return The name of the block.
    */
-  toJSON(){
+  toJSON() {
     return this._name;
   }
 }
@@ -721,7 +721,7 @@ type Properties = Set<string>;
  */
 export class PropertyContainer {
   private props: Properties = new Set();
-  private pseudoProps = new Map<string,Properties>();
+  private pseudoProps = new Map<string, Properties>();
 
   /**
    * Track a single property.
@@ -855,7 +855,7 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
    * @returns String representing output class.
    */
   cssClass(opts: OptionsReader) {
-    switch(opts.outputMode) {
+    switch (opts.outputMode) {
       case OutputMode.BEM:
         if (this.isRoot) {
           return `${this.block.name}`;
@@ -887,7 +887,7 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
    * @param subStateName Optional substate to filter states by.
    * @returns An array of all States that were requested.
    */
-  getStateOrGroup(stateName: string, subStateName?: string|undefined): Array<State> | Array<SubState> {
+  getStateOrGroup(stateName: string, subStateName?: string | undefined): Array<State> | Array<SubState> {
     let state = this.getState(stateName);
     if (state) {
       if (subStateName) {
@@ -928,7 +928,7 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
    * @param substate Optional substate to filter states by.
    * @returns A map of resolved state names to their states for all States that were requested.
    */
-  resolveGroup(groupName: string, substate?: string|undefined): ObjectDictionary<State | SubState> | undefined {
+  resolveGroup(groupName: string, substate?: string | undefined): ObjectDictionary<State | SubState> | undefined {
     let resolution: {[name: string]: State | SubState } = {};
     let states = this.getStateOrGroup(groupName, substate);
     for (let state of states) {
@@ -1229,7 +1229,7 @@ export class State extends BlockObject<State, BlockClass> {
    * @returns String representing output class.
    */
   cssClass(opts: OptionsReader) {
-    switch(opts.outputMode) {
+    switch (opts.outputMode) {
       case OutputMode.BEM:
         let cssClassName = this.blockClass.cssClass(opts);
         return `${cssClassName}--${this.name}`;
@@ -1282,7 +1282,7 @@ export class SubState extends BlockObject<SubState, State> {
   }
 
   public cssClass(opts: OptionsReader): string {
-    switch(opts.outputMode) {
+    switch (opts.outputMode) {
       case OutputMode.BEM:
         return `${this._container.cssClass(opts)}-${this.name}`;
       default:

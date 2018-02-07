@@ -47,7 +47,7 @@ import {
 } from '../analyzer/types';
 
 // TODO: detect conflicts and pick an available name.
-export const HELPER_FN_NAME ='c$$';
+export const HELPER_FN_NAME = 'c$$';
 
 const enum SourceExpression {
   ternary,

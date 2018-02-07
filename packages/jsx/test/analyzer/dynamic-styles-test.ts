@@ -12,7 +12,7 @@ export class Test {
     mock.restore();
   }
 
-  @test 'Objstr where value is a not a literal are marked dynamic'(){
+  @test 'Objstr where value is a not a literal are marked dynamic'() {
     mock({
       'bar.block.css': `
         .func { color: red; }
@@ -52,7 +52,7 @@ export class Test {
     });
   }
 
-  @test 'Inline objstr where value is a not a literal are marked dynamic'(){
+  @test 'Inline objstr where value is a not a literal are marked dynamic'() {
     mock({
       'bar.block.css': `
         .func { color: red; }
@@ -87,7 +87,7 @@ export class Test {
     });
   }
 
-  @test 'Throws when spread operator used in states.'(){
+  @test 'Throws when spread operator used in states.'() {
     mock({
       'foo.block.css': `
         .root { }

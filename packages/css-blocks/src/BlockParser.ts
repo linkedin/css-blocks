@@ -508,8 +508,7 @@ export class BlockParser {
       }
     });
 
-    // Test each node in selector
-    let result = sel.nodes.reduce<NodeAndType|null>((found, n) => {
+    let reducer = (found, n) => {
 
       // If selecting the root element, indicate we have encountered it. If this
       // is not the first BlockType encountered, throw the appropriate error
@@ -580,7 +579,9 @@ export class BlockParser {
         }
       }
       return found;
-    },                                              null);
+    };
+    // Test each node in selector
+    let result = sel.nodes.reduce<NodeAndType | null>(reducer, null);
 
     // If no rules found in selector, we have a problem. Throw.
     if (!result) {
@@ -607,7 +608,7 @@ export class BlockParser {
    */
   private objectTypeName(t: BlockType, options?: {plural: boolean}): string {
     let isPlural = options && options.plural;
-    switch(t) {
+    switch (t) {
       case BlockType.root: return isPlural ? "block roots" : "block root";
       case BlockType.state: return isPlural ? "root-level states" : "root-level state";
       case BlockType.class: return isPlural ? "classes" : "class";
@@ -739,7 +740,7 @@ export class BlockParser {
       // Class level objects cannot be ancestors of root level objects
       if (this.isClassLevelObject(currentObject)
            && this.isRootLevelObject(nextObject)
-           && SIBLING_COMBINATORS.has(combinator)){
+           && SIBLING_COMBINATORS.has(combinator)) {
           throw new errors.InvalidBlockSyntax(
             `A class is never a sibling of a ${this.objectTypeName(nextObject.blockType)}: ${rule.selector}`,
             this.selectorSourceLocation(block, rule, selector.selector.nodes[0]));

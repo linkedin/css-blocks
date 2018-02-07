@@ -14,13 +14,13 @@ export class Test {
     mock.restore();
   }
 
-  @test 'imports for non-css-block related files are ignored'(){
+  @test 'imports for non-css-block related files are ignored'() {
     return parse(`import foo from 'bar';`).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.blockDependencies().size, 0);
     });
   }
 
-  @test 'imports for css-block files are registered using default syntax'(){
+  @test 'imports for css-block files are registered using default syntax'() {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
@@ -30,7 +30,7 @@ export class Test {
     });
   }
 
-  @test 'imports for css-block files are registered using explicit default import'(){
+  @test 'imports for css-block files are registered using explicit default import'() {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
@@ -40,7 +40,7 @@ export class Test {
     });
   }
 
-  @test 'imports for css-block files register explicit state object import'(){
+  @test 'imports for css-block files register explicit state object import'() {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
@@ -50,7 +50,7 @@ export class Test {
     });
   }
 
-  @test 'imports for css-block files register explicit state object import with explicit default import'(){
+  @test 'imports for css-block files register explicit state object import with explicit default import'() {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
@@ -60,7 +60,7 @@ export class Test {
     });
   }
 
-  @test 'imports for css-block files are registered using "as" syntax'(){
+  @test 'imports for css-block files are registered using "as" syntax'() {
     mock({
       'bar.block.css': '.root { color: red; }',
     });
@@ -70,7 +70,7 @@ export class Test {
     });
   }
 
-  @test 'imports for multiple css-block files are registered'(){
+  @test 'imports for multiple css-block files are registered'() {
     mock({
       'bar.block.css': '.root { color: red; }',
       'baz.block.css': '.root { color: blue; }'
@@ -85,7 +85,7 @@ export class Test {
     });
   }
 
-  @test 'imported blocks may be renamed locally'(){
+  @test 'imported blocks may be renamed locally'() {
     mock({
       'bar.block.css': '.root { color: red; }',
       'baz.block.css': '.root { color: blue; }'
@@ -100,7 +100,7 @@ export class Test {
     });
   }
 
-  @test 'block identifiers may not be re-declaired elsewhere in the file – Function Declaration'(){
+  @test 'block identifiers may not be re-declaired elsewhere in the file – Function Declaration'() {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
@@ -116,7 +116,7 @@ export class Test {
     });
   }
 
-  @test 'block identifiers may not be re-declaired elsewhere in the file – Variable Declaration'(){
+  @test 'block identifiers may not be re-declaired elsewhere in the file – Variable Declaration'() {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
@@ -132,7 +132,7 @@ export class Test {
     });
   }
 
-  @test 'block identifiers may not be re-declaired elsewhere in the file – Class Name'(){
+  @test 'block identifiers may not be re-declaired elsewhere in the file – Class Name'() {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
@@ -148,7 +148,7 @@ export class Test {
     });
   }
 
-  @test 'block identifiers may not be re-declaired elsewhere in the file – Function Param'(){
+  @test 'block identifiers may not be re-declaired elsewhere in the file – Function Param'() {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
@@ -164,7 +164,7 @@ export class Test {
     });
   }
 
-  @test 'block identifiers may not be re-declaired elsewhere in the file – Class Method Param'(){
+  @test 'block identifiers may not be re-declaired elsewhere in the file – Class Method Param'() {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });
@@ -180,7 +180,7 @@ export class Test {
     });
   }
 
-  @test 'block identifiers may not be re-declaired elsewhere in the file – Object Method Param'(){
+  @test 'block identifiers may not be re-declaired elsewhere in the file – Object Method Param'() {
     mock({
       'baz.block.css': '.root { color: blue; }'
     });

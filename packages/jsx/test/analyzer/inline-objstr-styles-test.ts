@@ -12,7 +12,7 @@ export class Test {
     mock.restore();
   }
 
-  @test 'Elements can hand inline dynamic styles'(){
+  @test 'Elements can hand inline dynamic styles'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -34,7 +34,7 @@ export class Test {
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
-  @test 'with classes and states are tracked when applied'(){
+  @test 'with classes and states are tracked when applied'() {
     mock({
       'bar.block.css': `
         .root { color: red; }
@@ -58,7 +58,7 @@ export class Test {
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
-  @test 'Objstr lookup understands scope'(){
+  @test 'Objstr lookup understands scope'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -77,7 +77,7 @@ export class Test {
     });
   }
 
-  @test 'handles unknown function call in class attribute'(){
+  @test 'handles unknown function call in class attribute'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });

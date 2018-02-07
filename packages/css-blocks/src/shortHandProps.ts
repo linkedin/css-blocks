@@ -61,7 +61,7 @@ export function isLonghand(prop: string) {
   return shortHandMap.has(prop);
 }
 
-export function computeShorthands(): Map<string,Set<string>> {
+export function computeShorthands(): Map<string, Set<string>> {
   let shorthandMap = new Map<string, Set<string>>();
   longHandMap.forEach((longhands, shorthand) => {
     longhands.forEach((longhand) => {

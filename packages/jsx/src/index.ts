@@ -125,10 +125,10 @@ export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory:
   file = path.resolve(resolvedOpts.baseDir, file);
 
   return readFile(file, 'utf8')
-    .then(data =>{
+    .then(data => {
             // Return promise for parsed analysis object.
             let template: JSXTemplate = new JSXTemplate(file, data);
-            return parseWith(template, metaAnalysis, factory,resolvedOpts);
+            return parseWith(template, metaAnalysis, factory, resolvedOpts);
           },
           (err) => {
             throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
@@ -207,7 +207,7 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
   private options: JSXAnalyzerOptions;
   private cssBlocksOptions: CssBlocksOptionsReader;
 
-  constructor(entryPoint: string, name: string, options: JSXAnalyzerOptions){
+  constructor(entryPoint: string, name: string, options: JSXAnalyzerOptions) {
     this.entryPoint = entryPoint;
     this.name = name;
     this.options = options;

@@ -85,7 +85,7 @@ export class Test {
     });
   }
 
-  @test 'Empty objstr calls throw'(){
+  @test 'Empty objstr calls throw'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -146,7 +146,7 @@ export class Test {
     });
   }
 
-  @test 'Multiple classes from different blocks on objstr calls are tracked when applied'(){
+  @test 'Multiple classes from different blocks on objstr calls are tracked when applied'() {
     mock({
       'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
       'bar.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }'
@@ -175,7 +175,7 @@ export class Test {
     });
   }
 
-  @test 'An objstr call with no css-block styles are allowed'(){
+  @test 'An objstr call with no css-block styles are allowed'() {
     mock({
       'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
     });
@@ -202,7 +202,7 @@ export class Test {
     });
   }
 
-  @test 'Objstr function name may be renamed at import'(){
+  @test 'Objstr function name may be renamed at import'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -223,7 +223,7 @@ export class Test {
     });
   }
 
-  @test 'Objstr call throws if objstr is not imported'(){
+  @test 'Objstr call throws if objstr is not imported'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -244,7 +244,7 @@ export class Test {
     });
   }
 
-  @test 'cannot set objstr to a new function'(){
+  @test 'cannot set objstr to a new function'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -268,7 +268,7 @@ export class Test {
     });
   }
 
-  @test 'Overly complex expressions to reference a CSS Block throw'(){
+  @test 'Overly complex expressions to reference a CSS Block throw'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -293,7 +293,7 @@ export class Test {
     });
   }
 
-  @test 'Objstr lookup understands scope'(){
+  @test 'Objstr lookup understands scope'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });

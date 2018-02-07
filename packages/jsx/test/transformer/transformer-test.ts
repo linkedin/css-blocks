@@ -50,7 +50,7 @@ export class Test {
     mock.restore();
   }
 
-  @test 'Root styles with and without .root are rewritten correctly.'(){
+  @test 'Root styles with and without .root are rewritten correctly.'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -77,7 +77,7 @@ export class Test {
     });
   }
 
-  @test 'States with sub-states are transformed using string input'(){
+  @test 'States with sub-states are transformed using string input'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -116,7 +116,7 @@ export class Test {
     });
   }
 
-  @test 'States with sub-states are transformed using boolean input'(){
+  @test 'States with sub-states are transformed using boolean input'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -151,7 +151,7 @@ export class Test {
     });
   }
 
-  @test 'States with sub-states are transformed using numerical input'(){
+  @test 'States with sub-states are transformed using numerical input'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -186,7 +186,7 @@ export class Test {
     });
   }
 
-  @test 'States with dynamic sub-states are transformed'(){
+  @test 'States with dynamic sub-states are transformed'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -231,12 +231,12 @@ export class Test {
         );
         let leSigh = true;
         let dynamic = 'green';
-        assert.deepEqual(c$$('b',[1,2,4,2,1,leSigh&&dynamic,'yellow',1,1,'green',1,0,'d',0,'c',1]), 'b d');
+        assert.deepEqual(c$$('b', [1, 2, 4, 2, 1, leSigh && dynamic, 'yellow', 1, 1, 'green', 1, 0, 'd', 0, 'c', 1]), 'b d');
       });
     });
   }
 
-  @test 'States with dynamic sub-states are transformed when only a single sub-state exists'(){
+  @test 'States with dynamic sub-states are transformed when only a single sub-state exists'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -289,7 +289,7 @@ export class Test {
     });
   }
 
-  @test 'States with dynamic sub-states containing complex expression are transformed to the simplest possible output'(){
+  @test 'States with dynamic sub-states containing complex expression are transformed to the simplest possible output'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -335,16 +335,16 @@ export class Test {
                                 "yellowColor",1,1,"greenColor",1,0,"d",0,"c",1])} />
         </div>;`)
         );
-        function conditional() { return true;}
+        function conditional() { return true; }
         let dynamic = 'yellow';
-        assert.deepEqual(c$$('b', [1,2,4,2,1,conditional() && `${dynamic}Color`,
-                                   'yellowColor',1,1,'greenColor',1,0,'d',0,'c',1]),
+        assert.deepEqual(c$$('b', [1, 2, 4, 2, 1, conditional() && `${dynamic}Color`,
+                                   'yellowColor', 1, 1, 'greenColor', 1, 0, 'd', 0, 'c', 1]),
                          'b c');
       });
     });
   }
 
-  @test 'Gracefully handles conflicting BlockObject names.'(){
+  @test 'Gracefully handles conflicting BlockObject names.'() {
     mock({
       'bar.block.css': `
         .root { color: blue; }
@@ -419,7 +419,7 @@ export class Test {
     });
   }
 
-  @test "Doesn't explode with empty blocks."(){
+  @test "Doesn't explode with empty blocks."() {
     mock({
       'foo.block.css': `
         .root { }
@@ -449,7 +449,7 @@ export class Test {
     });
   }
 
-  @test 'Left over references to the block are an error'(){
+  @test 'Left over references to the block are an error'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }',
       'foo.block.css': '.root { font-family: sans-serif; } .big { font-size: 28px; }'

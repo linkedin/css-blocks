@@ -9,7 +9,7 @@ import {
   SimpleAttribute,
   SimpleTagname
 } from "@opticss/template-api";
-import { assertNever, Maybe, maybe, objectValues} from "@opticss/util";
+import { assertNever, Maybe, maybe, objectValues } from "@opticss/util";
 import { inspect } from 'util';
 
 import { Style } from '../Block';
@@ -64,7 +64,7 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
       }
     }
 
-    let inputs = classRewrite.inputs.filter((_,n) => indexSet.has(n)).map((_,n, inputs) => processExpressionLiteral(n, inputs, classMap));
+    let inputs = classRewrite.inputs.filter((_, n) => indexSet.has(n)).map((_, n, inputs) => processExpressionLiteral(n, inputs, classMap));
     objectValues(classRewrite.dynamicAttributes.class!).forEach(expr => renumber(renumberer, expr!));
     return new IndexedClassMapping(
       inputs,

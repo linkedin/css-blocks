@@ -146,7 +146,7 @@ function sourceExpr(stack: any[],
     let ifFalsy = number(stack);
     let value = truthyString(stack);
     if (value === undefined) {
-      switch(ifFalsy) {
+      switch (ifFalsy) {
         case FalsySwitchBehavior.default:
           value = string(stack);
           break;

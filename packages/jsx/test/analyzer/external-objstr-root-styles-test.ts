@@ -61,7 +61,7 @@ export class Test {
     });
   }
 
-  @test 'Root block styles may be applied with `.root` on attribute `class`'(){
+  @test 'Root block styles may be applied with `.root` on attribute `class`'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -87,7 +87,7 @@ export class Test {
     });
   }
 
-  @test 'Elements with root applied are tracked on attribute `className`'(){
+  @test 'Elements with root applied are tracked on attribute `className`'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -113,7 +113,7 @@ export class Test {
     });
   }
 
-  @test 'Root block styles may be applied with `.root` on attribute `className`'(){
+  @test 'Root block styles may be applied with `.root` on attribute `className`'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -139,7 +139,7 @@ export class Test {
     });
   }
 
-  @test 'Root block styles are deduped if applied to multiple valid properties'(){
+  @test 'Root block styles are deduped if applied to multiple valid properties'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -165,7 +165,7 @@ export class Test {
     });
   }
 
-  @test 'Root block styles are combined if applied to multiple valid properties'(){
+  @test 'Root block styles are combined if applied to multiple valid properties'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }',
       'foo.block.css': '.root { font-family: sans-serif; } .big { font-size: 28px; }'
@@ -197,7 +197,7 @@ export class Test {
     });
   }
 
-  @test 'Cannot pass a style variable to a function.'(){
+  @test 'Cannot pass a style variable to a function.'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
@@ -220,7 +220,7 @@ export class Test {
     });
   }
 
-  @test 'Cannot change the value of a variable used for styles to a new value'(){
+  @test 'Cannot change the value of a variable used for styles to a new value'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
@@ -243,7 +243,7 @@ export class Test {
     });
   }
 
-  @test 'Can console.log a style variable'(){
+  @test 'Can console.log a style variable'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }',
     });
@@ -263,7 +263,7 @@ export class Test {
     });
   }
 
-  @test 'Unused objstr calls are not analyzed'(){
+  @test 'Unused objstr calls are not analyzed'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }',
       'foo.block.css': '.root { font-family: sans-serif; } .big { font-size: 28px; }'

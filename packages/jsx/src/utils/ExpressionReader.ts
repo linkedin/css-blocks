@@ -31,7 +31,7 @@ const CALL_END      = Symbol('call-end');
 
 export const DYNAMIC_STATE_ID = '*';
 
-export type PathExpression = (string|symbol)[];
+export type PathExpression = (string | symbol)[];
 
 function isLiteral(node: Node): node is StringLiteral | NumericLiteral | BooleanLiteral  {
   return isStringLiteral(node) || isNumericLiteral(node) || isBooleanLiteral(node);
@@ -81,7 +81,7 @@ export class ExpressionReader {
   err: null | string = null;
   loc: ErrorLocation;
 
-  constructor(expression: Node, filename: string){
+  constructor(expression: Node, filename: string) {
 
     // Expression location info object for error reporting.
     this.loc = {
@@ -118,7 +118,7 @@ export class ExpressionReader {
       }
 
       let token = this.pathExpression[i];
-      let next = this.pathExpression[i+1];
+      let next = this.pathExpression[i + 1];
 
       if (token === PATH_START && this.block) {
         // XXX This err appears to be completely swallowed?
@@ -199,7 +199,7 @@ export class ExpressionReader {
     if (stateNames.length === 0) {
       let allSubStates = statesContainer.resolveGroup(this.state) || {};
       let knownStates = objectValues(allSubStates);
-      let message = `No state [state|${this.state}${this.subState ? '='+this.subState : ''}] found on block "${this.block}".`;
+      let message = `No state [state|${this.state}${this.subState ? '=' + this.subState : ''}] found on block "${this.block}".`;
       if (knownStates.length === 1) {
         message += `\n  Did you mean: ${knownStates[0].asSource()}?`;
       } else if (knownStates.length > 0) {
@@ -223,7 +223,7 @@ export class ExpressionReader {
     this.pathExpression.forEach((part, idx) => {
 
       // If the first or last character, skip. These will always be path start/end symbols.
-      if (idx === 0 || idx === len-1) { return; }
+      if (idx === 0 || idx === len - 1) { return; }
 
       // Print special characters
       if      (part === PATH_START)    { out += '['; }
@@ -234,7 +234,7 @@ export class ExpressionReader {
 
       // Else, if a segment that doesn't require bracket syntax, print with proper leading `.`
       else if (isValidSegment.test(<string>part)) {
-        out += (!out || out[out.length-1] === '[' || out[out.length-1] === '(') ? <string>part : '.'+<string>part;
+        out += (!out || out[out.length - 1] === '[' || out[out.length - 1] === '(') ? <string>part : '.' + <string>part;
       }
 
       // Else print with bracket syntax

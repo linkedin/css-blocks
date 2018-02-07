@@ -12,7 +12,7 @@ export class Test {
     mock.restore();
   }
 
-  @test 'Elements with root applied are tracked on attribute `class`'(){
+  @test 'Elements with root applied are tracked on attribute `class`'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -33,7 +33,7 @@ export class Test {
     });
   }
 
-  @test 'Root block styles may be applied with `.root` on attribute `class`'(){
+  @test 'Root block styles may be applied with `.root` on attribute `class`'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -54,7 +54,7 @@ export class Test {
     });
   }
 
-  @test 'Elements with root applied are tracked on attribute `className`'(){
+  @test 'Elements with root applied are tracked on attribute `className`'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -75,7 +75,7 @@ export class Test {
     });
   }
 
-  @test 'Root block styles may be applied with `.root` on attribute `className`'(){
+  @test 'Root block styles may be applied with `.root` on attribute `className`'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });
@@ -96,7 +96,7 @@ export class Test {
     });
   }
 
-  @test 'Root block styles are deduped if applied to multiple valid properties'(){
+  @test 'Root block styles are deduped if applied to multiple valid properties'() {
     mock({
       'bar.block.css': '.root { color: red; } .foo { color: blue; }'
     });

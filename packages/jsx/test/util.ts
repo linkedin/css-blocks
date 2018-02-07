@@ -3,7 +3,7 @@ import { BlockFactory, PluginOptions as CssBlocksOptions, PluginOptionsReader as
 import { JSXAnalyzerOptions, parse, parseFile } from '../src/index';
 import { MetaAnalysis } from '../src/utils/Analysis';
 
-export function testParse(data: string, filename ='', opts?: JSXAnalyzerOptions, cssBlocksOpts?: CssBlocksOptions): Promise<MetaAnalysis> {
+export function testParse(data: string, filename = '', opts?: JSXAnalyzerOptions, cssBlocksOpts?: CssBlocksOptions): Promise<MetaAnalysis> {
    let defaultOpts = new CssBlocksOptionsReader(cssBlocksOpts);
    let factory = new BlockFactory(defaultOpts);
    return parse(filename, data, factory, opts);

@@ -7,7 +7,7 @@ import * as path from "path";
 import { config as extractTextConfig } from "./configs/extractTextConfig";
 import { config as templateConfig } from "./configs/templateConfig";
 import { execTest, readAsset, readCss, readCssSourceMap, runWebpackAsPromise } from "./util/execTest";
-import { BLOCK_FIXTURES_DIRECTORY, DIST_DIRECTORY} from "./util/testPaths";
+import { BLOCK_FIXTURES_DIRECTORY, DIST_DIRECTORY } from "./util/testPaths";
 
 // import assertError from "./util/assertError";
 // import { MockImportRegistry } from "./util/MockImportRegistry";
@@ -60,7 +60,7 @@ export class PluginTest {
     });
   }
   @skip
-  @test "figure out why the paths in sourcemap sources are wrong in prev test."(){
+  @test "figure out why the paths in sourcemap sources are wrong in prev test."() {
     // there's an extra directory 'test/' in the paths.
   }
 }
