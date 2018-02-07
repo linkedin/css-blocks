@@ -3,7 +3,7 @@ import * as path from "path";
 import * as debugGenerator from "debug";
 import { Block } from "../Block";
 import { IBlockFactory } from "./IBlockFactory";
-import BlockParser, { ParsedSource } from "../BlockParser";
+import { BlockParser, ParsedSource } from "../BlockParser";
 import { CssBlockOptionsReadonly } from "../options";
 import { Importer, FileIdentifier, ImportedFile } from "../importing";
 import { annotateCssContentWithSourceMap, Preprocessors, Preprocessor, ProcessedFile, Syntax, syntaxName } from "../preprocessing";

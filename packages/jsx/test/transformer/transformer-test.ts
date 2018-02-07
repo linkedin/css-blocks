@@ -7,7 +7,7 @@ import * as prettier from 'prettier';
 import * as testConsole from 'test-console';
 import c$$ from '@css-blocks/runtime';
 
-import JSXAnalysis, { MetaAnalysis } from '../../src/utils/Analysis';
+import { Analysis as JSXAnalysis, MetaAnalysis } from '../../src/utils/Analysis';
 import Transformer from '../../src';
 import { testParse as parse } from '../util';
 import { Optimizer, OptiCSSOptions, OptimizationResult  } from 'opticss';
@@ -20,8 +20,7 @@ function minify(s: string) {
   mock.restore();
   return prettier.format(s).replace(/\n\n/mg, '\n');
 }
-
-const mkPlugin = require('../../src/transformer/babel').default;
+import { makePlugin } from "../../src/transformer/babel";
 
 function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult, css: OptimizationResult}> {
   let filename = analysis.template.identifier;
@@ -41,7 +40,7 @@ function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partia
     let babelResult = babel.transform(code, {
       filename: filename,
       plugins: [
-        mkPlugin({rewriter})
+        makePlugin({rewriter})
       ],
       parserOpts: { plugins: [ 'jsx' ] }
     });

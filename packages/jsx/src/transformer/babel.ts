@@ -2,8 +2,8 @@ import { isConsoleLogStatement } from '../utils/isConsoleLogStatement';
 import { JSXElementAnalyzer } from '../analyzer/JSXElementAnalyzer';
 import { StyleMapping, PluginOptionsReader } from 'css-blocks';
 import { NodePath } from 'babel-traverse';
-import Rewriter from './index';
-import Analysis, { } from '../utils/Analysis';
+import { CSSBlocksJSXTransformer as Rewriter } from './index';
+import { Analysis } from '../utils/Analysis';
 import { PluginObj } from 'babel-core';
 import {
   identifier,
@@ -24,7 +24,7 @@ import {
   Expression,
 } from 'babel-types';
 
-import isBlockFilename from '../utils/isBlockFilename';
+import { isBlockFilename } from '../utils/isBlockFilename';
 import { classnamesHelper as generateClassName, HELPER_FN_NAME } from './classNameGenerator';
 // import { TemplateAnalysisError } from '../utils/Errors';
 import * as debugGenerator from 'debug';
@@ -50,7 +50,7 @@ const CAN_PARSE_EXTENSIONS = {
   '.jsx': true,
 };
 
-export default function mkTransform(transformOpts: { rewriter: Rewriter }): () => PluginObj<CssBlocksVisitor> {
+export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginObj<CssBlocksVisitor> {
   const rewriter = transformOpts.rewriter;
 
   return function transform(): PluginObj<CssBlocksVisitor> {

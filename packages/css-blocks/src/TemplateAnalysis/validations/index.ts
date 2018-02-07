@@ -4,9 +4,9 @@ import { ElementAnalysis } from "../ElementAnalysis";
 
 import { Validator } from "./Validator";
 
-import rootClassValidator from "./rootClassValidator";
-import classPairsValidator from "./classPairsValidator";
-import stateParentValidator from "./stateParentValidator";
+import { rootClassValidator } from "./rootClassValidator";
+import { classPairsValidator } from "./classPairsValidator";
+import { stateParentValidator } from "./stateParentValidator";
 
 export * from "./classPairsValidator";
 export * from "./rootClassValidator";
@@ -53,7 +53,7 @@ const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
  *
  * @param options A hash of tslint-style template validator options.
  */
-export default class TemplateValidator {
+export class TemplateValidator {
 
   private validators: Validator[] = [];
   private opts: TemplateValidatorOptions;

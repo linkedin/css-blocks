@@ -1,4 +1,4 @@
-export { default as loader } from "./loader";
-export { LoaderOptions } from "./LoaderOptions";
+export * from "./loader";
+export * from "./LoaderOptions";
 export * from "./Plugin";
 export * from "./CssAssets";

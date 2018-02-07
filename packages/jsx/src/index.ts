@@ -12,10 +12,10 @@ import {
   PluginOptionsReader as CssBlocksOptionsReader
 } from 'css-blocks';
 
-import importer from './importer';
-import analyzer from './analyzer';
-import CSSBlocksJSXTransformer from './transformer';
-import Analysis, { JSXTemplate, MetaAnalysis } from './utils/Analysis';
+import { importer } from './importer';
+import { analyzer } from './analyzer';
+import { CSSBlocksJSXTransformer } from './transformer';
+import { Analysis, JSXTemplate, MetaAnalysis } from './utils/Analysis';
 import { JSXParseError } from './utils/Errors';
 
 function readFile(filename: string, encoding: string): Promise<string>;
@@ -225,6 +225,7 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
   }
 }
 
+// tslint:disable-next-line:no-default-export
 export default {
   Analyzer: CSSBlocksJSXAnalyzer,
   Rewriter: CSSBlocksJSXTransformer

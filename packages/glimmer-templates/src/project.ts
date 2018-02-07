@@ -12,12 +12,12 @@ import resMapBuilder = require('@glimmer/resolution-map-builder');
 const buildResolutionMap = resMapBuilder.buildResolutionMap;
 import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
 
-import DEFAULT_MODULE_CONFIG from './module-config';
-import GlimmerImporter from "./GlimmerImporter";
+import { MODULE_CONFIG } from './module-config';
+import { GlimmerImporter } from "./GlimmerImporter";
 import { parseSpecifier } from "./utils";
 import { GlimmerProject, ResolvedPath, ResolvedFile } from "./GlimmerProject";
 
-export default class Project implements GlimmerProject {
+export class Project implements GlimmerProject {
   projectDir: string;
   map: resMapBuilder.ResolutionMap;
   resolver: Resolver;
@@ -36,7 +36,7 @@ export default class Project implements GlimmerProject {
     let { name } = pkg;
 
     let config = {
-      ...(moduleConfig || DEFAULT_MODULE_CONFIG),
+      ...(moduleConfig || MODULE_CONFIG),
       app: {
         name,
         rootName: name

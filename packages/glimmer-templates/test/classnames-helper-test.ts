@@ -4,7 +4,7 @@ import {
   print,
   AST,
 } from '@glimmer/syntax';
-import classnamesHelper from '../src/helpers/classnames';
+import { classnames } from '../src/helpers/classnames';
 import { classnamesHelper as helperGenerator } from "../src/ClassnamesHelperGenerator";
 import path = require('path');
 import { expect } from 'chai';
@@ -28,7 +28,7 @@ import { inspect } from "util";
 
 function run(ast: AST.MustacheStatement, helper?: (name: string, params: any[]) => any) {
   let args = ast.params.map(p => astToLiterals(p, helper));
-  return classnamesHelper(args);
+  return classnames(args);
 }
 
 function astToLiterals(node: AST.Expression, helper?: (name: string, params: any[]) => any): any {

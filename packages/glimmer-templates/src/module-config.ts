@@ -1,4 +1,4 @@
-export default {
+export const MODULE_CONFIG = {
   "types": {
     "application": { "definitiveCollection": "main" },
     "component": { "definitiveCollection": "components" },

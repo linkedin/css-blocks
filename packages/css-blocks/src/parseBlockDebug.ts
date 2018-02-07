@@ -10,7 +10,7 @@ import {
 import * as errors from "./errors";
 
 export type DebugChannel = 'comment' | 'stderr' | 'stdout';
-export default function parseBlockDebug(atRule: AtRule, sourceFile: string, block: Block): { block: Block, channel: DebugChannel } {
+export function parseBlockDebug(atRule: AtRule, sourceFile: string, block: Block): { block: Block, channel: DebugChannel } {
   let md = atRule.params.match(/([^\s]+) to (comment|stderr|stdout)/);
   if (!md) {
     throw new errors.InvalidBlockSyntax(

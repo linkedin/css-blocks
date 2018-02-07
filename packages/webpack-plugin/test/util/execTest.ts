@@ -9,7 +9,7 @@ const CR = /\r/g;
 
 // This test harness was adapted from the sass-loader test suite.
 
-export default function execTest(testId: string, options?: LoaderOptions) {
+export function execTest(testId: string, options?: LoaderOptions) {
     const entryPath = path.join(BLOCK_FIXTURES_DIRECTORY, testId + ".block.css");
     return runWebpackAsPromise(basicConfig(entryPath, options))
         .then(() => {

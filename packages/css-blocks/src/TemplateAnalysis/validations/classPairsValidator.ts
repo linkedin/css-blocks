@@ -7,7 +7,7 @@ import { Validator, ErrorCallback } from "./Validator";
  * @param err Error callback.
  */
 
-const classPairsValidator: Validator = (analysis, _templateAnalysis, err) => {
+export const classPairsValidator: Validator = (analysis, _templateAnalysis, err) => {
   // TODO: this doesn't work for dynamic classes
   let classPerBlock: Map<Block, BlockClass> = new Map();
   for (let container of analysis.classesFound(false)) {
@@ -60,5 +60,3 @@ function checkExisting(classPerBlock: Map<Block, BlockClass>, tmpClassPerBlock: 
   }
   return blocks;
 }
-
-export default classPairsValidator;

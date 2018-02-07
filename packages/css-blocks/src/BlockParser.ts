@@ -11,7 +11,7 @@ import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import regexpu = require('regexpu-core');
 import { FileIdentifier } from "./importing";
 import { Syntax } from "./preprocessing";
-import parseBlockDebug from "./parseBlockDebug";
+import { parseBlockDebug } from "./parseBlockDebug";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
@@ -92,7 +92,7 @@ export interface ParsedSource {
  * Parser that, given a PostCSS AST will return a `Block` object. Main public
  * interface is `BlockParser.parse`.
  */
-export default class BlockParser {
+export class BlockParser {
   private opts: OptionsReader;
   private factory: IBlockFactory;
 

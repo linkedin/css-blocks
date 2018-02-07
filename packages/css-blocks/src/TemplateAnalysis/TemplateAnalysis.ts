@@ -4,7 +4,7 @@ import { BlockFactory } from "../BlockFactory";
 import { CustomLocalScope } from "../util/LocalScope";
 import { StyleAnalysis } from "./StyleAnalysis";
 import { Block, OBJ_REF_SPLITTER, Style } from "../Block";
-import TemplateValidator, { TemplateValidatorOptions } from "./validations";
+import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 import {
   TemplateTypes,
   SerializedTemplateInfo,

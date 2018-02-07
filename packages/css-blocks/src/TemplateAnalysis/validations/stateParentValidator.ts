@@ -6,7 +6,7 @@ import { Validator } from "./Validator";
  * @param err Error callback.
  */
 
-const stateParentValidator: Validator = (analysis, _templateAnalysis, err) => {
+export const stateParentValidator: Validator = (analysis, _templateAnalysis, err) => {
   for (let state of analysis.statesFound()) {
     if (!analysis.hasClass(state.blockClass!)) {
       err(`Cannot use state "${state.asSource()}" without parent ` +
@@ -14,5 +14,3 @@ const stateParentValidator: Validator = (analysis, _templateAnalysis, err) => {
     }
   }
 };
-
-export default stateParentValidator;

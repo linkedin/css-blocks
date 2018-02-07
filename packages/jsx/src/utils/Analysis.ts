@@ -46,7 +46,7 @@ TemplateInfoFactory.constructors['Opticss.JSXTemplate'] = JSXTemplate.deserializ
 * Extension of the default css-bocks analytics object to store blocks and other
 * files discovered in the dependency tree.
 */
-export default class Analysis extends TemplateAnalysis<'Opticss.JSXTemplate'> {
+export class Analysis extends TemplateAnalysis<'Opticss.JSXTemplate'> {
 
   template: JSXTemplate;
   parent: MetaAnalysis;

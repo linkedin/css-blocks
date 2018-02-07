@@ -1,13 +1,13 @@
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 import { Block, Style } from "../Block";
-import BlockParser from "../BlockParser";
+import { BlockParser } from "../BlockParser";
 import * as errors from "../errors";
 import { OptionsReader } from "../OptionsReader";
 import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import { QueryKeySelector } from "../query";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
-import * as conflictDetection from "./conflictDetection";
+import { Conflicts, detectConflicts } from "./conflictDetection";
 
 enum ConflictType {
   conflict,
@@ -55,7 +55,7 @@ function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
  * and any other explititly referenced blocks where resolution rules are applied, and
  * resolves property values accordingly.
  */
-export default class ConflictResolver {
+export class ConflictResolver {
   readonly opts: OptionsReader;
 
   constructor(opts: OptionsReader) {
@@ -78,8 +78,8 @@ export default class ConflictResolver {
 
         // These two conflicts caches persist between comma seperated selectors
         // so we don't resolve the same Properties or Style twice in a single pass.
-        let handledConflicts = new conflictDetection.Conflicts<string>();
-        let handledObjects = new conflictDetection.Conflicts<Style>();
+        let handledConflicts = new Conflicts<string>();
+        let handledObjects = new Conflicts<Style>();
 
         // For each key selector:
         let parsedSelectors = block.getParsedSelectors(rule);
@@ -104,7 +104,7 @@ export default class ConflictResolver {
 
           // Handle the inheritance conflicts
           let baseSource = base.asSource();
-          let conflicts = conflictDetection.detectConflicts(obj, base);
+          let conflicts = detectConflicts(obj, base);
           let handledConflictSet = handledConflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
           let conflictingProps = conflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
 

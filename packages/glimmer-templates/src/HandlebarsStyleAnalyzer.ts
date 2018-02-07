@@ -9,7 +9,7 @@ import {
   PluginOptionsReader,
   BlockFactory,
 } from "css-blocks";
-import Project from "./project";
+import { Project } from "./project";
 import { ResolvedFile } from "./GlimmerProject";
 import DependencyAnalyzer from "glimmer-analyzer";
 import * as debugGenerator from 'debug';

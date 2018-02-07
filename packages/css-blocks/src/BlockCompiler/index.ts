@@ -2,14 +2,14 @@ import * as postcss from "postcss";
 import { OptionsReader } from "../OptionsReader";
 import { PluginOptions } from "../options";
 import { Block } from "../Block";
-import ConflictResolver from "./ConflictResolver";
+import { ConflictResolver } from "./ConflictResolver";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
-import parseBlockDebug from "../parseBlockDebug";
+import { parseBlockDebug } from "../parseBlockDebug";
 /**
  * Compiler that, given a Block will return a transformed AST
  * interface is `BlockParser.parse`.
  */
-export default class BlockCompiler {
+export class BlockCompiler {
   private opts: OptionsReader;
   private postcss: typeof postcss;
 

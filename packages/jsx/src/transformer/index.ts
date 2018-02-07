@@ -18,7 +18,7 @@ export interface RewriterOutput {
 //       be replaced by serializing the Mapping to JSON in the loader, appending
 //       it in a comment sourcemaps style to the file, and hydrating/removing it
 //       in the transformer. Remove this when that is added.
-export default class CSSBlocksJSXTransformer {
+export class CSSBlocksJSXTransformer {
 
   styleMapping: StyleMapping | null;
   cssBlockOptions: CssBlockOptionsReadonly;

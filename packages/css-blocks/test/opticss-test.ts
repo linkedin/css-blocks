@@ -1,5 +1,5 @@
 import { ElementAnalysis } from '../src/TemplateAnalysis/ElementAnalysis';
-import BlockCompiler from '../src/BlockCompiler';
+import { BlockCompiler } from '../src/BlockCompiler';
 import { StyleMapping } from '../src/TemplateRewriter/StyleMapping';
 import { assert } from "chai";
 import { suite, test, only } from "mocha-typescript";
@@ -20,7 +20,7 @@ import {
 } from "@opticss/util";
 
 import * as cssBlocks from '../src/errors';
-import BlockParser from "../src/BlockParser";
+import { BlockParser } from "../src/BlockParser";
 import { BlockFactory } from "../src/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockClass, State } from "../src/Block";

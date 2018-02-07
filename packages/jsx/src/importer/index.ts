@@ -16,9 +16,9 @@ import {
   isImportNamespaceSpecifier
 } from 'babel-types';
 
-import Analysis, { JSXTemplate } from '../utils/Analysis';
+import { Analysis, JSXTemplate } from '../utils/Analysis';
 import { parseFileWith, JSXAnalyzerOptions } from '../index';
-import isBlockFilename from '../utils/isBlockFilename';
+import { isBlockFilename } from '../utils/isBlockFilename';
 import { TemplateImportError, ErrorLocation } from '../utils/Errors';
 import * as debugGenerator from 'debug';
 
@@ -55,7 +55,7 @@ function throwIfRegistered(name: string, blockRegistry: BlockRegistry, loc: Erro
  * @param analysis The Analysis object used to parse this file.
  * @param blockFactory The BlockFactory we will use to ensure the Blocks and BlockPromised we wait for are singletons.
  */
-export default function importer(file: JSXTemplate, analysis: Analysis, blockFactory: BlockFactory, options: JSXAnalyzerOptions) {
+export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: BlockFactory, options: JSXAnalyzerOptions) {
 
   // Keep a running record of local block names while traversing so we can check
   // for name conflicts elsewhere in the file.

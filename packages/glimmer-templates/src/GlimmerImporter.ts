@@ -12,7 +12,7 @@ import { parseSpecifier } from "./utils";
 
 const glimmerImportIdentifier = /^glimmer:(.+)$/;
 
-export default class GlimmerImporter extends PathBasedImporter {
+export class GlimmerImporter extends PathBasedImporter {
   project: GlimmerProject;
   otherImporter: Importer;
   constructor(project: GlimmerProject, otherImporter?: Importer) {

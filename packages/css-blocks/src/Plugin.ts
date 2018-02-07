@@ -2,8 +2,8 @@ import * as postcss from "postcss";
 import { PluginOptions } from "./options";
 import { OptionsReader } from "./OptionsReader";
 import { BlockFactory } from "./BlockFactory";
-import BlockParser from "./BlockParser";
-import BlockCompiler from "./BlockCompiler";
+import { BlockParser } from "./BlockParser";
+import { BlockCompiler } from "./BlockCompiler";
 import * as errors from "./errors";
 export { PluginOptions } from "./options";
 

@@ -5,7 +5,7 @@
     "adjacent-overload-signatures": true,
     "no-for-in-array":true,
     "no-unsafe-any": {
-      "severity": "warn"
+      "severity": "off"
     },
     "indent": [true, "spaces"],
     "label-position": true,
@@ -21,8 +21,6 @@
     "semicolon": [true, "always"],
     "triple-equals": true,
     "class-name": true,
-    "no-default-export": {
-      "severity": "warn"
-    }
+    "no-default-export": true
   }
 }

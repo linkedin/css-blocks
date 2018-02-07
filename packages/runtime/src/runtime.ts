@@ -105,6 +105,7 @@ type Abort = () => false;
  *   - switch statements with defaults
  *   - switch statements where the value is not the same as the subState names
  */
+// tslint:disable-next-line:no-default-export
 export default function c(staticClasses: string | any[], stack?: any[]): string {
   if (Array.isArray(staticClasses)) {
     stack = staticClasses;

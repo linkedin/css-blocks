@@ -105,7 +105,7 @@ type IsSourceSet = (n: number) => boolean;
 type SetSource = (n: number) => void;
 type Abort = () => false;
 
-export default function classnames(stack: any[]): string {
+export function classnames(stack: any[]): string {
   let sources: boolean[] = [];
   let classes: string[] = [];
   let nSources = number(stack);

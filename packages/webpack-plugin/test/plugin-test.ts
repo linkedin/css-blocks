@@ -2,7 +2,7 @@ import * as glob from "glob";
 import * as path from "path";
 import * as fs from "fs";
 import { suite, test, skip } from "mocha-typescript";
-import execTest, { runWebpackAsPromise, readCss, readAsset, readCssSourceMap } from "./util/execTest";
+import { execTest, runWebpackAsPromise, readCss, readAsset, readCssSourceMap } from "./util/execTest";
 import { DIST_DIRECTORY, BLOCK_FIXTURES_DIRECTORY} from "./util/testPaths";
 import { config as extractTextConfig } from "./configs/extractTextConfig";
 import { config as templateConfig } from "./configs/templateConfig";

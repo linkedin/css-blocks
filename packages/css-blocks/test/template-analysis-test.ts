@@ -5,7 +5,7 @@ import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimiz
 import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 
 import * as cssBlocks from "../src/errors";
-import BlockParser from "../src/BlockParser";
+import { BlockParser } from "../src/BlockParser";
 import { BlockFactory } from "../src/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockClass, State } from "../src/Block";

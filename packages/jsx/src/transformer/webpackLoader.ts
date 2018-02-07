@@ -21,7 +21,7 @@ function trackBlockDependencies(loaderContext: LoaderContext, block: Block, opti
   });
 }
 
-export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void {
+export function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void {
 
   let callback = this.async();
   let thisLoader = this.loaders[this.loaderIndex];
