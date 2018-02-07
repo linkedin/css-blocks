@@ -76,6 +76,7 @@
       "ban-keywords",
       "allow-leading-underscore"
     ],
-    "no-redundant-jsdoc": true
+    "no-redundant-jsdoc": true,
+    "binary-expression-operand-order": true
   }
 }
