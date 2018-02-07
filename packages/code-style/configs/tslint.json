@@ -47,6 +47,7 @@
     "triple-equals": true,
     "class-name": true,
     "no-default-export": true,
-    "align": [true, "parameters", "arguments", "statements", "members", "elements"]
+    "align": [true, "parameters", "arguments", "statements", "members", "elements"],
+    "new-parens": true
   }
 }

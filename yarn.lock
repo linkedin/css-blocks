@@ -1121,9 +1121,9 @@ commander@2.9.0:
   dependencies:
     graceful-readlink ">= 1.0.0"
 
-commander@^2.9.0:
-  version "2.12.2"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/commander/-/commander-2.12.2.tgz#0cac80bab4a6bc32aee3f15c992d9427f8055a5a"
+commander@^2.12.1:
+  version "2.14.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/commander/-/commander-2.14.0.tgz#7b25325963e6aace20d3a9285b09379b0c2208b5"
 
 comment-regex@^1.0.0:
   version "1.0.0"
@@ -5288,20 +5288,25 @@ tslib@^1.7.1:
   version "1.8.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tslib/-/tslib-1.8.0.tgz#cf7b901153dc998b9da08b16d978132a44bf9092"
 
-tslint@^5.1.0, tslint@^5.4.3, tslint@^5.5.0:
-  version "5.8.0"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tslint/-/tslint-5.8.0.tgz#203a9a96a7af0f427b67260fca3c46da3a2a6819"
+tslib@^1.8.0:
+  version "1.9.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tslib/-/tslib-1.9.0.tgz#e37a86fda8cbbaf23a057f473c9f4dc64e5fc2e8"
+
+tslint@^5.9.1:
+  version "5.9.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tslint/-/tslint-5.9.1.tgz#1255f87a3ff57eb0b0e1f0e610a8b4748046c9ae"
   dependencies:
     babel-code-frame "^6.22.0"
     builtin-modules "^1.1.1"
-    chalk "^2.1.0"
-    commander "^2.9.0"
+    chalk "^2.3.0"
+    commander "^2.12.1"
     diff "^3.2.0"
     glob "^7.1.1"
+    js-yaml "^3.7.0"
     minimatch "^3.0.4"
     resolve "^1.3.2"
     semver "^5.3.0"
-    tslib "^1.7.1"
+    tslib "^1.8.0"
     tsutils "^2.12.1"
 
 tsutils@^2.12.1:

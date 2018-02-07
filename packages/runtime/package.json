@@ -32,7 +32,7 @@
     "@css-blocks/code-style": "^0.17.0",
     "grunt": "^1.0.1",
     "grunt-release": "^0.12.0",
-    "tslint": "^5.5.0",
+    "tslint": "^5.9.1",
     "typescript": "^2.3.4"
   }
 }

@@ -65,7 +65,7 @@
     "shelljs": "^0.7.8",
     "test-console": "^1.1.0",
     "ts-node": "^3.0.4",
-    "tslint": "^5.5.0",
+    "tslint": "^5.9.1",
     "watch": "^1.0.2"
   },
   "peerDependencies": {
