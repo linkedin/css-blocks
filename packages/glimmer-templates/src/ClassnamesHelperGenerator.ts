@@ -2,67 +2,44 @@ import {
   AST,
   builders,
 } from '@glimmer/syntax';
-
-import {
-  IndexedClassRewrite,
-  DynamicClasses,
-  isTrueCondition,
-  isFalseCondition,
-  hasDependency,
-  isSwitch,
-  isConditional,
-  Dependency,
-  Conditional,
-  HasState,
-  HasGroup,
-  Switch,
-  BooleanExpression,
-  OrExpression,
-  NotExpression,
-  AndExpression,
-  BlockClass,
-  Style
-} from "css-blocks";
-import {
-  TemplateElement,
-  TernaryExpression as TernaryAST,
-  BooleanExpression as BooleanAST,
-  StringExpression as StringAST,
-} from './ElementAnalyzer';
 import {
   isAndExpression,
-  isOrExpression,
   isNotExpression,
+  isOrExpression,
 } from "@opticss/template-api";
 import {
   assertNever,
-  unwrap,
   isSome,
+  unwrap,
 } from "@opticss/util";
-
-const enum SourceExpression {
-  ternary,
-  dependency,
-  boolean,
-  booleanWithDep,
-  switch,
-  switchWithDep,
-}
-
-const enum FalsySwitchBehavior {
-  error,
-  unset,
-  default,
-}
-
-const enum BooleanExpr {
-  not = -1,
-  or = -2,
-  and = -3,
-}
-export type Builders = typeof builders;
-
+import {
+  AndExpression,
+  BlockClass,
+  BooleanExpression,
+  Conditional,
+  Dependency,
+  DynamicClasses,
+  hasDependency,
+  HasGroup,
+  HasState,
+  IndexedClassRewrite,
+  isConditional,
+  isFalseCondition,
+  isSwitch,
+  isTrueCondition,
+  NotExpression,
+  OrExpression,
+  Style,
+  Switch
+} from "css-blocks";
 import * as debugGenerator from 'debug';
+
+import {
+  BooleanExpression as BooleanAST,
+  StringExpression as StringAST,
+  TemplateElement,
+  TernaryExpression as TernaryAST,
+} from './ElementAnalyzer';
 const debug = debugGenerator("css-blocks:glimmer");
 
 export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: TemplateElement): AST.MustacheStatement {

@@ -1,13 +1,14 @@
-import * as path from 'path';
 import {
+  FileIdentifier,
+  filesystemImporter,
+  ImportedFile,
   Importer,
   PathBasedImporter,
-  FileIdentifier,
-  ImportedFile,
-  PluginOptionsReader,
-  filesystemImporter
+  PluginOptionsReader
 } from "css-blocks";
-import { ResolvedPath, GlimmerProject } from "./GlimmerProject";
+import * as path from 'path';
+
+import { GlimmerProject, ResolvedPath } from "./GlimmerProject";
 import { parseSpecifier } from "./utils";
 
 const glimmerImportIdentifier = /^glimmer:(.+)$/;

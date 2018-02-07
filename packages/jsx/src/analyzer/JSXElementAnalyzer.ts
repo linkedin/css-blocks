@@ -1,33 +1,33 @@
-import { Block } from 'css-blocks';
-import { ObjectDictionary, } from '@opticss/util';
 import {
   SourceLocation as TemplateSourceLocation,
   SourcePosition as TemplateSourcePosition
 } from '@opticss/element-analysis';
-import { NodePath, Binding } from 'babel-traverse';
+import { ObjectDictionary, } from '@opticss/util';
+import { Binding, NodePath } from 'babel-traverse';
 import {
+  AssignmentExpression,
   CallExpression,
-  JSXOpeningElement,
+  Expression,
+  Identifier,
   isCallExpression,
   isIdentifier,
   isJSXExpressionContainer,
   isJSXIdentifier,
   isMemberExpression,
-  Expression,
-  Node,
   isVariableDeclarator,
   JSXAttribute,
-  Identifier,
+  JSXOpeningElement,
+  Node,
   SourceLocation,
-  AssignmentExpression,
 } from 'babel-types';
+import { Block } from 'css-blocks';
 
+import { isCommonNameForStyling, isStyleFunction } from '../styleFunctions';
 import { MalformedBlockPath, TemplateAnalysisError } from '../utils/Errors';
+import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from '../utils/ExpressionReader';
 import { isConsoleLogStatement } from '../utils/isConsoleLogStatement';
 
-import { JSXElementAnalysis, Flags, newJSXElementAnalysis } from './types';
-import { isStyleFunction, isCommonNameForStyling } from '../styleFunctions';
-import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from '../utils/ExpressionReader';
+import { Flags, JSXElementAnalysis, newJSXElementAnalysis } from './types';
 
 export class JSXElementAnalyzer {
   private filename: string;

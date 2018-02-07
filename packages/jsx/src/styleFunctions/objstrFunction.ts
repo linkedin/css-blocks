@@ -1,21 +1,22 @@
+import { ObjectDictionary, } from '@opticss/util';
 import { Binding } from 'babel-traverse';
 import { ImportDeclaration } from 'babel-types';
-import { Block } from 'css-blocks';
-import { ObjectDictionary, } from '@opticss/util';
 import {
+  BooleanLiteral,
   CallExpression,
+  isBooleanLiteral,
   isLiteral,
   isObjectExpression,
   isObjectProperty,
-  logicalExpression,
-  BooleanLiteral,
-  isBooleanLiteral,
   isSpreadElement,
+  logicalExpression,
 } from 'babel-types';
+import { Block } from 'css-blocks';
 
 import { JSXElementAnalysis } from '../analyzer/types';
 import { TemplateAnalysisError } from '../utils/Errors';
 import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from '../utils/ExpressionReader';
+
 import { StyleFunctionAnalyzer } from './common';
 
 /**

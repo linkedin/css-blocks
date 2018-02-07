@@ -1,12 +1,12 @@
-import { Compiler as WebpackCompiler } from "webpack";
-import * as path from "path";
 import * as  async from "async";
-import * as fs from "fs";
-import * as postcss from "postcss";
-import { Source, RawSource, SourceMapSource, ConcatSource } from "webpack-sources";
-import { RawSourceMap } from "source-map";
 import * as convertSourceMap from "convert-source-map";
 import * as debugGenerator from 'debug';
+import * as fs from "fs";
+import * as path from "path";
+import * as postcss from "postcss";
+import { RawSourceMap } from "source-map";
+import { Compiler as WebpackCompiler } from "webpack";
+import { ConcatSource, RawSource, Source, SourceMapSource } from "webpack-sources";
 
 const debug = debugGenerator("css-blocks:webpack:assets");
 

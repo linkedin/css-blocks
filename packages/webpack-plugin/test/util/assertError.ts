@@ -1,6 +1,6 @@
 import { assert } from "chai";
-import * as postcss from "postcss";
 import cssBlocks = require("css-blocks");
+import * as postcss from "postcss";
 
 export function assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
   return promise.then(

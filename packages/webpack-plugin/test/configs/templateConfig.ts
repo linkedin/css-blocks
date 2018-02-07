@@ -1,28 +1,29 @@
-import { Configuration as WebpackConfiguration } from "webpack";
-import * as merge from "webpack-merge";
-import * as postcss from "postcss";
-import * as path from "path";
-import { config as defaultOutputConfig } from "./defaultOutputConfig";
-import { CssBlocksPlugin, CssAssets } from "../../src/index";
-import {
-  Block,
-  MultiTemplateAnalyzer,
-  StyleAnalysis,
-  MetaTemplateAnalysis,
-  TemplateAnalysis,
-  BlockFactory,
-  PluginOptionsReader
-} from "css-blocks";
-import {
-  TemplateInfo,
-  SerializedTemplateInfo,
-  TemplateInfoFactory,
-} from "@opticss/template-api";
 import {
   POSITION_UNKNOWN,
 } from "@opticss/element-analysis";
+import {
+  SerializedTemplateInfo,
+  TemplateInfo,
+  TemplateInfoFactory,
+} from "@opticss/template-api";
+import {
+  Block,
+  BlockFactory,
+  MetaTemplateAnalysis,
+  MultiTemplateAnalyzer,
+  PluginOptionsReader,
+  StyleAnalysis,
+  TemplateAnalysis
+} from "css-blocks";
+import * as path from "path";
+import * as postcss from "postcss";
+import { Configuration as WebpackConfiguration } from "webpack";
+import * as merge from "webpack-merge";
 
+import { CssAssets, CssBlocksPlugin } from "../../src/index";
 import { BLOCK_FIXTURES_DIRECTORY } from "../util/testPaths";
+
+import { config as defaultOutputConfig } from "./defaultOutputConfig";
 
 declare module "@opticss/template-api" {
   interface TemplateTypes {

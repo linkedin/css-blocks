@@ -1,14 +1,14 @@
 import {
+  SerializedTemplateInfo,
+  TemplateInfo,
+  TemplateInfoFactory,
+} from '@opticss/template-api';
+import { File } from 'babel-types';
+import {
   Block,
   MetaTemplateAnalysis,
   TemplateAnalysis,
 } from 'css-blocks';
-import { File } from 'babel-types';
-import {
-  TemplateInfo,
-  TemplateInfoFactory,
-  SerializedTemplateInfo,
-} from '@opticss/template-api';
 
 declare module '@opticss/template-api' {
   interface TemplateTypes {

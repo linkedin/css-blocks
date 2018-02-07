@@ -1,6 +1,7 @@
-import { isTrueCondition, isFalseCondition } from '../ElementAnalysis';
 import { Block, BlockClass, isBlockClass } from "../../Block";
-import { Validator, ErrorCallback } from "./Validator";
+import { isFalseCondition, isTrueCondition } from '../ElementAnalysis';
+
+import { ErrorCallback, Validator } from "./Validator";
 
 /**
  * Prevent two BlockClasses from the same Block hierarchy from being applied together.

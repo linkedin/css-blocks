@@ -1,5 +1,5 @@
-import * as debugGenerator from "debug";
 import * as async from "async";
+import * as debugGenerator from "debug";
 
 const debug = debugGenerator("css-blocks");
 interface PendingWork<WorkItem, Result> {

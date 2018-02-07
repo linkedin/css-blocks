@@ -1,17 +1,17 @@
-import * as debugGenerator from "debug";
 import {
-  ASTPluginEnvironment,
-  ASTPluginBuilder
+  ASTPluginBuilder,
+  ASTPluginEnvironment
 } from "@glimmer/syntax";
+import {
+  isTemplateType
+} from "@opticss/template-api";
 import {
   Block,
   PluginOptionsReader as CssBlocksOptionsReader,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
-import {
-  isTemplateType
-} from "@opticss/template-api";
+import * as debugGenerator from "debug";
 
 import { ResolvedFile } from "./GlimmerProject";
 import { Rewriter } from "./Rewriter";

@@ -1,7 +1,7 @@
 import {
   CssBlockOptions,
-  PluginOptions,
-  CssBlockOptionsReadonly
+  CssBlockOptionsReadonly,
+  PluginOptions
 } from "./options";
 
 import {
@@ -9,8 +9,8 @@ import {
 } from "./OutputMode";
 
 import {
-  Importer,
   filesystemImporter,
+  Importer,
   ImporterData
 } from "./importing";
 

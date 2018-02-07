@@ -1,11 +1,11 @@
-import { StyleAnalysis } from "../StyleAnalysis";
 import * as errors from '../../errors';
 import { ElementAnalysis } from "../ElementAnalysis";
+import { StyleAnalysis } from "../StyleAnalysis";
 
 import { Validator } from "./Validator";
 
-import { rootClassValidator } from "./rootClassValidator";
 import { classPairsValidator } from "./classPairsValidator";
+import { rootClassValidator } from "./rootClassValidator";
 import { stateParentValidator } from "./stateParentValidator";
 
 export * from "./classPairsValidator";

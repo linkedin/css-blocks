@@ -1,30 +1,32 @@
 // tslint:disable-next-line:no-unused-variable Imported for Documentation link
-import { OptionsReader } from '../OptionsReader';
-import { BlockFactory } from "../BlockFactory";
-import { CustomLocalScope } from "../util/LocalScope";
-import { StyleAnalysis } from "./StyleAnalysis";
-import { Block, OBJ_REF_SPLITTER, Style } from "../Block";
-import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 import {
-  TemplateTypes,
-  SerializedTemplateInfo,
-  TemplateInfo,
-  TemplateInfoFactory,
-  TemplateAnalysis as OptimizationTemplateAnalysis,
-  TemplateIntegrationOptions,
-} from "@opticss/template-api";
-import {
-  SourceLocation,
-  SourcePosition,
   isSourcePosition,
   POSITION_UNKNOWN,
+  SourceLocation,
+  SourcePosition,
 } from "@opticss/element-analysis";
+import {
+  SerializedTemplateInfo,
+  TemplateAnalysis as OptimizationTemplateAnalysis,
+  TemplateInfo,
+  TemplateInfoFactory,
+  TemplateIntegrationOptions,
+  TemplateTypes,
+} from "@opticss/template-api";
 import {
   ObjectDictionary,
   objectValues,
 } from "@opticss/util";
-import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
 import { IdentGenerator } from "opticss";
+
+import { Block, OBJ_REF_SPLITTER, Style } from "../Block";
+import { BlockFactory } from "../BlockFactory";
+import { OptionsReader } from '../OptionsReader';
+import { CustomLocalScope } from "../util/LocalScope";
+
+import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
+import { StyleAnalysis } from "./StyleAnalysis";
+import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 
 /**
  * This interface defines a JSON friendly serialization

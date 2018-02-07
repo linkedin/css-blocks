@@ -1,19 +1,19 @@
 import {
-  PluginOptions,
-  BlockFactory,
-  Importer,
-} from "css-blocks";
-import {
-  TemplateInfo,
-  TemplateInfoFactory,
-  SerializedTemplateInfo,
-} from "@opticss/template-api";
+  ResolutionMap
+} from '@glimmer/resolution-map-builder';
 import Resolver, {
   BasicModuleRegistry
 } from '@glimmer/resolver';
 import {
-  ResolutionMap
-} from '@glimmer/resolution-map-builder';
+  SerializedTemplateInfo,
+  TemplateInfo,
+  TemplateInfoFactory,
+} from "@opticss/template-api";
+import {
+  BlockFactory,
+  Importer,
+  PluginOptions,
+} from "css-blocks";
 
 declare module "@opticss/template-api" {
   interface TemplateTypes {

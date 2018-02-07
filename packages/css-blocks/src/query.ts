@@ -1,13 +1,14 @@
-import { Block, Style } from "./Block";
-import postcss = require("postcss");
-import {
-  ClassifiedParsedSelectors,
-  QueryKeySelector as QueryKeySelectorImpl
-} from "opticss";
 import {
   Element,
   Tagname,
 } from "@opticss/element-analysis";
+import {
+  ClassifiedParsedSelectors,
+  QueryKeySelector as QueryKeySelectorImpl
+} from "opticss";
+import postcss = require("postcss");
+
+import { Block, Style } from "./Block";
 
 export interface Query {
   execute(container: postcss.Container): ClassifiedParsedSelectors;

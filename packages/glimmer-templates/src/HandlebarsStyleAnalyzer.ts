@@ -2,18 +2,19 @@ import { preprocess, traverse } from '@glimmer/syntax';
 import {
   Block,
   BlockClass,
-  TemplateAnalysis as SingleTemplateStyleAnalysis,
+  BlockFactory,
   MetaTemplateAnalysis as MetaStyleAnalysis,
-  TemplateAnalyzer,
   MultiTemplateAnalyzer,
   PluginOptionsReader,
-  BlockFactory,
+  TemplateAnalysis as SingleTemplateStyleAnalysis,
+  TemplateAnalyzer,
 } from "css-blocks";
-import { Project } from "./project";
-import { ResolvedFile } from "./GlimmerProject";
-import DependencyAnalyzer from "glimmer-analyzer";
 import * as debugGenerator from 'debug';
+import DependencyAnalyzer from "glimmer-analyzer";
+
 import { ElementAnalyzer } from './ElementAnalyzer';
+import { ResolvedFile } from "./GlimmerProject";
+import { Project } from "./project";
 
 export type StateContainer = Block | BlockClass;
 

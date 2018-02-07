@@ -1,11 +1,12 @@
-import * as postcss from "postcss";
 import * as inlineSourceMapComment from 'inline-source-map-comment';
-import {
-  CssBlockOptionsReadonly
-} from "./options";
+import * as postcss from "postcss";
 import {
   RawSourceMap
 } from "source-map";
+
+import {
+  CssBlockOptionsReadonly
+} from "./options";
 
 declare module "./options" {
   export interface CssBlockOptions {

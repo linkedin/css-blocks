@@ -1,33 +1,34 @@
-import { isConsoleLogStatement } from '../utils/isConsoleLogStatement';
-import { JSXElementAnalyzer } from '../analyzer/JSXElementAnalyzer';
-import { StyleMapping, PluginOptionsReader } from 'css-blocks';
-import { NodePath } from 'babel-traverse';
-import { CSSBlocksJSXTransformer as Rewriter } from './index';
-import { Analysis } from '../utils/Analysis';
 import { PluginObj } from 'babel-core';
+import { NodePath } from 'babel-traverse';
 import {
+  AssignmentExpression,
+  Expression,
+  Identifier,
   identifier,
-  stringLiteral,
   importDeclaration,
+  ImportDeclaration,
   importDefaultSpecifier,
+  isJSXExpressionContainer,
   jSXAttribute,
+  JSXAttribute,
   jSXExpressionContainer,
   jSXIdentifier,
-  ImportDeclaration,
   JSXOpeningElement,
-  Statement,
-  isJSXExpressionContainer,
-  JSXAttribute,
   Node,
-  AssignmentExpression,
-  Identifier,
-  Expression,
+  Statement,
+  stringLiteral,
 } from 'babel-types';
-
-import { isBlockFilename } from '../utils/isBlockFilename';
-import { classnamesHelper as generateClassName, HELPER_FN_NAME } from './classNameGenerator';
+import { PluginOptionsReader, StyleMapping } from 'css-blocks';
 // import { TemplateAnalysisError } from '../utils/Errors';
 import * as debugGenerator from 'debug';
+
+import { JSXElementAnalyzer } from '../analyzer/JSXElementAnalyzer';
+import { Analysis } from '../utils/Analysis';
+import { isBlockFilename } from '../utils/isBlockFilename';
+import { isConsoleLogStatement } from '../utils/isConsoleLogStatement';
+
+import { classnamesHelper as generateClassName, HELPER_FN_NAME } from './classNameGenerator';
+import { CSSBlocksJSXTransformer as Rewriter } from './index';
 
 const debug = debugGenerator('css-blocks:jsx');
 

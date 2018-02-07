@@ -1,5 +1,6 @@
-import { parse, parseFile, JSXAnalyzerOptions } from '../src/index';
-import { BlockFactory, PluginOptionsReader as CssBlocksOptionsReader, PluginOptions as CssBlocksOptions } from 'css-blocks';
+import { BlockFactory, PluginOptions as CssBlocksOptions, PluginOptionsReader as CssBlocksOptionsReader } from 'css-blocks';
+
+import { JSXAnalyzerOptions, parse, parseFile } from '../src/index';
 import { MetaAnalysis } from '../src/utils/Analysis';
 
 export function testParse(data: string, filename ='', opts?: JSXAnalyzerOptions, cssBlocksOpts?: CssBlocksOptions): Promise<MetaAnalysis> {

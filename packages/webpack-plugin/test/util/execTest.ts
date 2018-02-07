@@ -1,10 +1,12 @@
-import * as path from "path";
-import * as fs from "fs";
-import * as webpack from "webpack";
 import { assert } from "chai";
-import { DIST_DIRECTORY, BLOCK_FIXTURES_DIRECTORY } from "./testPaths";
+import * as fs from "fs";
+import * as path from "path";
+import * as webpack from "webpack";
+
 import { LoaderOptions } from "../../src/LoaderOptions";
 import { config as basicConfig } from "../configs/basicConfig";
+
+import { BLOCK_FIXTURES_DIRECTORY, DIST_DIRECTORY } from "./testPaths";
 const CR = /\r/g;
 
 // This test harness was adapted from the sass-loader test suite.

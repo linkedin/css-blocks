@@ -1,49 +1,50 @@
 import {
-  IndexedClassRewrite,
-  DynamicClasses,
-  isTrueCondition,
-  isFalseCondition,
-  hasDependency,
-  isSwitch,
-  isConditional,
-  Dependency,
-  Conditional,
-  HasState,
-  HasGroup,
-  Switch,
-  BooleanExpression,
-  OrExpression,
-  NotExpression,
-  AndExpression,
-  BlockClass,
-  Style
-} from 'css-blocks';
-import {
-  JSXElementAnalysis,
-  TernaryExpression as TernaryAST,
-  BooleanExpression as BooleanAST,
-  StringExpression as StringAST,
-} from '../analyzer/types';
-import {
   isAndExpression,
-  isOrExpression,
   isNotExpression,
+  isOrExpression,
 } from '@opticss/template-api';
 import {
   assertNever,
-  unwrap,
   isSome,
+  unwrap,
 } from '@opticss/util';
 import {
   arrayExpression,
   callExpression,
-  numericLiteral,
-  stringLiteral,
-  nullLiteral,
-  identifier,
   CallExpression,
   Expression,
+  identifier,
+  nullLiteral,
+  numericLiteral,
+  stringLiteral,
 } from 'babel-types';
+import {
+  AndExpression,
+  BlockClass,
+  BooleanExpression,
+  Conditional,
+  Dependency,
+  DynamicClasses,
+  hasDependency,
+  HasGroup,
+  HasState,
+  IndexedClassRewrite,
+  isConditional,
+  isFalseCondition,
+  isSwitch,
+  isTrueCondition,
+  NotExpression,
+  OrExpression,
+  Style,
+  Switch
+} from 'css-blocks';
+
+import {
+  BooleanExpression as BooleanAST,
+  JSXElementAnalysis,
+  StringExpression as StringAST,
+  TernaryExpression as TernaryAST,
+} from '../analyzer/types';
 
 // TODO: detect conflicts and pick an available name.
 export const HELPER_FN_NAME ='c$$';

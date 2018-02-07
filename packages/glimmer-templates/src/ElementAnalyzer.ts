@@ -1,10 +1,11 @@
 import { AST, print } from '@glimmer/syntax';
-import { Block, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader, DynamicClasses, BlockClass, SubState, } from "css-blocks";
-import { ResolvedFile } from "./GlimmerProject";
-import { cssBlockError } from "./utils";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import { assertNever, ObjectDictionary } from "@opticss/util";
+import { Block, BlockClass, DynamicClasses, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader, SubState, } from "css-blocks";
 import * as debugGenerator from "debug";
+
+import { ResolvedFile } from "./GlimmerProject";
+import { cssBlockError } from "./utils";
 
 export type TernaryExpression = AST.Expression;
 export type StringExpression = AST.MustacheStatement | AST.ConcatStatement;

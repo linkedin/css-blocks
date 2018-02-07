@@ -1,12 +1,14 @@
+import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
+
 import { Block, Style } from "../Block";
 import { BlockParser } from "../BlockParser";
-import * as errors from "../errors";
 import { OptionsReader } from "../OptionsReader";
-import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
-import { QueryKeySelector } from "../query";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
+import * as errors from "../errors";
+import { QueryKeySelector } from "../query";
+
 import { Conflicts, detectConflicts } from "./conflictDetection";
 
 enum ConflictType {

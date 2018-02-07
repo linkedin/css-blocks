@@ -1,26 +1,18 @@
-import { assert } from 'chai';
-import { suite, test, skip } from 'mocha-typescript';
+import c$$ from '@css-blocks/runtime';
+import { TemplateIntegrationOptions } from '@opticss/template-api';
 import * as babel from 'babel-core';
-import { StyleMapping, PluginOptionsReader, CssBlockOptions, BlockCompiler } from 'css-blocks';
+import { assert } from 'chai';
+import { BlockCompiler, CssBlockOptions, PluginOptionsReader, StyleMapping } from 'css-blocks';
+import { skip, suite, test } from 'mocha-typescript';
+import { OptiCSSOptions, OptimizationResult, Optimizer  } from 'opticss';
 import * as postcss from 'postcss';
 import * as prettier from 'prettier';
 import * as testConsole from 'test-console';
-import c$$ from '@css-blocks/runtime';
 
-import { Analysis as JSXAnalysis, MetaAnalysis } from '../../src/utils/Analysis';
 import Transformer from '../../src';
-import { testParse as parse } from '../util';
-import { Optimizer, OptiCSSOptions, OptimizationResult  } from 'opticss';
-import { TemplateIntegrationOptions } from '@opticss/template-api';
-
-const mock = require('mock-fs');
-
-// Reduce whitespace.
-function minify(s: string) {
-  mock.restore();
-  return prettier.format(s).replace(/\n\n/mg, '\n');
-}
 import { makePlugin } from "../../src/transformer/babel";
+import { Analysis as JSXAnalysis, MetaAnalysis } from '../../src/utils/Analysis';
+import { testParse as parse } from '../util';
 
 function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult, css: OptimizationResult}> {
   let filename = analysis.template.identifier;

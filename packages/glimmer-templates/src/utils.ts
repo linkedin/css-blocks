@@ -1,6 +1,6 @@
 import { AST } from '@glimmer/syntax';
-import { CssBlockError } from "css-blocks";
 import { TemplateInfo } from "@opticss/template-api";
+import { CssBlockError } from "css-blocks";
 import { ClassifiedParsedSelectors } from "opticss";
 
 export function pathFromSpecifier(specifier: string) {

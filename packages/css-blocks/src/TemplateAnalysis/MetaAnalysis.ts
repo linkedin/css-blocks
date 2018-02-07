@@ -1,14 +1,15 @@
-import { OptionsReader } from '../OptionsReader';
+import {
+  TemplateAnalysis as OptimizedTemplateAnalysis,
+  TemplateIntegrationOptions,
+  TemplateTypes
+} from "@opticss/template-api";
 import * as debugGenerator from 'debug';
 
 import { Block, Style } from "../Block";
-import { TemplateAnalysis, SerializedTemplateAnalysis } from "./index";
-import {
-  TemplateTypes,
-  TemplateAnalysis as OptimizedTemplateAnalysis,
-  TemplateIntegrationOptions
-} from "@opticss/template-api";
+import { OptionsReader } from '../OptionsReader';
+
 import { StyleAnalysis } from "./StyleAnalysis";
+import { SerializedTemplateAnalysis, TemplateAnalysis } from "./index";
 
 let debug = debugGenerator("css-blocks");
 

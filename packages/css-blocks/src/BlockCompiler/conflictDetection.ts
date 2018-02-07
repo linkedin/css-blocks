@@ -1,5 +1,5 @@
 import { Style } from "../Block";
-import { shorthandsFor, longhandsFor } from "../shortHandProps";
+import { longhandsFor, shorthandsFor } from "../shortHandProps";
 
 export type Conflict = [string, string];
 

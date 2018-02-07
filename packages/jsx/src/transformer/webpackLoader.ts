@@ -1,4 +1,4 @@
-import { StyleMapping, PluginOptionsReader, Block } from 'css-blocks';
+import { Block, PluginOptionsReader, StyleMapping } from 'css-blocks';
 import * as debugGenerator from 'debug';
 
 const debug = debugGenerator('css-blocks:jsx');

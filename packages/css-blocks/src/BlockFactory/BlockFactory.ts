@@ -1,14 +1,16 @@
-import * as postcss from "postcss";
-import * as path from "path";
 import * as debugGenerator from "debug";
-import { Block } from "../Block";
-import { IBlockFactory } from "./IBlockFactory";
-import { BlockParser, ParsedSource } from "../BlockParser";
-import { CssBlockOptionsReadonly } from "../options";
-import { Importer, FileIdentifier, ImportedFile } from "../importing";
-import { annotateCssContentWithSourceMap, Preprocessors, Preprocessor, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
+import * as path from "path";
+import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
+
+import { Block } from "../Block";
+import { BlockParser, ParsedSource } from "../BlockParser";
+import { FileIdentifier, ImportedFile, Importer } from "../importing";
+import { CssBlockOptionsReadonly } from "../options";
+import { annotateCssContentWithSourceMap, Preprocessor, Preprocessors, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
 import { PromiseQueue } from "../util/PromiseQueue";
+
+import { IBlockFactory } from "./IBlockFactory";
 
 const debug = debugGenerator("css-blocks:BlockFactory");
 

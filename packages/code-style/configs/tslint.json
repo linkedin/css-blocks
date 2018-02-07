@@ -48,6 +48,14 @@
     "class-name": true,
     "no-default-export": true,
     "align": [true, "parameters", "arguments", "statements", "members", "elements"],
-    "new-parens": true
+    "new-parens": true,
+    "ordered-imports": [
+      true,
+      {
+        "import-sources-order": "lowercase-last",
+        "named-imports-order": "case-insensitive",
+        "grouped-imports": true
+      }
+    ]
   }
 }

@@ -1,20 +1,20 @@
-import * as debugGenerator from 'debug';
 import {
   AST,
-  Syntax,
-  NodeVisitor
+  NodeVisitor,
+  Syntax
 } from '@glimmer/syntax';
 import {
   Block,
-  PluginOptionsReader as CssBlocksOptionsReader,
   PluginOptions as CssBlocksOpts,
+  PluginOptionsReader as CssBlocksOptionsReader,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
+import * as debugGenerator from 'debug';
 
-import { ResolvedFile } from "./GlimmerProject";
-import { ElementAnalyzer } from "./ElementAnalyzer";
 import { classnamesHelper } from "./ClassnamesHelperGenerator";
+import { ElementAnalyzer } from "./ElementAnalyzer";
+import { ResolvedFile } from "./GlimmerProject";
 
 const DEBUG = debugGenerator("css-blocks:glimmer");
 

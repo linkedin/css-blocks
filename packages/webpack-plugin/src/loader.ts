@@ -1,7 +1,7 @@
-import { loader } from "webpack";
-import postcss = require("postcss");
-import * as loaderUtils from "loader-utils";
 import cssBlocks from "css-blocks";
+import * as loaderUtils from "loader-utils";
+import postcss = require("postcss");
+import { loader } from "webpack";
 
 /**
  * The css-blocks loader makes css-blocks available to webpack modules.

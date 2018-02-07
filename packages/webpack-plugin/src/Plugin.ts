@@ -1,30 +1,30 @@
-import Tapable = require('tapable');
-import { Plugin as WebpackPlugin, Compiler as WebpackCompiler } from "webpack";
 import * as debugGenerator from 'debug';
-import * as postcss from 'postcss';
 import * as path from 'path';
+import * as postcss from 'postcss';
 import { SourceMapConsumer, SourceMapGenerator } from "source-map";
-import { SourceMapSource, Source, RawSource } from 'webpack-sources';
+import Tapable = require('tapable');
+import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
+import { RawSource, Source, SourceMapSource } from 'webpack-sources';
 
 import {
-  MultiTemplateAnalyzer,
-  MetaTemplateAnalysis,
+  TemplateTypes
+} from "@opticss/template-api";
+import {
   Block,
   BlockCompiler,
+  MetaTemplateAnalysis,
+  MultiTemplateAnalyzer,
   PluginOptions as CssBlocksOptions,
   PluginOptionsReader as CssBlocksOptionsReader,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
 import {
-  TemplateTypes
-} from "@opticss/template-api";
-import {
-  Optimizer,
-  OptiCSSOptions,
-  DEFAULT_OPTIONS,
-  OptimizationResult,
   Actions,
+  DEFAULT_OPTIONS,
+  OptiCSSOptions,
+  OptimizationResult,
+  Optimizer,
 } from "opticss";
 
 export interface CssBlocksWebpackOptions {

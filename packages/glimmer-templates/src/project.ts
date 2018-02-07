@@ -1,21 +1,21 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as glob from 'glob';
-import * as postcss from "postcss";
 import {
+  BlockFactory,
   PluginOptions,
-  PluginOptionsReader,
-  BlockFactory
+  PluginOptionsReader
 } from "css-blocks";
+import * as fs from 'fs';
+import * as glob from 'glob';
+import * as path from 'path';
+import * as postcss from "postcss";
 
 import resMapBuilder = require('@glimmer/resolution-map-builder');
 const buildResolutionMap = resMapBuilder.buildResolutionMap;
 import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
 
-import { MODULE_CONFIG } from './module-config';
 import { GlimmerImporter } from "./GlimmerImporter";
+import { GlimmerProject, ResolvedFile, ResolvedPath } from "./GlimmerProject";
+import { MODULE_CONFIG } from './module-config';
 import { parseSpecifier } from "./utils";
-import { GlimmerProject, ResolvedPath, ResolvedFile } from "./GlimmerProject";
 
 export class Project implements GlimmerProject {
   projectDir: string;

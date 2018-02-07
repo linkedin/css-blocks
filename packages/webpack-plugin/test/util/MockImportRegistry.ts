@@ -1,7 +1,7 @@
-import * as path from "path";
 import { assert } from "chai";
+import * as path from "path";
 
-import { ImportedFile, Importer, PluginOptionsReader, PathBasedImporter, Syntax } from "css-blocks";
+import { ImportedFile, Importer, PathBasedImporter, PluginOptionsReader, Syntax } from "css-blocks";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 

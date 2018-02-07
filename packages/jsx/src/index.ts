@@ -1,19 +1,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import * as babylon from 'babylon';
-import * as typescript from 'typescript';
 import traverse from 'babel-traverse';
+import * as babylon from 'babylon';
 import {
   Block,
+  BlockFactory,
   MultiTemplateAnalyzer,
   PluginOptions as CssBlocksOptions,
-  BlockFactory,
   PluginOptionsReader as CssBlocksOptionsReader
 } from 'css-blocks';
+import * as typescript from 'typescript';
 
-import { importer } from './importer';
 import { analyzer } from './analyzer';
+import { importer } from './importer';
 import { CSSBlocksJSXTransformer } from './transformer';
 import { Analysis, JSXTemplate, MetaAnalysis } from './utils/Analysis';
 import { JSXParseError } from './utils/Errors';

@@ -1,26 +1,25 @@
+import { NodePath } from 'babel-traverse';
+import {
+  ClassDeclaration,
+  Function,
+  Identifier,
+  ImportDeclaration,
+  isIdentifier,
+  isImportDefaultSpecifier,
+  isImportNamespaceSpecifier,
+  isImportSpecifier,
+  VariableDeclaration,
+  VariableDeclarator
+} from 'babel-types';
+import { Block, BlockFactory } from 'css-blocks';
+import * as debugGenerator from 'debug';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Block, BlockFactory } from 'css-blocks';
-import { NodePath } from 'babel-traverse';
-import {
-  ImportDeclaration,
-  VariableDeclaration,
-  VariableDeclarator,
-  Function,
-  Identifier,
-  isIdentifier,
-  ClassDeclaration,
-  isImportDefaultSpecifier,
-  isImportSpecifier,
-  isImportNamespaceSpecifier
-} from 'babel-types';
-
+import { JSXAnalyzerOptions, parseFileWith } from '../index';
 import { Analysis, JSXTemplate } from '../utils/Analysis';
-import { parseFileWith, JSXAnalyzerOptions } from '../index';
+import { ErrorLocation, TemplateImportError } from '../utils/Errors';
 import { isBlockFilename } from '../utils/isBlockFilename';
-import { TemplateImportError, ErrorLocation } from '../utils/Errors';
-import * as debugGenerator from 'debug';
 
 const debug = debugGenerator('css-blocks:jsx');
 

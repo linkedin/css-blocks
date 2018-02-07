@@ -1,4 +1,4 @@
-import { StyleMapping, PluginOptions, CssBlockOptionsReadonly, PluginOptionsReader } from 'css-blocks';
+import { CssBlockOptionsReadonly, PluginOptions, PluginOptionsReader, StyleMapping } from 'css-blocks';
 
 export interface RewriterOptions {
   meta?: { [metaProp: string]: any };

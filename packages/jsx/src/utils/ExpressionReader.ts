@@ -1,24 +1,24 @@
 import { ObjectDictionary, objectValues } from '@opticss/util';
-import * as debugGenerator from 'debug';
-import { Block, BlockClass, State, isBlockClass, SubState } from 'css-blocks';
 import { Node } from 'babel-traverse';
 import {
+  BooleanLiteral,
+  CallExpression,
+  Expression,
+  isBooleanLiteral,
   isCallExpression,
+  isIdentifier,
   isJSXIdentifier,
   isJSXMemberExpression,
   isMemberExpression,
-  isStringLiteral,
-  isBooleanLiteral,
-  isIdentifier,
   isNumericLiteral,
-  StringLiteral,
+  isStringLiteral,
   NumericLiteral,
-  BooleanLiteral,
-  Expression,
-  CallExpression,
+  StringLiteral,
 } from 'babel-types';
+import { Block, BlockClass, isBlockClass, State, SubState } from 'css-blocks';
+import * as debugGenerator from 'debug';
 
-import { MalformedBlockPath, ErrorLocation } from '../utils/Errors';
+import { ErrorLocation, MalformedBlockPath } from '../utils/Errors';
 
 const debug = debugGenerator('css-blocks:jsx');
 

@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import { suite, test } from 'mocha-typescript';
+
 import { MetaAnalysis } from '../../src/utils/Analysis';
 import { testParse as parse } from '../util';
 

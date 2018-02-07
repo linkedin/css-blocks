@@ -1,17 +1,17 @@
+import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
 import * as postcss from 'postcss';
 import selectorParser = require('postcss-selector-parser');
-import { PluginOptions } from "./options";
-import { OptionsReader } from "./OptionsReader";
+import regexpu = require('regexpu-core');
+
 import { Block, StateInfo } from "./Block";
 import { IBlockFactory } from "./BlockFactory/IBlockFactory";
+import { OptionsReader } from "./OptionsReader";
+import { selectorSourceLocation, sourceLocation, SourceLocation } from "./SourceLocation";
 import * as errors from './errors';
-export { PluginOptions } from "./options";
-import { sourceLocation, selectorSourceLocation, SourceLocation } from "./SourceLocation";
-import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
-import regexpu = require('regexpu-core');
 import { FileIdentifier } from "./importing";
-import { Syntax } from "./preprocessing";
+import { PluginOptions } from "./options";
 import { parseBlockDebug } from "./parseBlockDebug";
+import { Syntax } from "./preprocessing";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);

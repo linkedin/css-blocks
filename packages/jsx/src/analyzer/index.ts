@@ -1,7 +1,8 @@
 import { NodePath } from 'babel-traverse';
-import { JSXOpeningElement, AssignmentExpression } from 'babel-types';
+import { AssignmentExpression, JSXOpeningElement } from 'babel-types';
 
 import { Analysis } from '../utils/Analysis';
+
 import { JSXElementAnalyzer } from './JSXElementAnalyzer';
 
 /**

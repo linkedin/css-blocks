@@ -1,17 +1,19 @@
-import { inspect } from 'util';
-import { Style } from '../Block';
-import { assertNever, objectValues, Maybe, maybe} from "@opticss/util";
 import {
   BooleanExpression,
   isAndExpression,
   isBooleanExpression,
   isNotExpression,
   isOrExpression,
+  isSimpleTagname,
   RewriteMapping as OptimizedMapping,
   SimpleAttribute,
-  SimpleTagname,
-  isSimpleTagname
+  SimpleTagname
 } from "@opticss/template-api";
+import { assertNever, Maybe, maybe, objectValues} from "@opticss/util";
+import { inspect } from 'util';
+
+import { Style } from '../Block';
+
 import { ClassRewrite, IndexedClassRewrite } from './ClassRewrite';
 
 export class IndexedClassMapping implements IndexedClassRewrite<Style> {

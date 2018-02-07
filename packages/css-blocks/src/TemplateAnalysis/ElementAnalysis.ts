@@ -1,40 +1,39 @@
 import {
-  unionInto,
-} from "../util/unionInto";
+  Attribute,
+  AttributeValueChoice,
+  AttributeValueChoiceOption,
+  AttributeValueSet,
+  AttributeValueSetItem,
+  attrValues,
+  Element,
+  isConstant,
+  POSITION_UNKNOWN,
+  SourceLocation,
+  Tagname,
+  ValueAbsent,
+  ValueConstant,
+} from "@opticss/element-analysis";
 import {
-  OptionsReader as CssBlocksOptionsReader,
-} from "../OptionsReader";
+  MultiMap,
+  ObjectDictionary,
+  objectValues,
+} from "@opticss/util";
 
 import {
   Block,
+  BlockClass,
   isBlockClass,
   isStateful,
   State,
-  BlockClass,
   Style,
   SubState,
 } from "../Block";
-
 import {
-  ObjectDictionary,
-  objectValues,
-  MultiMap,
-} from "@opticss/util";
+  OptionsReader as CssBlocksOptionsReader,
+} from "../OptionsReader";
 import {
-  Attribute,
-  AttributeValueSetItem,
-  Element,
-  SourceLocation,
-  Tagname,
-  attrValues,
-  ValueConstant,
-  ValueAbsent,
-  AttributeValueSet,
-  AttributeValueChoice,
-  AttributeValueChoiceOption,
-  isConstant,
-  POSITION_UNKNOWN,
-} from "@opticss/element-analysis";
+  unionInto,
+} from "../util/unionInto";
 
 export interface HasState<StateType extends State | SubState | number = State | SubState> {
   state: StateType;

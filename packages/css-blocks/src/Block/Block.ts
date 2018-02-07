@@ -1,19 +1,19 @@
+import { Attr, Attribute, AttributeNS, AttributeValueChoice, ValueAbsent, ValueConstant } from "@opticss/element-analysis";
+import { assertNever, MultiMap, ObjectDictionary } from "@opticss/util";
+import { objectValues } from "@opticss/util";
+import { CompoundSelector, ParsedSelector,
+         parseSelector, SelectorFactory } from "opticss";
 import * as postcss from 'postcss';
 import selectorParser = require('postcss-selector-parser');
-import { SelectorFactory, parseSelector,
-         ParsedSelector, CompoundSelector } from "opticss";
-import { Attribute, Attr, AttributeNS, ValueAbsent, ValueConstant, AttributeValueChoice } from "@opticss/element-analysis";
-import { ObjectDictionary, MultiMap, assertNever } from "@opticss/util";
 
-import { stateParser, isClassNode, isStateNode,
-         NodeAndType, BlockType, CLASS_NAME_IDENT } from "../BlockParser";
-import { CssBlockError } from "../errors";
-import { FileIdentifier } from "../importing";
+import { BlockType, CLASS_NAME_IDENT, isClassNode,
+         isStateNode, NodeAndType, stateParser } from "../BlockParser";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
-import { LocalScopedContext, HasLocalScope, HasScopeLookup } from "../util/LocalScope";
+import { CssBlockError } from "../errors";
+import { FileIdentifier } from "../importing";
+import { HasLocalScope, HasScopeLookup, LocalScopedContext } from "../util/LocalScope";
 import { unionInto } from '../util/unionInto';
-import { objectValues } from "@opticss/util";
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
   let index = s.indexOf('.');
