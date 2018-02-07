@@ -171,8 +171,10 @@ export class ExpressionReader {
       let found = block.lookup(`.${this.class}`) as BlockClass | undefined;
       if (!found) {
         let knownClasses = block.all(false).filter(s => isBlockClass(s)).map(c => c.asSource());
-        throw new MalformedBlockPath(`No class named "${this.class}" found on block "${this.block}". ` +
-          `Did you mean one of: ${knownClasses.join(', ')}`, this.loc);
+        throw new MalformedBlockPath(
+          `No class named "${this.class}" found on block "${this.block}". ` +
+            `Did you mean one of: ${knownClasses.join(', ')}`,
+          this.loc);
       } else {
         blockClass = found;
       }

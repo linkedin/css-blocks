@@ -216,7 +216,7 @@ export class CssBlocksPlugin
           error,
           compilation,
           assetPath: this.outputCssFile,
-        }, cb);
+        },                  cb);
         this.trace(`notified of compilation failure`);
       });
 

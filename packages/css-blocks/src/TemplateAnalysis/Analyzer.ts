@@ -1,6 +1,6 @@
 import { TemplateTypes } from "@opticss/template-api";
-import { TemplateAnalysis }  from "./TemplateAnalysis";
-import { MetaTemplateAnalysis }  from "./MetaAnalysis";
+import { TemplateAnalysis } from "./TemplateAnalysis";
+import { MetaTemplateAnalysis } from "./MetaAnalysis";
 import { BlockFactory } from "../BlockFactory";
 
 export interface AnalyzerBase {

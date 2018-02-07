@@ -109,7 +109,7 @@ export class Test {
 
     return parse(code).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not get here.');
-    }, (e) => {
+    },                      (e) => {
       assert.equal(e.message, '[css-blocks] AnalysisError: The spread operator is not allowed in CSS Block states. (9:18)');
     });
   }

@@ -29,7 +29,7 @@ export class Test {
       }`
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
-    }, e => {
+    },     e => {
       assert.equal(e.message, '[css-blocks] AnalysisError: Cannot mix class names with block styles. (8:10)');
     });
   }
@@ -214,7 +214,7 @@ export class Test {
       }`
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
-    }, e => {
+    },     e => {
       assert.equal(e.message, '[css-blocks] AnalysisError: illegal use of a style variable. (9:8)');
     });
   }
@@ -237,7 +237,7 @@ export class Test {
       }`
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
-    }, e => {
+    },     e => {
       assert.equal(e.message, '[css-blocks] AnalysisError: illegal assignment to a style variable. (9:8)');
     });
   }

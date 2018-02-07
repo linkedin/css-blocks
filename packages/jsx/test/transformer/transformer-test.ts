@@ -291,7 +291,8 @@ export class Test {
         let leSigh = true;
         let dynamic = 'yellow';
         assert.deepEqual(c$$([ 3, 2, 0, leSigh, 1, 0, 0, 1, 1, 0, 1, 1, 5, 1, 0, 1,
-              0, dynamic, 'yellow', 1, 2, 'c', -2, 2, 0, 1, 'd', 2]), 'c d');
+                               0, dynamic, 'yellow', 1, 2, 'c', -2, 2, 0, 1, 'd', 2]),
+                         'c d');
       });
     });
   }
@@ -345,7 +346,8 @@ export class Test {
         function conditional() { return true;}
         let dynamic = 'yellow';
         assert.deepEqual(c$$('b', [1,2,4,2,1,conditional() && `${dynamic}Color`,
-                                'yellowColor',1,1,'greenColor',1,0,'d',0,'c',1]), 'b c');
+                                   'yellowColor',1,1,'greenColor',1,0,'d',0,'c',1]),
+                         'b c');
       });
     });
   }

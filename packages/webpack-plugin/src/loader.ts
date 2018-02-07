@@ -27,7 +27,7 @@ export default function loader(this: loader.LoaderContext, content: string) {
   let result = postcss([plugin]).process(content, { from: this.resourcePath });
   result.then((result) => {
     callback(null, result.css);
-  }, (error) => {
+  },          (error) => {
     callback(error);
   });
 }

@@ -52,7 +52,7 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
       missing = missing + (n - last - 1);
       adjustments[n] = missing;
       return [missing, n];
-    }, [0, -1]);
+    },                 [0, -1]);
 
     function renumberer(i: number | BooleanExpression<number>, n: number, arr: number[]) {
       if (typeof i === "number") {

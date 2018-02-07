@@ -117,7 +117,7 @@ export class Test {
     `
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
-    }, (err) => {
+    },     (err) => {
       assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
     });
   }
@@ -140,7 +140,7 @@ export class Test {
     `
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
-    }, (err) => {
+    },     (err) => {
       assert.equal(err.message, '[css-blocks] TemplateError: Classes "baz" and "foo" from the same block are not allowed on the same element at the same time. (:10:6)');
     });
   }
@@ -238,7 +238,7 @@ export class Test {
     `
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
-    }, (err) => {
+    },     (err) => {
       assert.equal(err.message, `[css-blocks] AnalysisError: Undefined function for styling: objstr (4:18)`);
     });
   }
@@ -262,7 +262,7 @@ export class Test {
     `
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
-    }, (err) => {
+    },     (err) => {
       assert.equal(err.message, `[css-blocks] AnalysisError: Cannot override the objstr import of 'obj-str' (5:6)`);
     });
   }
@@ -287,7 +287,7 @@ export class Test {
     `
     ).then((analysis: MetaAnalysis) => {
       assert.ok(false, 'should not have succeeded.');
-    }, (err) => {
+    },     (err) => {
       assert.equal(err.message, `[css-blocks] MalformedBlockPath: Nested expressions are not allowed in block expressions. (8:9)`);
     });
   }

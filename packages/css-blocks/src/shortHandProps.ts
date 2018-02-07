@@ -102,7 +102,7 @@ export function allLonghandsFor(prop: string): string[] {
     return longhandsFor(prop).reduce<string[]>((memo, prop) => {
       memo.push(prop);
       return memo.concat(longhandsFor(prop));
-    }, []);
+    },                                         []);
   } else {
     return longhandsFor(prop);
   }

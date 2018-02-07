@@ -61,8 +61,8 @@ export function detectConflicts(obj1: Style, obj2: Style): Conflicts<Conflict> {
   obj1.propertyConcerns.getPseudos().forEach((pseudo) => {
     if (otherPseudos.has(pseudo)) {
       conflicts.pseudoConflicts.set(pseudo,
-        detectPropertyConflicts(obj1.propertyConcerns.getProperties(pseudo),
-                                obj2.propertyConcerns.getProperties(pseudo)));
+                                    detectPropertyConflicts(obj1.propertyConcerns.getProperties(pseudo),
+                                                            obj2.propertyConcerns.getProperties(pseudo)));
     }
   });
   return conflicts;

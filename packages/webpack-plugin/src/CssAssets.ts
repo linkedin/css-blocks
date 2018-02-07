@@ -108,12 +108,12 @@ interface SourceAndMap {
 
 export class CssAssets {
   options: CssAssetsOptions;
-    constructor(options: Partial<CssAssetsOptions>) {
+  constructor(options: Partial<CssAssetsOptions>) {
         let defaultOpts: CssAssetsOptions = { cssFiles: {}, concat: {}, emitSourceMaps: true, inlineSourceMaps: false };
         this.options = Object.assign(defaultOpts, options);
     }
 
-    apply(compiler: WebpackCompiler) {
+  apply(compiler: WebpackCompiler) {
         // install assets
         // This puts assets into the compilation results but they won't be part of
         // any chunk. the cssFiles option is an object where the keys are
@@ -156,7 +156,7 @@ export class CssAssets {
                 } else {
                     assetFileAsSource(path.resolve(compiler.options.context, sourcePath), handleSource);
                 }
-            }, cb);
+            },            cb);
         });
         // Concatenation
         // The concat option is an object where the keys are the
@@ -206,7 +206,7 @@ export class CssAssets {
             if (postProcessResults.length > 0) {
                 Promise.all(postProcessResults).then(() => {
                     cb();
-                }, error => {
+                },                                   error => {
                     cb(error);
                 });
             } else {

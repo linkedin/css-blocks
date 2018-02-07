@@ -33,7 +33,7 @@ export class PromiseQueue<WorkItem, Result> {
       this.debug(`[Job:${work.id}] Finished. Recording result.`);
       work.result = result;
       callback();
-    }, (error: any) => {
+    },                                    (error: any) => {
       this.debug(`[Job:${work.id}] Errored.`);
       callback(error);
     });

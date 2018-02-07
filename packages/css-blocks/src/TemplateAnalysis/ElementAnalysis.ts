@@ -361,7 +361,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
         res[1].push(style);
       }
       return res;
-    }, styles);
+    },                                                       styles);
 
     for (let classStyle of classStyles) {
       if (isStaticClass(classStyle)) {
@@ -733,7 +733,7 @@ function dynamicClassAndDependentStates(
     for (let dynState of dynStates) {
       if (isStateGroup(dynState)) {
         classValues.push(choices(isSwitch(dynState),
-                                     ...objectValues(dynState.group)));
+                                 ...objectValues(dynState.group)));
       } else {
         if (isConditional(dynState)) {
           classValues.push(choices(true, dynState.state));

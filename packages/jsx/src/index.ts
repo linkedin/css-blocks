@@ -37,7 +37,7 @@ function readFile(filename: string, encoding?: string | null): Promise<string | 
  * Default parser options.
  */
 
- export interface JSXAnalyzerOptions {
+export interface JSXAnalyzerOptions {
    baseDir: string;
    parserOptions?: object;
    aliases?: { [alias: string]: string };
@@ -124,13 +124,15 @@ export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory:
   let resolvedOpts = {...defaultOptions, ...opts};
   file = path.resolve(resolvedOpts.baseDir, file);
 
-  return readFile(file, 'utf8').then(data =>{
-    // Return promise for parsed analysis object.
-    let template: JSXTemplate = new JSXTemplate(file, data);
-    return parseWith(template, metaAnalysis, factory,resolvedOpts);
-  }, (err) => {
-    throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
-  });
+  return readFile(file, 'utf8')
+    .then(data =>{
+            // Return promise for parsed analysis object.
+            let template: JSXTemplate = new JSXTemplate(file, data);
+            return parseWith(template, metaAnalysis, factory,resolvedOpts);
+          },
+          (err) => {
+            throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
+          });
 }
 
 /**
@@ -165,15 +167,16 @@ function resolveAllRecursively<T>(promiseArray: Array<Promise<T>>): Promise<Arra
     let currentLength = promiseArray.length;
     let waitAgain = (promise: Promise<Array<T>>): void => {
       promise.then((values) => {
-        if (promiseArray.length === currentLength) {
-          resolve(values);
-        } else {
-          currentLength = promiseArray.length;
-          waitAgain(Promise.all(promiseArray));
-        }
-      }, (error) => {
-        reject(error);
-      });
+                     if (promiseArray.length === currentLength) {
+                       resolve(values);
+                     } else {
+                       currentLength = promiseArray.length;
+                       waitAgain(Promise.all(promiseArray));
+                     }
+                   },
+                   (error) => {
+                     reject(error);
+                   });
     };
     waitAgain(Promise.all(promiseArray));
   });
@@ -188,11 +191,13 @@ function resolveAllRecursively<T>(promiseArray: Array<Promise<T>>): Promise<Arra
 export function parseFile(file: string, factory: BlockFactory, opts: Partial<JSXAnalyzerOptions> = {}): Promise<MetaAnalysis> {
   let resolvedOpts = {...defaultOptions, ...opts};
 
-  return readFile(path.resolve(resolvedOpts.baseDir, file), 'utf8').then(data => {
-    return parse(file, data, factory, resolvedOpts);
-  }, err => {
-    throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
-  });
+  return readFile(path.resolve(resolvedOpts.baseDir, file), 'utf8')
+    .then(data => {
+            return parse(file, data, factory, resolvedOpts);
+          },
+          err => {
+            throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
+          });
 }
 
 export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {

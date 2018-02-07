@@ -246,15 +246,16 @@ function moustacheToExpression(expr: AST.MustacheStatement): AST.Expression {
 function moustacheToStringExpression(stringExpression: StringAST): AST.Expression {
   if (stringExpression.type === "ConcatStatement") {
     return builders.sexpr(builders.path("/css-blocks/components/concat"),
-      stringExpression.parts.reduce((arr, val) => {
-        if (val.type === 'TextNode') {
-          arr.push(builders.string(val.chars));
-        } else {
-          arr.push(val.path);
-        }
-        return arr;
-      }, new Array<AST.Expression>())
-    );
+                          stringExpression.parts.reduce(
+                            (arr, val) => {
+                              if (val.type === 'TextNode') {
+                                arr.push(builders.string(val.chars));
+                              } else {
+                                arr.push(val.path);
+                              }
+                              return arr;
+                            },
+                            new Array<AST.Expression>()));
   } else {
     return moustacheToExpression(stringExpression);
   }

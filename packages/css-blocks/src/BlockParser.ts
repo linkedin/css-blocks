@@ -580,7 +580,7 @@ export class BlockParser {
         }
       }
       return found;
-    }, null);
+    },                                              null);
 
     // If no rules found in selector, we have a problem. Throw.
     if (!result) {

@@ -401,8 +401,8 @@ export class Block
   // This is a really dumb impl
   find(sourceName: string): Style | undefined {
     let blockRefName: string | undefined;
-     let md = sourceName.match(CLASS_NAME_IDENT);
-     if (md && md.index === 0) {
+    let md = sourceName.match(CLASS_NAME_IDENT);
+    if (md && md.index === 0) {
        blockRefName = md[0];
        let blockRef: Block | undefined;
        this.eachBlockReference((name, block) => {
