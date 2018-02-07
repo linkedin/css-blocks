@@ -508,7 +508,7 @@ export class BlockParser {
       }
     });
 
-    let reducer = (found, n) => {
+    let reducer = (found: NodeAndType | null, n: selectorParser.Node) => {
 
       // If selecting the root element, indicate we have encountered it. If this
       // is not the first BlockType encountered, throw the appropriate error

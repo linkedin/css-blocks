@@ -40,6 +40,30 @@ import {
   TemplateElement,
   TernaryExpression as TernaryAST,
 } from './ElementAnalyzer';
+
+const enum SourceExpression {
+  ternary,
+  dependency,
+  boolean,
+  booleanWithDep,
+  switch,
+  switchWithDep,
+}
+
+const enum FalsySwitchBehavior {
+  error,
+  unset,
+  default,
+}
+
+const enum BooleanExpr {
+  not = -1,
+  or = -2,
+  and = -3,
+}
+
+export type Builders = typeof builders;
+
 const debug = debugGenerator("css-blocks:glimmer");
 
 export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: TemplateElement): AST.MustacheStatement {
