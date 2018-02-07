@@ -5,9 +5,6 @@ import { loader } from "webpack";
 
 /**
  * The css-blocks loader makes css-blocks available to webpack modules.
- *
- * @this {loader.LoaderContext}
- * @param {string} content
  */
 // tslint:disable-next-line:no-default-export
 export default function loader(this: loader.LoaderContext, content: string) {

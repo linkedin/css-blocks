@@ -75,6 +75,7 @@
       "check-format",
       "ban-keywords",
       "allow-leading-underscore"
-    ]
+    ],
+    "no-redundant-jsdoc": true
   }
 }

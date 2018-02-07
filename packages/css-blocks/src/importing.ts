@@ -252,7 +252,5 @@ export class PathAliasImporter extends FilesystemImporter {
 
 /**
  * Default importer. Returns `ImportedFile` from disk
- * @param fromFile
- * @param importPath
  */
 export let filesystemImporter = new FilesystemImporter();
