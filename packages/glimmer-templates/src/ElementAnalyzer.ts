@@ -14,11 +14,11 @@ export type TemplateElement  = ElementAnalysis<BooleanExpression, StringExpressi
 export type AnalysisElement  = ElementAnalysis<null, null, null>;
 
 type RewriteAnalysis = {
-  element: TemplateElement,
-  storeConditionals: true
+  element: TemplateElement;
+  storeConditionals: true;
 } | {
-  element: AnalysisElement,
-  storeConditionals: false
+  element: AnalysisElement;
+  storeConditionals: false;
 };
 
 const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;

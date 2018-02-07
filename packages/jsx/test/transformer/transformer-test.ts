@@ -14,7 +14,7 @@ import { makePlugin } from "../../src/transformer/babel";
 import { Analysis as JSXAnalysis, MetaAnalysis } from '../../src/utils/Analysis';
 import { testParse as parse } from '../util';
 
-function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult, css: OptimizationResult}> {
+function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult; css: OptimizationResult}> {
   let filename = analysis.template.identifier;
   let optimizer = new Optimizer(optimizationOpts, templateOpts);
   let reader = new PluginOptionsReader(cssBlocksOptions);

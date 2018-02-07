@@ -45,10 +45,10 @@ export class BlockFactory implements IBlockFactory {
   parser: BlockParser;
   preprocessors: Preprocessors;
   private promises: {
-    [identifier: string]: Promise<Block>
+    [identifier: string]: Promise<Block>;
   };
   private blocks: {
-    [identifier: string]: Block
+    [identifier: string]: Block;
   };
   private paths: {
     [path: string]: string;

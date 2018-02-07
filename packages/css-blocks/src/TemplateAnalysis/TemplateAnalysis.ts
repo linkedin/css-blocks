@@ -327,7 +327,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     let blockNames = Object.keys(serializedAnalysis.blocks);
     let info = TemplateInfoFactory.deserialize<K>(serializedAnalysis.template);
     let analysis = new TemplateAnalysis(info);
-    let blockPromises = new Array<Promise<{name: string, block: Block}>>();
+    let blockPromises = new Array<Promise<{name: string; block: Block}>>();
     blockNames.forEach(n => {
       let blockIdentifier = serializedAnalysis.blocks[n];
       let promise = blockFactory.getBlock(blockIdentifier).then(block => {

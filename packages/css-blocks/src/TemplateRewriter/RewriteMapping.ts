@@ -19,7 +19,7 @@ import { ClassRewrite, IndexedClassRewrite } from './ClassRewrite';
 export class IndexedClassMapping implements IndexedClassRewrite<Style> {
   inputs: Style[];
   staticClasses: string[];
-  private map: { [k: string]: BooleanExpression<number> | undefined; };
+  private map: { [k: string]: BooleanExpression<number> | undefined };
   private _inputMap: Map<Style, number>;
   constructor(inputs: Style[], staticClasses: string[], map: {[k: string]: BooleanExpression<number> | undefined}) {
     this.inputs = inputs;

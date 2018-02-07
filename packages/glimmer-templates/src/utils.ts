@@ -15,7 +15,7 @@ export function selectorCount(result: ClassifiedParsedSelectors) {
   return count;
 }
 
-export function parseSpecifier(specifier: string): { componentType: string; componentName: string; } | null {
+export function parseSpecifier(specifier: string): { componentType: string; componentName: string } | null {
   if (/^(component|template|stylesheet):(.*)$/.test(specifier)) {
     return {
       componentType: RegExp.$1,
