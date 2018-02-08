@@ -3,7 +3,7 @@ import * as errors from '../../errors';
 import selectorParser = require('postcss-selector-parser');
 import { CompoundSelector, ParsedSelector } from "opticss";
 import { sourceLocation, selectorSourceLocation as loc } from "../../SourceLocation";
-import { Block } from "../../Block";
+import { Block, Style } from "../../Block";
 import {
   stateParser,
   BlockType,
@@ -26,13 +26,15 @@ const LEGAL_COMBINATORS = new Set(["+", "~", " ", ">"]);
  * Should this selector be parsed as a block selector?
  * Right now, only ignore selectors in @keyframes blocks.
  * @param rule  The postcss rule to evaluate.
- * @returns If this is a block selctor or not.
+ * @returns If this is a block selector or not.
  **/
 function shouldBeParsedAsBlockSelector(rule: postcss.Rule): boolean {
   return !(rule.parent && rule.parent.type === "atrule" && (<postcss.AtRule>rule.parent).name === "keyframes");
 }
 
 export default async function parseStyles(root: postcss.Root, block: Block, file: string): Promise<Block> {
+
+  let styleRuleTuples: Set<[Style, postcss.Rule]> = new Set();
 
   // For each rule in this Block
   root.walkRules((rule) => {
@@ -67,7 +69,7 @@ export default async function parseStyles(root: postcss.Root, block: Block, file
             // process any inheritance properties present in this ruleset.
             case BlockType.root:
               if (!isKey) { break; }
-              block.rootClass.propertyConcerns.addProperties(rule, block);
+              styleRuleTuples.add([block.rootClass, rule]);
               break;
 
             // If a local state selector, ensure the state is registered with
@@ -77,7 +79,7 @@ export default async function parseStyles(root: postcss.Root, block: Block, file
               if (obj.blockName) { break; }
               let state = block.rootClass._ensureState(stateParser(<selectorParser.Attribute>obj.node));
               if (!isKey) { break; }
-              state.propertyConcerns.addProperties(rule, block);
+              styleRuleTuples.add([state, rule]);
               break;
 
             // If a class selector, ensure this class is registered with the
@@ -85,7 +87,7 @@ export default async function parseStyles(root: postcss.Root, block: Block, file
             case BlockType.class:
               let blockClass = block.ensureClass(obj.node.value!);
               if (!isKey) { break; }
-              blockClass.propertyConcerns.addProperties(rule, block);
+              styleRuleTuples.add([blockClass, rule]);
               break;
 
             // If a classState selector, ensure the class is registered with
@@ -96,7 +98,7 @@ export default async function parseStyles(root: postcss.Root, block: Block, file
               let classObj = block.ensureClass(classNode.value!);
               let classState = classObj._ensureState(stateParser(<selectorParser.Attribute>obj.node));
               if (!isKey) { break; }
-              classState.propertyConcerns.addProperties(rule, block);
+              styleRuleTuples.add([classState, rule]);
               break;
           }
         }
@@ -106,6 +108,12 @@ export default async function parseStyles(root: postcss.Root, block: Block, file
       }
     });
   });
+
+  // To allow self-referential block lookup when constructing ruleset concerns,
+  // we need to run `addRuleset()` only *after* all Style have been created.
+  for ( let [style, rule] of styleRuleTuples) {
+    style.rulesets.addRuleset(file, rule, style);
+  }
 
   return block;
 }
@@ -197,7 +205,7 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
     if (isClassLevelObject(nextObject)) {
       let conflictObj = foundObjects.find(obj => isClassLevelObject(obj) && obj.node.toString() !== nextObject.node.toString());
       if (conflictObj) {
-        // slightly better error verbage for objects of the same type.
+        // slightly better error verbiage for objects of the same type.
         if (conflictObj.blockType === nextObject.blockType) {
           throw new errors.InvalidBlockSyntax(
             `Distinct ${blockTypeName(conflictObj.blockType, { plural: true })} cannot be combined: ${rule.selector}`,

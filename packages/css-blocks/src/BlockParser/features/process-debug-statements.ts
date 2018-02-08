@@ -2,6 +2,7 @@ import parseBlockDebug from "../../parseBlockDebug";
 import * as postcss from 'postcss';
 import { Block } from "../../Block";
 import { OptionsReader } from "../../OptionsReader";
+import { BLOCK_DEBUG } from "../../blockSyntax";
 
 /**
  * Process all `@block-debug` statements, output debug statement to console or in comment as requested.
@@ -10,7 +11,7 @@ import { OptionsReader } from "../../OptionsReader";
  * @param block Block to resolve references for
  */
 export default async function processDebugStatements(root: postcss.Root, block: Block, file: string, opts: OptionsReader) {
-  root.walkAtRules("block-debug", (atRule) => {
+  root.walkAtRules(BLOCK_DEBUG, (atRule) => {
     let { block: ref, channel } = parseBlockDebug(atRule, file, block);
     let debugStr = ref.debug(opts);
     if (channel !== "comment") {

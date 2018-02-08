@@ -1,4 +1,6 @@
 import { Style } from "../Block";
+import { MultiMap } from "@opticss/util";
+import { SELF_SELECTOR } from "../blockSyntax";
 import { shorthandsFor, longhandsFor } from "../shortHandProps";
 
 export type Conflict = [string, string];
@@ -9,13 +11,9 @@ export type Conflict = [string, string];
  */
 export class Conflicts<T> {
   conflictingProps: Set<T> = new Set();
-  pseudoConflicts: Map<string, Set<T>> = new Map();
-  getConflictSet(pseudo?: string): Set<T> {
-    if (pseudo) {
-      return this.pseudoConflicts.get(pseudo.startsWith("::") ? pseudo : ":" + pseudo) || new Set<T>();
-    } else {
-      return this.conflictingProps;
-    }
+  pseudoConflicts: MultiMap<string, T> = new MultiMap();
+  getConflictSet(pseudo = SELF_SELECTOR): Set<T> {
+    return new Set(this.pseudoConflicts.get(pseudo));
   }
 }
 
@@ -55,14 +53,14 @@ function detectPropertyConflicts(props1: Set<string>, props2: Set<string>): Set<
  */
 export function detectConflicts(obj1: Style, obj2: Style): Conflicts<Conflict> {
   let conflicts = new Conflicts<Conflict>();
-  conflicts.conflictingProps = detectPropertyConflicts(obj1.propertyConcerns.getProperties(),
-                                                       obj2.propertyConcerns.getProperties());
-  let otherPseudos = obj2.propertyConcerns.getPseudos();
-  obj1.propertyConcerns.getPseudos().forEach((pseudo) => {
+  conflicts.conflictingProps = detectPropertyConflicts(obj1.rulesets.getProperties(),
+                                                       obj2.rulesets.getProperties());
+  let otherPseudos = obj2.rulesets.getPseudos();
+  obj1.rulesets.getPseudos().forEach((pseudo) => {
     if (otherPseudos.has(pseudo)) {
       conflicts.pseudoConflicts.set(pseudo,
-        detectPropertyConflicts(obj1.propertyConcerns.getProperties(pseudo),
-                                obj2.propertyConcerns.getProperties(pseudo)));
+        ...detectPropertyConflicts(obj1.rulesets.getProperties(pseudo),
+                                obj2.rulesets.getProperties(pseudo)));
     }
   });
   return conflicts;

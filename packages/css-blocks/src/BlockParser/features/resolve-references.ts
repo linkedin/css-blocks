@@ -4,6 +4,7 @@ import { IBlockFactory } from "../../BlockFactory/IBlockFactory";
 import { sourceLocation } from "../../SourceLocation";
 import { Block } from "../../Block";
 import { CLASS_NAME_IDENT } from "../block-intermediates";
+import { BLOCK_REFERENCE } from "../../blockSyntax";
 
 /**
  * Resolve all block references for a given block.
@@ -21,7 +22,7 @@ export default async function resolveReferences(block: Block, factory: IBlockFac
 
   // For each `@block-reference` expression, read in the block file, parse and
   // push to block references Promise array.
-  root.walkAtRules("block-reference", (atRule: any) => {
+  root.walkAtRules(BLOCK_REFERENCE, (atRule: any) => {
     let md = atRule.params.match(/^\s*((("|')?[-\w]+\3?)\s+from\s+)\s*("|')([^\4]+)\4\s*$/);
     if (!md) {
       throw new errors.InvalidBlockSyntax(

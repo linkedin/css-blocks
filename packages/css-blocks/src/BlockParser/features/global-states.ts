@@ -5,9 +5,10 @@ import { parseSelector } from "opticss";
 import { stateParser } from "../block-intermediates";
 import { sourceLocation as loc } from "../../SourceLocation";
 import { Block } from "../../Block";
+import { BLOCK_GLOBAL } from "../../blockSyntax";
 
 export default async function globalStates(root: postcss.Root, block: Block, file: string): Promise<Block> {
-  root.walkAtRules("block-global", (atRule) => {
+  root.walkAtRules(BLOCK_GLOBAL, (atRule) => {
 
     let selectors = parseSelector(atRule.params.trim());
 
