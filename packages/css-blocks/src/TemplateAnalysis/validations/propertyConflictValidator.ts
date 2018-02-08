@@ -4,7 +4,7 @@ import * as postcss from 'postcss';
 
 import { Validator } from "./Validator";
 import { Style, State } from "../../Block";
-import { RuleSet } from "../../Block/RulesetContainer";
+import { Ruleset } from "../../Block/RulesetContainer";
 import {
   isTrueCondition,
   isFalseCondition,
@@ -16,30 +16,18 @@ import {
 type Pseudo = string;
 type Property = string;
 
-type ConflictMap = MultiMap<Property, RuleSet>;
-type PropMap = TwoKeyMultiMap<Pseudo, Property, RuleSet>;
+type ConflictMap = MultiMap<Property, Ruleset>;
+type PropMap = TwoKeyMultiMap<Pseudo, Property, Ruleset>;
 
 /**
- * Merge Map B into Map A. Modifies Map A in place.
- * TODO: Move into @opticss/util
- * @param  a  Map A.
- * @param  b  Map B.
- */
-function merge(a: PropMap, b: PropMap) {
-  for (let [key1, key2, values] of b.entries() ) {
-    a.set(key1, key2, ...values);
-  }
-}
-
-/**
- * Add all properties to a supplied PropMap
+ * Add all Rulesets from a Style to the supplied PropMap
  * @param  propToBlocks  The PropMap to add properties to.
  * @param  obj  The Style object to track.
  */
 function add(propToBlocks: PropMap, obj: Style) {
   for (let pseudo of obj.rulesets.getPseudos()) {
     for (let prop of obj.rulesets.getProperties()) {
-      propToBlocks.set(pseudo, prop, ...obj.rulesets.getRuleSets(prop, pseudo));
+      propToBlocks.set(pseudo, prop, ...obj.rulesets.getRulesets(prop, pseudo));
     }
   }
 }
@@ -57,12 +45,12 @@ function evaluate(obj: Style, propToRules: PropMap, conflicts: ConflictMap) {
   // Ew! Quadruple for loops! Can we come up with a better way to do this!?
   //  - For each pseudo this Style may effect
   //  - For each property concern of this Style
-  //  - For each RuleSet we've already seen associated to this prop
-  //  - For each RuleSet relevant to this Style / prop
+  //  - For each Ruleset we've already seen associated to this prop
+  //  - For each Ruleset relevant to this Style / prop
   for (let pseudo of obj.rulesets.getPseudos()) {
     for (let prop of obj.rulesets.getProperties(pseudo)) {
       for (let other of propToRules.get(pseudo, prop)) {
-        for (let self of obj.rulesets.getRuleSets(prop, pseudo)) {
+        for (let self of obj.rulesets.getRulesets(prop, pseudo)) {
 
           // If these styles are from the same block, abort!
           if (other.style.block === self.style.block) { continue; }
@@ -88,11 +76,18 @@ function evaluate(obj: Style, propToRules: PropMap, conflicts: ConflictMap) {
   }
 }
 
-function recurse(prop: string, conflicts: ConflictMap): RuleSet[] {
+/**
+ * For every shorthand property in our conflicts map, remove all its possible longhand
+ * expressions that are set to the same value. Do this recursively to catch shorthands
+ * that expand to other shorthands.
+ * @param  prop  The property we're pruning.
+ * @param  conflicts  The ConflictMap we're modifying.
+ */
+function recursivelyPruneConflicts(prop: string, conflicts: ConflictMap): Ruleset[] {
   if (propParser.isShorthandProperty(prop)) {
     let longhands = propParser.expandShorthandProperty(prop, 'inherit', false, true);
     for (let longProp of Object.keys(longhands)) {
-      let rules = recurse(longProp, conflicts);
+      let rules = recursivelyPruneConflicts(longProp, conflicts);
       for (let rule of rules) {
         if (conflicts.hasValue(prop, rule)) {
           conflicts.deleteValue(longProp, rule);
@@ -103,13 +98,12 @@ function recurse(prop: string, conflicts: ConflictMap): RuleSet[] {
   return conflicts.get(prop);
 }
 
-function pruneConflicts(conflicts: ConflictMap) {
-  for (let [prop] of conflicts) {
-    if (propParser.isShorthandProperty(prop)) { recurse(prop, conflicts); }
-  }
-}
-
-function printRuleSetConflict(prop: string, rule: RuleSet) {
+/**
+ * Simple print function for a ruleset conflict error message.
+ * @param  prop  The property we're printing on this Ruleset.
+ * @param  rule  The Ruleset we're printing.
+ */
+function printRulesetConflict(prop: string, rule: Ruleset) {
   let decl = rule.declarations.get(prop);
   let node: postcss.Rule | postcss.Declaration =  decl ? decl.node : rule.node;
   let line = node.source.start && `:${node.source.start.line}`;
@@ -159,8 +153,8 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
       });
     }
 
-    merge(allConditions, truthyConditions);
-    merge(allConditions, falsyConditions);
+    allConditions.merge(truthyConditions);
+    allConditions.merge(falsyConditions);
 
   });
 
@@ -173,7 +167,7 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
         evaluate(state, allConditions, conflicts);
         add(stateConditions, state);
       });
-      merge(allConditions, stateConditions);
+      allConditions.merge(stateConditions);
     }
 
     else if (isBooleanState(condition)) {
@@ -182,7 +176,10 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
     }
   });
 
-  pruneConflicts(conflicts);
+  // Prune longhand conflicts that are properly covered by shorthand conflict reports.
+  for (let [prop] of conflicts) {
+    if (propParser.isShorthandProperty(prop)) { recursivelyPruneConflicts(prop, conflicts); }
+  }
 
   // For every set of conflicting properties, throw the error.
   if (conflicts.size) {
@@ -190,7 +187,7 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
     let details = '\n';
     for ( let [prop, matches] of conflicts.entries() ) {
       if (!prop || !matches.length) { return; }
-      details += `  ${prop}:\n${matches.map((m) => printRuleSetConflict(prop, m)).join('\n')}\n\n`;
+      details += `  ${prop}:\n${matches.map((m) => printRulesetConflict(prop, m)).join('\n')}\n\n`;
     }
     err(msg, null, details);
   }
