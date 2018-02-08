@@ -226,7 +226,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   }
 
   /**
-   * Find the closest common ancester Block between two Styles
+   * Find the closest common ancestor Block between two Styles
    * TODO: I think there is a more efficient way to do this.
    * @param relative  Style to compare ancestry with.
    * @returns The Style's common Block ancestor, or null.

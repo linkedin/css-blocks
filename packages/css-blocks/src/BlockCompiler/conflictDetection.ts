@@ -10,10 +10,9 @@ export type Conflict = [string, string];
  * pseudo elements that are in conflict with each other.
  */
 export class Conflicts<T> {
-  conflictingProps: Set<T> = new Set();
-  pseudoConflicts: MultiMap<string, T> = new MultiMap();
+  conflicts: MultiMap<string, T> = new MultiMap();
   getConflictSet(pseudo = SELF_SELECTOR): Set<T> {
-    return new Set(this.pseudoConflicts.get(pseudo));
+    return new Set(this.conflicts.get(pseudo));
   }
 }
 
@@ -53,15 +52,15 @@ function detectPropertyConflicts(props1: Set<string>, props2: Set<string>): Set<
  */
 export function detectConflicts(obj1: Style, obj2: Style): Conflicts<Conflict> {
   let conflicts = new Conflicts<Conflict>();
-  conflicts.conflictingProps = detectPropertyConflicts(obj1.rulesets.getProperties(),
-                                                       obj2.rulesets.getProperties());
   let otherPseudos = obj2.rulesets.getPseudos();
-  obj1.rulesets.getPseudos().forEach((pseudo) => {
-    if (otherPseudos.has(pseudo)) {
-      conflicts.pseudoConflicts.set(pseudo,
-        ...detectPropertyConflicts(obj1.rulesets.getProperties(pseudo),
-                                obj2.rulesets.getProperties(pseudo)));
-    }
-  });
+  for (let pseudo of obj1.rulesets.getPseudos()) {
+    if (!otherPseudos.has(pseudo)) { continue; }
+    conflicts.conflicts.set(pseudo,
+      ...detectPropertyConflicts(
+        obj1.rulesets.getProperties(pseudo),
+        obj2.rulesets.getProperties(pseudo)
+      )
+    );
+  }
   return conflicts;
 }

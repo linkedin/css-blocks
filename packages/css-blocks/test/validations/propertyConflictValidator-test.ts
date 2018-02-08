@@ -595,7 +595,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      return constructElement(block, '.klass', 'b.klass');
+      return constructElement(block, '.klass', 'b.klass').end();
     }).then(() => {
       assert.deepEqual(1, 1);
     });
@@ -673,7 +673,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      return constructElement(block, '.klass', 'b.klass', '.klass[state|foo]', 'b.klass[state|foo]');
+      return constructElement(block, '.klass', 'b.klass', '.klass[state|foo]', 'b.klass[state|foo]').end();
     }).then(() => {
       assert.deepEqual(1, 1);
     });
@@ -693,11 +693,25 @@ export class TemplateAnalysisTests {
       .klass { background: red; border-color: yellow; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      return constructElement(block, '.klass', 'b.klass');
-    }).then(() => {
-      assert.deepEqual(1, 1);
-    });
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+
+`The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+
+  background-color:
+    analysis.klass (blocks/foo.block.css:3:16)
+    b.klass (blocks/b.block.css:1:10)
+
+  border-color:
+    analysis.klass (blocks/foo.block.css:3:33)
+    b.klass (blocks/b.block.css:1:34)`,
+
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        return constructElement(block, '.klass', 'b.klass').end();
+      }).then(() => {
+        assert.deepEqual(1, 1);
+      })
+    );
   }
 
   @test 'conflict validator expands shorthands and manages longhand re-declarations'() {
@@ -714,11 +728,21 @@ export class TemplateAnalysisTests {
       .klass { border-color: green; border-left-color: yellow }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      return constructElement(block, '.klass', 'b.klass');
-    }).then(() => {
-      assert.deepEqual(1, 1);
-    });
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+
+`The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+
+  border-color:
+    analysis.klass (blocks/foo.block.css:3:16)
+    b.klass (blocks/b.block.css:1:10)`,
+
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        return constructElement(block, '.klass', 'b.klass').end();
+      }).then(() => {
+        assert.deepEqual(1, 1);
+      })
+    );
   }
 
   @test 'conflict validator expands shorthands and uses lowest common property'() {
@@ -735,11 +759,25 @@ export class TemplateAnalysisTests {
       .klass { background: red; border-left-color: yellow }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      return constructElement(block, '.klass', 'b.klass');
-    }).then(() => {
-      assert.deepEqual(1, 1);
-    });
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+
+`The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+
+  background-color:
+    analysis.klass (blocks/foo.block.css:3:16)
+    b.klass (blocks/b.block.css:1:10)
+
+  border-left-color:
+    analysis.klass (blocks/foo.block.css:3:33)
+    b.klass (blocks/b.block.css:1:34)`,
+
+     this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        return constructElement(block, '.klass', 'b.klass').end();
+      }).then(() => {
+        assert.deepEqual(1, 1);
+      })
+    );
   }
 
   @test 'conflict validator expands shorthands and manages multiple longhand conflicts'() {
@@ -756,11 +794,25 @@ export class TemplateAnalysisTests {
       .klass { border-right-color: green; border-left-color: yellow }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      return constructElement(block, '.klass', 'b.klass');
-    }).then(() => {
-      assert.deepEqual(1, 1);
-    });
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+
+`The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+
+  border-left-color:
+    analysis.klass (blocks/foo.block.css:3:43)
+    b.klass (blocks/b.block.css:1:10)
+
+  border-right-color:
+    analysis.klass (blocks/foo.block.css:3:16)
+    b.klass (blocks/b.block.css:1:10)`,
+
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        return constructElement(block, '.klass', 'b.klass').end();
+      }).then(() => {
+        assert.deepEqual(1, 1);
+      })
+    );
   }
 
   @test 'conflicts may be resolved by a shorthand'() {
@@ -780,10 +832,67 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      return constructElement(block, '.klass', 'b.klass');
+      return constructElement(block, '.klass', 'b.klass').end();
     }).then(() => {
       assert.deepEqual(1, 1);
     });
+  }
+
+  @test 'conflict validation errors are thrown on custom properties'() {
+    let imports = new MockImportRegistry();
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    imports.registerSource("blocks/b.block.css", `
+      .root { block-name: block-b; }
+      .klass { custom-prop: blue; }
+    `);
+
+    let css = `
+      @block-reference b from "./b.block.css";
+      .root { block-name: block-a; }
+      .klass { custom-prop: red; }
+    `;
+
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+
+`The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+
+  custom-prop:
+    block-a.klass (blocks/foo.block.css:4:16)
+    block-b.klass (blocks/b.block.css:3:16)`,
+
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        return constructElement(block, '.klass', 'b.klass').end();
+      }).then(() => {
+        assert.deepEqual(1, 1);
+      })
+    );
+  }
+
+
+  @test 'custom properties may be resolved'() {
+    let imports = new MockImportRegistry();
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    imports.registerSource("blocks/b.block.css",
+      `.root { block-name: block-b; }
+       .klass { custom-prop: blue; }`
+    );
+
+    let css = `
+      @block-reference b from "./b.block.css";
+      .root { block-name: block-a; }
+      .klass { custom-prop: red; custom-prop: resolve('b.klass'); }
+    `;
+
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        return constructElement(block, '.klass', 'b.klass').end();
+      }).then(() => {
+        assert.deepEqual(1, 1);
+      });
   }
 
 }
