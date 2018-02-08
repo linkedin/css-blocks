@@ -2,6 +2,7 @@ import * as postcss from 'postcss';
 import * as errors from '../../errors';
 import { sourceLocation } from "../../SourceLocation";
 import { Block } from "../../Block";
+import { IMPLEMENTS } from "../../blockSyntax";
 
 /**
  * For each `implements` property found in the passed ruleset, track the foreign
@@ -11,7 +12,7 @@ import { Block } from "../../Block";
  * @param rule Ruleset to crawl
  */
 export default async function implementsBlock(rule: postcss.Root, block: Block, sourceFile: string) {
-  rule.walkDecls("implements", (decl) => {
+  rule.walkDecls(IMPLEMENTS, (decl) => {
     let refNames = decl.value.split(/,\s*/);
     refNames.forEach((refName) => {
       let refBlock = block.getReferencedBlock(refName);

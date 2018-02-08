@@ -1,5 +1,10 @@
+import * as propParser from "css-property-parser";
+import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
+import * as postcss from 'postcss';
+
 import { Validator } from "./Validator";
 import { Style, State } from "../../Block";
+import { RuleSet } from "../../Block/RulesetContainer";
 import {
   isTrueCondition,
   isFalseCondition,
@@ -7,35 +12,23 @@ import {
   isBooleanState
 } from "../ElementAnalysis";
 
-type PropMap = Map<string, Set<Style>>;
+// Convenience types to help our code read better.
+type Pseudo = string;
+type Property = string;
 
-/**
- * Fetch a Set at `key` from input `map`. If it does not yet exist, create it.
- * @param  map  The map to query.
- * @param  key  The key to query at.
- * @returns  The requested Set
- */
-function ensureSet<T=Style>(map: Map<string, Set<T>>, key: string): Set<T> {
-  let set = map.get(key);
-  if (!set) {
-    map.set(key, (set = new Set));
-  }
-  return set;
-}
+type ConflictMap = MultiMap<Property, RuleSet>;
+type PropMap = TwoKeyMultiMap<Pseudo, Property, RuleSet>;
 
 /**
  * Merge Map B into Map A. Modifies Map A in place.
+ * TODO: Move into @opticss/util
  * @param  a  Map A.
  * @param  b  Map B.
  */
-function merge(a: PropMap, b: PropMap){
-  b.forEach((bList, prop) => {
-    let aList = a.get(prop);
-    if (!aList) {
-      aList = new Set;
-    }
-    a.set(prop, new Set([...aList, ...bList]));
-  });
+function merge(a: PropMap, b: PropMap) {
+  for (let [key1, key2, values] of b.entries() ) {
+    a.set(key1, key2, ...values);
+  }
 }
 
 /**
@@ -43,12 +36,12 @@ function merge(a: PropMap, b: PropMap){
  * @param  propToBlocks  The PropMap to add properties to.
  * @param  obj  The Style object to track.
  */
-function add(propToBlocks: PropMap, obj: Style){
-  let concerns = obj.propertyConcerns.getProperties();
-  concerns.forEach((prop) => {
-    let matches = ensureSet(propToBlocks, prop);
-    matches.add(obj);
-  });
+function add(propToBlocks: PropMap, obj: Style) {
+  for (let pseudo of obj.rulesets.getPseudos()) {
+    for (let prop of obj.rulesets.getProperties()) {
+      propToBlocks.set(pseudo, prop, ...obj.rulesets.getRuleSets(prop, pseudo));
+    }
+  }
 }
 
 /**
@@ -59,69 +52,115 @@ function add(propToBlocks: PropMap, obj: Style){
  * @param  propToBlocks  The previously encountered properties mapped to the owner Styles.
  * @param  conflicts  Where we store conflicting Style data.
  */
-function evaluate(obj: Style, propToBlocks: PropMap, conflicts: PropMap) {
-  let concerns = obj.propertyConcerns.getProperties();
-  concerns.forEach((prop) => {
-    let matches = ensureSet(propToBlocks, prop);
-    if (matches.size) {
-      matches.forEach((match) => {
-        if (
-          obj.commonAncester(match) ||
-          obj.propertyConcerns.hasResolutionFor(prop, match) ||
-          match.propertyConcerns.hasResolutionFor(prop, obj)
-        ) { return; }
-        let list = ensureSet(conflicts, prop);
-        list.add(match);
-        list.add(obj);
-      });
+function evaluate(obj: Style, propToRules: PropMap, conflicts: ConflictMap) {
+
+  // Ew! Quadruple for loops! Can we come up with a better way to do this!?
+  //  - For each pseudo this Style may effect
+  //  - For each property concern of this Style
+  //  - For each RuleSet we've already seen associated to this prop
+  //  - For each RuleSet relevant to this Style / prop
+  for (let pseudo of obj.rulesets.getPseudos()) {
+    for (let prop of obj.rulesets.getProperties(pseudo)) {
+      for (let other of propToRules.get(pseudo, prop)) {
+        for (let self of obj.rulesets.getRuleSets(prop, pseudo)) {
+
+          // If these styles are from the same block, abort!
+          if (other.style.block === self.style.block) { continue; }
+
+          // Get the declarations for this specific property.
+          let selfDecl = self.declarations.get(prop);
+          let otherDecl = other.declarations.get(prop);
+          if ( !selfDecl || !otherDecl ) { continue; }
+
+          // If these declarations have the exact same value, of if there
+          // is a specific resolution, keep going.
+          if ( selfDecl.value === otherDecl.value ||
+              other.hasResolutionFor(prop, self.style) ||
+              self.hasResolutionFor(prop, other.style)
+              ) { continue; }
+
+          // Otherwise, we found an unresolved conflict!
+          conflicts.set(prop, other);
+          conflicts.set(prop, self);
+        }
+      }
     }
-  });
+  }
+}
+
+function recurse(prop: string, conflicts: ConflictMap): RuleSet[] {
+  if (propParser.isShorthandProperty(prop)) {
+    let longhands = propParser.expandShorthandProperty(prop, 'inherit', false, true);
+    for (let longProp of Object.keys(longhands)) {
+      let rules = recurse(longProp, conflicts);
+      for (let rule of rules) {
+        if (conflicts.hasValue(prop, rule)) {
+          conflicts.deleteValue(longProp, rule);
+        }
+      }
+    }
+  }
+  return conflicts.get(prop);
+}
+
+function pruneConflicts(conflicts: ConflictMap) {
+  for (let [prop] of conflicts) {
+    if (propParser.isShorthandProperty(prop)) { recurse(prop, conflicts); }
+  }
+}
+
+function printRuleSetConflict(prop: string, rule: RuleSet) {
+  let decl = rule.declarations.get(prop);
+  let node: postcss.Rule | postcss.Declaration =  decl ? decl.node : rule.node;
+  let line = node.source.start && `:${node.source.start.line}`;
+  let column = node.source.start && `:${node.source.start.column}`;
+  return `    ${rule.style.block.name}${rule.style.asSource()} (${rule.file}${line}${column})`;
 }
 
 /**
- * Prevent conflicting styles from being applied to the same element without an explicit resoution.
+ * Prevent conflicting styles from being applied to the same element without an explicit resolution.
  * @param correlations The correlations object for a given element.
  * @param err Error callback.
  */
 const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err) => {
 
-  // Conflicting Styles stored here.
-  let conflicts: PropMap = new Map;
+  // Conflicting RuseSets stored here.
+  let conflicts: ConflictMap = new MultiMap(false);
 
   // Storage for static Styles
-  let staticPropToBlocks: PropMap = new Map;
+  let allConditions: PropMap = new TwoKeyMultiMap(false);
 
   // For each static style, evaluate it and add it to the static store.
   elAnalysis.static.forEach((obj) => {
-    evaluate(obj, staticPropToBlocks, conflicts);
-    add(staticPropToBlocks, obj);
+    evaluate(obj, allConditions, conflicts);
+    add(allConditions, obj);
   });
 
   // For each dynamic class, test it against the static classes,
-  // and independantly compare the mutually exclusive truthy
+  // and independently compare the mutually exclusive truthy
   // and falsy conditions. Once done, merge all concerns into the
   // static store.
   elAnalysis.dynamicClasses.forEach((condition) => {
-    let truthyPropToBlocks: PropMap = new Map;
-    let falsyPropToBlocks: PropMap = new Map;
+    let truthyConditions: PropMap = new TwoKeyMultiMap(false);
+    let falsyConditions: PropMap = new TwoKeyMultiMap(false);
 
     if (isTrueCondition(condition)) {
       condition.whenTrue.forEach((obj) => {
-        evaluate(obj, staticPropToBlocks, conflicts);
-        evaluate(obj, truthyPropToBlocks, conflicts);
-        add(truthyPropToBlocks, obj);
+        evaluate(obj, allConditions, conflicts);
+        evaluate(obj, truthyConditions, conflicts);
+        add(truthyConditions, obj);
       });
     }
     if (isFalseCondition(condition)) {
       condition.whenFalse.forEach((obj) => {
-        evaluate(obj, staticPropToBlocks, conflicts);
-        evaluate(obj, falsyPropToBlocks, conflicts);
-        add(falsyPropToBlocks, obj);
+        evaluate(obj, allConditions, conflicts);
+        evaluate(obj, falsyConditions, conflicts);
+        add(falsyConditions, obj);
       });
     }
 
-    merge(staticPropToBlocks, truthyPropToBlocks);
-    merge(staticPropToBlocks, falsyPropToBlocks);
+    merge(allConditions, truthyConditions);
+    merge(allConditions, falsyConditions);
 
   });
 
@@ -129,28 +168,30 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
   // as they are mutually exclusive. Boolean states are evaluated directly.
   elAnalysis.dynamicStates.forEach((condition) => {
     if (isStateGroup(condition)) {
-      let tmp: PropMap = new Map;
+      let stateConditions: PropMap = new TwoKeyMultiMap(false);
       (Object as any).values(condition.group).forEach((state: State) => {
-        evaluate(state, staticPropToBlocks, conflicts);
-        add(tmp, state);
+        evaluate(state, allConditions, conflicts);
+        add(stateConditions, state);
       });
-      merge(staticPropToBlocks, tmp);
+      merge(allConditions, stateConditions);
     }
 
     else if (isBooleanState(condition)) {
-      evaluate(condition.state, staticPropToBlocks, conflicts);
-      add(staticPropToBlocks, condition.state);
+      evaluate(condition.state, allConditions, conflicts);
+      add(allConditions, condition.state);
     }
   });
 
+  pruneConflicts(conflicts);
+
   // For every set of conflicting properties, throw the error.
   if (conflicts.size) {
-    let msg = 'The following property conflicts must be resolved for element located at';
-    let details = '';
-    conflicts.forEach((matches, prop) => {
-      if (!prop || !matches.size) { return; }
-      details += `  ${prop}: ${[...matches].map((m) => m.block.name + m.asSource() ).join(', ')}\n`;
-    });
+    let msg = 'The following property conflicts must be resolved for these co-located Styles:';
+    let details = '\n';
+    for ( let [prop, matches] of conflicts.entries() ) {
+      if (!prop || !matches.length) { return; }
+      details += `  ${prop}:\n${matches.map((m) => printRuleSetConflict(prop, m)).join('\n')}\n\n`;
+    }
     err(msg, null, details);
   }
 

@@ -603,7 +603,7 @@ export class BlockInheritance extends BEMProcessor {
                     .root { extends: super; }
                     .article {
                       color: green;
-                      color: resolve(".main");
+                      color: resolve("super.main");
                     }`;
 
     return assertError(

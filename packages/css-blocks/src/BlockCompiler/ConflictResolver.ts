@@ -8,6 +8,7 @@ import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import { QueryKeySelector } from "../query";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
 import * as conflictDetection from "./conflictDetection";
+import { RESOLVE_RE } from "../blockSyntax";
 
 enum ConflictType {
   conflict,
@@ -19,7 +20,6 @@ const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
 const CONTIGUOUS_COMBINATORS = new Set(["+", ">"]);
 const NONCONTIGUOUS_COMBINATORS = new Set(["~", " "]);
-const RESOLVE_RE = /resolve(-inherited)?\(("|')([^\2]*)\2\)/;
 
 /**
  * Assert that `obj` is of type `Style`. Throw if not.

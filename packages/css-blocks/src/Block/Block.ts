@@ -6,8 +6,8 @@ import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 import { LocalScopedContext, HasLocalScope, HasScopeLookup } from "../util/LocalScope";
 import { unionInto } from '../util/unionInto';
-import { objectValues } from "@opticss/util";
-import { ObjectDictionary, MultiMap, assertNever } from "@opticss/util";
+import { ObjectDictionary, MultiMap, assertNever, objectValues } from "@opticss/util";
+import { RulesetContainer } from './RulesetContainer';
 import {
   SelectorFactory,
   parseSelector,
@@ -48,7 +48,7 @@ export type StyleContainer = Block | BlockClass | State;
  * properties and abstract methods that extenders must implement.
  */
 export abstract class BlockObject<StyleType extends Style, ContainerType extends StyleContainer = StyleContainer> {
-  public readonly propertyConcerns: PropertyContainer;
+  public readonly rulesets: RulesetContainer;
 
   protected _name: string;
   protected _container: ContainerType;
@@ -67,7 +67,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   constructor(name: string, container: ContainerType) {
     this._name = name;
     this._container = container;
-    this.propertyConcerns = new PropertyContainer();
+    this.rulesets = new RulesetContainer();
   }
 
   /**
@@ -226,16 +226,16 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   }
 
   /**
-   * Find the closest common ancester Block between two BlockObjects
+   * Find the closest common ancester Block between two Styles
    * TODO: I think there is a more efficient way to do this.
-   * @param relative  BlockObject to compare ancestry with.
-   * @returns The BlockObjects' common ancester, or false.
+   * @param relative  Style to compare ancestry with.
+   * @returns The Style's common Block ancestor, or null.
    */
-  commonAncester(relative: Style): Style | false {
+  commonAncester(relative: Style): Style | null {
     let blockChain = new Set(...this.block.rootClass.resolveInheritance()); // lol
     blockChain.add(this.block.rootClass);
     let common = [relative.block.rootClass, ...relative.block.rootClass.resolveInheritance()].filter(b => blockChain.has(b));
-    return common.length ? common[0] as Style : false;
+    return common.length ? common[0] as Style : null;
   }
 
   /**
@@ -256,8 +256,8 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
 
 export class Block
   implements SelectorFactory,
-  HasLocalScope<Block, Style>,
-  HasScopeLookup<Style>
+             HasLocalScope<Block, Style>,
+             HasScopeLookup<Style>
 {
   private _name: string;
   private _classes: ObjectDictionary<BlockClass> = {};
@@ -533,7 +533,7 @@ export class Block
   }
 
   merged(): MultiMap<string, Style> {
-    let map = new MultiMap<string, Style>();
+    let map = new MultiMap<string, Style>(false);
     for (let obj of this.all()) {
       map.set(obj.asSource(), obj);
     }
@@ -741,126 +741,6 @@ export class Block
 
 export function isBlock(o: object): o is Block {
   return o instanceof Block;
-}
-
-type Properties = Set<string>;
-type Resolutions = Map<string, Set<Style>>;
-
-/**
- * Cache and interface methods for block properties.
- */
-const RESERVED_PROP_NAMES = new Set(['block-name', 'extends', 'implements']);
-export class PropertyContainer {
-  private props: Properties = new Set();
-  private pseudoProps = new Map<string, Properties>();
-  private resolutions: Resolutions = new Map<string, Set<Style>>();
-  private pseudoResolutions = new Map<string, Resolutions>();
-
-  /**
-   * Track a single property.
-   * @param  property  The property we're tracking
-   * @param  pseudo  The pseudo element this rule is styling, if applicable.
-   */
-  addProperty(property: string, pseudo?: string) {
-    let props: Properties;
-    if (pseudo) {
-      props = this.pseudoProps.get(pseudo) || new Set();
-      this.pseudoProps.set(pseudo, props);
-    } else {
-      props = this.props;
-    }
-    props.add(property);
-  }
-
-  /**
-   * Track all properties from a ruleset in this block's PropertyContainer.
-   * @param  rule  PostCSS ruleset
-   * @param  block  External block
-   */
-  addProperties(rule: postcss.Rule, block: Block) {
-    const RESOLVE_RE = /resolve(-inherited)?\(("|')([^\2]*)\2\)/;
-    let selectors = block.getParsedSelectors(rule);
-    selectors.forEach((selector) => {
-      let key = selector.key;
-      let pseudo: string | undefined;
-      if (key.pseudoelement) {
-        pseudo = key.pseudoelement.toString();
-      }
-      rule.walkDecls((decl) => {
-
-        // Ignore css-blocks specific prop names.
-        if (RESERVED_PROP_NAMES.has(decl.prop)) { return; }
-
-        // Add the property
-        this.addProperty(decl.prop, pseudo);
-
-        // If a resolution, track that this property has been resolved
-        let referenceStr = (decl.value.match(RESOLVE_RE) || [])[3];
-        if (referenceStr) {
-          let other = block.lookup(referenceStr);
-          if (other) {
-            this.addResolution(decl.prop, other, pseudo);
-          }
-        }
-      });
-    });
-  }
-
-  /**
-   * Track a property's resolution against another block.
-   * @param  property  The property we're tracking
-   * @param  block  The block we're resolving against
-   * @param  pseudo  The pseudo element this rule is styling, if applicable.
-   */
-  addResolution(property: string, block: Style, pseudo ?: string) {
-    let resolutions: Resolutions = this.resolutions;
-    if (pseudo) {
-      resolutions = this.pseudoResolutions.get(pseudo) || new Map<string, Set<Style>>();
-      this.pseudoResolutions.set(pseudo, resolutions);
-    }
-    let blocks = resolutions.get(property) || new Set();
-    resolutions.set(property, blocks);
-    blocks.add(block);
-  }
-
-  /**
-   * Retreive properties from all rulesets in this block.
-   * @param  pseudo  Optional pseudo element to get properties from
-   * @returns A set of property names.
-   */
-  getProperties(pseudo?: string): Set<string> {
-    let props: Properties;
-    if (pseudo) {
-      props = this.pseudoProps.get(pseudo) || new Set();
-      this.pseudoProps.set(pseudo, props);
-      return props;
-    } else {
-      return this.props;
-    }
-  }
-
-  /**
-   * Retrieve the pseudo elements which were found to have properties.
-   * @returns A set of property names.
-   */
-  getPseudos(): Set<string> {
-    return new Set(this.pseudoProps.keys());
-  }
-
-  /**
- * Test if this block has a resolution against another block.
- * @param  property  The property we're tracking
- * @param  block  The block we're resolving against
- * @param  pseudo  The pseudo element this rule is styling, if applicable.
- */
-  hasResolutionFor(property: string, obj: Style, pseudo ?: string): boolean {
-    let resolutions: Resolutions = this.resolutions;
-    if (pseudo) {
-        resolutions = this.pseudoResolutions.get(pseudo) || new Map<string, Set<Style>>();
-      }
-    let blocks = resolutions.get(property) || new Set();
-    return blocks.has(obj);
-  }
 }
 
 /**

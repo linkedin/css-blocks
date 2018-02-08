@@ -1307,7 +1307,7 @@ css-loader@^0.28.4:
 
 css-property-parser@^1.0.5:
   version "1.0.5"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/css-property-parser/-/css-property-parser-1.0.5.tgz#3f48d0d3d74e3111f642c96fafc01d2ba75ade73"
+  resolved "https://registry.yarnpkg.com/css-property-parser/-/css-property-parser-1.0.5.tgz#cde16a525b2cf012dd40df9db0e2e0a800aa297f"
   dependencies:
     fs-extra "^3.0.1"
     moo "^0.4.1"
