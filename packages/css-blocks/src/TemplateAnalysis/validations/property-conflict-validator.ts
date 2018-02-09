@@ -121,7 +121,7 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
   // Conflicting RuseSets stored here.
   let conflicts: ConflictMap = new MultiMap(false);
 
-  // Storage for static Styles
+  // Storage for previously encountered Styles
   let allConditions: PropMap = new TwoKeyMultiMap(false);
 
   // For each static style, evaluate it and add it to the static store.
@@ -177,7 +177,7 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
   });
 
   // Prune longhand conflicts that are properly covered by shorthand conflict reports.
-  for (let [prop] of conflicts) {
+  for (let prop of conflicts.keys()) {
     if (propParser.isShorthandProperty(prop)) { recursivelyPruneConflicts(prop, conflicts); }
   }
 
