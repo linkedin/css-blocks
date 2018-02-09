@@ -1,0 +1,10 @@
+{
+  "extends": "../css-blocks/tsconfig.json",
+  "include": [
+    "src/**/*"
+  ],
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": "dist"
+  }
+}

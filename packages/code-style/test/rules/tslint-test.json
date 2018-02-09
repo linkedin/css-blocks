@@ -1,0 +1,6 @@
+{
+  "rulesDirectory": "../../dist/rules",
+  "rules": {
+    "multiline-parameters": true
+  }
+}

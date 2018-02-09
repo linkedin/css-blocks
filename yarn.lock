@@ -5391,6 +5391,10 @@ typescript@^2.3.4, typescript@^2.4.1, typescript@^2.6.1:
   version "2.6.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/typescript/-/typescript-2.6.1.tgz#094aac5ce91cd9ec698917bae3b1acace3b8a42e"
 
+typescript@^2.7.1:
+  version "2.7.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/typescript/-/typescript-2.7.1.tgz#bb3682c2c791ac90e7c6210b26478a8da085c359"
+
 uglify-js@^2.6, uglify-js@^2.8.29:
   version "2.8.29"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/uglify-js/-/uglify-js-2.8.29.tgz#55ab62db7d2d379c3f4181de4bc24446def19eba"
