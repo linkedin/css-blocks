@@ -838,6 +838,39 @@ export class TemplateAnalysisTests {
     });
   }
 
+  @test 'shorthand conflicts cannot be resolved by a longhand'() {
+    let imports = new MockImportRegistry();
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    imports.registerSource("blocks/b.block.css", `
+      .root { block-name: b-block; }
+      .klass { border-color: blue; }
+    `);
+
+    let css = `
+      @block-reference b from "./b.block.css";
+      .root { block-name: a-block; }
+      .klass { border-color: red; border-left-color: resolve('b.klass'); }
+    `;
+
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+
+`The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+
+  border-color:
+    a-block.klass (blocks/foo.block.css:4:16)
+    b-block.klass (blocks/b.block.css:3:16)`,
+
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        return constructElement(block, '.klass', 'b.klass').end();
+      }).then(() => {
+        assert.deepEqual(1, 1);
+      })
+    );
+  }
+
   @test 'conflict validation errors are thrown on custom properties'() {
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
@@ -870,7 +903,6 @@ export class TemplateAnalysisTests {
       })
     );
   }
-
 
   @test 'custom properties may be resolved'() {
     let imports = new MockImportRegistry();

@@ -8,7 +8,7 @@ export const BLOCK_PROP_NAMES = new Set([BLOCK_NAME, EXTENDS, IMPLEMENTS]);
 export const BLOCK_DEBUG = 'block-debug';
 export const BLOCK_GLOBAL = 'block-global';
 export const BLOCK_REFERENCE = "block-reference";
-export const BLOCK_AT_RULES = new Set([BLOCK_DEBUG, BLOCK_GLOBAL]);
+export const BLOCK_AT_RULES = new Set([BLOCK_DEBUG, BLOCK_GLOBAL, BLOCK_REFERENCE]);
 
 // Prop Values
 // TODO: Make regexps private and consume below APIs instead.

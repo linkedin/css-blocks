@@ -4,15 +4,15 @@ import { ElementAnalysis } from "../ElementAnalysis";
 
 import { Validator } from "./Validator";
 
-import rootClassValidator from "./rootClassValidator";
-import classPairsValidator from "./classPairsValidator";
-import stateParentValidator from "./stateParentValidator";
-import propertyConflictValidator from "./propertyConflictValidator";
+import rootClassValidator from "./root-class-validator";
+import classPairsValidator from "./class-pairs-validator";
+import stateParentValidator from "./state-parent-validator";
+import propertyConflictValidator from "./property-conflict-validator";
 
-export * from "./classPairsValidator";
-export * from "./rootClassValidator";
-export * from "./stateParentValidator";
-export * from "./propertyConflictValidator";
+export * from "./class-pairs-validator";
+export * from "./root-class-validator";
+export * from "./state-parent-validator";
+export * from "./property-conflict-validator";
 
 export interface TemplateValidators {
   "no-root-classes": Validator;

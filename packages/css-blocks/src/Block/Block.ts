@@ -231,7 +231,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
    * @param relative  Style to compare ancestry with.
    * @returns The Style's common Block ancestor, or null.
    */
-  commonAncester(relative: Style): Style | null {
+  commonAncestor(relative: Style): Style | null {
     let blockChain = new Set(...this.block.rootClass.resolveInheritance()); // lol
     blockChain.add(this.block.rootClass);
     let common = [relative.block.rootClass, ...relative.block.rootClass.resolveInheritance()].filter(b => blockChain.has(b));
@@ -405,11 +405,11 @@ export class Block
    */
   checkImplementation(b: Block): Style[] {
     let missing: Style[] = [];
-    b.all().forEach((o: Style) => {
+    for (let o of b.all()) {
       if (!this.find(o.asSource())) {
         missing.push(o);
       }
-    });
+    }
     return missing;
   }
 
@@ -417,14 +417,14 @@ export class Block
    * Validate that all foreign blocks this block implements are fully...implemented.
    */
   checkImplementations(): void {
-    this.getImplementedBlocks().forEach((b: Block) => {
+    for (let b of this.getImplementedBlocks()) {
       let missingObjs: Style[] = this.checkImplementation(b);
       let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
       if (missingObjs.length > 0) {
         let s = missingObjs.length > 1 ? 's' : '';
         throw new CssBlockError(`Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
       }
-    });
+    }
   }
 
   // This is a really dumb impl
@@ -452,16 +452,16 @@ export class Block
   }
 
   eachBlockReference(callback: (name: string, block: Block) => any) {
-    Object.keys(this._blockReferences).forEach((name) => {
+    for (let name of Object.keys(this._blockReferences)) {
       callback(name, this._blockReferences[name]);
-    });
+    }
   }
 
   get classes(): BlockClass[] {
     let classes: BlockClass[] = [];
-    Object.keys(this._classes).forEach((e) => {
+    for (let e of Object.keys(this._classes)) {
       classes.push(this._classes[e]);
-    });
+    }
     return classes;
   }
 
@@ -679,12 +679,12 @@ export class Block
     let result: string[] = [`Source: ${this.identifier}`, this.rootClass.asDebug(opts)];
     let sourceNames = new Set<string>(this.all().map(s => s.asSource()));
     let sortedNames = [...sourceNames].sort();
-    sortedNames.forEach(n => {
+    for(let n of sortedNames) {
       if (n !== ".root") {
         let o = this.find(n) as Style;
         result.push(o.asDebug(opts));
       }
-    });
+    }
     return result;
   }
 
@@ -1008,9 +1008,9 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
    */
   debug(opts: OptionsReader): string[] {
     let result: string[] = [];
-    this.all().forEach((state) => {
+    for (let state of this.all()) {
       result.push(state.asDebug(opts));
-    });
+    }
     return result;
   }
 
