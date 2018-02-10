@@ -55,6 +55,7 @@ export class JSXElementAnalyzer {
         found.push(attrPath);
       }
       // Any because the type def is incomplete
+      // tslint:disable-next-line:prefer-whatever-to-any
       attrPath = (<any>attrPath).getNextSibling() as NodePath<JSXAttribute> | undefined;
     }
     return found;

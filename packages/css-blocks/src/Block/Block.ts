@@ -1,6 +1,6 @@
 import { Attr, Attribute, AttributeNS, AttributeValueChoice, ValueAbsent, ValueConstant } from "@opticss/element-analysis";
 import { assertNever, MultiMap, ObjectDictionary } from "@opticss/util";
-import { objectValues } from "@opticss/util";
+import { objectValues, whatever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector,
          parseSelector, SelectorFactory } from "opticss";
 import * as postcss from 'postcss';
@@ -221,6 +221,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   // TypeScript can't figure out that `this` is the `StyleType` so this private
   // method casts it in a few places where it's needed.
   private asStyle(): StyleType {
+    // tslint:disable-next-line:prefer-whatever-to-any
     return <StyleType><any>this;
   }
 }
@@ -422,7 +423,7 @@ export class Block
     return this.all().find(e => e.asSource() === sourceName);
   }
 
-  eachBlockReference(callback: (name: string, block: Block) => any) {
+  eachBlockReference(callback: (name: string, block: Block) => whatever) {
      Object.keys(this._blockReferences).forEach((name) => {
        callback(name, this._blockReferences[name]);
      });

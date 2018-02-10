@@ -14,7 +14,7 @@ import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
 
 import { GlimmerImporter } from "./GlimmerImporter";
 import { GlimmerProject, ResolvedFile, ResolvedPath } from "./GlimmerProject";
-import { MODULE_CONFIG } from './module-config';
+import { MODULE_CONFIG, ModuleConfig } from './module-config';
 import { parseSpecifier } from "./utils";
 
 export class Project implements GlimmerProject {
@@ -26,7 +26,7 @@ export class Project implements GlimmerProject {
   blockFactory: BlockFactory;
   cssBlocksOpts: PluginOptionsReader;
 
-  constructor(projectDir: string, moduleConfig?: any, blockOpts?: PluginOptions) {
+  constructor(projectDir: string, moduleConfig?: ModuleConfig, blockOpts?: PluginOptions) {
     this.projectDir = projectDir;
     this.cssBlocksOpts = new PluginOptionsReader(blockOpts || {});
     this.blockImporter = new GlimmerImporter(this, this.cssBlocksOpts.importer);

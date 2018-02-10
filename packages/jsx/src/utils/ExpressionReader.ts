@@ -247,6 +247,10 @@ export class ExpressionReader {
   }
 }
 
+interface HasComputed {
+  computed?: boolean;
+}
+
 /**
  * Given a `MemberExpression`, `Identifier`, or `CallExpression`, return an array
  * of all expression identifiers.
@@ -278,8 +282,7 @@ function parsePathExpression(expression: Node, loc: ErrorLocation): PathExpressi
     return parts;
   }
 
-  // Yes, any. We must do very explicit type checking here.
-  function addPart(expression: any, prop: Node, loc: ErrorLocation) {
+  function addPart(expression: object, prop: Node, loc: ErrorLocation) {
     if (isIdentifier(prop) || isJSXIdentifier(prop)) {
       parts.unshift(prop.name);
     }
@@ -291,7 +294,7 @@ function parsePathExpression(expression: Node, loc: ErrorLocation): PathExpressi
     // If we encounter another member expression (Ex: foo[bar.baz])
     // Because Typescript has issues with recursively nested types, we use symbols
     // to denote the boundaries between nested expressions.
-    else if (expression.computed && (
+    else if ((<HasComputed>expression).computed && (
               isCallExpression(prop)      ||
               isMemberExpression(prop)    ||
               isJSXMemberExpression(prop) ||

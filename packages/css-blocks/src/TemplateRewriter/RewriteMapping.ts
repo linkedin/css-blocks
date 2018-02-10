@@ -137,7 +137,9 @@ function indexesUsed(indexes: Set<number>, expression: BooleanExpression<number>
   }
 }
 
-function renumber(renumberer: any, expression: BooleanExpression<number>) {
+type Renumberer = (i: number | BooleanExpression<number>, n: number, arr: number[]) => void;
+
+function renumber(renumberer: Renumberer, expression: BooleanExpression<number>) {
   if (isAndExpression(expression)) {
     expression.and.forEach(renumberer);
   } else if (isOrExpression(expression)) {

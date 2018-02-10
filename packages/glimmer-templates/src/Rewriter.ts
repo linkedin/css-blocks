@@ -3,6 +3,7 @@ import {
   NodeVisitor,
   Syntax,
 } from '@glimmer/syntax';
+import { whatever } from "@opticss/util";
 import {
   Block,
   PluginOptions as CssBlocksOpts,
@@ -42,7 +43,7 @@ export class Rewriter implements NodeVisitor {
     this.elementAnalyzer = new ElementAnalyzer(this.block, this.template, this.cssBlocksOpts);
   }
 
-  debug(message: string, ...args: any[]): void {
+  debug(message: string, ...args: whatever[]): void {
     DEBUG(`${this.template.fullPath}: ${message}`, ...args);
   }
 

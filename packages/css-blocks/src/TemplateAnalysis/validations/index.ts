@@ -84,6 +84,7 @@ export class TemplateValidator {
    * @param correlations The correlations object for a given element.
    * @param locInfo Location info for the elements being validated.
    */
+  // tslint:disable-next-line:prefer-whatever-to-any
   validate(templateAnalysis: StyleAnalysis, element: ElementAnalysis<any, any, any>) {
 
     function err (message: string, locInfo?: errors.ErrorLocation | undefined | null) {

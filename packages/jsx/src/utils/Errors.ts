@@ -5,6 +5,9 @@ export interface ErrorLocation {
   column?: number;
 }
 
+interface HasPrefix {
+  prefix?: string;
+}
 /**
  * Custom CSS Blocks error base class. Will format `SourceLocation` into thrown
  * error message if provided.
@@ -29,7 +32,8 @@ export class CssBlockError extends Error {
     let line = loc.line ? `${filename ? ':' : ''}${loc.line}` : '';
     let column = loc.column ? `:${loc.column}` : '';
     let locMessage = ` (${filename}${line}${column})`;
-    return `[css-blocks] ${(this.constructor as any).prefix}: ${this.origMessage}${locMessage}`;
+    let c = <HasPrefix>this.constructor;
+    return `[css-blocks] ${c.prefix || CssBlockError.prefix}: ${this.origMessage}${locMessage}`;
   }
 
   get location(): ErrorLocation | void {

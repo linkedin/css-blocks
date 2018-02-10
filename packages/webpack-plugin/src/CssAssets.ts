@@ -8,12 +8,17 @@ import { RawSourceMap } from "source-map";
 import { Compiler as WebpackCompiler } from "webpack";
 import { ConcatSource, RawSource, Source, SourceMapSource } from "webpack-sources";
 
+import { WebpackAny } from "./Plugin";
+
+// tslint:disable-next-line:prefer-whatever-to-any
+export type PostcssAny = any;
+
 const debug = debugGenerator("css-blocks:webpack:assets");
 
 export type PostcssProcessor =
-    Array<postcss.Plugin<any>>
-        | ((assetPath: string) => Array<postcss.Plugin<any>>
-                                | Promise<Array<postcss.Plugin<any>>>);
+    Array<postcss.Plugin<PostcssAny>>
+        | ((assetPath: string) => Array<postcss.Plugin<PostcssAny>>
+                                | Promise<Array<postcss.Plugin<PostcssAny>>>);
 
 export type GenericProcessor =
     (source: Source, assetPath: string) => Source | Promise<Source>;
@@ -133,8 +138,8 @@ export class CssAssets {
                     sourcePath = asset.source;
                     chunkName = asset.chunk;
                 }
-                let chunks: any[] = compilation.chunks;
-                let chunk: any | undefined = chunkName && chunks.find(c => c.name === chunkName);
+                let chunks: WebpackAny[] = compilation.chunks;
+                let chunk: WebpackAny | undefined = chunkName && chunks.find(c => c.name === chunkName);
                 if (chunkName && !chunk) {
                     throw new Error(`No chunk named ${chunkName} found.`);
                 }
@@ -174,13 +179,13 @@ export class CssAssets {
                 let inputFiles = Array.isArray(concatenation) ? concatenation : concatenation.sources;
                 let concatenationOptions = Array.isArray(concatenation) ? {sources: concatenation} : concatenation;
                 let missingFiles = inputFiles.filter(f => (!compilation.assets[f]));
-                let chunks = new Set<any>();
+                let chunks = new Set<WebpackAny>();
                 if (missingFiles.length === 0) {
                     for (let inputFile of inputFiles) {
                         let asset = compilation.assets[inputFile];
                         concatSource.add(asset);
-                        let chunksWithInputAsset = compilation.chunks.filter((chunk: any) => (<Array<string>>chunk.files).indexOf(inputFile) >= 0);
-                        chunksWithInputAsset.forEach((chunk: any) => {
+                        let chunksWithInputAsset = compilation.chunks.filter((chunk: WebpackAny) => (<Array<string>>chunk.files).indexOf(inputFile) >= 0);
+                        chunksWithInputAsset.forEach((chunk: WebpackAny) => {
                             chunks.add(chunk);
                             let files: string[] = chunk.files;
                             chunk.files = files.filter(file => file !== inputFile);
@@ -329,7 +334,7 @@ function makePostcssProcessor (
 ): GenericProcessor {
     return (asset: Source, assetPath: string) => {
         let { source, map } = sourceAndMap(asset);
-        let pluginsPromise: Promise<Array<postcss.Plugin<any>>>;
+        let pluginsPromise: Promise<Array<postcss.Plugin<PostcssAny>>>;
         if (typeof plugins === "function") {
             pluginsPromise = Promise.resolve(plugins(assetPath));
         } else {

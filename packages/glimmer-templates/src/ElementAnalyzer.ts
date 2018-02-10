@@ -47,6 +47,7 @@ export class ElementAnalyzer {
     return element;
   }
 
+  // tslint:disable-next-line:prefer-whatever-to-any
   private debugAnalysis(node: AST.ElementNode, atRootElement: boolean, element: ElementAnalysis<any, any, any>) {
     if (!debug.enabled) return;
     let startTag = `<${node.tag} ${node.attributes.map(a => print(a)).join(' ')}>`;

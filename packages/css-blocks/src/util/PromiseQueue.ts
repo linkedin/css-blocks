@@ -1,3 +1,4 @@
+import { whatever } from "@opticss/util";
 import * as async from "async";
 import * as debugGenerator from "debug";
 
@@ -27,7 +28,7 @@ export class PromiseQueue<WorkItem, Result> {
     this.jobId = 0;
   }
 
-  private processWork(work: PendingWork<WorkItem, Result>, callback: (err?: any) => void) {
+  private processWork(work: PendingWork<WorkItem, Result>, callback: (err?: whatever) => void) {
     this.debug(`[Job:${work.id}] Starting job.`);
     this.promiseProcessor(work.item).then(
       (result: Result) => {
@@ -35,7 +36,7 @@ export class PromiseQueue<WorkItem, Result> {
         work.result = result;
         callback();
       },
-      (error: any) => {
+      (error: whatever) => {
         this.debug(`[Job:${work.id}] Errored.`);
         callback(error);
       });

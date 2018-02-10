@@ -1,3 +1,4 @@
+import { whatever } from "@opticss/util";
 /**
  * This helpers converts input classes and states into
  * runtime dynamic classes from the optimizer.
@@ -90,22 +91,22 @@ const enum BooleanExpr {
   or = -2,
   and = -3,
 }
-
-const e = (m: string): any => { throw new Error(m); };
-const num = (v: any[]): number => typeof v[0] === "number" ? v.shift() : e("not a number: " + (v[0] || "undefined"));
-const str = (v: any[]): string => v.shift().toString();
-const truthyString = (v: any[]): string | undefined => {
+const e = (m: string): never => { throw new Error(m); };
+const toStr = (s: whatever): string => typeof s === "symbol" ? s.toString() : "" + s;
+const num = (v: whatever[]): number => typeof v[0] === "number" ? <number>v.shift() : e("not a number: " + toStr(v[0]));
+const str = (s: whatever[]): string => toStr(s.shift());
+const truthyString = (v: whatever[]): string | undefined => {
   let s = v.shift();
   if (!s && s !== 0) return;
   return s.toString();
 };
-const bool = (v: any[]): boolean => !!v.shift();
+const bool = (v: whatever[]): boolean => !!v.shift();
 
 type IsSourceSet = (n: number) => boolean;
 type SetSource = (n: number) => void;
 type Abort = () => false;
 
-export function classnames(stack: any[]): string {
+export function classnames(stack: whatever[]): string {
   let sources: boolean[] = [];
   let classes: string[] = [];
   let nSources = num(stack);
@@ -126,7 +127,7 @@ export function classnames(stack: any[]): string {
   }
 
 function sourceExpr(
-  stack: any[],
+  stack: whatever[],
   isSourceSet: IsSourceSet, setSource: SetSource,
   abort: Abort,
 ): void {
@@ -186,7 +187,7 @@ function sourceExpr(
   }
 }
 
-function boolExpr(stack: any[], isSourceSet: IsSourceSet): boolean {
+function boolExpr(stack: whatever[], isSourceSet: IsSourceSet): boolean {
   let result: boolean;
   let type = num(stack);
   switch (type) {

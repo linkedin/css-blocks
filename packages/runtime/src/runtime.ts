@@ -1,4 +1,5 @@
-
+// we can't import this from opticss because we compile for an older version of javascript.
+export type whatever = string | number | boolean | symbol | object | null | undefined | void;
 const enum SourceExpression {
   ternary = 0,
   dependency = 1,
@@ -20,15 +21,16 @@ const enum BooleanExpr {
   and = -3,
 }
 
-const e = (m: string): any => { throw new Error(m); };
-const num = (v: any[]): number => typeof v[0] === 'number' ? v.shift() : e('not a number: ' + (v[0] || 'undefined'));
-const str = (v: any[]): string => v.shift().toString();
-const truthyString = (v: any[]): string | undefined => {
+const e = (m: string): never => { throw new Error(m); };
+const toStr = (v: whatever): string => typeof v === "symbol" ? v.toString() : "" + v;
+const num = (v: whatever[]): number => typeof v[0] === 'number' ? <number>(v.shift()!) : e('not a number: ' + toStr(v[0]));
+const str = (v: whatever[]): string => toStr(v.shift());
+const truthyString = (v: whatever[]): string | undefined => {
   let s = v.shift();
   if (!s && s !== 0) return;
   return s.toString();
 };
-const bool = (v: any[]): boolean => !!v.shift();
+const bool = (v: whatever[]): boolean => !!v.shift();
 
 type IsSourceSet = (n: number) => boolean;
 type SetSource = (n: number) => void;
@@ -106,7 +108,7 @@ type Abort = () => false;
  *   - switch statements where the value is not the same as the subState names
  */
 // tslint:disable-next-line:no-default-export
-export default function c(staticClasses: string | any[], stack?: any[]): string {
+export default function c(staticClasses: string | whatever[], stack?: whatever[]): string {
   if (Array.isArray(staticClasses)) {
     stack = staticClasses;
     staticClasses = '';
@@ -139,7 +141,7 @@ export default function c(staticClasses: string | any[], stack?: any[]): string 
 }
 
 function sourceExpr(
-  stack: any[],
+  stack: whatever[],
   isSourceSet: IsSourceSet, setSource: SetSource,
   abort: Abort,
 ): void {
@@ -199,7 +201,7 @@ function sourceExpr(
   }
 }
 
-function boolExpr(stack: any[], isSourceSet: IsSourceSet): boolean {
+function boolExpr(stack: whatever[], isSourceSet: IsSourceSet): boolean {
   let result: boolean;
   let type = num(stack);
   switch (type) {

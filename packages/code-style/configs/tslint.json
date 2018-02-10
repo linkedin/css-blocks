@@ -6,6 +6,7 @@
     "no-var-keyword": true,
     "adjacent-overload-signatures": true,
     "no-for-in-array":true,
+    "prefer-whatever-to-any": true,
     "no-unsafe-any": {
       "severity": "off"
     },
@@ -89,6 +90,7 @@
     "max-line-length": [
       false,
       {"limit": 120}
-    ]
+    ],
+    "prefer-for-of": true
   }
 }

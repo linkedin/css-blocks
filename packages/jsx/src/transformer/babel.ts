@@ -51,13 +51,19 @@ const CAN_PARSE_EXTENSIONS = {
   '.jsx': true,
 };
 
+interface BabelFile {
+  opts: {
+    filename: string;
+  };
+}
+
 export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginObj<CssBlocksVisitor> {
   const rewriter = transformOpts.rewriter;
 
   return function transform(): PluginObj<CssBlocksVisitor> {
 
     return {
-      pre(file: any) {
+      pre(file: BabelFile) {
         this.dynamicStylesFound = false;
         this.importsToRemove = new Array<NodePath<ImportDeclaration>>();
         this.statementsToRemove = new Array<NodePath<Statement>>();
@@ -78,7 +84,7 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
           this.elementAnalyzer = new JSXElementAnalyzer(this.analysis.blocks, this.filename);
         }
       },
-      post(state: any) {
+      post() {
         for (let nodePath of this.statementsToRemove) {
           if (nodePath.removed) { continue; }
           nodePath.remove();
@@ -133,7 +139,7 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
           }
         },
 
-        JSXOpeningElement(path: NodePath<JSXOpeningElement>, state: any): void {
+        JSXOpeningElement(path: NodePath<JSXOpeningElement>): void {
           if (!this.shouldProcess) { return; }
           let elementAnalysis = this.elementAnalyzer.analyzeJSXElement(path);
           if (elementAnalysis) {

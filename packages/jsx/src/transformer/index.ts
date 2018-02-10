@@ -1,16 +1,12 @@
+import { whatever } from '@opticss/util';
 import { CssBlockOptionsReadonly, PluginOptions, PluginOptionsReader, StyleMapping } from 'css-blocks';
 
 export interface RewriterOptions {
-  meta?: { [metaProp: string]: any };
+  meta?: { [metaProp: string]: whatever };
   cssBlocks: {
     styleMapping: StyleMapping | null;
     compilationOptions: PluginOptions;
   };
-}
-
-export interface RewriterOutput {
-  source: string;
-  map: any;
 }
 
 // TODO: The entire point of this class is to serve as a transport mechanism for

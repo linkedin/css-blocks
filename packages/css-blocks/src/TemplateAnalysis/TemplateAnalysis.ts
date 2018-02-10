@@ -89,12 +89,14 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    * A per-element correlation of styles used. The current correlation is added
    * to this list when [[endElement]] is called.
    */
+  // tslint:disable-next-line:prefer-whatever-to-any
   elements: Map<string, ElementAnalysis<any, any, any>>;
 
   /**
    * The current element, created when calling [[startElement]].
    * The current element is unset after calling [[endElement]].
    */
+  // tslint:disable-next-line:prefer-whatever-to-any
   currentElement: ElementAnalysis<any, any, any> | undefined;
 
   /**

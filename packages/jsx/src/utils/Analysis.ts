@@ -3,6 +3,7 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from '@opticss/template-api';
+import { whatever } from '@opticss/util';
 import { File } from 'babel-types';
 import {
   Block,
@@ -27,8 +28,8 @@ export class JSXTemplate implements TemplateInfo<'Opticss.JSXTemplate'> {
     this.data = data;
   }
 
-  static deserialize(identifier: string, ..._data: any[]): JSXTemplate {
-    return new JSXTemplate(identifier, _data[0]);
+  static deserialize(identifier: string, ..._data: whatever[]): JSXTemplate {
+    return new JSXTemplate(identifier, <string>_data[0]);
   }
 
   serialize(): SerializedTemplateInfo<'Opticss.JSXTemplate'> {
@@ -93,6 +94,8 @@ export class MetaAnalysis extends MetaTemplateAnalysis {
   getAnalysis(idx: number): Analysis {
     let analysis = this.analyses[idx];
     if (analysis.template.type === 'Opticss.JSXTemplate') {
+      // Cast through any to force return type.
+      // tslint:disable-next-line:prefer-whatever-to-any
       return (<any>analysis) as Analysis;
     } else {
       throw new Error(`analysis at ${idx} is not a jsx analysis`);

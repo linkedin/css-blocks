@@ -36,6 +36,7 @@ function trackBlockDependencies(loaderContext: LoaderContext, blocks: Set<Block>
   }
 }
 
+// tslint:disable-next-line:prefer-whatever-to-any
 export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginBuilder> {
   debug(`loader adapter for:`, loaderContext.resourcePath);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);

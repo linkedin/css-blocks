@@ -17,6 +17,7 @@ import {
   MultiMap,
   ObjectDictionary,
   objectValues,
+  whatever,
 } from "@opticss/util";
 
 import {
@@ -58,7 +59,7 @@ export interface Conditional<BooleanExpression> {
   condition: BooleanExpression;
 }
 
-export function isConditional(o: object): o is Conditional<any> {
+export function isConditional(o: object): o is Conditional<whatever> {
   return o.hasOwnProperty('condition');
 }
 
@@ -72,7 +73,7 @@ export interface Switch<StringExpression> {
   disallowFalsy?: boolean;
 }
 
-export function isSwitch(o: object): o is Switch<any> {
+export function isSwitch(o: object): o is Switch<whatever> {
   return o.hasOwnProperty('stringExpression');
 }
 
@@ -721,8 +722,8 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
 function dynamicClassAndDependentStates(
   classes: Array<BlockClass>,
-  depStatesMap: MultiMap<BlockClass, DynamicStates<any, any>>,
-  dynStatesHandled: Set<DynamicStates<any, any>>,
+  depStatesMap: MultiMap<BlockClass, DynamicStates<whatever, whatever>>,
+  dynStatesHandled: Set<DynamicStates<whatever, whatever>>,
   mapper: ClassMapper,
   choices: ChoiceMapper,
 ): AttributeValueSet | ValueConstant {
@@ -800,7 +801,7 @@ function mapChoiceClasses(
   return attrValues.oneOf(choices);
 }
 
-function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Style, number>): SerializedDynamicContainer {
+function serializeDynamicContainer(c: DynamicClasses<whatever>, styleIndexes: Map<Style, number>): SerializedDynamicContainer {
   let classes: SerializedDynamicContainer = {
     condition: true,
     whenFalse: [],
@@ -819,7 +820,7 @@ function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Sty
   return classes;
 }
 
-function serializeDynamicStates(c: DynamicStates<any, any>, styleIndexes: Map<Style, number>): SerializedDynamicStates {
+function serializeDynamicStates(c: DynamicStates<whatever, whatever>, styleIndexes: Map<Style, number>): SerializedDynamicStates {
   let dynState = {
     stringExpression: true,
     condition: true,

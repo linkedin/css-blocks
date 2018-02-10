@@ -21,11 +21,13 @@ function trackBlockDependencies(loaderContext: LoaderContext, block: Block, opti
   });
 }
 
+// tslint:disable-next-line:prefer-whatever-to-any
 export function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void {
 
   let callback = this.async();
   let thisLoader = this.loaders[this.loaderIndex];
   let path = this.resourcePath;
+  // tslint:disable-next-line:prefer-whatever-to-any
   let options: any;
 
   if (thisLoader.options) {

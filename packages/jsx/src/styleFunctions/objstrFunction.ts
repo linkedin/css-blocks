@@ -71,7 +71,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
   };
 
   // Ensure the first argument passed to suspected `objstr` call is an object.
-  let obj: any = func.arguments[0];
+  let obj = func.arguments[0];
   if (!isObjectExpression(obj)) {
     throw new TemplateAnalysisError(`First argument passed to "objstr" call must be an object literal.`, {filename, ...func.loc.start});
   }

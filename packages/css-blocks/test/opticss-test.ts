@@ -1,6 +1,3 @@
-import { ElementAnalysis } from '../src/TemplateAnalysis/ElementAnalysis';
-import { BlockCompiler } from '../src/BlockCompiler';
-import { StyleMapping } from '../src/TemplateRewriter/StyleMapping';
 import { assert } from "chai";
 import { suite, test, only } from "mocha-typescript";
 import * as postcss from 'postcss';
@@ -16,10 +13,15 @@ import {
   POSITION_UNKNOWN
 } from "@opticss/element-analysis";
 import {
-  clean, isType as assertType, ObjectDictionary
+  assert as typedAssert,
+  clean,
+  ObjectDictionary,
 } from "@opticss/util";
 
 import * as cssBlocks from '../src/errors';
+import { ElementAnalysis } from '../src/TemplateAnalysis/ElementAnalysis';
+import { BlockCompiler } from '../src/BlockCompiler';
+import { StyleMapping } from '../src/TemplateRewriter/StyleMapping';
 import { BlockParser } from "../src/BlockParser";
 import { BlockFactory } from "../src/BlockFactory";
 import { Importer, ImportedFile } from "../src/importing";
@@ -96,7 +98,7 @@ export class TemplateAnalysisTests {
       let compiler = new BlockCompiler(postcss, reader);
       let compiled = compiler.compile(block, block.stylesheet!, analysis);
       optimizer.addSource({
-        content: compiled.toResult({to: "blocks/foo.block.css"})
+        content: compiled.toResult({to: "blocks/foo.block.css"}),
       });
       optimizer.addAnalysis(optimizerAnalysis);
       return optimizer.optimize("result.css").then((optimized) => {
@@ -117,7 +119,7 @@ export class TemplateAnalysisTests {
         assert.deepEqual([...rewrite2.staticClasses].sort(), ['c']);
         assert.deepEqual([...rewrite2.dynamicClasses].sort(), ['e', 'f']);
         let expr = rewrite2.dynamicClass('e')!;
-        assertType(isAndExpression, expr).and(andExpr => {
+        typedAssert.isType(isAndExpression, expr).and(andExpr => {
           assert.deepEqual(andExpr.and.length, 1);
           assert.deepEqual(andExpr.and[0], block.find(".asdf[state|larger]")!);
         });

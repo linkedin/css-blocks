@@ -40,15 +40,19 @@ export interface CssBlocksWebpackOptions {
   optimization?: OptiCSSOptions;
 }
 
+// there's not any good types for webpack's internals.
+// tslint:disable-next-line:prefer-whatever-to-any
+export type WebpackAny = any;
+
 export interface BlockCompilationError {
-  compilation: any;
+  compilation: WebpackAny;
   assetPath: string;
   error: Error;
   mapping?: StyleMapping;
   optimizerActions?: Actions;
 }
 export interface BlockCompilationComplete {
-  compilation: any;
+  compilation: WebpackAny;
   assetPath: string;
   mapping: StyleMapping;
   optimizerActions: Actions;
@@ -71,7 +75,7 @@ export class CssBlocksRewriterPlugin
   parent: CssBlocksPlugin;
   compilationOptions: CssBlocksOptions;
   outputCssFile: string;
-  name: any;
+  name: string;
   debug: debugGenerator.IDebugger;
   pendingResult: Promise<StyleMapping | void> | undefined;
   constructor(parent: CssBlocksPlugin) {
@@ -92,8 +96,8 @@ export class CssBlocksRewriterPlugin
   }
 
   apply(compiler: WebpackCompiler) {
-    compiler.plugin("compilation", (compilation: any) => {
-      compilation.plugin("normal-module-loader", (context: any, mod: any) => {
+    compiler.plugin("compilation", (compilation: WebpackAny) => {
+      compilation.plugin("normal-module-loader", (context: WebpackAny, mod: WebpackAny) => {
         this.trace(`preparing normal-module-loader for ${mod.resource}`);
         context.cssBlocks = context.cssBlocks || {mappings: {}, compilationOptions: this.compilationOptions};
 
@@ -146,7 +150,7 @@ export class CssBlocksPlugin
     return new CssBlocksRewriterPlugin(this);
   }
 
-  private handleMake(outputPath: string, assets: Assets, compilation: any, cb: (error?: Error) => void) {
+  private handleMake(outputPath: string, assets: Assets, compilation: WebpackAny, cb: (error?: Error) => void) {
       // Start analysis with a clean analysis object
       this.trace(`starting analysis.`);
       this.analyzer.reset();
