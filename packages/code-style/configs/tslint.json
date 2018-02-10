@@ -1,6 +1,7 @@
 {
   "rulesDirectory": "../dist/rules",
   "rules": {
+    "multiline-parameters": true,
     "curly": false,
     "no-var-keyword": true,
     "adjacent-overload-signatures": true,

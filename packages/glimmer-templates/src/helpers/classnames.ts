@@ -125,9 +125,10 @@ export function classnames(stack: any[]): string {
   return classes.join(" ");
   }
 
-function sourceExpr(stack: any[],
-                    isSourceSet: IsSourceSet, setSource: SetSource,
-                    abort: Abort,
+function sourceExpr(
+  stack: any[],
+  isSourceSet: IsSourceSet, setSource: SetSource,
+  abort: Abort,
 ): void {
   let enforceSwitch = true;
   let type = num(stack);

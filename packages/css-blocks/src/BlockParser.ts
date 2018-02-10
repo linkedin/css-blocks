@@ -416,8 +416,9 @@ export class BlockParser {
    */
   private assertValidState(block: Block, rule: postcss.Rule, attr: selectorParser.Attribute) {
     if (attr.value && attr.operator !== "=") {
-      throw new errors.InvalidBlockSyntax(`A state with a value must use the = operator (found ${attr.operator} instead).`,
-                                          this.selectorSourceLocation(block, rule, attr));
+      throw new errors.InvalidBlockSyntax(
+        `A state with a value must use the = operator (found ${attr.operator} instead).`,
+        this.selectorSourceLocation(block, rule, attr));
     }
   }
 

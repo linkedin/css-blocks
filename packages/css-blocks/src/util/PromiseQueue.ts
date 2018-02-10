@@ -29,14 +29,16 @@ export class PromiseQueue<WorkItem, Result> {
 
   private processWork(work: PendingWork<WorkItem, Result>, callback: (err?: any) => void) {
     this.debug(`[Job:${work.id}] Starting job.`);
-    this.promiseProcessor(work.item).then((result: Result) => {
-      this.debug(`[Job:${work.id}] Finished. Recording result.`);
-      work.result = result;
-      callback();
-    },                                    (error: any) => {
-      this.debug(`[Job:${work.id}] Errored.`);
-      callback(error);
-    });
+    this.promiseProcessor(work.item).then(
+      (result: Result) => {
+        this.debug(`[Job:${work.id}] Finished. Recording result.`);
+        work.result = result;
+        callback();
+      },
+      (error: any) => {
+        this.debug(`[Job:${work.id}] Errored.`);
+        callback(error);
+      });
   }
 
   get activeJobCount() {

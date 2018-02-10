@@ -50,11 +50,13 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
     objectValues(dynClasses).forEach(expr => indexesUsed(indexSet, expr!));
     let usedIndexes = [...indexSet].sort((a, b) => a < b ? -1 : 1);
     let adjustments = new Array<number>();
-    usedIndexes.reduce(([missing, last], n) => {
-      missing = missing + (n - last - 1);
-      adjustments[n] = missing;
-      return [missing, n];
-    },                 [0, -1]);
+    usedIndexes.reduce(
+      ([missing, last], n) => {
+        missing = missing + (n - last - 1);
+        adjustments[n] = missing;
+        return [missing, n];
+      },
+      [0, -1]);
 
     function renumberer(i: number | BooleanExpression<number>, n: number, arr: number[]) {
       if (typeof i === "number") {

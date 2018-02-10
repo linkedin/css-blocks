@@ -64,8 +64,9 @@ export class MockImportRegistry {
     sourcePath = this.relativize(sourcePath);
     if (!this.imported[sourcePath]) {
       let importedFiles = Object.keys(this.imported).join(", ");
-      assert(false,
-             `${sourcePath} was not imported as expected. These were imported: ${importedFiles}`);
+      assert(
+        false,
+        `${sourcePath} was not imported as expected. These were imported: ${importedFiles}`);
     }
   }
 

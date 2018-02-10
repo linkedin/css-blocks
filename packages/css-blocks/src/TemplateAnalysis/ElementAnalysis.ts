@@ -353,14 +353,16 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       Array<StaticClass | DynamicClasses<TernaryExpression>>,
       Array<DependentState | ConditionalDependentState<BooleanExpression> | ConditionalDependentStateGroup<StringExpression>>
     ] = [[], []];
-    let [classStyles, stateStyles] = this.addedStyles.reduce((res, style) => {
-      if (isStaticClass(style) || isTrueCondition(style) || isFalseCondition(style)) {
-        res[0].push(style);
-      } else {
-        res[1].push(style);
-      }
-      return res;
-    },                                                       styles);
+    let [classStyles, stateStyles] = this.addedStyles.reduce(
+      (res, style) => {
+        if (isStaticClass(style) || isTrueCondition(style) || isFalseCondition(style)) {
+          res[0].push(style);
+        } else {
+          res[1].push(style);
+        }
+        return res;
+      },
+      styles);
 
     for (let classStyle of classStyles) {
       if (isStaticClass(classStyle)) {
