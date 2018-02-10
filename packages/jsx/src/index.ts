@@ -124,15 +124,15 @@ export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory:
   let resolvedOpts = {...defaultOptions, ...opts};
   file = path.resolve(resolvedOpts.baseDir, file);
 
-  return readFile(file, 'utf8')
-    .then(data => {
-            // Return promise for parsed analysis object.
-            let template: JSXTemplate = new JSXTemplate(file, data);
-            return parseWith(template, metaAnalysis, factory, resolvedOpts);
-          },
-          (err) => {
-            throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
-          });
+  return readFile(file, 'utf8').then(
+    data => {
+      // Return promise for parsed analysis object.
+      let template: JSXTemplate = new JSXTemplate(file, data);
+      return parseWith(template, metaAnalysis, factory, resolvedOpts);
+    },
+    (err) => {
+      throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
+    });
 }
 
 /**
@@ -166,17 +166,18 @@ function resolveAllRecursively<T>(promiseArray: Array<Promise<T>>): Promise<Arra
   return new Promise<Array<T>>((resolve, reject) => {
     let currentLength = promiseArray.length;
     let waitAgain = (promise: Promise<Array<T>>): void => {
-      promise.then((values) => {
-                     if (promiseArray.length === currentLength) {
-                       resolve(values);
-                     } else {
-                       currentLength = promiseArray.length;
-                       waitAgain(Promise.all(promiseArray));
-                     }
-                   },
-                   (error) => {
-                     reject(error);
-                   });
+      promise.then(
+        (values) => {
+          if (promiseArray.length === currentLength) {
+            resolve(values);
+          } else {
+            currentLength = promiseArray.length;
+            waitAgain(Promise.all(promiseArray));
+          }
+        },
+        (error) => {
+          reject(error);
+        });
     };
     waitAgain(Promise.all(promiseArray));
   });

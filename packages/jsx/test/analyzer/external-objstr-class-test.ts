@@ -116,11 +116,13 @@ export class Test {
 
       <div class={style}></div>;
     `,
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    },     (err) => {
-      assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
-    });
+    ).then(
+      (analysis: MetaAnalysis) => {
+        assert.ok(false, 'should not have succeeded.');
+      },
+      (err) => {
+        assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
+      });
   }
 
   @test 'Multiple classes from the same block on objstr calls are an error.'() {
@@ -139,11 +141,13 @@ export class Test {
 
       <div class={style}></div>;
     `,
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    },     (err) => {
-      assert.equal(err.message, '[css-blocks] TemplateError: Classes "baz" and "foo" from the same block are not allowed on the same element at the same time. (:10:6)');
-    });
+    ).then(
+      (analysis: MetaAnalysis) => {
+        assert.ok(false, 'should not have succeeded.');
+      },
+      (err) => {
+        assert.equal(err.message, '[css-blocks] TemplateError: Classes "baz" and "foo" from the same block are not allowed on the same element at the same time. (:10:6)');
+      });
   }
 
   @test 'Multiple classes from different blocks on objstr calls are tracked when applied'() {
@@ -237,11 +241,13 @@ export class Test {
 
       <div class={style}></div>;
     `,
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    },     (err) => {
-      assert.equal(err.message, `[css-blocks] AnalysisError: Undefined function for styling: objstr (4:18)`);
-    });
+    ).then(
+      (analysis: MetaAnalysis) => {
+        assert.ok(false, 'should not have succeeded.');
+      },
+      (err) => {
+        assert.equal(err.message, `[css-blocks] AnalysisError: Undefined function for styling: objstr (4:18)`);
+      });
   }
 
   @test 'cannot set objstr to a new function'() {
@@ -261,11 +267,13 @@ export class Test {
 
       <div class={style}></div>;
     `,
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    },     (err) => {
-      assert.equal(err.message, `[css-blocks] AnalysisError: Cannot override the objstr import of 'obj-str' (5:6)`);
-    });
+    ).then(
+      (analysis: MetaAnalysis) => {
+        assert.ok(false, 'should not have succeeded.');
+      },
+      (err) => {
+        assert.equal(err.message, `[css-blocks] AnalysisError: Cannot override the objstr import of 'obj-str' (5:6)`);
+      });
   }
 
   @test 'Overly complex expressions to reference a CSS Block throw'() {

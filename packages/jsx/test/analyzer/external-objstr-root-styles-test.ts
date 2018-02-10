@@ -28,11 +28,13 @@ export class Test {
         });
         return ( <div class={style}></div> );
       }`,
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    },     e => {
-      assert.equal(e.message, '[css-blocks] AnalysisError: Cannot mix class names with block styles. (8:10)');
-    });
+    ).then(
+      (analysis: MetaAnalysis) => {
+        assert.ok(false, 'should not have succeeded.');
+      },
+      e => {
+        assert.equal(e.message, '[css-blocks] AnalysisError: Cannot mix class names with block styles. (8:10)');
+      });
   }
 
   @test 'Elements with root applied are tracked on attribute `class`'() {
@@ -213,11 +215,13 @@ export class Test {
         youShallNotPass(style);
         return ( <div class={style}></div> );
       }`,
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    },     e => {
-      assert.equal(e.message, '[css-blocks] AnalysisError: illegal use of a style variable. (9:8)');
-    });
+    ).then(
+      (analysis: MetaAnalysis) => {
+        assert.ok(false, 'should not have succeeded.');
+      },
+      e => {
+        assert.equal(e.message, '[css-blocks] AnalysisError: illegal use of a style variable. (9:8)');
+      });
   }
 
   @test 'Cannot change the value of a variable used for styles to a new value'() {
@@ -236,11 +240,13 @@ export class Test {
         style = "foo";
         return ( <div class={style}></div> );
       }`,
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    },     e => {
-      assert.equal(e.message, '[css-blocks] AnalysisError: illegal assignment to a style variable. (9:8)');
-    });
+    ).then(
+      (analysis: MetaAnalysis) => {
+        assert.ok(false, 'should not have succeeded.');
+      },
+      e => {
+        assert.equal(e.message, '[css-blocks] AnalysisError: illegal assignment to a style variable. (9:8)');
+      });
   }
 
   @test 'Can console.log a style variable'() {

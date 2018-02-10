@@ -156,11 +156,13 @@ export class Test {
         [bar.awesome('wat')]: leSigh
       });
       <div class={style}></div>;`,
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    },     (err) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|awesome=wat] found on block "bar".\n  Did you mean: [state|awesome]? (7:9)');
-    });
+    ).then(
+      (analysis: MetaAnalysis) => {
+        assert.ok(false, 'should not have succeeded.');
+      },
+      (err) => {
+        assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|awesome=wat] found on block "bar".\n  Did you mean: [state|awesome]? (7:9)');
+      });
   }
 
   @test 'Conflicting state names on root and class are handled'() {

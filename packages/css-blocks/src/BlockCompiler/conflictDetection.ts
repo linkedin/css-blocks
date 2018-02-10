@@ -55,14 +55,17 @@ function detectPropertyConflicts(props1: Set<string>, props2: Set<string>): Set<
  */
 export function detectConflicts(obj1: Style, obj2: Style): Conflicts<Conflict> {
   let conflicts = new Conflicts<Conflict>();
-  conflicts.conflictingProps = detectPropertyConflicts(obj1.propertyConcerns.getProperties(),
-                                                       obj2.propertyConcerns.getProperties());
+  conflicts.conflictingProps = detectPropertyConflicts(
+    obj1.propertyConcerns.getProperties(),
+    obj2.propertyConcerns.getProperties(),
+  );
   let otherPseudos = obj2.propertyConcerns.getPseudos();
   obj1.propertyConcerns.getPseudos().forEach((pseudo) => {
     if (otherPseudos.has(pseudo)) {
-      conflicts.pseudoConflicts.set(pseudo,
-                                    detectPropertyConflicts(obj1.propertyConcerns.getProperties(pseudo),
-                                                            obj2.propertyConcerns.getProperties(pseudo)));
+      conflicts.pseudoConflicts.set(
+        pseudo,
+        detectPropertyConflicts(obj1.propertyConcerns.getProperties(pseudo),
+                                obj2.propertyConcerns.getProperties(pseudo)));
     }
   });
   return conflicts;

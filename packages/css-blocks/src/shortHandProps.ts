@@ -99,10 +99,12 @@ export function longhandsFor(prop: string): string[] {
 
 export function allLonghandsFor(prop: string): string[] {
   if (doubleExpandProps.has(prop)) {
-    return longhandsFor(prop).reduce<string[]>((memo, prop) => {
-      memo.push(prop);
-      return memo.concat(longhandsFor(prop));
-    },                                         []);
+    return longhandsFor(prop).reduce<string[]>(
+      (memo, prop) => {
+        memo.push(prop);
+        return memo.concat(longhandsFor(prop));
+      },
+      []);
   } else {
     return longhandsFor(prop);
   }
