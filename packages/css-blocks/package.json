@@ -37,7 +37,6 @@
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/css-blocks#readme",
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0",
-    "@opticss/util": "^0.1.1",
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.39",
@@ -48,7 +47,6 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
-    "opticss": "^0.2.0",
     "perfectionist": "^2.4.0",
     "postcss": "^6.0.14",
     "remap-istanbul": "^0.9.5",
@@ -60,6 +58,7 @@
   "dependencies": {
     "@opticss/element-analysis": "^0.2.0",
     "@opticss/template-api": "^0.2.0",
+    "@opticss/util": "^0.2.0",
     "@types/async": "^2.0.40",
     "@types/debug": "0.0.29",
     "@types/source-map": "^0.5.0",
@@ -67,6 +66,7 @@
     "debug": "^2.6.8",
     "inline-source-map-comment": "^1.0.5",
     "object.values": "^1.0.4",
+    "opticss": "^0.2.0",
     "postcss-selector-parser": "3.1.1",
     "regexpu-core": "^4.0.11",
     "source-map": "^0.5.7",

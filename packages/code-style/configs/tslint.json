@@ -4,9 +4,13 @@
     "multiline-parameters": true,
     "curly": false,
     "no-var-keyword": true,
+    "no-construct": true,
     "adjacent-overload-signatures": true,
     "no-for-in-array":true,
     "prefer-whatever-to-any": true,
+    "no-reference": true,
+    "no-eval": true,
+    "no-floating-promises": true,
     "no-unsafe-any": {
       "severity": "off"
     },

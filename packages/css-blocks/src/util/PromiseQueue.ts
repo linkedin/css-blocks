@@ -1,3 +1,4 @@
+// tslint:disable:no-floating-promises
 import { whatever } from "@opticss/util";
 import * as async from "async";
 import * as debugGenerator from "debug";
