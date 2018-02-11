@@ -540,15 +540,15 @@ export class Block
     if (node.type === selectorParser.CLASS && node.value === "root") {
       return [this.rootClass, 0];
     } else if (node.type === selectorParser.TAG) {
-      let otherBlock = this.getReferencedBlock(node.value!);
+      let otherBlock = this.getReferencedBlock(node.value);
       if (otherBlock) {
         let next = node.next();
         if (next && isClassNode(next)) {
-          let klass = otherBlock.getClass(next.value!);
+          let klass = otherBlock.getClass(next.value);
           if (klass) {
             let another = next.next();
             if (another && isStateNode(another)) {
-              let info = stateParser(<selectorParser.Attribute>another);
+              let info = stateParser(another);
               let state = klass._getState(info);
               if (state) {
                 return [state, 2];
@@ -563,7 +563,7 @@ export class Block
             return null;
           }
         } else if (next && isStateNode(next)) {
-          let info = stateParser(<selectorParser.Attribute>next);
+          let info = stateParser(next);
           let state = otherBlock.rootClass._getState(info);
           if (state) {
             return [state, 1];
@@ -577,13 +577,13 @@ export class Block
         return null;
       }
     } else if (node.type === selectorParser.CLASS) {
-      let klass = this.getClass(node.value!);
+      let klass = this.getClass(node.value);
       if (klass === undefined) {
         return null;
       }
       let next = node.next();
       if (next && isStateNode(next)) {
-        let info = stateParser(<selectorParser.Attribute>next);
+        let info = stateParser(next);
         let state = klass._getState(info);
         if (state === undefined) {
           return null;
@@ -594,7 +594,7 @@ export class Block
         return [klass, 0];
       }
     } else if (isStateNode(node)) {
-      let info = stateParser(<selectorParser.Attribute>node);
+      let info = stateParser(node);
       let state = this.rootClass._ensureState(info);
       if (state) {
         return [state, 0];

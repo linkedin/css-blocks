@@ -62,7 +62,7 @@ export class JSXElementAnalyzer {
   }
 
   analyzeAssignment(path: NodePath<AssignmentExpression>): JSXElementAnalysis | undefined {
-    let assignment = path.node as AssignmentExpression;
+    let assignment = path.node;
     if (assignment.operator !== '=') return;
     let lVal = assignment.left;
     if (isMemberExpression(lVal)) {

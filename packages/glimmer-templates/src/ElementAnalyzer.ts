@@ -273,7 +273,7 @@ function isMustacheStatement(value: AST.TextNode | AST.MustacheStatement | AST.C
 
 function isStyleIfHelper(node: AST.MustacheStatement): "style-if" | "style-unless" | undefined {
   if (node.path.type !== 'PathExpression') { return undefined; }
-  let parts: string[] = (<AST.PathExpression>node.path).parts;
+  let parts: string[] = (node.path).parts;
   if (parts.length > 0) {
     let name = parts[0];
     if (name === STYLE_IF || name === STYLE_UNLESS) {

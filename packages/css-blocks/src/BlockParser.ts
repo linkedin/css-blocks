@@ -51,7 +51,7 @@ export function isRootNode(node: selectorParser.Node): node is selectorParser.Cl
  */
 export function isStateNode(node: selectorParser.Node): node is selectorParser.Attribute {
   return node.type === selectorParser.ATTRIBUTE &&
-         (<selectorParser.Attribute>node).namespace === "state";
+         node.namespace === "state";
 }
 
 /**
@@ -282,7 +282,7 @@ export class BlockParser {
   private shouldBeParsedAsBlockSelector(rule: postcss.Rule): boolean {
     if (rule.parent &&
       rule.parent.type === "atrule" &&
-      (<postcss.AtRule>rule.parent).name === "keyframes") {
+      rule.parent.name === "keyframes") {
       return false;
     }
     return true;
@@ -500,7 +500,7 @@ export class BlockParser {
     // Disallow pseudoclasses that take selectors as arguments.
     sel.nodes.forEach(n => {
       if (n.type === selectorParser.PSEUDO) {
-        let pseudo = <selectorParser.Pseudo>n;
+        let pseudo = n;
         if (pseudo.value === ":not" || pseudo.value === ":matches") {
           throw new errors.InvalidBlockSyntax(
             `The ${pseudo.value}() pseudoclass cannot be used: ${rule.selector}`,
@@ -535,7 +535,7 @@ export class BlockParser {
       // If selecting a state attribute, assert it is valid, save the found state,
       // and throw the appropriate error if conflicting selectors are found.
       else if (isStateNode(n)) {
-        this.assertValidState(block, rule, <selectorParser.Attribute>n);
+        this.assertValidState(block, rule, n);
         if (!found) {
           found = {
             node: n,

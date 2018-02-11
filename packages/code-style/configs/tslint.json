@@ -10,7 +10,7 @@
     "no-unsafe-any": {
       "severity": "off"
     },
-    "no-unnecessary-type-assertion": false,
+    "no-unnecessary-type-assertion": true,
     "indent": [true, "spaces"],
     "label-position": true,
     "no-consecutive-blank-lines": [

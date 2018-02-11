@@ -46,7 +46,7 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
   ): IndexedClassMapping {
     // TODO: move this renumbering to opticss?
     let indexSet = new Set<number>();
-    let dynClasses = classRewrite.dynamicAttributes.class!;
+    let dynClasses = classRewrite.dynamicAttributes.class;
     objectValues(dynClasses).forEach(expr => indexesUsed(indexSet, expr!));
     let usedIndexes = [...indexSet].sort((a, b) => a < b ? -1 : 1);
     let adjustments = new Array<number>();
@@ -67,11 +67,11 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
     }
 
     let inputs = classRewrite.inputs.filter((_, n) => indexSet.has(n)).map((_, n, inputs) => processExpressionLiteral(n, inputs, classMap));
-    objectValues(classRewrite.dynamicAttributes.class!).forEach(expr => renumber(renumberer, expr!));
+    objectValues(classRewrite.dynamicAttributes.class).forEach(expr => renumber(renumberer, expr!));
     return new IndexedClassMapping(
       inputs,
-      classRewrite.staticAttributes.class!,
-      classRewrite.dynamicAttributes.class!,
+      classRewrite.staticAttributes.class,
+      classRewrite.dynamicAttributes.class,
     );
   }
 

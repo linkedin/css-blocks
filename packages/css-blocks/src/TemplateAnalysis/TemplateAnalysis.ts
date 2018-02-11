@@ -311,7 +311,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       elements[key] = el.serialize(styleIndexes);
     });
 
-    let t: SerializedTemplateInfo<K> = template as SerializedTemplateInfo<K>;
+    let t: SerializedTemplateInfo<K> = template;
     // Return serialized Analysis object.
     return { template: t, blocks, stylesFound, elements };
   }
