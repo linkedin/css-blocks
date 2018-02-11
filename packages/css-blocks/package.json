@@ -5,9 +5,9 @@
   "main": "dist/src/index.js",
   "scripts": {
     "compile": "rm -rf dist && tsc -p test/tsconfig.json",
-    "pretest": "npm run compile && tslint --project tsconfig.json --type-check",
+    "pretest": "npm run compile && tslint --project tsconfig.json",
     "prepublish": "npm run compile",
-    "tslint": "tslint --project tsconfig.json",
+    "lint": "tslint --project tsconfig.json",
     "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
@@ -35,6 +35,7 @@
   ],
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/css-blocks#readme",
   "devDependencies": {
+    "@css-blocks/code-style": "^0.17.0",
     "@opticss/util": "^0.1.1",
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",

@@ -6,7 +6,7 @@
   "scripts": {
     "prepublish": "tsc -p tsconfig.json",
     "pretest": "tsc -p tsconfig.json && tslint --project tsconfig.json",
-    "tslint": "tslint --project tsconfig.json",
+    "lint": "tslint --project tsconfig.json",
     "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
@@ -33,6 +33,7 @@
   ],
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/webpack-plugin#readme",
   "devDependencies": {
+    "@css-blocks/code-style": "^0.17.0",
     "@types/async": "^2.0.40",
     "@types/chai": "^3.5.2",
     "@types/convert-source-map": "^1.3.33",

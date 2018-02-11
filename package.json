@@ -1,14 +1,14 @@
 {
   "private": true,
-<<<<<<< HEAD
+  "scripts": {
+    "commitmsg": "commitlint -e $GIT_PARAMS"
+  },
   "devDependencies": {
+    "@commitlint/cli": "^6.1.0",
+    "@commitlint/config-conventional": "^6.1.0",
+    "husky": "^0.14.3",
     "lerna": "^2.5.1"
   },
-=======
-	"devDependencies": {
-		"lerna": "^2.5.1"
-	},
->>>>>>> 65ec8b6... Squash with 4420cd6e5efaf53b5c9ae2a2c4bfd82407cb4373
   "workspaces": [
     "packages/*"
   ]

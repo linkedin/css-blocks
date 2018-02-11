@@ -8,11 +8,11 @@
     "dist"
   ],
   "scripts": {
-    "pretest": "npm run build && npm run tslint",
+    "pretest": "npm run build && npm run lint",
     "test": "echo 'tested in @css-blocks/jsx'",
     "build": "rm -rf dist && tsc",
     "prepublish": "npm run build",
-    "tslint": "tslint --project tsconfig.json"
+    "lint": "tslint --project tsconfig.json"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/runtime/#readme",
   "devDependencies": {
+    "@css-blocks/code-style": "^0.17.0",
     "grunt": "^1.0.1",
     "grunt-release": "^0.12.0",
     "tslint": "^5.5.0",

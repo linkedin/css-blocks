@@ -1,0 +1,14 @@
+{
+  "name": "@css-blocks/code-style",
+  "version": "0.17.0",
+  "main": "configs/tslint.json",
+  "readme": "README.md",
+  "bugs": {
+    "url": "https://github.com/css-blocks/css-blocks/issues"
+  },
+  "repository": {
+    "url": "https://github.com/css-blocks/css-blocks.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/code-style"
+}

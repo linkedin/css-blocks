@@ -50,8 +50,8 @@ const CAN_PARSE_EXTENSIONS = {
   '.jsx': true,
 };
 
-export default function mkTransform(tranformOpts: { rewriter: Rewriter }): () => PluginObj<CssBlocksVisitor> {
-  const rewriter = tranformOpts.rewriter;
+export default function mkTransform(transformOpts: { rewriter: Rewriter }): () => PluginObj<CssBlocksVisitor> {
+  const rewriter = transformOpts.rewriter;
 
   return function transform(): PluginObj<CssBlocksVisitor> {
 

@@ -16,7 +16,7 @@
 			"path": "packages/webpack-plugin"
 		},
 		{
-			"path": "packages/webpack-plugin"
+			"path": "packages/code-style"
 		}
 	],
 	"settings": {

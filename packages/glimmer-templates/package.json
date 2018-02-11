@@ -12,9 +12,9 @@
   "scripts": {
     "test": "mocha --opts test/mocha.opts dist/test",
     "compile": "rm -rf dist && tsc -p test/tsconfig.json",
-    "pretest": "npm run compile && npm run tslint",
+    "pretest": "npm run compile && npm run lint",
     "prepublish": "npm run compile",
-    "tslint": "tslint --project tsconfig.json --type-check",
+    "lint": "tslint --project tsconfig.json",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs .",
@@ -43,6 +43,7 @@
   },
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/glimmer-templates#readme",
   "devDependencies": {
+    "@css-blocks/code-style": "^0.17.0",
     "@types/chai": "^3.5.2",
     "@types/debug": "0.0.29",
     "@types/mocha": "^2.2.41",

@@ -9,6 +9,15 @@
     "opticss",
     "truthy"
   ],
+  "cSpell.ignorePaths": [
+    "**/node_modules/**",
+    "**/vscode-extension/**",
+    "**/.git/**",
+    ".vscode",
+    "typings",
+    "package.json"
+  ],
   "tslint.packageManager": "yarn",
-  "npm.packageManager": "yarn"
+  "npm.packageManager": "yarn",
+  "tslint.enable": true
 }
