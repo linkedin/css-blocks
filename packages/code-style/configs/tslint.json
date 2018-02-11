@@ -12,6 +12,7 @@
     "no-eval": true,
     "no-floating-promises": true,
     "no-string-throw": true,
+    "switch-default": true,
     "no-unsafe-any": {
       "severity": "off"
     },

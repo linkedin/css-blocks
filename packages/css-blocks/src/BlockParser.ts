@@ -1,3 +1,4 @@
+import { assertNever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
 import * as postcss from 'postcss';
 import selectorParser = require('postcss-selector-parser');
@@ -263,6 +264,8 @@ export class BlockParser {
                     classState.propertyConcerns.addProperties(rule, block);
                   }
                   break;
+                default:
+                  assertNever(obj.blockType);
               }
             }
 

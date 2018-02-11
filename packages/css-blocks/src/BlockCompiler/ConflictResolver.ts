@@ -1,3 +1,4 @@
+import { assertNever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
@@ -49,6 +50,8 @@ function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
         default:
           return ConflictType.samevalues;
       }
+    default:
+      return assertNever(t1);
   }
 }
 
