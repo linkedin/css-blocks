@@ -13,7 +13,7 @@ interface HasPrefix {
  * error message if provided.
  */
 export class CssBlockError extends Error {
-  static prefix = 'Error';
+  static prefix = "Error";
   origMessage: string;
   private _location?: ErrorLocation | void;
   constructor(message: string, location?: ErrorLocation | void) {
@@ -28,9 +28,9 @@ export class CssBlockError extends Error {
     if (!loc) {
       return this.origMessage;
     }
-    let filename = loc.filename || '';
-    let line = loc.line ? `${filename ? ':' : ''}${loc.line}` : '';
-    let column = loc.column ? `:${loc.column}` : '';
+    let filename = loc.filename || "";
+    let line = loc.line ? `${filename ? ":" : ""}${loc.line}` : "";
+    let column = loc.column ? `:${loc.column}` : "";
     let locMessage = ` (${filename}${line}${column})`;
     let c = <HasPrefix>this.constructor;
     return `[css-blocks] ${c.prefix || CssBlockError.prefix}: ${this.origMessage}${locMessage}`;
@@ -46,7 +46,7 @@ export class CssBlockError extends Error {
  * Custom JSX Parser error type for template import errors.
  */
 export class JSXParseError extends CssBlockError {
-  static prefix = 'JSXParseError';
+  static prefix = "JSXParseError";
   constructor(message: string, location?: ErrorLocation) {
     super(message, location);
   }
@@ -56,7 +56,7 @@ export class JSXParseError extends CssBlockError {
  * Custom CSS Blocks error type for template analysis errors.
  */
 export class TemplateAnalysisError extends CssBlockError {
-  static prefix = 'AnalysisError';
+  static prefix = "AnalysisError";
   constructor(message: string, location?: ErrorLocation) {
     super(message, location);
   }
@@ -66,7 +66,7 @@ export class TemplateAnalysisError extends CssBlockError {
  * Custom CSS Blocks error type for template import errors.
  */
 export class TemplateImportError extends CssBlockError {
-  static prefix = 'ImportError';
+  static prefix = "ImportError";
   constructor(message: string, location?: ErrorLocation) {
     super(message, location);
   }
@@ -76,7 +76,7 @@ export class TemplateImportError extends CssBlockError {
  * Custom CSS Blocks error type for template import errors.
  */
 export class TemplateRewriteError extends CssBlockError {
-  static prefix = 'RewriteError';
+  static prefix = "RewriteError";
   constructor(message: string, location?: ErrorLocation) {
     super(message, location);
   }
@@ -86,7 +86,7 @@ export class TemplateRewriteError extends CssBlockError {
  * Custom CSS Blocks error type for template import errors.
  */
 export class MalformedBlockPath extends CssBlockError {
-  static prefix = 'MalformedBlockPath';
+  static prefix = "MalformedBlockPath";
   constructor(message: string, location?: ErrorLocation) {
     super(message, location);
   }

@@ -1,4 +1,4 @@
-import * as errors from '../../errors';
+import * as errors from "../../errors";
 import { ElementAnalysis } from "../ElementAnalysis";
 import { StyleAnalysis } from "../StyleAnalysis";
 

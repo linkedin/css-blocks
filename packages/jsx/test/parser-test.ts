@@ -1,17 +1,17 @@
-import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
+import { assert } from "chai";
+import { suite, test } from "mocha-typescript";
 
-import { testParse as parse, testParseFile as parseFile } from './util';
+import { testParse as parse, testParseFile as parseFile } from "./util";
 
-const mock = require('mock-fs');
+const mock = require("mock-fs");
 
-@suite('Parser Test')
+@suite("Parser Test")
 export class Test {
   after() {
     mock.restore();
   }
 
-  @test 'parses when provided a string'() {
+  @test "parses when provided a string"() {
     return parse(`
       class Foo {
         method(){
@@ -23,28 +23,28 @@ export class Test {
     });
   }
 
-  @test 'parses when provided a path'() {
+  @test "parses when provided a path"() {
     mock({
-      'bar.js': `class Foo {
+      "bar.js": `class Foo {
         method(){
           1;
         }
       }`,
     });
-    return parseFile('bar.js').then((analysis) => {
+    return parseFile("bar.js").then((analysis) => {
       assert.ok(analysis);
     });
   }
 
-  @test 'parser takes an optional options hash with baseDir'() {
+  @test "parser takes an optional options hash with baseDir"() {
     mock({
-      '/foo/baz/bar.js': `class Foo {
+      "/foo/baz/bar.js": `class Foo {
         method(){
           1;
         }
       }`,
     });
-    return parseFile('bar.js', { baseDir: '/foo/baz'}).then((analysis) => {
+    return parseFile("bar.js", { baseDir: "/foo/baz"}).then((analysis) => {
       assert.ok(analysis);
     });
   }

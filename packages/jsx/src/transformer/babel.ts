@@ -1,5 +1,5 @@
-import { PluginObj } from 'babel-core';
-import { NodePath } from 'babel-traverse';
+import { PluginObj } from "babel-core";
+import { NodePath } from "babel-traverse";
 import {
   AssignmentExpression,
   Expression,
@@ -17,22 +17,22 @@ import {
   Node,
   Statement,
   stringLiteral,
-} from 'babel-types';
-import { PluginOptionsReader, StyleMapping } from 'css-blocks';
+} from "babel-types";
+import { PluginOptionsReader, StyleMapping } from "css-blocks";
 // import { TemplateAnalysisError } from '../utils/Errors';
-import * as debugGenerator from 'debug';
+import * as debugGenerator from "debug";
 
-import { JSXElementAnalyzer } from '../analyzer/JSXElementAnalyzer';
-import { Analysis } from '../utils/Analysis';
-import { isBlockFilename } from '../utils/isBlockFilename';
-import { isConsoleLogStatement } from '../utils/isConsoleLogStatement';
+import { JSXElementAnalyzer } from "../analyzer/JSXElementAnalyzer";
+import { Analysis } from "../utils/Analysis";
+import { isBlockFilename } from "../utils/isBlockFilename";
+import { isConsoleLogStatement } from "../utils/isConsoleLogStatement";
 
-import { classnamesHelper as generateClassName, HELPER_FN_NAME } from './classNameGenerator';
-import { CSSBlocksJSXTransformer as Rewriter } from './index';
+import { classnamesHelper as generateClassName, HELPER_FN_NAME } from "./classNameGenerator";
+import { CSSBlocksJSXTransformer as Rewriter } from "./index";
 
-const debug = debugGenerator('css-blocks:jsx');
+const debug = debugGenerator("css-blocks:jsx");
 
-let { parse } = require('path');
+let { parse } = require("path");
 
 export interface CssBlocksVisitor {
   dynamicStylesFound: boolean;
@@ -47,8 +47,8 @@ export interface CssBlocksVisitor {
 }
 
 const CAN_PARSE_EXTENSIONS = {
-  '.tsx': true,
-  '.jsx': true,
+  ".tsx": true,
+  ".jsx": true,
 };
 
 interface BabelFile {
@@ -94,7 +94,7 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
           detectStrayReferenceToImport(firstImport, this.filename);
           let importDecl = importDeclaration(
             [importDefaultSpecifier(identifier(HELPER_FN_NAME))],
-            stringLiteral('@css-blocks/runtime'));
+            stringLiteral("@css-blocks/runtime"));
           firstImport.replaceWith(importDecl);
         }
         for (let nodePath of this.importsToRemove) {
@@ -124,13 +124,13 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
             if (classMapping.dynamicClasses.length > 0) {
               className = generateClassName(classMapping, elementAnalysis, HELPER_FN_NAME, true);
             } else {
-              className = stringLiteral(classMapping.staticClasses.join(' '));
+              className = stringLiteral(classMapping.staticClasses.join(" "));
             }
-            let right = path.get('right');
+            let right = path.get("right");
             if (right.isIdentifier()) {
               let binding = right.scope.getBinding((<Identifier>right.node).name);
               if (binding && binding.path.isVariableDeclarator()) {
-                let init = binding.path.get('init');
+                let init = binding.path.get("init");
                 init.replaceWith(className);
                 return;
               }
@@ -145,17 +145,17 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
           if (elementAnalysis) {
             elementAnalysis.seal();
             let classMapping = this.mapping.simpleRewriteMapping(elementAnalysis);
-            let attributeValue: JSXAttribute['value'] | undefined = undefined;
+            let attributeValue: JSXAttribute["value"] | undefined = undefined;
             let newClassAttr: JSXAttribute | undefined = undefined;
             if (classMapping.dynamicClasses.length > 0) {
               this.dynamicStylesFound = true;
               attributeValue = jSXExpressionContainer(
                 generateClassName(classMapping, elementAnalysis, HELPER_FN_NAME, true));
             } else if (classMapping.staticClasses.length > 0) {
-              attributeValue = stringLiteral(classMapping.staticClasses.join(' '));
+              attributeValue = stringLiteral(classMapping.staticClasses.join(" "));
             }
             if (attributeValue) {
-              newClassAttr = jSXAttribute(jSXIdentifier('class'), attributeValue);
+              newClassAttr = jSXAttribute(jSXIdentifier("class"), attributeValue);
             }
 
             let classAttrs = this.elementAnalyzer.classAttributePaths(path);
@@ -196,7 +196,7 @@ function detectStrayReferenceToImport(
     let binding = importDeclPath.scope.getBinding(specifier.local.name);
     if (binding) {
       for (let ref of binding.referencePaths) {
-        if (ref.type === 'Identifier'
+        if (ref.type === "Identifier"
             && (<Identifier>ref.node).name === specifier.local.name
             && !isRemoved(ref)) {
           console.warn(`WARNING: Stray reference to block import (${specifier.local.name}). Imports are removed during rewrite so this will probably be a runtime error. (${filename}:${ref.node.loc.start.line}:${ref.node.loc.start.column})`);
@@ -209,7 +209,7 @@ function detectStrayReferenceToImport(
 
 function isRemoved(path: NodePath<Node>): boolean {
   let p = path;
-  while (p && p.type !== 'Program') {
+  while (p && p.type !== "Program") {
     if (p.removed || p.parentPath.removed) return true;
     if (p.inList) {
       let list = p.parentPath.get(p.listKey);

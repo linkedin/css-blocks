@@ -21,7 +21,7 @@ import { IdentGenerator } from "opticss";
 
 import { Block, OBJ_REF_SPLITTER, Style } from "../Block";
 import { BlockFactory } from "../BlockFactory";
-import { OptionsReader } from '../OptionsReader';
+import { OptionsReader } from "../OptionsReader";
 import { CustomLocalScope } from "../util/LocalScope";
 
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
@@ -226,7 +226,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    * @return The local name for the block object using the local prefix for the block.
    */
   serializedName(o: Style): string {
-    return `${this.getBlockName(o.block) || ''}${o.asSource()}`;
+    return `${this.getBlockName(o.block) || ""}${o.asSource()}`;
   }
 
   /**

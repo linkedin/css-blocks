@@ -3,18 +3,18 @@ import {
   PluginOptions,
   PluginOptionsReader,
 } from "css-blocks";
-import * as fs from 'fs';
-import * as glob from 'glob';
-import * as path from 'path';
+import * as fs from "fs";
+import * as glob from "glob";
+import * as path from "path";
 import * as postcss from "postcss";
 
-import resMapBuilder = require('@glimmer/resolution-map-builder');
+import resMapBuilder = require("@glimmer/resolution-map-builder");
 const buildResolutionMap = resMapBuilder.buildResolutionMap;
-import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
+import Resolver, { BasicModuleRegistry } from "@glimmer/resolver";
 
 import { GlimmerImporter } from "./GlimmerImporter";
 import { GlimmerProject, ResolvedFile, ResolvedPath } from "./GlimmerProject";
-import { MODULE_CONFIG, ModuleConfig } from './module-config';
+import { MODULE_CONFIG, ModuleConfig } from "./module-config";
 import { parseSpecifier } from "./utils";
 
 export class Project implements GlimmerProject {
@@ -78,7 +78,7 @@ export class Project implements GlimmerProject {
     if (!relativePath) { return null; }
 
     // XXX: Is this `src` folder standard or is it based on some glimmer config?
-    let globPattern = path.join(this.projectDir, 'src', `${relativePath}.*`);
+    let globPattern = path.join(this.projectDir, "src", `${relativePath}.*`);
     let paths = glob.sync(globPattern);
     if (paths.length > 0) {
       return {
@@ -96,12 +96,12 @@ export class Project implements GlimmerProject {
       return null;
     }
     let { fullPath, specifier } = resolution;
-    let contents = fs.readFileSync(fullPath, 'utf8');
+    let contents = fs.readFileSync(fullPath, "utf8");
     return new ResolvedFile(contents, specifier, fullPath);
   }
 
   relativize(fullPath: string): string {
-    return path.relative(path.join(this.projectDir, 'src'), fullPath);
+    return path.relative(path.join(this.projectDir, "src"), fullPath);
   }
 
   stylesheetFor(stylesheetName: string, fromGlimmerIdentifier?: string): ResolvedFile | undefined {
@@ -121,7 +121,7 @@ export class Project implements GlimmerProject {
   }
 
   private loadPackageJSON(appPath: string) {
-    let pkgPath = path.join(appPath, 'package.json');
+    let pkgPath = path.join(appPath, "package.json");
     try {
       return JSON.parse(fs.readFileSync(pkgPath).toString());
     } catch (e) {

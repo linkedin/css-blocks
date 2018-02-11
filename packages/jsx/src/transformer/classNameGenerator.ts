@@ -2,12 +2,12 @@ import {
   isAndExpression,
   isNotExpression,
   isOrExpression,
-} from '@opticss/template-api';
+} from "@opticss/template-api";
 import {
   assertNever,
   isSome,
   unwrap,
-} from '@opticss/util';
+} from "@opticss/util";
 import {
   arrayExpression,
   callExpression,
@@ -17,7 +17,7 @@ import {
   nullLiteral,
   numericLiteral,
   stringLiteral,
-} from 'babel-types';
+} from "babel-types";
 import {
   AndExpression,
   BlockClass,
@@ -37,17 +37,17 @@ import {
   OrExpression,
   Style,
   Switch,
-} from 'css-blocks';
+} from "css-blocks";
 
 import {
   BooleanExpression as BooleanAST,
   JSXElementAnalysis,
   StringExpression as StringAST,
   TernaryExpression as TernaryAST,
-} from '../analyzer/types';
+} from "../analyzer/types";
 
 // TODO: detect conflicts and pick an available name.
-export const HELPER_FN_NAME = 'c$$';
+export const HELPER_FN_NAME = "c$$";
 
 const enum SourceExpression {
   ternary,
@@ -80,7 +80,7 @@ export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: J
   let args: Expression[] = [ arrayExpression(constructArgs(rewrite, element)) ];
   let staticClassnames = rewrite.staticClasses;
   if (includeStaticClasses && staticClassnames.length > 0) {
-    args.unshift(stringLiteral(staticClassnames.join(' ')));
+    args.unshift(stringLiteral(staticClassnames.join(" ")));
   }
   return callExpression(identifier(helpFnName), args);
 }
@@ -243,7 +243,7 @@ function constructOutputArgs(rewrite: IndexedClassRewrite<any>): Array<Expressio
 type ConditionalArg = number | BooleanExpression<number>;
 
 function constructBoolean(bool: ConditionalArg): Array<Expression> {
-  if (typeof bool === 'number') {
+  if (typeof bool === "number") {
     return [builders.number(bool)];
   } else if (isAndExpression(bool)) {
     return constructAndExpression(bool);
@@ -271,7 +271,7 @@ function constructConditionalExpression(type: BooleanExpr, args: Array<Condition
   let expr = new Array<Expression>();
   if (args.length === 1) {
     let n = args[0];
-    if (typeof n === 'number') {
+    if (typeof n === "number") {
       expr.push(builders.number(n));
       return expr;
     }
@@ -279,7 +279,7 @@ function constructConditionalExpression(type: BooleanExpr, args: Array<Condition
   expr.push(builders.number(type));
   expr.push(builders.number(args.length));
   for (let e of args) {
-    if (typeof e === 'number') {
+    if (typeof e === "number") {
       expr.push(builders.number(e));
     } else {
       expr.push(...constructBoolean(e));

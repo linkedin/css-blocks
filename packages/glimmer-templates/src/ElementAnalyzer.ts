@@ -1,4 +1,4 @@
-import { AST, print } from '@glimmer/syntax';
+import { AST, print } from "@glimmer/syntax";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import { assertNever, ObjectDictionary } from "@opticss/util";
 import { Block, BlockClass, DynamicClasses, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader, SubState } from "css-blocks";
@@ -22,8 +22,8 @@ type RewriteAnalysis = {
 };
 
 const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
-const STYLE_IF: 'style-if' = 'style-if';
-const STYLE_UNLESS: 'style-unless' = 'style-unless';
+const STYLE_IF: "style-if" = "style-if";
+const STYLE_UNLESS: "style-unless" = "style-unless";
 
 const debug = debugGenerator("css-blocks:glimmer:analyzer");
 
@@ -50,8 +50,8 @@ export class ElementAnalyzer {
   // tslint:disable-next-line:prefer-whatever-to-any
   private debugAnalysis(node: AST.ElementNode, atRootElement: boolean, element: ElementAnalysis<any, any, any>) {
     if (!debug.enabled) return;
-    let startTag = `<${node.tag} ${node.attributes.map(a => print(a)).join(' ')}>`;
-    debug(`Element ${startTag} is ${atRootElement ? 'the root ' : 'a sub'}element at ${this.debugTemplateLocation(node)}`);
+    let startTag = `<${node.tag} ${node.attributes.map(a => print(a)).join(" ")}>`;
+    debug(`Element ${startTag} is ${atRootElement ? "the root " : "a sub"}element at ${this.debugTemplateLocation(node)}`);
     debug(`↳ Analyzed as: ${element.forOptimizer(this.cssBlocksOpts)[0].toString()}`);
   }
 
@@ -102,7 +102,7 @@ export class ElementAnalyzer {
   private lookupClass(name: string, node: AST.Node): BlockClass {
     let found = this.block.lookup(name);
     if (!found && !/\./.test(name)) {
-      found = this.block.lookup('.' + name);
+      found = this.block.lookup("." + name);
     }
     if (found) {
       return <BlockClass>found;
@@ -262,17 +262,17 @@ function isStringLiteral(value: AST.Node | undefined): value is AST.StringLitera
   return value !== undefined && value.type === "StringLiteral";
 }
 function isConcatStatement(value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement): value is AST.ConcatStatement {
-  return value.type === 'ConcatStatement';
+  return value.type === "ConcatStatement";
 }
 function isTextNode(value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement): value is AST.TextNode {
-  return value.type === 'TextNode';
+  return value.type === "TextNode";
 }
 function isMustacheStatement(value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement): value is AST.MustacheStatement {
-  return value.type === 'MustacheStatement';
+  return value.type === "MustacheStatement";
 }
 
 function isStyleIfHelper(node: AST.MustacheStatement): "style-if" | "style-unless" | undefined {
-  if (node.path.type !== 'PathExpression') { return undefined; }
+  if (node.path.type !== "PathExpression") { return undefined; }
   let parts: string[] = (node.path).parts;
   if (parts.length > 0) {
     let name = parts[0];
@@ -312,6 +312,6 @@ function dynamicClasses(condition: AST.Expression | null, whenTrue: BranchStyles
   } else if (whenFalse) {
     return { condition, whenFalse };
   } else {
-    throw new Error('sometimes type checkers are dumb');
+    throw new Error("sometimes type checkers are dumb");
   }
 }

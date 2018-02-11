@@ -60,7 +60,7 @@ export interface Conditional<BooleanExpression> {
 }
 
 export function isConditional(o: object): o is Conditional<whatever> {
-  return o.hasOwnProperty('condition');
+  return o.hasOwnProperty("condition");
 }
 
 /**
@@ -74,7 +74,7 @@ export interface Switch<StringExpression> {
 }
 
 export function isSwitch(o: object): o is Switch<whatever> {
-  return o.hasOwnProperty('stringExpression');
+  return o.hasOwnProperty("stringExpression");
 }
 
 /**
@@ -529,7 +529,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
   assertSealed(isSealed = true) {
     if (this._sealed === isSealed) return;
-    throw new Error(`Internal Error: The analysis is ${ this._sealed ? '' : 'not yet '}sealed.`);
+    throw new Error(`Internal Error: The analysis is ${ this._sealed ? "" : "not yet "}sealed.`);
   }
 
   countAllStaticStyles(): number {
@@ -692,7 +692,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
   private prepareCondition(
     classes: DynamicClasses<TernaryExpression>,
-    condition: 'whenTrue' | 'whenFalse',
+    condition: "whenTrue" | "whenFalse",
   ) {
     let parents: Array<BlockClass> = classes[condition];
     let dynamicParents = parents.filter(c => {

@@ -1,7 +1,7 @@
 import {
   AST,
   builders,
-} from '@glimmer/syntax';
+} from "@glimmer/syntax";
 import {
   isAndExpression,
   isNotExpression,
@@ -32,14 +32,14 @@ import {
   Style,
   Switch,
 } from "css-blocks";
-import * as debugGenerator from 'debug';
+import * as debugGenerator from "debug";
 
 import {
   BooleanExpression as BooleanAST,
   StringExpression as StringAST,
   TemplateElement,
   TernaryExpression as TernaryAST,
-} from './ElementAnalyzer';
+} from "./ElementAnalyzer";
 
 const enum SourceExpression {
   ternary,
@@ -68,7 +68,7 @@ const debug = debugGenerator("css-blocks:glimmer");
 
 export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: TemplateElement): AST.MustacheStatement {
   return builders.mustache(
-    builders.path('/css-blocks/components/classnames'),
+    builders.path("/css-blocks/components/classnames"),
     constructArgs(rewrite, element),
   );
 }
@@ -252,7 +252,7 @@ function moustacheToStringExpression(stringExpression: StringAST): AST.Expressio
       builders.path("/css-blocks/components/concat"),
       stringExpression.parts.reduce(
         (arr, val) => {
-          if (val.type === 'TextNode') {
+          if (val.type === "TextNode") {
             arr.push(builders.string(val.chars));
           } else {
             arr.push(val.path);

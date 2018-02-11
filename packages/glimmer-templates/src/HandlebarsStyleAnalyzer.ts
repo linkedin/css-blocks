@@ -1,4 +1,4 @@
-import { preprocess, traverse } from '@glimmer/syntax';
+import { preprocess, traverse } from "@glimmer/syntax";
 import {
   Block,
   BlockClass,
@@ -9,10 +9,10 @@ import {
   TemplateAnalysis as SingleTemplateStyleAnalysis,
   TemplateAnalyzer,
 } from "css-blocks";
-import * as debugGenerator from 'debug';
+import * as debugGenerator from "debug";
 import DependencyAnalyzer from "glimmer-analyzer";
 
-import { ElementAnalyzer } from './ElementAnalyzer';
+import { ElementAnalyzer } from "./ElementAnalyzer";
 import { ResolvedFile } from "./GlimmerProject";
 import { Project } from "./project";
 
@@ -65,7 +65,7 @@ export class BaseStyleAnalyzer {
         analysis.blocks[name] = refBlock;
       });
       let localBlockNames = Object.keys(analysis.blocks).map(n => n === "" ? "<default>" : n);
-      self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(', ')}.`);
+      self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(", ")}.`);
       traverse(ast, {
         ElementNode(node) {
           elementCount++;

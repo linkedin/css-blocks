@@ -145,7 +145,7 @@ export class FilesystemImporter extends PathBasedImporter {
   }
   import(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Promise<ImportedFile> {
     return new Promise((resolve, reject) => {
-      fs.readFile(identifier, 'utf-8', (err: whatever, data: string) => {
+      fs.readFile(identifier, "utf-8", (err: whatever, data: string) => {
         if (err) {
           reject(err);
         }

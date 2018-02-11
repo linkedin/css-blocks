@@ -1,6 +1,7 @@
 {
   "rulesDirectory": "../dist/rules",
   "rules": {
+    "quotemark": [true, "double", "avoid-escape"],
     "multiline-parameters": true,
     "curly": false,
     "no-var-keyword": true,

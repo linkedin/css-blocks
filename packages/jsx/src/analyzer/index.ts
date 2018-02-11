@@ -1,9 +1,9 @@
-import { NodePath } from 'babel-traverse';
-import { AssignmentExpression, JSXOpeningElement } from 'babel-types';
+import { NodePath } from "babel-traverse";
+import { AssignmentExpression, JSXOpeningElement } from "babel-types";
 
-import { Analysis } from '../utils/Analysis';
+import { Analysis } from "../utils/Analysis";
 
-import { JSXElementAnalyzer } from './JSXElementAnalyzer';
+import { JSXElementAnalyzer } from "./JSXElementAnalyzer";
 
 /**
  * Babel visitors we can pass to `babel-traverse` to run analysis on a given JSX file.

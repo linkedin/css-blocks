@@ -1,8 +1,8 @@
-import { ObjectDictionary } from '@opticss/util';
-import { CallExpression } from 'babel-types';
-import { Block } from 'css-blocks';
+import { ObjectDictionary } from "@opticss/util";
+import { CallExpression } from "babel-types";
+import { Block } from "css-blocks";
 
-import { JSXElementAnalysis } from '../analyzer/types';
+import { JSXElementAnalysis } from "../analyzer/types";
 
 export type StyleFunctionAnalyzer<StyleFunctionType> = (
   blocks: ObjectDictionary<Block>,

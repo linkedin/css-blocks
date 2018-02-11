@@ -2,8 +2,8 @@ import { Attr, Attribute, AttributeNS, AttributeValueChoice, ValueAbsent, ValueC
 import { assertNever, MultiMap, ObjectDictionary, objectValues, whatever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector,
          parseSelector, SelectorFactory } from "opticss";
-import * as postcss from 'postcss';
-import selectorParser = require('postcss-selector-parser');
+import * as postcss from "postcss";
+import selectorParser = require("postcss-selector-parser");
 
 import { BlockType, CLASS_NAME_IDENT, isClassNode,
          isStateNode, NodeAndType, stateParser } from "../BlockParser";
@@ -12,11 +12,11 @@ import { OutputMode } from "../OutputMode";
 import { CssBlockError } from "../errors";
 import { FileIdentifier } from "../importing";
 import { HasLocalScope, HasScopeLookup, LocalScopedContext } from "../util/LocalScope";
-import { unionInto } from '../util/unionInto';
+import { unionInto } from "../util/unionInto";
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
-  let index = s.indexOf('.');
-  if (index < 0) index = s.indexOf('[');
+  let index = s.indexOf(".");
+  if (index < 0) index = s.indexOf("[");
   if (index >= 0) {
     return [s.substr(0, index), s.substring(index)];
   }
@@ -256,7 +256,7 @@ export class Block
     this.parsedRuleSelectors = new WeakMap();
     this._localScope = new LocalScopedContext<Block, Style>(OBJ_REF_SPLITTER, this);
     this._dependencies = new Set<string>();
-    this._rootClass = new BlockClass('root', this);
+    this._rootClass = new BlockClass("root", this);
     this.addClass(this._rootClass);
   }
 
@@ -266,7 +266,7 @@ export class Block
 
   set name(name: string) {
     if (this.hasHadNameReset) {
-      throw new CssBlockError('Can not set block name more than once.');
+      throw new CssBlockError("Can not set block name more than once.");
     }
     this._name = name;
     this.hasHadNameReset = true;
@@ -392,7 +392,7 @@ export class Block
       let missingObjs: Style[] = this.checkImplementation(b);
       let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
       if (missingObjs.length > 0) {
-        let s = missingObjs.length > 1 ? 's' : '';
+        let s = missingObjs.length > 1 ? "s" : "";
         throw new CssBlockError(`Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
       }
     });

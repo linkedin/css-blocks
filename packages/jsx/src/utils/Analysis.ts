@@ -2,24 +2,24 @@ import {
   SerializedTemplateInfo,
   TemplateInfo,
   TemplateInfoFactory,
-} from '@opticss/template-api';
-import { whatever } from '@opticss/util';
-import { File } from 'babel-types';
+} from "@opticss/template-api";
+import { whatever } from "@opticss/util";
+import { File } from "babel-types";
 import {
   Block,
   MetaTemplateAnalysis,
   TemplateAnalysis,
-} from 'css-blocks';
+} from "css-blocks";
 
-declare module '@opticss/template-api' {
+declare module "@opticss/template-api" {
   interface TemplateTypes {
-    'Opticss.JSXTemplate': JSXTemplate;
+    "Opticss.JSXTemplate": JSXTemplate;
   }
 }
 
-export class JSXTemplate implements TemplateInfo<'Opticss.JSXTemplate'> {
+export class JSXTemplate implements TemplateInfo<"Opticss.JSXTemplate"> {
   identifier: string;
-  type: 'Opticss.JSXTemplate' = 'Opticss.JSXTemplate';
+  type: "Opticss.JSXTemplate" = "Opticss.JSXTemplate";
   data: string;
   ast: File;
 
@@ -32,7 +32,7 @@ export class JSXTemplate implements TemplateInfo<'Opticss.JSXTemplate'> {
     return new JSXTemplate(identifier, <string>_data[0]);
   }
 
-  serialize(): SerializedTemplateInfo<'Opticss.JSXTemplate'> {
+  serialize(): SerializedTemplateInfo<"Opticss.JSXTemplate"> {
     return {
       type: this.type,
       identifier: this.identifier,
@@ -41,13 +41,13 @@ export class JSXTemplate implements TemplateInfo<'Opticss.JSXTemplate'> {
   }
 }
 
-TemplateInfoFactory.constructors['Opticss.JSXTemplate'] = JSXTemplate.deserialize;
+TemplateInfoFactory.constructors["Opticss.JSXTemplate"] = JSXTemplate.deserialize;
 
 /**
 * Extension of the default css-bocks analytics object to store blocks and other
 * files discovered in the dependency tree.
 */
-export class Analysis extends TemplateAnalysis<'Opticss.JSXTemplate'> {
+export class Analysis extends TemplateAnalysis<"Opticss.JSXTemplate"> {
 
   template: JSXTemplate;
   parent: MetaAnalysis;
@@ -93,7 +93,7 @@ export class MetaAnalysis extends MetaTemplateAnalysis {
 
   getAnalysis(idx: number): Analysis {
     let analysis = this.analyses[idx];
-    if (analysis.template.type === 'Opticss.JSXTemplate') {
+    if (analysis.template.type === "Opticss.JSXTemplate") {
       // Cast through any to force return type.
       // tslint:disable-next-line:prefer-whatever-to-any
       return (<any>analysis) as Analysis;

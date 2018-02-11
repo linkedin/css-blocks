@@ -6,7 +6,7 @@ import {
   PathBasedImporter,
   PluginOptionsReader,
 } from "css-blocks";
-import * as path from 'path';
+import * as path from "path";
 
 import { GlimmerProject, ResolvedPath } from "./GlimmerProject";
 import { parseSpecifier } from "./utils";

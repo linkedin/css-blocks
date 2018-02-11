@@ -10,11 +10,11 @@ import {
   SimpleTagname,
 } from "@opticss/template-api";
 import { assertNever, Maybe, maybe, objectValues } from "@opticss/util";
-import { inspect } from 'util';
+import { inspect } from "util";
 
-import { Style } from '../Block';
+import { Style } from "../Block";
 
-import { ClassRewrite, IndexedClassRewrite } from './ClassRewrite';
+import { ClassRewrite, IndexedClassRewrite } from "./ClassRewrite";
 
 export class IndexedClassMapping implements IndexedClassRewrite<Style> {
   inputs: Style[];

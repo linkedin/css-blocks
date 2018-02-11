@@ -76,7 +76,7 @@ export class PromiseQueue<WorkItem, Result> {
     let id = this.jobId++;
     return new Promise<Result>((resolve, reject) => {
       if (this.draining) {
-        let message = 'Queue is draining, cannot enqueue job.';
+        let message = "Queue is draining, cannot enqueue job.";
         this.debug(`[Job:${id}] ${message}`);
         return reject(new Error(message));
       }

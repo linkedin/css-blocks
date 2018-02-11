@@ -17,6 +17,6 @@ export {
   OptionsReader as PluginOptionsReader,
 } from "./OptionsReader";
 
-import cssBlocks = require('./cssBlocks');
+import cssBlocks = require("./cssBlocks");
 // tslint:disable-next-line:no-default-export
 export default cssBlocks;

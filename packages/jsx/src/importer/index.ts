@@ -1,4 +1,4 @@
-import { NodePath } from 'babel-traverse';
+import { NodePath } from "babel-traverse";
 import {
   ClassDeclaration,
   Function,
@@ -10,22 +10,22 @@ import {
   isImportSpecifier,
   VariableDeclaration,
   VariableDeclarator,
-} from 'babel-types';
-import { Block, BlockFactory } from 'css-blocks';
-import * as debugGenerator from 'debug';
-import * as fs from 'fs';
-import * as path from 'path';
+} from "babel-types";
+import { Block, BlockFactory } from "css-blocks";
+import * as debugGenerator from "debug";
+import * as fs from "fs";
+import * as path from "path";
 
-import { JSXAnalyzerOptions, parseFileWith } from '../index';
-import { Analysis, JSXTemplate } from '../utils/Analysis';
-import { ErrorLocation, TemplateImportError } from '../utils/Errors';
-import { isBlockFilename } from '../utils/isBlockFilename';
+import { JSXAnalyzerOptions, parseFileWith } from "../index";
+import { Analysis, JSXTemplate } from "../utils/Analysis";
+import { ErrorLocation, TemplateImportError } from "../utils/Errors";
+import { isBlockFilename } from "../utils/isBlockFilename";
 
-const debug = debugGenerator('css-blocks:jsx');
+const debug = debugGenerator("css-blocks:jsx");
 
-const DEFAULT_IDENTIFIER = 'default';
+const DEFAULT_IDENTIFIER = "default";
 const VALID_FILE_EXTENSIONS = {
-  '.jsx': 1, '.tsx': 1,
+  ".jsx": 1, ".tsx": 1,
 };
 
 interface BlockRegistry {
@@ -109,10 +109,10 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       }
 
       // TODO: Make import prefix configurable
-      filePath = filePath.replace('cssblock!', '');
+      filePath = filePath.replace("cssblock!", "");
 
       // For each specifier in this block import statement:
-      let localName = '';
+      let localName = "";
       let blockPath = path.resolve(dirname, filePath);
 
       specifiers.forEach((specifier) => {

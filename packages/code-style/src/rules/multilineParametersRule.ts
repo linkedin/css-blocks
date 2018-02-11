@@ -27,10 +27,10 @@ interface CheckOptions {
 // The walker takes care of all the work.
 class MultilineParametersRule extends Lint.RuleWalker {
   visitConstructorDeclaration(constructorDecl: ts.ConstructorDeclaration): void {
-    this.checkArgList('parameter', constructorDecl, constructorDecl.parameters);
+    this.checkArgList("parameter", constructorDecl, constructorDecl.parameters);
   }
   visitFunctionDeclaration(fn: ts.FunctionDeclaration): void {
-    this.checkArgList('parameter', fn, fn.parameters);
+    this.checkArgList("parameter", fn, fn.parameters);
   }
   visitFunctionExpression(fn: ts.FunctionExpression): void {
     let options: Partial<CheckOptions> = {};
@@ -38,7 +38,7 @@ class MultilineParametersRule extends Lint.RuleWalker {
         && fn.parent.parent && ts.isVariableDeclarationList(fn.parent.parent)) {
       options.startPos = fn.parent.parent.getStart();
     }
-    this.checkArgList('parameter', fn, fn.parameters, options);
+    this.checkArgList("parameter", fn, fn.parameters, options);
   }
   visitArrowFunction(arrowFn: ts.ArrowFunction): void {
     let options: Partial<CheckOptions> = {};
@@ -46,21 +46,21 @@ class MultilineParametersRule extends Lint.RuleWalker {
         && arrowFn.parent.parent && ts.isVariableDeclarationList(arrowFn.parent.parent)) {
       options.startPos = arrowFn.parent.parent.getStart();
     }
-    this.checkArgList('parameter', arrowFn, arrowFn.parameters, options);
+    this.checkArgList("parameter", arrowFn, arrowFn.parameters, options);
   }
   visitMethodDeclaration(methodDecl: ts.MethodDeclaration): void {
-    this.checkArgList('parameter', methodDecl, methodDecl.parameters);
+    this.checkArgList("parameter", methodDecl, methodDecl.parameters);
     super.visitMethodDeclaration(methodDecl);
   }
   visitCallSignature(callSig: ts.CallSignatureDeclaration): void {
-    this.checkArgList('parameter', callSig, callSig.parameters);
+    this.checkArgList("parameter", callSig, callSig.parameters);
   }
   visitCallExpression(callExpr: ts.CallExpression): void {
-    this.checkArgList('argument', callExpr, callExpr.arguments, {omitTrailingNewline: true});
+    this.checkArgList("argument", callExpr, callExpr.arguments, {omitTrailingNewline: true});
   }
   visitNewExpression(newExpr: ts.NewExpression): void {
     let args: ts.NodeArray<ts.Expression> = newExpr.arguments || ts.createNodeArray();
-    this.checkArgList('argument', newExpr, args, {omitTrailingNewline: true});
+    this.checkArgList("argument", newExpr, args, {omitTrailingNewline: true});
   }
 
   checkArgList(type: string, callTarget: CallLike, args: ArgListLike, options: Partial<CheckOptions> = {}): void {

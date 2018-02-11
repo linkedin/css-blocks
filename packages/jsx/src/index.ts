@@ -1,22 +1,22 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
-import traverse from 'babel-traverse';
-import * as babylon from 'babylon';
+import traverse from "babel-traverse";
+import * as babylon from "babylon";
 import {
   Block,
   BlockFactory,
   MultiTemplateAnalyzer,
   PluginOptions as CssBlocksOptions,
   PluginOptionsReader as CssBlocksOptionsReader,
-} from 'css-blocks';
-import * as typescript from 'typescript';
+} from "css-blocks";
+import * as typescript from "typescript";
 
-import { analyzer } from './analyzer';
-import { importer } from './importer';
-import { CSSBlocksJSXTransformer } from './transformer';
-import { Analysis, JSXTemplate, MetaAnalysis } from './utils/Analysis';
-import { JSXParseError } from './utils/Errors';
+import { analyzer } from "./analyzer";
+import { importer } from "./importer";
+import { CSSBlocksJSXTransformer } from "./transformer";
+import { Analysis, JSXTemplate, MetaAnalysis } from "./utils/Analysis";
+import { JSXParseError } from "./utils/Errors";
 
 function readFile(filename: string, encoding: string): Promise<string>;
 function readFile(filename: string, encoding: null): Promise<Buffer>;
@@ -45,19 +45,19 @@ export interface JSXAnalyzerOptions {
  }
 
 const defaultOptions: JSXAnalyzerOptions = {
-  baseDir: '.',
+  baseDir: ".",
   parserOptions: {
-    sourceType: 'module',
+    sourceType: "module",
     plugins: [
-      'jsx',
-      'flow',
-      'decorators',
-      'classProperties',
-      'exportExtensions',
-      'asyncGenerators',
-      'functionBind',
-      'functionSent',
-      'dynamicImport',
+      "jsx",
+      "flow",
+      "decorators",
+      "classProperties",
+      "exportExtensions",
+      "asyncGenerators",
+      "functionBind",
+      "functionSent",
+      "dynamicImport",
     ],
   },
   aliases: {},
@@ -78,7 +78,7 @@ export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, fac
     // Babylon currently has...abysmal support for typescript. We need to transpile
     // it with the standard typescript library first.
     // TODO: When Typescript support lands in Babylon, remove this: https://github.com/babel/babylon/issues/320
-    if (path.parse(template.identifier).ext === '.tsx') {
+    if (path.parse(template.identifier).ext === ".tsx") {
       let wat = typescript.transpileModule(template.data, {
         compilerOptions: {
           module: typescript.ModuleKind.ES2015,
@@ -124,7 +124,7 @@ export function parseFileWith(file: string, metaAnalysis: MetaAnalysis, factory:
   let resolvedOpts = {...defaultOptions, ...opts};
   file = path.resolve(resolvedOpts.baseDir, file);
 
-  return readFile(file, 'utf8').then(
+  return readFile(file, "utf8").then(
     data => {
       // Return promise for parsed analysis object.
       let template: JSXTemplate = new JSXTemplate(file, data);
@@ -192,7 +192,7 @@ function resolveAllRecursively<T>(promiseArray: Array<Promise<T>>): Promise<Arra
 export function parseFile(file: string, factory: BlockFactory, opts: Partial<JSXAnalyzerOptions> = {}): Promise<MetaAnalysis> {
   let resolvedOpts = {...defaultOptions, ...opts};
 
-  return readFile(path.resolve(resolvedOpts.baseDir, file), 'utf8')
+  return readFile(path.resolve(resolvedOpts.baseDir, file), "utf8")
     .then(data => {
             return parse(file, data, factory, resolvedOpts);
           },
@@ -217,7 +217,7 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
   }
   analyze(): Promise<MetaAnalysis> {
     if (!this.entryPoint || !this.name) {
-      throw new JSXParseError('CSS Blocks JSX Analyzer must be passed an entry point and name.');
+      throw new JSXParseError("CSS Blocks JSX Analyzer must be passed an entry point and name.");
     }
     return parseFile(this.entryPoint, this.blockFactory, this.options);
   }

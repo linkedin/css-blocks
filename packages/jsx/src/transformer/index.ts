@@ -1,5 +1,5 @@
-import { whatever } from '@opticss/util';
-import { CssBlockOptionsReadonly, PluginOptions, PluginOptionsReader, StyleMapping } from 'css-blocks';
+import { whatever } from "@opticss/util";
+import { CssBlockOptionsReadonly, PluginOptions, PluginOptionsReader, StyleMapping } from "css-blocks";
 
 export interface RewriterOptions {
   meta?: { [metaProp: string]: whatever };

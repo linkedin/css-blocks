@@ -23,7 +23,7 @@ const enum BooleanExpr {
 
 const e = (m: string): never => { throw new Error(m); };
 const toStr = (v: whatever): string => typeof v === "symbol" ? v.toString() : "" + v;
-const num = (v: whatever[]): number => typeof v[0] === 'number' ? <number>(v.shift()!) : e('not a number: ' + toStr(v[0]));
+const num = (v: whatever[]): number => typeof v[0] === "number" ? <number>(v.shift()!) : e("not a number: " + toStr(v[0]));
 const str = (v: whatever[]): string => toStr(v.shift());
 const truthyString = (v: whatever[]): string | undefined => {
   let s = v.shift();
@@ -111,7 +111,7 @@ type Abort = () => false;
 export default function c(staticClasses: string | whatever[], stack?: whatever[]): string {
   if (Array.isArray(staticClasses)) {
     stack = staticClasses;
-    staticClasses = '';
+    staticClasses = "";
   }
   if (!stack) {
     return staticClasses;
@@ -137,7 +137,7 @@ export default function c(staticClasses: string | whatever[], stack?: whatever[]
     let c = str(stack);
     if (boolExpr(stack, isSourceSet)) classes.push(c);
   }
-  return classes.join(' ');
+  return classes.join(" ");
 }
 
 function sourceExpr(
@@ -167,13 +167,13 @@ function sourceExpr(
           value = str(stack);
           break;
         case FalsySwitchBehavior.error:
-          if (enforceSwitch) e('string expected'); // TODO: error message
+          if (enforceSwitch) e("string expected"); // TODO: error message
           break;
         case FalsySwitchBehavior.unset:
           abort();
           break;
         default:
-          e('wtf');
+          e("wtf");
       }
     }
     while (nValues-- > 0) {

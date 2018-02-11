@@ -1,20 +1,20 @@
-import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
+import { assert } from "chai";
+import { suite, test } from "mocha-typescript";
 
-import { MetaAnalysis } from '../../src/utils/Analysis';
-import { testParse as parse } from '../util';
+import { MetaAnalysis } from "../../src/utils/Analysis";
+import { testParse as parse } from "../util";
 
-const mock = require('mock-fs');
+const mock = require("mock-fs");
 
-@suite('Analyzer | External Objstr Class Styles')
+@suite("Analyzer | External Objstr Class Styles")
 export class Test {
   after() {
     mock.restore();
   }
 
-  @test 'Can set className dynamically'() {
+  @test "Can set className dynamically"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: red; }
         .foo { color: blue; }
         .foo[state|happy] { color: balloons; }
@@ -40,7 +40,7 @@ export class Test {
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ['bar.foo', 'bar.foo[state|happy]', 'bar.root']);
+      assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar.foo[state|happy]", "bar.root"]);
 
       let aAnalysis = analysis.elements.a;
       assert.deepEqual(aAnalysis.dynamicClasses, []);
@@ -59,9 +59,9 @@ export class Test {
     });
   }
 
-  @test 'Classes on objstr calls are tracked when applied'() {
+  @test "Classes on objstr calls are tracked when applied"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -81,13 +81,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ['bar.foo']);
+      assert.deepEqual(analysis.stylesFound, ["bar.foo"]);
     });
   }
 
-  @test 'Empty objstr calls throw'() {
+  @test "Empty objstr calls throw"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -103,9 +103,9 @@ export class Test {
     });
   }
 
-  @test 'Objstr calls with non-object-literal input throw'() {
+  @test "Objstr calls with non-object-literal input throw"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -118,16 +118,16 @@ export class Test {
     `,
     ).then(
       (analysis: MetaAnalysis) => {
-        assert.ok(false, 'should not have succeeded.');
+        assert.ok(false, "should not have succeeded.");
       },
       (err) => {
         assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
       });
   }
 
-  @test 'Multiple classes from the same block on objstr calls are an error.'() {
+  @test "Multiple classes from the same block on objstr calls are an error."() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; } .baz { color: red; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; } .baz { color: red; }",
     });
 
     return parse(`
@@ -143,17 +143,17 @@ export class Test {
     `,
     ).then(
       (analysis: MetaAnalysis) => {
-        assert.ok(false, 'should not have succeeded.');
+        assert.ok(false, "should not have succeeded.");
       },
       (err) => {
         assert.equal(err.message, '[css-blocks] TemplateError: Classes "baz" and "foo" from the same block are not allowed on the same element at the same time. (:10:6)');
       });
   }
 
-  @test 'Multiple classes from different blocks on objstr calls are tracked when applied'() {
+  @test "Multiple classes from different blocks on objstr calls are tracked when applied"() {
     mock({
-      'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
-      'bar.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
+      "foo.block.css": ".root { color: red; } .biz { color: blue; } .baz { color: red; }",
+      "bar.block.css": ".root { color: red; } .biz { color: blue; } .baz { color: red; }",
     });
 
     return parse(`
@@ -175,13 +175,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
-      assert.deepEqual(analysis.stylesFound, ['bar.biz', 'foo.biz']);
+      assert.deepEqual(analysis.stylesFound, ["bar.biz", "foo.biz"]);
     });
   }
 
-  @test 'An objstr call with no css-block styles are allowed'() {
+  @test "An objstr call with no css-block styles are allowed"() {
     mock({
-      'foo.block.css': '.root { color: red; } .biz { color: blue; } .baz { color: red; }',
+      "foo.block.css": ".root { color: red; } .biz { color: blue; } .baz { color: red; }",
     });
 
     return parse(`
@@ -206,9 +206,9 @@ export class Test {
     });
   }
 
-  @test 'Objstr function name may be renamed at import'() {
+  @test "Objstr function name may be renamed at import"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -227,9 +227,9 @@ export class Test {
     });
   }
 
-  @test 'Objstr call throws if objstr is not imported'() {
+  @test "Objstr call throws if objstr is not imported"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -243,16 +243,16 @@ export class Test {
     `,
     ).then(
       (analysis: MetaAnalysis) => {
-        assert.ok(false, 'should not have succeeded.');
+        assert.ok(false, "should not have succeeded.");
       },
       (err) => {
         assert.equal(err.message, `[css-blocks] AnalysisError: Undefined function for styling: objstr (4:18)`);
       });
   }
 
-  @test 'cannot set objstr to a new function'() {
+  @test "cannot set objstr to a new function"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -269,16 +269,16 @@ export class Test {
     `,
     ).then(
       (analysis: MetaAnalysis) => {
-        assert.ok(false, 'should not have succeeded.');
+        assert.ok(false, "should not have succeeded.");
       },
       (err) => {
         assert.equal(err.message, `[css-blocks] AnalysisError: Cannot override the objstr import of 'obj-str' (5:6)`);
       });
   }
 
-  @test 'Overly complex expressions to reference a CSS Block throw'() {
+  @test "Overly complex expressions to reference a CSS Block throw"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -295,15 +295,15 @@ export class Test {
       <div class={style}></div>;
     `,
     ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
+      assert.ok(false, "should not have succeeded.");
     },     (err) => {
       assert.equal(err.message, `[css-blocks] MalformedBlockPath: Nested expressions are not allowed in block expressions. (8:9)`);
     });
   }
 
-  @test 'Objstr lookup understands scope'() {
+  @test "Objstr lookup understands scope"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`

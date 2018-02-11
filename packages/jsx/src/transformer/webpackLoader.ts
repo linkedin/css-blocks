@@ -1,8 +1,8 @@
-import { Block, PluginOptionsReader, StyleMapping } from 'css-blocks';
-import * as debugGenerator from 'debug';
+import { Block, PluginOptionsReader, StyleMapping } from "css-blocks";
+import * as debugGenerator from "debug";
 
-const debug = debugGenerator('css-blocks:jsx');
-const loaderUtils = require('loader-utils');
+const debug = debugGenerator("css-blocks:jsx");
+const loaderUtils = require("loader-utils");
 
 type LoaderContext = {
   dependency(dep: string): void;
@@ -41,7 +41,7 @@ export function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void 
 
   this.dependency(path);
 
-  if (!~path.indexOf('.tsx') && !~path.indexOf('.jsx')) {
+  if (!~path.indexOf(".tsx") && !~path.indexOf(".jsx")) {
     return callback(null, source, map);
   }
 

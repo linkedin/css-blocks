@@ -1,4 +1,4 @@
-import * as inlineSourceMapComment from 'inline-source-map-comment';
+import * as inlineSourceMapComment from "inline-source-map-comment";
 import * as postcss from "postcss";
 import {
   RawSourceMap,
@@ -83,5 +83,5 @@ export function annotateCssContentWithSourceMap(content: string | postcss.Result
   if (typeof sourceMap === "string") {
     sourceMap = JSON.parse(sourceMap);
   }
-  return contentStr + (contentStr.endsWith('\n') ? '' : '\n') + inlineSourceMapComment(sourceMap, {block: true});
+  return contentStr + (contentStr.endsWith("\n") ? "" : "\n") + inlineSourceMapComment(sourceMap, {block: true});
 }

@@ -1,20 +1,20 @@
-import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
+import { assert } from "chai";
+import { suite, test } from "mocha-typescript";
 
-import { MetaAnalysis } from '../../src/utils/Analysis';
-import { testParse as parse } from '../util';
+import { MetaAnalysis } from "../../src/utils/Analysis";
+import { testParse as parse } from "../util";
 
-const mock = require('mock-fs');
+const mock = require("mock-fs");
 
-@suite('Analyzer | Dynamic Styles')
+@suite("Analyzer | Dynamic Styles")
 export class Test {
   after() {
     mock.restore();
   }
 
-  @test 'Objstr where value is a not a literal are marked dynamic'() {
+  @test "Objstr where value is a not a literal are marked dynamic"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .func { color: red; }
         .expr { color: red; }
         .equality { color: blue; }
@@ -43,7 +43,7 @@ export class Test {
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ['bar.bool', 'bar.equality', 'bar.expr', 'bar.func', 'bar.new']);
+      assert.deepEqual(analysis.stylesFound, ["bar.bool", "bar.equality", "bar.expr", "bar.func", "bar.new"]);
       assert.deepEqual(analysis.elements.a.dynamicClasses, [{condition: true, whenTrue: [3]}]);
       assert.deepEqual(analysis.elements.b.dynamicClasses, [{condition: true, whenTrue: [2]}]);
       assert.deepEqual(analysis.elements.c.dynamicClasses, [{condition: true, whenTrue: [1]}]);
@@ -52,9 +52,9 @@ export class Test {
     });
   }
 
-  @test 'Inline objstr where value is a not a literal are marked dynamic'() {
+  @test "Inline objstr where value is a not a literal are marked dynamic"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .func { color: red; }
         .expr { color: red; }
         .equality { color: blue; }
@@ -78,7 +78,7 @@ export class Test {
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ['bar.bool', 'bar.equality', 'bar.expr', 'bar.func', 'bar.new']);
+      assert.deepEqual(analysis.stylesFound, ["bar.bool", "bar.equality", "bar.expr", "bar.func", "bar.new"]);
       assert.deepEqual(analysis.elements.a.dynamicClasses, [{condition: true, whenTrue: [3]}]);
       assert.deepEqual(analysis.elements.b.dynamicClasses, [{condition: true, whenTrue: [2]}]);
       assert.deepEqual(analysis.elements.c.dynamicClasses, [{condition: true, whenTrue: [1]}]);
@@ -87,9 +87,9 @@ export class Test {
     });
   }
 
-  @test 'Throws when spread operator used in states.'() {
+  @test "Throws when spread operator used in states."() {
     mock({
-      'foo.block.css': `
+      "foo.block.css": `
         .root { }
         [state|cool=foo] { }
       `,
@@ -110,10 +110,10 @@ export class Test {
 
     return parse(code).then(
       (analysis: MetaAnalysis) => {
-        assert.ok(false, 'should not get here.');
+        assert.ok(false, "should not get here.");
       },
       (e) => {
-        assert.equal(e.message, '[css-blocks] AnalysisError: The spread operator is not allowed in CSS Block states. (9:18)');
+        assert.equal(e.message, "[css-blocks] AnalysisError: The spread operator is not allowed in CSS Block states. (9:18)");
       });
   }
 }

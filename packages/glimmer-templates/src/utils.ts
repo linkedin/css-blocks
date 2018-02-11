@@ -1,10 +1,10 @@
-import { AST } from '@glimmer/syntax';
+import { AST } from "@glimmer/syntax";
 import { TemplateInfo } from "@opticss/template-api";
 import { CssBlockError } from "css-blocks";
 import { ClassifiedParsedSelectors } from "opticss";
 
 export function pathFromSpecifier(specifier: string) {
-  return specifier.split(':')[1];
+  return specifier.split(":")[1];
 }
 
 export function selectorCount(result: ClassifiedParsedSelectors) {

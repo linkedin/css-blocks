@@ -1,9 +1,9 @@
 import {
   ResolutionMap,
-} from '@glimmer/resolution-map-builder';
+} from "@glimmer/resolution-map-builder";
 import Resolver, {
   BasicModuleRegistry,
-} from '@glimmer/resolver';
+} from "@glimmer/resolver";
 import {
   SerializedTemplateInfo,
   TemplateInfo,

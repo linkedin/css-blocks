@@ -1,19 +1,19 @@
-import { Binding, NodePath } from 'babel-traverse';
+import { Binding, NodePath } from "babel-traverse";
 import {
   CallExpression,
   isIdentifier,
   isImportDeclaration,
   Node,
-} from 'babel-types';
+} from "babel-types";
 
-import { ErrorLocation } from '../utils/Errors';
+import { ErrorLocation } from "../utils/Errors";
 
-import { COMMON_NAMES as COMMON_OBJSTR_NAMES, objstrFn, ObjStrStyleFunction } from './objstrFunction';
+import { COMMON_NAMES as COMMON_OBJSTR_NAMES, objstrFn, ObjStrStyleFunction } from "./objstrFunction";
 
 export type StyleFunction = ObjStrStyleFunction;
 
 export interface StyleFunctionError {
-  type: 'error';
+  type: "error";
   canIgnore: boolean;
   message: string;
   location: ErrorLocation;
@@ -37,7 +37,7 @@ export function isStyleFunction(path: NodePath<Node>, expression: CallExpression
     binding = path.scope.getBinding(expression.callee.name);
     if (!binding) {
       return {
-        type: 'error',
+        type: "error",
         canIgnore: false,
         message: `Undefined function for styling: ${expression.callee.name}`,
         location: expression.callee.loc.start,
@@ -46,7 +46,7 @@ export function isStyleFunction(path: NodePath<Node>, expression: CallExpression
   }
   if (!binding) {
     return {
-      type: 'error',
+      type: "error",
       canIgnore: true,
       message: `unexpected function for styling`,
       location: expression.callee.loc.start,
@@ -58,14 +58,14 @@ export function isStyleFunction(path: NodePath<Node>, expression: CallExpression
 
     if (!fn) {
       return {
-        type: 'error',
+        type: "error",
         canIgnore: true,
-        message: 'style function is not an import',
+        message: "style function is not an import",
         location: funcDef.loc.start,
       };
     } else if (binding.constantViolations.length > 0) {
       return {
-        type: 'error',
+        type: "error",
         canIgnore: false,
         message: `Cannot override the ${fn.name} import of '${fn.type}'`,
         location: binding.constantViolations[0].node.loc.start,
@@ -75,9 +75,9 @@ export function isStyleFunction(path: NodePath<Node>, expression: CallExpression
     }
   } else {
     return {
-      type: 'error',
+      type: "error",
       canIgnore: true,
-      message: 'style function is not an import',
+      message: "style function is not an import",
       location: funcDef.loc.start,
     };
   }

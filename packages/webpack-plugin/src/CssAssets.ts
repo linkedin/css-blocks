@@ -1,6 +1,6 @@
 import * as  async from "async";
 import * as convertSourceMap from "convert-source-map";
-import * as debugGenerator from 'debug';
+import * as debugGenerator from "debug";
 import * as fs from "fs";
 import * as path from "path";
 import * as postcss from "postcss";

@@ -1,14 +1,14 @@
 import { assertNever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
-import * as postcss from 'postcss';
-import selectorParser = require('postcss-selector-parser');
-import regexpu = require('regexpu-core');
+import * as postcss from "postcss";
+import selectorParser = require("postcss-selector-parser");
+import regexpu = require("regexpu-core");
 
 import { Block, StateInfo } from "./Block";
 import { IBlockFactory } from "./BlockFactory/IBlockFactory";
 import { OptionsReader } from "./OptionsReader";
 import { selectorSourceLocation, sourceLocation, SourceLocation } from "./SourceLocation";
-import * as errors from './errors';
+import * as errors from "./errors";
 import { FileIdentifier } from "./importing";
 import { PluginOptions } from "./options";
 import { parseBlockDebug } from "./parseBlockDebug";
@@ -75,7 +75,7 @@ export function stateParser(attr: selectorParser.Attribute): StateInfo {
   };
   if (attr.value) {
     info.group = info.name;
-    info.name = attr.value.replace(/^(["'])(.+(?=\1$))\1$/, '$2'); // Strip quotes from value
+    info.name = attr.value.replace(/^(["'])(.+(?=\1$))\1$/, "$2"); // Strip quotes from value
   }
   return info;
 }
@@ -591,7 +591,7 @@ export class BlockParser {
     // If no rules found in selector, we have a problem. Throw.
     if (!result) {
       throw new errors.InvalidBlockSyntax(
-        `Missing block object in selector component '${sel.nodes.join('')}': ${rule.selector}`,
+        `Missing block object in selector component '${sel.nodes.join("")}': ${rule.selector}`,
         this.selectorSourceLocation(block, rule, sel.nodes[0]));
     }
 

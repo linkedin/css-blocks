@@ -15,7 +15,7 @@ import { BLOCK_FIXTURES_DIRECTORY, DIST_DIRECTORY } from "./util/testPaths";
 @suite("Plugin")
 export class PluginTest {
   eachOutputFile(callback: (f: string) => void) {
-    let globPattern = path.join(DIST_DIRECTORY, 'test_output', "**", "*");
+    let globPattern = path.join(DIST_DIRECTORY, "test_output", "**", "*");
     glob.sync(globPattern).forEach((f) => {
       callback(f);
     });
@@ -42,7 +42,7 @@ export class PluginTest {
   @test "works with ExtractTextPlugin"() {
     let entry = path.join(BLOCK_FIXTURES_DIRECTORY, "hello.block.css");
     return runWebpackAsPromise(extractTextConfig(entry)).then(() => {
-      const cssFile = path.resolve(DIST_DIRECTORY, 'test_output', 'main.b815aed0afb162dc9e5f905d0aa9de7e.css');
+      const cssFile = path.resolve(DIST_DIRECTORY, "test_output", "main.b815aed0afb162dc9e5f905d0aa9de7e.css");
       assert.deepEqual(readCss("hello"), fs.readFileSync(cssFile).toString());
     });
   }

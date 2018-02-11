@@ -4,10 +4,10 @@ import {
   TemplateTypes,
 } from "@opticss/template-api";
 import { whatever } from "@opticss/util";
-import * as debugGenerator from 'debug';
+import * as debugGenerator from "debug";
 
 import { Block, Style } from "../Block";
-import { OptionsReader } from '../OptionsReader';
+import { OptionsReader } from "../OptionsReader";
 
 import { StyleAnalysis } from "./StyleAnalysis";
 import { SerializedTemplateAnalysis, TemplateAnalysis } from "./index";
