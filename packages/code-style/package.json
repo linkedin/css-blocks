@@ -8,9 +8,9 @@
     "tslint-plugin"
   ],
   "scripts": {
-    "compile": "tsc",
-    "pretest": "tsc",
-    "prepublish": "tsc",
+    "compile": "rm -rf dist && tsc",
+    "pretest": "npm run compile",
+    "prepublish": "npm run compile && tslint -p . -c tslint.release.json",
     "test": "tslint --test test/rules/*/* && tslint -p ."
   },
   "bugs": {

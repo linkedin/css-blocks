@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "rm -rf dist && tsc -p test/tsconfig.json",
     "pretest": "npm run compile && tslint --project tsconfig.json",
-    "prepublish": "npm run compile",
+    "prepublish": "npm run compile && tslint --project tsconfig.json -c tslint.release.json",
     "lint": "tslint --project tsconfig.json",
     "lintfix": "tslint --project tsconfig.json --fix",
     "test": "mocha dist/test --opts test/mocha.opts",

@@ -8,10 +8,10 @@
     "dist"
   ],
   "scripts": {
-    "pretest": "npm run build && npm run lint",
+    "pretest": "npm run compile && npm run lint",
     "test": "echo 'tested in @css-blocks/jsx'",
-    "build": "rm -rf dist && tsc",
-    "prepublish": "npm run build",
+    "compile": "rm -rf dist && tsc",
+    "prepublish": "npm run compile && tslint --project tsconfig.json -c tslint.release.json",
     "lint": "tslint --project tsconfig.json",
     "lintfix": "tslint --project tsconfig.json --fix"
   },

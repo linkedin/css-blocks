@@ -305,6 +305,7 @@ export class BlockParser {
         if (channel === "stderr") {
           console.warn(debugStr.join("\n"));
         } else {
+          // tslint:disable-next-line:no-console
           console.log(debugStr.join("\n"));
         }
       }

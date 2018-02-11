@@ -536,9 +536,9 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     this.assertSealed();
     return this.allStaticStyles.size;
   }
-  *getAllStaticStyles() {
+  *getAllStaticStyles(): IterableIterator<Style> {
     this.assertSealed();
-    let s;
+    let s: Style;
     for (s of this.allStaticStyles) {
       yield s;
     }

@@ -30,6 +30,11 @@ interface PreprocessJob {
   contents: string;
 }
 
+interface ErrorWithErrNum {
+  code?: string;
+  message: string;
+}
+
 /**
  * This factory ensures that instances of a block are re-used when blocks are
  * going to be compiled/optimized together. Multiple instances of the same
@@ -197,7 +202,7 @@ export class BlockFactory implements IBlockFactory {
     let importer = this.importer;
     let fromPath = importer.debugIdentifier(fromIdentifier, this.options);
     let identifier = importer.identifier(fromIdentifier, importPath, this.options);
-    return this.getBlock(identifier).catch(err => {
+    return this.getBlock(identifier).catch((err: ErrorWithErrNum) => {
       if (err.code === "ENOENT") {
         err.message = `From ${fromPath}: ${err.message}`;
       }

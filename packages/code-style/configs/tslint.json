@@ -11,6 +11,7 @@
     "no-reference": true,
     "no-eval": true,
     "no-floating-promises": true,
+    "no-invalid-template-strings": true,
     "no-string-throw": true,
     "switch-default": true,
     "no-unsafe-any": {

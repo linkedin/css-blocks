@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json.schemastore.org/tslint",
+  "extends": "./tslint.json",
+  "rules": {
+    "no-debugger": true,
+    "no-console": [true, "log"]
+  }
+}
