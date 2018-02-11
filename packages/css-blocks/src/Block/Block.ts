@@ -1,6 +1,5 @@
 import { Attr, Attribute, AttributeNS, AttributeValueChoice, ValueAbsent, ValueConstant } from "@opticss/element-analysis";
-import { assertNever, MultiMap, ObjectDictionary } from "@opticss/util";
-import { objectValues, whatever } from "@opticss/util";
+import { assertNever, MultiMap, ObjectDictionary, objectValues, whatever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector,
          parseSelector, SelectorFactory } from "opticss";
 import * as postcss from 'postcss';
@@ -864,7 +863,7 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
           return `${this.block.name}__${this.name}`;
         }
       default:
-        throw "this never happens";
+        return assertNever(opts.outputMode);
     }
   }
 
@@ -1235,7 +1234,7 @@ export class State extends BlockObject<State, BlockClass> {
         let cssClassName = this.blockClass.cssClass(opts);
         return `${cssClassName}--${this.name}`;
       default:
-        throw "this never happens";
+        return assertNever(opts.outputMode);
     }
   }
 
