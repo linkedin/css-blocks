@@ -32,13 +32,23 @@ Code Style
    any new strictness options are enabled with each TypeScript release.
 5. Specific Lint rules ran are not covered here. The source of truth is
    the [`tslint.json`][tsconfig-file] file.
-6. Avoid `any`. There are very few times it's necessary. We use
-   the type `something` from `@opticss/util` to express very generic
+6. We prefer `for ... of` loops for iteration.
+      * `forEach` should only be used to apply an existing function to values
+        in a list. Never use a local function with `forEach`.
+      * If an object needs to provide a way to iterate over values,
+        we prefer using a generator to taking a callback. This
+        works better with `for ... of` loops.
+7. Avoid `any`. There are very few times it's necessary. We use
+   the type `whatever` from `@opticss/util` to express very generic
    values without introducing the infectious semantics of `any`.
    Exceptions:
-   a. [Type guards][type-guards] can accept an argument of type `any`.
-   b. Callbacks whose return value is not consumed can have a declared
-      return value of `any`.
+     * Using a value from library that has a very complex type for which
+       types are not available or are not good enough. If possible, declare
+       a local interface for the aspects of the library that we use. If any
+       is needed, declare a type alias to any for that library and disable the
+       lint rule for that line.
+     * In very rare cases, casting through any is required to convince
+       the type checker that a value will have the type you say it will have.
 
 Test Code Style
 ---------------
