@@ -23,22 +23,24 @@ Maintenance LTS mode.
 Code Style
 ----------
 
+Specific Lint rules ran are not covered here. The source of truth is
+found in the [configuration files below](#shared-configuration-files).
+Not all code style can be linted, here's what else you need to know:
+
 1. Code is written in TypeScript and transpiled to the newest version of ES
-   Modules that are supported by our Node Support Policy (see above).
+   Modules that are supported by our Node Support Policy ([see above](#node-support-policy)).
 2. All TypeScript code will use this project's configuration
    files where possible.
 3. Linting must be performed as part of `yarn test` for every node package.
 4. All code is compiled with TypeScript's strictest settings enabled and
    any new strictness options are enabled with each TypeScript release.
-5. Specific Lint rules ran are not covered here. The source of truth is
-   the [`tslint.json`][tsconfig-file] file.
-6. We prefer `for ... of` loops for iteration.
-      * `forEach` should only be used to apply an existing function to values
-        in a list. Never use a local function with `forEach`.
-      * If an object needs to provide a way to iterate over values,
-        we prefer using a generator to taking a callback. This
-        works better with `for ... of` loops.
-7. Avoid `any`. There are very few times it's necessary. We use
+5. We prefer `for ... of` loops for iteration.
+  * `forEach` should only be used to apply an existing function to values
+    in an array. Never use a local function with `forEach`.
+  * If an object needs to provide a way to iterate over values,
+    we prefer using a [generator][generators] to taking a callback. This
+    works better with `for ... of` loops.
+6. Avoid `any`. There are very few times it's necessary. We use
    the type `whatever` from `@opticss/util` to express very generic
    values without introducing the infectious semantics of `any`.
    Exceptions:
@@ -49,6 +51,8 @@ Code Style
        lint rule for that line.
      * In very rare cases, casting through any is required to convince
        the type checker that a value will have the type you say it will have.
+       More often than not, if the type checker says you can't cast to a value,
+       it's right.
 
 Test Code Style
 ---------------
@@ -76,9 +80,34 @@ configuration for integration with it to enhance the IDE experience
 with the tooling choices of the project and makes things like
 interactive debugging work easily while running the tests.
 
+Shared Configuration Files
+--------------------------
+
+* [`configs/tslint.interactive.json`][interactive-lint-config] - These
+  lints affect the way code is written and usually can't be fixed
+  automatically. They are well-suited to be ran interactively while you
+  develop. If you use VSCode, our provided configuration files will
+  automatically be set up to run only these lints while you're writing code.
+* [`configs/tslint.cli.json`][cli-lint-config] - Lints that are best to run
+  from the CLI after tests pass or before commit. Usually these can be fixed
+  automatically by running `lerna run lintfix`. Automated fixers aren't
+  perfect, so we recommend running the code after staging a commit so you can
+  see what it did by running a `git diff` or with `git add -p`. When you run
+  `yarn test` on a package or `lerna run test` on the repo, these lints will
+  be used. This lint configuration file inherits from `tslint.interactive.json`.
+* [`configs/tslint.release.json`][release-lint-config] - These lints perform
+  sanity checks against code that is about to be released or checked in.
+  These lints would be annoying under normal development workflows and so
+  they're not included. This lint configuration file inherits from `tslint.interactive.json`.
+  and rule customization for test code. This configuration does not extend
+  any other configuration files. It is meant to be combined with the others
+  for tests.
 
 [node-releases]: https://github.com/nodejs/Release
-[tsconfig-file]: https://github.com/css-blocks/css-blocks/tree/master/packages/code-style/configs/tslint.json
 [type-guards]: https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types
 [ts-mocha]: https://www.npmjs.com/package/ts-mocha
 [chai]: http://chaijs.com/api/assert/
+[generators]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators
+[interactive-lint-config]: https://github.com/css-blocks/css-blocks/tree/master/packages/code-style/configs/tslint.interactive.json
+[cli-lint-config]: https://github.com/css-blocks/css-blocks/tree/master/packages/code-style/configs/tslint.cli.json
+[release-lint-config]: https://github.com/css-blocks/css-blocks/tree/master/packages/code-style/configs/tslint.release.json

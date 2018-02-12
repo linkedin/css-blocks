@@ -128,7 +128,7 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
             }
             let right = path.get("right");
             if (right.isIdentifier()) {
-              let binding = right.scope.getBinding((<Identifier>right.node).name);
+              let binding = right.scope.getBinding((right.node).name);
               if (binding && binding.path.isVariableDeclarator()) {
                 let init = binding.path.get("init");
                 init.replaceWith(className);

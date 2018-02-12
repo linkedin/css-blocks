@@ -142,7 +142,7 @@ export class JSXElementAnalyzer {
 
   private analyzeClassExpression(expression: NodePath<Expression>, element: JSXElementAnalysis, suppressErrors = false): void {
     if (expression.isIdentifier()) {
-      let identifier = expression.node as Identifier;
+      let identifier = expression.node;
       let identBinding = expression.scope.getBinding(identifier.name);
       if (identBinding) {
         if (identBinding.constantViolations.length > 0) {
@@ -192,7 +192,7 @@ export class JSXElementAnalyzer {
         element.addStaticClass(blockClass);
       }
     } else if (expression.isCallExpression()) {
-      let callExpr = expression.node as CallExpression;
+      let callExpr = expression.node;
       let styleFn = isStyleFunction(expression, callExpr);
       if (styleFn.type === "error") {
         if (styleFn.canIgnore) {

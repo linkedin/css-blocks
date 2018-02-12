@@ -1,7 +1,7 @@
 {
   "name": "@css-blocks/code-style",
   "version": "0.17.0",
-  "main": "configs/tslint.json",
+  "main": "configs/tslint.interactive.json",
   "readme": "README.md",
   "keywords": [
     "tslint",
@@ -11,9 +11,9 @@
     "compile": "rm -rf dist && tsc",
     "pretest": "npm run compile",
     "prepublish": "npm run compile && tslint -p . -c tslint.release.json",
-    "test": "tslint --test test/rules/*/* && tslint -p .",
-    "lint": "tslint -p .",
-    "lintfix": "tslint -p . --fix"
+    "test": "tslint --test test/rules/*/* && npm run lint",
+    "lint": "tslint -p . -c tslint.cli.json",
+    "lintfix": "tslint -p . --fix -c tslint.cli.json"
   },
   "bugs": {
     "url": "https://github.com/css-blocks/css-blocks/issues"

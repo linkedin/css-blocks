@@ -1,6 +1,6 @@
 {
   "$schema": "http://json.schemastore.org/tslint",
-  "extends": "./tslint.json",
+  "extends": "./tslint.cli.json",
   "rules": {
     "no-debugger": true,
     "no-console": [true, "log"]

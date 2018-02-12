@@ -11,9 +11,9 @@
     "pretest": "npm run compile && npm run lint",
     "test": "echo 'tested in @css-blocks/jsx'",
     "compile": "rm -rf dist && tsc",
-    "prepublish": "npm run compile && tslint --project tsconfig.json -c tslint.release.json",
-    "lint": "tslint --project tsconfig.json",
-    "lintfix": "tslint --project tsconfig.json --fix"
+    "prepublish": "npm run compile && tslint --project . -c tslint.release.json",
+    "lint": "tslint -c tslint.cli.json --project .",
+    "lintfix": "tslint -c tslint.cli.json --project . --fix"
   },
   "repository": {
     "type": "git",

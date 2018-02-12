@@ -11,10 +11,10 @@
     "pretest": "npm run compile && npm run lint",
     "test": "mocha dist/test --recursive --opts test/mocha.opts && npm run lint",
     "compile": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
-    "prepublish": "npm run compile && tslint --project tsconfig.json -c tslint.release.json",
+    "prepublish": "npm run compile && tslint --project . -c tslint.release.json",
     "watch": "watch 'npm run test' './src' './test' --wait=3",
-    "lint": "tslint --project tsconfig.json",
-    "lintfix": "tslint --project tsconfig.json --fix"
+    "lint": "tslint -c tslint.cli.json --project .",
+    "lintfix": "tslint -c tslint.cli.json --project . --fix"
   },
   "repository": {
     "type": "git",
