@@ -601,7 +601,7 @@ export class TemplateAnalysisTests {
     });
   }
 
-  @test "Style paths in resolve statements that can't be resolved throw helpful error"() {
+  @test "Block references in resolve statements that can't be resolved throw helpful error"() {
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
     let reader = new OptionsReader(options);
@@ -614,7 +614,32 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.CssBlockError,
-      `Cannot resolve Style at Block path "b.klass". (blocks/foo.block.css:3:23)`,
+      `No Block named "b" found in scope. (blocks/foo.block.css:3:23)`,
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(() => {
+        assert.deepEqual(1, 1);
+      })
+    );
+  }
+
+  @test "Style paths in resolve statements that can't be resolved throw helpful error"() {
+    let imports = new MockImportRegistry();
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    imports.registerSource("blocks/b.block.css",
+      `.root { block-name: block-b; }`
+    );
+
+    let css = `
+      @block-reference b from './b.block.css';
+      .root { block-name: block-a; }
+      .klass:before { color: resolve('b.klass'); color: red; }
+      .klass { color: red; }
+    `;
+
+    return assertParseError(
+      cssBlocks.CssBlockError,
+      `No Style ".klass" found on Block "block-b". (blocks/foo.block.css:4:23)`,
       this.parseBlock(css, "blocks/foo.block.css", reader).then(() => {
         assert.deepEqual(1, 1);
       })

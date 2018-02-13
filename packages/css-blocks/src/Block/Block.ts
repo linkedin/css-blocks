@@ -8,6 +8,7 @@ import { LocalScopedContext, HasLocalScope, HasScopeLookup } from "../util/Local
 import { unionInto } from '../util/unionInto';
 import { ObjectDictionary, MultiMap, assertNever, objectValues } from "@opticss/util";
 import { RulesetContainer } from './RulesetContainer';
+import { CLASS_NAME_IDENT } from "../BlockSyntax";
 import {
   SelectorFactory,
   parseSelector,
@@ -27,8 +28,7 @@ import {
   isClassNode,
   isStateNode,
   NodeAndType,
-  BlockType,
-  CLASS_NAME_IDENT
+  BlockType
 } from "../BlockParser";
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
@@ -485,6 +485,7 @@ export class Block
   }
 
   getReferencedBlock(localName: string): Block | null {
+    if (localName === "") { return this; }
     return this._blockReferences[localName] || null;
   }
 

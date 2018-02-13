@@ -1,3 +1,11 @@
+import regexpu = require('regexpu-core');
+
+/**
+ * CSS <ident-token> RegExp.
+ * Defined: https://www.w3.org/TR/css-syntax-3/#typedef-ident-token
+ */
+export const CLASS_NAME_IDENT = new RegExp(regexpu("^(-?(?:\\\\.|[A-Za-z_\\u{0080}-\\u{10ffff}])(?:\\\\.|[A-Za-z0-9_\\-\\u{0080}-\\u{10ffff}])*)$", "u"));
+
 // Prop Names
 export const BLOCK_NAME = 'block-name';
 export const EXTENDS = 'extends';

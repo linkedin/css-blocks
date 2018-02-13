@@ -2,7 +2,7 @@ import * as postcss from 'postcss';
 import * as propParser from 'css-property-parser';
 import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
 import { Style } from './Block';
-import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR } from "../blockSyntax";
+import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR, BlockPath } from "../BlockSyntax";
 import * as errors from '../errors';
 import { sourceLocation } from "../SourceLocation";
 
@@ -110,11 +110,20 @@ export class RulesetContainer {
         // If this is a resolution, track that this property has been resolved
         if (referenceStr) {
 
+          let blockPath = new BlockPath(referenceStr);
           let other = style.block.lookup(referenceStr);
+          let otherBlock = style.block.getReferencedBlock(blockPath.block);
+
+          if (!otherBlock) {
+            throw new errors.InvalidBlockSyntax(
+              `No Block named "${blockPath.block}" found in scope.`,
+              sourceLocation(file, decl)
+            );
+          }
 
           if (!other) {
             throw new errors.InvalidBlockSyntax(
-              `Cannot resolve Style at Block path "${referenceStr}".`,
+              `No Style "${blockPath.path}" found on Block "${otherBlock.name}".`,
               sourceLocation(file, decl)
             );
           }

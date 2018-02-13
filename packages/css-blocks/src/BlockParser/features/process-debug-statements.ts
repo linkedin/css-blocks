@@ -2,7 +2,7 @@ import parseBlockDebug from "../../parseBlockDebug";
 import * as postcss from 'postcss';
 import { Block } from "../../Block";
 import { OptionsReader } from "../../OptionsReader";
-import { BLOCK_DEBUG } from "../../blockSyntax";
+import { BLOCK_DEBUG } from "../../BlockSyntax";
 
 /**
  * Process all `@block-debug` statements, output debug statement to console or in comment as requested.
