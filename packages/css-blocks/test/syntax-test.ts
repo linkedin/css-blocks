@@ -1,14 +1,11 @@
-import * as nodeAssert from "assert";
 import { assert } from "chai";
-import { only, skip, suite, test } from "mocha-typescript";
+import { skip, suite, test } from "mocha-typescript";
 
 import cssBlocks = require("../src/cssBlocks");
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertError } from "./util/assertError";
-
-const { AssertionError } = nodeAssert;
 
 @suite("In BEM output mode")
 export class BEMOutputMode extends BEMProcessor {

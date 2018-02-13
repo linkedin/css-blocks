@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { only, suite, test } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import { Block } from "../src/Block";

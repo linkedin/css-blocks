@@ -2,7 +2,6 @@ import { NodePath } from "babel-traverse";
 import {
   ClassDeclaration,
   Function,
-  Identifier,
   ImportDeclaration,
   isIdentifier,
   isImportDefaultSpecifier,
@@ -193,12 +192,14 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
         });
       }
 
-      node.params.forEach((param: Identifier) => {
-        throwIfRegistered(param.name, _localBlocks, {
-          filename: analysis.template.identifier,
-          line: path.node.loc.start.line,
-          column: path.node.loc.start.column,
-        });
+      node.params.forEach((param) => {
+        if (isIdentifier(param)) {
+          throwIfRegistered(param.name, _localBlocks, {
+            filename: analysis.template.identifier,
+            line: path.node.loc.start.line,
+            column: path.node.loc.start.column,
+          });
+        }
       });
     },
   };

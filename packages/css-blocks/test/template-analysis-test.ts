@@ -1,5 +1,5 @@
 import { POSITION_UNKNOWN } from "@opticss/element-analysis";
-import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template, TemplateInfo } from "@opticss/template-api";
+import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template } from "@opticss/template-api";
 import { ObjectDictionary } from "@opticss/util";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
@@ -11,7 +11,6 @@ import { BlockParser } from "../src/BlockParser";
 import { OptionsReader } from "../src/OptionsReader";
 import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAnalysis";
 import * as cssBlocks from "../src/errors";
-import { ImportedFile, Importer } from "../src/importing";
 import { SubState } from "../src/index";
 import { PluginOptions } from "../src/options";
 
@@ -538,14 +537,13 @@ export class TemplateAnalysisTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
-      let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.rootClass);
       element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("foo") as ObjectDictionary<SubState>, null, true);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
-        blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
+        blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".root", "[state|foo=purple]", "[state|foo=red]"],
         elements: {
@@ -644,7 +642,6 @@ export class TemplateAnalysisTests {
   @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -673,7 +670,6 @@ export class TemplateAnalysisTests {
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { "no-class-pairs": false });
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -698,7 +694,6 @@ export class TemplateAnalysisTests {
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -720,7 +715,6 @@ export class TemplateAnalysisTests {
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -750,7 +744,6 @@ export class TemplateAnalysisTests {
   @test "adding both root and a state from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);

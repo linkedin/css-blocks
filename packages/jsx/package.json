@@ -66,6 +66,7 @@
     "test-console": "^1.1.0",
     "ts-node": "^3.0.4",
     "tslint": "^5.9.1",
+    "typescript": "^2.7.1",
     "watch": "^1.0.2"
   },
   "peerDependencies": {
@@ -81,7 +82,6 @@
     "debug": "^2.6.8",
     "minimatch": "^3.0.4",
     "object.values": "^1.0.4",
-    "opticss": "^0.2.0",
-    "typescript": "^2.3.4"
+    "opticss": "^0.2.0"
   }
 }

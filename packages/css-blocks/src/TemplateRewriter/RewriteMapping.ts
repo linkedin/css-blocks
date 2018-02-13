@@ -58,7 +58,7 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
       },
       [0, -1]);
 
-    function renumberer(i: number | BooleanExpression<number>, n: number, arr: number[]) {
+    function renumberer(i: ExprItem, n: number, arr: ExprItem[]) {
       if (typeof i === "number") {
         arr[n] = i - adjustments[i];
       } else {
@@ -137,7 +137,8 @@ function indexesUsed(indexes: Set<number>, expression: BooleanExpression<number>
   }
 }
 
-type Renumberer = (i: number | BooleanExpression<number>, n: number, arr: number[]) => void;
+type ExprItem = number | BooleanExpression<number>;
+type Renumberer = (i: ExprItem, n: number, arr: ExprItem[]) => void;
 
 function renumber(renumberer: Renumberer, expression: BooleanExpression<number>) {
   if (isAndExpression(expression)) {

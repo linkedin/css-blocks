@@ -2,11 +2,10 @@ import {
   POSITION_UNKNOWN,
 } from "@opticss/element-analysis";
 import {
+  AndExpression,
+  BooleanExpression,
   isAndExpression,
-  SerializedTemplateAnalysis as SerializedOptimizedAnalysis,
   Template,
-  TemplateInfo,
-  TemplateIntegrationOptions,
 } from "@opticss/template-api";
 import {
   assert as typedAssert,
@@ -15,25 +14,20 @@ import {
   whatever,
 } from "@opticss/util";
 import { assert } from "chai";
-import { only, suite, test } from "mocha-typescript";
-import { OptiCSSOptions, Optimizer } from "opticss";
+import { suite, test } from "mocha-typescript";
+import { Optimizer } from "opticss";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, State } from "../src/Block";
+import { Block, BlockClass, State, Style } from "../src/Block";
 import { BlockCompiler } from "../src/BlockCompiler";
 import { BlockFactory } from "../src/BlockFactory";
 import { BlockParser } from "../src/BlockParser";
 import { OptionsReader } from "../src/OptionsReader";
-import { SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAnalysis";
+import { TemplateAnalysis } from "../src/TemplateAnalysis";
 import { ElementAnalysis } from "../src/TemplateAnalysis/ElementAnalysis";
 import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
-import * as cssBlocks from "../src/errors";
-import { ImportedFile, Importer } from "../src/importing";
 import { SubState } from "../src/index";
 import { PluginOptions } from "../src/options";
-
-import { MockImportRegistry } from "./util/MockImportRegistry";
-import { assertParseError } from "./util/assertError";
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -121,9 +115,9 @@ export class TemplateAnalysisTests {
         assert.deepEqual([...rewrite2.staticClasses].sort(), ["c"]);
         assert.deepEqual([...rewrite2.dynamicClasses].sort(), ["e", "f"]);
         let expr = rewrite2.dynamicClass("e");
-        typedAssert.isType(isAndExpression, expr).and(andExpr => {
-          assert.deepEqual(andExpr.and.length, 1);
-          assert.deepEqual(andExpr.and[0], block.find(".asdf[state|larger]")!);
+        typedAssert.isType<BooleanExpression<Style>, AndExpression<Style>>(isAndExpression, expr).and(expr => {
+          assert.deepEqual(expr.and.length, 1);
+          assert.deepEqual(expr.and[0], block.find(".asdf[state|larger]")!);
         });
       });
     });

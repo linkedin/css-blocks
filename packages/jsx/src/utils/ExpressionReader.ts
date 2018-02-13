@@ -102,6 +102,8 @@ export class ExpressionReader {
         this.err = "Only one argument can be supplied to a dynamic state";
         return;
       }
+    } else {
+      this.isDynamic = false;
     }
 
     if (this.pathExpression.length < 3) {

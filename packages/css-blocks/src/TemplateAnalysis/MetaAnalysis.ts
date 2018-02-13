@@ -14,7 +14,7 @@ import { SerializedTemplateAnalysis, TemplateAnalysis } from "./index";
 
 let debug = debugGenerator("css-blocks");
 
-export class SerializedMetaTemplateAnalysis {
+export interface SerializedMetaTemplateAnalysis {
   analyses: SerializedTemplateAnalysis<keyof TemplateTypes>[];
 }
 

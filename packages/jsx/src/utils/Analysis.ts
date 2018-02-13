@@ -3,7 +3,7 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from "@opticss/template-api";
-import { whatever } from "@opticss/util";
+import { Maybe, none, whatever } from "@opticss/util";
 import { File } from "babel-types";
 import {
   Block,
@@ -21,11 +21,12 @@ export class JSXTemplate implements TemplateInfo<"Opticss.JSXTemplate"> {
   identifier: string;
   type: "Opticss.JSXTemplate" = "Opticss.JSXTemplate";
   data: string;
-  ast: File;
+  ast: Maybe<File>;
 
   constructor(identifier: string, data: string) {
     this.identifier = identifier;
     this.data = data;
+    this.ast = none("The template was not yet parsed.");
   }
 
   static deserialize(identifier: string, ..._data: whatever[]): JSXTemplate {
@@ -55,9 +56,7 @@ export class Analysis extends TemplateAnalysis<"Opticss.JSXTemplate"> {
 
   constructor(template: JSXTemplate, parent: MetaAnalysis) {
     super(template);
-    // super(template, {
-    //   'no-class-pairs': false
-    // });
+    this.template = template;
     this.parent = parent;
   }
 

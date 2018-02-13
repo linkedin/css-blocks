@@ -2,37 +2,22 @@ import { assert } from "chai";
 import * as fs from "fs";
 import { IHookCallbackContext } from "mocha";
 import * as path from "path";
-import * as util from "util";
 
 import {
   OptionsReader,
 } from "../src/OptionsReader";
 import {
-  OutputMode,
-} from "../src/OutputMode";
-import cssBlocks = require("../src/cssBlocks");
-import {
-  FileIdentifier,
   filesystemImporter,
-  FilesystemImporter,
-  ImportedFile,
   Importer,
-  ImporterData,
-  PathAliases,
   PathAliasImporter,
 } from "../src/importing";
 import {
   CssBlockOptions,
   CssBlockOptionsReadonly,
-  PluginOptions,
 } from "../src/options";
 import {
   Syntax,
 } from "../src/preprocessing";
-
-import { BEMProcessor } from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
-import { assertError } from "./util/assertError";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.resolve(FIXTURES, "filesystemImporter");
@@ -114,10 +99,6 @@ function testFSImporter(name: string, importer: Importer) {
 testFSImporter("FilesystemImporter", filesystemImporter);
 testFSImporter("Default PathAliasImporter", new PathAliasImporter({}));
 testFSImporter("Configured PathAliasImporter", new PathAliasImporter({alias: ALIAS_FIXTURES}));
-
-interface HasImporter {
-  importer: Importer;
-}
 
 describe("PathAliasImporter", () => {
   before(function(this: IHookCallbackContext) {

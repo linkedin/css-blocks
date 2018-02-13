@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import Analyzer from "glimmer-analyzer";
-import path = require("path");
 
 import { fixture } from "./fixtures";
 

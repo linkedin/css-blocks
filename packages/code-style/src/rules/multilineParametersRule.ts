@@ -16,7 +16,6 @@ type CallLike = ts.CallExpression
               | ts.FunctionExpression
               | ts.NewExpression
               ;
-type ArgLike = ts.Expression | ts.ParameterDeclaration;
 type ArgListLike = ts.NodeArray<ts.Expression> | ts.NodeArray<ts.ParameterDeclaration>;
 
 interface CheckOptions {

@@ -2,7 +2,6 @@ import {
   AST,
   builders,
   print,
-  Syntax,
 } from "@glimmer/syntax";
 import {
   POSITION_UNKNOWN,
@@ -13,10 +12,8 @@ import {
 } from "@opticss/util";
 import { expect } from "chai";
 import {
-  AndExpression, Block, BooleanExpression, ElementAnalysis, IndexedClassMapping, IndexedClassRewrite, NotExpression, OrExpression,
-  Style,
+  Block, ElementAnalysis, IndexedClassMapping, Style,
 } from "css-blocks";
-import path = require("path");
 import { inspect } from "util";
 
 import { classnamesHelper as helperGenerator } from "../src/ClassnamesHelperGenerator";
@@ -26,8 +23,6 @@ import {
   TernaryExpression as TernaryAST,
 } from "../src/ElementAnalyzer";
 import { classnames } from "../src/helpers/classnames";
-
-import { fixture } from "./fixtures";
 
 function run(ast: AST.MustacheStatement, helper?: (name: string, params: whatever[]) => whatever) {
   let args = ast.params.map(p => astToLiterals(p, helper));

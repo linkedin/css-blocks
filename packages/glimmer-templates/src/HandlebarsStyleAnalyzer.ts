@@ -87,7 +87,6 @@ export class BaseStyleAnalyzer {
 }
 
 export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements TemplateAnalyzer<"GlimmerTemplates.ResolvedFile"> {
-  project: Project;
   templateName: string;
 
   constructor(project: Project | string, templateName: string) {
@@ -115,7 +114,6 @@ export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements Templa
 }
 
 export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer implements MultiTemplateAnalyzer {
-  project: Project;
   templateNames: string[];
 
   constructor(project: Project | string, ...templateNames: string[]) {

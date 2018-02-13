@@ -2,7 +2,6 @@ import { whatever } from "@opticss/util";
 import { assert } from "chai";
 import * as postcss from "postcss";
 
-import { Block } from "../../src/Block";
 import cssBlocks from "../../src/cssBlocks";
 
 export function assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {

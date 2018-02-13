@@ -3,14 +3,11 @@ import {
 } from "@opticss/util";
 import { assert } from "chai";
 import {
-  BlockFactory,
   SerializedElementAnalysis,
   TemplateAnalysis,
 } from "css-blocks";
-import path = require("path");
-import * as postcss from "postcss";
 
-import { HandlebarsStyleAnalyzer, ResolvedFile } from "../src";
+import { HandlebarsStyleAnalyzer } from "../src";
 
 import { fixture } from "./fixtures";
 

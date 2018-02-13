@@ -35,14 +35,13 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
 
   protected _name: string;
   protected _container: ContainerType;
-  protected _compiledAttribute: Attribute;
 
   /** cache of resolveStyles() */
   private _resolvedStyles: Set<Style> | undefined;
   /** cache for the block getter. */
   private _block: Block | undefined;
   /** cache for the block getter. */
-  private _base: StyleType | null;
+  private _base: StyleType | null | undefined;
 
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
@@ -51,6 +50,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
     this._name = name;
     this._container = container;
     this.propertyConcerns = new PropertyContainer();
+
   }
 
   /**
@@ -810,7 +810,7 @@ export type StyleParent = Block | BlockClass | State | undefined;
  * Represents a Class present in the Block.
  */
 export class BlockClass extends BlockObject<BlockClass, Block> {
-  private _sourceAttribute: Attribute;
+  private _sourceAttribute: Attribute | undefined;
   private _states: StateMap = {};
 
   /**
@@ -1087,7 +1087,7 @@ export class State extends BlockObject<State, BlockClass> {
 
   private _hasSubStates: boolean;
   private _subStates: undefined | ObjectDictionary<SubState>;
-  private _sourceAttributes: Attr[];
+  private _sourceAttributes: Attr[] | undefined;
 
   /**
    * State constructor. Provide a local name for this State, an optional group name,
@@ -1252,7 +1252,7 @@ export class State extends BlockObject<State, BlockClass> {
 }
 
 export class SubState extends BlockObject<SubState, State> {
-  _sourceAttributes: Array<AttributeNS>;
+  _sourceAttributes: Array<AttributeNS> | undefined;
   isGlobal = false;
 
   getBaseFromBaseParent(baseParent: State): SubState | undefined {

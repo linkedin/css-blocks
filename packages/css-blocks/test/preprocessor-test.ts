@@ -4,18 +4,15 @@ import { RawSourceMap } from "source-map";
 
 import { OptionsReader } from "../src/OptionsReader";
 import {
-  annotateCssContentWithSourceMap,
   BlockFactory,
   CssBlockOptionsReadonly,
   PluginOptions,
-  Preprocessor,
   Preprocessors,
   ProcessedFile,
   Syntax,
 } from "../src/index";
 
 import {
-  MockImporter,
   MockImportRegistry,
 } from "./util/MockImportRegistry";
 

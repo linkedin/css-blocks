@@ -53,7 +53,7 @@
     "source-map-support": "^0.4.15",
     "tslint": "^5.9.1",
     "typedoc": "^0.7.1",
-    "typescript": "^2.4.1"
+    "typescript": "^2.7.1"
   },
   "dependencies": {
     "@opticss/element-analysis": "^0.2.0",

@@ -1,6 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
 
+import {
+  some, unwrap,
+} from "@opticss/util";
 import traverse from "babel-traverse";
 import * as babylon from "babylon";
 import {
@@ -89,7 +92,7 @@ export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, fac
       template.data = wat.outputText;
     }
 
-    analysis.template.ast = babylon.parse(template.data, resolvedOpts.parserOptions);
+    analysis.template.ast = some(babylon.parse(template.data, resolvedOpts.parserOptions));
   } catch (e) {
     process.chdir(oldDir);
     throw new JSXParseError(`Error parsing '${template.identifier}'\n${e.message}\n\n${template.data}: ${e.message}`, { filename: template.identifier });
@@ -97,7 +100,7 @@ export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, fac
 
   // The blocks importer will insert a promise that resolves to a `ResolvedBlock`
   // for each CSS Blocks import it encounters.
-  traverse(analysis.template.ast, importer(template, analysis, factory, resolvedOpts));
+  traverse(unwrap(analysis.template.ast), importer(template, analysis, factory, resolvedOpts));
 
   // Once all blocks this file is waiting for resolve, resolve with the File object.
   let analysisPromise = Promise.all(analysis.blockPromises)
@@ -150,7 +153,7 @@ export function parse(filename: string, data: string, factory: BlockFactory, opt
     return parseWith(template, metaAnalysis, factory, resolvedOpts).then(_analysis => {
       return resolveAllRecursively(metaAnalysis.analysisPromises).then((analyses) => {
         for (let analysis of (new Set(analyses))) {
-          traverse(analysis.template.ast, analyzer(analysis));
+          traverse(unwrap(analysis.template.ast), analyzer(analysis));
           metaAnalysis.addAnalysis(analysis);
           // No need to keep detailed template data anymore!
           delete analysis.template.ast;

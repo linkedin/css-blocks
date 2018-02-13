@@ -1,6 +1,6 @@
 import { assert as typedAssert } from "@opticss/util";
 import { assert } from "chai";
-import { only, suite, test } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import {

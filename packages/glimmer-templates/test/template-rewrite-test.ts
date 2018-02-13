@@ -1,13 +1,11 @@
-import { precompile, PrecompileOptions } from "@glimmer/compiler";
-import { ASTPlugin, preprocess, PreprocessOptions, print } from "@glimmer/syntax";
+import { preprocess, print } from "@glimmer/syntax";
 import { assert } from "chai";
-import { Block, BlockCompiler, CssBlockOptionsReadonly, PluginOptionsReader, StyleMapping } from "css-blocks";
+import { BlockCompiler, CssBlockOptionsReadonly, StyleMapping } from "css-blocks";
 import fs = require("fs");
 import { Optimizer } from "opticss";
-import path = require("path");
 import * as postcss from "postcss";
 
-import { HandlebarsStyleAnalyzer, loaderAdapter, Project, Rewriter } from "../src";
+import { HandlebarsStyleAnalyzer, loaderAdapter, Project } from "../src";
 
 import { fixture } from "./fixtures";
 
@@ -83,7 +81,7 @@ describe("Template Rewriting", function() {
     let analyzer = new HandlebarsStyleAnalyzer(project, "with-dynamic-states");
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-states/template.hbs");
     return pipeline(analyzer, templatePath).then((result) => {
-      let { css, ast } = result;
+      let { ast } = result;
       let res = print(ast);
       // TODO why is `f` class both static and dynamic?
       assert.deepEqual(minify(res), minify(`
@@ -108,7 +106,7 @@ describe("Template Rewriting", function() {
     let analyzer = new HandlebarsStyleAnalyzer(project, "with-dynamic-classes");
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-classes/template.hbs");
     return pipeline(analyzer, templatePath).then((result) => {
-      let { css, ast } = result;
+      let { ast } = result;
       let res = print(ast);
       assert.deepEqual(minify(res), minify(`
         <div class="a">
@@ -127,7 +125,7 @@ describe("Template Rewriting", function() {
     let analyzer = new HandlebarsStyleAnalyzer(project, "page-layout");
     let templatePath = fixture("readme-app/src/ui/components/page-layout/template.hbs");
     return pipeline(analyzer, templatePath).then((result) => {
-      let { css, ast } = result;
+      let { ast } = result;
       let res = print(ast);
       assert.deepEqual(minify(res), minify(`
       <div class="a {{/css-blocks/components/classnames 1 1 2 isLoading 1 0 "b" 0}}">

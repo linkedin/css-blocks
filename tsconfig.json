@@ -20,6 +20,10 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "strictFunctionTypes": true,
+    "alwaysStrict": true,
+    "strictPropertyInitialization": true,
 
     // output options
     "preserveConstEnums": false,

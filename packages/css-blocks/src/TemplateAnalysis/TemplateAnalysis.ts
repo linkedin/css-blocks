@@ -360,7 +360,8 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
         analysis.elements.set(elID, element);
       });
 
-      return analysis as TemplateAnalysis<K>;
+      // tslint:disable-next-line:prefer-whatever-to-any
+      return <TemplateAnalysis<K>> <any> analysis;
     });
   }
 

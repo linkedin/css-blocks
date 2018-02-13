@@ -62,7 +62,7 @@
     "style-loader": "^0.18.2",
     "tslint": "^5.9.1",
     "typedoc": "^0.7.1",
-    "typescript": "^2.4.1",
+    "typescript": "^2.7.1",
     "watch": "^1.0.2",
     "webpack": "^3.0.0",
     "webpack-merge": "^4.1.0"

@@ -59,7 +59,7 @@
     "ts-node": "^3.0.4",
     "tslint": "^5.9.1",
     "typedoc": "^0.7.1",
-    "typescript": "^2.6.1",
+    "typescript": "^2.7.1",
     "watch": "^1.0.2"
   },
   "dependencies": {
