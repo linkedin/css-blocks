@@ -1,6 +1,6 @@
 import { Style } from "../Block";
 import { MultiMap } from "@opticss/util";
-import { SELF_SELECTOR } from "../blockSyntax";
+import { SELF_SELECTOR } from "../BlockSyntax";
 import { shorthandsFor, longhandsFor } from "../shortHandProps";
 
 export type Conflict = [string, string];

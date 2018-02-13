@@ -8,7 +8,7 @@ import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
 import { QueryKeySelector } from "../query";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
 import * as conflictDetection from "./conflictDetection";
-import { RESOLVE_RE } from "../blockSyntax";
+import { RESOLVE_RE } from "../BlockSyntax";
 
 enum ConflictType {
   conflict,

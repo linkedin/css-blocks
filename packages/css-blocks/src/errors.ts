@@ -68,3 +68,14 @@ export class InvalidBlockSyntax extends CssBlockError {
     super(message, location);
   }
 }
+
+/**
+ * Custom CSS Blocks error type for malformed BlockPath errors.
+ */
+export class BlockPathError extends CssBlockError {
+  static prefix = "MalformedBlockPath";
+  constructor(message: string, location?: ErrorLocation, details?: string) {
+    super(message, location);
+    if (details) { this.message += `\n${details}`; }
+  }
+}

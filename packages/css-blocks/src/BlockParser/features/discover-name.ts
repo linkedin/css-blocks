@@ -1,8 +1,7 @@
 import * as postcss from 'postcss';
 import * as errors from '../../errors';
-import { CLASS_NAME_IDENT } from "../block-intermediates";
 import { sourceLocation } from "../../SourceLocation";
-import { BLOCK_NAME } from "../../blockSyntax";
+import { BLOCK_NAME, CLASS_NAME_IDENT } from "../../BlockSyntax";
 
 export default async function discoverName(root: postcss.Root, defaultName: string, file: string): Promise<string> {
 

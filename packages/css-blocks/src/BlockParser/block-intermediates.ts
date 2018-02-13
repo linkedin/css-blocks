@@ -1,12 +1,5 @@
-import regexpu = require('regexpu-core');
 import selectorParser = require('postcss-selector-parser');
 import { CompoundSelector } from "opticss";
-
-/**
- * CSS <ident-token> RegExp.
- * Defined: https://www.w3.org/TR/css-syntax-3/#typedef-ident-token
- */
-export const CLASS_NAME_IDENT = new RegExp(regexpu("^(-?(?:\\\\.|[A-Za-z_\\u{0080}-\\u{10ffff}])(?:\\\\.|[A-Za-z0-9_\\-\\u{0080}-\\u{10ffff}])*)$", "u"));
 
 /**
  * Holds state values to be passed to the StateContainer.

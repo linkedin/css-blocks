@@ -2,7 +2,7 @@ import * as postcss from 'postcss';
 import * as errors from '../../errors';
 import { sourceLocation } from "../../SourceLocation";
 import { Block } from "../../Block";
-import { EXTENDS } from "../../blockSyntax";
+import { EXTENDS } from "../../BlockSyntax";
 
 /**
  * For each `extends` property found in the passed ruleset, set the block's base

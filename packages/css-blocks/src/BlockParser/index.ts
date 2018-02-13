@@ -19,7 +19,6 @@ import extendBlock from "./features/extend-block";
 import implementBlock from "./features/implement-block";
 
 export {
-  CLASS_NAME_IDENT,
   stateParser,
   BlockType,
   NodeAndType,

@@ -3,8 +3,7 @@ import * as errors from '../../errors';
 import { IBlockFactory } from "../../BlockFactory/IBlockFactory";
 import { sourceLocation } from "../../SourceLocation";
 import { Block } from "../../Block";
-import { CLASS_NAME_IDENT } from "../block-intermediates";
-import { BLOCK_REFERENCE } from "../../blockSyntax";
+import { BLOCK_REFERENCE, CLASS_NAME_IDENT } from "../../BlockSyntax";
 
 /**
  * Resolve all block references for a given block.
