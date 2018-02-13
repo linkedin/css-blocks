@@ -1,20 +1,26 @@
-import { HandlebarsStyleAnalyzer, Rewriter, loaderAdapter, Project } from '../src';
-import path = require('path');
-import * as postcss from "postcss";
-import fs = require('fs');
-import { assert } from 'chai';
-import { fixture } from "./fixtures";
-import { PreprocessOptions, ASTPlugin, print, preprocess } from "@glimmer/syntax";
 import { precompile, PrecompileOptions } from "@glimmer/compiler";
-import { PluginOptionsReader, Block, StyleMapping, BlockCompiler } from "css-blocks";
+import { ASTPlugin, preprocess, PreprocessOptions, print } from "@glimmer/syntax";
+import { assert } from "chai";
+import { Block, BlockCompiler, CssBlockOptionsReadonly, PluginOptionsReader, StyleMapping } from "css-blocks";
+import fs = require("fs");
 import { Optimizer } from "opticss";
+import path = require("path");
+import * as postcss from "postcss";
+
+import { HandlebarsStyleAnalyzer, loaderAdapter, Project, Rewriter } from "../src";
+
+import { fixture } from "./fixtures";
 
 // Reduce whitespace.
-function minify(s) {
-  return s.replace(/(^[\s\n]+|[\s\n]+$)/gm, ' ').replace(/[\s\n][\s\n]+/gm, ' ').replace(/\n/gm, ' ').trim();
+function minify(s: string) {
+  return s.replace(/(^[\s\n]+|[\s\n]+$)/gm, " ").replace(/[\s\n][\s\n]+/gm, " ").replace(/\n/gm, " ").trim();
 }
 
-function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer) {
+interface CSSAndMapping {
+  css: postcss.Result | string;
+  styleMapping: StyleMapping;
+}
+function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer): Promise<CSSAndMapping> {
   let reader = analyzer.project.cssBlocksOpts;
   return analyzer.analyze().then(analysis => {
     let blocks = analysis.transitiveBlockDependencies();
@@ -26,7 +32,7 @@ function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer) {
     for (let block of blocks) {
       let compiled = compiler.compile(block, block.stylesheet!, analysis);
       optimizer.addSource({
-        content: compiled.toResult({to: reader.importer.filesystemPath(block.identifier, reader)!})
+        content: compiled.toResult({to: reader.importer.filesystemPath(block.identifier, reader)!}),
       });
 
     }
@@ -38,24 +44,24 @@ function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer) {
   });
 }
 
-function pretendToBeWebPack(result, templatePath, cssBlocksOpts) {
+function pretendToBeWebPack(result: CSSAndMapping, templatePath: string, cssBlocksOpts: CssBlockOptionsReadonly) {
   let fakeLoaderContext = {
     resourcePath: templatePath,
     cssBlocks: {
       mappings: {
-        'css-blocks.css': result.styleMapping
+        "css-blocks.css": result.styleMapping,
       },
-      compilationOptions: cssBlocksOpts
+      compilationOptions: cssBlocksOpts,
     },
-    dependency(_path) {
-    }
+    dependency() {
+    },
   };
   return loaderAdapter(fakeLoaderContext).then(plugin => {
     let options = {
       meta: {},
       plugins: {
-        ast: [plugin]
-      }
+        ast: [plugin],
+      },
     };
     return preprocess(fs.readFileSync(templatePath).toString(), options);
   });
@@ -69,13 +75,13 @@ function pipeline(analyzer: HandlebarsStyleAnalyzer, templatePath: string) {
   });
 }
 
-describe('Template Rewriting', function() {
+describe("Template Rewriting", function() {
 
-  it('rewrites styles from dynamic attributes', function() {
-    let projectDir = fixture('styled-app');
+  it("rewrites styles from dynamic attributes", function() {
+    let projectDir = fixture("styled-app");
     let project = new Project(projectDir);
-    let analyzer = new HandlebarsStyleAnalyzer(project, 'with-dynamic-states');
-    let templatePath = fixture('styled-app/src/ui/components/with-dynamic-states/template.hbs');
+    let analyzer = new HandlebarsStyleAnalyzer(project, "with-dynamic-states");
+    let templatePath = fixture("styled-app/src/ui/components/with-dynamic-states/template.hbs");
     return pipeline(analyzer, templatePath).then((result) => {
       let { css, ast } = result;
       let res = print(ast);
@@ -84,23 +90,23 @@ describe('Template Rewriting', function() {
           <div class="b">
             <h1 class="e">Hello, <span class="f c {{/css-blocks/components/classnames 2 3 2 isThick 1 2 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2}}">World</span>!</h1>
           </div>`));
-      assert.deepEqual(minify(result.css), minify(`
+      assert.deepEqual(minify(result.css.toString()), minify(`
           .b { color: red; }
           .c { border: 1px solid black; }
           .d { border-width: 3px; }
           .e { font-size: 18px; }
           .f { font-style: italic; }
           .g { font-weight: bold; }
-        `)
+        `),
       );
     });
   });
 
-  it('rewrites styles from dynamic classes', function() {
-    let projectDir = fixture('styled-app');
+  it("rewrites styles from dynamic classes", function() {
+    let projectDir = fixture("styled-app");
     let project = new Project(projectDir);
-    let analyzer = new HandlebarsStyleAnalyzer(project, 'with-dynamic-classes');
-    let templatePath = fixture('styled-app/src/ui/components/with-dynamic-classes/template.hbs');
+    let analyzer = new HandlebarsStyleAnalyzer(project, "with-dynamic-classes");
+    let templatePath = fixture("styled-app/src/ui/components/with-dynamic-classes/template.hbs");
     return pipeline(analyzer, templatePath).then((result) => {
       let { css, ast } = result;
       let res = print(ast);
@@ -115,11 +121,11 @@ describe('Template Rewriting', function() {
     });
   });
 
-  it('rewrites styles from dynamic attributes from readme', function() {
-    let projectDir = fixture('readme-app');
+  it("rewrites styles from dynamic attributes from readme", function() {
+    let projectDir = fixture("readme-app");
     let project = new Project(projectDir);
-    let analyzer = new HandlebarsStyleAnalyzer(project, 'page-layout');
-    let templatePath = fixture('readme-app/src/ui/components/page-layout/template.hbs');
+    let analyzer = new HandlebarsStyleAnalyzer(project, "page-layout");
+    let templatePath = fixture("readme-app/src/ui/components/page-layout/template.hbs");
     return pipeline(analyzer, templatePath).then((result) => {
       let { css, ast } = result;
       let res = print(ast);
@@ -129,7 +135,7 @@ describe('Template Rewriting', function() {
         <article class="i {{/css-blocks/components/classnames 1 2 0 isRecommended 1 1 1 0 "e" 0 "f" 1}}"> </article>
       </div>
           `));
-      assert.deepEqual(minify(result.css), minify(`
+      assert.deepEqual(minify(result.css.toString()), minify(`
       .a { color: red; width: 100vw; }
       .b { color: blue }
       .c { float: left; }
@@ -139,7 +145,7 @@ describe('Template Rewriting', function() {
       .g { width: 20%; }
       .h { width: calc(20% - 20px); margin-right: 20px; }
       .i { width: 80%; }
-        `)
+        `),
       );
     });
   });

@@ -117,7 +117,7 @@ export class Test {
       <div class={style}></div>;
     `,
     ).then(
-      (analysis: MetaAnalysis) => {
+      (_analysis: MetaAnalysis) => {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
@@ -142,7 +142,7 @@ export class Test {
       <div class={style}></div>;
     `,
     ).then(
-      (analysis: MetaAnalysis) => {
+      (_analysis: MetaAnalysis) => {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
@@ -242,7 +242,7 @@ export class Test {
       <div class={style}></div>;
     `,
     ).then(
-      (analysis: MetaAnalysis) => {
+      (_analysis: MetaAnalysis) => {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
@@ -268,7 +268,7 @@ export class Test {
       <div class={style}></div>;
     `,
     ).then(
-      (analysis: MetaAnalysis) => {
+      (_analysis: MetaAnalysis) => {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
@@ -294,7 +294,7 @@ export class Test {
 
       <div class={style}></div>;
     `,
-    ).then((analysis: MetaAnalysis) => {
+    ).then((_analysis: MetaAnalysis) => {
       assert.ok(false, "should not have succeeded.");
     },     (err) => {
       assert.equal(err.message, `[css-blocks] MalformedBlockPath: Nested expressions are not allowed in block expressions. (8:9)`);

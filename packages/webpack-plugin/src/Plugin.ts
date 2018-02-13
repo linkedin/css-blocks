@@ -2,7 +2,7 @@ import * as debugGenerator from "debug";
 import * as path from "path";
 import * as postcss from "postcss";
 import { SourceMapConsumer, SourceMapGenerator } from "source-map";
-import Tapable = require("tapable");
+import * as Tapable from "tapable";
 import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
 import { RawSource, Source, SourceMapSource } from "webpack-sources";
 

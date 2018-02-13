@@ -17,6 +17,10 @@
 		},
 		{
 			"path": "packages/code-style"
+		},
+		{
+			"path": ".",
+			"name": "Workspace Root"
 		}
 	],
 	"settings": {

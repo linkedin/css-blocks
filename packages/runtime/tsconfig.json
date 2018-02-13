@@ -1,3 +1,5 @@
+// This config doesn't inherit from the base workspace configuration.
+// Runtime output is very different.
 {
   "compilerOptions": {
     // Compilation Configuration

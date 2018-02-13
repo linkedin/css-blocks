@@ -1,36 +1,11 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "es2015",
-    "inlineSources": true,
-    "inlineSourceMap": true,
-    "declaration": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "allowUnreachableCode": false,
-    "strictNullChecks": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "preserveConstEnums": true,
-    "forceConsistentCasingInFileNames": true,
-    "newLine": "LF",
     "outDir": "dist",
-    "module": "commonjs",
-    "traceResolution": false,
-    "baseUrl": ".",
+    "baseUrl": "dist",
     "paths": {
-      "webpack": [
-        "node_modules/@types/webpack"
-      ],
-      "postcss": [
-        "node_modules/postcss"
-      ],
       "loader-utils": [
-        "types-local/loader-utils"
+        "../types-local/loader-utils"
       ]
     }
   },
@@ -39,9 +14,7 @@
     "test"
   ],
   "exclude": [
-    "sanity",
     "dist",
-    "tsbuild",
     "node_modules",
   ]
 }

@@ -109,7 +109,7 @@ export class Test {
     `;
 
     return parse(code).then(
-      (analysis: MetaAnalysis) => {
+      (_analysis: MetaAnalysis) => {
         assert.ok(false, "should not get here.");
       },
       (e) => {

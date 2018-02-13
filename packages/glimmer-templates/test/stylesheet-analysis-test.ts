@@ -1,35 +1,37 @@
-import * as postcss from "postcss";
-import { HandlebarsStyleAnalyzer, ResolvedFile } from '../src';
 import {
-  TemplateAnalysis,
-  BlockFactory,
-  SerializedElementAnalysis
-} from "css-blocks";
-import {
-  ObjectDictionary
+  ObjectDictionary,
 } from "@opticss/util";
-import path = require('path');
-import { assert } from 'chai';
+import { assert } from "chai";
+import {
+  BlockFactory,
+  SerializedElementAnalysis,
+  TemplateAnalysis,
+} from "css-blocks";
+import path = require("path");
+import * as postcss from "postcss";
+
+import { HandlebarsStyleAnalyzer, ResolvedFile } from "../src";
+
 import { fixture } from "./fixtures";
 
 type ElementsAnalysis = ObjectDictionary<SerializedElementAnalysis>;
 
-describe('Stylesheet analysis', function() {
-  it('analyzes styles from the implicit block', function() {
-    let projectDir = fixture('styled-app');
-    let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'my-app');
+describe("Stylesheet analysis", function() {
+  it("analyzes styles from the implicit block", function() {
+    let projectDir = fixture("styled-app");
+    let analyzer = new HandlebarsStyleAnalyzer(projectDir, "my-app");
     return analyzer.analyze().then((richAnalysis) => {
       let analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile"> = richAnalysis;
       let serializedAnalysis = analysis.serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/my-app");
       assert.deepEqual(serializedAnalysis.blocks, {
-        "": "glimmer:stylesheet:/styled-app/components/my-app" // I think the identifier shouldn't be the resolved value from glimmer.
+        "": "glimmer:stylesheet:/styled-app/components/my-app", // I think the identifier shouldn't be the resolved value from glimmer.
       });
-      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" ,".root", "[state|is-loading]"]);
+      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" , ".root", "[state|is-loading]"]);
       let expected: ElementsAnalysis = {
-        a: { tagName: 'div', staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
-        b: { tagName: 'page-banner', staticStyles: [ ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" } } },
-        c: { tagName: 'text-editor', staticStyles: [ 0, 1 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" } }}
+        a: { tagName: "div", staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
+        b: { tagName: "page-banner", staticStyles: [ ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" } } },
+        c: { tagName: "text-editor", staticStyles: [ 0, 1 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" } }},
       };
       assert.deepEqual(serializedAnalysis.elements, expected);
 
@@ -45,21 +47,21 @@ describe('Stylesheet analysis', function() {
     });
   });
 
-  it('analyzes styles from a referenced block', function() {
-    let projectDir = fixture('styled-app');
-    let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'with-multiple-blocks');
+  it("analyzes styles from a referenced block", function() {
+    let projectDir = fixture("styled-app");
+    let analyzer = new HandlebarsStyleAnalyzer(projectDir, "with-multiple-blocks");
     return analyzer.analyze().then((richAnalysis) => {
       let analysis = richAnalysis.serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-multiple-blocks");
       assert.deepEqual(analysis.blocks, {
         "": "glimmer:stylesheet:/styled-app/components/with-multiple-blocks",
-        "h": fixture("styled-app/src/ui/components/with-multiple-blocks/header.css")
+        "h": fixture("styled-app/src/ui/components/with-multiple-blocks/header.css"),
       });
       assert.deepEqual(analysis.stylesFound, [".root", ".world", ".world[state|thick]", "h.emphasis", "h.emphasis[state|extra]", "h.root"]);
       assert.deepEqual(analysis.elements, {
-        a: { tagName: 'div', staticStyles: [ 0 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
-        b: { tagName: 'h1', staticStyles: [ 5 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
-        c: { tagName: 'span', staticStyles: [ 1, 2, 3, 4 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" } } }
+        a: { tagName: "div", staticStyles: [ 0 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        b: { tagName: "h1", staticStyles: [ 5 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        c: { tagName: "span", staticStyles: [ 1, 2, 3, 4 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
       });
     }).catch((error) => {
       console.error(error);
@@ -67,49 +69,49 @@ describe('Stylesheet analysis', function() {
     });
   });
 
-  it('analyzes styles from a referenced block with dynamic state', function() {
-    let projectDir = fixture('styled-app');
-    let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'with-dynamic-states');
+  it("analyzes styles from a referenced block with dynamic state", function() {
+    let projectDir = fixture("styled-app");
+    let analyzer = new HandlebarsStyleAnalyzer(projectDir, "with-dynamic-states");
     return analyzer.analyze().then((richAnalysis) => {
       let analysis = richAnalysis.serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-states");
       assert.deepEqual(analysis.blocks, {
         "": "glimmer:stylesheet:/styled-app/components/with-dynamic-states",
-        "h": fixture("styled-app/src/ui/components/with-dynamic-states/header.css")
+        "h": fixture("styled-app/src/ui/components/with-dynamic-states/header.css"),
       });
       assert.deepEqual(analysis.stylesFound, [
-        '.root',
-         '.world',
-         '.world[state|thick]',
-         'h.emphasis',
-         'h.emphasis[state|style=bold]',
-         'h.emphasis[state|style=italic]',
-         'h.root'
+        ".root",
+        ".world",
+        ".world[state|thick]",
+        "h.emphasis",
+        "h.emphasis[state|style=bold]",
+        "h.emphasis[state|style=italic]",
+        "h.root",
       ]);
       assert.deepEqual(analysis.elements, {
         a: {
-          tagName: 'div',
+          tagName: "div",
           staticStyles: [ 0 ],
           dynamicClasses: [],
           dynamicStates: [],
-          sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" } }
+          sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" } },
         },
         b: {
-          tagName: 'h1',
+          tagName: "h1",
           staticStyles: [ 6 ],
           dynamicClasses: [],
           dynamicStates: [],
-          sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" } }
+          sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" } },
         },
         c: {
-          tagName: 'span',
+          tagName: "span",
           staticStyles: [ 1, 3 ],
           dynamicClasses: [],
           dynamicStates: [
             { condition: true, state: 2 },
             { stringExpression: true, group: { bold: 4, italic: 5 } },
           ],
-          sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" } }
+          sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" } },
         },
 
       });
@@ -119,73 +121,73 @@ describe('Stylesheet analysis', function() {
     });
   });
 
-  it('analyzes styles from a referenced block with dynamic classes', function() {
-    let projectDir = fixture('styled-app');
-    let analyzer = new HandlebarsStyleAnalyzer(projectDir, 'with-dynamic-classes');
+  it("analyzes styles from a referenced block with dynamic classes", function() {
+    let projectDir = fixture("styled-app");
+    let analyzer = new HandlebarsStyleAnalyzer(projectDir, "with-dynamic-classes");
     return analyzer.analyze().then((richAnalysis) => {
       let analysis = richAnalysis.serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-classes");
       assert.deepEqual(analysis.blocks, {
         "": "glimmer:stylesheet:/styled-app/components/with-dynamic-classes",
         "h": fixture("styled-app/src/ui/components/with-dynamic-classes/header.css"),
-        "t": fixture("styled-app/src/ui/components/with-dynamic-classes/typography.css")
+        "t": fixture("styled-app/src/ui/components/with-dynamic-classes/typography.css"),
       });
       assert.deepEqual(analysis.stylesFound, [
-        '.root',
-         '.world',
-         '.world[state|thick]',
-         'h.emphasis',
-         'h.emphasis[state|style=bold]',
-         'h.emphasis[state|style=italic]',
-         'h.root',
-         't.underline'
+        ".root",
+        ".world",
+        ".world[state|thick]",
+        "h.emphasis",
+        "h.emphasis[state|style=bold]",
+        "h.emphasis[state|style=italic]",
+        "h.root",
+        "t.underline",
       ]);
       assert.deepEqual(analysis.elements, {
         a: {
-          tagName: 'div',
+          tagName: "div",
           staticStyles: [ 0 ],
           dynamicClasses: [],
           dynamicStates: [],
-          sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" } }
+          sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         b: {
-          tagName: 'h1',
+          tagName: "h1",
           staticStyles: [ 6 ],
           dynamicClasses: [],
           dynamicStates: [],
-          sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } }
+          sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         c: {
-          tagName: 'span',
+          tagName: "span",
           staticStyles: [ 3, 7 ],
           dynamicClasses: [ {condition: true, whenTrue: [ 1 ]} ],
           dynamicStates: [
             { condition: true, state: 2, container: 1 },
             { stringExpression: true, group: { bold: 4, italic: 5 } },
           ],
-          sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" } }
+          sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         d: {
-          tagName: 'div',
+          tagName: "div",
           staticStyles: [],
           dynamicClasses: [ { condition: true, whenTrue: [ 1 ], whenFalse: [ 3 ]} ],
           dynamicStates: [],
-          sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } }
+          sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         e: {
-          tagName: 'div',
+          tagName: "div",
           staticStyles: [],
           dynamicClasses: [ { condition: true, whenTrue: [ 3 ], whenFalse: [ 1 ]} ],
           dynamicStates: [],
-          sourceLocation: { start: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } }
+          sourceLocation: { start: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         f: {
-          tagName: 'div',
+          tagName: "div",
           staticStyles: [],
           dynamicClasses: [ { condition: true, whenFalse: [ 1 ]} ],
           dynamicStates: [],
-          sourceLocation: { start: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } }
-        }
+          sourceLocation: { start: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
+        },
       });
     }).catch((error) => {
       console.error(error);

@@ -201,7 +201,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `).then((analysis: MetaAnalysis) => {
+    `).then((_analysis: MetaAnalysis) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
       assert.equal(err.message, "[css-blocks] MalformedBlockPath: State bar.pretty.color() expects a sub-state. (9:9)");
@@ -260,7 +260,7 @@ export class Test {
         [bar.pretty.awesome('wat')]: leSigh
       });
       <div class={style}></div>;
-    `).then((analysis: MetaAnalysis) => {
+    `).then((_analysis: MetaAnalysis) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
       assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|awesome=wat] found on block "bar".\n  Did you mean: .pretty[state|awesome]? (7:9)');

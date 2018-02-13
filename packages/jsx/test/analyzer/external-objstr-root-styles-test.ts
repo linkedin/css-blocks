@@ -29,7 +29,7 @@ export class Test {
         return ( <div class={style}></div> );
       }`,
     ).then(
-      (analysis: MetaAnalysis) => {
+      (_analysis: MetaAnalysis) => {
         assert.ok(false, "should not have succeeded.");
       },
       e => {
@@ -216,7 +216,7 @@ export class Test {
         return ( <div class={style}></div> );
       }`,
     ).then(
-      (analysis: MetaAnalysis) => {
+      (_analysis: MetaAnalysis) => {
         assert.ok(false, "should not have succeeded.");
       },
       e => {
@@ -241,7 +241,7 @@ export class Test {
         return ( <div class={style}></div> );
       }`,
     ).then(
-      (analysis: MetaAnalysis) => {
+      (_analysis: MetaAnalysis) => {
         assert.ok(false, "should not have succeeded.");
       },
       e => {
@@ -265,7 +265,7 @@ export class Test {
         console.log(style);
         return ( <div class={style}></div> );
       }`,
-    ).then((analysis: MetaAnalysis) => {
+    ).then((_analysis: MetaAnalysis) => {
     });
   }
 

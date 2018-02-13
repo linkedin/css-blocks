@@ -101,7 +101,7 @@ export function parseWith(template: JSXTemplate, metaAnalysis: MetaAnalysis, fac
 
   // Once all blocks this file is waiting for resolve, resolve with the File object.
   let analysisPromise = Promise.all(analysis.blockPromises)
-  .then((blocks: Block[]) => {
+  .then((_blocks: Block[]) => {
     return analysis;
   });
 
@@ -147,7 +147,7 @@ export function parse(filename: string, data: string, factory: BlockFactory, opt
   let metaAnalysis: MetaAnalysis = new MetaAnalysis();
 
   return Promise.resolve().then(() => {
-    return parseWith(template, metaAnalysis, factory, resolvedOpts).then(analysis => {
+    return parseWith(template, metaAnalysis, factory, resolvedOpts).then(_analysis => {
       return resolveAllRecursively(metaAnalysis.analysisPromises).then((analyses) => {
         for (let analysis of (new Set(analyses))) {
           traverse(analysis.template.ast, analyzer(analysis));

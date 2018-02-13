@@ -479,7 +479,7 @@ export class Test {
 
     return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
       let stderr = testConsole.stderr.inspect();
-      return transform(code, analysis.getAnalysis(0)).then(res => {
+      return transform(code, analysis.getAnalysis(0)).then(_res => {
         let result = stderr.output;
         stderr.restore();
         assert.deepEqual(result.length, 1);

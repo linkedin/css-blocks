@@ -47,7 +47,7 @@ export class ResolvedFile implements TemplateInfo<"GlimmerTemplates.ResolvedFile
       ],
     };
   }
-  static deserialize(identifier, str, fullPath): ResolvedFile {
+  static deserialize(identifier: string, str: string, fullPath: string): ResolvedFile {
     return new ResolvedFile(str, identifier, fullPath);
   }
 }
@@ -70,5 +70,5 @@ export interface GlimmerProject {
   relativize(fullPath: string): string;
   stylesheetFor(stylesheetName: string, fromGlimmerIdentifier?: string): ResolvedFile | undefined;
   templateFor(templateName: string, fromGlimmerIdentifier?: string): ResolvedFile;
-  reset();
+  reset(): void;
 }

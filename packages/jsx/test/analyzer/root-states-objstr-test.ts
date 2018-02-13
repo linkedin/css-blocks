@@ -157,7 +157,7 @@ export class Test {
       });
       <div class={style}></div>;`,
     ).then(
-      (analysis: MetaAnalysis) => {
+      (_analysis: MetaAnalysis) => {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {

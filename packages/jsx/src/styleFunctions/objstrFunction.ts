@@ -61,7 +61,7 @@ export function objstrFn(binding: Binding, funcDef: ImportDeclaration): ObjStrSt
   return;
 }
 
-export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXElementAnalysis, filename: string, styleFn: ObjStrStyleFunction, func: CallExpression) {
+export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXElementAnalysis, filename: string, _styleFn: ObjStrStyleFunction, func: CallExpression) {
 
   // Location object for error reporting
   let loc = {

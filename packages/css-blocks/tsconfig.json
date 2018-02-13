@@ -1,32 +1,8 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    // Compilation Configuration
-    "target": "es2015",
-    "inlineSources": true,
-    "inlineSourceMap": true,
-    "declaration": true,
-    "allowSyntheticDefaultImports": true,
-
-    // Environment Configuration
-    "experimentalDecorators": true,
-    "moduleResolution": "node",
-
-    // Enhance Strictness
-    "noImplicitAny": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "noUnusedParameters": true,
-    "allowUnreachableCode": false,
-    "strictNullChecks": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "preserveConstEnums": true,
-    "forceConsistentCasingInFileNames": true,
-
     // output options
-    "newLine": "LF",
     "outDir": "dist",
-    "module": "commonjs",
-    "traceResolution": false,
     "baseUrl": "dist",
     "paths": {
       "perfectionist": [

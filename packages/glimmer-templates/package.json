@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "test": "mocha --opts test/mocha.opts dist/test",
-    "compile": "rm -rf dist && tsc -p test/tsconfig.json",
+    "compile": "rm -rf dist && tsc -p tsconfig.json",
     "pretest": "npm run compile && npm run lint",
     "prepublish": "npm run compile && tslint --project . -c tslint.release.json",
     "lint": "tslint --project . -c tslint.cli.json",

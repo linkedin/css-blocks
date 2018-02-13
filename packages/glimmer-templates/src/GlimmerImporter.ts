@@ -1,4 +1,5 @@
 import {
+  CssBlockOptionsReadonly,
   FileIdentifier,
   filesystemImporter,
   ImportedFile,
@@ -96,7 +97,7 @@ export class GlimmerImporter extends PathBasedImporter {
       return this.otherImporter.filesystemPath(identifier, options);
     }
   }
-  debugIdentifier(identifier: string, options): string {
+  debugIdentifier(identifier: string, options: CssBlockOptionsReadonly): string {
     let specifier = this.demangle(identifier);
     if (specifier) {
       let resolution = this.project.resolve(specifier);
