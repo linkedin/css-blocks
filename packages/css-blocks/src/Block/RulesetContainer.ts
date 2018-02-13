@@ -44,7 +44,7 @@ export class Ruleset {
   node: postcss.Rule;
   style: Style;
 
-  declarations = new Map<Property, Declaration>();
+  declarations = new MultiMap<Property, Declaration>();
   resolutions  = new MultiMap<Property, Style>();
 
   constructor(file: string, node: postcss.Rule, style: Style){

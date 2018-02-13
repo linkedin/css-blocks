@@ -54,18 +54,18 @@ export class TemplateAnalysisTests {
     });
   }
 
-  @test 'properties of the same value that have been redefined in-ruleset do not throw an error'() {
+  @test 'all properties of the same type must match, in order, for a conflict to not be thrown'() {
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css",
-      `.root { block-name: block-b; color: red; color: blue; background: yellow; }`
+      `.root { block-name: block-b; color: blue; color: yellow; }`
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; color: blue; background-color: yellow; }
+      .root { block-name: block-a; color: blue; color: yellow; }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
@@ -74,7 +74,39 @@ export class TemplateAnalysisTests {
     });
   }
 
-  @test 'properties of the different values that have been redefined in-ruleset throw an error'() {
+  @test 'if properties of the same type do not match, in order, a conflict is thrown'() {
+    let imports = new MockImportRegistry();
+    let options: PluginOptions = { importer: imports.importer() };
+    let reader = new OptionsReader(options);
+
+    imports.registerSource("blocks/b.block.css",
+      `.root { block-name: block-b; color: red; color: yellow; }`
+    );
+
+    let css = `
+      @block-reference b from "./b.block.css";
+      .root { block-name: block-a; color: blue; color: yellow; }
+    `;
+
+    return assertParseError(
+      cssBlocks.TemplateAnalysisError,
+
+`The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+
+  color:
+    block-a.root (blocks/foo.block.css:3:36)
+    block-a.root (blocks/foo.block.css:3:49)
+    block-b.root (blocks/b.block.css:1:30)
+    block-b.root (blocks/b.block.css:1:42)`,
+
+      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+        constructElement(block, '.root', 'b.root').end();
+        assert.deepEqual(1, 1);
+      })
+    );
+  }
+
+  @test 'properties with different values that have been redefined in-ruleset throw an error'() {
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
     let reader = new OptionsReader(options);
@@ -95,6 +127,7 @@ export class TemplateAnalysisTests {
 
   color:
     block-a.root (blocks/foo.block.css:3:36)
+    block-b.root (blocks/b.block.css:1:30)
     block-b.root (blocks/b.block.css:1:43)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
