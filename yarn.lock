@@ -186,7 +186,7 @@
     postcss "^6.0.12"
     typescript-collections "^1.2.5"
 
-"@opticss/util@^0.1.1", "@opticss/util@^0.2.0":
+"@opticss/util@^0.1.1":
   version "0.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@opticss/util/-/@opticss/util-0.1.1.tgz#519f4c696f991ff4db7030ef2db8fcaf52bf2ff5"
   dependencies:
@@ -5139,13 +5139,9 @@ symlink-or-copy@^1.1.8:
   version "1.1.8"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/symlink-or-copy/-/symlink-or-copy-1.1.8.tgz#1a7e291465c669a6c954d1942f5609fc05e6d730"
 
-tapable@^0.2.7:
+tapable@^0.2.5, tapable@^0.2.7:
   version "0.2.8"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tapable/-/tapable-0.2.8.tgz#aba81a5c786864c317ec9e0d3c3f3d724d4c704d"
-
-tapable@^1.0.0-beta.5:
-  version "1.0.0-beta.5"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tapable/-/tapable-1.0.0-beta.5.tgz#9bc844b856487e03345b7d3361288aefd97f8303"
 
 tar-pack@^3.4.0:
   version "3.4.0"
