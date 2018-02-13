@@ -60,9 +60,16 @@ function evaluate(obj: Style, propToRules: PropMap, conflicts: ConflictMap) {
           let otherDecl = other.declarations.get(prop);
           if ( !selfDecl || !otherDecl ) { continue; }
 
-          // If these declarations have the exact same value, of if there
-          // is a specific resolution, keep going.
-          if ( selfDecl.value === otherDecl.value ||
+          // If these declarations have the exact same number of declarations,
+          // in the exact same order, or if there is an explicit resolution,
+          // ignore it and move on.
+          let valuesEqual = selfDecl.length === otherDecl.length;
+          if (valuesEqual) {
+            for (let i = 0; i < Math.min(selfDecl.length, otherDecl.length); i++ ) {
+              valuesEqual = valuesEqual && selfDecl[i].value === otherDecl[i].value;
+            }
+          }
+          if ( valuesEqual ||
               other.hasResolutionFor(prop, self.style) ||
               self.hasResolutionFor(prop, other.style)
               ) { continue; }
@@ -105,10 +112,14 @@ function recursivelyPruneConflicts(prop: string, conflicts: ConflictMap): Rulese
  */
 function printRulesetConflict(prop: string, rule: Ruleset) {
   let decl = rule.declarations.get(prop);
-  let node: postcss.Rule | postcss.Declaration =  decl ? decl.node : rule.node;
-  let line = node.source.start && `:${node.source.start.line}`;
-  let column = node.source.start && `:${node.source.start.column}`;
-  return `    ${rule.style.block.name}${rule.style.asSource()} (${rule.file}${line}${column})`;
+  let nodes: postcss.Rule[] | postcss.Declaration[] =  decl ? decl.map((d) => d.node) : [rule.node];
+  let out = [];
+  for (let node of nodes) {
+    let line = node.source.start && `:${node.source.start.line}`;
+    let column = node.source.start && `:${node.source.start.column}`;
+    out.push(`    ${rule.style.block.name}${rule.style.asSource()} (${rule.file}${line}${column})`);
+  }
+  return out.join('\n');
 }
 
 /**
