@@ -8,6 +8,7 @@ import {
   importDeclaration,
   ImportDeclaration,
   importDefaultSpecifier,
+  isIdentifier,
   isJSXExpressionContainer,
   jSXAttribute,
   JSXAttribute,
@@ -127,8 +128,8 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
               className = stringLiteral(classMapping.staticClasses.join(" "));
             }
             let right = path.get("right");
-            if (right.isIdentifier()) {
-              let binding = right.scope.getBinding((right.node).name);
+            if (isIdentifier(right.node)) {
+              let binding = right.scope.getBinding(right.node.name);
               if (binding && binding.path.isVariableDeclarator()) {
                 let init = binding.path.get("init");
                 init.replaceWith(className);
