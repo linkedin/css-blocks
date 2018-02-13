@@ -4,7 +4,7 @@
   "description": "Fast, maintainable, optimal, component-oriented CSS.",
   "main": "dist/src/index.js",
   "scripts": {
-    "compile": "rm -rf dist && tsc -p test/tsconfig.json",
+    "compile": "rm -rf dist && tsc",
     "pretest": "npm run compile && npm run lint",
     "prepublish": "npm run compile && tslint --project . -c tslint.release.json",
     "lint": "tslint --project . -c tslint.cli.json",

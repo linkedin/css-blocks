@@ -27,19 +27,19 @@
     "outDir": "dist",
     "module": "commonjs",
     "traceResolution": false,
-    "baseUrl": "dist/src",
+    "baseUrl": "dist",
     "paths": {
       "perfectionist": [
-        "../../types-local/perfectionist"
+        "../types-local/perfectionist"
       ],
       "postcss-selector-parser": [
-        "../../types-local/postcss-selector-parser"
+        "../types-local/postcss-selector-parser"
       ],
       "regexpu-core": [
-        "../../types-local/regexpu-core"
+        "../types-local/regexpu-core"
       ],
       "inline-source-map-comment": [
-        "../../types-local/inline-source-map-comment"
+        "../types-local/inline-source-map-comment"
       ]
     }
   },
@@ -50,8 +50,6 @@
   "exclude": [
     "sanity",
     "dist",
-    "tsbuild",
-    "node_modules",
-    "test"
+    "node_modules"
   ]
 }

@@ -1,38 +1,39 @@
-import { assert } from "chai";
-import { suite, test, only } from "mocha-typescript";
-import * as postcss from 'postcss';
-import { Optimizer, OptiCSSOptions } from "opticss";
 import {
+  POSITION_UNKNOWN,
+} from "@opticss/element-analysis";
+import {
+  isAndExpression,
   SerializedTemplateAnalysis as SerializedOptimizedAnalysis,
   Template,
   TemplateInfo,
   TemplateIntegrationOptions,
-  isAndExpression,
 } from "@opticss/template-api";
-import {
-  POSITION_UNKNOWN
-} from "@opticss/element-analysis";
 import {
   assert as typedAssert,
   clean,
   ObjectDictionary,
+  whatever,
 } from "@opticss/util";
+import { assert } from "chai";
+import { only, suite, test } from "mocha-typescript";
+import { OptiCSSOptions, Optimizer } from "opticss";
+import * as postcss from "postcss";
 
-import * as cssBlocks from '../src/errors';
-import { ElementAnalysis } from '../src/TemplateAnalysis/ElementAnalysis';
-import { BlockCompiler } from '../src/BlockCompiler';
-import { StyleMapping } from '../src/TemplateRewriter/StyleMapping';
-import { BlockParser } from "../src/BlockParser";
-import { BlockFactory } from "../src/BlockFactory";
-import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockClass, State } from "../src/Block";
-import { PluginOptions } from "../src/options";
+import { BlockCompiler } from "../src/BlockCompiler";
+import { BlockFactory } from "../src/BlockFactory";
+import { BlockParser } from "../src/BlockParser";
 import { OptionsReader } from "../src/OptionsReader";
 import { SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAnalysis";
+import { ElementAnalysis } from "../src/TemplateAnalysis/ElementAnalysis";
+import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
+import * as cssBlocks from "../src/errors";
+import { ImportedFile, Importer } from "../src/importing";
+import { SubState } from "../src/index";
+import { PluginOptions } from "../src/options";
 
 import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertParseError } from "./util/assertError";
-import { SubState } from '../src/index';
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -50,7 +51,7 @@ export class TemplateAnalysisTests {
       return <BlockAndRoot>[block, root];
     });
   }
-  private useStates(element: ElementAnalysis<any, any, any>, stateContainer: BlockClass) {
+  private useStates(element: ElementAnalysis<whatever, whatever, whatever>, stateContainer: BlockClass) {
     for (let groupName of stateContainer.getGroups()) {
       element.addDynamicGroup(stateContainer, stateContainer.resolveGroup(groupName) as ObjectDictionary<SubState>, null);
     }
@@ -58,8 +59,9 @@ export class TemplateAnalysisTests {
       element.addStaticState(stateContainer, state);
     }
   }
-  private useBlockStyles(analysis: Analysis, block: Block, blockName: string,
-    useStatesCallback?: (container: BlockClass, element: ElementAnalysis<any, any, any>) => void
+  private useBlockStyles(
+    analysis: Analysis, block: Block, blockName: string,
+    useStatesCallback?: (container: BlockClass, element: ElementAnalysis<whatever, whatever, whatever>) => void,
   ) {
     analysis.blocks[blockName] = block;
 
@@ -112,13 +114,13 @@ export class TemplateAnalysisTests {
         let it = analysis.elements.values();
         let element1 = it.next().value;
         let rewrite1 = blockMapping.rewriteMapping(element1);
-        assert.deepEqual([...rewrite1.staticClasses].sort(), ['c', 'd', 'e']);
+        assert.deepEqual([...rewrite1.staticClasses].sort(), ["c", "d", "e"]);
         assert.deepEqual(rewrite1.dynamicClasses, []);
         let element2 = it.next().value;
         let rewrite2 = blockMapping.rewriteMapping(element2);
-        assert.deepEqual([...rewrite2.staticClasses].sort(), ['c']);
-        assert.deepEqual([...rewrite2.dynamicClasses].sort(), ['e', 'f']);
-        let expr = rewrite2.dynamicClass('e')!;
+        assert.deepEqual([...rewrite2.staticClasses].sort(), ["c"]);
+        assert.deepEqual([...rewrite2.dynamicClasses].sort(), ["e", "f"]);
+        let expr = rewrite2.dynamicClass("e");
         typedAssert.isType(isAndExpression, expr).and(andExpr => {
           assert.deepEqual(andExpr.and.length, 1);
           assert.deepEqual(andExpr.and[0], block.find(".asdf[state|larger]")!);

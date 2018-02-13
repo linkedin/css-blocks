@@ -1,37 +1,38 @@
 import { assert } from "chai";
-import * as util from "util";
-import * as path from "path";
 import * as fs from "fs";
 import { IHookCallbackContext } from "mocha";
-import BEMProcessor from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
-import assertError from "./util/assertError";
-import cssBlocks = require("../src/cssBlocks");
+import * as path from "path";
+import * as util from "util";
 
 import {
+  OptionsReader,
+} from "../src/OptionsReader";
+import {
+  OutputMode,
+} from "../src/OutputMode";
+import cssBlocks = require("../src/cssBlocks");
+import {
   FileIdentifier,
-  ImportedFile,
   filesystemImporter,
   FilesystemImporter,
-  PathAliases,
-  PathAliasImporter,
+  ImportedFile,
   Importer,
   ImporterData,
+  PathAliases,
+  PathAliasImporter,
 } from "../src/importing";
-import {
-  Syntax
-} from "../src/preprocessing";
-import {
-  OutputMode
-} from "../src/OutputMode";
 import {
   CssBlockOptions,
   CssBlockOptionsReadonly,
-  PluginOptions
+  PluginOptions,
 } from "../src/options";
 import {
-  OptionsReader
-} from "../src/OptionsReader";
+  Syntax,
+} from "../src/preprocessing";
+
+import { BEMProcessor } from "./util/BEMProcessor";
+import { MockImportRegistry } from "./util/MockImportRegistry";
+import { assertError } from "./util/assertError";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.resolve(FIXTURES, "filesystemImporter");
@@ -122,7 +123,7 @@ describe("PathAliasImporter", () => {
   before(function(this: IHookCallbackContext) {
     let aliases = {
       "pai": ALIAS_FIXTURES,
-      "sub": path.resolve(ALIAS_FIXTURES, "alias_subdirectory")
+      "sub": path.resolve(ALIAS_FIXTURES, "alias_subdirectory"),
     };
     this.importer = new PathAliasImporter(aliases);
   });

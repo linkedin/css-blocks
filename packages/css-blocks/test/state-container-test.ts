@@ -1,22 +1,22 @@
 import { assert as typedAssert } from "@opticss/util";
 import { assert } from "chai";
-import { suite, test, only } from "mocha-typescript";
+import { only, suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import cssBlocks = require("../src/cssBlocks");
 import {
-  PluginOptions,
-} from "../src/options";
+  BlockFactory,
+} from "../src/BlockFactory";
 import {
   OptionsReader,
 } from "../src/OptionsReader";
+import cssBlocks = require("../src/cssBlocks");
+import { State, SubState } from "../src/index";
 import {
-  BlockFactory
-} from "../src/BlockFactory";
+  PluginOptions,
+} from "../src/options";
 
-import BEMProcessor from "./util/BEMProcessor";
+import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
-import { SubState, State } from "../src/index";
 
 @suite("State container")
 export class StateContainerTest extends BEMProcessor {
@@ -34,10 +34,11 @@ export class StateContainerTest extends BEMProcessor {
   @test "finds boolean states"() {
     let imports = new MockImportRegistry();
     let filename = "foo/bar/a-block.css";
-    imports.registerSource(filename,
+    imports.registerSource(
+      filename,
       `[state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`
+       .foo[state|small] { font-size: 5px; }`,
     );
 
     let importer = imports.importer();
@@ -62,13 +63,14 @@ export class StateContainerTest extends BEMProcessor {
   @test "finds state groups"() {
     let imports = new MockImportRegistry();
     let filename = "foo/bar/a-block.css";
-    imports.registerSource(filename,
+    imports.registerSource(
+      filename,
       `[state|size=large] { font-size: 20px; }
        [state|size=small] { font-size: 10px; }
        [state|active] { color: red; }
        .foo[state|mode=collapsed] { display: none; }
        .foo[state|mode=minimized] { display: block; max-height: 100px; }
-       .foo[state|mode=expanded] { display: block; }`
+       .foo[state|mode=expanded] { display: block; }`,
     );
 
     let importer = imports.importer();
@@ -97,19 +99,21 @@ export class StateContainerTest extends BEMProcessor {
   @test "resolves inherited state groups"() {
     let imports = new MockImportRegistry();
     let filename = "foo/bar/sub-block.block.css";
-    imports.registerSource("foo/bar/base-block.block.css",
+    imports.registerSource(
+      "foo/bar/base-block.block.css",
       `[state|size=large] { font-size: 20px; }
        [state|size=small] { font-size: 10px; }
        [state|active] { color: red; }
        .foo[state|mode=collapsed] { display: none; }
        .foo[state|mode=minimized] { display: block; max-height: 100px; }
-       .foo[state|mode=expanded] { display: block; }`
+       .foo[state|mode=expanded] { display: block; }`,
     );
-    imports.registerSource(filename,
+    imports.registerSource(
+      filename,
       `@block-reference base-block from "base-block.block.css";
        .root { extends: base-block; }
        [state|size=tiny] { font-size: 6px; }
-       .foo[state|mode=minimized] { display: block; max-height: 200px; }`
+       .foo[state|mode=minimized] { display: block; max-height: 200px; }`,
     );
 
     let importer = imports.importer();

@@ -2,8 +2,8 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import cssBlocks = require("../src/cssBlocks");
 import { OptionsReader } from "../src/OptionsReader";
+import cssBlocks = require("../src/cssBlocks");
 
 @suite("Setting up")
 export class SetupTests {
@@ -21,7 +21,7 @@ export class SetupTests {
     let processor = cssBlocksPlugin();
     let inputCSS = `.root {color: red;}`;
     return postcss([
-      processor
+      processor,
     ]).process(inputCSS, {}).then(() => {
       assert(false, "Error was not raised.");
     }).catch((reason: Error) => {

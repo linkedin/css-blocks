@@ -1,23 +1,23 @@
-import { OptionsReader } from '../src/OptionsReader';
 import { assert } from "chai";
-import { suite, test, skip } from "mocha-typescript";
+import { skip, suite, test } from "mocha-typescript";
+import { RawSourceMap } from "source-map";
 
+import { OptionsReader } from "../src/OptionsReader";
 import {
+  annotateCssContentWithSourceMap,
   BlockFactory,
-  Syntax,
+  CssBlockOptionsReadonly,
+  PluginOptions,
   Preprocessor,
   Preprocessors,
   ProcessedFile,
-  annotateCssContentWithSourceMap,
-  PluginOptions,
-  CssBlockOptionsReadonly,
+  Syntax,
 } from "../src/index";
 
 import {
   MockImporter,
-  MockImportRegistry
+  MockImportRegistry,
 } from "./util/MockImportRegistry";
-import { RawSourceMap } from "source-map";
 
 @suite("Preprocessing")
 export class PreprocessorTest {
@@ -25,15 +25,17 @@ export class PreprocessorTest {
     let registry = new MockImportRegistry();
     registry.registerSource("foo.block.styl", `my-stylus-var = 10px`, Syntax.stylus);
     let options: PluginOptions = {
-      importer: registry.importer()
+      importer: registry.importer(),
     };
     let reader = new OptionsReader(options);
     let factory = new BlockFactory(reader);
-    return factory.getBlock("foo.block.styl").then((_block) => {
-      throw new Error("exception not raised!");
-    },(reason: Error) => {
-      assert.equal(reason.message, "No preprocessor provided for stylus.");
-    });
+    return factory.getBlock("foo.block.styl").then(
+      (_block) => {
+        throw new Error("exception not raised!");
+      },
+      (reason: Error) => {
+        assert.equal(reason.message, "No preprocessor provided for stylus.");
+      });
   }
 
   @test "converts a file to css"() {
@@ -42,14 +44,14 @@ export class PreprocessorTest {
     let preprocessors: Preprocessors = {
       other: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
-          content: `.root { block-name: ${content}; color: red; }`
+          content: `.root { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
-      }
+      },
     };
     let options: PluginOptions = {
       importer: registry.importer(),
-      preprocessors
+      preprocessors,
     };
     let reader = new OptionsReader(options);
     let factory = new BlockFactory(reader);
@@ -64,21 +66,21 @@ export class PreprocessorTest {
     let preprocessors: Preprocessors = {
       other: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
-          content: `.root { block-name: ${content}; color: red; }`
+          content: `.root { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },
       css: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
-          content: `${content} .injected { width: 100%; }`
+          content: `${content} .injected { width: 100%; }`,
         };
         return Promise.resolve(file);
-      }
+      },
 
     };
     let options: PluginOptions = {
       importer: registry.importer(),
-      preprocessors
+      preprocessors,
     };
 
     let reader = new OptionsReader(options);
@@ -96,22 +98,22 @@ export class PreprocessorTest {
     let preprocessors: Preprocessors = {
       other: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
-          content: `.root { block-name: ${content}; color: red; }`
+          content: `.root { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },
       css: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
-          content: `${content} .injected { width: 100%; }`
+          content: `${content} .injected { width: 100%; }`,
         };
         return Promise.resolve(file);
-      }
+      },
 
     };
     let options: PluginOptions = {
       importer: registry.importer(),
       preprocessors,
-      disablePreprocessChaining: true
+      disablePreprocessChaining: true,
     };
 
     let reader = new OptionsReader(options);

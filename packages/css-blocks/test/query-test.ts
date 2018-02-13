@@ -1,11 +1,11 @@
-import { OptionsReader } from '../src/OptionsReader';
 import { assert } from "chai";
-import { suite, test, only } from "mocha-typescript";
+import { only, suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { BlockParser } from "../src/BlockParser";
-import { BlockFactory } from "../src/BlockFactory";
 import { Block } from "../src/Block";
+import { BlockFactory } from "../src/BlockFactory";
+import { BlockParser } from "../src/BlockParser";
+import { OptionsReader } from "../src/OptionsReader";
 import { PluginOptions } from "../src/options";
 import { QueryKeySelector } from "../src/query";
 
