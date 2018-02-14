@@ -193,7 +193,7 @@ export class RulesetContainer {
       }
       return new Set(res);
     }
-    return new Set([...this.concerns.subkeys(pseudo)]);
+    return new Set([...this.concerns.subKeys(pseudo)]);
   }
 
   /**
@@ -201,7 +201,7 @@ export class RulesetContainer {
    * @returns A set of pseudo element names.
    */
   getPseudos(): Set<string> {
-    return new Set([...this.concerns.subkeys()]);
+    return new Set([...this.concerns.primaryKeys()]);
   }
 
   /**

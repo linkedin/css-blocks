@@ -164,8 +164,8 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
       });
     }
 
-    allConditions.merge(truthyConditions);
-    allConditions.merge(falsyConditions);
+    allConditions.setAll(truthyConditions);
+    allConditions.setAll(falsyConditions);
 
   });
 
@@ -178,7 +178,7 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
         evaluate(state, allConditions, conflicts);
         add(stateConditions, state);
       });
-      allConditions.merge(stateConditions);
+      allConditions.setAll(stateConditions);
     }
 
     else if (isBooleanState(condition)) {

@@ -1,12 +1,13 @@
 import { BlockPathError, ErrorLocation } from '../errors';
 import { CLASS_NAME_IDENT as CSS_IDENT } from "./blockSyntax";
+import { StateInfo } from "../BlockParser";
 
-export interface BlockToken {
+interface BlockToken {
   type: 'block';
   name: string;
 }
 
-export interface ClassToken {
+interface ClassToken {
   type: 'class';
   name: string;
 }
@@ -18,20 +19,23 @@ export interface StateToken {
   value?: string;
 }
 
-export type Token = BlockToken | ClassToken | StateToken;
+type Token = BlockToken | ClassToken | StateToken;
 
-export const isBlock = (token?: Token): token is BlockToken => !!token && token.type === 'block';
-export const isClass = (token?: Token): token is ClassToken => !!token && token.type === 'class';
-export const isState = (token?: Token): token is StateToken  => !!token && token.type === 'state';
-export const hasName = (token?: Token): boolean => !!token && !!token.name;
-export const hasNamespace = (token?: Token): boolean => isState(token) && !!token.namespace;
-export const hasValue = (token?: Token): boolean => isState(token) && !!token.value;
+const isBlock = (token?: Token): token is BlockToken => !!token && token.type === 'block';
+const isClass = (token?: Token): token is ClassToken => !!token && token.type === 'class';
+const isState = (token?: Token): token is StateToken  => !!token && token.type === 'state';
+const hasName = (token?: Token): boolean => !!token && !!token.name;
+const hasNamespace = (token?: Token): boolean => isState(token) && !!token.namespace;
 
 const STATE_BEGIN = "[";
 const STATE_END = "]";
 const CLASS_BEGIN = ".";
 const NAMESPACE_END = "|";
 const VALUE_START = "=";
+const SINGLE_QUOTE = `'`;
+const DOUBLE_QUOTE = `"`;
+const WHITESPACE_REGEXP = /\s/g;
+const SEPARATORS = new Set([CLASS_BEGIN, STATE_BEGIN]);
 
 export const ERRORS = {
   whitespace: "Whitespace is only allowed in quoted state values",
@@ -55,8 +59,6 @@ function stringify(tokens: Token[]): string {
   }
   return out;
 }
-
-const SEPARATORS = new Set([".", "["]);
 
 /**
  * Simple utility to easily walk over string data one character at a time.
@@ -99,7 +101,7 @@ export class BlockPath {
   private _class: ClassToken;
   private _state: StateToken;
 
-  protected tokens: Token[] = [];
+  private tokens: Token[] = [];
 
   /**
    * Throw a new BlockPathError with the given message.
@@ -147,10 +149,10 @@ export class BlockPath {
 
     while (char = walker.next()) {
 
-      switch (char) {
+      switch (true) {
 
         // If a period, we've finished the previous token and are now building a class name.
-        case CLASS_BEGIN:
+        case char === CLASS_BEGIN:
           if (isState(token)) { this.throw(ERRORS.illegalCharInState(char)); }
           token.name = working;
           this.addToken(token);
@@ -159,7 +161,7 @@ export class BlockPath {
           break;
 
         // If the beginning of a state, we've finished the previous token and are now building a state.
-        case STATE_BEGIN:
+        case char === STATE_BEGIN:
           if (isState(token)) { this.throw(ERRORS.illegalCharInState(char)); }
           token.name = working;
           this.addToken(token);
@@ -168,13 +170,13 @@ export class BlockPath {
           break;
 
         // If the end of a state, set the state part we've been working on and finish.
-        case STATE_END:
+        case char === STATE_END:
           if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
           token.name ? (token.value = working) : (token.name = working);
           this.addToken(token);
           working = "";
 
-          // The character immediately following a `STATE_END` *must* be another `SEPERATOR`
+          // The character immediately following a `STATE_END` *must* be another `SEPARATORS`
           // Depending on the next value, seed our token input
           let next = walker.next();
           if (next && !SEPARATORS.has(next)) { this.throw(ERRORS.expectsSepInsteadRec(next)); }
@@ -182,14 +184,14 @@ export class BlockPath {
           break;
 
         // When we find a namespace terminator, set the namespace property of the state token we're working on.
-        case NAMESPACE_END:
+        case char === NAMESPACE_END:
           if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
           token.namespace = working;
           working = "";
           break;
 
         // If the start of the value section of a state part, set the name we've been working on and move on.
-        case VALUE_START:
+        case char === VALUE_START:
           if (!isState(token)) { this.throw(ERRORS.illegalCharNotInState(char)); }
           if (!working) { this.throw(ERRORS.noname); }
           token.name = working;
@@ -197,8 +199,8 @@ export class BlockPath {
           break;
 
         // If the opening quote of the value section of a state part, greedily consume everything between quotes.
-        case `"`:
-        case `'`:
+        case char === SINGLE_QUOTE:
+        case char === DOUBLE_QUOTE:
           if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
           working = walker.consume(char);
           if (walker.peek() !== char) { this.throw(ERRORS.mismatchedQuote); }
@@ -208,7 +210,7 @@ export class BlockPath {
         // We should never encounter whitespace in this switch statement.
         // The only place whitespace is allowed is between quotes, which
         // is handled above.
-        case ` `:
+        case WHITESPACE_REGEXP.test(char):
           this.throw(ERRORS.whitespace);
 
         // If none of the above special characters, add this character to our working string.
@@ -239,45 +241,51 @@ export class BlockPath {
    * @param path The BlockPath input data.
    * @param location An optional ErrorLocation object for more detailed error reporting.
    */
-  constructor(path: string | BlockPath | Token[], location?: ErrorLocation) {
+  constructor(path: string | BlockPath, location?: ErrorLocation) {
     this._location = location;
     if (path instanceof BlockPath) {
       this.tokens = path.tokens;
-    }
-    else if (path instanceof Array) {
-      this.tokens = path;
     }
     else {
       this.tokenize(path);
     }
   }
 
-  /**
-   * Get the parsed block name of this Block Path
-   */
-  get block(): string {
-    return this._block.name;
+  private static from(tokens: Token[]) {
+    let path = new BlockPath('');
+    path.tokens = tokens;
+    return path;
   }
 
   /**
    * Get the parsed Style path of this Block Path
    */
   get path(): string {
-    return stringify(this.tokens.slice(1)) || '.root';
+    return stringify(this.tokens.slice(1));
+  }
+
+  /**
+   * Get the parsed block name of this Block Path
+   */
+  get block(): string {
+    return this._block ? this._block.name : "";
   }
 
   /**
    * Get the parsed class name of this Block Path
    */
   get class(): string {
-    return this._class && this._class.name || 'root';
+    return this._class && this._class.name || "root";
   }
 
   /**
-   * Get the parsed state name of this Block Path
+   * Get the parsed state name of this Block Path and return the `StateInfo`
    */
-  get state(): StateToken | undefined {
-    return this._state;
+  get state(): StateInfo | undefined {
+    return {
+      group: this._state.value ? this._state.name : undefined,
+      name: this._state.value || this._state.name,
+    };
   }
 
   /**
@@ -291,14 +299,14 @@ export class BlockPath {
    * Return a new BlockPath without the parent-most token.
    */
   childPath() {
-    return new BlockPath(this.tokens.slice(1));
+    return BlockPath.from(this.tokens.slice(1));
   }
 
   /**
    * Return a new BlockPath without the child-most token.
    */
   parentPath() {
-    return new BlockPath(this.tokens.slice(0, -1));
+    return BlockPath.from(this.tokens.slice(0, -1));
   }
 
 }
