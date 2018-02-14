@@ -13,6 +13,7 @@ export class BlockPathTests {
 
   @test "finds the class"() {
     let path = new BlockPath(".test");
+    console.log(path.block, path.path);
     assert.equal(path.block, "");
     assert.equal(path.path, ".test");
   }
@@ -26,7 +27,7 @@ export class BlockPathTests {
   @test "finds the block with a state"() {
     let path = new BlockPath("block[state|my-state]");
     assert.equal(path.block, "block");
-    assert.equal(path.path, "[state|my-state]");
+    assert.equal(path.path, ".root[state|my-state]");
   }
 
   @test "finds the block and class with a state"() {
@@ -38,19 +39,19 @@ export class BlockPathTests {
   @test "finds a a state with value"() {
     let path = new BlockPath("[state|my-state=value]");
     assert.equal(path.block, "");
-    assert.equal(path.path, `[state|my-state="value"]`);
+    assert.equal(path.path, `.root[state|my-state="value"]`);
   }
 
   @test "finds a state with value in single quotes"() {
     let path = new BlockPath("[state|my-state='my value']");
     assert.equal(path.block, "");
-    assert.equal(path.path, `[state|my-state="my value"]`);
+    assert.equal(path.path, `.root[state|my-state="my value"]`);
   }
 
   @test "finds a state with value in double quotes"() {
     let path = new BlockPath(`[state|my-state="my value"]`);
     assert.equal(path.block, "");
-    assert.equal(path.path, `[state|my-state="my value"]`);
+    assert.equal(path.path, `.root[state|my-state="my value"]`);
   }
 
   @test "finds a class with a state and value"() {
@@ -89,6 +90,13 @@ export class BlockPathTests {
     assert.equal(path.path, `.class[state|my-state="my value"]`);
   }
 
+  @test "finds .root when passed empty string"() {
+    let path = new BlockPath("");
+    assert.equal(path.block, "");
+    assert.equal(path.path, ".root");
+    assert.equal(path.state, undefined);
+  }
+
   @test "parentPath returns the parent's path"() {
     let path = new BlockPath("block.class[state|my-state]");
     assert.equal(path.parentPath().toString(), "block.class");
@@ -97,7 +105,7 @@ export class BlockPathTests {
     path = new BlockPath("block.class");
     assert.equal(path.parentPath().toString(), "block");
     path = new BlockPath("block[state|my-state]");
-    assert.equal(path.parentPath().toString(), "block");
+    assert.equal(path.parentPath().toString(), "block.root");
   }
 
   @test "childPath returns the child's path"() {
@@ -108,7 +116,7 @@ export class BlockPathTests {
     path = new BlockPath("block.class");
     assert.equal(path.childPath().toString(), ".class");
     path = new BlockPath("block[state|my-state]");
-    assert.equal(path.childPath().toString(), "[state|my-state]");
+    assert.equal(path.childPath().toString(), ".root[state|my-state]");
   }
 
   @test "sub-path properties return expected values"() {
@@ -121,7 +129,7 @@ export class BlockPathTests {
 
     path = new BlockPath("block[state|my-state=foobar]");
     assert.equal(path.block, "block");
-    assert.equal(path.path, `[state|my-state="foobar"]`);
+    assert.equal(path.path, `.root[state|my-state="foobar"]`);
     assert.equal(path.class, "root");
     // assert.equal(path.state && path.state.namespace, "state");
     assert.equal(path.state && path.state.group, "my-state");
@@ -233,18 +241,23 @@ export class BlockPathTests {
   }
 
   @test "unescaped illegal characters in identifiers throw."() {
+    let loc = {
+      filename: 'foo.scss',
+      line: 10,
+      column: 20
+    };
     assert.throws(() => {
-      let path = new BlockPath(`block+name`);
-    }, ERRORS.illegalChar('+'));
+      let path = new BlockPath(`block+name`, loc);
+    }, `${ERRORS.invalidIdent('block+name')} (foo.scss:10:21)`);
     assert.throws(() => {
-      let path = new BlockPath(`block[#name|foo=bar]`);
-    }, ERRORS.illegalChar('#'));
+      let path = new BlockPath(`block[#name|foo=bar]`, loc);
+    }, `${ERRORS.invalidIdent('#name')} (foo.scss:10:27)`);
     assert.throws(() => {
-      let path = new BlockPath(`block[name|fo&o=bar]`);
-    }, ERRORS.illegalChar('&'));
+      let path = new BlockPath(`block[name|fo&o=bar]`, loc);
+    }, `${ERRORS.invalidIdent('fo&o')} (foo.scss:10:32)`);
     assert.throws(() => {
-      let path = new BlockPath(`block[name|foo=1bar]`);
-    }, ERRORS.illegalChar('1'));
+      let path = new BlockPath(`block[name|foo=1bar]`, loc);
+    }, `${ERRORS.invalidIdent('1bar')} (foo.scss:10:36)`);
 
     // Quoted values may have illegal strings
     let path = new BlockPath(`block[name|foo="1bar"]`);
