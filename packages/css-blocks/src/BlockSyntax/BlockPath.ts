@@ -199,8 +199,7 @@ export class BlockPath {
           break;
 
         // If the opening quote of the value section of a state part, greedily consume everything between quotes.
-        case char === SINGLE_QUOTE:
-        case char === DOUBLE_QUOTE:
+        case char === SINGLE_QUOTE || char === DOUBLE_QUOTE:
           if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
           working = walker.consume(char);
           if (walker.peek() !== char) { this.throw(ERRORS.mismatchedQuote); }
