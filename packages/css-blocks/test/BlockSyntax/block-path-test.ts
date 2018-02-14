@@ -92,6 +92,8 @@ export class BlockPathTests {
   @test "parentPath returns the parent's path"() {
     let path = new BlockPath("block.class[state|my-state]");
     assert.equal(path.parentPath().toString(), "block.class");
+    path = new BlockPath(".class[state|my-state]");
+    assert.equal(path.parentPath().toString(), ".class");
     path = new BlockPath("block.class");
     assert.equal(path.parentPath().toString(), "block");
     path = new BlockPath("block[state|my-state]");
@@ -101,6 +103,8 @@ export class BlockPathTests {
   @test "childPath returns the child's path"() {
     let path = new BlockPath("block.class[state|my-state]");
     assert.equal(path.childPath().toString(), ".class[state|my-state]");
+    path = new BlockPath(".class[state|my-state]");
+    assert.equal(path.childPath().toString(), "[state|my-state]");
     path = new BlockPath("block.class");
     assert.equal(path.childPath().toString(), ".class");
     path = new BlockPath("block[state|my-state]");
@@ -112,16 +116,16 @@ export class BlockPathTests {
     assert.equal(path.block, "block");
     assert.equal(path.path, ".class[state|my-state]");
     assert.equal(path.class, "class");
-    assert.equal(path.state && path.state.namespace, "state");
+    // assert.equal(path.state && path.state.namespace, "state");
     assert.equal(path.state && path.state.name, "my-state");
 
     path = new BlockPath("block[state|my-state=foobar]");
     assert.equal(path.block, "block");
     assert.equal(path.path, `[state|my-state="foobar"]`);
     assert.equal(path.class, "root");
-    assert.equal(path.state && path.state.namespace, "state");
-    assert.equal(path.state && path.state.name, "my-state");
-    assert.equal(path.state && path.state.value, "foobar");
+    // assert.equal(path.state && path.state.namespace, "state");
+    assert.equal(path.state && path.state.group, "my-state");
+    assert.equal(path.state && path.state.name, "foobar");
   }
 
   @test "mismatched State value quotes throw"() {
@@ -155,9 +159,12 @@ export class BlockPathTests {
     assert.throws(() => {
       let path = new BlockPath(`[state|my-state=my value]`);
     }, ERRORS.whitespace);
+    assert.throws(() => {
+      let path = new BlockPath(`[state|my-state=my\nvalue]`);
+    }, ERRORS.whitespace);
   }
 
-  @test "state are required to have namespaces"() {
+  @test "states are required to have namespaces"() {
     let path = new BlockPath(`[namespace|name=value]`);
 
     assert.throws(() => {
@@ -241,6 +248,7 @@ export class BlockPathTests {
 
     // Quoted values may have illegal strings
     let path = new BlockPath(`block[name|foo="1bar"]`);
+    assert.equal(path.state && path.state.name, "1bar");
   }
 
   @test @skip "escaped illegal characters in identifiers are processed"() {
