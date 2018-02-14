@@ -17,15 +17,18 @@ export interface StateToken {
   namespace: string;
   name: string;
   value?: string;
+  quoted: boolean;
 }
 
 type Token = BlockToken | ClassToken | StateToken;
 
-const isBlock = (token?: Token): token is BlockToken => !!token && token.type === 'block';
-const isClass = (token?: Token): token is ClassToken => !!token && token.type === 'class';
-const isState = (token?: Token): token is StateToken  => !!token && token.type === 'state';
-const hasName = (token?: Token): boolean => !!token && !!token.name;
-const hasNamespace = (token?: Token): boolean => isState(token) && !!token.namespace;
+const isBlock = (token?: Partial<Token>): token is BlockToken => !!token && token.type === 'block';
+const isClass = (token?: Partial<Token>): token is ClassToken => !!token && token.type === 'class';
+const isState = (token?: Partial<Token>): token is StateToken  => !!token && token.type === 'state';
+const isQuoted = (token?: Partial<Token>): boolean => isState(token) && !!token.quoted;
+const isIdent = (ident?: string): boolean => !ident || CSS_IDENT.test(ident);
+const hasName = (token?: Partial<Token>): boolean => !!token && !!token.name;
+const hasNamespace = (token?: Partial<Token>): boolean => isState(token) && !!token.namespace;
 
 const STATE_BEGIN = "[";
 const STATE_END = "]";
@@ -43,7 +46,7 @@ export const ERRORS = {
   noname: "Block path segments must include a valid name",
   unclosedState: "Unclosed state selector",
   mismatchedQuote: "No closing quote found in Block path",
-  illegalChar: (c: string) => `Unexpected character "${c}" found in Block path.`,
+  invalidIdent: (i: string) => `Invalid identifier "${i}" found in Block path.`,
   expectsSepInsteadRec: (c: string) => `Expected separator tokens "[" or ".", instead found \`${c}\``,
   illegalCharNotInState: (c: string) => `Only state selectors may contain the \`${c}\` character.`,
   illegalCharInState: (c: string) => `State selectors may not contain the \`${c}\` character.`,
@@ -75,6 +78,7 @@ class Walker {
 
   next(): string { return this.data[this.idx++]; }
   peek(): string { return this.data[this.idx]; }
+  index(): number { return this.idx; }
 
   /**
    * Consume all characters that do not match the provided Set or strings
@@ -101,23 +105,31 @@ export class BlockPath {
   private _class: ClassToken;
   private _state: StateToken;
 
+  private walker: Walker;
   private tokens: Token[] = [];
 
   /**
    * Throw a new BlockPathError with the given message.
    * @param msg The error message.
    */
-  private throw(msg: string): never {
-    throw new BlockPathError(msg, this._location);
+  private throw(msg: string, len = 0): never {
+    let location;
+    if (this._location) {
+      location = {
+        ...this._location,
+        column: (this._location.column || 0) + this.walker.index() - len
+      };
+    }
+    throw new BlockPathError(msg, location);
   }
 
   /**
    * Used by `tokenize` to insert a newly constructed token.
    * @param token The token to insert.
    */
-  private addToken(token: Token): void {
+  private addToken(token: Partial<Token>): void {
 
-    // Final validation of incoming data.
+    // Final validation of incoming data. Blocks may have no name. States must have a namespace.
     if (!isBlock(token) && !hasName(token)) { this.throw(ERRORS.noname); }
     if (isState(token) && !hasNamespace(token)) { this.throw(ERRORS.namespace); }
 
@@ -127,13 +139,17 @@ export class BlockPath {
     }
     if (isClass(token)) {
       this._class = this._class ? this.throw(ERRORS.multipleOfType(token.type)) : token;
+      // If no block has been added yet, automatically inject the `self` block name.
+      if (!this._block) { this.addToken({ type: "block", name: "" }); }
     }
     if (isState(token)) {
       this._state = this._state ? this.throw(ERRORS.multipleOfType(token.type)) : token;
+      // If no class has been added yet, automatically inject the root class.
+      if (!this._class) { this.addToken({ type: "class", name: "root" }); }
     }
 
     // Add the token.
-    this.tokens.push(token);
+    this.tokens.push(token as Token);
   }
 
   /**
@@ -144,8 +160,8 @@ export class BlockPath {
   private tokenize(str: string): void {
     let char,
         working = "",
-        walker = new Walker(str),
-        token: Token = { type: 'block', name: '' };
+        walker = this.walker = new Walker(str),
+        token: Partial<Token> = { type: 'block' };
 
     while (char = walker.next()) {
 
@@ -154,38 +170,27 @@ export class BlockPath {
         // If a period, we've finished the previous token and are now building a class name.
         case char === CLASS_BEGIN:
           if (isState(token)) { this.throw(ERRORS.illegalCharInState(char)); }
+          if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           this.addToken(token);
-          token = { type: 'class', name: '' };
+          token = { type: 'class' };
           working = "";
           break;
 
         // If the beginning of a state, we've finished the previous token and are now building a state.
         case char === STATE_BEGIN:
           if (isState(token)) { this.throw(ERRORS.illegalCharInState(char)); }
+          if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           this.addToken(token);
-          token = { type: 'state', namespace: '', name: '' };
+          token = { type: 'state' };
           working = "";
-          break;
-
-        // If the end of a state, set the state part we've been working on and finish.
-        case char === STATE_END:
-          if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
-          token.name ? (token.value = working) : (token.name = working);
-          this.addToken(token);
-          working = "";
-
-          // The character immediately following a `STATE_END` *must* be another `SEPARATORS`
-          // Depending on the next value, seed our token input
-          let next = walker.next();
-          if (next && !SEPARATORS.has(next)) { this.throw(ERRORS.expectsSepInsteadRec(next)); }
-          token = (next === STATE_BEGIN) ? { type: 'state', namespace: '', name: '' } : { type: 'class', name: '' };
           break;
 
         // When we find a namespace terminator, set the namespace property of the state token we're working on.
         case char === NAMESPACE_END:
           if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
+          if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.namespace = working;
           working = "";
           break;
@@ -194,6 +199,7 @@ export class BlockPath {
         case char === VALUE_START:
           if (!isState(token)) { this.throw(ERRORS.illegalCharNotInState(char)); }
           if (!working) { this.throw(ERRORS.noname); }
+          if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           working = "";
           break;
@@ -202,8 +208,26 @@ export class BlockPath {
         case char === SINGLE_QUOTE || char === DOUBLE_QUOTE:
           if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
           working = walker.consume(char);
+          token.quoted = true;
           if (walker.peek() !== char) { this.throw(ERRORS.mismatchedQuote); }
           walker.next(); // Throw away the other quote
+          break;
+
+        // If the end of a state, set the state part we've been working on and finish.
+        case char === STATE_END:
+          if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
+          if ((!hasName(token) || !isQuoted(token)) && !isIdent(working)) {
+            console.log(working); return this.throw(ERRORS.invalidIdent(working), working.length);
+          }
+          (hasName(token)) ? (token.value = working) : (token.name = working);
+          this.addToken(token);
+          working = "";
+
+          // The character immediately following a `STATE_END` *must* be another `SEPARATORS`
+          // Depending on the next value, seed our token input
+          let next = walker.next();
+          if (next && !SEPARATORS.has(next)) { this.throw(ERRORS.expectsSepInsteadRec(next)); }
+          token = (next === STATE_BEGIN) ? { type: 'state' } : { type: 'class' };
           break;
 
         // We should never encounter whitespace in this switch statement.
@@ -217,7 +241,6 @@ export class BlockPath {
         // TODO: We need to handle invalid character escapes here!
         default:
           working += char;
-          if (!CSS_IDENT.test(working)) { return this.throw(ERRORS.illegalChar(char)); }
 
       }
 
@@ -228,11 +251,13 @@ export class BlockPath {
     if (isState(token)) { this.throw(ERRORS.unclosedState); }
 
     // Class and Block tokens are not explicitly terminated and may be sealed when we
-    // get to the end.
+    // get to the end. If no class has been discovered, automatically add our root class.
     if (!isState(token) && working) {
+      if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
       token.name = working;
       this.addToken(token);
     }
+    if (!this._class) { this.addToken({ type: "class", name: "root" }); }
   }
 
   /**
@@ -281,7 +306,7 @@ export class BlockPath {
    * Get the parsed state name of this Block Path and return the `StateInfo`
    */
   get state(): StateInfo | undefined {
-    return {
+    return this._state && {
       group: this._state.value ? this._state.name : undefined,
       name: this._state.value || this._state.name,
     };
@@ -298,7 +323,7 @@ export class BlockPath {
    * Return a new BlockPath without the parent-most token.
    */
   childPath() {
-    return BlockPath.from(this.tokens.slice(1));
+    return BlockPath.from(this.tokens.slice(this._block.name ? 1 : 2));
   }
 
   /**
