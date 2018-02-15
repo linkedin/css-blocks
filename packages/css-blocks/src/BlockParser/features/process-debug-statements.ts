@@ -11,7 +11,7 @@ import parseBlockDebug from "../../parseBlockDebug";
  * @param root PostCSS Root for block.
  * @param block Block to resolve references for
  */
-export default async function processDebugStatements(root: postcss.Root, block: Block, file: string, opts: OptionsReader) {
+export async function processDebugStatements(root: postcss.Root, block: Block, file: string, opts: OptionsReader) {
   root.walkAtRules(BLOCK_DEBUG, (atRule) => {
     let { block: ref, channel } = parseBlockDebug(atRule, file, block);
     let debugStr = ref.debug(opts);

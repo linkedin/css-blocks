@@ -11,7 +11,7 @@ import * as errors from "../../errors";
  * @param block Block to resolve references for
  * @return Promise that resolves when all references have been loaded.
  */
-export default async function resolveReferences(block: Block, factory: IBlockFactory, file: string): Promise<Block> {
+export async function resolveReferences(block: Block, factory: IBlockFactory, file: string): Promise<Block> {
 
   let root: postcss.Root | undefined = block.stylesheet;
   let namedBlockReferences: Promise<[string, string, postcss.AtRule, Block]>[] = [];

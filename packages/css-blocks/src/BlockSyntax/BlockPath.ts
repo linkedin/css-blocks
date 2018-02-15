@@ -1,7 +1,7 @@
 import { StateInfo } from "../BlockParser";
 import { BlockPathError, ErrorLocation } from "../errors";
 
-import { CLASS_NAME_IDENT as CSS_IDENT } from "./blockSyntax";
+import { CLASS_NAME_IDENT as CSS_IDENT } from "./BlockSyntax";
 
 interface BlockToken {
   type: "block";

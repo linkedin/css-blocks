@@ -128,7 +128,7 @@ function printRulesetConflict(prop: string, rule: Ruleset) {
  * @param correlations The correlations object for a given element.
  * @param err Error callback.
  */
-const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err) => {
+export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err) => {
 
   // Conflicting RuseSets stored here.
   let conflicts: ConflictMap = new MultiMap(false);
@@ -205,5 +205,3 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
   }
 
 };
-
-export default propertyConflictValidator;

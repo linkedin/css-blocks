@@ -8,7 +8,7 @@ import { sourceLocation as loc } from "../../SourceLocation";
 import * as errors from "../../errors";
 import { stateParser } from "../block-intermediates";
 
-export default async function globalStates(root: postcss.Root, block: Block, file: string): Promise<Block> {
+export async function globalStates(root: postcss.Root, block: Block, file: string): Promise<Block> {
   root.walkAtRules(BLOCK_GLOBAL, (atRule) => {
 
     let selectors = parseSelector(atRule.params.trim());

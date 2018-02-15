@@ -4,7 +4,7 @@ import { BLOCK_NAME, CLASS_NAME_IDENT } from "../../BlockSyntax";
 import { sourceLocation } from "../../SourceLocation";
 import * as errors from "../../errors";
 
-export default async function discoverName(root: postcss.Root, defaultName: string, file: string): Promise<string> {
+export async function discoverName(root: postcss.Root, defaultName: string, file: string): Promise<string> {
 
   // Eagerly fetch custom `block-name` from the root block rule.
   root.walkRules(".root", (rule) => {

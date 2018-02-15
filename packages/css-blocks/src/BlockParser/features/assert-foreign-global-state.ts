@@ -17,7 +17,7 @@ import {
  * @param rule The rule referencing the external block.
  * @param obj The parsed node making the external reference.
  */
-export default async function assertForeignGlobalState(root: postcss.Root, block: Block, file: string) {
+export async function assertForeignGlobalState(root: postcss.Root, block: Block, file: string) {
 
   root.walkRules((rule) => {
 

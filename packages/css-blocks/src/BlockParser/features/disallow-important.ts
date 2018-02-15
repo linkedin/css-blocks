@@ -3,7 +3,7 @@ import * as postcss from "postcss";
 import { sourceLocation as loc } from "../../SourceLocation";
 import * as errors from "../../errors";
 
-export default async function disallowImportant(root: postcss.Root, file: string): Promise<postcss.Root> {
+export async function disallowImportant(root: postcss.Root, file: string): Promise<postcss.Root> {
   root.walkDecls((decl) => {
 
     // `!important` is not allowed in Blocks. If contains `!important` declaration, throw.

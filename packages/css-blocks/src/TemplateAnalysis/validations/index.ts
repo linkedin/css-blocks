@@ -4,10 +4,10 @@ import { StyleAnalysis } from "../StyleAnalysis";
 
 import { Validator } from "./Validator";
 
-import classPairsValidator from "./class-pairs-validator";
-import propertyConflictValidator from "./property-conflict-validator";
-import rootClassValidator from "./root-class-validator";
-import stateParentValidator from "./state-parent-validator";
+import { classPairsValidator } from "./class-pairs-validator";
+import { propertyConflictValidator } from "./property-conflict-validator";
+import { rootClassValidator } from "./root-class-validator";
+import { stateParentValidator } from "./state-parent-validator";
 
 export * from "./class-pairs-validator";
 export * from "./root-class-validator";

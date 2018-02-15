@@ -34,7 +34,7 @@ function shouldBeParsedAsBlockSelector(rule: postcss.Rule): boolean {
   return !(rule.parent && rule.parent.type === "atrule" && (rule.parent).name === "keyframes");
 }
 
-export default async function parseStyles(root: postcss.Root, block: Block, file: string): Promise<Block> {
+export async function parseStyles(root: postcss.Root, block: Block, file: string): Promise<Block> {
 
   let styleRuleTuples: Set<[Style, postcss.Rule]> = new Set();
 

@@ -6,7 +6,7 @@ import {
   ValueAbsent,
   ValueConstant,
 } from "@opticss/element-analysis";
-import { assertNever, MultiMap, ObjectDictionary, objectValues } from "@opticss/util";
+import { assertNever, MultiMap, ObjectDictionary, objectValues, whatever } from "@opticss/util";
 import {
   CompoundSelector,
   ParsedSelector,

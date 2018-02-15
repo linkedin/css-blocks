@@ -6,7 +6,7 @@ import * as postcss from "postcss";
 
 import { Block, BlockClass, BlockObject, State } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
-import BlockParser from "../../src/BlockParser";
+import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
 import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from "../../src/TemplateAnalysis";
 import * as cssBlocks from "../../src/errors";
