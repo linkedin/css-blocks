@@ -1,8 +1,9 @@
-import * as postcss from 'postcss';
-import * as errors from '../../errors';
-import { sourceLocation } from "../../SourceLocation";
+import * as postcss from "postcss";
+
 import { Block } from "../../Block";
 import { IMPLEMENTS } from "../../BlockSyntax";
+import { sourceLocation } from "../../SourceLocation";
+import * as errors from "../../errors";
 
 /**
  * For each `implements` property found in the passed ruleset, track the foreign

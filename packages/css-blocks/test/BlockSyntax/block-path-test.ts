@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { suite, test, only, skip } from "mocha-typescript";
+import { only, skip, suite, test } from "mocha-typescript";
 
 import { BlockPath, ERRORS } from "../../src/BlockSyntax";
 
@@ -136,37 +136,46 @@ export class BlockPathTests {
   }
 
   @test "mismatched State value quotes throw"() {
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`.class[state|name="value']`);
     }, ERRORS.mismatchedQuote);
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`.class[state|name='value"]`);
     }, ERRORS.mismatchedQuote);
   }
 
   @test "duplicate selector types in the same path throw"() {
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block.class.class`);
-    }, ERRORS.multipleOfType('class'));
-    assert.throws(() => {
+    }, ERRORS.multipleOfType("class"));
+    assert.throws(
+       () => {
       let path = new BlockPath(`block[state|foo][state|bar]`);
-    }, ERRORS.multipleOfType('state'));
+    }, ERRORS.multipleOfType("state"));
   }
 
   @test "whitespace outside of quoted state values throws"() {
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block. class`);
     }, ERRORS.whitespace);
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[state|my state]`);
     }, ERRORS.whitespace);
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[my namespace|my-state]`);
     }, ERRORS.whitespace);
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[state|my-state=my value]`);
     }, ERRORS.whitespace);
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[state|my-state=my\nvalue]`);
     }, ERRORS.whitespace);
   }
@@ -174,89 +183,109 @@ export class BlockPathTests {
   @test "states are required to have namespaces"() {
     let path = new BlockPath(`[namespace|name=value]`);
 
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[|name=value]`);
     }, ERRORS.namespace);
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[name=value]`);
     }, ERRORS.namespace);
   }
 
   @test "separator token required after path termination"() {
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[state|name=value]class`);
-    }, ERRORS.expectsSepInsteadRec('c'));
-    assert.throws(() => {
+    }, ERRORS.expectsSepInsteadRec("c"));
+    assert.throws(
+       () => {
       let path = new BlockPath(`[state|name=value]]`);
-    }, ERRORS.expectsSepInsteadRec(']'));
+    }, ERRORS.expectsSepInsteadRec("]"));
   }
 
   @test "Style path segments require names"() {
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block.[state|name=value]`);
     }, ERRORS.noname);
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block.class[state|]`);
     }, ERRORS.noname);
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block.class[state|=value]`);
     }, ERRORS.noname);
   }
 
   @test "Illegal characters outside of state segments throw"() {
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block.cla|ss`);
     }, ERRORS.illegalCharNotInState(`|`));
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block.cla=ss`);
     }, ERRORS.illegalCharNotInState(`=`));
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block.cla"ss`);
     }, ERRORS.illegalCharNotInState(`"`));
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block.cla'ss`);
     }, ERRORS.illegalCharNotInState(`'`));
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block.cla]ss`);
     }, ERRORS.illegalCharNotInState(`]`));
   }
 
   @test "Illegal characters inside of state segments throw"() {
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[state|val.ue]`);
     }, ERRORS.illegalCharInState(`.`));
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[state|val[ue]`);
     }, ERRORS.illegalCharInState(`[`));
   }
 
   @test "Unterminated state selectors throw"() {
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[state|name`);
     }, ERRORS.unclosedState);
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`[state|name=value`);
     }, ERRORS.unclosedState);
   }
 
   @test "unescaped illegal characters in identifiers throw."() {
     let loc = {
-      filename: 'foo.scss',
+      filename: "foo.scss",
       line: 10,
-      column: 20
+      column: 20,
     };
-    assert.throws(() => {
+    assert.throws(
+       () => {
       let path = new BlockPath(`block+name`, loc);
-    }, `${ERRORS.invalidIdent('block+name')} (foo.scss:10:21)`);
-    assert.throws(() => {
+    }, `${ERRORS.invalidIdent("block+name")} (foo.scss:10:21)`);
+    assert.throws(
+       () => {
       let path = new BlockPath(`block[#name|foo=bar]`, loc);
-    }, `${ERRORS.invalidIdent('#name')} (foo.scss:10:27)`);
-    assert.throws(() => {
+    }, `${ERRORS.invalidIdent("#name")} (foo.scss:10:27)`);
+    assert.throws(
+       () => {
       let path = new BlockPath(`block[name|fo&o=bar]`, loc);
-    }, `${ERRORS.invalidIdent('fo&o')} (foo.scss:10:32)`);
-    assert.throws(() => {
+    }, `${ERRORS.invalidIdent("fo&o")} (foo.scss:10:32)`);
+    assert.throws(
+       () => {
       let path = new BlockPath(`block[name|foo=1bar]`, loc);
-    }, `${ERRORS.invalidIdent('1bar')} (foo.scss:10:36)`);
+    }, `${ERRORS.invalidIdent("1bar")} (foo.scss:10:36)`);
 
     // Quoted values may have illegal strings
     let path = new BlockPath(`block[name|foo="1bar"]`);

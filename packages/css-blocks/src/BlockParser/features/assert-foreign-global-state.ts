@@ -1,12 +1,13 @@
-import * as postcss from 'postcss';
-import * as errors from '../../errors';
-import { selectorSourceLocation as loc } from '../../SourceLocation';
-import { Block } from '../../Block';
-import selectorParser = require('postcss-selector-parser');
+import * as postcss from "postcss";
+import selectorParser = require("postcss-selector-parser");
+
+import { Block } from "../../Block";
+import { selectorSourceLocation as loc } from "../../SourceLocation";
+import * as errors from "../../errors";
 import {
-  stateParser,
   BlockType,
-  getBlockNode
+  getBlockNode,
+  stateParser,
 } from "../block-intermediates";
 
 /**

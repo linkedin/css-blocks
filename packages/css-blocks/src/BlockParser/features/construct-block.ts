@@ -1,21 +1,22 @@
-import * as postcss from 'postcss';
-import * as errors from '../../errors';
-import selectorParser = require('postcss-selector-parser');
 import { CompoundSelector, ParsedSelector } from "opticss";
-import { sourceLocation, selectorSourceLocation as loc } from "../../SourceLocation";
+import * as postcss from "postcss";
+import selectorParser = require("postcss-selector-parser");
+
 import { Block, Style } from "../../Block";
+import { selectorSourceLocation as loc, sourceLocation } from "../../SourceLocation";
+import * as errors from "../../errors";
 import {
-  stateParser,
+  BlockNodeAndType,
   BlockType,
   blockTypeName,
-  NodeAndType,
+  getBlockNode,
   isClassLevelObject,
-  isRootLevelObject,
-  isStateNode,
-  isRootNode,
   isClassNode,
-  BlockNodeAndType,
-  getBlockNode
+  isRootLevelObject,
+  isRootNode,
+  isStateNode,
+  NodeAndType,
+  stateParser,
 } from "../block-intermediates";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
@@ -29,7 +30,7 @@ const LEGAL_COMBINATORS = new Set(["+", "~", " ", ">"]);
  * @returns If this is a block selector or not.
  **/
 function shouldBeParsedAsBlockSelector(rule: postcss.Rule): boolean {
-  return !(rule.parent && rule.parent.type === "atrule" && (<postcss.AtRule>rule.parent).name === "keyframes");
+  return !(rule.parent && rule.parent.type === "atrule" && (rule.parent).name === "keyframes");
 }
 
 export default async function parseStyles(root: postcss.Root, block: Block, file: string): Promise<Block> {
@@ -111,7 +112,7 @@ export default async function parseStyles(root: postcss.Root, block: Block, file
 
   // To allow self-referential block lookup when constructing ruleset concerns,
   // we need to run `addRuleset()` only *after* all Style have been created.
-  for ( let [style, rule] of styleRuleTuples) {
+  for (let [style, rule] of styleRuleTuples) {
     style.rulesets.addRuleset(file, rule, style);
   }
 
@@ -162,7 +163,7 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
     if (!LEGAL_COMBINATORS.has(combinator)) {
       throw new errors.InvalidBlockSyntax(
         `Illegal Combinator '${combinator}': ${rule.selector}`,
-        loc(file, rule, currentCompoundSel.next.combinator)
+        loc(file, rule, currentCompoundSel.next.combinator),
       );
     }
 
@@ -170,7 +171,7 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
     if (isClassLevelObject(currentObject) && nextLevelIsRoot && SIBLING_COMBINATORS.has(combinator)) {
       throw new errors.InvalidBlockSyntax(
         `A class is never a sibling of a ${blockTypeName(nextObject.blockType)}: ${rule.selector}`,
-        loc(file, rule, selector.selector.nodes[0])
+        loc(file, rule, selector.selector.nodes[0]),
       );
     }
 
@@ -178,7 +179,7 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
     if (foundClassLevel && nextLevelIsRoot) {
       throw new errors.InvalidBlockSyntax(
         `Illegal scoping of a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
-        loc(file, rule, currentCompoundSel.next.combinator)
+        loc(file, rule, currentCompoundSel.next.combinator),
       );
     }
 
@@ -188,7 +189,7 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
       if (!foundObjects.every(f => f.node.toString() === nextObject.node.toString())) {
         throw new errors.InvalidBlockSyntax(
           `Illegal scoping of a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
-          loc(file, rule, currentCompoundSel.next.combinator)
+          loc(file, rule, currentCompoundSel.next.combinator),
         );
       }
     }
@@ -197,7 +198,7 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
     if (isRootLevelObject(currentObject) && nextLevelIsClass && SIBLING_COMBINATORS.has(combinator)) {
       throw new errors.InvalidBlockSyntax(
         `A ${blockTypeName(nextObject.blockType)} cannot be a sibling with a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
-        loc(file, rule, currentCompoundSel.next.combinator)
+        loc(file, rule, currentCompoundSel.next.combinator),
       );
     }
 
@@ -209,12 +210,12 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
         if (conflictObj.blockType === nextObject.blockType) {
           throw new errors.InvalidBlockSyntax(
             `Distinct ${blockTypeName(conflictObj.blockType, { plural: true })} cannot be combined: ${rule.selector}`,
-            loc(file, rule, nextObject.node)
+            loc(file, rule, nextObject.node),
           );
         } else {
           throw new errors.InvalidBlockSyntax(
             `Cannot combine a ${blockTypeName(conflictObj.blockType)} with a ${blockTypeName(nextObject.blockType)}}: ${rule.selector}`,
-            loc(file, rule, nextObject.node)
+            loc(file, rule, nextObject.node),
           );
         }
       }
@@ -247,7 +248,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
     if (!refBlock) {
       throw new errors.InvalidBlockSyntax(
         `Tag name selectors are not allowed: ${rule.selector}`,
-        loc(file, rule, blockName)
+        loc(file, rule, blockName),
       );
     }
   }
@@ -257,18 +258,18 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
   if (nonStateAttribute) {
     throw new errors.InvalidBlockSyntax(
       `Cannot select attributes other than states: ${rule.selector}`,
-      loc(file, rule, nonStateAttribute)
+      loc(file, rule, nonStateAttribute),
     );
   }
 
   // Disallow pseudoclasses that take selectors as arguments.
   sel.nodes.forEach(n => {
     if (n.type === selectorParser.PSEUDO) {
-      let pseudo = <selectorParser.Pseudo>n;
+      let pseudo = n;
       if (pseudo.value === ":not" || pseudo.value === ":matches") {
         throw new errors.InvalidBlockSyntax(
           `The ${pseudo.value}() pseudoclass cannot be used: ${rule.selector}`,
-          loc(file, rule, pseudo)
+          loc(file, rule, pseudo),
         );
       }
     }
@@ -283,18 +284,18 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
       if (found === null) {
         found = {
           blockType: BlockType.root,
-          node: n
+          node: n,
         };
       } else {
         if (found.blockType === BlockType.class || found.blockType === BlockType.classState) {
           throw new errors.InvalidBlockSyntax(
             `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
-            loc(file, rule, sel.nodes[0])
+            loc(file, rule, sel.nodes[0]),
           );
         } else if (found.blockType === BlockType.state) {
           throw new errors.InvalidBlockSyntax(
             `It's redundant to specify a state with the an explicit .root: ${rule.selector}`,
-            loc(file, rule, n)
+            loc(file, rule, n),
           );
         }
       }
@@ -307,7 +308,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
       if (n.value && n.operator !== "=") {
         throw new errors.InvalidBlockSyntax(
           `A state with a value must use the = operator (found ${n.operator} instead).`,
-          loc(file, rule, n)
+          loc(file, rule, n),
         );
       }
       if (!found) {
@@ -317,7 +318,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
       } else if (found.blockType === BlockType.root) {
         throw new errors.InvalidBlockSyntax(
           `It's redundant to specify a state with an explicit .root: ${rule.selector}`,
-          loc(file, rule, found.node)
+          loc(file, rule, found.node),
         );
       }
     }
@@ -328,7 +329,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
       if (!found) {
         found = {
           node: n,
-          blockType: BlockType.class
+          blockType: BlockType.class,
         };
       } else {
         if (found.blockType === BlockType.root) {
@@ -349,12 +350,12 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
       }
     }
     return found;
-  }, null);
+  },                                                null);
 
   // If no rules found in selector, we have a problem. Throw.
   if (!result) {
     throw new errors.InvalidBlockSyntax(
-      `Missing block object in selector component '${sel.nodes.join('')}': ${rule.selector}`,
+      `Missing block object in selector component '${sel.nodes.join("")}': ${rule.selector}`,
       loc(file, rule, sel.nodes[0]));
   }
 
@@ -363,7 +364,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
     return {
       blockName: blockName && blockName.value,
       blockType: result.blockType,
-      node: result.node
+      node: result.node,
     };
   }
 }

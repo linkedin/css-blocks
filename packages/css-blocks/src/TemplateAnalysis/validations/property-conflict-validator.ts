@@ -1,16 +1,17 @@
-import * as propParser from "css-property-parser";
 import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
-import * as postcss from 'postcss';
+import * as propParser from "css-property-parser";
+import * as postcss from "postcss";
 
-import { Validator } from "./Validator";
-import { Style, State } from "../../Block";
+import { State, Style } from "../../Block";
 import { Ruleset } from "../../Block/RulesetContainer";
 import {
-  isTrueCondition,
+  isBooleanState,
   isFalseCondition,
   isStateGroup,
-  isBooleanState
+  isTrueCondition,
 } from "../ElementAnalysis";
+
+import { Validator } from "./Validator";
 
 // Convenience types to help our code read better.
 type Pseudo = string;
@@ -58,18 +59,18 @@ function evaluate(obj: Style, propToRules: PropMap, conflicts: ConflictMap) {
           // Get the declarations for this specific property.
           let selfDecl = self.declarations.get(prop);
           let otherDecl = other.declarations.get(prop);
-          if ( !selfDecl || !otherDecl ) { continue; }
+          if (!selfDecl || !otherDecl) { continue; }
 
           // If these declarations have the exact same number of declarations,
           // in the exact same order, or if there is an explicit resolution,
           // ignore it and move on.
           let valuesEqual = selfDecl.length === otherDecl.length;
           if (valuesEqual) {
-            for (let i = 0; i < Math.min(selfDecl.length, otherDecl.length); i++ ) {
+            for (let i = 0; i < Math.min(selfDecl.length, otherDecl.length); i++) {
               valuesEqual = valuesEqual && selfDecl[i].value === otherDecl[i].value;
             }
           }
-          if ( valuesEqual ||
+          if (valuesEqual ||
               other.hasResolutionFor(prop, self.style) ||
               self.hasResolutionFor(prop, other.style)
               ) { continue; }
@@ -92,7 +93,7 @@ function evaluate(obj: Style, propToRules: PropMap, conflicts: ConflictMap) {
  */
 function recursivelyPruneConflicts(prop: string, conflicts: ConflictMap): Ruleset[] {
   if (propParser.isShorthandProperty(prop)) {
-    let longhands = propParser.expandShorthandProperty(prop, 'inherit', false, true);
+    let longhands = propParser.expandShorthandProperty(prop, "inherit", false, true);
     for (let longProp of Object.keys(longhands)) {
       let rules = recursivelyPruneConflicts(longProp, conflicts);
       for (let rule of rules) {
@@ -119,7 +120,7 @@ function printRulesetConflict(prop: string, rule: Ruleset) {
     let column = node.source.start && `:${node.source.start.column}`;
     out.push(`    ${rule.style.block.name}${rule.style.asSource()} (${rule.file}${line}${column})`);
   }
-  return out.join('\n');
+  return out.join("\n");
 }
 
 /**
@@ -174,7 +175,7 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
   elAnalysis.dynamicStates.forEach((condition) => {
     if (isStateGroup(condition)) {
       let stateConditions: PropMap = new TwoKeyMultiMap(false);
-      (Object as any).values(condition.group).forEach((state: State) => {
+      (Object as whatever).values(condition.group).forEach((state: State) => {
         evaluate(state, allConditions, conflicts);
         add(stateConditions, state);
       });
@@ -194,11 +195,11 @@ const propertyConflictValidator: Validator = (elAnalysis, _templateAnalysis, err
 
   // For every set of conflicting properties, throw the error.
   if (conflicts.size) {
-    let msg = 'The following property conflicts must be resolved for these co-located Styles:';
-    let details = '\n';
-    for ( let [prop, matches] of conflicts.entries() ) {
+    let msg = "The following property conflicts must be resolved for these co-located Styles:";
+    let details = "\n";
+    for (let [prop, matches] of conflicts.entries()) {
       if (!prop || !matches.length) { return; }
-      details += `  ${prop}:\n${matches.map((m) => printRulesetConflict(prop, m)).join('\n')}\n\n`;
+      details += `  ${prop}:\n${matches.map((m) => printRulesetConflict(prop, m)).join("\n")}\n\n`;
     }
     err(msg, null, details);
   }

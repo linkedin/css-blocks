@@ -1,17 +1,17 @@
-import { assert } from "chai";
-import { suite, test, only, skip } from "mocha-typescript";
-import * as postcss from "postcss";
-import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimizedAnalysis } from "@opticss/template-api";
 import { POSITION_UNKNOWN } from "@opticss/element-analysis";
+import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template, TemplateInfo } from "@opticss/template-api";
+import { assert } from "chai";
+import { only, skip, suite, test } from "mocha-typescript";
+import * as postcss from "postcss";
 
-import * as cssBlocks from "../../src/errors";
-import BlockParser from "../../src/BlockParser";
+import { Block, BlockClass, BlockObject, State } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
-import { Importer, ImportedFile } from "../../src/importing";
-import { Block, BlockObject, BlockClass, State } from "../../src/Block";
-import { PluginOptions } from "../../src/options";
+import BlockParser from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
-import { SerializedTemplateAnalysis, TemplateAnalysis, ElementAnalysis } from "../../src/TemplateAnalysis";
+import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from "../../src/TemplateAnalysis";
+import * as cssBlocks from "../../src/errors";
+import { ImportedFile, Importer } from "../../src/importing";
+import { PluginOptions } from "../../src/options";
 
 import { MockImportRegistry } from "./../util/MockImportRegistry";
 import { assertParseError } from "./../util/assertError";
@@ -52,15 +52,15 @@ export class TemplateAnalysisTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       let element = analysis.startElement(POSITION_UNKNOWN);
-      element.addStaticClass(block.getClass('asdf')!);
-      element.addStaticClass(block.getClass('fdsa')!);
+      element.addStaticClass(block.getClass("asdf")!);
+      element.addStaticClass(block.getClass("fdsa")!);
       analysis.endElement(element);
     });
   }
 
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err) { if (data) err('CUSTOM ERROR'); } });
+    let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
     let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
@@ -76,7 +76,7 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 1, column: 2 });
         analysis.endElement(element);
-      })
+      }),
     );
   }
 

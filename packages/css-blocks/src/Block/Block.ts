@@ -1,35 +1,37 @@
-import * as postcss from 'postcss';
-import selectorParser = require('postcss-selector-parser');
-import { CssBlockError } from "../errors";
-import { FileIdentifier } from "../importing";
-import { OptionsReader } from "../OptionsReader";
-import { OutputMode } from "../OutputMode";
-import { LocalScopedContext, HasLocalScope, HasScopeLookup } from "../util/LocalScope";
-import { unionInto } from '../util/unionInto';
-import { ObjectDictionary, MultiMap, assertNever, objectValues } from "@opticss/util";
-import { RulesetContainer } from './RulesetContainer';
-import { CLASS_NAME_IDENT } from "../BlockSyntax";
 import {
-  SelectorFactory,
-  parseSelector,
-  ParsedSelector,
-  CompoundSelector
-} from "opticss";
-import {
-  Attribute,
   Attr,
+  Attribute,
   AttributeNS,
+  AttributeValueChoice,
   ValueAbsent,
   ValueConstant,
-  AttributeValueChoice
 } from "@opticss/element-analysis";
+import { assertNever, MultiMap, ObjectDictionary, objectValues } from "@opticss/util";
 import {
-  stateParser,
+  CompoundSelector,
+  ParsedSelector,
+  parseSelector,
+  SelectorFactory,
+} from "opticss";
+import * as postcss from "postcss";
+import selectorParser = require("postcss-selector-parser");
+
+import {
+  BlockType,
   isClassNode,
   isStateNode,
   NodeAndType,
-  BlockType
+  stateParser,
 } from "../BlockParser";
+import { CLASS_NAME_IDENT } from "../BlockSyntax";
+import { OptionsReader } from "../OptionsReader";
+import { OutputMode } from "../OutputMode";
+import { CssBlockError } from "../errors";
+import { FileIdentifier } from "../importing";
+import { HasLocalScope, HasScopeLookup, LocalScopedContext } from "../util/LocalScope";
+import { unionInto } from "../util/unionInto";
+
+import { RulesetContainer } from "./RulesetContainer";
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
   let index = s.indexOf(".");
@@ -295,7 +297,7 @@ export class Block
 
   set name(name: string) {
     if (this.hasHadNameReset) {
-      throw new CssBlockError('Can not set block name more than once.');
+      throw new CssBlockError("Can not set block name more than once.");
     }
     this._name = name;
     this.hasHadNameReset = true;
@@ -421,7 +423,7 @@ export class Block
       let missingObjs: Style[] = this.checkImplementation(b);
       let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
       if (missingObjs.length > 0) {
-        let s = missingObjs.length > 1 ? 's' : '';
+        let s = missingObjs.length > 1 ? "s" : "";
         throw new CssBlockError(`Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
       }
     }
@@ -451,7 +453,7 @@ export class Block
     return this.all().find(e => e.asSource() === sourceName);
   }
 
-  eachBlockReference(callback: (name: string, block: Block) => any) {
+  eachBlockReference(callback: (name: string, block: Block) => whatever) {
     for (let name of Object.keys(this._blockReferences)) {
       callback(name, this._blockReferences[name]);
     }
@@ -680,7 +682,7 @@ export class Block
     let result: string[] = [`Source: ${this.identifier}`, this.rootClass.asDebug(opts)];
     let sourceNames = new Set<string>(this.all().map(s => s.asSource()));
     let sortedNames = [...sourceNames].sort();
-    for(let n of sortedNames) {
+    for (let n of sortedNames) {
       if (n !== ".root") {
         let o = this.find(n) as Style;
         result.push(o.asDebug(opts));

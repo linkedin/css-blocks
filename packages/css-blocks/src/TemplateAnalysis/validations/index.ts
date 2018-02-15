@@ -4,10 +4,10 @@ import { StyleAnalysis } from "../StyleAnalysis";
 
 import { Validator } from "./Validator";
 
-import rootClassValidator from "./root-class-validator";
 import classPairsValidator from "./class-pairs-validator";
-import stateParentValidator from "./state-parent-validator";
 import propertyConflictValidator from "./property-conflict-validator";
+import rootClassValidator from "./root-class-validator";
+import stateParentValidator from "./state-parent-validator";
 
 export * from "./class-pairs-validator";
 export * from "./root-class-validator";
@@ -30,14 +30,14 @@ const VALIDATORS: TemplateValidators = {
   "no-root-classes": rootClassValidator,
   "no-class-pairs": classPairsValidator,
   "no-state-orphans": stateParentValidator,
-  "no-required-resolution": propertyConflictValidator
+  "no-required-resolution": propertyConflictValidator,
 };
 
 const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
   "no-root-classes": true,
   "no-class-pairs": true,
   "no-state-orphans": true,
-  "no-required-resolution": true
+  "no-required-resolution": true,
 };
 
 /**
@@ -92,7 +92,7 @@ export class TemplateValidator {
   // tslint:disable-next-line:prefer-whatever-to-any
   validate(templateAnalysis: StyleAnalysis, element: ElementAnalysis<any, any, any>) {
 
-    function err ( message: string, locInfo?: errors.ErrorLocation | undefined | null, details?: string ) {
+    function err (message: string, locInfo?: errors.ErrorLocation | undefined | null, details?: string) {
       throw new errors.TemplateAnalysisError(
         message, locInfo || element.sourceLocation.start, details);
     }

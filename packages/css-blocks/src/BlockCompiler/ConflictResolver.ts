@@ -5,11 +5,12 @@ import selectorParser = require("postcss-selector-parser");
 
 import { Block, Style } from "../Block";
 import { getBlockNode } from "../BlockParser";
-import * as errors from "../errors";
+import { RESOLVE_RE } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
+import * as errors from "../errors";
+
 import * as conflictDetection from "./conflictDetection";
-import { RESOLVE_RE } from "../BlockSyntax";
 
 enum ConflictType {
   conflict,
@@ -91,7 +92,7 @@ export class ConflictResolver {
 
           // Fetch the associated `Style`. If does not exist (ex: malformed selector), skip.
           let blockNode = getBlockNode(key);
-          if ( !blockNode ) { return; }
+          if (!blockNode) { return; }
           let obj: Style | undefined = block.nodeAndTypeToStyle(blockNode);
           if (!obj) { return; }
 

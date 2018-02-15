@@ -1,19 +1,20 @@
-import { BlockPathError, ErrorLocation } from '../errors';
-import { CLASS_NAME_IDENT as CSS_IDENT } from "./blockSyntax";
 import { StateInfo } from "../BlockParser";
+import { BlockPathError, ErrorLocation } from "../errors";
+
+import { CLASS_NAME_IDENT as CSS_IDENT } from "./blockSyntax";
 
 interface BlockToken {
-  type: 'block';
+  type: "block";
   name: string;
 }
 
 interface ClassToken {
-  type: 'class';
+  type: "class";
   name: string;
 }
 
 export interface StateToken {
-  type: 'state';
+  type: "state";
   namespace: string;
   name: string;
   value?: string;
@@ -22,9 +23,9 @@ export interface StateToken {
 
 type Token = BlockToken | ClassToken | StateToken;
 
-const isBlock = (token?: Partial<Token>): token is BlockToken => !!token && token.type === 'block';
-const isClass = (token?: Partial<Token>): token is ClassToken => !!token && token.type === 'class';
-const isState = (token?: Partial<Token>): token is StateToken  => !!token && token.type === 'state';
+const isBlock = (token?: Partial<Token>): token is BlockToken => !!token && token.type === "block";
+const isClass = (token?: Partial<Token>): token is ClassToken => !!token && token.type === "class";
+const isState = (token?: Partial<Token>): token is StateToken  => !!token && token.type === "state";
 const isQuoted = (token?: Partial<Token>): boolean => isState(token) && !!token.quoted;
 const isIdent = (ident?: string): boolean => !ident || CSS_IDENT.test(ident);
 const hasName = (token?: Partial<Token>): boolean => !!token && !!token.name;
@@ -58,7 +59,7 @@ function stringify(tokens: Token[]): string {
   for (let token of tokens) {
          if (isBlock(token)) { out += token.name; }
     else if (isClass(token)) { out += `.${token.name}`; }
-    else if (isState(token)) { out += `[${token.namespace}|${token.name}${token.value ? `="${token.value}"` : ''}]`; }
+    else if (isState(token)) { out += `[${token.namespace}|${token.name}${token.value ? `="${token.value}"` : ""}]`; }
   }
   return out;
 }
@@ -71,7 +72,7 @@ class Walker {
   private length: number;
   private idx = 0;
 
-  constructor(data: string){
+  constructor(data: string) {
     this.data = data;
     this.length = data.length;
   }
@@ -87,8 +88,8 @@ class Walker {
    */
   consume(stop: string | Set<string>, ...args: string[]): string {
     let out = "";
-    stop = typeof stop === 'string' ? new Set([stop, ...args]) : stop;
-    while (!stop.has(this.data[this.idx]) && this.idx <= this.length-1) {
+    stop = typeof stop === "string" ? new Set([stop, ...args]) : stop;
+    while (!stop.has(this.data[this.idx]) && this.idx <= this.length - 1) {
       out += this.data[this.idx++];
     }
     return out;
@@ -117,7 +118,7 @@ export class BlockPath {
     if (this._location) {
       location = {
         ...this._location,
-        column: (this._location.column || 0) + this.walker.index() - len
+        column: (this._location.column || 0) + this.walker.index() - len,
       };
     }
     throw new BlockPathError(msg, location);
@@ -161,7 +162,7 @@ export class BlockPath {
     let char,
         working = "",
         walker = this.walker = new Walker(str),
-        token: Partial<Token> = { type: 'block' };
+        token: Partial<Token> = { type: "block" };
 
     while (char = walker.next()) {
 
@@ -173,7 +174,7 @@ export class BlockPath {
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           this.addToken(token);
-          token = { type: 'class' };
+          token = { type: "class" };
           working = "";
           break;
 
@@ -183,7 +184,7 @@ export class BlockPath {
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           this.addToken(token);
-          token = { type: 'state' };
+          token = { type: "state" };
           working = "";
           break;
 
@@ -227,7 +228,7 @@ export class BlockPath {
           // Depending on the next value, seed our token input
           let next = walker.next();
           if (next && !SEPARATORS.has(next)) { this.throw(ERRORS.expectsSepInsteadRec(next)); }
-          token = (next === STATE_BEGIN) ? { type: 'state' } : { type: 'class' };
+          token = (next === STATE_BEGIN) ? { type: "state" } : { type: "class" };
           break;
 
         // We should never encounter whitespace in this switch statement.
@@ -276,7 +277,7 @@ export class BlockPath {
   }
 
   private static from(tokens: Token[]) {
-    let path = new BlockPath('');
+    let path = new BlockPath("");
     path.tokens = tokens;
     return path;
   }
