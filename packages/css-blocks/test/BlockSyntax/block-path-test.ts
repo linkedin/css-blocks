@@ -13,7 +13,6 @@ export class BlockPathTests {
 
   @test "finds the class"() {
     let path = new BlockPath(".test");
-    console.log(path.block, path.path);
     assert.equal(path.block, "");
     assert.equal(path.path, ".test");
   }

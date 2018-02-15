@@ -217,7 +217,7 @@ export class BlockPath {
         case char === STATE_END:
           if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
           if ((!hasName(token) || !isQuoted(token)) && !isIdent(working)) {
-            console.log(working); return this.throw(ERRORS.invalidIdent(working), working.length);
+            return this.throw(ERRORS.invalidIdent(working), working.length);
           }
           (hasName(token)) ? (token.value = working) : (token.name = working);
           this.addToken(token);
