@@ -1,10 +1,12 @@
-import * as path from "path";
+import { whatever } from "@opticss/util";
 import * as fs from "fs";
+import * as path from "path";
+
 import {
-  CssBlockOptionsReadonly
+  CssBlockOptionsReadonly,
 } from "./options";
 import {
-  Syntax
+  Syntax,
 } from "./preprocessing";
 
 declare module "./options" {
@@ -15,7 +17,7 @@ declare module "./options" {
 }
 
 export interface ImporterData {
-  [key: string]: any;
+  [key: string]: whatever;
 }
 
 /**
@@ -143,7 +145,7 @@ export class FilesystemImporter extends PathBasedImporter {
   }
   import(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Promise<ImportedFile> {
     return new Promise((resolve, reject) => {
-      fs.readFile(identifier, 'utf-8', (err: any, data: string) => {
+      fs.readFile(identifier, "utf-8", (err: whatever, data: string) => {
         if (err) {
           reject(err);
         }
@@ -152,7 +154,7 @@ export class FilesystemImporter extends PathBasedImporter {
             syntax: this.syntax(identifier, options),
             identifier: identifier,
             defaultName: this.defaultName(identifier, options),
-            contents: data
+            contents: data,
           });
         }
       });
@@ -251,7 +253,5 @@ export class PathAliasImporter extends FilesystemImporter {
 
 /**
  * Default importer. Returns `ImportedFile` from disk
- * @param fromFile
- * @param importPath
  */
 export let filesystemImporter = new FilesystemImporter();

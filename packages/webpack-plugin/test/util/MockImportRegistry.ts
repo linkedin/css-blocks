@@ -1,7 +1,7 @@
-import * as path from "path";
 import { assert } from "chai";
+import * as path from "path";
 
-import { ImportedFile, Importer, PluginOptionsReader, PathBasedImporter, Syntax } from "css-blocks";
+import { ImportedFile, Importer, PathBasedImporter, PluginOptionsReader, Syntax } from "css-blocks";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 
@@ -36,7 +36,7 @@ export class MockImporter extends PathBasedImporter {
           syntax: Syntax.css,
           identifier: resolvedPath,
           defaultName: this.defaultName(resolvedPath, options),
-          contents: contents
+          contents: contents,
         });
       } else {
         let importedFiles = Object.keys(this.registry.sources).join(", ");
@@ -64,8 +64,9 @@ export class MockImportRegistry {
     sourcePath = this.relativize(sourcePath);
     if (!this.imported[sourcePath]) {
       let importedFiles = Object.keys(this.imported).join(", ");
-      assert(false,
-             `${sourcePath} was not imported as expected. These were imported: ${importedFiles}`);
+      assert(
+        false,
+        `${sourcePath} was not imported as expected. These were imported: ${importedFiles}`);
     }
   }
 

@@ -1,35 +1,35 @@
-import Analyzer from 'glimmer-analyzer';
-import path = require('path');
-import { expect } from 'chai';
+import { expect } from "chai";
+import Analyzer from "glimmer-analyzer";
+
 import { fixture } from "./fixtures";
 
-describe('Template dependency analysis', function() {
-  it('discovers angle bracket components', function() {
-    let analyzer = new Analyzer(fixture('basic-app'));
-    let analysis = analyzer.dependenciesForTemplate('my-app');
+describe("Template dependency analysis", function() {
+  it("discovers angle bracket components", function() {
+    let analyzer = new Analyzer(fixture("basic-app"));
+    let analysis = analyzer.dependenciesForTemplate("my-app");
 
     expect(analysis).to.deep.equal({
-      path: '/basic-app/components/my-app',
+      path: "/basic-app/components/my-app",
       hasComponentHelper: false,
       helpers: [],
       components: [
-        '/basic-app/components/my-app/page-banner',
-        '/basic-app/components/text-editor'
-      ]
+        "/basic-app/components/my-app/page-banner",
+        "/basic-app/components/text-editor",
+      ],
     });
   });
 
-  it('discovers use of the {{component}} helper', function() {
-    let analyzer = new Analyzer(fixture('basic-app'));
-    let analysis = analyzer.dependenciesForTemplate('with-component-helper');
+  it("discovers use of the {{component}} helper", function() {
+    let analyzer = new Analyzer(fixture("basic-app"));
+    let analysis = analyzer.dependenciesForTemplate("with-component-helper");
 
     expect(analysis).to.deep.equal({
-      path: '/basic-app/components/with-component-helper',
+      path: "/basic-app/components/with-component-helper",
       helpers: [],
       hasComponentHelper: true,
       components: [
-        '/basic-app/components/my-app'
-      ]
+        "/basic-app/components/my-app",
+      ],
     });
   });
 });

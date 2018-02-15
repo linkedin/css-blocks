@@ -1,20 +1,22 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import BEMProcessor from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
-import assertError from "./util/assertError";
 import cssBlocks = require("../src/cssBlocks");
+
+import { BEMProcessor } from "./util/BEMProcessor";
+import { MockImportRegistry } from "./util/MockImportRegistry";
+import { assertError } from "./util/assertError";
 
 @suite("Resolves conflicts")
 export class BlockInheritance extends BEMProcessor {
   @test "Can use global states"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("app.block.css",
+    imports.registerSource(
+      "app.block.css",
       `@block-global [state|is-loading];
        [state|is-loading] .profile {
          pointer-events: none;
-       }`
+       }`,
     );
 
     let filename = "widget.block.css";
@@ -27,16 +29,17 @@ export class BlockInheritance extends BEMProcessor {
       imports.assertImported("app.block.css");
       assert.deepEqual(
         result.css.toString(),
-        ".app--is-loading .widget__b { border: none; }\n"
+        ".app--is-loading .widget__b { border: none; }\n",
       );
     });
   }
   @test "Can't use non-global states"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("app.block.css",
+    imports.registerSource(
+      "app.block.css",
       `[state|is-loading] .profile {
          pointer-events: none;
-       }`
+       }`,
     );
 
     let filename = "widget.block.css";

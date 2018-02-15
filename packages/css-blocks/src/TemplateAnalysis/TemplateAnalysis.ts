@@ -1,30 +1,32 @@
 // tslint:disable-next-line:no-unused-variable Imported for Documentation link
-import { OptionsReader } from '../OptionsReader';
-import { BlockFactory } from "../BlockFactory";
-import { CustomLocalScope } from "../util/LocalScope";
-import { StyleAnalysis } from "./StyleAnalysis";
-import { Block, OBJ_REF_SPLITTER, Style } from "../Block";
-import TemplateValidator, { TemplateValidatorOptions } from "./validations";
 import {
-  TemplateTypes,
-  SerializedTemplateInfo,
-  TemplateInfo,
-  TemplateInfoFactory,
-  TemplateAnalysis as OptimizationTemplateAnalysis,
-  TemplateIntegrationOptions,
-} from "@opticss/template-api";
-import {
-  SourceLocation,
-  SourcePosition,
   isSourcePosition,
   POSITION_UNKNOWN,
+  SourceLocation,
+  SourcePosition,
 } from "@opticss/element-analysis";
+import {
+  SerializedTemplateInfo,
+  TemplateAnalysis as OptimizationTemplateAnalysis,
+  TemplateInfo,
+  TemplateInfoFactory,
+  TemplateIntegrationOptions,
+  TemplateTypes,
+} from "@opticss/template-api";
 import {
   ObjectDictionary,
   objectValues,
 } from "@opticss/util";
-import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
 import { IdentGenerator } from "opticss";
+
+import { Block, OBJ_REF_SPLITTER, Style } from "../Block";
+import { BlockFactory } from "../BlockFactory";
+import { OptionsReader } from "../OptionsReader";
+import { CustomLocalScope } from "../util/LocalScope";
+
+import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
+import { StyleAnalysis } from "./StyleAnalysis";
+import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 
 /**
  * This interface defines a JSON friendly serialization
@@ -87,12 +89,14 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    * A per-element correlation of styles used. The current correlation is added
    * to this list when [[endElement]] is called.
    */
+  // tslint:disable-next-line:prefer-whatever-to-any
   elements: Map<string, ElementAnalysis<any, any, any>>;
 
   /**
    * The current element, created when calling [[startElement]].
    * The current element is unset after calling [[endElement]].
    */
+  // tslint:disable-next-line:prefer-whatever-to-any
   currentElement: ElementAnalysis<any, any, any> | undefined;
 
   /**
@@ -108,7 +112,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   getElement<BooleanExpression, StringExpression, TernaryExpression>(idx: number): ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> {
     let mapIter = this.elements.entries();
     let el = mapIter.next().value;
-    for ( let i = 0; i < idx; i++) {
+    for (let i = 0; i < idx; i++) {
       el = mapIter.next().value;
     }
     return el[1];
@@ -123,7 +127,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
         omitIdents: {
           id: [],
           class: [],
-        }
+        },
       },
       analyzedAttributes: ["class"],
       analyzedTagnames: false,
@@ -222,7 +226,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    * @return The local name for the block object using the local prefix for the block.
    */
   serializedName(o: Style): string {
-    return `${this.getBlockName(o.block) || ''}${o.asSource()}`;
+    return `${this.getBlockName(o.block) || ""}${o.asSource()}`;
   }
 
   /**
@@ -303,11 +307,11 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     });
 
     // Serialize all discovered Elements.
-    this.elements.forEach( (el, key) => {
+    this.elements.forEach((el, key) => {
       elements[key] = el.serialize(styleIndexes);
     });
 
-    let t: SerializedTemplateInfo<K> = template as SerializedTemplateInfo<K>;
+    let t: SerializedTemplateInfo<K> = template;
     // Return serialized Analysis object.
     return { template: t, blocks, stylesFound, elements };
   }
@@ -320,12 +324,12 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    */
   static deserialize<K extends keyof TemplateTypes>(
     serializedAnalysis: SerializedTemplateAnalysis<K>,
-    blockFactory: BlockFactory
+    blockFactory: BlockFactory,
   ): Promise<TemplateAnalysis<K>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
     let info = TemplateInfoFactory.deserialize<K>(serializedAnalysis.template);
     let analysis = new TemplateAnalysis(info);
-    let blockPromises = new Array<Promise<{name: string, block: Block}>>();
+    let blockPromises = new Array<Promise<{name: string; block: Block}>>();
     blockNames.forEach(n => {
       let blockIdentifier = serializedAnalysis.blocks[n];
       let promise = blockFactory.getBlock(blockIdentifier).then(block => {
@@ -350,13 +354,14 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       });
 
       let elementNames = Object.keys(serializedAnalysis.elements);
-      elementNames.forEach( (elID) => {
+      elementNames.forEach((elID) => {
         let data = serializedAnalysis.elements[elID];
         let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, undefined, elID);
         analysis.elements.set(elID, element);
       });
 
-      return analysis as TemplateAnalysis<K>;
+      // tslint:disable-next-line:prefer-whatever-to-any
+      return <TemplateAnalysis<K>> <any> analysis;
     });
   }
 

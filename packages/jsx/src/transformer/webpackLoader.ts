@@ -1,8 +1,8 @@
-import { StyleMapping, PluginOptionsReader, Block } from 'css-blocks';
-import * as debugGenerator from 'debug';
+import { Block, PluginOptionsReader, StyleMapping } from "css-blocks";
+import * as debugGenerator from "debug";
 
-const debug = debugGenerator('css-blocks:jsx');
-const loaderUtils = require('loader-utils');
+const debug = debugGenerator("css-blocks:jsx");
+const loaderUtils = require("loader-utils");
 
 type LoaderContext = {
   dependency(dep: string): void;
@@ -21,11 +21,13 @@ function trackBlockDependencies(loaderContext: LoaderContext, block: Block, opti
   });
 }
 
-export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void {
+// tslint:disable-next-line:prefer-whatever-to-any
+export function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void {
 
   let callback = this.async();
   let thisLoader = this.loaders[this.loaderIndex];
   let path = this.resourcePath;
+  // tslint:disable-next-line:prefer-whatever-to-any
   let options: any;
 
   if (thisLoader.options) {
@@ -39,7 +41,7 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
 
   this.dependency(path);
 
-  if (!~path.indexOf('.tsx') && !~path.indexOf('.jsx')) {
+  if (!~path.indexOf(".tsx") && !~path.indexOf(".jsx")) {
     return callback(null, source, map);
   }
 
@@ -57,11 +59,11 @@ export default function CSSBlocksWebpackAdapter(this: any, source: any, map: any
   .then((mappings: StyleMapping[]) => {
     mappings.forEach((mapping: StyleMapping) => {
       // When an css or analysis error happens the mapping seems to be undefined and generates a confusing error.
-      let styleMapping: StyleMapping | undefined = mapping && mapping.analyses && mapping.analyses.find(a => a.template.identifier === path ) && mapping;
-      if ( !styleMapping ) {
+      let styleMapping: StyleMapping | undefined = mapping && mapping.analyses && mapping.analyses.find(a => a.template.identifier === path) && mapping;
+      if (!styleMapping) {
         return;
       }
-      for ( let key in styleMapping.blocks ) {
+      for (let key in styleMapping.blocks) {
         let block = styleMapping.blocks[key];
         trackBlockDependencies(this, block, cssBlockOpts);
       }

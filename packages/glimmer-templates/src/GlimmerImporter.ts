@@ -1,18 +1,20 @@
-import * as path from 'path';
 import {
+  CssBlockOptionsReadonly,
+  FileIdentifier,
+  filesystemImporter,
+  ImportedFile,
   Importer,
   PathBasedImporter,
-  FileIdentifier,
-  ImportedFile,
   PluginOptionsReader,
-  filesystemImporter
 } from "css-blocks";
-import { ResolvedPath, GlimmerProject } from "./GlimmerProject";
+import * as path from "path";
+
+import { GlimmerProject, ResolvedPath } from "./GlimmerProject";
 import { parseSpecifier } from "./utils";
 
 const glimmerImportIdentifier = /^glimmer:(.+)$/;
 
-export default class GlimmerImporter extends PathBasedImporter {
+export class GlimmerImporter extends PathBasedImporter {
   project: GlimmerProject;
   otherImporter: Importer;
   constructor(project: GlimmerProject, otherImporter?: Importer) {
@@ -95,7 +97,7 @@ export default class GlimmerImporter extends PathBasedImporter {
       return this.otherImporter.filesystemPath(identifier, options);
     }
   }
-  debugIdentifier(identifier: string, options): string {
+  debugIdentifier(identifier: string, options: CssBlockOptionsReadonly): string {
     let specifier = this.demangle(identifier);
     if (specifier) {
       let resolution = this.project.resolve(specifier);
@@ -117,7 +119,7 @@ export default class GlimmerImporter extends PathBasedImporter {
           syntax: this.syntax(identifier, options),
           identifier: identifier,
           contents: resolution.string,
-          defaultName: this.defaultName(identifier, options)
+          defaultName: this.defaultName(identifier, options),
         });
       } else {
         return Promise.reject(new Error(`File not found for ${specifier}`));

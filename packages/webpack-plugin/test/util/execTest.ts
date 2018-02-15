@@ -1,15 +1,18 @@
-import * as path from "path";
-import * as fs from "fs";
-import * as webpack from "webpack";
 import { assert } from "chai";
-import { DIST_DIRECTORY, BLOCK_FIXTURES_DIRECTORY } from "./testPaths";
+import * as fs from "fs";
+import * as path from "path";
+import * as webpack from "webpack";
+
 import { LoaderOptions } from "../../src/LoaderOptions";
+import { WebpackAny } from "../../src/Plugin";
 import { config as basicConfig } from "../configs/basicConfig";
+
+import { BLOCK_FIXTURES_DIRECTORY, DIST_DIRECTORY } from "./testPaths";
 const CR = /\r/g;
 
 // This test harness was adapted from the sass-loader test suite.
 
-export default function execTest(testId: string, options?: LoaderOptions) {
+export function execTest(testId: string, options?: LoaderOptions) {
     const entryPath = path.join(BLOCK_FIXTURES_DIRECTORY, testId + ".block.css");
     return runWebpackAsPromise(basicConfig(entryPath, options))
         .then(() => {
@@ -52,8 +55,8 @@ export function runWebpackAsPromise(webpackConfig: webpack.Configuration) {
 function runWebpack(webpackConfig: webpack.Configuration, done: (err: Error) => void) {
     webpack(webpackConfig, (webpackErr, stats) => {
         const err = webpackErr ||
-            (stats.hasErrors() && (<any>stats).compilation.errors[0]) ||
-            (stats.hasWarnings() && (<any>stats).compilation.warnings[0]);
+            (stats.hasErrors() && (<WebpackAny>stats).compilation.errors[0]) ||
+            (stats.hasWarnings() && (<WebpackAny>stats).compilation.warnings[0]);
 
         done(err || null);
     });

@@ -1,27 +1,22 @@
 import * as postcss from "postcss";
-import { CssBlockOptions } from "./options";
-import { Plugin } from "./Plugin";
+
 import { OutputMode } from "./OutputMode";
+import { Plugin } from "./Plugin";
 import { CssBlockError, InvalidBlockSyntax, MissingSourcePath } from "./errors";
+import { CssBlockOptions } from "./options";
 
 // This is ugly but it's the only thing I have been able to make work.
 // I welcome a patch that cleans this up.
 
-function makeApi(): {
-  (postcssImpl: typeof postcss): (opts?: Partial<Readonly<CssBlockOptions>>) => any;
+type temp = {
+  (postcssImpl: typeof postcss): (opts?: Partial<Readonly<CssBlockOptions>>) => postcss.Plugin<Partial<Readonly<CssBlockOptions>>>;
   OutputMode: typeof OutputMode;
   CssBlockError: typeof CssBlockError;
   InvalidBlockSyntax: typeof InvalidBlockSyntax;
   MissingSourcePath: typeof MissingSourcePath;
-} {
-  type temp = {
-    (postcssImpl: typeof postcss): (opts?: Partial<Readonly<CssBlockOptions>>) => any;
-    OutputMode: typeof OutputMode;
-    CssBlockError: typeof CssBlockError;
-    InvalidBlockSyntax: typeof InvalidBlockSyntax;
-    MissingSourcePath: typeof MissingSourcePath;
-  };
+};
 
+function makeApi(): temp {
   let cssBlocks: temp;
   cssBlocks = <temp>function(postcssImpl: typeof postcss) {
     return (opts?: Partial<Readonly<CssBlockOptions>>) => {

@@ -1,29 +1,28 @@
-import { assert } from 'chai';
-import { suite, test, skip } from 'mocha-typescript';
-import * as babel from 'babel-core';
-import { StyleMapping, PluginOptionsReader, CssBlockOptions, BlockCompiler } from 'css-blocks';
-import * as postcss from 'postcss';
-import * as prettier from 'prettier';
-import * as testConsole from 'test-console';
-import c$$ from '@css-blocks/runtime';
+import c$$ from "@css-blocks/runtime";
+import { TemplateIntegrationOptions } from "@opticss/template-api";
+import * as babel from "babel-core";
+import { assert } from "chai";
+import { BlockCompiler, CssBlockOptions, PluginOptionsReader, StyleMapping } from "css-blocks";
+import { skip, suite, test } from "mocha-typescript";
+import { OptiCSSOptions, OptimizationResult, Optimizer  } from "opticss";
+import * as postcss from "postcss";
+import * as prettier from "prettier";
+import * as testConsole from "test-console";
 
-import JSXAnalysis, { MetaAnalysis } from '../../src/utils/Analysis';
-import Transformer from '../../src';
-import { testParse as parse } from '../util';
-import { Optimizer, OptiCSSOptions, OptimizationResult  } from 'opticss';
-import { TemplateIntegrationOptions } from '@opticss/template-api';
+import Transformer from "../../src";
+import { makePlugin } from "../../src/transformer/babel";
+import { Analysis as JSXAnalysis, MetaAnalysis } from "../../src/utils/Analysis";
+import { testParse as parse } from "../util";
 
-const mock = require('mock-fs');
+const mock = require("mock-fs");
 
 // Reduce whitespace.
 function minify(s: string) {
   mock.restore();
-  return prettier.format(s).replace(/\n\n/mg, '\n');
+  return prettier.format(s).replace(/\n\n/mg, "\n");
 }
 
-const mkPlugin = require('../../src/transformer/babel').default;
-
-function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult, css: OptimizationResult}> {
+function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult; css: OptimizationResult}> {
   let filename = analysis.template.identifier;
   let optimizer = new Optimizer(optimizationOpts, templateOpts);
   let reader = new PluginOptionsReader(cssBlocksOptions);
@@ -35,35 +34,35 @@ function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partia
       content: compiler.compile(block, block.stylesheet!).toResult({to: reader.importer.filesystemPath(block.identifier, reader) || undefined}),
     });
   }
-  return optimizer.optimize('optimized.css').then(result => {
+  return optimizer.optimize("optimized.css").then(result => {
     let rewriter = new Transformer.Rewriter();
     rewriter.blocks[filename] = new StyleMapping(result.styleMapping, blocks, reader, [analysis]);
     let babelResult = babel.transform(code, {
       filename: filename,
       plugins: [
-        mkPlugin({rewriter})
+        makePlugin({rewriter}),
       ],
-      parserOpts: { plugins: [ 'jsx' ] }
+      parserOpts: { plugins: [ "jsx" ] },
     });
     return {
       jsx: babelResult,
-      css: result
+      css: result,
     };
   });
 
 }
 
-@suite('Transformer | External Objstr Class States')
+@suite("Transformer | External Objstr Class States")
 export class Test {
   after() {
     mock.restore();
   }
 
-  @test 'Root styles with and without .root are rewritten correctly.'(){
+  @test "Root styles with and without .root are rewritten correctly."() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
-      `
+      `,
     });
 
     let code = `
@@ -75,7 +74,7 @@ export class Test {
 
     `;
 
-    return parse(code, 'test.tsx').then((meta: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((meta: MetaAnalysis) => {
       return transform(code, meta.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
@@ -86,15 +85,15 @@ export class Test {
     });
   }
 
-  @test 'States with sub-states are transformed using string input'(){
+  @test "States with sub-states are transformed using string input"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
           color: yellow;
         }
-      `
+      `,
     });
 
     let code = `
@@ -111,29 +110,29 @@ export class Test {
       <div class={style}></div>;
     `;
 
-    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import c$$ from '@css-blocks/runtime';
           import objstr from 'obj-str';
           let isDynamic = true;
-          <div class={c$$("a", [1, 1, 2, isDynamic, 1, 0, 'b', 0])}></div>;`
+          <div class={c$$("a", [1, 1, 2, isDynamic, 1, 0, 'b', 0])}></div>;`,
         ));
-        assert.deepEqual(c$$('a', [1, 1, 2, true, 1, 0, 'b', 0]), 'a b');
+        assert.deepEqual(c$$("a", [1, 1, 2, true, 1, 0, "b", 0]), "a b");
       });
     });
   }
 
-  @test 'States with sub-states are transformed using boolean input'(){
+  @test "States with sub-states are transformed using boolean input"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=true] {
           color: yellow;
         }
-      `
+      `,
     });
 
     let code = `
@@ -148,27 +147,27 @@ export class Test {
       <div class={style}></div>;
     `;
 
-    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
-          <div class="a b"></div>;`)
+          <div class="a b"></div>;`),
         );
       });
     });
   }
 
-  @test 'States with sub-states are transformed using numerical input'(){
+  @test "States with sub-states are transformed using numerical input"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=100] {
           color: yellow;
         }
-      `
+      `,
     });
 
     let code = `
@@ -183,7 +182,7 @@ export class Test {
       <div class={style}></div>;
     `;
 
-    return parse(code, 'test.jsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.jsx").then((analysis: MetaAnalysis) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
@@ -195,9 +194,9 @@ export class Test {
     });
   }
 
-  @test 'States with dynamic sub-states are transformed'(){
+  @test "States with dynamic sub-states are transformed"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -206,7 +205,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     let code = `
@@ -225,7 +224,7 @@ export class Test {
       <div class={style}></div></div>;
     `;
 
-    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
@@ -236,25 +235,25 @@ export class Test {
           let leSigh = true;
 
           <div class="a">
-          <div class={c$$("b",[1,2,4,2,1,leSigh&&dynamic,"yellow",1,1,"green",1,0,"d",0,"c",1])}></div></div>;`)
+          <div class={c$$("b",[1,2,4,2,1,leSigh&&dynamic,"yellow",1,1,"green",1,0,"d",0,"c",1])}></div></div>;`),
         );
         let leSigh = true;
-        let dynamic = 'green';
-        assert.deepEqual(c$$('b',[1,2,4,2,1,leSigh&&dynamic,'yellow',1,1,'green',1,0,'d',0,'c',1]), 'b d');
+        let dynamic = "green";
+        assert.deepEqual(c$$("b", [1, 2, 4, 2, 1, leSigh && dynamic, "yellow", 1, 1, "green", 1, 0, "d", 0, "c", 1]), "b d");
       });
     });
   }
 
-  @test 'States with dynamic sub-states are transformed when only a single sub-state exists'(){
+  @test "States with dynamic sub-states are transformed when only a single sub-state exists"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|bool] { color: red; }
         .pretty[state|color=yellow] {
           color: yellow;
         }
-      `
+      `,
     });
 
     let code = `
@@ -273,7 +272,7 @@ export class Test {
       <div class={bar.root}><div class={style}></div></div>;
     `;
 
-    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
         import c$$ from "@css-blocks/runtime";
@@ -287,19 +286,20 @@ export class Test {
             ])}
           />
         </div>;
-          `)
+          `),
         );
         let leSigh = true;
-        let dynamic = 'yellow';
+        let dynamic = "yellow";
         assert.deepEqual(c$$([ 3, 2, 0, leSigh, 1, 0, 0, 1, 1, 0, 1, 1, 5, 1, 0, 1,
-              0, dynamic, 'yellow', 1, 2, 'c', -2, 2, 0, 1, 'd', 2]), 'c d');
+                               0, dynamic, "yellow", 1, 2, "c", -2, 2, 0, 1, "d", 2]),
+                         "c d");
       });
     });
   }
 
-  @test 'States with dynamic sub-states containing complex expression are transformed to the simplest possible output'(){
+  @test "States with dynamic sub-states containing complex expression are transformed to the simplest possible output"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellowColor] {
@@ -308,7 +308,7 @@ export class Test {
         .pretty[state|color=greenColor] {
           color: green;
         }
-      `
+      `,
     });
 
     let code = `
@@ -328,7 +328,7 @@ export class Test {
       <div class={bar.root}><div class={style}></div></div>;
     `;
 
-    return parse(code, 'test.jsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.jsx").then((analysis: MetaAnalysis) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
@@ -341,26 +341,27 @@ export class Test {
         <div class="a">
           <div class={c$$("b", [1,2,4,2,1,conditional() && \`\${dynamic}Color\`,
                                 "yellowColor",1,1,"greenColor",1,0,"d",0,"c",1])} />
-        </div>;`)
+        </div>;`),
         );
-        function conditional() { return true;}
-        let dynamic = 'yellow';
-        assert.deepEqual(c$$('b', [1,2,4,2,1,conditional() && `${dynamic}Color`,
-                                'yellowColor',1,1,'greenColor',1,0,'d',0,'c',1]), 'b c');
+        function conditional() { return true; }
+        let dynamic = "yellow";
+        assert.deepEqual(c$$("b", [1, 2, 4, 2, 1, conditional() && `${dynamic}Color`,
+                                   "yellowColor", 1, 1, "greenColor", 1, 0, "d", 0, "c", 1]),
+                         "b c");
       });
     });
   }
 
-  @test 'Gracefully handles conflicting BlockObject names.'(){
+  @test "Gracefully handles conflicting BlockObject names."() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
       `,
-      'foo.block.css': `
+      "foo.block.css": `
         .root { color: white; }
         .pretty { color: black; }
-      `
+      `,
     });
 
     let code = `
@@ -371,7 +372,7 @@ export class Test {
       <div class={foo.pretty}></div>;
     `;
 
-    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
@@ -382,13 +383,13 @@ export class Test {
     });
   }
 
-  @test 'Can set className dynamically'() {
+  @test "Can set className dynamically"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: red; }
         .foo { color: blue; }
         .foo[state|happy] { color: balloons; }
-      `
+      `,
     });
 
     let code = `
@@ -409,7 +410,7 @@ export class Test {
       }
     `;
 
-    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
@@ -426,12 +427,12 @@ export class Test {
     });
   }
 
-  @test "Doesn't explode with empty blocks."(){
+  @test "Doesn't explode with empty blocks."() {
     mock({
-      'foo.block.css': `
+      "foo.block.css": `
         .root { }
         [state|cool] { }
-      `
+      `,
     });
 
     let code = `
@@ -444,7 +445,7 @@ export class Test {
       <div class={styles}></div>;
     `;
 
-    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
@@ -456,10 +457,10 @@ export class Test {
     });
   }
 
-  @test 'Left over references to the block are an error'(){
+  @test "Left over references to the block are an error"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
-      'foo.block.css': '.root { font-family: sans-serif; } .big { font-size: 28px; }'
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "foo.block.css": ".root { font-family: sans-serif; } .big { font-size: 28px; }",
     });
 
     let code = `
@@ -476,20 +477,20 @@ export class Test {
         return ( <div class={style}></div> );
       }`;
 
-    return parse(code, 'test.tsx').then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
       let stderr = testConsole.stderr.inspect();
-      return transform(code, analysis.getAnalysis(0)).then(res => {
+      return transform(code, analysis.getAnalysis(0)).then(_res => {
         let result = stderr.output;
         stderr.restore();
         assert.deepEqual(result.length, 1);
-        assert.deepEqual(result[0].trim(), 'WARNING: Stray reference to block import (foo). Imports are removed during rewrite so this will probably be a runtime error. (test.tsx:10:11)');
+        assert.deepEqual(result[0].trim(), "WARNING: Stray reference to block import (foo). Imports are removed during rewrite so this will probably be a runtime error. (test.tsx:10:11)");
       });
     });
   }
   @skip
-  @test 'invalid runtime expression'() {
+  @test "invalid runtime expression"() {
     let args = JSON.parse('[13,21,0,false,1,0,0,0,false,1,13,0,0,true,1,17,0,3,1,0,false,1,1,5,1,0,4,0,null,"small",1,12,"medium",1,11,"large",1,10,"extraLarge",1,9,3,1,0,true,1,5,5,1,0,2,1,null,"square",1,8,"round",1,7,5,1,0,3,1,false,"inverse",1,3,"muted",1,4,"active",1,2,3,1,0,false,1,6,5,1,13,3,1,false,"inverse",1,14,"muted",1,15,"active",1,2,3,1,13,false,1,16,5,1,17,3,1,"muted","inverse",1,18,"muted",1,19,"active",1,2,3,1,17,true,1,20,"primary-button",0,"primary-button--animating",1,"primary-button--color-active",2,"primary-button--color-inverse",3,"primary-button--color-muted",4,"primary-button--fullWidth",5,"primary-button--hoverable",6,"primary-button--shape-round",7,"primary-button--shape-square",8,"primary-button--size-extraLarge",9,"primary-button--size-large",10,"primary-button--size-medium",11,"primary-button--size-small",12,"secondary-button",13,"secondary-button--color-inverse",14,"secondary-button--color-muted",15,"secondary-button--hoverable",16,"tertiary-button",17,"tertiary-button--color-inverse",18,"tertiary-button--color-muted",19,"tertiary-button--hoverable",20]');
     let result = c$$(args);
-    assert.deepEqual(result, 'tertiary-button tertiary-button--color-muted tertiary-button--hoverable');
+    assert.deepEqual(result, "tertiary-button tertiary-button--color-muted tertiary-button--hoverable");
   }
 }

@@ -1,0 +1,57 @@
+const foo = (asdf,
+             ~~~~ [Newline expected before first multi-line parameter.]
+  xyz) => {
+  ~~~ [Newline expected after last multi-line parameter.]
+  return true;
+};
+
+const foo = function(asdf,
+                     ~~~~ [Newline expected before first multi-line parameter.]
+  xyz) {
+  ~~~ [Newline expected after last multi-line parameter.]
+  return true;
+};
+
+function foo(asdf,
+             ~~~~ [Newline expected before first multi-line parameter.]
+  xyz) {
+  ~~~ [Newline expected after last multi-line parameter.]
+}
+
+class Foo {
+  constructor(one,
+              ~~~ [Newline expected before first multi-line parameter.]
+    two) {
+    ~~~ [Newline expected after last multi-line parameter.]
+
+  }
+  foo(asdf: boolean, xyz: string) {
+  }
+  fooBar(asdf: boolean,
+         ~~~~~~~~~~~~~ [Newline expected before first multi-line parameter.]
+    xyz: "asdf");
+    ~~~~~~~~~~~ [Newline expected after last multi-line parameter.]
+  fooBar(asdf: boolean,
+         ~~~~~~~~~~~~~ [Newline expected before first multi-line parameter.]
+    xyz: string) {
+    ~~~~~~~~~~~ [Newline expected after last multi-line parameter.]
+  }
+}
+
+const f = new Foo(1,
+                  ~ [Newline expected before first multi-line argument.]
+ 2);
+
+(new Foo()).fooBar(true,
+                   ~~~~ [Newline expected before first multi-line argument.]
+  "asdf");
+
+foo("asdf",
+    ~~~~~~ [Newline expected before first multi-line argument.]
+  "xyz");
+
+
+@decorate("first",
+          ~~~~~~~ [Newline expected before first multi-line argument.]
+"second)
+const foo = 1;

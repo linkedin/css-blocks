@@ -1,13 +1,14 @@
-import { isTrueCondition, isFalseCondition } from '../ElementAnalysis';
 import { Block, BlockClass, isBlockClass } from "../../Block";
-import { Validator, ErrorCallback } from "./Validator";
+import { isFalseCondition, isTrueCondition } from "../ElementAnalysis";
+
+import { ErrorCallback, Validator } from "./Validator";
 
 /**
  * Prevent two BlockClasses from the same Block hierarchy from being applied together.
  * @param err Error callback.
  */
 
-const classPairsValidator: Validator = (analysis, _templateAnalysis, err) => {
+export const classPairsValidator: Validator = (analysis, _templateAnalysis, err) => {
   // TODO: this doesn't work for dynamic classes
   let classPerBlock: Map<Block, BlockClass> = new Map();
   for (let container of analysis.classesFound(false)) {
@@ -53,12 +54,10 @@ function checkExisting(classPerBlock: Map<Block, BlockClass>, tmpClassPerBlock: 
   for (let block of blockHierarchy) {
     let otherClass = classPerBlock.get(block) || tmpClassPerBlock.get(block);
     if (otherClass) {
-      err(`Classes "${container.name}" and "${otherClass.name}" from the same block${block !== mainBlock ? ' hierarchy' : ''} are not allowed on the same element at the same time.`);
+      err(`Classes "${container.name}" and "${otherClass.name}" from the same block${block !== mainBlock ? " hierarchy" : ""} are not allowed on the same element at the same time.`);
     } else {
       blocks.push(block);
     }
   }
   return blocks;
 }
-
-export default classPairsValidator;

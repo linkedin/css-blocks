@@ -1,44 +1,45 @@
 import {
   AST,
   builders,
-} from '@glimmer/syntax';
-
-import {
-  IndexedClassRewrite,
-  DynamicClasses,
-  isTrueCondition,
-  isFalseCondition,
-  hasDependency,
-  isSwitch,
-  isConditional,
-  Dependency,
-  Conditional,
-  HasState,
-  HasGroup,
-  Switch,
-  BooleanExpression,
-  OrExpression,
-  NotExpression,
-  AndExpression,
-  BlockClass,
-  Style
-} from "css-blocks";
-import {
-  TemplateElement,
-  TernaryExpression as TernaryAST,
-  BooleanExpression as BooleanAST,
-  StringExpression as StringAST,
-} from './ElementAnalyzer';
+} from "@glimmer/syntax";
 import {
   isAndExpression,
-  isOrExpression,
   isNotExpression,
+  isOrExpression,
 } from "@opticss/template-api";
 import {
   assertNever,
-  unwrap,
   isSome,
+  unwrap,
 } from "@opticss/util";
+import {
+  AndExpression,
+  BlockClass,
+  BooleanExpression,
+  Conditional,
+  Dependency,
+  DynamicClasses,
+  hasDependency,
+  HasGroup,
+  HasState,
+  IndexedClassRewrite,
+  isConditional,
+  isFalseCondition,
+  isSwitch,
+  isTrueCondition,
+  NotExpression,
+  OrExpression,
+  Style,
+  Switch,
+} from "css-blocks";
+import * as debugGenerator from "debug";
+
+import {
+  BooleanExpression as BooleanAST,
+  StringExpression as StringAST,
+  TemplateElement,
+  TernaryExpression as TernaryAST,
+} from "./ElementAnalyzer";
 
 const enum SourceExpression {
   ternary,
@@ -60,18 +61,19 @@ const enum BooleanExpr {
   or = -2,
   and = -3,
 }
+
 export type Builders = typeof builders;
 
-import * as debugGenerator from 'debug';
 const debug = debugGenerator("css-blocks:glimmer");
 
 export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: TemplateElement): AST.MustacheStatement {
   return builders.mustache(
-    builders.path('/css-blocks/components/classnames'),
-    constructArgs(rewrite, element)
+    builders.path("/css-blocks/components/classnames"),
+    constructArgs(rewrite, element),
   );
 }
 
+// tslint:disable-next-line:prefer-whatever-to-any
 function constructArgs(rewrite: IndexedClassRewrite<any>, element: TemplateElement): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   expr.push(builders.number(element.dynamicClasses.length + element.dynamicStates.length));
@@ -81,6 +83,7 @@ function constructArgs(rewrite: IndexedClassRewrite<any>, element: TemplateEleme
   return expr;
 }
 
+// tslint:disable-next-line:prefer-whatever-to-any
 function constructSourceArgs(rewrite: IndexedClassRewrite<any>, element: TemplateElement): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   for (let classes of element.dynamicClasses) {
@@ -245,21 +248,24 @@ function moustacheToExpression(expr: AST.MustacheStatement): AST.Expression {
 
 function moustacheToStringExpression(stringExpression: StringAST): AST.Expression {
   if (stringExpression.type === "ConcatStatement") {
-    return builders.sexpr(builders.path("/css-blocks/components/concat"),
-      stringExpression.parts.reduce( (arr, val) => {
-        if (val.type === 'TextNode') {
-          arr.push(builders.string(val.chars));
-        } else {
-          arr.push(val.path);
-        }
-        return arr;
-      }, new Array<AST.Expression>())
-    );
+    return builders.sexpr(
+      builders.path("/css-blocks/components/concat"),
+      stringExpression.parts.reduce(
+        (arr, val) => {
+          if (val.type === "TextNode") {
+            arr.push(builders.string(val.chars));
+          } else {
+            arr.push(val.path);
+          }
+          return arr;
+        },
+        new Array<AST.Expression>()));
   } else {
     return moustacheToExpression(stringExpression);
   }
 }
 
+// tslint:disable-next-line:prefer-whatever-to-any
 function constructOutputArgs(rewrite: IndexedClassRewrite<any>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   for (let out of rewrite.dynamicClasses) {

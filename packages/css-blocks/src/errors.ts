@@ -22,13 +22,14 @@ export class CssBlockError extends Error {
 
   private annotatedMessage() {
     let loc = this.location;
-    if ( !loc ) {
+    if (!loc) {
       return this.origMessage;
     }
-    let filename = loc.filename || '';
-    let line = loc.line ? `:${loc.line}` : '';
-    let column = loc.column ? `:${loc.column}` : '';
+    let filename = loc.filename || "";
+    let line = loc.line ? `:${loc.line}` : "";
+    let column = loc.column ? `:${loc.column}` : "";
     let locMessage = ` (${filename}${line}${column})`;
+    // tslint:disable-next-line:prefer-whatever-to-any
     return `[css-blocks] ${(this.constructor as any).prefix}: ${this.origMessage}${locMessage}`;
   }
 

@@ -2,14 +2,14 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import cssBlocks = require("../src/cssBlocks");
 import {
+  BlockFactory,
   PluginOptions,
   PluginOptionsReader,
-  BlockFactory
 } from "../src";
+import cssBlocks = require("../src/cssBlocks");
 
-import BEMProcessor from "./util/BEMProcessor";
+import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
 
 @suite("Local Scope lookup")
@@ -28,11 +28,12 @@ export class LocalScopeLookupTest extends BEMProcessor {
   @test "can look up a local object"() {
     let imports = new MockImportRegistry();
     let filename = "foo/bar/a-block.css";
-    imports.registerSource(filename,
+    imports.registerSource(
+      filename,
       `.root { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`
+       .foo[state|small] { font-size: 5px; }`,
     );
 
     let importer = imports.importer();
@@ -59,15 +60,17 @@ export class LocalScopeLookupTest extends BEMProcessor {
 
   @test "can look up a referenced object"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/a-block.block.css",
+    imports.registerSource(
+      "foo/bar/a-block.block.css",
       `.root { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`
+       .foo[state|small] { font-size: 5px; }`,
     );
     let filename = "foo/bar/hasref.block.css";
-    imports.registerSource(filename,
-      `@block-reference a-block from "a-block.block.css";`
+    imports.registerSource(
+      filename,
+      `@block-reference a-block from "a-block.block.css";`,
     );
 
     let importer = imports.importer();
@@ -99,15 +102,17 @@ export class LocalScopeLookupTest extends BEMProcessor {
 
   @test "can look up a referenced object with an aliased named"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/a-block.block.css",
+    imports.registerSource(
+      "foo/bar/a-block.block.css",
       `.root { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`
+       .foo[state|small] { font-size: 5px; }`,
     );
     let filename = "foo/bar/hasref.block.css";
-    imports.registerSource(filename,
-      `@block-reference my-block from "a-block.block.css";`
+    imports.registerSource(
+      filename,
+      `@block-reference my-block from "a-block.block.css";`,
     );
 
     let importer = imports.importer();

@@ -1,6 +1,12 @@
 {
   "private": true,
+  "scripts": {
+    "commitmsg": "commitlint -e $GIT_PARAMS"
+  },
   "devDependencies": {
+    "@commitlint/cli": "^6.1.0",
+    "@commitlint/config-conventional": "^6.1.0",
+    "husky": "^0.14.3",
     "lerna": "^2.5.1"
   },
   "workspaces": [

@@ -1,0 +1,43 @@
+{
+  "name": "@css-blocks/code-style",
+  "author": "Chris Eppstein",
+  "description": "Configuration and tools to manage the code style of css-blocks.",
+  "license": "BSD-2-Clause",
+  "version": "0.17.0",
+  "main": "configs/tslint.interactive.json",
+  "readme": "README.md",
+  "keywords": [
+    "tslint",
+    "tslint-plugin"
+  ],
+  "types": "dist",
+  "scripts": {
+    "compile": "rm -rf dist && tsc",
+    "pretest": "npm run compile",
+    "prepublish": "npm run compile && tslint -p . -c tslint.release.json",
+    "test": "tslint --test test/rules/*/* && npm run lint",
+    "lint": "tslint -p . -c tslint.cli.json",
+    "lintfix": "tslint -p . --fix -c tslint.cli.json"
+  },
+  "bugs": {
+    "url": "https://github.com/css-blocks/css-blocks/issues"
+  },
+  "repository": {
+    "url": "https://github.com/css-blocks/css-blocks.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/code-style",
+  "devDependencies": {
+    "tslint": "^5.9.1",
+    "typescript": "^2.7.1"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "dist",
+    "configs",
+    "*.md",
+    "test"
+  ]
+}

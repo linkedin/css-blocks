@@ -1,25 +1,24 @@
 import {
-  CssBlockOptions,
+  CssBlockOptionsReadonly,
   PluginOptions,
-  CssBlockOptionsReadonly
 } from "./options";
 
 import {
-  OutputMode
+  OutputMode,
 } from "./OutputMode";
 
 import {
-  Importer,
   filesystemImporter,
-  ImporterData
+  Importer,
+  ImporterData,
 } from "./importing";
 
 import {
-  BlockFactory
+  BlockFactory,
 } from "./BlockFactory";
 
 import {
-  Preprocessors
+  Preprocessors,
 } from "./preprocessing";
 
 /**
@@ -36,16 +35,13 @@ export class OptionsReader implements CssBlockOptionsReadonly {
   readonly factory?: BlockFactory;
   readonly maxConcurrentCompiles: number;
 
-  constructor(opts?: PluginOptions) {
-    let defaults: CssBlockOptions = {
-      outputMode: OutputMode.BEM,
-      importer: filesystemImporter,
-      rootDir: process.cwd(),
-      data: {},
-      preprocessors: {},
-      disablePreprocessChaining: false,
-      maxConcurrentCompiles: 4
-    };
-    Object.assign(this, defaults, opts || {});
+  constructor(opts: PluginOptions = {}) {
+    this.outputMode = opts.outputMode || OutputMode.BEM;
+    this.importer = opts.importer || filesystemImporter;
+    this.rootDir = opts.rootDir || process.cwd();
+    this.data = opts.data || {};
+    this.preprocessors = opts.preprocessors || {};
+    this.disablePreprocessChaining = !!opts.disablePreprocessChaining;
+    this.maxConcurrentCompiles = opts.maxConcurrentCompiles || 4;
   }
 }

@@ -1,11 +1,12 @@
+import * as inlineSourceMapComment from "inline-source-map-comment";
 import * as postcss from "postcss";
-import * as inlineSourceMapComment from 'inline-source-map-comment';
 import {
-  CssBlockOptionsReadonly
-} from "./options";
-import {
-  RawSourceMap
+  RawSourceMap,
 } from "source-map";
+
+import {
+  CssBlockOptionsReadonly,
+} from "./options";
 
 declare module "./options" {
   export interface CssBlockOptions {
@@ -28,7 +29,7 @@ export enum Syntax {
   css = "css",
   less = "less",
   stylus = "styl",
-  other = "other"
+  other = "other",
 }
 
 export function syntaxName(syntax: Syntax): string {
@@ -82,5 +83,5 @@ export function annotateCssContentWithSourceMap(content: string | postcss.Result
   if (typeof sourceMap === "string") {
     sourceMap = JSON.parse(sourceMap);
   }
-  return contentStr + (contentStr.endsWith('\n') ? '' : '\n') + inlineSourceMapComment(sourceMap, {block: true});
+  return contentStr + (contentStr.endsWith("\n") ? "" : "\n") + inlineSourceMapComment(sourceMap, {block: true});
 }

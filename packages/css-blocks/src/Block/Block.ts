@@ -32,8 +32,8 @@ import {
 } from "../BlockParser";
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
-  let index = s.indexOf('.');
-  if (index < 0) index = s.indexOf('[');
+  let index = s.indexOf(".");
+  if (index < 0) index = s.indexOf("[");
   if (index >= 0) {
     return [s.substr(0, index), s.substring(index)];
   }
@@ -52,14 +52,13 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
 
   protected _name: string;
   protected _container: ContainerType;
-  protected _compiledAttribute: Attribute;
 
   /** cache of resolveStyles() */
   private _resolvedStyles: Set<Style> | undefined;
   /** cache for the block getter. */
   private _block: Block | undefined;
   /** cache for the block getter. */
-  private _base: StyleType | null;
+  private _base: StyleType | null | undefined;
 
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
@@ -250,6 +249,7 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   // TypeScript can't figure out that `this` is the `StyleType` so this private
   // method casts it in a few places where it's needed.
   private asStyle(): StyleType {
+    // tslint:disable-next-line:prefer-whatever-to-any
     return <StyleType><any>this;
   }
 }
@@ -285,7 +285,7 @@ export class Block
     this.parsedRuleSelectors = new WeakMap();
     this._localScope = new LocalScopedContext<Block, Style>(OBJ_REF_SPLITTER, this);
     this._dependencies = new Set<string>();
-    this._rootClass = new BlockClass('root', this);
+    this._rootClass = new BlockClass("root", this);
     this.addClass(this._rootClass);
   }
 
@@ -569,15 +569,15 @@ export class Block
     if (node.type === selectorParser.CLASS && node.value === "root") {
       return [this.rootClass, 0];
     } else if (node.type === selectorParser.TAG) {
-      let otherBlock = this.getReferencedBlock(node.value!);
+      let otherBlock = this.getReferencedBlock(node.value);
       if (otherBlock) {
         let next = node.next();
         if (next && isClassNode(next)) {
-          let klass = otherBlock.getClass(next.value!);
+          let klass = otherBlock.getClass(next.value);
           if (klass) {
             let another = next.next();
             if (another && isStateNode(another)) {
-              let info = stateParser(<selectorParser.Attribute>another);
+              let info = stateParser(another);
               let state = klass._getState(info);
               if (state) {
                 return [state, 2];
@@ -592,7 +592,7 @@ export class Block
             return null;
           }
         } else if (next && isStateNode(next)) {
-          let info = stateParser(<selectorParser.Attribute>next);
+          let info = stateParser(next);
           let state = otherBlock.rootClass._getState(info);
           if (state) {
             return [state, 1];
@@ -606,13 +606,13 @@ export class Block
         return null;
       }
     } else if (node.type === selectorParser.CLASS) {
-      let klass = this.getClass(node.value!);
+      let klass = this.getClass(node.value);
       if (klass === undefined) {
         return null;
       }
       let next = node.next();
       if (next && isStateNode(next)) {
-        let info = stateParser(<selectorParser.Attribute>next);
+        let info = stateParser(next);
         let state = klass._getState(info);
         if (state === undefined) {
           return null;
@@ -623,7 +623,7 @@ export class Block
         return [klass, 0];
       }
     } else if (isStateNode(node)) {
-      let info = stateParser(<selectorParser.Attribute>node);
+      let info = stateParser(node);
       let state = this.rootClass._ensureState(info);
       if (state) {
         return [state, 0];
@@ -769,7 +769,7 @@ export type StyleParent = Block | BlockClass | State | undefined;
  * Represents a Class present in the Block.
  */
 export class BlockClass extends BlockObject<BlockClass, Block> {
-  private _sourceAttribute: Attribute;
+  private _sourceAttribute: Attribute | undefined;
   private _states: StateMap = {};
 
   /**
@@ -822,7 +822,7 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
           return `${this.block.name}__${this.name}`;
         }
       default:
-        throw "this never happens";
+        return assertNever(opts.outputMode);
     }
   }
 
@@ -1046,7 +1046,7 @@ export class State extends BlockObject<State, BlockClass> {
 
   private _hasSubStates: boolean;
   private _subStates: undefined | ObjectDictionary<SubState>;
-  private _sourceAttributes: Attr[];
+  private _sourceAttributes: Attr[] | undefined;
 
   /**
    * State constructor. Provide a local name for this State, an optional group name,
@@ -1193,7 +1193,7 @@ export class State extends BlockObject<State, BlockClass> {
         let cssClassName = this.blockClass.cssClass(opts);
         return `${cssClassName}--${this.name}`;
       default:
-        throw "this never happens";
+        return assertNever(opts.outputMode);
     }
   }
 
@@ -1211,7 +1211,7 @@ export class State extends BlockObject<State, BlockClass> {
 }
 
 export class SubState extends BlockObject<SubState, State> {
-  _sourceAttributes: Array<AttributeNS>;
+  _sourceAttributes: Array<AttributeNS> | undefined;
   isGlobal = false;
 
   getBaseFromBaseParent(baseParent: State): SubState | undefined {

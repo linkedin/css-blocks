@@ -1,16 +1,16 @@
-import * as postcss from "postcss";
 import * as perfectionist from "perfectionist";
+import * as postcss from "postcss";
 
-import { PluginOptions } from "../../src/options";
 import cssBlocks = require("../../src/cssBlocks");
+import { PluginOptions } from "../../src/options";
 
-export default class BEMProcessor {
+export class BEMProcessor {
   process(filename: string, contents: string, cssBlocksOpts?: PluginOptions) {
     let processOpts = { from: filename };
     let cssBlocksProcessor = cssBlocks(postcss);
     return postcss([
       cssBlocksProcessor(cssBlocksOpts),
-      perfectionist({format: "compact", indentSize: 2})
+      perfectionist({format: "compact", indentSize: 2}),
     ]).process(contents, processOpts);
   }
 }

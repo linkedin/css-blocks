@@ -1,5 +1,5 @@
-export { default as classnames } from './classnames';
-export { default as concat } from './concat';
+export { default as classnames } from "./classnames";
+export { default as concat } from "./concat";
 
 /*
   This metadata tells Glimmer's Bundle Compiler where
@@ -22,16 +22,16 @@ export { default as concat } from './concat';
   are directly produce Glimmer references from @glimmer/references.
 */
 export const cssBlocksHelpers = {
-  '/css-blocks/components/concat': {
-    kind: 'helper',
-    module: '@css-blocks/glimmer-templates/dist/src/helpers',
-    name: 'concat',
-    meta: { factory: false }
+  "/css-blocks/components/concat": {
+    kind: "helper",
+    module: "@css-blocks/glimmer-templates/dist/src/helpers",
+    name: "concat",
+    meta: { factory: false },
   },
-  '/css-blocks/components/classnames': {
-    kind: 'helper',
-    module: '@css-blocks/glimmer-templates/dist/src/helpers',
-    name: 'classnames',
-    meta: { factory: false }
-  }
+  "/css-blocks/components/classnames": {
+    kind: "helper",
+    module: "@css-blocks/glimmer-templates/dist/src/helpers",
+    name: "classnames",
+    meta: { factory: false },
+  },
 };

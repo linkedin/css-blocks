@@ -1,14 +1,15 @@
-import { NodePath } from 'babel-traverse';
-import { JSXOpeningElement, AssignmentExpression } from 'babel-types';
+import { NodePath } from "babel-traverse";
+import { AssignmentExpression, JSXOpeningElement } from "babel-types";
 
-import Analysis from '../utils/Analysis';
-import { JSXElementAnalyzer } from './JSXElementAnalyzer';
+import { Analysis } from "../utils/Analysis";
+
+import { JSXElementAnalyzer } from "./JSXElementAnalyzer";
 
 /**
  * Babel visitors we can pass to `babel-traverse` to run analysis on a given JSX file.
  * @param analysis The Analysis object to store our results in.
  */
-export default function visitors(analysis: Analysis): object {
+export function analyzer(analysis: Analysis): object {
   let elementAnalyzer = new JSXElementAnalyzer(analysis.blocks, analysis.template.identifier);
 
   return {
@@ -26,6 +27,6 @@ export default function visitors(analysis: Analysis): object {
     JSXOpeningElement(path: NodePath<JSXOpeningElement>): void {
       let element = elementAnalyzer.analyzeJSXElement(path);
       if (element) analysis.addElement(element);
-    }
+    },
   };
 }

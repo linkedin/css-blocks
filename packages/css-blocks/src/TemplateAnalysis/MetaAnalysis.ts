@@ -1,18 +1,20 @@
-import { OptionsReader } from '../OptionsReader';
-import * as debugGenerator from 'debug';
+import {
+  TemplateAnalysis as OptimizedTemplateAnalysis,
+  TemplateIntegrationOptions,
+  TemplateTypes,
+} from "@opticss/template-api";
+import { whatever } from "@opticss/util";
+import * as debugGenerator from "debug";
 
 import { Block, Style } from "../Block";
-import { TemplateAnalysis, SerializedTemplateAnalysis } from "./index";
-import {
-  TemplateTypes,
-  TemplateAnalysis as OptimizedTemplateAnalysis,
-  TemplateIntegrationOptions
-} from "@opticss/template-api";
+import { OptionsReader } from "../OptionsReader";
+
 import { StyleAnalysis } from "./StyleAnalysis";
+import { SerializedTemplateAnalysis, TemplateAnalysis } from "./index";
 
 let debug = debugGenerator("css-blocks");
 
-export class SerializedMetaTemplateAnalysis {
+export interface SerializedMetaTemplateAnalysis {
   analyses: SerializedTemplateAnalysis<keyof TemplateTypes>[];
 }
 
@@ -36,7 +38,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
         omitIdents: {
           id: [],
           class: [],
-        }
+        },
       },
       analyzedAttributes: ["class"],
       analyzedTagnames: false,
@@ -64,7 +66,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     return Object.keys(this.analyses).length;
   }
 
-  eachAnalysis(cb: (v: TemplateAnalysis<keyof TemplateTypes>) => any) {
+  eachAnalysis(cb: (v: TemplateAnalysis<keyof TemplateTypes>) => whatever) {
     this.analyses.forEach(a => {
       cb(a);
     });

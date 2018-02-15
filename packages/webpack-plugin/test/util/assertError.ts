@@ -1,8 +1,8 @@
 import { assert } from "chai";
-import * as postcss from "postcss";
 import cssBlocks = require("css-blocks");
+import * as postcss from "postcss";
 
-export default function assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
+export function assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
   return promise.then(
     () => {
       assert(false, `Error ${errorType.name} was not raised.`);

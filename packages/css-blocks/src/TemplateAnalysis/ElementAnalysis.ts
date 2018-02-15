@@ -1,40 +1,40 @@
 import {
-  unionInto,
-} from "../util/unionInto";
+  Attribute,
+  AttributeValueChoice,
+  AttributeValueChoiceOption,
+  AttributeValueSet,
+  AttributeValueSetItem,
+  attrValues,
+  Element,
+  isConstant,
+  POSITION_UNKNOWN,
+  SourceLocation,
+  Tagname,
+  ValueAbsent,
+  ValueConstant,
+} from "@opticss/element-analysis";
 import {
-  OptionsReader as CssBlocksOptionsReader,
-} from "../OptionsReader";
+  MultiMap,
+  ObjectDictionary,
+  objectValues,
+  whatever,
+} from "@opticss/util";
 
 import {
   Block,
+  BlockClass,
   isBlockClass,
   isStateful,
   State,
-  BlockClass,
   Style,
   SubState,
 } from "../Block";
-
 import {
-  ObjectDictionary,
-  objectValues,
-  MultiMap,
-} from "@opticss/util";
+  OptionsReader as CssBlocksOptionsReader,
+} from "../OptionsReader";
 import {
-  Attribute,
-  AttributeValueSetItem,
-  Element,
-  SourceLocation,
-  Tagname,
-  attrValues,
-  ValueConstant,
-  ValueAbsent,
-  AttributeValueSet,
-  AttributeValueChoice,
-  AttributeValueChoiceOption,
-  isConstant,
-  POSITION_UNKNOWN,
-} from "@opticss/element-analysis";
+  unionInto,
+} from "../util/unionInto";
 
 export interface HasState<StateType extends State | SubState | number = State | SubState> {
   state: StateType;
@@ -59,8 +59,8 @@ export interface Conditional<BooleanExpression> {
   condition: BooleanExpression;
 }
 
-export function isConditional(o: object): o is Conditional<any> {
-  return o.hasOwnProperty('condition');
+export function isConditional(o: object): o is Conditional<whatever> {
+  return o.hasOwnProperty("condition");
 }
 
 /**
@@ -73,8 +73,8 @@ export interface Switch<StringExpression> {
   disallowFalsy?: boolean;
 }
 
-export function isSwitch(o: object): o is Switch<any> {
-  return o.hasOwnProperty('stringExpression');
+export function isSwitch(o: object): o is Switch<whatever> {
+  return o.hasOwnProperty("stringExpression");
 }
 
 /**
@@ -354,14 +354,16 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       Array<StaticClass | DynamicClasses<TernaryExpression>>,
       Array<DependentState | ConditionalDependentState<BooleanExpression> | ConditionalDependentStateGroup<StringExpression>>
     ] = [[], []];
-    let [classStyles, stateStyles] = this.addedStyles.reduce((res, style) => {
-      if (isStaticClass(style) || isTrueCondition(style) || isFalseCondition(style)) {
-        res[0].push(style);
-      } else {
-        res[1].push(style);
-      }
-      return res;
-    }, styles);
+    let [classStyles, stateStyles] = this.addedStyles.reduce(
+      (res, style) => {
+        if (isStaticClass(style) || isTrueCondition(style) || isFalseCondition(style)) {
+          res[0].push(style);
+        } else {
+          res[1].push(style);
+        }
+        return res;
+      },
+      styles);
 
     for (let classStyle of classStyles) {
       if (isStaticClass(classStyle)) {
@@ -527,16 +529,16 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
   assertSealed(isSealed = true) {
     if (this._sealed === isSealed) return;
-    throw new Error(`Internal Error: The analysis is ${ this._sealed ? '' : 'not yet '}sealed.`);
+    throw new Error(`Internal Error: The analysis is ${ this._sealed ? "" : "not yet "}sealed.`);
   }
 
   countAllStaticStyles(): number {
     this.assertSealed();
     return this.allStaticStyles.size;
   }
-  *getAllStaticStyles() {
+  *getAllStaticStyles(): IterableIterator<Style> {
     this.assertSealed();
-    let s;
+    let s: Style;
     for (s of this.allStaticStyles) {
       yield s;
     }
@@ -562,14 +564,14 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     let serialization: SerializedElementAnalysis = {
       staticStyles,
       dynamicClasses,
-      dynamicStates
+      dynamicStates,
     };
     if (this.tagName) {
       serialization.tagName = this.tagName;
     }
     if (this.sourceLocation.start.line !== POSITION_UNKNOWN.line) {
       serialization.sourceLocation = {
-        start: { line: this.sourceLocation.start.line }
+        start: { line: this.sourceLocation.start.line },
       };
       if (this.sourceLocation.start.column) {
         serialization.sourceLocation.start.column = this.sourceLocation.start.column;
@@ -579,7 +581,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       }
       if (this.sourceLocation.end) {
         serialization.sourceLocation.end = {
-          line: this.sourceLocation.end.line
+          line: this.sourceLocation.end.line,
         };
         if (this.sourceLocation.end.column) {
           serialization.sourceLocation.end.column = this.sourceLocation.end.column;
@@ -655,7 +657,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       tagName,
       [new Attribute("class", classValue)],
       this.sourceLocation,
-      this.id
+      this.id,
     );
     return [element, classMap];
   }
@@ -690,7 +692,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
   private prepareCondition(
     classes: DynamicClasses<TernaryExpression>,
-    condition: 'whenTrue' | 'whenFalse',
+    condition: "whenTrue" | "whenFalse",
   ) {
     let parents: Array<BlockClass> = classes[condition];
     let dynamicParents = parents.filter(c => {
@@ -720,10 +722,10 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
 function dynamicClassAndDependentStates(
   classes: Array<BlockClass>,
-  depStatesMap: MultiMap<BlockClass, DynamicStates<any, any>>,
-  dynStatesHandled: Set<DynamicStates<any, any>>,
+  depStatesMap: MultiMap<BlockClass, DynamicStates<whatever, whatever>>,
+  dynStatesHandled: Set<DynamicStates<whatever, whatever>>,
   mapper: ClassMapper,
-  choices: ChoiceMapper
+  choices: ChoiceMapper,
 ): AttributeValueSet | ValueConstant {
   let classValues = new Array<AttributeValueSetItem>();
   for (let klass of classes) {
@@ -733,7 +735,7 @@ function dynamicClassAndDependentStates(
     for (let dynState of dynStates) {
       if (isStateGroup(dynState)) {
         classValues.push(choices(isSwitch(dynState),
-                                     ...objectValues(dynState.group)));
+                                 ...objectValues(dynState.group)));
       } else {
         if (isConditional(dynState)) {
           classValues.push(choices(true, dynState.state));
@@ -752,7 +754,7 @@ function dynamicClassAndDependentStates(
 
 function addToSet(
   setItems: Array<AttributeValueSetItem>,
-  value: ValueConstant | AttributeValueSet
+  value: ValueConstant | AttributeValueSet,
 ): Array<AttributeValueSetItem> {
   if (isConstant(value)) {
     setItems.push(value);
@@ -766,7 +768,7 @@ type ClassMapper = (style: Style) => ValueConstant | AttributeValueSet;
 function mapClasses(
   options: CssBlocksOptionsReader,
   map: Map<string, Style>,
-  style: Style
+  style: Style,
 ): ValueConstant | AttributeValueSet {
   let classes = new Array<string>();
   let resolvedStyles = style.resolveStyles();
@@ -787,7 +789,7 @@ function mapChoiceClasses(
   options: CssBlocksOptionsReader,
   map: Map<string, Style>,
   includeAbsent: boolean,
-  ...styles: Style[]
+  ...styles: Style[],
 ): AttributeValueChoice {
   let choices = new Array<AttributeValueChoiceOption>();
   if (includeAbsent) {
@@ -799,11 +801,11 @@ function mapChoiceClasses(
   return attrValues.oneOf(choices);
 }
 
-function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Style, number>): SerializedDynamicContainer {
+function serializeDynamicContainer(c: DynamicClasses<whatever>, styleIndexes: Map<Style, number>): SerializedDynamicContainer {
   let classes: SerializedDynamicContainer = {
     condition: true,
     whenFalse: [],
-    whenTrue: []
+    whenTrue: [],
   };
   if (isTrueCondition(c)) {
     classes.whenTrue = c.whenTrue.map(s => styleIndexes.get(s)!).sort();
@@ -818,7 +820,7 @@ function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Sty
   return classes;
 }
 
-function serializeDynamicStates(c: DynamicStates<any, any>, styleIndexes: Map<Style, number>): SerializedDynamicStates {
+function serializeDynamicStates(c: DynamicStates<whatever, whatever>, styleIndexes: Map<Style, number>): SerializedDynamicStates {
   let dynState = {
     stringExpression: true,
     condition: true,

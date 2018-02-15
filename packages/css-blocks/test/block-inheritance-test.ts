@@ -1,18 +1,19 @@
 import { assert } from "chai";
-import { suite, test, skip, only } from "mocha-typescript";
+import { skip, suite, test } from "mocha-typescript";
 
-import BEMProcessor from "./util/BEMProcessor";
+import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
 
 @suite("Block Inheritance")
 export class BlockInheritance extends BEMProcessor {
   @test "can import another block"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/base.css",
+    imports.registerSource(
+      "foo/bar/base.css",
       `.root { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`
+       .foo[state|small] { font-size: 5px; }`,
     );
 
     let filename = "foo/bar/inherits.css";
@@ -36,7 +37,7 @@ export class BlockInheritance extends BEMProcessor {
         "   .b[state|small] => .inherits__b--small\n" +
         "   .foo => .base__foo .inherits__foo\n" +
         "   .foo[state|small] => .base__foo--small\n" +
-        "   [state|large] => .base--large */\n"
+        "   [state|large] => .base--large */\n",
       );
     });
   }
@@ -46,9 +47,10 @@ export class BlockInheritance extends BEMProcessor {
     // This is hard because the base block and the sub block have to be compiled together to make it work.
     // or the base block would need to discover all subblocks somehow.
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/base.css",
+    imports.registerSource(
+      "foo/bar/base.css",
       `.root { color: purple; }
-       .foo   { float: left; width: 500px; }`
+       .foo   { float: left; width: 500px; }`,
     );
 
     let filename = "foo/bar/inherits.css";
@@ -61,15 +63,16 @@ export class BlockInheritance extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".inherits { color: red; }\n" +
-        ".inherits__foo { clear: both; }\n"
+        ".inherits__foo { clear: both; }\n",
       );
     });
   }
 
   @test "inheritance conflicts automatically resolve to the base class"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("base.css",
-      `.root { width: 100%; }`
+    imports.registerSource(
+      "base.css",
+      `.root { width: 100%; }`,
     );
 
     let filename = "sub.css";
@@ -84,15 +87,16 @@ export class BlockInheritance extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".sub { width: 80%; }\n" +
-        ".base.sub { width: 80%; }\n"
+        ".base.sub { width: 80%; }\n",
       );
     });
   }
 
   @test "inheritance conflicts automatically resolve pseudoelements to the base class"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("base.css",
-      `.foo::after { width: 100%; }`
+    imports.registerSource(
+      "base.css",
+      `.foo::after { width: 100%; }`,
     );
 
     let filename = "sub.css";
@@ -109,16 +113,17 @@ export class BlockInheritance extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".sub__foo::after { width: 80%; }\n" +
-        ".base__foo.sub__foo::after { width: 80%; }\n"
+        ".base__foo.sub__foo::after { width: 80%; }\n",
       );
     });
   }
 
   @test "multiple rulesets for the same target object pseudoelement get resolved"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("base.css",
+    imports.registerSource(
+      "base.css",
       `.nav { margin: 10px; }
-       .nav + .nav { margin-bottom: 0px; }`
+       .nav + .nav { margin-bottom: 0px; }`,
     );
 
     let filename = "sub.css";
@@ -134,7 +139,7 @@ export class BlockInheritance extends BEMProcessor {
         ".sub__nav { margin: 15px; }\n" +
         ".base__nav.sub__nav { margin: 15px; }\n" +
         ".sub__nav + .sub__nav { margin-bottom: 5px; }\n" +
-        ".base__nav.sub__nav + .base__nav.sub__nav { margin-bottom: 5px; }\n"
+        ".base__nav.sub__nav + .base__nav.sub__nav { margin-bottom: 5px; }\n",
       );
     });
   }
@@ -143,8 +148,9 @@ export class BlockInheritance extends BEMProcessor {
   // This bug will be resolved when https://github.com/css-blocks/css-blocks/issues/64 lands.
   @test @skip "multiple selectors in ruleset for object get resolved"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("base.css",
-      `.nav:active, .nav:hover { color: red; }`
+    imports.registerSource(
+      "base.css",
+      `.nav:active, .nav:hover { color: red; }`,
     );
 
     let filename = "sub.css";
@@ -159,7 +165,7 @@ export class BlockInheritance extends BEMProcessor {
         ".sub__nav:active, .sub__nav:hover { color: blue; }\n" +
         ".base__nav.sub__nav:hover { color: blue; }\n" +
         ".base__nav.sub__nav:active { color: blue; }\n" +
-        ".base__nav.sub__nav:active:hover { color: blue; }\n"
+        ".base__nav.sub__nav:active:hover { color: blue; }\n",
       );
     });
   }
@@ -167,8 +173,9 @@ export class BlockInheritance extends BEMProcessor {
   @skip
   @test "longhand inheritance conflicts automatically resolve to the base class"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("base.css",
-      `.root { border: 1px solid black; }`
+    imports.registerSource(
+      "base.css",
+      `.root { border: 1px solid black; }`,
     );
 
     let filename = "sub.css";
@@ -183,7 +190,7 @@ export class BlockInheritance extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".sub { border-color: green; }\n" +
-        ".base.sub { border-color: green; }\n"
+        ".base.sub { border-color: green; }\n",
       );
     });
   }

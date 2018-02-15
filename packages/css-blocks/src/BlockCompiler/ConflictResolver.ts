@@ -1,11 +1,12 @@
+import { assertNever } from "@opticss/util";
+import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
+
 import { Block, Style } from "../Block";
 import { getBlockNode } from "../BlockParser";
 import * as errors from "../errors";
 import { OptionsReader } from "../OptionsReader";
-import { parseSelector, ParsedSelector, CompoundSelector } from "opticss";
-import { QueryKeySelector } from "../query";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
 import * as conflictDetection from "./conflictDetection";
 import { RESOLVE_RE } from "../BlockSyntax";
@@ -13,7 +14,7 @@ import { RESOLVE_RE } from "../BlockSyntax";
 enum ConflictType {
   conflict,
   noconflict,
-  samevalues
+  samevalues,
 }
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
@@ -47,6 +48,8 @@ function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
         default:
           return ConflictType.samevalues;
       }
+    default:
+      return assertNever(t1);
   }
 }
 
@@ -55,7 +58,7 @@ function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
  * and any other explititly referenced blocks where resolution rules are applied, and
  * resolves property values accordingly.
  */
-export default class ConflictResolver {
+export class ConflictResolver {
   readonly opts: OptionsReader;
 
   constructor(opts: OptionsReader) {
@@ -78,8 +81,8 @@ export default class ConflictResolver {
 
         // These two conflicts caches persist between comma seperated selectors
         // so we don't resolve the same Properties or Style twice in a single pass.
-        let handledConflicts = new conflictDetection.Conflicts<string>();
-        let handledObjects = new conflictDetection.Conflicts<Style>();
+        let handledConflicts = new Conflicts<string>();
+        let handledObjects = new Conflicts<Style>();
 
         // For each key selector:
         let parsedSelectors = block.getParsedSelectors(rule);
@@ -90,21 +93,21 @@ export default class ConflictResolver {
           let blockNode = getBlockNode(key);
           if ( !blockNode ) { return; }
           let obj: Style | undefined = block.nodeAndTypeToStyle(blockNode);
-          if ( !obj ) { return; }
+          if (!obj) { return; }
 
           // Fetch the set of Style conflicts. If the Style has already
           // been handled, skip.
           let objectConflicts = handledObjects.getConflictSet(key.pseudoelement && key.pseudoelement.value);
-          if ( objectConflicts.has(obj) ) { return; }
+          if (objectConflicts.has(obj)) { return; }
           objectConflicts.add(obj);
 
           // Fetch the parent Style this Style inherits from. If none, skip.
           let base = obj.base;
-          if ( !base ) { return; }
+          if (!base) { return; }
 
           // Handle the inheritance conflicts
           let baseSource = base.asSource();
-          let conflicts = conflictDetection.detectConflicts(obj, base);
+          let conflicts = detectConflicts(obj, base);
           let handledConflictSet = handledConflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
           let conflictingProps = conflicts.getConflictSet(key.pseudoelement && key.pseudoelement.value);
 
@@ -213,7 +216,7 @@ export default class ConflictResolver {
     other: Style,
     decl: postcss.Declaration,
     otherDecls: postcss.Declaration[],
-    isOverride: boolean
+    isOverride: boolean,
   ): ConflictType {
     let curSel = parseSelector((<postcss.Rule>decl.parent)); // can't use the cache, it's already been rewritten.
     let prop = decl.prop;
@@ -324,7 +327,7 @@ export default class ConflictResolver {
   private mergeKeySelectors(s1: ParsedSelector, s2: ParsedSelector): ParsedSelector[] {
 
     // We can not currently handle selectors with more than one combinator.
-    if ( s1.length > 2 && s2.length > 2 ) {
+    if (s1.length > 2 && s2.length > 2) {
       throw new errors.InvalidBlockSyntax(`Cannot resolve selectors with more than 1 combinator at this time [FIXME].`);
     }
 
@@ -339,25 +342,25 @@ export default class ConflictResolver {
     let mergedSels: CompoundSelector[] = [];
 
     // If both selectors have contexts, we need to do some CSS magic.
-    if ( context1 && context2 && combinator1 && combinator2 ) {
+    if (context1 && context2 && combinator1 && combinator2) {
 
       // >, >; +, +
-      if ( CONTIGUOUS_COMBINATORS.has(combinator1.value) && combinator1.value === combinator2.value ) {
+      if (CONTIGUOUS_COMBINATORS.has(combinator1.value) && combinator1.value === combinator2.value) {
         mergedSels.push(context1.clone().mergeNodes(context2).append(combinator1, mergedKey));
       }
 
       // +,>; ~,>; +," "; ~," "
-      else if ( SIBLING_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value) ) {
+      else if (SIBLING_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value)) {
         mergedSels.push(context2.clone().append(combinator2, context1).append(combinator1, mergedKey));
       }
 
       // >,+; " ",+; >,~; " ",~
-      else if ( HIERARCHICAL_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value) ) {
+      else if (HIERARCHICAL_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value)) {
         mergedSels.push(context1.clone().append(combinator1, context2).append(combinator2, mergedKey));
       }
 
       // " "," "; ~,~
-      else if ( NONCONTIGUOUS_COMBINATORS.has(combinator1.value) && NONCONTIGUOUS_COMBINATORS.has(combinator2.value) ) {
+      else if (NONCONTIGUOUS_COMBINATORS.has(combinator1.value) && NONCONTIGUOUS_COMBINATORS.has(combinator2.value)) {
         mergedSels.push(context1.clone().mergeNodes(context2).append(combinator2, mergedKey));
         mergedSels.push(context1.clone().append(combinator1, context2.clone()).append(combinator2, mergedKey.clone()));
         mergedSels.push(context2.clone().append(combinator1, context1.clone()).append(combinator2, mergedKey.clone()));
@@ -366,8 +369,8 @@ export default class ConflictResolver {
       // " ", >; ~,+
       else if (
            NONCONTIGUOUS_COMBINATORS.has(combinator1.value) && CONTIGUOUS_COMBINATORS.has(combinator2.value)    &&
-        (( HIERARCHICAL_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value) ) ||
-         ( SIBLING_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value) ))
+        ((HIERARCHICAL_COMBINATORS.has(combinator1.value) && HIERARCHICAL_COMBINATORS.has(combinator2.value)) ||
+         (SIBLING_COMBINATORS.has(combinator1.value) && SIBLING_COMBINATORS.has(combinator2.value)))
       ) {
         mergedSels.push(context1.clone().mergeNodes(context2).append(combinator2, mergedKey));
         mergedSels.push(context1.clone().append(combinator1, context2.clone()).append(combinator2, mergedKey.clone()));
@@ -376,9 +379,9 @@ export default class ConflictResolver {
       // >, " "; +,~
       else if (
            NONCONTIGUOUS_COMBINATORS.has(combinator2.value) && CONTIGUOUS_COMBINATORS.has(combinator1.value)    &&
-        (( HIERARCHICAL_COMBINATORS.has(combinator2.value) && HIERARCHICAL_COMBINATORS.has(combinator1.value) ) ||
-         ( SIBLING_COMBINATORS.has(combinator2.value) && SIBLING_COMBINATORS.has(combinator1.value) ))
-      ){
+        ((HIERARCHICAL_COMBINATORS.has(combinator2.value) && HIERARCHICAL_COMBINATORS.has(combinator1.value)) ||
+         (SIBLING_COMBINATORS.has(combinator2.value) && SIBLING_COMBINATORS.has(combinator1.value)))
+      ) {
         mergedSels.push(context1.clone().mergeNodes(context2).append(combinator1, mergedKey));
         mergedSels.push(context2.clone().append(combinator2, context1.clone()).append(combinator1, mergedKey.clone()));
       }

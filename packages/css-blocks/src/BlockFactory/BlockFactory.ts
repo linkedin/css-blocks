@@ -1,14 +1,16 @@
-import * as postcss from "postcss";
-import * as path from "path";
 import * as debugGenerator from "debug";
-import { Block } from "../Block";
-import { IBlockFactory } from "./IBlockFactory";
-import BlockParser, { ParsedSource } from "../BlockParser";
-import { CssBlockOptionsReadonly } from "../options";
-import { Importer, FileIdentifier, ImportedFile } from "../importing";
-import { annotateCssContentWithSourceMap, Preprocessors, Preprocessor, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
+import * as path from "path";
+import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
+
+import { Block } from "../Block";
+import { BlockParser, ParsedSource } from "../BlockParser";
+import { FileIdentifier, ImportedFile, Importer } from "../importing";
+import { CssBlockOptionsReadonly } from "../options";
+import { annotateCssContentWithSourceMap, Preprocessor, Preprocessors, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
 import { PromiseQueue } from "../util/PromiseQueue";
+
+import { IBlockFactory } from "./IBlockFactory";
 
 const debug = debugGenerator("css-blocks:BlockFactory");
 
@@ -28,6 +30,11 @@ interface PreprocessJob {
   contents: string;
 }
 
+interface ErrorWithErrNum {
+  code?: string;
+  message: string;
+}
+
 /**
  * This factory ensures that instances of a block are re-used when blocks are
  * going to be compiled/optimized together. Multiple instances of the same
@@ -43,10 +50,10 @@ export class BlockFactory implements IBlockFactory {
   parser: BlockParser;
   preprocessors: Preprocessors;
   private promises: {
-    [identifier: string]: Promise<Block>
+    [identifier: string]: Promise<Block>;
   };
   private blocks: {
-    [identifier: string]: Block
+    [identifier: string]: Block;
   };
   private paths: {
     [path: string]: string;
@@ -160,7 +167,7 @@ export class BlockFactory implements IBlockFactory {
           parseResult: result,
           originalSource: file.contents,
           originalSyntax: file.syntax,
-          dependencies: preprocessedResult.dependencies || []
+          dependencies: preprocessedResult.dependencies || [],
         };
         return this.parser.parseSource(source).then(block => {
           return block;
@@ -195,7 +202,7 @@ export class BlockFactory implements IBlockFactory {
     let importer = this.importer;
     let fromPath = importer.debugIdentifier(fromIdentifier, this.options);
     let identifier = importer.identifier(fromIdentifier, importPath, this.options);
-    return this.getBlock(identifier).catch(err => {
+    return this.getBlock(identifier).catch((err: ErrorWithErrNum) => {
       if (err.code === "ENOENT") {
         err.message = `From ${fromPath}: ${err.message}`;
       }
@@ -208,8 +215,8 @@ export class BlockFactory implements IBlockFactory {
    * @param name The new block name to register.
    * @return True or false depending on success status.
    */
-  getUniqueBlockName(name: string): string{
-    if ( !this.blockNames[name] ) {
+  getUniqueBlockName(name: string): string {
+    if (!this.blockNames[name]) {
       this.blockNames[name] = 1;
       return name;
     }
@@ -230,7 +237,7 @@ export class BlockFactory implements IBlockFactory {
               return {
                 content: result2.content,
                 sourceMap: sourceMapFromProcessedFile(result2),
-                dependencies: (result.dependencies || []).concat(result2.dependencies || [])
+                dependencies: (result.dependencies || []).concat(result2.dependencies || []),
               };
             });
           });

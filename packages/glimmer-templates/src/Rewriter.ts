@@ -1,20 +1,21 @@
-import * as debugGenerator from 'debug';
 import {
   AST,
+  NodeVisitor,
   Syntax,
-  NodeVisitor
-} from '@glimmer/syntax';
+} from "@glimmer/syntax";
+import { whatever } from "@opticss/util";
 import {
   Block,
-  PluginOptionsReader as CssBlocksOptionsReader,
   PluginOptions as CssBlocksOpts,
+  PluginOptionsReader as CssBlocksOptionsReader,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
+import * as debugGenerator from "debug";
 
-import { ResolvedFile } from "./GlimmerProject";
-import { ElementAnalyzer } from "./ElementAnalyzer";
 import { classnamesHelper } from "./ClassnamesHelperGenerator";
+import { ElementAnalyzer } from "./ElementAnalyzer";
+import { ResolvedFile } from "./GlimmerProject";
 
 const DEBUG = debugGenerator("css-blocks:glimmer");
 
@@ -42,7 +43,7 @@ export class Rewriter implements NodeVisitor {
     this.elementAnalyzer = new ElementAnalyzer(this.block, this.template, this.cssBlocksOpts);
   }
 
-  debug(message: string, ...args: any[]): void {
+  debug(message: string, ...args: whatever[]): void {
     DEBUG(`${this.template.fullPath}: ${message}`, ...args);
   }
 
@@ -63,7 +64,7 @@ export class Rewriter implements NodeVisitor {
       }
 
       // It's a simple text node of static classes.
-      let value = this.syntax.builders.text(rewrite.staticClasses.join(' '));
+      let value = this.syntax.builders.text(rewrite.staticClasses.join(" "));
       let classAttr = this.syntax.builders.attr("class", value);
       node.attributes.unshift(classAttr);
       return;
@@ -73,7 +74,7 @@ export class Rewriter implements NodeVisitor {
     let classValue: AST.MustacheStatement | AST.ConcatStatement;
     let staticNode: AST.TextNode | undefined = undefined;
     if (rewrite.staticClasses.length > 0) {
-      staticNode = this.syntax.builders.text(rewrite.staticClasses.join(' ') + ' ');
+      staticNode = this.syntax.builders.text(rewrite.staticClasses.join(" ") + " ");
       classValue = this.syntax.builders.concat([staticNode, dynamicNode]);
     } else {
       classValue = dynamicNode;

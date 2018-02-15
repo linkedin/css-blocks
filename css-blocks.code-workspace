@@ -16,7 +16,11 @@
 			"path": "packages/webpack-plugin"
 		},
 		{
-			"path": "packages/webpack-plugin"
+			"path": "packages/code-style"
+		},
+		{
+			"path": ".",
+			"name": "Workspace Root"
 		}
 	],
 	"settings": {

@@ -1,6 +1,6 @@
-import { StyleAnalysis } from "../StyleAnalysis";
-import * as errors from '../../errors';
+import * as errors from "../../errors";
 import { ElementAnalysis } from "../ElementAnalysis";
+import { StyleAnalysis } from "../StyleAnalysis";
 
 import { Validator } from "./Validator";
 
@@ -58,7 +58,7 @@ const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
  *
  * @param options A hash of tslint-style template validator options.
  */
-export default class TemplateValidator {
+export class TemplateValidator {
 
   private validators: Validator[] = [];
   private opts: TemplateValidatorOptions;
@@ -70,14 +70,14 @@ export default class TemplateValidator {
 
     // For each item in options, push all built-in and user-provided validators
     // to our validators list to await template processing.
-    for ( let key in opts ) {
-      if ( opts[key] instanceof Function) {
+    for (let key in opts) {
+      if (opts[key] instanceof Function) {
         this.validators.push(opts[key] as Validator);
       }
-      else if ( !VALIDATORS[key] ) {
+      else if (!VALIDATORS[key]) {
         throw new errors.CssBlockError(`Can not find template validator "${key}".`);
       }
-      else if ( opts[key] && VALIDATORS[key] ) {
+      else if (opts[key] && VALIDATORS[key]) {
         this.validators.push(VALIDATORS[key]);
       }
     }
@@ -89,14 +89,15 @@ export default class TemplateValidator {
    * @param correlations The correlations object for a given element.
    * @param locInfo Location info for the elements being validated.
    */
-  validate( templateAnalysis: StyleAnalysis, element: ElementAnalysis<any, any, any> ) {
+  // tslint:disable-next-line:prefer-whatever-to-any
+  validate(templateAnalysis: StyleAnalysis, element: ElementAnalysis<any, any, any>) {
 
     function err ( message: string, locInfo?: errors.ErrorLocation | undefined | null, details?: string ) {
       throw new errors.TemplateAnalysisError(
         message, locInfo || element.sourceLocation.start, details);
     }
 
-    this.validators.forEach(( func ) => {
+    this.validators.forEach((func) => {
       func(element, templateAnalysis, err);
     });
 

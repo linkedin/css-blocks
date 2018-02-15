@@ -1,19 +1,20 @@
-import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
-import { MetaAnalysis } from '../../src/utils/Analysis';
-import { testParse as parse } from '../util';
+import { assert } from "chai";
+import { suite, test } from "mocha-typescript";
 
-const mock = require('mock-fs');
+import { MetaAnalysis } from "../../src/utils/Analysis";
+import { testParse as parse } from "../util";
 
-@suite('Analyzer | External Objstr Root Styles')
+const mock = require("mock-fs");
+
+@suite("Analyzer | External Objstr Root Styles")
 export class Test {
   after() {
     mock.restore();
   }
 
-  @test 'Elements with mixed classes and block styles are errors.'() {
+  @test "Elements with mixed classes and block styles are errors."() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -26,17 +27,19 @@ export class Test {
           foo: 'bar'
         });
         return ( <div class={style}></div> );
-      }`
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    }, e => {
-      assert.equal(e.message, '[css-blocks] AnalysisError: Cannot mix class names with block styles. (8:10)');
-    });
+      }`,
+    ).then(
+      (_analysis: MetaAnalysis) => {
+        assert.ok(false, "should not have succeeded.");
+      },
+      e => {
+        assert.equal(e.message, "[css-blocks] AnalysisError: Cannot mix class names with block styles. (8:10)");
+      });
   }
 
-  @test 'Elements with root applied are tracked on attribute `class`'() {
+  @test "Elements with root applied are tracked on attribute `class`"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -48,7 +51,7 @@ export class Test {
           [bar]: true,
         });
         return ( <div class={style}></div> );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -56,13 +59,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
     });
   }
 
-  @test 'Root block styles may be applied with `.root` on attribute `class`'(){
+  @test "Root block styles may be applied with `.root` on attribute `class`"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -74,7 +77,7 @@ export class Test {
           [bar.root]: true,
         });
         return ( <div class={style}></div> );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -82,13 +85,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
     });
   }
 
-  @test 'Elements with root applied are tracked on attribute `className`'(){
+  @test "Elements with root applied are tracked on attribute `className`"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -100,7 +103,7 @@ export class Test {
           [bar]: true,
         });
         return ( <div className={style}></div> );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -108,13 +111,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
     });
   }
 
-  @test 'Root block styles may be applied with `.root` on attribute `className`'(){
+  @test "Root block styles may be applied with `.root` on attribute `className`"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -126,7 +129,7 @@ export class Test {
           [bar.root]: true,
         });
         return ( <div className={style}></div> );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -134,13 +137,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
     });
   }
 
-  @test 'Root block styles are deduped if applied to multiple valid properties'(){
+  @test "Root block styles are deduped if applied to multiple valid properties"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }'
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -152,7 +155,7 @@ export class Test {
           [bar.root]: true,
         });
         return ( <div class={style} className={style}></div> );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
@@ -160,14 +163,14 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ['bar.root']);
+      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
     });
   }
 
-  @test 'Root block styles are combined if applied to multiple valid properties'(){
+  @test "Root block styles are combined if applied to multiple valid properties"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
-      'foo.block.css': '.root { font-family: sans-serif; } .big { font-size: 28px; }'
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "foo.block.css": ".root { font-family: sans-serif; } .big { font-size: 28px; }",
     });
 
     return parse(`
@@ -183,22 +186,22 @@ export class Test {
           [foo]: true,
         });
         return ( <div class={style} className={otherStyle}></div> );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(Object.keys(analysis.elements), ['a']);
+      assert.deepEqual(Object.keys(analysis.elements), ["a"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
-      assert.deepEqual(analysis.stylesFound, ['bar.root', 'foo.root']);
+      assert.deepEqual(analysis.stylesFound, ["bar.root", "foo.root"]);
     });
   }
 
-  @test 'Cannot pass a style variable to a function.'(){
+  @test "Cannot pass a style variable to a function."() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -211,17 +214,19 @@ export class Test {
         });
         youShallNotPass(style);
         return ( <div class={style}></div> );
-      }`
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    }, e => {
-      assert.equal(e.message, '[css-blocks] AnalysisError: illegal use of a style variable. (9:8)');
-    });
+      }`,
+    ).then(
+      (_analysis: MetaAnalysis) => {
+        assert.ok(false, "should not have succeeded.");
+      },
+      e => {
+        assert.equal(e.message, "[css-blocks] AnalysisError: illegal use of a style variable. (9:8)");
+      });
   }
 
-  @test 'Cannot change the value of a variable used for styles to a new value'(){
+  @test "Cannot change the value of a variable used for styles to a new value"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -234,17 +239,19 @@ export class Test {
         });
         style = "foo";
         return ( <div class={style}></div> );
-      }`
-    ).then((analysis: MetaAnalysis) => {
-      assert.ok(false, 'should not have succeeded.');
-    }, e => {
-      assert.equal(e.message, '[css-blocks] AnalysisError: illegal assignment to a style variable. (9:8)');
-    });
+      }`,
+    ).then(
+      (_analysis: MetaAnalysis) => {
+        assert.ok(false, "should not have succeeded.");
+      },
+      e => {
+        assert.equal(e.message, "[css-blocks] AnalysisError: illegal assignment to a style variable. (9:8)");
+      });
   }
 
-  @test 'Can console.log a style variable'(){
+  @test "Can console.log a style variable"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -257,15 +264,15 @@ export class Test {
         });
         console.log(style);
         return ( <div class={style}></div> );
-      }`
-    ).then((analysis: MetaAnalysis) => {
+      }`,
+    ).then((_analysis: MetaAnalysis) => {
     });
   }
 
-  @test 'Unused objstr calls are not analyzed'(){
+  @test "Unused objstr calls are not analyzed"() {
     mock({
-      'bar.block.css': '.root { color: red; } .foo { color: blue; }',
-      'foo.block.css': '.root { font-family: sans-serif; } .big { font-size: 28px; }'
+      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "foo.block.css": ".root { font-family: sans-serif; } .big { font-size: 28px; }",
     });
 
     return parse(`
@@ -284,16 +291,16 @@ export class Test {
           [foo.big]: true,
         });
         return ( <div class={style} className={otherStyle}></div> );
-      }`
+      }`,
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(Object.keys(analysis.elements), ['a']);
+      assert.deepEqual(Object.keys(analysis.elements), ["a"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
-      assert.deepEqual(analysis.stylesFound, ['bar.root', 'foo.root']);
+      assert.deepEqual(analysis.stylesFound, ["bar.root", "foo.root"]);
     });
   }
 }
