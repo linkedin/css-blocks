@@ -1,3 +1,5 @@
+import { whatever } from "@opticss/util";
+
 import { ElementAnalysis } from "../ElementAnalysis";
 import { StyleAnalysis } from "../StyleAnalysis";
 

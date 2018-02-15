@@ -13,8 +13,8 @@ export type Pseudo = string;
 export type Property = string;
 
 export type Declaration = {
-  node: postcss.Declaration,
-  value: string,
+  node: postcss.Declaration;
+  value: string;
 };
 
 export type Resolution = {

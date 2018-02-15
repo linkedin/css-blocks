@@ -1,3 +1,4 @@
+import { assertNever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
@@ -101,6 +102,8 @@ export default async function parseStyles(root: postcss.Root, block: Block, file
               if (!isKey) { break; }
               styleRuleTuples.add([classState, rule]);
               break;
+            default:
+              assertNever(obj.blockType);
           }
         }
 

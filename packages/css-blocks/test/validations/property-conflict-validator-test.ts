@@ -190,7 +190,7 @@ export class TemplateAnalysisTests {
       .klass { color: resolve('b.klass'); color: blue; background-color: yellow; }
     `;
 
-    this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       constructElement(block, ".klass", "b.klass").end();
       assert.deepEqual(1, 1);
     });
