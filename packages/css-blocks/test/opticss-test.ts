@@ -18,7 +18,7 @@ import { suite, test } from "mocha-typescript";
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, State, Style } from "../src/Block";
+import { Block, BlockClass, State, Style, StateGroup } from "../src/Block";
 import { BlockCompiler } from "../src/BlockCompiler";
 import { BlockFactory } from "../src/BlockFactory";
 import { BlockParser } from "../src/BlockParser";
@@ -26,7 +26,6 @@ import { OptionsReader } from "../src/OptionsReader";
 import { TemplateAnalysis } from "../src/TemplateAnalysis";
 import { ElementAnalysis } from "../src/TemplateAnalysis/ElementAnalysis";
 import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
-import { SubState } from "../src/index";
 import { PluginOptions } from "../src/options";
 
 type BlockAndRoot = [Block, postcss.Container];
@@ -45,11 +44,12 @@ export class TemplateAnalysisTests {
       return <BlockAndRoot>[block, root];
     });
   }
+
   private useStates(element: ElementAnalysis<whatever, whatever, whatever>, stateContainer: BlockClass) {
-    for (let groupName of stateContainer.getGroups()) {
-      element.addDynamicGroup(stateContainer, stateContainer.resolveGroup(groupName) as ObjectDictionary<SubState>, null);
+    for (let group of stateContainer.getGroups()) {
+      element.addDynamicGroup(stateContainer, group, null);
     }
-    for (let state of stateContainer.booleanStates) {
+    for (let state of stateContainer.booleanStates()) {
       element.addStaticState(stateContainer, state);
     }
   }

@@ -45,3 +45,8 @@ export function getConstraints(value: string): string[] {
 // This way, we can use a MultiMap to track all element and pseudo element concerns
 // for any give Style instead of using different containers for the element and its pseudos.
 export const SELF_SELECTOR = "::self";
+
+// Internally use the invented `::universal` state name to represent a bare state selector with no value set.
+// This way, we can treat the universal state selector as just another `State` object instead of having to
+// special case it in the `StateGroup` Block object..
+export const UNIVERSAL_STATE = '::universal';
