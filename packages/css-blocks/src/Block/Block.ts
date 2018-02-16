@@ -1,261 +1,49 @@
-import {
-  Attr,
-  Attribute,
-  AttributeNS,
-  AttributeValueChoice,
-  ValueAbsent,
-  ValueConstant,
-} from "@opticss/element-analysis";
-import { assertNever, MultiMap, ObjectDictionary, objectValues, whatever } from "@opticss/util";
-import {
-  CompoundSelector,
-  ParsedSelector,
-  parseSelector,
-  SelectorFactory,
-} from "opticss";
-import * as postcss from "postcss";
-import selectorParser = require("postcss-selector-parser");
+import * as postcss from 'postcss';
+import { ObjectDictionary, MultiMap, assertNever } from "@opticss/util";
+import selectorParser = require('postcss-selector-parser');
+
+import { FileIdentifier } from "../importing";
+import { LocalScopedContext } from "../util/LocalScope";
+import { CssBlockError } from "../errors";
+import { OptionsReader } from "../OptionsReader";
+import { CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
+
+import { Source } from "./BlockTree";
+import { BlockClass } from "./BlockClass";
+import { State } from "./State";
+import { BlockPath } from "../BlockSyntax";
 
 import {
-  BlockType,
+  SelectorFactory,
+  parseSelector,
+  ParsedSelector,
+  CompoundSelector
+} from "opticss";
+import {
+  stateParser,
   isClassNode,
   isStateNode,
   NodeAndType,
-  stateParser,
+  BlockType
 } from "../BlockParser";
-import { StateInfo } from "../BlockParser/block-intermediates";
-import { CLASS_NAME_IDENT } from "../BlockSyntax";
-import { OptionsReader } from "../OptionsReader";
-import { OutputMode } from "../OutputMode";
-import { CssBlockError } from "../errors";
-import { FileIdentifier } from "../importing";
-import { HasLocalScope, HasScopeLookup, LocalScopedContext } from "../util/LocalScope";
-import { unionInto } from "../util/unionInto";
 
-import { RulesetContainer } from "./RulesetContainer";
+export type Style = BlockClass | State;
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
-  let index = s.indexOf(".");
-  if (index < 0) index = s.indexOf("[");
+  let index = s.indexOf('.');
+  if (index < 0) index = s.indexOf('[');
   if (index >= 0) {
     return [s.substr(0, index), s.substring(index)];
   }
   return;
 };
 
-export type Style = BlockClass | State | SubState;
-export type StyleContainer = Block | BlockClass | State;
-
-/**
- * Abstract class that serves as the base for all Styles. Contains basic
- * properties and abstract methods that extenders must implement.
- */
-export abstract class BlockObject<StyleType extends Style, ContainerType extends StyleContainer = StyleContainer> {
-  public readonly rulesets: RulesetContainer;
-
-  protected _name: string;
-  protected _container: ContainerType;
-
-  /** cache of resolveStyles() */
-  private _resolvedStyles: Set<Style> | undefined;
-  /** cache for the block getter. */
-  private _block: Block | undefined;
-  /** cache for the block getter. */
-  private _base: StyleType | null | undefined;
-
-  /**
-   * Save name, parent container, and create the PropertyContainer for this data object.
-   */
-  constructor(name: string, container: ContainerType) {
-    this._name = name;
-    this._container = container;
-    this.rulesets = new RulesetContainer();
-  }
-
-  /**
-   * Readonly name of this object.
-   */
-  get name(): string {
-    return this._name;
-  }
-
-  /**
-   * Block parent container.
-   */
-  get parent(): ContainerType {
-    return this._container;
-  }
-
-  /**
-   * Given a parent that is a base class of this style, retrieve this style's
-   * base style from it, if it exists. This method does not traverse into base styles.
-   */
-  protected abstract getBaseFromBaseParent(baseParent: ContainerType): StyleType | undefined;
-
-  /**
-   * Get the style that this style inherits from, if any.
-   *
-   * This walks down the declared styles of the parent's inheritance chain,
-   * and attempts to find a matching directly declared style on each.
-   *
-   * The result is cached because it never changes and is decidable as soon
-   * as the style is instantiated.
-   */
-  public get base(): StyleType | undefined {
-    if (this._base !== undefined) {
-      return this._base || undefined;
-    }
-    let baseParent: ContainerType | undefined = <ContainerType | undefined>this.parent.base;
-    while (baseParent) {
-      let cls = this.getBaseFromBaseParent(baseParent);
-      if (cls) {
-        this._base = cls;
-        return cls;
-      }
-      baseParent = <ContainerType | undefined>baseParent.base;
-    }
-    this._base = null;
-    return undefined;
-  }
-
-  /**
-   * Return the local identifier for this `Style`.
-   * @returns The local name.
-   */
-  public abstract localName(): string;
-
-  /**
-   * Return an attribute for analysis using the authored source syntax.
-   */
-  public abstract asSourceAttributes(): Attr[];
-
-  /**
-   * Return the source selector this `Style` was read from.
-   * @returns The source selector.
-   */
-  public abstract asSource(): string;
-
-  /**
-   * Return the css selector for this `Style`.
-   * @param opts Option hash configuring output mode.
-   * @returns The CSS class.
-   */
-  public abstract cssClass(opts: OptionsReader): string;
-
-  /**
-   * traverse parents and return the base block object.
-   * @returns The base block in this container tree.
-   */
-  public get block(): Block {
-    if (this._block !== undefined) {
-      return this._block;
-    }
-    let p: StyleContainer = this.parent;
-    if (isBlock(p)) {
-      return this._block = p;
-    } else {
-      return this._block = p.block;
-    }
-  }
-
-  /**
-   * Returns all the classes needed to represent this block object
-   * including inherited classes.
-   * @returns this object's css class and all inherited classes.
-   */
-  cssClasses(opts: OptionsReader): string[] {
-    let classes = new Array<string>();
-    for (let style of this.resolveStyles()) {
-      classes.push(style.cssClass(opts));
-    }
-    return classes;
-  }
-
-  /**
-   * Return all Block Objects that are implied by this object.
-   * This takes inheritance, state/class correlations, and any
-   * other declared links between styles into account.
-   *
-   * This block object is included in the returned result so the
-   * resolved value's size is always 1 or greater.
-   */
-  public resolveStyles(): Set<Style> {
-    if (this._resolvedStyles) {
-      return new Set(this._resolvedStyles);
-    }
-
-    let inheritedStyles = this.resolveInheritance();
-    this._resolvedStyles = new Set(inheritedStyles);
-    this._resolvedStyles.add(this.asStyle());
-
-    for (let s of inheritedStyles) {
-      let implied = s.impliedStyles();
-      if (!implied) continue;
-      for (let i of implied) {
-        unionInto(this._resolvedStyles, i.resolveStyles());
-      }
-    }
-
-    return new Set(this._resolvedStyles);
-  }
-
-  /**
-   * Returns the styles that are directly implied by this style.
-   * Does not include the styles that this style inherits implied.
-   * Does not include the styles that this style implies inherits.
-   *
-   * returns undefined if no styles are implied.
-   */
-  impliedStyles(): Set<Style> | undefined {
-    return undefined;
-  }
-
-  /**
-   * Compute all block objects that are implied by this block object through
-   * inheritance. Does not include this object or the styles it implies through
-   * other relationships to this object.
-   *
-   * If nothing is inherited, this returns an empty set.
-   */
-  resolveInheritance(): Array<StyleType> {
-    let inherited = new Array<StyleType>();
-    let base: StyleType | undefined = this.base;
-    while (base) {
-      inherited.unshift(base);
-      base = <StyleType | undefined>base.base;
-    }
-    return inherited;
-  }
-
-  /**
-   * Debug utility to help log Styles
-   * @param opts  Options for rendering cssClass.
-   * @returns A debug string.
-   */
-  asDebug(opts: OptionsReader) {
-    return `${this.asSource()} => ${this.cssClasses(opts).map(n => `.${n}`).join(" ")}`;
-  }
-
-  // TypeScript can't figure out that `this` is the `StyleType` so this private
-  // method casts it in a few places where it's needed.
-  private asStyle(): StyleType {
-    // tslint:disable-next-line:prefer-whatever-to-any
-    return <StyleType><any>this;
-  }
-}
-
 export class Block
-  implements SelectorFactory,
-             HasLocalScope<Block, Style>,
-             HasScopeLookup<Style>
-{
-  private _name: string;
-  private _classes: ObjectDictionary<BlockClass> = {};
+  extends Source<Block, BlockClass>
+  implements SelectorFactory {
   private _rootClass: BlockClass;
   private _blockReferences: ObjectDictionary<Block> = {};
   private _identifier: FileIdentifier;
-  private _base?: Block;
-  private _baseName?: string;
   private _implements: Block[] = [];
   private _localScope: LocalScopedContext<Block, Style>;
   private hasHadNameReset = false;
@@ -270,22 +58,19 @@ export class Block
   public readonly parsedRuleSelectors: WeakMap<postcss.Rule, ParsedSelector[]>;
 
   constructor(name: string, identifier: FileIdentifier) {
+    super(name);
     this._identifier = identifier;
-    this._name = name;
     this.parsedRuleSelectors = new WeakMap();
     this._localScope = new LocalScopedContext<Block, Style>(OBJ_REF_SPLITTER, this);
     this._dependencies = new Set<string>();
-    this._rootClass = new BlockClass("root", this);
+    this._rootClass = new BlockClass(ROOT_CLASS, this, this);
     this.addClass(this._rootClass);
   }
 
-  get name() {
-    return this._name;
-  }
-
+  get name() { return this._name; }
   set name(name: string) {
     if (this.hasHadNameReset) {
-      throw new CssBlockError("Can not set block name more than once.");
+      throw new CssBlockError('Can not set block name more than once.');
     }
     this._name = name;
     this.hasHadNameReset = true;
@@ -312,9 +97,7 @@ export class Block
       return this.all(false).find(o => o.asSource() === name);
     }
   }
-  /// End of methods to implement LocalScope<Block, Style>
 
-  /// Start of methods to implement LocalScope<Block, Style>
   /**
    * Lookup a sub-block either locally, or on a referenced foreign block.
    * @param reference
@@ -336,8 +119,26 @@ export class Block
    *   A single dot by itself returns the current block.
    * @returns The Style referenced at the supplied path.
    */
-  lookup(reference: string): Style | undefined {
-    return this._localScope.lookup(reference);
+  public lookup(path: string | BlockPath): Style | undefined {
+    path = new BlockPath(path);
+    let block = this.getReferencedBlock(path.block);
+    if (!block) return undefined;
+    let klass = block.resolveClass(path.class);
+    if (!klass) return undefined;
+    let state;
+    if (path.state) {
+      let groupName = path.state.group ? path.state.group : path.state.name;
+      let stateName = path.state.group ? path.state.name : undefined;
+      state = klass.resolveState(groupName, stateName);
+      if (!state) return undefined;
+    }
+    return state || klass;
+
+    // for (let part of path.tokens()) {
+
+    //   res = res.resolveChild(part);
+    //   if (!res) { break; }
+    // }
   }
 
   /// End of methods to implement LocalScope<Block, Style>
@@ -348,37 +149,26 @@ export class Block
    *
    * It is not necessary or helpful to add css-block files.
    */
-  addDependency(filePath: string) {
-    this._dependencies.add(filePath);
+  addDependency(filepath: string) {
+    this._dependencies.add(filepath);
   }
 
   get dependencies(): string[] {
     return new Array(...this._dependencies);
   }
 
-  /**
-   * Get the block that this block inherits from.
-   */
-  get base(): Block | undefined {
-    return this._base;
-  }
-
-  get baseName(): string | undefined {
-    return this._baseName;
-  }
-
   get identifier(): FileIdentifier {
     return this._identifier;
   }
 
-  setBase(baseName: string, base: Block) {
-    this._baseName = baseName;
-    this._base = base;
-  }
+  getClass(name: string): BlockClass | null { return name ? this.getChild(name) : this.getChild(ROOT_CLASS); }
+  resolveClass(name: string): BlockClass | null { return name ? this.resolveChild(name) : this.resolveChild(ROOT_CLASS); }
+  newChild(name: string): BlockClass { return new BlockClass(name, this, this); }
 
-  getClass(name: string): BlockClass | undefined {
-    return this._classes[name];
-  }
+  // Alias protected methods from `Inheritable` to Block-specific names, and expose them as a public API.
+  get classes(): BlockClass[] { return this.children(); }
+  addClass(blockClass: BlockClass) { this.setChild(blockClass.name, blockClass); }
+  ensureClass(name: string): BlockClass { return this.ensureChild(name); }
 
   getImplementedBlocks(): Block[] {
     return this._implements.slice();
@@ -409,10 +199,10 @@ export class Block
   checkImplementations(): void {
     for (let b of this.getImplementedBlocks()) {
       let missing: Style[] = this.checkImplementation(b);
-      let missingStr = missing.map(o => o.asSource()).join(", ");
+      let paths = missing.map(o => o.asSource()).join(", ");
       if (missing.length > 0) {
-        let s = missing.length > 1 ? "s" : "";
-        throw new CssBlockError(`Missing implementation${s} for: ${missingStr} from ${b.identifier}`);
+        let s = missing.length > 1 ? 's' : '';
+        throw new CssBlockError(`Missing implementation${s} for: ${paths} from ${b.identifier}`);
       }
     }
   }
@@ -441,33 +231,10 @@ export class Block
     return this.all().find(e => e.asSource() === sourceName);
   }
 
-  eachBlockReference(callback: (name: string, block: Block) => whatever) {
+  eachBlockReference(callback: (name: string, block: Block) => any) {
     for (let name of Object.keys(this._blockReferences)) {
       callback(name, this._blockReferences[name]);
     }
-  }
-
-  get classes(): BlockClass[] {
-    let classes: BlockClass[] = [];
-    for (let e of Object.keys(this._classes)) {
-      classes.push(this._classes[e]);
-    }
-    return classes;
-  }
-
-  addClass(blockClass: BlockClass) {
-    this._classes[blockClass.name] = blockClass;
-  }
-
-  ensureClass(name: string): BlockClass {
-    let blockClass;
-    if (this._classes[name]) {
-      blockClass = this._classes[name];
-    } else {
-      blockClass = new BlockClass(name, this);
-      this.addClass(blockClass);
-    }
-    return blockClass;
   }
 
   addBlockReference(localName: string, other: Block) {
@@ -535,7 +302,7 @@ export class Block
    * Fetch a the cached `Style` from `Block` given `NodeAndType`.
    * @param obj The `NodeAndType` object to use for `Style` lookup.
    */
-  nodeAndTypeToStyle(obj: NodeAndType): Style | undefined {
+  nodeAndTypeToStyle(obj: NodeAndType): Style | null {
     switch (obj.blockType) {
       case BlockType.root:
         return this.rootClass;
@@ -549,25 +316,25 @@ export class Block
         if (classObj) {
           return classObj._getState(stateParser(<selectorParser.Attribute>obj.node));
         }
-        return undefined;
+        return null;
       default:
         return assertNever(obj.blockType);
     }
   }
 
   nodeAsStyle(node: selectorParser.Node): [Style, number] | null {
-    if (node.type === selectorParser.CLASS && node.value === "root") {
+    if (node.type === selectorParser.CLASS && node.value === ROOT_CLASS) {
       return [this.rootClass, 0];
     } else if (node.type === selectorParser.TAG) {
-      let otherBlock = this.getReferencedBlock(node.value);
+      let otherBlock = this.getReferencedBlock(node.value!);
       if (otherBlock) {
         let next = node.next();
         if (next && isClassNode(next)) {
-          let klass = otherBlock.getClass(next.value);
+          let klass = otherBlock.getClass(next.value!);
           if (klass) {
             let another = next.next();
             if (another && isStateNode(another)) {
-              let info = stateParser(another);
+              let info = stateParser(<selectorParser.Attribute>another);
               let state = klass._getState(info);
               if (state) {
                 return [state, 2];
@@ -582,7 +349,7 @@ export class Block
             return null;
           }
         } else if (next && isStateNode(next)) {
-          let info = stateParser(next);
+          let info = stateParser(<selectorParser.Attribute>next);
           let state = otherBlock.rootClass._getState(info);
           if (state) {
             return [state, 1];
@@ -596,15 +363,15 @@ export class Block
         return null;
       }
     } else if (node.type === selectorParser.CLASS) {
-      let klass = this.getClass(node.value);
-      if (klass === undefined) {
+      let klass = this.getClass(node.value!);
+      if (klass === null) {
         return null;
       }
       let next = node.next();
       if (next && isStateNode(next)) {
-        let info = stateParser(next);
+        let info = stateParser(<selectorParser.Attribute>next);
         let state = klass._getState(info);
-        if (state === undefined) {
+        if (state === null) {
           return null;
         } else {
           return [state, 1];
@@ -613,7 +380,7 @@ export class Block
         return [klass, 0];
       }
     } else if (isStateNode(node)) {
-      let info = stateParser(node);
+      let info = stateParser(<selectorParser.Attribute>node);
       let state = this.rootClass._ensureState(info);
       if (state) {
         return [state, 0];
@@ -671,7 +438,7 @@ export class Block
     let sourceNames = new Set<string>(this.all().map(s => s.asSource()));
     let sortedNames = [...sourceNames].sort();
     for (let n of sortedNames) {
-      if (n !== ".root") {
+      if (n !== `.${ROOT_CLASS}`) {
         let o = this.find(n) as Style;
         result.push(o.asDebug(opts));
       }
@@ -709,12 +476,12 @@ export class Block
    * @return ParsedSelector array
    */
   getParsedSelectors(rule: postcss.Rule): ParsedSelector[] {
-    let selectors = this.parsedRuleSelectors.get(rule);
-    if (!selectors) {
-      selectors = parseSelector(rule);
-      this.parsedRuleSelectors.set(rule, selectors);
+    let sels = this.parsedRuleSelectors.get(rule);
+    if (!sels) {
+      sels = parseSelector(rule);
+      this.parsedRuleSelectors.set(rule, sels);
     }
-    return selectors;
+    return sels;
   }
 
   /**
@@ -730,524 +497,6 @@ export class Block
   }
 }
 
-export function isBlock(o: object): o is Block {
+export function isBlock(o?: object): o is Block {
   return o instanceof Block;
-}
-
-/**
- * A Map of State objects
- */
-type StateMap = ObjectDictionary<State>;
-
-/** Parent types for a state */
-export type StateParent = BlockClass | State;
-
-/**
- * Valid parent types for a Style
- */
-export type StyleParent = Block | BlockClass | State | undefined;
-
-/**
- * Represents a Class present in the Block.
- */
-export class BlockClass extends BlockObject<BlockClass, Block> {
-  private _sourceAttribute: Attribute | undefined;
-  private _states: StateMap = {};
-
-  /**
-   * BlockClass constructor
-   * @param name Name for this BlockClass instance
-   * @param parent The parent block of this class.
-   */
-  constructor(name: string, parent: Block) {
-    super(name, parent);
-  }
-
-  get isRoot(): boolean {
-    return this.name === "root";
-  }
-
-  protected getBaseFromBaseParent(baseParent: Block): BlockClass | undefined {
-    return baseParent.getClass(this.name);
-  }
-
-  localName(): string {
-    return this.name;
-  }
-
-  /**
-   * Export as original class name.
-   * @returns String representing original class.
-   */
-  asSource(): string {
-    return `.${this.name}`;
-  }
-
-  asSourceAttributes(): Attribute[] {
-    if (!this._sourceAttribute) {
-      this._sourceAttribute = new Attribute("class", { constant: this.name });
-    }
-    return [this._sourceAttribute];
-  }
-
-  /**
-   * Export as new class name.
-   * @param opts Option hash configuring output mode.
-   * @returns String representing output class.
-   */
-  cssClass(opts: OptionsReader) {
-    switch (opts.outputMode) {
-      case OutputMode.BEM:
-        if (this.isRoot) {
-          return `${this.block.name}`;
-        } else {
-          return `${this.block.name}__${this.name}`;
-        }
-      default:
-        return assertNever(opts.outputMode);
-    }
-  }
-
-  /**
-   * Return array self and all children.
-   * @param shallow Pass false to not include children.
-   * @returns Array of Styles.
-   */
-  all(shallow?: boolean): Style[] {
-    let result: Style[] = [this];
-    if (!shallow) {
-      result = result.concat(this.allStates());
-    }
-    return result;
-  }
-
-  /**
-   * Group getter. Returns a list of State objects in the requested group that are defined
-   * against this specific class. This does not take inheritance into account.
-   * @param stateName State group for lookup or a boolean state name if sub-state is not provided.
-   * @param subStateName Optional sub-state to filter states by.
-   * @returns An array of all States that were requested.
-   */
-  getStateOrGroup(stateName: string, subStateName?: string | undefined): Array<State> | Array<SubState> {
-    let state = this.getState(stateName);
-    if (state) {
-      if (subStateName) {
-        let subState = state.getSubState(subStateName);
-        if (subState) {
-          return [subState];
-        } else {
-          return [];
-        }
-      } else if (state.hasSubStates) {
-        return state.subStates;
-      } else {
-        return [state];
-      }
-    } else {
-      return [];
-    }
-  }
-
-  /**
-   * Resolves the state with the given name from this class's inheritance
-   * chain. Returns undefined if the state is not found.
-   * @param stateName The name of the state to resolve.
-   */
-  resolveState(stateName: string): State | null {
-    let klass: BlockClass | undefined = this;
-    let state: State | null = null;
-    while (!state && klass) {
-      state = klass.getState(stateName);
-      klass = klass.base;
-    }
-    return state;
-  }
-
-  /**
-   * like getGroup but includes the states from all super blocks for the group.
-   * @param group State group for lookup
-   * @param subState Optional sub-state to filter states by.
-   * @returns A map of resolved state names to their states for all States that were requested.
-   */
-  resolveGroup(groupName: string, subState?: string | undefined): ObjectDictionary<State | SubState> | undefined {
-    let resolution: { [name: string]: State | SubState } = {};
-    let states = this.getStateOrGroup(groupName, subState);
-    for (let state of states) {
-      resolution[state.name] = state;
-    }
-    if (subState && resolution[subState]) {
-      return resolution;
-    }
-    let base = this.base;
-    if (base) {
-      let baseResolution = base.resolveGroup(groupName, subState);
-      if (baseResolution) {
-        resolution = Object.assign(baseResolution, resolution); // overwrite any base definitions with their overrides.
-      }
-    }
-    if (Object.keys(resolution).length === 0) {
-      return undefined;
-    } else {
-      return resolution;
-    }
-  }
-
-  getGroups(): Set<string> {
-    let groups = new Set<string>();
-    let klass: BlockClass | undefined = this;
-    while (klass) {
-      for (let state of klass.states) {
-        if (state.hasSubStates) {
-          groups.add(state.name);
-        }
-      }
-      klass = klass.base;
-    }
-    return groups;
-  }
-
-  get states(): Array<State> {
-    return objectValues(this._states);
-  }
-
-  get booleanStates(): Array<State> {
-    let states = new Array<State>();
-    for (let state of this.states) {
-      if (!state.hasSubStates) {
-        states.push(state);
-      }
-    }
-    return states;
-  }
-
-  /**
-   * State getter
-   * @param name The State's name to lookup.
-   * @returns The State that was requested, or undefined
-   */
-  getState(name: string): State | null {
-    return this._states[name] || null;
-  }
-
-  /**
-   * Legacy State getter
-   * @param info The StateInfo type to lookup, contains `name` and `group`
-   * @returns The State that was requested, or undefined
-   */
-  _getState(info: StateInfo): State | SubState | undefined {
-    if (info.group) {
-      let state = this.getState(info.group);
-      if (state) {
-        return state.getSubState(info.name) || undefined;
-      } else {
-        return undefined;
-      }
-    } else {
-      return this.getState(info.name) || undefined;
-    }
-  }
-
-  /**
-   * Ensure that a `State` with the given `name` is registered with this class.
-   * @param name The State's name to ensure.
-   * @return The `State` object on this `Block`
-   */
-  ensureState(name: string): State {
-    if (!this._states[name]) {
-      this._states[name] = new State(name, this);
-    }
-    return this._states[name];
-  }
-
-  /**
-   * Ensure that a `SubState` with the given `subStateName` exists belonging to
-   * the state named `stateName`. If the state does not exist, it is created.
-   * @param stateName The State's name to ensure.
-   * @param subStateName  Optional state group for lookup/registration
-   */
-  ensureSubState(stateName: string, subStateName: string): SubState {
-    return this.ensureState(stateName).ensureSubState(subStateName);
-  }
-
-  /**
-   * Legacy state ensurer. Ensure that a `State` with the given `StateInfo` is
-   * registered with this Block.
-   * @param info  `StateInfo` to verify exists on this `Block`
-   * @return The `State` object on this `Block`
-   */
-  _ensureState(info: StateInfo): State | SubState {
-    let state = this.ensureState(info.group || info.name);
-    if (info.group) {
-      return state.ensureSubState(info.name);
-    } else {
-      return state;
-    }
-  }
-
-  /**
-   * Debug utility to help test States.
-   * @param options  Options to pass to States' asDebug method.
-   * @return Array of debug strings for these states
-   */
-  debug(opts: OptionsReader): string[] {
-    let result: string[] = [];
-    for (let state of this.all()) {
-      result.push(state.asDebug(opts));
-    }
-    return result;
-  }
-
-  /**
-   * Returns all concrete states defined against this class.
-   * Does not take inheritance into account.
-   */
-  allStates(): Array<State | SubState> {
-    let result: Array<State | SubState> = [];
-    for (let state of objectValues(this._states)) {
-      if (state.hasSubStates) {
-        result.push(...state.subStates);
-      } else {
-        result.push(state);
-      }
-    }
-    return result;
-  }
-}
-
-export function isBlockClass(o: object): o is BlockClass {
-  return o instanceof BlockClass;
-}
-
-/**
- * States represent a state attribute selector in a particular Block.
- * A State can have sub-states that are considered to be mutually exclusive.
- * States can be designated as "global";
- */
-export class State extends BlockObject<State, BlockClass> {
-  isGlobal = false;
-
-  private _hasSubStates: boolean;
-  private _subStates: undefined | ObjectDictionary<SubState>;
-  private _sourceAttributes: Attr[] | undefined;
-
-  /**
-   * State constructor. Provide a local name for this State, an optional group name,
-   * and the parent container.
-   * @param name The local name for this state.
-   * @param group An optional parent group name.
-   * @param container The parent container of this State.
-   */
-  constructor(name: string, container: BlockClass) {
-    super(name, container);
-    this._hasSubStates = false;
-  }
-
-  ensureSubState(name: string) {
-    if (!this._subStates) {
-      this._subStates = {};
-    }
-    if (!this._subStates[name]) {
-      this._hasSubStates = true;
-      this._subStates[name] = new SubState(name, this);
-    }
-    return this._subStates[name];
-  }
-
-  get subStates(): Array<SubState> {
-    if (this._subStates) {
-      return objectValues(this._subStates);
-    } else {
-      return [];
-    }
-  }
-
-  /**
-   * Resolves the sub-state with the given name from this state's inheritance
-   * chain. Returns undefined if the sub-state is not found.
-   * @param stateName The name of the sub-state to resolve.
-   */
-  resolveSubState(stateName: string): SubState | null {
-    let state: State | undefined = this;
-    let subState: SubState | null = null;
-    while (!subState && state) {
-      subState = state.getSubState(stateName);
-      state = state.base;
-    }
-    return subState || null;
-  }
-
-  /**
-   * returns whether this state has any sub states defined directly
-   * or inherited.
-   */
-  hasResolvedSubStates(): boolean {
-    return this.hasSubStates ||
-      (this.base ? this.base.hasResolvedSubStates() : false);
-  }
-
-  /**
-   * Resolves all sub-states from this state's inheritance
-   * chain. Returns an empty object if no
-   * @param stateName The name of the sub-state to resolve.
-   */
-  resolveSubStates(): ObjectDictionary<SubState> {
-    let resolved: ObjectDictionary<SubState> = {};
-    for (let base of this.resolveInheritance()) {
-      if (base._subStates) {
-        Object.assign(resolved, base._subStates);
-      }
-    }
-    Object.assign(resolved, this._subStates);
-    return resolved;
-  }
-
-  getSubState(name: string): SubState | null {
-    return this._subStates && this._subStates[name] || null;
-  }
-
-  /**
-   * Retrieve the BlockClass that this state belongs to, if applicable.
-   * @returns The parent block class, or null.
-   */
-  get blockClass(): BlockClass {
-    return this._container;
-  }
-
-  get hasSubStates(): boolean {
-    return this._hasSubStates;
-  }
-
-  unqualifiedSource(): string {
-    return `[state|${this.name}]`;
-  }
-
-  /**
-   * Retrieve this State's selector as it appears in the Block source code.
-   * @returns The State's attribute selector
-   */
-  asSource(): string {
-    if (this.blockClass.isRoot) {
-      return this.unqualifiedSource();
-    } else {
-      return this.blockClass.asSource() + this.unqualifiedSource();
-    }
-  }
-
-  asSourceAttributes(): Attr[] {
-    if (!this._sourceAttributes) {
-      this._sourceAttributes = [];
-      this._sourceAttributes.push(...this.blockClass.asSourceAttributes());
-      let value: AttributeValueChoice | ValueAbsent;
-      if (this.hasSubStates) {
-        let values = new Array<ValueConstant>();
-        for (let subState of this.subStates) {
-          values.push({ constant: subState.name });
-        }
-        value = { oneOf: values };
-      } else {
-        value = { absent: true };
-      }
-      this._sourceAttributes.push(new AttributeNS("state", this.name, value));
-    }
-    return this._sourceAttributes;
-  }
-
-  /**
-   * Retrieve this State's local name, including the optional BlockClass and group designations.
-   * @returns The State's local name.
-   */
-  localName(): string {
-    if (this.blockClass.isRoot) {
-      return this.name;
-    } else {
-      return `${this.blockClass.localName()}--${this.name}`;
-    }
-  }
-
-  /**
-   * Export as new class name.
-   * @param opts Option hash configuring output mode.
-   * @returns String representing output class.
-   */
-  cssClass(opts: OptionsReader) {
-    switch (opts.outputMode) {
-      case OutputMode.BEM:
-        let cssClassName = this.blockClass.cssClass(opts);
-        return `${cssClassName}--${this.name}`;
-      default:
-        return assertNever(opts.outputMode);
-    }
-  }
-
-  getBaseFromBaseParent(baseParent: BlockClass): State | undefined {
-    return baseParent.getState(this._name) || undefined;
-  }
-
-  /**
-   * Return array self and all children.
-   * @returns Array of Styles.
-   */
-  all(): Style[] {
-    return [this];
-  }
-}
-
-export class SubState extends BlockObject<SubState, State> {
-  _sourceAttributes: Array<AttributeNS> | undefined;
-  isGlobal = false;
-
-  getBaseFromBaseParent(baseParent: State): SubState | undefined {
-    return baseParent.getSubState(this._name) || undefined;
-  }
-
-  localName(): string {
-    return `${this._container.localName()}-${this.name}`;
-  }
-
-  asSourceAttributes(): Attr[] {
-    if (!this._sourceAttributes) {
-      this._sourceAttributes = [];
-      this._sourceAttributes.push(new AttributeNS("state", this._container.name, { constant: this.name }));
-    }
-    return this._sourceAttributes.slice();
-  }
-
-  asSource(): string {
-    let attr = `[state|${this._container.name}=${this.name}]`;
-    let blockClass = this.blockClass;
-    if (!blockClass.isRoot) {
-      return `${blockClass.asSource()}${attr}`;
-    } else {
-      return attr;
-    }
-  }
-
-  public cssClass(opts: OptionsReader): string {
-    switch (opts.outputMode) {
-      case OutputMode.BEM:
-        return `${this._container.cssClass(opts)}-${this.name}`;
-      default:
-        return assertNever(opts.outputMode);
-    }
-  }
-
-  get blockClass(): BlockClass {
-    return this._container.blockClass;
-  }
-}
-
-export function isState(o: object): o is State {
-  return o instanceof State;
-}
-
-export function isSubState(o: object): o is SubState {
-  return o instanceof SubState;
-}
-
-export function isStateful(o: object): o is State | SubState {
-  return isState(o) || isSubState(o);
-}
-
-export function isStyle(o: Object): o is Style {
-  return isBlockClass(o) || isState(o) || isSubState(o);
 }
