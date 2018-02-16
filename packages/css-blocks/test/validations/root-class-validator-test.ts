@@ -3,9 +3,10 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block } from "../../src/Block";
+import { Block, BlockClass, State } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
+import { Importer, ImportedFile } from "../../src/importing";
 import { OptionsReader } from "../../src/OptionsReader";
 import { SerializedTemplateAnalysis, TemplateAnalysis } from "../../src/TemplateAnalysis";
 import * as cssBlocks from "../../src/errors";
