@@ -4,7 +4,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, State, SubState } from "../../src/Block";
+import { Block, BlockClass, State, StateGroup } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
@@ -1294,7 +1294,7 @@ function constructElement(block: Block, ...styles: string[]) {
       element.addStaticClass(style);
     }
     else if (style instanceof State) {
-      element.addStaticState(style.parent, style);
+      element.addStaticState(style.parent.parent, style);
     }
   }
 
@@ -1302,7 +1302,7 @@ function constructElement(block: Block, ...styles: string[]) {
     addDynamic(truthy: string[] | string, falsy?: string[]) {
       if (typeof truthy === "string") {
         let state = block.lookup(truthy) as State;
-        element.addDynamicState(state.parent, state, true);
+        element.addDynamicState(state.parent.parent, state, true);
         return this;
       }
       let truthyStyles = truthy.map(block.lookup.bind(block));
@@ -1316,7 +1316,9 @@ function constructElement(block: Block, ...styles: string[]) {
     },
     addStateGroup(base: string, groupName: string) {
       let baseStyle = block.lookup(base) as BlockClass;
-      element.addDynamicGroup(baseStyle, baseStyle.resolveGroup(groupName) as ObjectDictionary<SubState>, {});
+      let group = baseStyle.resolveGroup(groupName);
+      if (!group) throw new Error(`Error resolving group ${groupName}`);
+      element.addDynamicGroup(baseStyle, group, {});
       return this;
     },
     end() {

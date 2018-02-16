@@ -24,10 +24,10 @@ import {
   Block,
   BlockClass,
   isBlockClass,
-  isStateful,
+  isState,
   State,
   Style,
-  SubState,
+  StateGroup,
 } from "../Block";
 import {
   OptionsReader as CssBlocksOptionsReader,
@@ -36,19 +36,19 @@ import {
   unionInto,
 } from "../util/unionInto";
 
-export interface HasState<StateType extends State | SubState | number = State | SubState> {
+export interface HasState<StateType extends State | number = State> {
   state: StateType;
 }
 
-export function isBooleanState(o: object): o is HasState<State | SubState | number> {
+export function isBooleanState(o: object): o is HasState<State | number> {
   return !!(<HasState>o).state;
 }
 
-export interface HasGroup<GroupType extends SubState | number = SubState> {
+export interface HasGroup<GroupType extends State | number = State> {
   group: ObjectDictionary<GroupType>;
 }
 
-export function isStateGroup(o: object): o is HasGroup<SubState | number> {
+export function isStateGroup(o: object): o is HasGroup<State | number> {
   return !!(<HasGroup>o).group;
 }
 
@@ -279,10 +279,10 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    */
   *statesFound(dynamic?: boolean) {
     this.assertSealed();
-    let found = new Set<State | SubState>();
+    let found = new Set<State | StateGroup>();
     if (returnStatic(dynamic)) {
       for (let s of this.static) {
-        if (isStateful(s)) {
+        if (isState(s)) {
           found.add(s);
           yield s;
         }
@@ -391,7 +391,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * The state is added as dynamic and conditional on its class if that
    * class is dynamic.
    */
-  addStaticState(container: BlockClass, state: State | SubState) {
+  addStaticState(container: BlockClass, state: State) {
     this.assertSealed(false);
     this.addedStyles.push({container, state});
   }
@@ -406,7 +406,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     }
   }
 
-  private assertValidContainer(container: BlockClass, state: State | SubState) {
+  private assertValidContainer(container: BlockClass, state: State | StateGroup) {
     if (container !== state.blockClass) {
       if (!container.resolveStyles().has(state.blockClass)) {
         throw new Error("container is not a valid container for the given state");
@@ -420,7 +420,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * @param state the state that is dynamic.
    * @param condition The AST node(s) representing this boolean expression.
    */
-  addDynamicState(container: BlockClass, state: State | SubState, condition: BooleanExpression) {
+  addDynamicState(container: BlockClass, state: State, condition: BooleanExpression) {
     this.assertSealed(false);
     this.addedStyles.push({state, container, condition});
   }
@@ -445,9 +445,14 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * @param disallowFalsy Whether a missing value is expected or should be
    *   a runtime error.
    */
-  addDynamicGroup(container: BlockClass, group: ObjectDictionary<SubState>, stringExpression: StringExpression, disallowFalsy = false) {
+  addDynamicGroup(container: BlockClass, group: StateGroup, stringExpression: StringExpression, disallowFalsy = false) {
     this.assertSealed(false);
-    this.addedStyles.push({ container, group, stringExpression, disallowFalsy });
+    this.addedStyles.push({
+      container,
+      group: group.statesHash(),
+      stringExpression,
+      disallowFalsy
+    });
   }
   private _addDynamicGroup(style: ConditionalDependentStateGroup<StringExpression>) {
     let { container, group, stringExpression, disallowFalsy } = style;

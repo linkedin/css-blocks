@@ -2,7 +2,7 @@ import { Template } from "@opticss/template-api";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block } from "../../src/Block";
+import { Block, BlockClass, State } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";

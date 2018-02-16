@@ -2,7 +2,7 @@ import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import * as postcss from "postcss";
 
-import { BLOCK_PROP_NAMES, BlockPath, RESOLVE_RE, SELF_SELECTOR } from "../BlockSyntax";
+import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR, BlockPath } from "../BlockSyntax";
 import { sourceLocation } from "../SourceLocation";
 import * as errors from "../errors";
 
