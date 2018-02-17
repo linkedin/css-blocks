@@ -1,27 +1,28 @@
-import { assert } from 'chai';
-import { suite, test, skip } from 'mocha-typescript';
-import { MetaAnalysis } from '../../src/utils/Analysis';
-import { testParse as parse } from '../util';
+import { assert } from "chai";
+import { skip, suite, test } from "mocha-typescript";
 
-const mock = require('mock-fs');
+import { MetaAnalysis } from "../../src/utils/Analysis";
+import { testParse as parse } from "../util";
+
+const mock = require("mock-fs");
 
 // This suite is skipped because we don't currently support state attributes because jsx parser doesn't support it
 // and we don't want to use a fork.
-@suite('Analyzer | State Attributes')
+@suite("Analyzer | State Attributes")
 export class Test {
   after() {
     mock.restore();
   }
 
-  @skip @test 'States with sub-states are tracked'(){
+  @skip @test "States with sub-states are tracked"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -34,9 +35,9 @@ export class Test {
     });
   }
 
-  @skip @test 'When provided state value is string literal, only the corresponding state is registered'(){
+  @skip @test "When provided state value is string literal, only the corresponding state is registered"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -45,7 +46,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -58,9 +59,9 @@ export class Test {
     });
   }
 
-  @skip @test 'When provided state value is dynamic, all states in the group are registered'(){
+  @skip @test "When provided state value is dynamic, all states in the group are registered"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -69,7 +70,7 @@ export class Test {
         .pretty[state|color=green] {
           color: green;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -82,15 +83,15 @@ export class Test {
     });
   }
 
-  @skip @test 'Boolean states with no value only ever register the one state and are never dynamic'(){
+  @skip @test "Boolean states with no value only ever register the one state and are never dynamic"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -103,15 +104,15 @@ export class Test {
     });
   }
 
-  @skip @test 'Boolean states with a literal value only ever register the one state and are not dynamic'(){
+  @skip @test "Boolean states with a literal value only ever register the one state and are not dynamic"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`
@@ -124,15 +125,15 @@ export class Test {
     });
   }
 
-  @skip @test 'Boolean states with a dynamic value only ever register the one state and are dynamic'(){
+  @skip @test "Boolean states with a dynamic value only ever register the one state and are dynamic"() {
     mock({
-      'bar.block.css': `
+      "bar.block.css": `
         .root { color: blue; }
         .pretty { color: red; }
         .pretty[state|awesome] {
           color: yellow;
         }
-      `
+      `,
     });
 
     return parse(`

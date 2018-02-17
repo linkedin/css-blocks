@@ -1,33 +1,33 @@
-import { Block } from 'css-blocks';
-import { ObjectDictionary, } from '@opticss/util';
 import {
   SourceLocation as TemplateSourceLocation,
-  SourcePosition as TemplateSourcePosition
-} from '@opticss/element-analysis';
-import { NodePath, Binding } from 'babel-traverse';
+  SourcePosition as TemplateSourcePosition,
+} from "@opticss/element-analysis";
+import { ObjectDictionary } from "@opticss/util";
+import { Binding, NodePath } from "babel-traverse";
 import {
+  AssignmentExpression,
   CallExpression,
-  JSXOpeningElement,
+  Expression,
+  Identifier,
   isCallExpression,
   isIdentifier,
   isJSXExpressionContainer,
   isJSXIdentifier,
   isMemberExpression,
-  Expression,
-  Node,
   isVariableDeclarator,
   JSXAttribute,
-  Identifier,
+  JSXOpeningElement,
+  Node,
   SourceLocation,
-  AssignmentExpression,
-} from 'babel-types';
+} from "babel-types";
+import { Block } from "css-blocks";
 
-import { MalformedBlockPath, TemplateAnalysisError } from '../utils/Errors';
-import { isConsoleLogStatement } from '../utils/isConsoleLogStatement';
+import { isCommonNameForStyling, isStyleFunction } from "../styleFunctions";
+import { MalformedBlockPath, TemplateAnalysisError } from "../utils/Errors";
+import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../utils/ExpressionReader";
+import { isConsoleLogStatement } from "../utils/isConsoleLogStatement";
 
-import { JSXElementAnalysis, Flags, newJSXElementAnalysis } from './types';
-import { isStyleFunction, isCommonNameForStyling } from '../styleFunctions';
-import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from '../utils/ExpressionReader';
+import { Flags, JSXElementAnalysis, newJSXElementAnalysis } from "./types";
 
 export class JSXElementAnalyzer {
   private filename: string;
@@ -39,7 +39,7 @@ export class JSXElementAnalyzer {
     this.filename = filename;
     this.classProperties = {
       class: true,
-      className: true
+      className: true,
     };
   }
 
@@ -48,27 +48,28 @@ export class JSXElementAnalyzer {
   }
 
   classAttributePaths(path: NodePath<JSXOpeningElement>): Array<NodePath<JSXAttribute>> {
-    let attrPath = path.get('attributes.0') as NodePath<JSXAttribute> | undefined;
+    let attrPath = path.get("attributes.0") as NodePath<JSXAttribute> | undefined;
     let found = new Array<NodePath<JSXAttribute>>();
     while (attrPath && attrPath.node) {
       if (this.isClassAttribute(attrPath.node)) {
         found.push(attrPath);
       }
       // Any because the type def is incomplete
+      // tslint:disable-next-line:prefer-whatever-to-any
       attrPath = (<any>attrPath).getNextSibling() as NodePath<JSXAttribute> | undefined;
     }
     return found;
   }
 
   analyzeAssignment(path: NodePath<AssignmentExpression>): JSXElementAnalysis | undefined {
-    let assignment = path.node as AssignmentExpression;
-    if (assignment.operator !== '=') return;
+    let assignment = path.node;
+    if (assignment.operator !== "=") return;
     let lVal = assignment.left;
     if (isMemberExpression(lVal)) {
       let property = lVal.property;
-      if (!lVal.computed && isIdentifier(property) && property.name === 'className') {
+      if (!lVal.computed && isIdentifier(property) && property.name === "className") {
         let element = newJSXElementAnalysis(this.location(path));
-        this.analyzeClassExpression(path.get('right') as NodePath<Expression>, element);
+        this.analyzeClassExpression(path.get("right") as NodePath<Expression>, element);
         if (element.hasStyles()) {
           return element;
         }
@@ -124,12 +125,12 @@ export class JSXElementAnalyzer {
   }
 
   styleVariableBinding(path: NodePath<JSXAttribute>): Binding | undefined {
-    let valuePath = path.get('value');
+    let valuePath = path.get("value");
     if (!isJSXExpressionContainer(valuePath.node)) return; // should this be an error?
     if (isIdentifier(valuePath.node.expression)) {
-      let identPath = valuePath.get('expression') as NodePath<Identifier>;
+      let identPath = valuePath.get("expression") as NodePath<Identifier>;
       let identBinding = path.scope.getBinding(identPath.node.name);
-      if (identBinding && identBinding.kind === 'module' || !identBinding) {
+      if (identBinding && identBinding.kind === "module" || !identBinding) {
         return;
       }
       if (isVariableDeclarator(identBinding.path.node)) {
@@ -140,15 +141,15 @@ export class JSXElementAnalyzer {
   }
 
   private analyzeClassExpression(expression: NodePath<Expression>, element: JSXElementAnalysis, suppressErrors = false): void {
-    if (expression.isIdentifier()) {
-      let identifier = expression.node as Identifier;
+    if (isIdentifier(expression.node)) {
+      let identifier = expression.node;
       let identBinding = expression.scope.getBinding(identifier.name);
       if (identBinding) {
         if (identBinding.constantViolations.length > 0) {
           if (suppressErrors) return;
           throw new TemplateAnalysisError(`illegal assignment to a style variable.`, this.nodeLoc(identBinding.constantViolations[0]));
         }
-        if (identBinding.kind === 'module') {
+        if (identBinding.kind === "module") {
           let name = identifier.name;
           // Check if there is a block of this name imported. If so, save style and exit.
           let block: Block | undefined = this.blocks[name];
@@ -164,7 +165,7 @@ export class JSXElementAnalyzer {
           if (isVariableDeclarator(identPathNode)) {
             initialValueOfIdent = identPathNode.init;
             if (identBinding.references > 1) {
-              for (let refPath of identBinding.referencePaths.filter(p => p.parentPath.type !== 'JSXExpressionContainer')) {
+              for (let refPath of identBinding.referencePaths.filter(p => p.parentPath.type !== "JSXExpressionContainer")) {
                 let parentPath = refPath.parentPath;
                 if (!isConsoleLogStatement(parentPath.node)) {
                   if (suppressErrors) return;
@@ -186,14 +187,14 @@ export class JSXElementAnalyzer {
       let expressionResult = parts.getResult(this.blocks);
       let blockClass = expressionResult.blockClass;
       if (isBlockStateGroupResult(expressionResult) || isBlockStateResult(expressionResult)) {
-        throw new Error('internal error, not expected on a member expression');
+        throw new Error("internal error, not expected on a member expression");
       } else {
         element.addStaticClass(blockClass);
       }
-    } else if (expression.isCallExpression()) {
-      let callExpr = expression.node as CallExpression;
+    } else if (isCallExpression(expression.node)) {
+      let callExpr = expression.node;
       let styleFn = isStyleFunction(expression, callExpr);
-      if (styleFn.type === 'error') {
+      if (styleFn.type === "error") {
         if (styleFn.canIgnore) {
           // It's not a style helper function, assume it's a static reference to a state.
           try {
@@ -205,7 +206,7 @@ export class JSXElementAnalyzer {
             } else if (isBlockStateResult(expressionResult)) {
               element.addStaticState(blockClass, expressionResult.state);
             } else {
-              throw new Error('internal error, not expected on a call expression');
+              throw new Error("internal error, not expected on a call expression");
             }
           } catch (e) {
             if (e instanceof MalformedBlockPath) {
@@ -233,11 +234,11 @@ export class JSXElementAnalyzer {
   }
 
   private analyzeClassAttribute(path: NodePath<JSXAttribute>, element: JSXElementAnalysis): void {
-    let value = path.get('value');
+    let value = path.get("value");
     if (!value.isJSXExpressionContainer()) return; // should this be an error?
     // If this attribute's value is an expression, evaluate it for block references.
     // Discover block root identifiers.
-    let expressionPath = value.get('expression') as NodePath<Expression>;
+    let expressionPath = value.get("expression") as NodePath<Expression>;
     this.analyzeClassExpression(expressionPath, element);
   }
 
@@ -260,7 +261,7 @@ export class JSXElementAnalyzer {
     // If this call expression is not an `objstr` call, or is in a form we don't
     // recognize (Ex: first arg is not an object), short circuit and continue execution.
     let styleFunc = isStyleFunction(path, expression);
-    if (styleFunc.type === 'error') {
+    if (styleFunc.type === "error") {
       if (styleFunc.canIgnore) {
         return;
       } else {
@@ -279,7 +280,7 @@ function htmlTagName(el: JSXOpeningElement): string | undefined {
 }
 
 function isLocation(n: object): n is SourceLocation {
-  if ((<SourceLocation>n).start && (<SourceLocation>n).end && typeof (<SourceLocation>n).start.line === 'number') {
+  if ((<SourceLocation>n).start && (<SourceLocation>n).end && typeof (<SourceLocation>n).start.line === "number") {
     return true;
   } else {
     return false;

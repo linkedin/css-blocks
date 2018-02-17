@@ -1,6 +1,6 @@
-import { ElementAnalysis, } from 'css-blocks';
-import { Expression, } from 'babel-types';
-import { SourceLocation, } from '@opticss/element-analysis';
+import { SourceLocation } from "@opticss/element-analysis";
+import { Expression } from "babel-types";
+import { ElementAnalysis } from "css-blocks";
 
 export type BooleanExpression = Expression;
 export type StringExpression = Expression;

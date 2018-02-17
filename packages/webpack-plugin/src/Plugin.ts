@@ -1,30 +1,30 @@
-import Tapable = require('tapable');
-import { Plugin as WebpackPlugin, Compiler as WebpackCompiler } from "webpack";
-import * as debugGenerator from 'debug';
-import * as postcss from 'postcss';
-import * as path from 'path';
+import * as debugGenerator from "debug";
+import * as path from "path";
+import * as postcss from "postcss";
 import { SourceMapConsumer, SourceMapGenerator } from "source-map";
-import { SourceMapSource, Source, RawSource } from 'webpack-sources';
+import * as Tapable from "tapable";
+import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
+import { RawSource, Source, SourceMapSource } from "webpack-sources";
 
 import {
-  MultiTemplateAnalyzer,
-  MetaTemplateAnalysis,
+  TemplateTypes,
+} from "@opticss/template-api";
+import {
   Block,
   BlockCompiler,
+  MetaTemplateAnalysis,
+  MultiTemplateAnalyzer,
   PluginOptions as CssBlocksOptions,
   PluginOptionsReader as CssBlocksOptionsReader,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
 import {
-  TemplateTypes
-} from "@opticss/template-api";
-import {
-  Optimizer,
-  OptiCSSOptions,
-  DEFAULT_OPTIONS,
-  OptimizationResult,
   Actions,
+  DEFAULT_OPTIONS,
+  OptiCSSOptions,
+  OptimizationResult,
+  Optimizer,
 } from "opticss";
 
 export interface CssBlocksWebpackOptions {
@@ -40,15 +40,19 @@ export interface CssBlocksWebpackOptions {
   optimization?: OptiCSSOptions;
 }
 
+// there's not any good types for webpack's internals.
+// tslint:disable-next-line:prefer-whatever-to-any
+export type WebpackAny = any;
+
 export interface BlockCompilationError {
-  compilation: any;
+  compilation: WebpackAny;
   assetPath: string;
   error: Error;
   mapping?: StyleMapping;
   optimizerActions?: Actions;
 }
 export interface BlockCompilationComplete {
-  compilation: any;
+  compilation: WebpackAny;
   assetPath: string;
   mapping: StyleMapping;
   optimizerActions: Actions;
@@ -71,7 +75,7 @@ export class CssBlocksRewriterPlugin
   parent: CssBlocksPlugin;
   compilationOptions: CssBlocksOptions;
   outputCssFile: string;
-  name: any;
+  name: string;
   debug: debugGenerator.IDebugger;
   pendingResult: Promise<StyleMapping | void> | undefined;
   constructor(parent: CssBlocksPlugin) {
@@ -92,8 +96,8 @@ export class CssBlocksRewriterPlugin
   }
 
   apply(compiler: WebpackCompiler) {
-    compiler.plugin("compilation", (compilation: any) => {
-      compilation.plugin("normal-module-loader", (context: any, mod: any) => {
+    compiler.plugin("compilation", (compilation: WebpackAny) => {
+      compilation.plugin("normal-module-loader", (context: WebpackAny, mod: WebpackAny) => {
         this.trace(`preparing normal-module-loader for ${mod.resource}`);
         context.cssBlocks = context.cssBlocks || {mappings: {}, compilationOptions: this.compilationOptions};
 
@@ -146,7 +150,7 @@ export class CssBlocksPlugin
     return new CssBlocksRewriterPlugin(this);
   }
 
-  private handleMake(outputPath: string, assets: Assets, compilation: any, cb: (error?: Error) => void) {
+  private handleMake(outputPath: string, assets: Assets, compilation: WebpackAny, cb: (error?: Error) => void) {
       // Start analysis with a clean analysis object
       this.trace(`starting analysis.`);
       this.analyzer.reset();
@@ -216,7 +220,7 @@ export class CssBlocksPlugin
           error,
           compilation,
           assetPath: this.outputCssFile,
-        }, cb);
+        },                  cb);
         this.trace(`notified of compilation failure`);
       });
 
@@ -233,7 +237,7 @@ export class CssBlocksPlugin
     compiler.plugin("this-compilation", (compilation) => {
       this.notifyCompilationExpiration();
 
-      compilation.plugin('additional-assets', (cb: () => void) => {
+      compilation.plugin("additional-assets", (cb: () => void) => {
         Object.assign(compilation.assets, assets);
         cb();
       });
@@ -262,7 +266,7 @@ export class CssBlocksPlugin
         optimizer.addSource({
           content: result.css,
           filename,
-          sourceMap: result.map.toJSON()
+          sourceMap: result.map.toJSON(),
         });
         numBlocks++;
       }

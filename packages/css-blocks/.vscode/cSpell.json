@@ -6,17 +6,26 @@
     "language": "en",
     // words - list of words to be always considered correct
     "words": [
+        "asdf",
+        "atrule",
+        "combinator",
+        "COMBINATORS",
         "deserialize",
+        "fdsa",
         "klass",
+        "longhands",
         "opticss",
         "preprocessed",
-        "stateful",
-        "shorthands",
-        "longhands",
-        "truthy",
+        "pseudoclass",
+        "pseudoclasses",
+        "pseudoelement",
+        "regexpu",
         "ruleset",
-        "combinator",
-        "regexpu"
+        "rulesets",
+        "shorthands",
+        "stateful",
+        "truthy",
+        "Validators"
     ],
     // flagWords - list of words to be always considered incorrect
     // This is useful for offensive words and common spelling errors.

@@ -1,19 +1,19 @@
 import {
-  PluginOptions,
-  BlockFactory,
-  Importer,
-} from "css-blocks";
+  ResolutionMap,
+} from "@glimmer/resolution-map-builder";
+import Resolver, {
+  BasicModuleRegistry,
+} from "@glimmer/resolver";
 import {
+  SerializedTemplateInfo,
   TemplateInfo,
   TemplateInfoFactory,
-  SerializedTemplateInfo,
 } from "@opticss/template-api";
-import Resolver, {
-  BasicModuleRegistry
-} from '@glimmer/resolver';
 import {
-  ResolutionMap
-} from '@glimmer/resolution-map-builder';
+  BlockFactory,
+  Importer,
+  PluginOptions,
+} from "css-blocks";
 
 declare module "@opticss/template-api" {
   interface TemplateTypes {
@@ -43,12 +43,12 @@ export class ResolvedFile implements TemplateInfo<"GlimmerTemplates.ResolvedFile
       identifier: this.identifier,
       data: [
         this.string,
-        this.fullPath
-      ]
+        this.fullPath,
+      ],
     };
   }
-  static deserialize(identifier, string, fullPath): ResolvedFile {
-    return new ResolvedFile(string, identifier, fullPath);
+  static deserialize(identifier: string, str: string, fullPath: string): ResolvedFile {
+    return new ResolvedFile(str, identifier, fullPath);
   }
 }
 
@@ -70,5 +70,5 @@ export interface GlimmerProject {
   relativize(fullPath: string): string;
   stylesheetFor(stylesheetName: string, fromGlimmerIdentifier?: string): ResolvedFile | undefined;
   templateFor(templateName: string, fromGlimmerIdentifier?: string): ResolvedFile;
-  reset();
+  reset(): void;
 }

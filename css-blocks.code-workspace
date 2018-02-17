@@ -16,12 +16,33 @@
 			"path": "packages/webpack-plugin"
 		},
 		{
-			"path": "packages/webpack-plugin"
+			"path": "packages/code-style"
+		},
+		{
+			"path": ".",
+			"name": "Workspace Root"
 		}
 	],
 	"settings": {
 		"cSpell.words": [
-			"Stateful"
+			"COMBINATORS",
+			"Stateful",
+			"Validators",
+			"asdf",
+			"atrule",
+			"fdsa",
+			"pseudoclass",
+			"pseudoclasses",
+			"pseudoelement",
+			"rulesets"
+		],
+		"cSpell.ignorePaths": [
+			"**/node_modules/**",
+			"**/vscode-extension/**",
+			"**/.git/**",
+			".vscode",
+			"typings",
+			"**/package.json"
 		]
 	}
 }

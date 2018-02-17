@@ -4,7 +4,7 @@ import * as postcss from "postcss";
 
 import cssBlocks = require("../src/cssBlocks");
 
-import BEMProcessor from "./util/BEMProcessor";
+import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
 
 @suite("Block Interfaces")
@@ -22,11 +22,12 @@ export class BlockInterfaceTests extends BEMProcessor {
 
   @test "can detect missing surface area"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/base.css",
+    imports.registerSource(
+      "foo/bar/base.css",
       `.root { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`
+       .foo[state|small] { font-size: 5px; }`,
     );
 
     let filename = "foo/bar/implements.css";
@@ -46,17 +47,19 @@ export class BlockInterfaceTests extends BEMProcessor {
 
   @test "can import another block"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/base.css",
+    imports.registerSource(
+      "foo/bar/base.css",
       `.root { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`
+       .foo[state|small] { font-size: 5px; }`,
     );
-    imports.registerSource("foo/bar/other.css",
+    imports.registerSource(
+      "foo/bar/other.css",
       `.root { color: purple; }
       [state|medium] { font-size: 20px; }
       .foo   { float: left;   }
-      .foo[state|medium] { font-size: 5px; }`
+      .foo[state|medium] { font-size: 5px; }`,
     );
 
     let filename = "foo/bar/implements.css";

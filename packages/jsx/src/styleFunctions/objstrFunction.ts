@@ -1,22 +1,23 @@
-import { Binding } from 'babel-traverse';
-import { ImportDeclaration } from 'babel-types';
-import { Block } from 'css-blocks';
-import { ObjectDictionary, } from '@opticss/util';
+import { ObjectDictionary } from "@opticss/util";
+import { Binding } from "babel-traverse";
+import { ImportDeclaration } from "babel-types";
 import {
+  BooleanLiteral,
   CallExpression,
+  isBooleanLiteral,
   isLiteral,
   isObjectExpression,
   isObjectProperty,
-  logicalExpression,
-  BooleanLiteral,
-  isBooleanLiteral,
   isSpreadElement,
-} from 'babel-types';
+  logicalExpression,
+} from "babel-types";
+import { Block } from "css-blocks";
 
-import { JSXElementAnalysis } from '../analyzer/types';
-import { TemplateAnalysisError } from '../utils/Errors';
-import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from '../utils/ExpressionReader';
-import { StyleFunctionAnalyzer } from './common';
+import { JSXElementAnalysis } from "../analyzer/types";
+import { TemplateAnalysisError } from "../utils/Errors";
+import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../utils/ExpressionReader";
+
+import { StyleFunctionAnalyzer } from "./common";
 
 /**
  * objstr() is a preact idiom for expressing class names. It is similar to the classnames library
@@ -40,12 +41,12 @@ import { StyleFunctionAnalyzer } from './common';
  * rewriter will set them as static string values.
  **/
 
-export const PACKAGE_NAME = 'obj-str';
-export const COMMON_NAMES = { 'objstr': true };
+export const PACKAGE_NAME = "obj-str";
+export const COMMON_NAMES = { "objstr": true };
 
 export interface ObjStrStyleFunction {
-  type: 'obj-str';
-  name: 'objstr';
+  type: "obj-str";
+  name: "objstr";
   localName: string;
   analyze: StyleFunctionAnalyzer<ObjStrStyleFunction>;
 }
@@ -55,23 +56,23 @@ export interface ObjStrStyleFunction {
  */
 export function objstrFn(binding: Binding, funcDef: ImportDeclaration): ObjStrStyleFunction | undefined {
   if (funcDef.source.value === PACKAGE_NAME) {
-    return { type: 'obj-str', name: 'objstr', localName: binding.identifier.name, analyze: analyzeObjstr };
+    return { type: "obj-str", name: "objstr", localName: binding.identifier.name, analyze: analyzeObjstr };
   }
   return;
 }
 
-export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXElementAnalysis, filename: string, styleFn: ObjStrStyleFunction, func: CallExpression ) {
+export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXElementAnalysis, filename: string, _styleFn: ObjStrStyleFunction, func: CallExpression) {
 
   // Location object for error reporting
   let loc = {
     filename,
     line: func.loc.start.line,
-    column: func.loc.start.column
+    column: func.loc.start.column,
   };
 
   // Ensure the first argument passed to suspected `objstr` call is an object.
-  let obj: any = func.arguments[0];
-  if ( !isObjectExpression(obj) ) {
+  let obj = func.arguments[0];
+  if (!isObjectExpression(obj)) {
     throw new TemplateAnalysisError(`First argument passed to "objstr" call must be an object literal.`, {filename, ...func.loc.start});
   }
 
@@ -82,7 +83,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
   for (let prop of obj.properties) {
 
     // Ignore non computed properties, they will never be blocks objects.
-    if ( !isObjectProperty(prop) || prop.computed === false ) {
+    if (!isObjectProperty(prop) || prop.computed === false) {
       foundNonBlockObj = true;
       if (foundBlockObj) {
         throw new TemplateAnalysisError(`Cannot mix class names with block styles.`, {filename, ...prop.loc.start});
@@ -106,7 +107,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
       if (isBooleanLiteral(rightHandExpr)) {
         rightHandLiteral = rightHandExpr;
       } else {
-        throw new TemplateAnalysisError('Right hand side of an objstr style must be a boolean literal or an expression.', {filename, ...rightHandExpr.loc.start});
+        throw new TemplateAnalysisError("Right hand side of an objstr style must be a boolean literal or an expression.", {filename, ...rightHandExpr.loc.start});
       }
     }
 
@@ -114,15 +115,15 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
       if (rightHandLiteral) {
         // It's set to true or false
         if (rightHandLiteral.value) {
-          if ( isSpreadElement(result.dynamicStateExpression) ) {
-            throw new TemplateAnalysisError('The spread operator is not allowed in CSS Block states.', {filename, ...result.dynamicStateExpression.loc.start});
+          if (isSpreadElement(result.dynamicStateExpression)) {
+            throw new TemplateAnalysisError("The spread operator is not allowed in CSS Block states.", {filename, ...result.dynamicStateExpression.loc.start});
           } else {
             // if truthy, the only dynamic expr is from the state selector.
             element.addDynamicGroup(result.blockClass || result.block, result.stateGroup, result.dynamicStateExpression, true);
           }
         } // else ignore
       } else {
-        let orExpression = logicalExpression('&&', prop.value, result.dynamicStateExpression);
+        let orExpression = logicalExpression("&&", prop.value, result.dynamicStateExpression);
         element.addDynamicGroup(result.blockClass || result.block, result.stateGroup, orExpression, false);
       }
 

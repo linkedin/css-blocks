@@ -1,22 +1,21 @@
-import { assert } from "chai";
-import { suite, test, skip } from "mocha-typescript";
-import * as postcss from "postcss";
-import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimizedAnalysis } from "@opticss/template-api";
 import { POSITION_UNKNOWN } from "@opticss/element-analysis";
+import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template } from "@opticss/template-api";
+import { ObjectDictionary } from "@opticss/util";
+import { assert } from "chai";
+import { skip, suite, test } from "mocha-typescript";
+import * as postcss from "postcss";
 
-import * as cssBlocks from "../src/errors";
-import BlockParser from "../src/BlockParser";
-import { BlockFactory } from "../src/BlockFactory";
-import { Importer, ImportedFile } from "../src/importing";
 import { Block, BlockClass, State } from "../src/Block";
-import { PluginOptions } from "../src/options";
+import { BlockFactory } from "../src/BlockFactory";
+import { BlockParser } from "../src/BlockParser";
 import { OptionsReader } from "../src/OptionsReader";
-import { SerializedTemplateAnalysis, TemplateAnalysis, ElementAnalysis } from "../src/TemplateAnalysis";
+import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAnalysis";
+import * as cssBlocks from "../src/errors";
+import { SubState } from "../src/index";
+import { PluginOptions } from "../src/options";
 
 import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertParseError } from "./util/assertError";
-import { ObjectDictionary } from "@opticss/util";
-import { SubState } from "../src/index";
 
 type TestElement = ElementAnalysis<null, null, null>;
 
@@ -60,8 +59,8 @@ export class TemplateAnalysisTests {
             staticStyles: [ 0 ],
             dynamicClasses: [ ],
             dynamicStates: [ ],
-          }
-        }
+          },
+        },
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -93,8 +92,8 @@ export class TemplateAnalysisTests {
             staticStyles: [ ],
             dynamicClasses: [ { condition: true, whenTrue: [0]} ],
             dynamicStates: [ ],
-          }
-        }
+          },
+        },
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -133,8 +132,8 @@ export class TemplateAnalysisTests {
             staticStyles: [ 0, 1 ],
             dynamicClasses: [ ],
             dynamicStates: [ ],
-          }
-        }
+          },
+        },
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -176,7 +175,7 @@ export class TemplateAnalysisTests {
               staticStyles: [ 1 ],
               dynamicClasses: [ ],
               dynamicStates: [ ],
-            }
+            },
           },
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [".root", "ref.root"],
@@ -190,8 +189,9 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    imports.registerSource("blocks/a.css",
-      `.foo { border: 3px; }`
+    imports.registerSource(
+      "blocks/a.css",
+      `.foo { border: 3px; }`,
     );
 
     let options: PluginOptions = { importer: imports.importer() };
@@ -211,10 +211,10 @@ export class TemplateAnalysisTests {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
-      let klass = block.getClass('asdf') as BlockClass;
+      let klass = block.getClass("asdf") as BlockClass;
       element.addStaticClass(klass);
-      element.addDynamicClasses({ condition: null, whenTrue: [aBlock.getClass('foo')!] });
-      element.addDynamicState(klass, klass.getState('larger')!, null);
+      element.addDynamicClasses({ condition: null, whenTrue: [aBlock.getClass("foo")!] });
+      element.addDynamicState(klass, klass.getState("larger")!, null);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -225,13 +225,13 @@ export class TemplateAnalysisTests {
           a: {
             staticStyles: [0],
             dynamicClasses: [
-              { condition: true, whenTrue: [ 2 ]}
+              { condition: true, whenTrue: [ 2 ]},
             ],
             dynamicStates: [
-              { condition: true, state: 1 }
+              { condition: true, state: 1 },
             ],
           },
-        }
+        },
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -253,8 +253,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as ObjectDictionary<SubState>, null );
-        element.addDynamicState( block.rootClass, block.rootClass.getState('bgcolor')!, null );
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as ObjectDictionary<SubState>, null);
+        element.addDynamicState(block.rootClass, block.rootClass.getState("bgcolor")!, null);
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -268,11 +268,11 @@ export class TemplateAnalysisTests {
               staticStyles: [ ],
               dynamicClasses: [ {condition: true, whenTrue: [ 0 ] } ],
               dynamicStates: [
-                { stringExpression: true, group: {'color': 2 }, container: 0 },
+                { stringExpression: true, group: {"color": 2 }, container: 0 },
                 { condition: true, state: 1, container: 0 },
               ],
             },
-          }
+          },
         };
         assert.deepEqual(result, expectedResult);
     });
@@ -296,8 +296,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as ObjectDictionary<SubState>, null );
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as ObjectDictionary<SubState>, null, true );
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as ObjectDictionary<SubState>, null);
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as ObjectDictionary<SubState>, null, true);
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -307,12 +307,12 @@ export class TemplateAnalysisTests {
           stylesFound: [
             ".root",
             "[state|color=blue]",
-            "[state|color=red]"
+            "[state|color=red]",
           ],
           elements: {
             "a": {
               "sourceLocation": {
-                "start": { filename: "templates/my-template.hbs", "column": 32, "line": 10 }
+                "start": { filename: "templates/my-template.hbs", "column": 32, "line": 10 },
               },
               "staticStyles": [ 0 ],
               "dynamicClasses": [],
@@ -321,20 +321,20 @@ export class TemplateAnalysisTests {
                   "stringExpression": true,
                   "group": {
                     "blue": 1,
-                    "red": 2
-                  }
+                    "red": 2,
+                  },
                 },
                 {
                   "stringExpression": true,
                   "disallowFalsy": true,
                   "group": {
                     "blue": 1,
-                    "red": 2
-                  }
+                    "red": 2,
+                  },
                 },
               ],
-            }
-          }
+            },
+          },
         };
 
         assert.deepEqual(result, expectedResult);
@@ -358,8 +358,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as ObjectDictionary<SubState>, null );
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('bgcolor') as ObjectDictionary<SubState>, null, true );
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as ObjectDictionary<SubState>, null);
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("bgcolor") as ObjectDictionary<SubState>, null, true);
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -371,12 +371,12 @@ export class TemplateAnalysisTests {
             "[state|bgcolor=blue]",
             "[state|bgcolor=red]",
             "[state|color=blue]",
-            "[state|color=red]"
+            "[state|color=red]",
           ],
           elements: {
             "a": {
               "sourceLocation": {
-                "start": { filename: "templates/my-template.hbs", "column": 32, "line": 10 }
+                "start": { filename: "templates/my-template.hbs", "column": 32, "line": 10 },
               },
               "staticStyles": [ 0 ],
               "dynamicClasses": [],
@@ -385,20 +385,20 @@ export class TemplateAnalysisTests {
                   "stringExpression": true,
                   "group": {
                     "blue": 3,
-                    "red": 4
-                  }
+                    "red": 4,
+                  },
                 },
                 {
                   "stringExpression": true,
                   "disallowFalsy": true,
                   "group": {
                     "blue": 1,
-                    "red": 2
-                  }
+                    "red": 2,
+                  },
                 },
               ],
-            }
-          }
+            },
+          },
         };
 
         assert.deepEqual(result, expectedResult);
@@ -409,8 +409,9 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    imports.registerSource("blocks/a.css",
-      `.foo { border: 3px; }`
+    imports.registerSource(
+      "blocks/a.css",
+      `.foo { border: 3px; }`,
     );
 
     let options: PluginOptions = { importer: imports.importer() };
@@ -430,14 +431,14 @@ export class TemplateAnalysisTests {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
-      let asdf = block.getClass('asdf')!;
-      let fdsa = block.getClass('fdsa')!;
-      let foo = aBlock.getClass('foo')!;
+      let asdf = block.getClass("asdf")!;
+      let fdsa = block.getClass("fdsa")!;
+      let foo = aBlock.getClass("foo")!;
       element.addDynamicClasses({condition: null, whenTrue: [asdf], whenFalse: [fdsa, foo]});
       // This is what we do when the same state is in the template for two
       // classes that have the states of the same name.
-      element.addStaticState(asdf, asdf.getState('larger')!);
-      element.addStaticState(fdsa, fdsa.getState('larger')!);
+      element.addStaticState(asdf, asdf.getState("larger")!);
+      element.addStaticState(fdsa, fdsa.getState("larger")!);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -453,7 +454,7 @@ export class TemplateAnalysisTests {
               { state: 3, container: 2 },
             ],
           },
-        }
+        },
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -463,10 +464,11 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    imports.registerSource("blocks/a.css",
+    imports.registerSource(
+      "blocks/a.css",
       `.foo { border: 3px; }
        .foo[state|bar] { font-size: 26px; }
-      `
+      `,
     );
 
     let options: PluginOptions = { importer: imports.importer() };
@@ -484,14 +486,14 @@ export class TemplateAnalysisTests {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
-      let klass = aBlock.getClass('foo')!;
+      let klass = aBlock.getClass("foo")!;
       element.addStaticClass(klass);
       element.addDynamicClasses({
         condition: null,
-        whenTrue: [block.getClass('asdf')!],
-        whenFalse: [block.getClass('fdsa')!]
+        whenTrue: [block.getClass("asdf")!],
+        whenFalse: [block.getClass("fdsa")!],
       });
-      element.addStaticState(klass, klass.getState('bar')!);
+      element.addStaticState(klass, klass.getState("bar")!);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -504,7 +506,7 @@ export class TemplateAnalysisTests {
             dynamicClasses: [ {condition: true, whenTrue: [ 0 ], whenFalse: [ 1 ] } ],
             dynamicStates: [ ],
           },
-        }
+        },
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -514,10 +516,11 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    imports.registerSource("blocks/a.css",
+    imports.registerSource(
+      "blocks/a.css",
       `.foo { border: 3px; }
        .foo[state|bar] { font-size: 26px; }
-      `
+      `,
     );
 
     let options: PluginOptions = { importer: imports.importer() };
@@ -534,14 +537,13 @@ export class TemplateAnalysisTests {
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
-      let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
-      element.addStaticClass( block.rootClass );
+      element.addStaticClass(block.rootClass);
       element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("foo") as ObjectDictionary<SubState>, null, true);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
-        blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
+        blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".root", "[state|foo=purple]", "[state|foo=red]"],
         elements: {
@@ -552,8 +554,8 @@ export class TemplateAnalysisTests {
             dynamicStates: [
               { stringExpression: true, group: {"red": 2, "purple": 1}, disallowFalsy: true },
             ],
-          }
-        }
+          },
+        },
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -562,10 +564,11 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    imports.registerSource("blocks/a.css",
+    imports.registerSource(
+      "blocks/a.css",
       `.foo { border: 3px; }
        .foo[state|bar] { font-size: 26px; }
-      `
+      `,
     );
 
     let options: PluginOptions = { importer: imports.importer() };
@@ -583,10 +586,10 @@ export class TemplateAnalysisTests {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
-      let klass = aBlock.getClass('foo') as BlockClass;
-      element.addStaticClass( klass );
-      element.addDynamicClasses({condition: null, whenTrue: [block.getClass('asdf')!], whenFalse: [block.getClass('fdsa')!]});
-      element.addStaticState(klass, klass.getState('bar')! );
+      let klass = aBlock.getClass("foo") as BlockClass;
+      element.addStaticClass(klass);
+      element.addDynamicClasses({condition: null, whenTrue: [block.getClass("asdf")!], whenFalse: [block.getClass("fdsa")!]});
+      element.addStaticState(klass, klass.getState("bar")!);
       analysis.endElement(element);
       let options: PluginOptions = {};
       let reader = new OptionsReader(options);
@@ -595,7 +598,7 @@ export class TemplateAnalysisTests {
       let expectedResult: SerializedOptimizedAnalysis<"Opticss.Template"> = {
         template: {
           type: "Opticss.Template",
-          identifier: "templates/my-template.hbs"
+          identifier: "templates/my-template.hbs",
         },
         elements: [
           {
@@ -605,32 +608,32 @@ export class TemplateAnalysisTests {
                 "value": {
                   "allOf": [
                     {
-                      "constant": "a__foo"
+                      "constant": "a__foo",
                     },
                     {
-                      "constant": "a__foo--bar"
+                      "constant": "a__foo--bar",
                     },
                     {
                       "oneOf": [
                         {
-                          "constant": "main__asdf"
+                          "constant": "main__asdf",
                         },
                         {
-                          "constant": "main__fdsa"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
+                          "constant": "main__fdsa",
+                        },
+                      ],
+                    },
+                  ],
+                },
+              },
             ],
             "tagname": {
               "value": {
-                "unknown": true
-              }
-            }
-          }
-        ]
+                "unknown": true,
+              },
+            },
+          },
+        ],
       };
       assert.deepEqual(result, expectedResult);
     });
@@ -639,7 +642,6 @@ export class TemplateAnalysisTests {
   @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -658,17 +660,16 @@ export class TemplateAnalysisTests {
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 11});
-          element.addStaticClass( block.getClass('asdf')! );
-          element.addStaticClass( block.getClass('fdsa')!, );
+          element.addStaticClass(block.getClass("asdf")!);
+          element.addStaticClass(block.getClass("fdsa")!);
           analysis.endElement(element);
-      })
+      }),
     );
   }
 
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { "no-class-pairs": false });
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -684,16 +685,15 @@ export class TemplateAnalysisTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement(POSITION_UNKNOWN);
-          element.addStaticClass( block.getClass('asdf')!);
-          element.addStaticClass( block.getClass('fdsa')!);
+          element.addStaticClass(block.getClass("asdf")!);
+          element.addStaticClass(block.getClass("fdsa")!);
           analysis.endElement(element);
       });
   }
 
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err){ if (data) err('CUSTOM ERROR'); } });
-    let imports = new MockImportRegistry();
+    let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -708,14 +708,13 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 1, column: 2 });
           analysis.endElement(element);
-      })
+      }),
     );
   }
 
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -735,17 +734,16 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticClass(block.rootClass);
-          element.addStaticClass(block.getClass('fdsa')!);
+          element.addStaticClass(block.getClass("fdsa")!);
           analysis.endElement(element);
           return [block, _];
-      })
+      }),
     );
   }
 
   @test "adding both root and a state from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -761,7 +759,7 @@ export class TemplateAnalysisTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]): [Block, postcss.Container] => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
-          element.addStaticClass( block.rootClass );
+          element.addStaticClass(block.rootClass);
           element.addStaticState(block.rootClass, block.rootClass.getState("foo")!);
           analysis.endElement(element);
           return [block, _];
@@ -772,8 +770,9 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    imports.registerSource("blocks/a.css",
-      `.foo { border: 3px; }`
+    imports.registerSource(
+      "blocks/a.css",
+      `.foo { border: 3px; }`,
     );
 
     let options: PluginOptions = { importer: imports.importer() };
@@ -788,8 +787,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         analysis.blocks["a"] = aBlock;
         let element = analysis.startElement({ line: 10, column: 32 });
-        element.addStaticClass( block.rootClass );
-        element.addStaticClass( aBlock.getClass('foo')! );
+        element.addStaticClass(block.rootClass);
+        element.addStaticClass(aBlock.getClass("foo")!);
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -805,12 +804,12 @@ export class TemplateAnalysisTests {
                 start: {
                   column: 32,
                   filename: "templates/my-template.hbs",
-                  line: 10
-                }
+                  line: 10,
+                },
               },
-              staticStyles: [ 0, 1 ]
-            }
-          }
+              staticStyles: [ 0, 1 ],
+            },
+          },
         };
         assert.deepEqual(result, expectedResult);
     });
@@ -833,7 +832,7 @@ export class TemplateAnalysisTests {
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
-          element.addStaticState(block.rootClass, block.rootClass.getState('test')! );
+          element.addStaticState(block.rootClass, block.rootClass.getState("test")!);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
       }));
@@ -857,22 +856,23 @@ export class TemplateAnalysisTests {
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
-          let klass = block.getClass('foo') as BlockClass;
-          element.addStaticState(klass, klass.getState('test')! );
+          let klass = block.getClass("foo") as BlockClass;
+          element.addStaticState(klass, klass.getState("test")!);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
     }));
 
   }
 
-  @test 'Throws when inherited states are applied without their root'(){
+  @test "Throws when inherited states are applied without their root"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
     let reader = new OptionsReader(options);
 
-    imports.registerSource("blocks/a.css",
+    imports.registerSource(
+      "blocks/a.css",
       `.root { color: blue; }
       .pretty { color: red; }
       .pretty[state|color=yellow] {
@@ -880,7 +880,7 @@ export class TemplateAnalysisTests {
       }
       .pretty[state|color=green] {
         color: green;
-      }`
+      }`,
     );
 
     let css = `
@@ -899,22 +899,23 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
-          let klass = block.getClass('pretty') as BlockClass;
-          let group = klass.resolveGroup('color')!;
-          element.addStaticState(klass, group['yellow'] );
+          let klass = block.getClass("pretty") as BlockClass;
+          let group = klass.resolveGroup("color")!;
+          element.addStaticState(klass, group["yellow"]);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
     }));
   }
 
-  @test 'Inherited states pass validation when applied with their root'(){
+  @test "Inherited states pass validation when applied with their root"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
     let reader = new OptionsReader(options);
 
-    imports.registerSource("blocks/a.css",
+    imports.registerSource(
+      "blocks/a.css",
       `.root { color: blue; }
       .pretty { color: red; }
       .pretty[state|color=yellow] {
@@ -922,7 +923,7 @@ export class TemplateAnalysisTests {
       }
       .pretty[state|color=green] {
         color: green;
-      }`
+      }`,
     );
 
     let css = `
@@ -938,10 +939,10 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
-          let klass = block.getClass('pretty') as BlockClass;
-          let group = klass.resolveGroup('color') as {[name: string]: State};
-          element.addStaticClass( klass );
-          element.addStaticState(klass, group['yellow'] );
+          let klass = block.getClass("pretty") as BlockClass;
+          let group = klass.resolveGroup("color") as {[name: string]: State};
+          element.addStaticClass(klass);
+          element.addStaticState(klass, group["yellow"]);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
     });

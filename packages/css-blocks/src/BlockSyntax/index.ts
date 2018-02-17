@@ -1,2 +1,2 @@
-export * from "./blockSyntax";
+export * from "./BlockSyntax";
 export * from "./BlockPath";

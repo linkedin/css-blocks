@@ -1,22 +1,15 @@
-import { assert } from "chai";
-import { suite, test, only, skip } from "mocha-typescript";
+import { Template } from "@opticss/template-api";
+import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
-import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimizedAnalysis } from "@opticss/template-api";
-import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 
-import * as cssBlocks from "../../src/errors";
-import BlockParser from "../../src/BlockParser";
+import { Block } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
-import { Importer, ImportedFile } from "../../src/importing";
-import { Block, BlockObject, BlockClass, State } from "../../src/Block";
-import { PluginOptions } from "../../src/options";
+import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
-import { SerializedTemplateAnalysis, TemplateAnalysis, ElementAnalysis } from "../../src/TemplateAnalysis";
-
-import { MockImportRegistry } from "./../util/MockImportRegistry";
-import { assertParseError } from "./../util/assertError";
-
-type TestElement = ElementAnalysis<null, null, null>;
+import { TemplateAnalysis } from "../../src/TemplateAnalysis";
+import * as cssBlocks from "../../src/errors";
+import { PluginOptions } from "../../src/options";
+import { assertParseError } from "../util/assertError";
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -36,7 +29,6 @@ export class TemplateAnalysisTests {
   @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -55,10 +47,10 @@ export class TemplateAnalysisTests {
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 11 });
-        element.addStaticClass(block.getClass('asdf')!);
-        element.addStaticClass(block.getClass('fdsa')!, );
+        element.addStaticClass(block.getClass("asdf")!);
+        element.addStaticClass(block.getClass("fdsa")!);
         analysis.endElement(element);
-      })
+      }),
     );
   }
 }

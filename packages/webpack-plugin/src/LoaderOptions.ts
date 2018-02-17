@@ -1,3 +1,4 @@
+import { WebpackAny } from "./Plugin";
 export interface LoaderOptions {
-    [opt: string] : any;
+    [opt: string]: WebpackAny;
 }

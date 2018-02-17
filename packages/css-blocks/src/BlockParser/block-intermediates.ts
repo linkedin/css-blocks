@@ -1,5 +1,5 @@
-import selectorParser = require('postcss-selector-parser');
 import { CompoundSelector } from "opticss";
+import selectorParser = require("postcss-selector-parser");
 
 /**
  * Holds state values to be passed to the StateContainer.
@@ -13,7 +13,7 @@ export enum BlockType {
   root = 1,
   state,
   class,
-  classState
+  classState,
 }
 
 export interface NodeAndType {
@@ -32,11 +32,11 @@ export interface BlockNodeAndType extends NodeAndType {
  */
 export function stateParser(attr: selectorParser.Attribute): StateInfo {
   let info: StateInfo = {
-    name: attr.attribute
+    name: attr.attribute,
   };
   if (attr.value) {
     info.group = info.name;
-    info.name = attr.value.replace(/^(["'])(.+(?=\1$))\1$/, '$2'); // Strip quotes from value
+    info.name = attr.value.replace(/^(["'])(.+(?=\1$))\1$/, "$2"); // Strip quotes from value
   }
   return info;
 }
@@ -98,7 +98,7 @@ export function isClassNode(node: selectorParser.Node): node is selectorParser.C
  * @return True if state selector, false if not.
  */
 export function isStateNode(node: selectorParser.Node): node is selectorParser.Attribute {
-  return node.type === selectorParser.ATTRIBUTE && (<selectorParser.Attribute>node).namespace === "state";
+  return node.type === selectorParser.ATTRIBUTE && (node).namespace === "state";
 }
 
 /**
@@ -114,7 +114,7 @@ export function getBlockNode(sel: CompoundSelector): BlockNodeAndType | null {
     return {
       blockName: blockName && blockName.value,
       blockType: BlockType.root,
-      node: n
+      node: n,
     };
   }
   n = sel.nodes.find(n => isStateNode(n));
@@ -124,13 +124,13 @@ export function getBlockNode(sel: CompoundSelector): BlockNodeAndType | null {
       return {
         blockName: blockName && blockName.value,
         blockType: BlockType.classState,
-        node: n
+        node: n,
       };
     } else {
       return {
         blockName: blockName && blockName.value,
         blockType: BlockType.state,
-        node: n
+        node: n,
       };
     }
   }
@@ -139,7 +139,7 @@ export function getBlockNode(sel: CompoundSelector): BlockNodeAndType | null {
     return {
       blockName: blockName && blockName.value,
       blockType: BlockType.class,
-      node: n
+      node: n,
     };
   } else {
     return null;

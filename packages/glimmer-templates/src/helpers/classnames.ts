@@ -1,3 +1,4 @@
+import { whatever } from "@opticss/util";
 /**
  * This helpers converts input classes and states into
  * runtime dynamic classes from the optimizer.
@@ -90,26 +91,26 @@ const enum BooleanExpr {
   or = -2,
   and = -3,
 }
-
-const e = (m: string): any => { throw new Error(m); };
-const number = (v: any[]): number => typeof v[0] === "number" ? v.shift() : e("not a number: " + (v[0] || "undefined") );
-const string = (v: any[]): string => v.shift().toString();
-const truthyString = (v: any[]): string | undefined => {
+const e = (m: string): never => { throw new Error(m); };
+const toStr = (s: whatever): string => typeof s === "symbol" ? s.toString() : "" + s;
+const num = (v: whatever[]): number => typeof v[0] === "number" ? <number>v.shift() : e("not a number: " + toStr(v[0]));
+const str = (s: whatever[]): string => toStr(s.shift());
+const truthyString = (v: whatever[]): string | undefined => {
   let s = v.shift();
   if (!s && s !== 0) return;
   return s.toString();
 };
-const bool = (v: any[]): boolean => !!v.shift();
+const bool = (v: whatever[]): boolean => !!v.shift();
 
 type IsSourceSet = (n: number) => boolean;
 type SetSource = (n: number) => void;
 type Abort = () => false;
 
-export default function classnames(stack: any[]): string {
+export function classnames(stack: whatever[]): string {
   let sources: boolean[] = [];
   let classes: string[] = [];
-  let nSources = number(stack);
-  let nOutputs = number(stack);
+  let nSources = num(stack);
+  let nOutputs = num(stack);
   let canSetSource = true;
   let abort: Abort = () => canSetSource = false;
   let isSourceSet: IsSourceSet = (n) => sources[n];
@@ -119,22 +120,23 @@ export default function classnames(stack: any[]): string {
     canSetSource = true;
   }
   while (nOutputs-- > 0) {
-    let c = string(stack);
+    let c = str(stack);
     if (boolExpr(stack, isSourceSet)) classes.push(c);
   }
   return classes.join(" ");
   }
 
-function sourceExpr(stack: any[],
+function sourceExpr(
+  stack: whatever[],
   isSourceSet: IsSourceSet, setSource: SetSource,
-  abort: Abort
+  abort: Abort,
 ): void {
   let enforceSwitch = true;
-  let type = number(stack);
+  let type = num(stack);
   if (type & SourceExpression.dependency) {
-    let numDeps = number(stack);
+    let numDeps = num(stack);
     while (numDeps-- > 0) {
-      let depIndex = number(stack);
+      let depIndex = num(stack);
       if (!isSourceSet(depIndex)) enforceSwitch = abort();
     }
   }
@@ -142,13 +144,13 @@ function sourceExpr(stack: any[],
     if (!bool(stack)) abort();
   }
   if (type & SourceExpression.switch) {
-    let nValues = number(stack);
-    let ifFalsy = number(stack);
+    let nValues = num(stack);
+    let ifFalsy = num(stack);
     let value = truthyString(stack);
     if (value === undefined) {
-      switch(ifFalsy) {
+      switch (ifFalsy) {
         case FalsySwitchBehavior.default:
-          value = string(stack);
+          value = str(stack);
           break;
         case FalsySwitchBehavior.error:
           if (enforceSwitch) e("string expected"); // TODO: error message
@@ -161,38 +163,38 @@ function sourceExpr(stack: any[],
       }
     }
     while (nValues-- > 0) {
-      let matchValue = string(stack);
-      let nSources = number(stack);
+      let matchValue = str(stack);
+      let nSources = num(stack);
       while (nSources-- > 0) {
-        value === matchValue ? setSource(number(stack)) : number(stack);
+        value === matchValue ? setSource(num(stack)) : num(stack);
       }
     }
   } else if (type === SourceExpression.ternary) {
     let condition = bool(stack);
-    let nTrue = number(stack);
+    let nTrue = num(stack);
     while (nTrue-- > 0) {
-      condition ? setSource(number(stack)) : number(stack);
+      condition ? setSource(num(stack)) : num(stack);
     }
-    let nFalse = number(stack);
+    let nFalse = num(stack);
     while (nFalse-- > 0) {
-      condition ? number(stack) : setSource(number(stack));
+      condition ? num(stack) : setSource(num(stack));
     }
   } else {
-    let nSources = number(stack);
+    let nSources = num(stack);
     while (nSources-- > 0) {
-      setSource(number(stack));
+      setSource(num(stack));
     }
   }
 }
 
-function boolExpr(stack: any[], isSourceSet: IsSourceSet): boolean {
+function boolExpr(stack: whatever[], isSourceSet: IsSourceSet): boolean {
   let result: boolean;
-  let type = number(stack);
+  let type = num(stack);
   switch (type) {
     case BooleanExpr.not:
       return !boolExpr(stack, isSourceSet);
     case BooleanExpr.and:
-      let nAnds = number(stack);
+      let nAnds = num(stack);
       result = true;
       while (nAnds-- > 0) {
         let nextResult = boolExpr(stack, isSourceSet);
@@ -200,7 +202,7 @@ function boolExpr(stack: any[], isSourceSet: IsSourceSet): boolean {
       }
       return result;
     case BooleanExpr.or:
-      let nOrs = number(stack);
+      let nOrs = num(stack);
       result = false;
       while (nOrs-- > 0) {
         let nextResult = boolExpr(stack, isSourceSet);

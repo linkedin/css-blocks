@@ -1,16 +1,17 @@
 import {
-  AtRule
+  AtRule,
 } from "postcss";
+
 import {
-  Block
+  Block,
 } from "./Block";
 import {
   sourceLocation,
 } from "./SourceLocation";
 import * as errors from "./errors";
 
-export type DebugChannel = 'comment' | 'stderr' | 'stdout';
-export default function parseBlockDebug(atRule: AtRule, sourceFile: string, block: Block): { block: Block, channel: DebugChannel } {
+export type DebugChannel = "comment" | "stderr" | "stdout";
+export function parseBlockDebug(atRule: AtRule, sourceFile: string, block: Block): { block: Block; channel: DebugChannel } {
   let md = atRule.params.match(/([^\s]+) to (comment|stderr|stdout)/);
   if (!md) {
     throw new errors.InvalidBlockSyntax(
@@ -30,6 +31,6 @@ export default function parseBlockDebug(atRule: AtRule, sourceFile: string, bloc
   }
   return {
     block: ref,
-    channel: outputTo
+    channel: outputTo,
   };
 }

@@ -1,22 +1,18 @@
+import { Template } from "@opticss/template-api";
 import { assert } from "chai";
-import { suite, test, only, skip } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
-import { TemplateInfo, Template, SerializedTemplateAnalysis as SerializedOptimizedAnalysis } from "@opticss/template-api";
-import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 
-import * as cssBlocks from "../../src/errors";
-import BlockParser from "../../src/BlockParser";
+import { Block } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
-import { Importer, ImportedFile } from "../../src/importing";
-import { Block, BlockObject, BlockClass, State } from "../../src/Block";
-import { PluginOptions } from "../../src/options";
+import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
-import { SerializedTemplateAnalysis, TemplateAnalysis, ElementAnalysis } from "../../src/TemplateAnalysis";
+import { SerializedTemplateAnalysis, TemplateAnalysis } from "../../src/TemplateAnalysis";
+import * as cssBlocks from "../../src/errors";
+import { PluginOptions } from "../../src/options";
 
 import { MockImportRegistry } from "./../util/MockImportRegistry";
 import { assertParseError } from "./../util/assertError";
-
-type TestElement = ElementAnalysis<null, null, null>;
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -36,7 +32,6 @@ export class TemplateAnalysisTests {
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -56,17 +51,16 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addStaticClass(block.getClass('fdsa')!);
+        element.addStaticClass(block.getClass("fdsa")!);
         analysis.endElement(element);
         return [block, _];
-      })
+      }),
     );
   }
 
   @test "adding both root and a state from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -93,8 +87,9 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    imports.registerSource("blocks/a.css",
-      `.foo { border: 3px; }`
+    imports.registerSource(
+      "blocks/a.css",
+      `.foo { border: 3px; }`,
     );
 
     let options: PluginOptions = { importer: imports.importer() };
@@ -110,7 +105,7 @@ export class TemplateAnalysisTests {
       analysis.blocks["a"] = aBlock;
       let element = analysis.startElement({ line: 10, column: 32 });
       element.addStaticClass(block.rootClass);
-      element.addStaticClass(aBlock.getClass('foo')!);
+      element.addStaticClass(aBlock.getClass("foo")!);
       analysis.endElement(element);
 
       let result = analysis.serialize();
@@ -126,12 +121,12 @@ export class TemplateAnalysisTests {
               start: {
                 column: 32,
                 filename: "templates/my-template.hbs",
-                line: 10
-              }
+                line: 10,
+              },
             },
-            staticStyles: [0, 1]
-          }
-        }
+            staticStyles: [0, 1],
+          },
+        },
       };
       assert.deepEqual(result, expectedResult);
     });

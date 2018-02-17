@@ -1,12 +1,14 @@
-import { TemplateAnalysis } from '../TemplateAnalysis';
-import { Block, Style } from '../Block';
-import { OptionsReader } from '../OptionsReader';
-import { RewriteMapping, IndexedClassMapping } from './RewriteMapping';
-import { ElementAnalysis } from '../TemplateAnalysis/ElementAnalysis';
-import { TemplateTypes, StyleMapping as OptimizedMapping } from "@opticss/template-api";
+import { StyleMapping as OptimizedMapping, TemplateTypes } from "@opticss/template-api";
+
+import { Block, Style } from "../Block";
+import { OptionsReader } from "../OptionsReader";
+import { TemplateAnalysis } from "../TemplateAnalysis";
+import { ElementAnalysis } from "../TemplateAnalysis/ElementAnalysis";
+
 import {
-  IndexedClassRewrite
+  IndexedClassRewrite,
 } from "./ClassRewrite";
+import { IndexedClassMapping, RewriteMapping } from "./RewriteMapping";
 export class StyleMapping {
   /** The analyses that were used to create this mapping. */
   analyses: Array<TemplateAnalysis<keyof TemplateTypes>> | undefined;

@@ -1,8 +1,8 @@
-import * as path from "path";
 import { assert } from "chai";
+import * as path from "path";
 
-import { ImportedFile, Importer, PathBasedImporter } from "../../src/importing";
 import { OptionsReader } from "../../src/OptionsReader";
+import { ImportedFile, Importer, PathBasedImporter } from "../../src/importing";
 import { Syntax } from "../../src/preprocessing";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
@@ -41,7 +41,7 @@ export class MockImporter extends PathBasedImporter {
           syntax: source.syntax,
           identifier: resolvedPath,
           defaultName: this.defaultName(resolvedPath, options),
-          contents: source.contents
+          contents: source.contents,
         });
       } else {
         let importedFiles = Object.keys(this.registry.sources).join(", ");
@@ -59,7 +59,7 @@ export class MockImportRegistry {
     sourcePath = this.relativize(sourcePath);
     this.sources[sourcePath] = {
       contents: contents,
-      syntax: syntax || Syntax.css
+      syntax: syntax || Syntax.css,
     };
   }
 
@@ -72,7 +72,8 @@ export class MockImportRegistry {
     sourcePath = this.relativize(sourcePath);
     if (!this.imported[sourcePath]) {
       let importedFiles = Object.keys(this.imported).join(", ");
-      assert(false,
+      assert(
+             false,
              `${sourcePath} was not imported as expected. These were imported: ${importedFiles}`);
     }
   }

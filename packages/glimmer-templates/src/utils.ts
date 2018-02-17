@@ -1,10 +1,10 @@
-import { AST } from '@glimmer/syntax';
-import { CssBlockError } from "css-blocks";
+import { AST } from "@glimmer/syntax";
 import { TemplateInfo } from "@opticss/template-api";
+import { CssBlockError } from "css-blocks";
 import { ClassifiedParsedSelectors } from "opticss";
 
 export function pathFromSpecifier(specifier: string) {
-  return specifier.split(':')[1];
+  return specifier.split(":")[1];
 }
 
 export function selectorCount(result: ClassifiedParsedSelectors) {
@@ -15,11 +15,11 @@ export function selectorCount(result: ClassifiedParsedSelectors) {
   return count;
 }
 
-export function parseSpecifier(specifier: string): { componentType: string; componentName: string; } | null {
+export function parseSpecifier(specifier: string): { componentType: string; componentName: string } | null {
   if (/^(component|template|stylesheet):(.*)$/.test(specifier)) {
     return {
       componentType: RegExp.$1,
-      componentName: RegExp.$2
+      componentName: RegExp.$2,
     };
   } else {
     return null;
@@ -30,6 +30,6 @@ export function cssBlockError(message: string, node: AST.Node, template: Templat
   return new CssBlockError(message, {
     filename: node.loc.source || template.identifier,
     line: node.loc.start.line,
-    column: node.loc.start.column
+    column: node.loc.start.column,
   });
 }

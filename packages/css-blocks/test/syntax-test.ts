@@ -1,13 +1,11 @@
-import { suite, test, skip, only } from "mocha-typescript";
-import cssBlocks = require("../src/cssBlocks");
 import { assert } from "chai";
-import * as nodeAssert from "assert";
+import { skip, suite, test } from "mocha-typescript";
 
-import BEMProcessor from "./util/BEMProcessor";
-import assertError from "./util/assertError";
+import cssBlocks = require("../src/cssBlocks");
+
+import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
-
-const { AssertionError } = nodeAssert;
+import { assertError } from "./util/assertError";
 
 @suite("In BEM output mode")
 export class BEMOutputMode extends BEMProcessor {
@@ -17,7 +15,7 @@ export class BEMOutputMode extends BEMProcessor {
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ".test-block { color: red; }\n"
+        ".test-block { color: red; }\n",
       );
     });
   }
@@ -30,7 +28,7 @@ export class BEMOutputMode extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".test-block-pseudos { color: #111; }\n" +
-        ".test-block-pseudos:hover { font-weight: bold; }\n"
+        ".test-block-pseudos:hover { font-weight: bold; }\n",
       );
     });
   }
@@ -43,7 +41,7 @@ export class BEMOutputMode extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".test-state { color: #111; }\n" +
-        ".test-state--big { transform: scale( 2 ); }\n"
+        ".test-state--big { transform: scale( 2 ); }\n",
       );
     });
   }
@@ -58,7 +56,7 @@ export class BEMOutputMode extends BEMProcessor {
         result.css.toString(),
         ".test-state { color: #111; }\n" +
         ".test-state--big .test-state__thing { transform: scale( 2 ); }\n" +
-        ".test-state--big .test-state__thing--medium { transform: scale( 1.8 ); }\n"
+        ".test-state--big .test-state__thing--medium { transform: scale( 1.8 ); }\n",
       );
     });
   }
@@ -69,7 +67,7 @@ export class BEMOutputMode extends BEMProcessor {
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ".test-state--big, .test-state--really-big { transform: scale( 2 ); }\n"
+        ".test-state--big, .test-state--really-big { transform: scale( 2 ); }\n",
       );
     });
   }
@@ -82,7 +80,7 @@ export class BEMOutputMode extends BEMProcessor {
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ".self-combinator--big .self-combinator--big::after { content: \"\"; }\n"
+        ".self-combinator--big .self-combinator--big::after { content: \"\"; }\n",
       );
     });
   }
@@ -93,7 +91,7 @@ export class BEMOutputMode extends BEMProcessor {
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ".self-combinator--big + .self-combinator--big::after { content: \"\"; }\n"
+        ".self-combinator--big + .self-combinator--big::after { content: \"\"; }\n",
       );
     });
   }
@@ -108,7 +106,7 @@ export class BEMOutputMode extends BEMProcessor {
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ".checkbox:checked + .checkbox--when-checked { color: green; }\n"
+        ".checkbox:checked + .checkbox--when-checked { color: green; }\n",
       );
     });
   }
@@ -121,7 +119,7 @@ export class BEMOutputMode extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".test-state { color: #111; }\n" +
-        ".test-state--font-big { transform: scale( 2 ); }\n"
+        ".test-state--font-big { transform: scale( 2 ); }\n",
       );
     });
   }
@@ -134,7 +132,7 @@ export class BEMOutputMode extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".test-state { color: #111; }\n" +
-        ".test-state--size-1dp { transform: scale( 2 ); }\n"
+        ".test-state--size-1dp { transform: scale( 2 ); }\n",
       );
     });
   }
@@ -147,7 +145,7 @@ export class BEMOutputMode extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".test-state { color: #111; }\n" +
-        ".test-state--size-1dp { transform: scale( 2 ); }\n"
+        ".test-state--size-1dp { transform: scale( 2 ); }\n",
       );
     });
   }
@@ -158,7 +156,7 @@ export class BEMOutputMode extends BEMProcessor {
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ".test-state--font-big, .test-state--font-really-big { transform: scale( 2 ); }\n"
+        ".test-state--font-big, .test-state--font-really-big { transform: scale( 2 ); }\n",
       );
     });
   }
@@ -169,7 +167,7 @@ export class BEMOutputMode extends BEMProcessor {
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ".self-combinator--font-big + .self-combinator--font-big::after { content: \"\"; }\n"
+        ".self-combinator--font-big + .self-combinator--font-big::after { content: \"\"; }\n",
       );
     });
   }
@@ -182,7 +180,7 @@ export class BEMOutputMode extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".test-class { color: #111; }\n" +
-        ".test-class__my-class { display: block; }\n"
+        ".test-class__my-class { display: block; }\n",
       );
     });
   }
@@ -197,7 +195,7 @@ export class BEMOutputMode extends BEMProcessor {
         result.css.toString(),
         ".stateful-class { color: #111; }\n" +
         ".stateful-class__my-class { display: none; }\n" +
-        ".stateful-class--visible .stateful-class__my-class { display: block; }\n"
+        ".stateful-class--visible .stateful-class__my-class { display: block; }\n",
       );
     });
   }
@@ -212,7 +210,7 @@ export class BEMOutputMode extends BEMProcessor {
         result.css.toString(),
         ".stateful-class { color: #111; }\n" +
         ".stateful-class__my-class { display: none; }\n" +
-        ".stateful-class__my-class--visible { display: block; }\n"
+        ".stateful-class__my-class--visible { display: block; }\n",
       );
     });
   }
@@ -227,7 +225,7 @@ export class BEMOutputMode extends BEMProcessor {
         result.css.toString(),
         ".stateful { color: #111; }\n" +
         ".stateful__my-class { display: none; }\n" +
-        ".stateful--translucent .stateful__my-class--visible { display: block; opacity: .75; }\n"
+        ".stateful--translucent .stateful__my-class--visible { display: block; opacity: .75; }\n",
       );
     });
   }
@@ -338,7 +336,7 @@ export class StraightJacket extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".multi-state { color: #111; }\n" +
-        ".multi-state--first.multi-state--second { display: block; }\n"
+        ".multi-state--first.multi-state--second { display: block; }\n",
       );
     });
   }
@@ -352,7 +350,7 @@ export class StraightJacket extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".multi-class-state__foo { color: #111; }\n" +
-        ".multi-class-state__foo--first.multi-class-state__foo--second { display: block; }\n"
+        ".multi-class-state__foo--first.multi-class-state__foo--second { display: block; }\n",
       );
     });
   }
@@ -444,13 +442,14 @@ export class StraightJacket extends BEMProcessor {
 export class BlockReferences extends BEMProcessor {
   @test "can import another block"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
+    imports.registerSource(
+      "foo/bar/imported.css",
       `.root { color: purple; }
        [state|large] { font-size: 20px; }
        [state|theme=red] { color: red; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }
-       .foo[state|font=fancy] { font-family: fancy; }`
+       .foo[state|font=fancy] { font-family: fancy; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -471,15 +470,16 @@ export class BlockReferences extends BEMProcessor {
         "   [state|large] => .imported--large\n" +
         "   [state|theme=red] => .imported--theme-red */\n" +
         ".test-block { color: red; }\n" +
-        ".test-block__b--big { color: blue; }\n"
+        ".test-block__b--big { color: blue; }\n",
       );
     });
   }
 
   @test "if blocks specify name independently of filename, imported name is still used"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
-      `.root { block-name: snow-flake; }`
+    imports.registerSource(
+      "foo/bar/imported.css",
+      `.root { block-name: snow-flake; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -491,15 +491,16 @@ export class BlockReferences extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         `/* Source: foo/bar/imported.css\n` +
-        "   .root => .snow-flake */\n"
+        "   .root => .snow-flake */\n",
       );
     });
   }
 
   @test "block names in double quotes fail parse with helpful error"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
-      `.root { block-name: "snow-flake"; }`
+    imports.registerSource(
+      "foo/bar/imported.css",
+      `.root { block-name: "snow-flake"; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -513,8 +514,9 @@ export class BlockReferences extends BEMProcessor {
 
   @test "block names in single quotes fail parse with helpful error"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
-      `.root { block-name: 'snow-flake'; }`
+    imports.registerSource(
+      "foo/bar/imported.css",
+      `.root { block-name: 'snow-flake'; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -528,8 +530,9 @@ export class BlockReferences extends BEMProcessor {
 
   @test "block names in double quotes in @block-reference fail parse with helpful error"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
-      `.root { block-name: block; }`
+    imports.registerSource(
+      "foo/bar/imported.css",
+      `.root { block-name: block; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -539,14 +542,15 @@ export class BlockReferences extends BEMProcessor {
     return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Illegal block name in import. \"snow-flake\" is not a legal CSS identifier. (foo/bar/test-block.css:1:1)",
-      this.process(filename, inputCSS, {importer: imports.importer()})
+      this.process(filename, inputCSS, {importer: imports.importer()}),
     );
   }
 
   @test "block names in single quotes in @block-reference fail parse with helpful error"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
-      `.root { block-name: block; }`
+    imports.registerSource(
+      "foo/bar/imported.css",
+      `.root { block-name: block; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -556,15 +560,16 @@ export class BlockReferences extends BEMProcessor {
     return assertError(
       cssBlocks.InvalidBlockSyntax,
       "Illegal block name in import. 'snow-flake' is not a legal CSS identifier. (foo/bar/test-block.css:1:1)",
-      this.process(filename, inputCSS, {importer: imports.importer()})
+      this.process(filename, inputCSS, {importer: imports.importer()}),
     );
 
   }
 
   @test "block-name property only works in the root ruleset"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
-      `.not-root { block-name: snow-flake; }`
+    imports.registerSource(
+      "foo/bar/imported.css",
+      `.not-root { block-name: snow-flake; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -577,7 +582,7 @@ export class BlockReferences extends BEMProcessor {
         result.css.toString(),
         `/* Source: foo/bar/imported.css\n` +
         "   .root => .imported\n" +
-        "   .not-root => .imported__not-root */\n"
+        "   .not-root => .imported__not-root */\n",
       );
     });
   }
@@ -592,8 +597,9 @@ export class BlockReferences extends BEMProcessor {
 
   @test "doesn't allow poorly formed names in block-name property"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
-      `.root { block-name: 123; }`
+    imports.registerSource(
+      "foo/bar/imported.css",
+      `.root { block-name: 123; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -607,8 +613,9 @@ export class BlockReferences extends BEMProcessor {
 
   @test "doesn't allow poorly formed names in import"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
-      `.root { block-name: block; }`
+    imports.registerSource(
+      "foo/bar/imported.css",
+      `.root { block-name: block; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -622,8 +629,9 @@ export class BlockReferences extends BEMProcessor {
 
   @test "requires from statement in @block-reference"() {
     let imports = new MockImportRegistry();
-    imports.registerSource("foo/bar/imported.css",
-      `.root { block-name: block; }`
+    imports.registerSource(
+      "foo/bar/imported.css",
+      `.root { block-name: block; }`,
     );
 
     let filename = "foo/bar/test-block.css";
@@ -642,7 +650,7 @@ export class BlockReferences extends BEMProcessor {
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        `.foo__asdf { color: blue; }\n`
+        `.foo__asdf { color: blue; }\n`,
       );
     });
   }
@@ -682,7 +690,7 @@ export class BlockReferences extends BEMProcessor {
         "@keyframes foo {\n" +
         " 0% { top: 0; }\n" +
         " 100% { top: 100px; }\n" +
-        "}\n"
+        "}\n",
       );
     });
   }
@@ -699,11 +707,11 @@ export class BlockReferences extends BEMProcessor {
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-          ".test-media { color: red; }\n" +
+        ".test-media { color: red; }\n" +
           "@media all and (max-width: 400px) {\n" +
           " .test-media--responsive { color: blue; }\n" +
           " .test-media__a-class { width: 100%; }\n" +
-          "}\n"
+          "}\n",
       );
     });
   }

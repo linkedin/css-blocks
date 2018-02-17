@@ -2,6 +2,106 @@
 # yarn lockfile v1
 
 
+"@commitlint/cli@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/cli/-/cli-6.1.0.tgz#0a545088b4e0268cca1dca7e8ccd95bd55847b88"
+  dependencies:
+    "@commitlint/core" "^6.1.0"
+    babel-polyfill "6.26.0"
+    chalk "2.3.0"
+    get-stdin "5.0.1"
+    lodash.merge "4.6.0"
+    lodash.pick "4.4.0"
+    meow "3.7.0"
+
+"@commitlint/config-conventional@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/config-conventional/-/config-conventional-6.1.0.tgz#1f1c1577f1ca10f112e4346d9c94af1f8936f0c5"
+
+"@commitlint/core@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/core/-/core-6.1.0.tgz#41b2482044039435cb9673995598717038f2f6d0"
+  dependencies:
+    "@commitlint/execute-rule" "^6.1.0"
+    "@commitlint/is-ignored" "^6.1.0"
+    "@commitlint/parse" "^6.1.0"
+    "@commitlint/resolve-extends" "^6.1.0"
+    "@commitlint/rules" "^6.1.0"
+    "@commitlint/top-level" "^6.1.0"
+    "@marionebl/sander" "^0.6.0"
+    babel-runtime "^6.23.0"
+    chalk "^2.0.1"
+    cosmiconfig "^4.0.0"
+    git-raw-commits "^1.3.0"
+    lodash.merge "4.6.0"
+    lodash.mergewith "4.6.0"
+    lodash.pick "4.4.0"
+    lodash.topairs "4.3.0"
+    resolve-from "4.0.0"
+
+"@commitlint/ensure@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/ensure/-/ensure-6.1.0.tgz#567f029d816b6b5ca16bf62499230324c99a8fa9"
+  dependencies:
+    lodash.camelcase "4.3.0"
+    lodash.kebabcase "4.1.1"
+    lodash.snakecase "4.1.1"
+    lodash.startcase "4.4.0"
+    lodash.upperfirst "4.3.1"
+
+"@commitlint/execute-rule@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/execute-rule/-/execute-rule-6.1.0.tgz#4f56e5855a5e25ebcbc985d2209ea29f1bb89774"
+  dependencies:
+    babel-runtime "6.26.0"
+
+"@commitlint/is-ignored@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/is-ignored/-/is-ignored-6.1.0.tgz#0b86f8b37dfc693d6d66760b36fee1aba50882d8"
+  dependencies:
+    semver "5.5.0"
+
+"@commitlint/message@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/message/-/message-6.1.0.tgz#ee4ca775ad876ba59d23d02ba386c9b9038969e3"
+
+"@commitlint/parse@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/parse/-/parse-6.1.0.tgz#e4ba58ab632371078b9b9609ae7af03c2e7b3a3e"
+  dependencies:
+    conventional-changelog-angular "^1.3.3"
+    conventional-commits-parser "^2.1.0"
+
+"@commitlint/resolve-extends@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/resolve-extends/-/resolve-extends-6.1.0.tgz#b3d92f69e3746e94de0023f8be3b1f605a20839a"
+  dependencies:
+    babel-runtime "6.26.0"
+    lodash.merge "4.6.0"
+    lodash.omit "4.5.0"
+    require-uncached "^1.0.3"
+    resolve-from "^4.0.0"
+    resolve-global "^0.1.0"
+
+"@commitlint/rules@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/rules/-/rules-6.1.0.tgz#564b69503a3a4d09d03a9a077731c9655ee8f4df"
+  dependencies:
+    "@commitlint/ensure" "^6.1.0"
+    "@commitlint/message" "^6.1.0"
+    "@commitlint/to-lines" "^6.1.0"
+    babel-runtime "^6.23.0"
+
+"@commitlint/to-lines@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/to-lines/-/to-lines-6.1.0.tgz#9e130254c980dbd456e1693df1082a77ba7114a0"
+
+"@commitlint/top-level@^6.1.0":
+  version "6.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@commitlint/top-level/-/top-level-6.1.0.tgz#b420c1e9166df3afa000186a42b7f49cae4014cc"
+  dependencies:
+    find-up "^2.1.0"
+
 "@glimmer/compiler@^0.29.1":
   version "0.29.10"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@glimmer/compiler/-/@glimmer/compiler-0.29.10.tgz#5d06bdd5861d1cf5bda7a4f702be1e0e1b1ace6d"
@@ -62,6 +162,14 @@
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@glimmer/wire-format/-/@glimmer/wire-format-0.29.10.tgz#6d9ec674c45d01b9909a27675de8a01f91075793"
   dependencies:
     "@glimmer/util" "^0.29.10"
+
+"@marionebl/sander@^0.6.0":
+  version "0.6.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/@marionebl/sander/-/sander-0.6.1.tgz#1958965874f24bc51be48875feb50d642fc41f7b"
+  dependencies:
+    graceful-fs "^4.1.3"
+    mkdirp "^0.5.1"
+    rimraf "^2.5.2"
 
 "@opticss/element-analysis@^0.2.0":
   version "0.2.0"
@@ -276,10 +384,6 @@ acorn@^5.0.0:
   version "5.2.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/acorn/-/acorn-5.2.1.tgz#941c5e462f3604f43f3c6a7c7b60b0d3e30d155d"
 
-add-stream@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/add-stream/-/add-stream-1.0.0.tgz#6a7990437ca736d5e1288db92bd3266d5f5cb2aa"
-
 ajv-keywords@^2.0.0:
   version "2.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/ajv-keywords/-/ajv-keywords-2.1.1.tgz#2a0931677916c73a83907d65df985055dd211e91"
@@ -315,10 +419,6 @@ alphanum-sort@^1.0.1, alphanum-sort@^1.0.2:
 amdefine@>=0.0.4, amdefine@^1.0.0:
   version "1.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/amdefine/-/amdefine-1.0.1.tgz#f156f6613c4b94c29ce260df950f92527fe8d0d7"
-
-ansi-escapes@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-3.0.0.tgz#ec3e8b4e9f8064fc02c3ac9b65f1c275bda8ef92"
 
 ansi-regex@^2.0.0:
   version "2.1.1"
@@ -384,13 +484,7 @@ array-ify@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/array-ify/-/array-ify-1.0.0.tgz#9e528762b4a9066ad163a6962a364418e9626ece"
 
-array-union@^1.0.1:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/array-union/-/array-union-1.0.2.tgz#9a34410e4f4e3da23dea375be5be70f24778ec39"
-  dependencies:
-    array-uniq "^1.0.1"
-
-array-uniq@^1.0.1, array-uniq@^1.0.2:
+array-uniq@^1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/array-uniq/-/array-uniq-1.0.3.tgz#af6ac877a25cc7f74e058894753858dfdb24fdb6"
 
@@ -436,7 +530,7 @@ async-each@^1.0.0:
   version "1.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/async-each/-/async-each-1.0.1.tgz#56a1b2aff07dda4089eb7d669115d6fdd62ca386"
 
-async@1.x, async@^1.4.0, async@^1.5.0, async@~1.5.2:
+async@1.x, async@^1.4.0, async@~1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
 
@@ -531,6 +625,14 @@ babel-messages@^6.23.0:
   dependencies:
     babel-runtime "^6.22.0"
 
+babel-polyfill@6.26.0:
+  version "6.26.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/babel-polyfill/-/babel-polyfill-6.26.0.tgz#771e32ee04bb9ed0ab147ca2bdb9c876e8a0aee4"
+  dependencies:
+    babel-runtime "^6.26.0"
+    core-js "^2.5.0"
+    regenerator-runtime "^0.10.5"
+
 babel-register@^6.26.0:
   version "6.26.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/babel-register/-/babel-register-6.26.0.tgz#2a1b297c24c2c6dde56d3ebb305c58368d3b4939"
@@ -543,7 +645,7 @@ babel-register@^6.26.0:
     mkdirp "^0.5.1"
     source-map-support "^0.4.15"
 
-babel-runtime@^6.22.0, babel-runtime@^6.26.0:
+babel-runtime@6.26.0, babel-runtime@^6.22.0, babel-runtime@^6.23.0, babel-runtime@^6.26.0:
   version "6.26.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/babel-runtime/-/babel-runtime-6.26.0.tgz#1e11a387a25325d00e337dbf12c8d1aec44decc8"
   dependencies:
@@ -744,15 +846,21 @@ builtin-status-codes@^3.0.0:
   version "3.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/builtin-status-codes/-/builtin-status-codes-3.0.0.tgz#8939402f584b2acc91a4453dc94f4991840e8f8f"
 
-byline@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/byline/-/byline-5.0.0.tgz#741c5216468eadc457b03410118ad77de8c1ddb1"
-
 caller-id@^0.1.0:
   version "0.1.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/caller-id/-/caller-id-0.1.0.tgz#3af1fe241224e18e4399c27c88698a32cd2ca544"
   dependencies:
     stack-trace "~0.0.7"
+
+caller-path@^0.1.0:
+  version "0.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/caller-path/-/caller-path-0.1.0.tgz#0a0c93b40c2efd69dc60b29ca49a6e978ea61c97"
+  dependencies:
+    callsites "^0.2.0"
+
+callsites@^0.2.0:
+  version "0.2.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/callsites/-/callsites-0.2.0.tgz#145009bb58b6855162060d88e2a98425ec441178"
 
 camelcase-keys@^2.0.0:
   version "2.1.0"
@@ -790,10 +898,6 @@ caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
   version "1.0.30000769"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/caniuse-db/-/caniuse-db-1.0.30000769.tgz#8aaee9e9df07a1a516d4c8cc7f2e310f91782609"
 
-capture-stack-trace@^1.0.0:
-  version "1.0.0"
-  resolved "http://registry.npmjs.org/capture-stack-trace/-/capture-stack-trace-1.0.0.tgz#4a6fa07399c26bba47f0b2496b4d0fb408c5550d"
-
 caseless@~0.12.0:
   version "0.12.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/caseless/-/caseless-0.12.0.tgz#b277fc48c7c1d1c3e0c0a3fd0a4017d677515a31"
@@ -813,6 +917,14 @@ chai@^3.5.0:
     deep-eql "^0.1.3"
     type-detect "^1.0.0"
 
+chalk@2.3.0, chalk@^2.0.0, chalk@^2.0.1, chalk@^2.3.0:
+  version "2.3.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/chalk/-/chalk-2.3.0.tgz#f51fdb9a9fc375b8561058fbc1409ed3192e1a57"
+  dependencies:
+    ansi-styles "^3.1.0"
+    escape-string-regexp "^1.0.5"
+    supports-color "^4.0.0"
+
 chalk@^1.0.0, chalk@^1.1.1, chalk@^1.1.3, chalk@~1.1.1:
   version "1.1.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/chalk/-/chalk-1.1.3.tgz#8a517bb9581e318deb3ed64b0c1f0ea637a4cd85"
@@ -822,18 +934,6 @@ chalk@^1.0.0, chalk@^1.1.1, chalk@^1.1.3, chalk@~1.1.1:
     has-ansi "^2.0.0"
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
-
-chalk@^2.0.0, chalk@^2.1.0, chalk@^2.3.0:
-  version "2.3.0"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/chalk/-/chalk-2.3.0.tgz#f51fdb9a9fc375b8561058fbc1409ed3192e1a57"
-  dependencies:
-    ansi-styles "^3.1.0"
-    escape-string-regexp "^1.0.5"
-    supports-color "^4.0.0"
-
-chardet@^0.4.0:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/chardet/-/chardet-0.4.2.tgz#b5473b33dc97c424e5d98dc87d55d4d8a29c8bf2"
 
 chokidar@^1.7.0:
   version "1.7.0"
@@ -867,16 +967,6 @@ clap@^1.0.9:
   dependencies:
     chalk "^1.1.3"
 
-cli-cursor@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/cli-cursor/-/cli-cursor-2.1.0.tgz#b35dac376479facc3e94747d41d0d0f5238ffcb5"
-  dependencies:
-    restore-cursor "^2.0.0"
-
-cli-width@^2.0.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/cli-width/-/cli-width-2.2.0.tgz#ff19ede8a9a5e579324147b0c11f0fbcbabed639"
-
 cliui@^2.1.0:
   version "2.1.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/cliui/-/cliui-2.1.0.tgz#4b475760ff80264c762c3a1719032e91c7fea0d1"
@@ -900,13 +990,6 @@ clone-stats@^0.0.1:
 clone@^1.0.0, clone@^1.0.2:
   version "1.0.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/clone/-/clone-1.0.3.tgz#9c2cb07d4bbeafd63726986150ce8806c51f215e"
-
-cmd-shim@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/cmd-shim/-/cmd-shim-2.0.2.tgz#6fcbda99483a8fd15d7d30a196ca69d688a2efdb"
-  dependencies:
-    graceful-fs "^4.1.2"
-    mkdirp "~0.5.0"
 
 co@^4.6.0:
   version "4.6.0"
@@ -966,13 +1049,6 @@ colors@~1.1.2:
   version "1.1.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/colors/-/colors-1.1.2.tgz#0b2e3948fe3f30bf42b2ff9f0fe0e643fbf9f8c2"
 
-columnify@^1.5.4:
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/columnify/-/columnify-1.5.4.tgz#4737ddf1c7b69a8a7c340570782e947eec8e78bb"
-  dependencies:
-    strip-ansi "^3.0.0"
-    wcwidth "^1.0.0"
-
 combined-stream@^1.0.5, combined-stream@~1.0.5:
   version "1.0.5"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/combined-stream/-/combined-stream-1.0.5.tgz#3647beeaf3dc2d27b346a145954790aa815abb39"
@@ -985,19 +1061,15 @@ combined-stream@~0.0.4:
   dependencies:
     delayed-stream "0.0.5"
 
-command-join@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/command-join/-/command-join-2.0.0.tgz#52e8b984f4872d952ff1bdc8b98397d27c7144cf"
-
 commander@2.9.0:
   version "2.9.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/commander/-/commander-2.9.0.tgz#794dbfbac84084f0f8a33e1dd0fc0b316a8c844a"
   dependencies:
     graceful-readlink ">= 1.0.0"
 
-commander@^2.9.0:
-  version "2.12.2"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/commander/-/commander-2.12.2.tgz#0cac80bab4a6bc32aee3f15c992d9427f8055a5a"
+commander@^2.12.1:
+  version "2.14.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/commander/-/commander-2.14.0.tgz#7b25325963e6aace20d3a9285b09379b0c2208b5"
 
 comment-regex@^1.0.0:
   version "1.0.0"
@@ -1022,14 +1094,6 @@ concat-map@0.0.1:
   version "0.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
 
-concat-stream@^1.4.10:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/concat-stream/-/concat-stream-1.6.0.tgz#0aac662fd52be78964d5532f694784e70110acf7"
-  dependencies:
-    inherits "^2.0.3"
-    readable-stream "^2.2.2"
-    typedarray "^0.0.6"
-
 concat-with-sourcemaps@^1.0.4:
   version "1.0.4"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/concat-with-sourcemaps/-/concat-with-sourcemaps-1.0.4.tgz#6971a409cd02e0ac177371fb0674ecbd9fee921b"
@@ -1050,126 +1114,12 @@ constants-browserify@^1.0.0:
   version "1.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/constants-browserify/-/constants-browserify-1.0.0.tgz#9aaf85b817339022d57d111c78b94e2223dcd85d"
 
-conventional-changelog-angular@^1.5.2:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-angular/-/conventional-changelog-angular-1.6.0.tgz#0a26a071f2c9fcfcf2b86ba0cfbf6e6301b75bfa"
+conventional-changelog-angular@^1.3.3:
+  version "1.6.2"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/conventional-changelog-angular/-/conventional-changelog-angular-1.6.2.tgz#0a811313de46326e5e4e11dac281d61cfe1f00c4"
   dependencies:
     compare-func "^1.3.1"
     q "^1.4.1"
-
-conventional-changelog-atom@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-atom/-/conventional-changelog-atom-0.1.2.tgz#12595ad5267a6937c34cf900281b1c65198a4c63"
-  dependencies:
-    q "^1.4.1"
-
-conventional-changelog-cli@^1.3.2:
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-cli/-/conventional-changelog-cli-1.3.5.tgz#46c51496216b7406588883defa6fac589e9bb31e"
-  dependencies:
-    add-stream "^1.0.0"
-    conventional-changelog "^1.1.7"
-    lodash "^4.1.0"
-    meow "^3.7.0"
-    tempfile "^1.1.1"
-
-conventional-changelog-codemirror@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-codemirror/-/conventional-changelog-codemirror-0.2.1.tgz#299a4f7147baf350e6c8158fc54954a291c5cc09"
-  dependencies:
-    q "^1.4.1"
-
-conventional-changelog-core@^1.9.3:
-  version "1.9.5"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-core/-/conventional-changelog-core-1.9.5.tgz#5db7566dad7c0cb75daf47fbb2976f7bf9928c1d"
-  dependencies:
-    conventional-changelog-writer "^2.0.3"
-    conventional-commits-parser "^2.1.0"
-    dateformat "^1.0.12"
-    get-pkg-repo "^1.0.0"
-    git-raw-commits "^1.3.0"
-    git-remote-origin-url "^2.0.0"
-    git-semver-tags "^1.2.3"
-    lodash "^4.0.0"
-    normalize-package-data "^2.3.5"
-    q "^1.4.1"
-    read-pkg "^1.1.0"
-    read-pkg-up "^1.0.1"
-    through2 "^2.0.0"
-
-conventional-changelog-ember@^0.2.9:
-  version "0.2.10"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-ember/-/conventional-changelog-ember-0.2.10.tgz#dcd6e4cdc2e6c2b58653cf4d2cb1656a60421929"
-  dependencies:
-    q "^1.4.1"
-
-conventional-changelog-eslint@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-eslint/-/conventional-changelog-eslint-0.2.1.tgz#2c2a11beb216f80649ba72834180293b687c0662"
-  dependencies:
-    q "^1.4.1"
-
-conventional-changelog-express@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-express/-/conventional-changelog-express-0.2.1.tgz#838d9e1e6c9099703b150b9c19aa2d781742bd6c"
-  dependencies:
-    q "^1.4.1"
-
-conventional-changelog-jquery@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-jquery/-/conventional-changelog-jquery-0.1.0.tgz#0208397162e3846986e71273b6c79c5b5f80f510"
-  dependencies:
-    q "^1.4.1"
-
-conventional-changelog-jscs@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-jscs/-/conventional-changelog-jscs-0.1.0.tgz#0479eb443cc7d72c58bf0bcf0ef1d444a92f0e5c"
-  dependencies:
-    q "^1.4.1"
-
-conventional-changelog-jshint@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-jshint/-/conventional-changelog-jshint-0.2.1.tgz#86139bb3ac99899f2b177e9617e09b37d99bcf3a"
-  dependencies:
-    compare-func "^1.3.1"
-    q "^1.4.1"
-
-conventional-changelog-writer@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-writer/-/conventional-changelog-writer-2.0.3.tgz#073b0c39f1cc8fc0fd9b1566e93833f51489c81c"
-  dependencies:
-    compare-func "^1.3.1"
-    conventional-commits-filter "^1.1.1"
-    dateformat "^1.0.11"
-    handlebars "^4.0.2"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.0.0"
-    meow "^3.3.0"
-    semver "^5.0.1"
-    split "^1.0.0"
-    through2 "^2.0.0"
-
-conventional-changelog@^1.1.7:
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/conventional-changelog/-/conventional-changelog-1.1.7.tgz#9151a62b1d8edb2d82711dabf5b7cf71041f82b1"
-  dependencies:
-    conventional-changelog-angular "^1.5.2"
-    conventional-changelog-atom "^0.1.2"
-    conventional-changelog-codemirror "^0.2.1"
-    conventional-changelog-core "^1.9.3"
-    conventional-changelog-ember "^0.2.9"
-    conventional-changelog-eslint "^0.2.1"
-    conventional-changelog-express "^0.2.1"
-    conventional-changelog-jquery "^0.1.0"
-    conventional-changelog-jscs "^0.1.0"
-    conventional-changelog-jshint "^0.2.1"
-
-conventional-commits-filter@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/conventional-commits-filter/-/conventional-commits-filter-1.1.1.tgz#72172319c0c88328a015b30686b55527b3a5e54a"
-  dependencies:
-    is-subset "^0.1.1"
-    modify-values "^1.0.0"
 
 conventional-commits-parser@^2.1.0:
   version "2.1.0"
@@ -1182,18 +1132,6 @@ conventional-commits-parser@^2.1.0:
     split2 "^2.0.0"
     through2 "^2.0.0"
     trim-off-newlines "^1.0.0"
-
-conventional-recommended-bump@^1.0.1:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/conventional-recommended-bump/-/conventional-recommended-bump-1.1.0.tgz#964d4fcc70fb5259d41fa9b39d3df6afdb87d253"
-  dependencies:
-    concat-stream "^1.4.10"
-    conventional-commits-filter "^1.1.1"
-    conventional-commits-parser "^2.1.0"
-    git-raw-commits "^1.3.0"
-    git-semver-tags "^1.2.3"
-    meow "^3.3.0"
-    object-assign "^4.0.1"
 
 convert-source-map@^1.5.0:
   version "1.5.1"
@@ -1219,18 +1157,21 @@ core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/core-util-is/-/core-util-is-1.0.2.tgz#ff8cadd074282138091203b3c03f5b11eb4a388b"
 
+cosmiconfig@^4.0.0:
+  version "4.0.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/cosmiconfig/-/cosmiconfig-4.0.0.tgz#760391549580bbd2df1e562bc177b13c290972dc"
+  dependencies:
+    is-directory "^0.3.1"
+    js-yaml "^3.9.0"
+    parse-json "^4.0.0"
+    require-from-string "^2.0.1"
+
 create-ecdh@^4.0.0:
   version "4.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/create-ecdh/-/create-ecdh-4.0.0.tgz#b7230ca6014640c9bc8ab2038a3086997ae61053"
   dependencies:
     bn.js "^4.1.0"
     elliptic "^6.0.0"
-
-create-error-class@^3.0.0:
-  version "3.0.2"
-  resolved "http://registry.npmjs.org/create-error-class/-/create-error-class-3.0.2.tgz#06be7abef947a3f14a30fd610671d401bca8b7b6"
-  dependencies:
-    capture-stack-trace "^1.0.0"
 
 create-hash@^1.1.0, create-hash@^1.1.2:
   version "1.1.3"
@@ -1397,7 +1338,7 @@ date-now@^0.1.4:
   version "0.1.4"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/date-now/-/date-now-0.1.4.tgz#eaf439fd4d4848ad74e5cc7dbef200672b9e345b"
 
-dateformat@^1.0.11, dateformat@^1.0.12, dateformat@~1.0.12:
+dateformat@^1.0.11, dateformat@~1.0.12:
   version "1.0.12"
   resolved "https://registry.yarnpkg.com/dateformat/-/dateformat-1.0.12.tgz#9f124b67594c937ff706932e4a642cca8dbbfee9"
   dependencies:
@@ -1420,10 +1361,6 @@ decamelize@^1.0.0, decamelize@^1.1.1, decamelize@^1.1.2:
   version "1.2.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/decamelize/-/decamelize-1.2.0.tgz#862f48cf06932a22160dea2916d7153894581c4d"
 
-dedent@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/dedent/-/dedent-0.7.0.tgz#2495ddbaf6eb874abb0e1be9df22d2e5a544326c"
-
 deep-eql@^0.1.3:
   version "0.1.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/deep-eql/-/deep-eql-0.1.3.tgz#ef558acab8de25206cd713906d74e56930eb69f2"
@@ -1437,12 +1374,6 @@ deep-extend@~0.4.0:
 deep-is@~0.1.3:
   version "0.1.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/deep-is/-/deep-is-0.1.3.tgz#b369d6fb5dbc13eecf524f91b070feedc357cf34"
-
-defaults@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/defaults/-/defaults-1.0.3.tgz#c656051e9817d9ff08ed881477f3fe4019f3ef7d"
-  dependencies:
-    clone "^1.0.2"
 
 define-properties@^1.1.2:
   version "1.1.2"
@@ -1479,10 +1410,6 @@ detect-indent@^4.0.0:
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/detect-indent/-/detect-indent-4.0.0.tgz#a780cf1ce2fd76be4791d81c290d2db892a5e64b"
   dependencies:
     repeating "^2.0.0"
-
-detect-indent@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/detect-indent/-/detect-indent-5.0.0.tgz#3871cc0a6a002e8c3e5b3cf7f336264675f06b9d"
 
 detect-libc@^1.0.2:
   version "1.0.2"
@@ -1529,14 +1456,6 @@ duplexer2@0.0.2:
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/duplexer2/-/duplexer2-0.0.2.tgz#c614dcf67e2fb14995a91711e5a617e8a60a31db"
   dependencies:
     readable-stream "~1.1.9"
-
-duplexer3@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/duplexer3/-/duplexer3-0.1.4.tgz#ee01dd1cac0ed3cbc7fdbea37dc0a8f1ce002ce2"
-
-duplexer@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/duplexer/-/duplexer-0.1.1.tgz#ace6ff808c1ce66b57d1ebf97977acb02334cfc1"
 
 ecc-jsbn@~0.1.1:
   version "0.1.1"
@@ -1750,18 +1669,6 @@ execa@^0.7.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-execa@^0.8.0:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/execa/-/execa-0.8.0.tgz#d8d76bbc1b55217ed190fd6dd49d3c774ecfc8da"
-  dependencies:
-    cross-spawn "^5.0.1"
-    get-stream "^3.0.0"
-    is-stream "^1.1.0"
-    npm-run-path "^2.0.0"
-    p-finally "^1.0.0"
-    signal-exit "^3.0.0"
-    strip-eof "^1.0.0"
-
 exit@~0.1.1:
   version "0.1.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/exit/-/exit-0.1.2.tgz#0632638f8d877cc82107d30a0fff1a17cba1cd0c"
@@ -1789,14 +1696,6 @@ extend@~1.2.1:
 extend@~3.0.0:
   version "3.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/extend/-/extend-3.0.1.tgz#bb83498508e49d0af95853ebb6f9ace4a3f68690"
-
-external-editor@^2.0.4:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/external-editor/-/external-editor-2.1.0.tgz#3d026a21b7f95b5726387d4200ac160d372c3b48"
-  dependencies:
-    chardet "^0.4.0"
-    iconv-lite "^0.4.17"
-    tmp "^0.0.33"
 
 extglob@^0.3.1:
   version "0.3.2"
@@ -1839,12 +1738,6 @@ fast-levenshtein@~2.0.4:
 fastparse@^1.1.1:
   version "1.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/fastparse/-/fastparse-1.1.1.tgz#75a2a46fe4c8dda6c4b477e2d525ff29834ea132"
-
-figures@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/figures/-/figures-2.0.0.tgz#3ab1a2d2a62c8bfb431a0c94cb797a2fce27c962"
-  dependencies:
-    escape-string-regexp "^1.0.5"
 
 filename-regex@^2.0.0:
   version "2.0.1"
@@ -1937,14 +1830,6 @@ fs-extra@^3.0.0, fs-extra@^3.0.1:
     jsonfile "^3.0.0"
     universalify "^0.1.0"
 
-fs-extra@^4.0.1:
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-4.0.3.tgz#0d852122e5bc5beb453fb028e9c0c9bf36340c94"
-  dependencies:
-    graceful-fs "^4.1.2"
-    jsonfile "^4.0.0"
-    universalify "^0.1.0"
-
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/fs.realpath/-/fs.realpath-1.0.0.tgz#98f1139855348e8433d679d6530046407f37a3fd"
@@ -1998,19 +1883,9 @@ get-caller-file@^1.0.1:
   version "1.0.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/get-caller-file/-/get-caller-file-1.0.2.tgz#cc75f3b0ac549c9f7c1a4c247f8bff11309a529b"
 
-get-pkg-repo@^1.0.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/get-pkg-repo/-/get-pkg-repo-1.4.0.tgz#c73b489c06d80cc5536c2c853f9e05232056972d"
-  dependencies:
-    hosted-git-info "^2.1.4"
-    meow "^3.3.0"
-    normalize-package-data "^2.3.0"
-    parse-github-repo-url "^1.3.0"
-    through2 "^2.0.0"
-
-get-port@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/get-port/-/get-port-3.2.0.tgz#dd7ce7de187c06c8bf353796ac71e099f0980ebc"
+get-stdin@5.0.1:
+  version "5.0.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/get-stdin/-/get-stdin-5.0.1.tgz#557bb0b675aed83de82d7237295ac4aef7caf7d2"
 
 get-stdin@^4.0.1:
   version "4.0.1"
@@ -2040,26 +1915,6 @@ git-raw-commits@^1.3.0:
     split2 "^2.0.0"
     through2 "^2.0.0"
 
-git-remote-origin-url@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/git-remote-origin-url/-/git-remote-origin-url-2.0.0.tgz#5282659dae2107145a11126112ad3216ec5fa65f"
-  dependencies:
-    gitconfiglocal "^1.0.0"
-    pify "^2.3.0"
-
-git-semver-tags@^1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/git-semver-tags/-/git-semver-tags-1.2.3.tgz#188b453882bf9d7a23afd31baba537dab7388d5d"
-  dependencies:
-    meow "^3.3.0"
-    semver "^5.0.1"
-
-gitconfiglocal@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/gitconfiglocal/-/gitconfiglocal-1.0.0.tgz#41d045f3851a5ea88f03f24ca1c6178114464b9b"
-  dependencies:
-    ini "^1.3.2"
-
 glimmer-analyzer@^0.2.0:
   version "0.2.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/glimmer-analyzer/-/glimmer-analyzer-0.2.1.tgz#5836f79d9292d872d815602c985dabe0b7c079ba"
@@ -2082,13 +1937,6 @@ glob-parent@^2.0.0:
   dependencies:
     is-glob "^2.0.0"
 
-glob-parent@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-3.1.0.tgz#9e6af6299d8d3bd2bd40430832bd113df906c5ae"
-  dependencies:
-    is-glob "^3.1.0"
-    path-dirname "^1.0.0"
-
 glob@7.1.1:
   version "7.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/glob/-/glob-7.1.1.tgz#2e950b488114682551ebdea13e7407c7b8c8e0d9"
@@ -2110,7 +1958,7 @@ glob@^5.0.15, glob@~5.0.0:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^7.0.0, glob@^7.0.3, glob@^7.0.5, glob@^7.1.1, glob@^7.1.2:
+glob@^7.0.0, glob@^7.0.5, glob@^7.1.1, glob@^7.1.2:
   version "7.1.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/glob/-/glob-7.1.2.tgz#773f0eddc8f6f5c8f5afe196b49c4d507ce84a54"
   dependencies:
@@ -2132,19 +1980,15 @@ glob@~7.0.0:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
+global-dirs@^0.1.0:
+  version "0.1.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/global-dirs/-/global-dirs-0.1.1.tgz#c441d47e1165ae08e0f3babf15c16d0c8af4d35f"
+  dependencies:
+    ini "^1.3.4"
+
 globals@^9.18.0:
   version "9.18.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/globals/-/globals-9.18.0.tgz#ff778999351eee188960c862cb68fe3187df181d"
-
-globby@^6.1.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/globby/-/globby-6.1.0.tgz#f5a6d70e8395e21c858fb0489d64df02424d506c"
-  dependencies:
-    array-union "^1.0.1"
-    glob "^7.0.3"
-    object-assign "^4.0.1"
-    pify "^2.0.0"
-    pinkie-promise "^2.0.0"
 
 glogg@^1.0.0:
   version "1.0.0"
@@ -2152,23 +1996,7 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-got@^6.7.1:
-  version "6.7.1"
-  resolved "https://registry.yarnpkg.com/got/-/got-6.7.1.tgz#240cd05785a9a18e561dc1b44b41c763ef1e8db0"
-  dependencies:
-    create-error-class "^3.0.0"
-    duplexer3 "^0.1.4"
-    get-stream "^3.0.0"
-    is-redirect "^1.0.0"
-    is-retry-allowed "^1.0.0"
-    is-stream "^1.0.0"
-    lowercase-keys "^1.0.0"
-    safe-buffer "^5.0.1"
-    timed-out "^4.0.0"
-    unzip-response "^2.0.1"
-    url-parse-lax "^1.0.0"
-
-graceful-fs@^4.1.11, graceful-fs@^4.1.2, graceful-fs@^4.1.6:
+graceful-fs@^4.1.2, graceful-fs@^4.1.3, graceful-fs@^4.1.6:
   version "4.1.11"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/graceful-fs/-/graceful-fs-4.1.11.tgz#3fab0bae12b7ce877cbaed06a150e776be88a62d"
 
@@ -2297,7 +2125,7 @@ gulplog@^1.0.0:
   dependencies:
     glogg "^1.0.0"
 
-handlebars@^4.0.1, handlebars@^4.0.2, handlebars@^4.0.6:
+handlebars@^4.0.1, handlebars@^4.0.6:
   version "4.0.11"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.0.11.tgz#630a35dfe0294bc281edae6ffc5d329fc7982dcc"
   dependencies:
@@ -2414,7 +2242,7 @@ hooker@~0.2.3:
   version "0.2.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/hooker/-/hooker-0.2.3.tgz#b834f723cc4a242aa65963459df6d984c5d3d959"
 
-hosted-git-info@^2.1.4, hosted-git-info@^2.5.0:
+hosted-git-info@^2.1.4:
   version "2.5.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/hosted-git-info/-/hosted-git-info-2.5.0.tgz#f7930716c597f94106debee9965ee193bb2b940e"
 
@@ -2434,7 +2262,15 @@ https-browserify@^1.0.0:
   version "1.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/https-browserify/-/https-browserify-1.0.0.tgz#975809b105d4573e63de761dc6adc78a665a4b7a"
 
-iconv-lite@^0.4.17, iconv-lite@~0.4.13:
+husky@^0.14.3:
+  version "0.14.3"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/husky/-/husky-0.14.3.tgz#33e60329797a50086e06c136935b98d5d68537dd"
+  dependencies:
+    is-ci "^1.0.10"
+    normalize-path "^1.0.0"
+    strip-indent "^2.0.0"
+
+iconv-lite@~0.4.13:
   version "0.4.19"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.19.tgz#f7468f60135f5e5dad3399c0a81be9a1603a082b"
 
@@ -2451,10 +2287,6 @@ icss-utils@^2.1.0:
 ieee754@^1.1.4:
   version "1.1.8"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/ieee754/-/ieee754-1.1.8.tgz#f87ff83b6a9afc7e4d69a75cca752c4459ed9c0b"
-
-imurmurhash@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
 
 indent-string@^2.1.0:
   version "2.1.0"
@@ -2485,7 +2317,7 @@ inherits@2.0.1:
   version "2.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/inherits/-/inherits-2.0.1.tgz#b17d08d326b4423e568eff719f91b0b1cbdf69f1"
 
-ini@^1.3.2, ini@~1.3.0:
+ini@^1.3.4, ini@~1.3.0:
   version "1.3.5"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/ini/-/ini-1.3.5.tgz#118561c68097ff813b597831bbfd6bd8ee3882b6"
 
@@ -2498,25 +2330,6 @@ inline-source-map-comment@^1.0.5:
     minimist "^1.1.1"
     sum-up "^1.0.1"
     xtend "^4.0.0"
-
-inquirer@^3.2.2:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/inquirer/-/inquirer-3.3.0.tgz#9dd2f2ad765dcab1ff0443b491442a20ba227dc9"
-  dependencies:
-    ansi-escapes "^3.0.0"
-    chalk "^2.0.0"
-    cli-cursor "^2.1.0"
-    cli-width "^2.0.0"
-    external-editor "^2.0.4"
-    figures "^2.0.0"
-    lodash "^4.3.0"
-    mute-stream "0.0.7"
-    run-async "^2.2.0"
-    rx-lite "^4.0.8"
-    rx-lite-aggregates "^4.0.8"
-    string-width "^2.1.0"
-    strip-ansi "^4.0.0"
-    through "^2.3.6"
 
 install@^0.10.1:
   version "0.10.1"
@@ -2574,6 +2387,10 @@ is-date-object@^1.0.1:
   version "1.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/is-date-object/-/is-date-object-1.0.1.tgz#f202301eeaa348824d1e5bf222f00a8041eb240c"
 
+is-directory@^0.3.1:
+  version "0.3.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/is-directory/-/is-directory-0.3.1.tgz#b3f052a6bb663e7f6629c0bbd2f5ea3284bdad8b"
+
 is-dotfile@^1.0.0:
   version "1.0.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/is-dotfile/-/is-dotfile-1.0.3.tgz#e148a5580daf0d69f51f2719dfdf5e37d3be9002"
@@ -2591,10 +2408,6 @@ is-extendable@^0.1.1:
 is-extglob@^1.0.0:
   version "1.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/is-extglob/-/is-extglob-1.0.0.tgz#09bcbe6e323aab5d31902376361f62715ecf7e6c"
-
-is-extglob@^2.1.0:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/is-extglob/-/is-extglob-2.1.1.tgz#a88c02535791f02ed37c76a1b9ea9773c833f8c2"
 
 is-finite@^1.0.0:
   version "1.0.2"
@@ -2617,12 +2430,6 @@ is-glob@^2.0.0, is-glob@^2.0.1:
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/is-glob/-/is-glob-2.0.1.tgz#4d47b0981c0fbbbfade4040ef30e46b978040684"
   dependencies:
     is-extglob "^1.0.0"
-
-is-glob@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/is-glob/-/is-glob-3.1.0.tgz#7ba5ae24217804ac70707b96922567486cc3e84a"
-  dependencies:
-    is-extglob "^2.1.0"
 
 is-number@^2.1.0:
   version "2.1.0"
@@ -2652,31 +2459,15 @@ is-primitive@^2.0.0:
   version "2.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/is-primitive/-/is-primitive-2.0.0.tgz#6dd29a17eebc2eb52f6e669da6f6dbaf7e203e3b"
 
-is-promise@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/is-promise/-/is-promise-2.1.0.tgz#79a2a9ece7f096e80f36d2b2f3bc16c1ff4bf3fa"
-
-is-redirect@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/is-redirect/-/is-redirect-1.0.0.tgz#1d03dded53bd8db0f30c26e4f95d36fc7c87dc24"
-
 is-regex@^1.0.4:
   version "1.0.4"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/is-regex/-/is-regex-1.0.4.tgz#b011ccc255ae29d987dadb328c883c5ec79d76db"
   dependencies:
     has "^1.0.1"
 
-is-retry-allowed@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/is-retry-allowed/-/is-retry-allowed-1.1.0.tgz#11a060568b67339444033d0125a61a20d564fb34"
-
-is-stream@^1.0.0, is-stream@^1.1.0:
+is-stream@^1.1.0:
   version "1.1.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/is-stream/-/is-stream-1.1.0.tgz#d0d7fd96ad0ed54c51829b1db3aaccee3c977f68"
-
-is-subset@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/is-subset/-/is-subset-0.1.1.tgz#8a59117d932de1de00f245fcdd39ce43f1e939a6"
 
 is-svg@^2.0.0:
   version "2.1.0"
@@ -2751,7 +2542,7 @@ js-tokens@^3.0.0, js-tokens@^3.0.2:
   version "3.0.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/js-tokens/-/js-tokens-3.0.2.tgz#745cb853d71b748271d4bbf5608694f5ba745cc3"
 
-js-yaml@3.x:
+js-yaml@3.x, js-yaml@^3.7.0, js-yaml@^3.9.0:
   version "3.10.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/js-yaml/-/js-yaml-3.10.0.tgz#62397bb3c5b6f1990795c1cdc1c4aa6105eb755a"
   dependencies:
@@ -2788,6 +2579,10 @@ json-loader@^0.5.4:
   version "0.5.7"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/json-loader/-/json-loader-0.5.7.tgz#7710f9980b6ad0fcd920796057c4c6845644aa14"
 
+json-parse-better-errors@^1.0.1:
+  version "1.0.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/json-parse-better-errors/-/json-parse-better-errors-1.0.1.tgz#50183cd1b2d25275de069e9e71b467ac9eab973a"
+
 json-schema-traverse@^0.3.0:
   version "0.3.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/json-schema-traverse/-/json-schema-traverse-0.3.1.tgz#abda6ce59f664eca88fd5f51467b38415bfc59d2"
@@ -2802,7 +2597,7 @@ json-stable-stringify@^1.0.1:
   dependencies:
     jsonify "~0.0.0"
 
-json-stringify-safe@^5.0.1, json-stringify-safe@~5.0.1:
+json-stringify-safe@~5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz#1296a2d58fd45f19a0f6ce01d65701e2c735b6eb"
 
@@ -2817,12 +2612,6 @@ json5@^0.5.0, json5@^0.5.1:
 jsonfile@^3.0.0:
   version "3.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/jsonfile/-/jsonfile-3.0.1.tgz#e650cb7e53373d76c7f5fae47201919d3e0b63aa"
-  optionalDependencies:
-    graceful-fs "^4.1.6"
-
-jsonfile@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/jsonfile/-/jsonfile-4.0.0.tgz#8771aae0799b64076b76640fca058f9c10e33ecb"
   optionalDependencies:
     graceful-fs "^4.1.6"
 
@@ -2865,50 +2654,6 @@ lcid@^1.0.0:
   dependencies:
     invert-kv "^1.0.0"
 
-lerna@^2.5.1:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/lerna/-/lerna-2.6.0.tgz#865377717ca9e0daa5a2fbb00e364968d533650a"
-  dependencies:
-    async "^1.5.0"
-    chalk "^2.1.0"
-    cmd-shim "^2.0.2"
-    columnify "^1.5.4"
-    command-join "^2.0.0"
-    conventional-changelog-cli "^1.3.2"
-    conventional-recommended-bump "^1.0.1"
-    dedent "^0.7.0"
-    execa "^0.8.0"
-    find-up "^2.1.0"
-    fs-extra "^4.0.1"
-    get-port "^3.2.0"
-    glob "^7.1.2"
-    glob-parent "^3.1.0"
-    globby "^6.1.0"
-    graceful-fs "^4.1.11"
-    hosted-git-info "^2.5.0"
-    inquirer "^3.2.2"
-    is-ci "^1.0.10"
-    load-json-file "^3.0.0"
-    lodash "^4.17.4"
-    minimatch "^3.0.4"
-    npmlog "^4.1.2"
-    p-finally "^1.0.0"
-    package-json "^4.0.1"
-    path-exists "^3.0.0"
-    read-cmd-shim "^1.0.1"
-    read-pkg "^2.0.0"
-    rimraf "^2.6.1"
-    safe-buffer "^5.1.1"
-    semver "^5.4.1"
-    signal-exit "^3.0.2"
-    slash "^1.0.0"
-    strong-log-transformer "^1.0.6"
-    temp-write "^3.3.0"
-    write-file-atomic "^2.3.0"
-    write-json-file "^2.2.0"
-    write-pkg "^3.1.0"
-    yargs "^8.0.2"
-
 levn@~0.3.0:
   version "0.3.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/levn/-/levn-0.3.0.tgz#0db10a9b2dcec64b0a46f4c2f8194ba1d842b3b2"
@@ -2932,15 +2677,6 @@ load-json-file@^2.0.0:
   dependencies:
     graceful-fs "^4.1.2"
     parse-json "^2.2.0"
-    pify "^2.0.0"
-    strip-bom "^3.0.0"
-
-load-json-file@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/load-json-file/-/load-json-file-3.0.0.tgz#7eb3735d983a7ed2262ade4ff769af5369c5c440"
-  dependencies:
-    graceful-fs "^4.1.2"
-    parse-json "^3.0.0"
     pify "^2.0.0"
     strip-bom "^3.0.0"
 
@@ -3010,7 +2746,7 @@ lodash._root@^3.0.0:
   version "3.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash._root/-/lodash._root-3.0.1.tgz#3c9422e357cb88cedd267dc2df6ba059da21c7a0"
 
-lodash.camelcase@^4.3.0:
+lodash.camelcase@4.3.0, lodash.camelcase@^4.3.0:
   version "4.3.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz#1e439b8d76f5bb284fc2d7e48a98aa9a80cf7780"
 
@@ -3036,6 +2772,10 @@ lodash.isarray@^3.0.0:
   version "3.0.4"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.isarray/-/lodash.isarray-3.0.4.tgz#cd674282dff43adbc25872debd01c15a28990785"
 
+lodash.kebabcase@4.1.1:
+  version "4.1.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.kebabcase/-/lodash.kebabcase-4.1.1.tgz#05a836295f2437dc446bd5939325cd24a2ceb209"
+
 lodash.keys@^3.0.0:
   version "3.1.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.keys/-/lodash.keys-3.1.2.tgz#bf020265a645c32980a484c4f648f92930289acc"
@@ -3048,9 +2788,33 @@ lodash.memoize@^4.1.2:
   version "4.1.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.memoize/-/lodash.memoize-4.1.2.tgz#f09aa3d606b3f0678217318b5cce300fb12378b1"
 
+lodash.merge@4.6.0:
+  version "4.6.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.merge/-/lodash.merge-4.6.0.tgz#5aa5437e5ec085a62414120d85ce7af7900a95ee"
+
+lodash.mergewith@4.6.0:
+  version "4.6.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.mergewith/-/lodash.mergewith-4.6.0.tgz#317a292e2191be774d8dd8e3cf0d9e0bd02b56dd"
+
+lodash.omit@4.5.0:
+  version "4.5.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.omit/-/lodash.omit-4.5.0.tgz#7e62cd16ca21d5b859ea1b18c8997d8540a84f46"
+
+lodash.pick@4.4.0:
+  version "4.4.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.pick/-/lodash.pick-4.4.0.tgz#4b7bba9a03a2fe60b52b7faf43e78afade62b9d4"
+
 lodash.restparam@^3.0.0:
   version "3.6.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.restparam/-/lodash.restparam-3.6.1.tgz#936a4e309ef330a7645ed4145986c85ae5b20805"
+
+lodash.snakecase@4.1.1:
+  version "4.1.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.snakecase/-/lodash.snakecase-4.1.1.tgz#50d98c01f8b6cbbb72eb8dc43cccbefdcd198b0b"
+
+lodash.startcase@4.4.0:
+  version "4.4.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.startcase/-/lodash.startcase-4.4.0.tgz#9436e34ed26093ed7ffae1936144350915d9add8"
 
 lodash.template@^3.0.0:
   version "3.6.2"
@@ -3086,15 +2850,23 @@ lodash.templatesettings@^4.0.0:
   dependencies:
     lodash._reinterpolate "~3.0.0"
 
+lodash.topairs@4.3.0:
+  version "4.3.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.topairs/-/lodash.topairs-4.3.0.tgz#3b6deaa37d60fb116713c46c5f17ea190ec48d64"
+
 lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.uniq/-/lodash.uniq-4.5.0.tgz#63acdbdea29429cb43cdb064b012f1c1820f2447"
+
+lodash.upperfirst@4.3.1:
+  version "4.3.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash.upperfirst/-/lodash.upperfirst-4.3.1.tgz#1365edf431480481ef0d1c68957a5ed99d49f7ce"
 
 lodash@^3.10.0, lodash@~3.10.1:
   version "3.10.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash/-/lodash-3.10.1.tgz#b20bac311fe442a9e391e63ffc51f13c9893a667"
 
-lodash@^4.0.0, lodash@^4.1.0, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.17.4, lodash@^4.2.1, lodash@^4.3.0:
+lodash@^4.13.1, lodash@^4.14.0, lodash@^4.17.4, lodash@^4.2.1:
   version "4.17.4"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lodash/-/lodash-4.17.4.tgz#1ddd0afd0d3ce5b95af1e3c8b97afd69fd94fc93"
 
@@ -3119,10 +2891,6 @@ loud-rejection@^1.0.0:
     currently-unhandled "^0.4.1"
     signal-exit "^3.0.0"
 
-lowercase-keys@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/lowercase-keys/-/lowercase-keys-1.0.0.tgz#4e3366b39e7f5457e35f1324bdf6f88d0bfc7306"
-
 lru-cache@^4.0.1:
   version "4.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/lru-cache/-/lru-cache-4.1.1.tgz#17f151d274027f0ad1650a1baeda64ce99f30598"
@@ -3133,12 +2901,6 @@ lru-cache@^4.0.1:
 macaddress@^0.2.8:
   version "0.2.8"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/macaddress/-/macaddress-0.2.8.tgz#ee7d93c6cf6a456ac6853b731bb7656a1e8ed5b0"
-
-make-dir@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-1.1.0.tgz#19b4369fe48c116f53c2af95ad102c0e39e85d51"
-  dependencies:
-    pify "^3.0.0"
 
 make-error@^1.1.1:
   version "1.3.0"
@@ -3182,7 +2944,7 @@ memory-fs@^0.4.0, memory-fs@~0.4.1:
     errno "^0.1.3"
     readable-stream "^2.0.1"
 
-meow@^3.3.0, meow@^3.7.0:
+meow@3.7.0, meow@^3.3.0:
   version "3.7.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/meow/-/meow-3.7.0.tgz#3dd1578c1fc024a5590d200db84ecafaabe15b87"
   dependencies:
@@ -3274,10 +3036,6 @@ minimist@0.0.8:
   version "0.0.8"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/minimist/-/minimist-0.0.8.tgz#857fcabfc3397d2625b8228262e86aa7a011b05d"
 
-minimist@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.1.0.tgz#99df657a52574c21c9057497df742790b2b4c0de"
-
 minimist@^1.1.0, minimist@^1.1.1, minimist@^1.1.3, minimist@^1.2.0:
   version "1.2.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/minimist/-/minimist-1.2.0.tgz#4907015bd402f18321d9d43ec399951d285df80a"
@@ -3331,14 +3089,6 @@ mock-require@^2.0.2:
   dependencies:
     caller-id "^0.1.0"
 
-modify-values@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/modify-values/-/modify-values-1.0.0.tgz#e2b6cdeb9ce19f99317a53722f3dbf5df5eaaab2"
-
-moment@^2.6.0:
-  version "2.20.1"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.20.1.tgz#d6eb1a46cbcc14a2b2f9434112c1ff8907f313fd"
-
 moo@^0.4.1:
   version "0.4.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/moo/-/moo-0.4.3.tgz#3844a6889113dfc5a988811a21f41a181acf1fb1"
@@ -3352,10 +3102,6 @@ multipipe@^0.1.2:
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/multipipe/-/multipipe-0.1.2.tgz#2a8f2ddf70eed564dff2d57f1e1a137d9f05078b"
   dependencies:
     duplexer2 "0.0.2"
-
-mute-stream@0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.7.tgz#3075ce93bc21b8fab43e1bc4da7e8115ed1e7bab"
 
 nan@^2.3.0:
   version "2.8.0"
@@ -3433,7 +3179,7 @@ nopt@^4.0.1:
     abbrev "1"
     osenv "^0.1.4"
 
-normalize-package-data@^2.3.0, normalize-package-data@^2.3.2, normalize-package-data@^2.3.4, normalize-package-data@^2.3.5:
+normalize-package-data@^2.3.2, normalize-package-data@^2.3.4:
   version "2.4.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/normalize-package-data/-/normalize-package-data-2.4.0.tgz#bb301e78eb05fc9da52b77db093bad4b4c2a6a94"
   dependencies:
@@ -3441,6 +3187,10 @@ normalize-package-data@^2.3.0, normalize-package-data@^2.3.2, normalize-package-
     is-builtin-module "^1.0.0"
     semver "2 || 3 || 4 || 5"
     validate-npm-package-license "^3.0.1"
+
+normalize-path@^1.0.0:
+  version "1.0.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/normalize-path/-/normalize-path-1.0.0.tgz#d8d9c2b2712467b0a3f2ef0617ffe9b74d5c3cbb"
 
 normalize-path@^2.0.0, normalize-path@^2.0.1:
   version "2.1.1"
@@ -3467,7 +3217,7 @@ npm-run-path@^2.0.0:
   dependencies:
     path-key "^2.0.0"
 
-npmlog@^4.0.2, npmlog@^4.1.2:
+npmlog@^4.0.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/npmlog/-/npmlog-4.1.2.tgz#08a7f2a8bf734604779a9efa4ad5cc717abb954b"
   dependencies:
@@ -3525,12 +3275,6 @@ once@1.x, once@^1.3.0, once@^1.3.3:
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/once/-/once-1.4.0.tgz#522e263281c82b99b664d059bf11b9b452d21110"
   dependencies:
     wrappy "1"
-
-onetime@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/onetime/-/onetime-2.0.1.tgz#067428230fd67443b2794b22bba528b6867962d4"
-  dependencies:
-    mimic-fn "^1.0.0"
 
 opticss@^0.2.0:
   version "0.2.0"
@@ -3592,7 +3336,7 @@ os-locale@^2.0.0:
     lcid "^1.0.0"
     mem "^1.1.0"
 
-os-tmpdir@^1.0.0, os-tmpdir@^1.0.1, os-tmpdir@~1.0.2:
+os-tmpdir@^1.0.0, os-tmpdir@^1.0.1:
   version "1.0.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/os-tmpdir/-/os-tmpdir-1.0.2.tgz#949096ca8f993b06aac9523e319f2d95699c4058"
 
@@ -3602,6 +3346,10 @@ osenv@^0.1.4:
   dependencies:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
+
+outdent@^0.4.1:
+  version "0.4.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/outdent/-/outdent-0.4.1.tgz#92dd65ff729032770e375c943dfd120025beef7e"
 
 p-finally@^1.0.0:
   version "1.0.0"
@@ -3617,15 +3365,6 @@ p-locate@^2.0.0:
   dependencies:
     p-limit "^1.1.0"
 
-package-json@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/package-json/-/package-json-4.0.1.tgz#8869a0401253661c4c4ca3da6c2121ed555f5eed"
-  dependencies:
-    got "^6.7.1"
-    registry-auth-token "^3.0.1"
-    registry-url "^3.0.3"
-    semver "^5.1.0"
-
 pako@~1.0.5:
   version "1.0.6"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/pako/-/pako-1.0.6.tgz#0021a5bb305d71e0290b35db781d6949629181e5"
@@ -3639,10 +3378,6 @@ parse-asn1@^5.0.0:
     create-hash "^1.1.0"
     evp_bytestokey "^1.0.0"
     pbkdf2 "^3.0.3"
-
-parse-github-repo-url@^1.3.0:
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/parse-github-repo-url/-/parse-github-repo-url-1.4.1.tgz#9e7d8bb252a6cb6ba42595060b7bf6df3dbc1f50"
 
 parse-glob@^3.0.4:
   version "3.0.4"
@@ -3659,9 +3394,9 @@ parse-json@^2.2.0:
   dependencies:
     error-ex "^1.2.0"
 
-parse-json@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/parse-json/-/parse-json-3.0.0.tgz#fa6f47b18e23826ead32f263e744d0e1e847fb13"
+parse-json@^4.0.0:
+  version "4.0.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/parse-json/-/parse-json-4.0.0.tgz#be35f5425be1f7f6c747184f98a788cb99477ee0"
   dependencies:
     error-ex "^1.3.1"
 
@@ -3672,10 +3407,6 @@ parse-passwd@^1.0.0:
 path-browserify@0.0.0:
   version "0.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/path-browserify/-/path-browserify-0.0.0.tgz#a0b870729aae214005b7d5032ec2cbbb0fb4451a"
-
-path-dirname@^1.0.0:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/path-dirname/-/path-dirname-1.0.2.tgz#cc33d24d525e099a5388c0336c6e32b9160609e0"
 
 path-exists@^2.0.0:
   version "2.1.0"
@@ -3742,13 +3473,9 @@ performance-now@^0.2.0:
   version "0.2.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/performance-now/-/performance-now-0.2.0.tgz#33bab02a338677b15baa70f6cfc6f96486d43b32"
 
-pify@^2.0.0, pify@^2.3.0:
+pify@^2.0.0:
   version "2.3.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/pify/-/pify-2.3.0.tgz#9b6fea21d0add69093fdb7870cbf9658a753c0e0"
-
-pify@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/pify/-/pify-3.0.0.tgz#e5a4acd2c101fdf3d9a4d07f0dbc4db49dd28176"
 
 pinkie-promise@^2.0.0:
   version "2.0.1"
@@ -4028,7 +3755,7 @@ prelude-ls@~1.1.2:
   version "1.1.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
 
-prepend-http@^1.0.0, prepend-http@^1.0.1:
+prepend-http@^1.0.0:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-1.0.4.tgz#d4f4562b0ce3696e41ac52d0e002e57a635dc6dc"
 
@@ -4162,15 +3889,6 @@ raw-loader@^0.5.1:
   version "0.5.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/raw-loader/-/raw-loader-0.5.1.tgz#b0ca75931fe48193ea43bceb5c3902a9f2e41c9a"
 
-rc@^1.0.1, rc@^1.1.6:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/rc/-/rc-1.2.3.tgz#51575a900f8dd68381c710b4712c2154c3e2035b"
-  dependencies:
-    deep-extend "~0.4.0"
-    ini "~1.3.0"
-    minimist "^1.2.0"
-    strip-json-comments "~2.0.1"
-
 rc@^1.1.7:
   version "1.2.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/rc/-/rc-1.2.2.tgz#609aecda4e4b644efbeb8bd2b326e6fabb9235dc"
@@ -4179,12 +3897,6 @@ rc@^1.1.7:
     ini "~1.3.0"
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
-
-read-cmd-shim@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/read-cmd-shim/-/read-cmd-shim-1.0.1.tgz#2d5d157786a37c055d22077c32c53f8329e91c7b"
-  dependencies:
-    graceful-fs "^4.1.2"
 
 read-file-stdin@^0.2.0:
   version "0.2.1"
@@ -4206,7 +3918,7 @@ read-pkg-up@^2.0.0:
     find-up "^2.0.0"
     read-pkg "^2.0.0"
 
-read-pkg@^1.0.0, read-pkg@^1.1.0:
+read-pkg@^1.0.0:
   version "1.1.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/read-pkg/-/read-pkg-1.1.0.tgz#cadbca0d3fcb981ac96ea2d7f9f028ea553829cf"
   dependencies:
@@ -4231,7 +3943,7 @@ readable-stream@1.0.27-1:
     isarray "0.0.1"
     string_decoder "~0.10.x"
 
-readable-stream@^2.0.1, readable-stream@^2.0.2, readable-stream@^2.0.6, readable-stream@^2.1.4, readable-stream@^2.1.5, readable-stream@^2.2.2, readable-stream@^2.2.6, readable-stream@^2.3.3:
+readable-stream@^2.0.1, readable-stream@^2.0.2, readable-stream@^2.0.6, readable-stream@^2.1.4, readable-stream@^2.1.5, readable-stream@^2.2.6, readable-stream@^2.3.3:
   version "2.3.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/readable-stream/-/readable-stream-2.3.3.tgz#69904cb66e37709e6132907aff8aaab8f182962e"
   dependencies:
@@ -4313,6 +4025,10 @@ regenerate@^1.2.1, regenerate@^1.3.2:
   version "1.3.3"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/regenerate/-/regenerate-1.3.3.tgz#0d5275c65edc53f7d0c40c1bcac37ab4c16e4060"
 
+regenerator-runtime@^0.10.5:
+  version "0.10.5"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/regenerator-runtime/-/regenerator-runtime-0.10.5.tgz#b098ec7b8901bd9d3952ed67fa79119ac677642e"
+
 regenerator-runtime@^0.11.0:
   version "0.11.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/regenerator-runtime/-/regenerator-runtime-0.11.0.tgz#38bfbb99c07eb7fb137b6e7511987f994167b2e9"
@@ -4341,19 +4057,6 @@ regexpu-core@^4.0.11:
     regjsparser "^0.2.1"
     unicode-match-property-ecmascript "^1.0.1"
     unicode-match-property-value-ecmascript "^1.0.0"
-
-registry-auth-token@^3.0.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/registry-auth-token/-/registry-auth-token-3.3.1.tgz#fb0d3289ee0d9ada2cbb52af5dfe66cb070d3006"
-  dependencies:
-    rc "^1.1.6"
-    safe-buffer "^5.0.1"
-
-registry-url@^3.0.3:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/registry-url/-/registry-url-3.1.0.tgz#3d4ef870f73dde1d77f0cf9a381432444e174942"
-  dependencies:
-    rc "^1.0.1"
 
 regjsgen@^0.2.0:
   version "0.2.0"
@@ -4439,9 +4142,34 @@ require-directory@^2.1.1:
   version "2.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/require-directory/-/require-directory-2.1.1.tgz#8c9e49a11151902104a19aa4d4dd7d351aa2bb4c"
 
+require-from-string@^2.0.1:
+  version "2.0.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/require-from-string/-/require-from-string-2.0.1.tgz#8dd240f2df652702c293fb4257876a327e5a3412"
+
 require-main-filename@^1.0.1:
   version "1.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/require-main-filename/-/require-main-filename-1.0.1.tgz#05a099cfe964843b470cb92aad83eec086869706"
+
+require-uncached@^1.0.3:
+  version "1.0.3"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/require-uncached/-/require-uncached-1.0.3.tgz#354c4d301af3560a278e79cf739b0544abe5a7d4"
+  dependencies:
+    caller-path "^0.1.0"
+    resolve-from "^1.0.0"
+
+resolve-from@4.0.0, resolve-from@^4.0.0:
+  version "4.0.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/resolve-from/-/resolve-from-4.0.0.tgz#f2d3dc4c3b4828548e7c029cd38662db2ecc7bc3"
+
+resolve-from@^1.0.0:
+  version "1.0.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/resolve-from/-/resolve-from-1.0.1.tgz#c88db669af828ace4712cd73f9fbfba9396b3918"
+
+resolve-global@^0.1.0:
+  version "0.1.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/resolve-global/-/resolve-global-0.1.0.tgz#8fb02cfd5b7db20118e886311f15af95bd15fbd9"
+  dependencies:
+    global-dirs "^0.1.0"
 
 resolve@1.1.x, resolve@~1.1.0:
   version "1.1.7"
@@ -4453,13 +4181,6 @@ resolve@^1.1.6, resolve@^1.3.2:
   dependencies:
     path-parse "^1.0.5"
 
-restore-cursor@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/restore-cursor/-/restore-cursor-2.0.0.tgz#9f7ee287f82fd326d4fd162923d62129eee0dfaf"
-  dependencies:
-    onetime "^2.0.0"
-    signal-exit "^3.0.2"
-
 ret@~0.1.10:
   version "0.1.15"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/ret/-/ret-0.1.15.tgz#f5df5cfb8d9dbf27bed819547f8d1d7ef767c5b1"
@@ -4470,7 +4191,7 @@ right-align@^0.1.1:
   dependencies:
     align-text "^0.1.1"
 
-rimraf@2, rimraf@^2.3.4, rimraf@^2.5.1, rimraf@^2.5.4, rimraf@^2.6.1:
+rimraf@2, rimraf@^2.3.4, rimraf@^2.5.1, rimraf@^2.5.2, rimraf@^2.5.4, rimraf@^2.6.1:
   version "2.6.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/rimraf/-/rimraf-2.6.2.tgz#8a53d676ca6931b6c3eb5073849fa66a58e6c6ad"
   dependencies:
@@ -4491,22 +4212,6 @@ rsvp@^3.0.14:
   version "3.6.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/rsvp/-/rsvp-3.6.2.tgz#eea087de18935afe8e4183300ea4a89c68cf6e84"
 
-run-async@^2.2.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/run-async/-/run-async-2.3.0.tgz#0371ab4ae0bdd720d4166d7dfda64ff7a445a6c0"
-  dependencies:
-    is-promise "^2.1.0"
-
-rx-lite-aggregates@^4.0.8:
-  version "4.0.8"
-  resolved "https://registry.yarnpkg.com/rx-lite-aggregates/-/rx-lite-aggregates-4.0.8.tgz#753b87a89a11c95467c4ac1626c4efc4e05c67be"
-  dependencies:
-    rx-lite "*"
-
-rx-lite@*, rx-lite@^4.0.8:
-  version "4.0.8"
-  resolved "https://registry.yarnpkg.com/rx-lite/-/rx-lite-4.0.8.tgz#0b1e11af8bc44836f04a6407e92da42467b79444"
-
 safe-buffer@^5.0.1, safe-buffer@^5.1.0, safe-buffer@^5.1.1, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/safe-buffer/-/safe-buffer-5.1.1.tgz#e80a777770cc19df43d57c3de89940563de499b1"
@@ -4525,13 +4230,13 @@ schema-utils@^0.3.0:
   version "5.4.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/semver/-/semver-5.4.1.tgz#e8049d105c3069953b8ec0d87fc6038528a7f7de"
 
+semver@5.5.0:
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.0.tgz#dc4bbc7a6ca9d916dee5d43516f0092b58f7b8ab"
+
 semver@^4.1.0:
   version "4.3.6"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/semver/-/semver-4.3.6.tgz#300bc6e0e86374f7ba61068b5b1ecd57fc6532da"
-
-semver@^5.0.1, semver@^5.4.1:
-  version "5.5.0"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.0.tgz#dc4bbc7a6ca9d916dee5d43516f0092b58f7b8ab"
 
 set-blocking@^2.0.0, set-blocking@~2.0.0:
   version "2.0.0"
@@ -4574,7 +4279,7 @@ shelljs@^0.7.0, shelljs@^0.7.8:
     interpret "^1.0.0"
     rechoir "^0.6.2"
 
-signal-exit@^3.0.0, signal-exit@^3.0.2:
+signal-exit@^3.0.0:
   version "3.0.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/signal-exit/-/signal-exit-3.0.2.tgz#85aebebe2e81642fd646ef46bf0a68ceddf36202"
 
@@ -4601,12 +4306,6 @@ sntp@1.x.x:
 sort-keys@^1.0.0:
   version "1.1.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/sort-keys/-/sort-keys-1.1.2.tgz#570a4a566c41d660dc314eece42621eda93e501f"
-  dependencies:
-    is-plain-obj "^1.0.0"
-
-sort-keys@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/sort-keys/-/sort-keys-2.0.0.tgz#658535584861ec97d730d6cf41822e1f56684128"
   dependencies:
     is-plain-obj "^1.0.0"
 
@@ -4668,12 +4367,6 @@ split2@^2.0.0:
   dependencies:
     through2 "^2.0.2"
 
-split@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/split/-/split-1.0.1.tgz#605bd9be303aa59fb35f9229fbea0ddec9ea07d9"
-  dependencies:
-    through "2"
-
 sprintf-js@^1.0.3:
   version "1.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/sprintf-js/-/sprintf-js-1.1.1.tgz#795ff2560c412e4125a3ad2c8ff7b0066816c553"
@@ -4729,7 +4422,7 @@ string-width@^1.0.1, string-width@^1.0.2:
     is-fullwidth-code-point "^1.0.0"
     strip-ansi "^3.0.0"
 
-string-width@^2.0.0, string-width@^2.1.0:
+string-width@^2.0.0:
   version "2.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/string-width/-/string-width-2.1.1.tgz#b1114bb7bbf239c675f272f25135eda348fc3db1"
   dependencies:
@@ -4786,19 +4479,13 @@ strip-indent@^1.0.1:
   dependencies:
     get-stdin "^4.0.1"
 
+strip-indent@^2.0.0:
+  version "2.0.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/strip-indent/-/strip-indent-2.0.0.tgz#07389e13b0c1a050c7bc2f695b0c139b5fab38be"
+
 strip-json-comments@^2.0.0, strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/strip-json-comments/-/strip-json-comments-2.0.1.tgz#31a25740366ff5939b199d0f01759f6ea87a29d8"
-
-strong-log-transformer@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/strong-log-transformer/-/strong-log-transformer-1.0.6.tgz#f7fb93758a69a571140181277eea0c2eb1301fa3"
-  dependencies:
-    byline "^5.0.0"
-    duplexer "^0.1.1"
-    minimist "^0.1.0"
-    moment "^2.6.0"
-    through "^2.3.4"
 
 style-loader@^0.18.2:
   version "0.18.2"
@@ -4883,7 +4570,7 @@ symlink-or-copy@^1.1.8:
   version "1.1.8"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/symlink-or-copy/-/symlink-or-copy-1.1.8.tgz#1a7e291465c669a6c954d1942f5609fc05e6d730"
 
-tapable@^0.2.7:
+tapable@^0.2.5, tapable@^0.2.7:
   version "0.2.8"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tapable/-/tapable-0.2.8.tgz#aba81a5c786864c317ec9e0d3c3f3d724d4c704d"
 
@@ -4908,28 +4595,6 @@ tar@^2.2.1:
     fstream "^1.0.2"
     inherits "2"
 
-temp-dir@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/temp-dir/-/temp-dir-1.0.0.tgz#0a7c0ea26d3a39afa7e0ebea9c1fc0bc4daa011d"
-
-temp-write@^3.3.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/temp-write/-/temp-write-3.4.0.tgz#8cff630fb7e9da05f047c74ce4ce4d685457d492"
-  dependencies:
-    graceful-fs "^4.1.2"
-    is-stream "^1.1.0"
-    make-dir "^1.0.0"
-    pify "^3.0.0"
-    temp-dir "^1.0.0"
-    uuid "^3.0.1"
-
-tempfile@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/tempfile/-/tempfile-1.1.1.tgz#5bcc4eaecc4ab2c707d8bc11d99ccc9a2cb287f2"
-  dependencies:
-    os-tmpdir "^1.0.0"
-    uuid "^2.0.1"
-
 test-console@^1.1.0:
   version "1.1.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/test-console/-/test-console-1.1.0.tgz#e541e7aa0d801475b8f11ea14e5bea637773cf48"
@@ -4952,7 +4617,7 @@ through2@^2.0.0, through2@^2.0.2:
     readable-stream "^2.1.5"
     xtend "~4.0.1"
 
-through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6:
+"through@>=2.2.7 <3":
   version "2.3.8"
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
 
@@ -4960,21 +4625,11 @@ time-stamp@^1.0.0:
   version "1.1.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/time-stamp/-/time-stamp-1.1.0.tgz#6f40daaec5c1fa5e5b23bfafdf7ef29de5b7d569"
 
-timed-out@^4.0.0:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/timed-out/-/timed-out-4.0.1.tgz#f32eacac5a175bea25d7fab565ab3ed8741ef56f"
-
 timers-browserify@^2.0.4:
   version "2.0.4"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/timers-browserify/-/timers-browserify-2.0.4.tgz#48331965523fda0a76b02925d0b84325658db546"
   dependencies:
     setimmediate "^1.0.4"
-
-tmp@^0.0.33:
-  version "0.0.33"
-  resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.0.33.tgz#6d34335889768d21b2bcda0aa277ced3b1bfadf9"
-  dependencies:
-    os-tmpdir "~1.0.2"
 
 to-arraybuffer@^1.0.0:
   version "1.0.1"
@@ -5028,20 +4683,25 @@ tslib@^1.7.1:
   version "1.8.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tslib/-/tslib-1.8.0.tgz#cf7b901153dc998b9da08b16d978132a44bf9092"
 
-tslint@^5.1.0, tslint@^5.4.3, tslint@^5.5.0:
-  version "5.8.0"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tslint/-/tslint-5.8.0.tgz#203a9a96a7af0f427b67260fca3c46da3a2a6819"
+tslib@^1.8.0:
+  version "1.9.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tslib/-/tslib-1.9.0.tgz#e37a86fda8cbbaf23a057f473c9f4dc64e5fc2e8"
+
+tslint@^5.9.1:
+  version "5.9.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/tslint/-/tslint-5.9.1.tgz#1255f87a3ff57eb0b0e1f0e610a8b4748046c9ae"
   dependencies:
     babel-code-frame "^6.22.0"
     builtin-modules "^1.1.1"
-    chalk "^2.1.0"
-    commander "^2.9.0"
+    chalk "^2.3.0"
+    commander "^2.12.1"
     diff "^3.2.0"
     glob "^7.1.1"
+    js-yaml "^3.7.0"
     minimatch "^3.0.4"
     resolve "^1.3.2"
     semver "^5.3.0"
-    tslib "^1.7.1"
+    tslib "^1.8.0"
     tsutils "^2.12.1"
 
 tsutils@^2.12.1:
@@ -5077,10 +4737,6 @@ type-detect@0.1.1:
 type-detect@^1.0.0:
   version "1.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/type-detect/-/type-detect-1.0.0.tgz#0c99d56443b666aa57149049fbc44a79ac75163c"
-
-typedarray@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
 typedoc-default-themes@^0.5.0:
   version "0.5.0"
@@ -5122,9 +4778,9 @@ typescript@2.3.4:
   version "2.3.4"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/typescript/-/typescript-2.3.4.tgz#bd1cdaf3dc1b37c6e8797716dd66bba1f36be39a"
 
-typescript@^2.3.4, typescript@^2.4.1, typescript@^2.6.1:
-  version "2.6.1"
-  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/typescript/-/typescript-2.6.1.tgz#094aac5ce91cd9ec698917bae3b1acace3b8a42e"
+typescript@^2.7.1:
+  version "2.7.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/typescript/-/typescript-2.7.1.tgz#bb3682c2c791ac90e7c6210b26478a8da085c359"
 
 uglify-js@^2.6, uglify-js@^2.8.29:
   version "2.8.29"
@@ -5203,16 +4859,6 @@ universalify@^0.1.0:
   version "0.1.1"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/universalify/-/universalify-0.1.1.tgz#d16766dbea629ba5f5dee012d2c3ef15be311a8a"
 
-unzip-response@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/unzip-response/-/unzip-response-2.0.1.tgz#d2f0f737d16b0615e72a6935ed04214572d56f97"
-
-url-parse-lax@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/url-parse-lax/-/url-parse-lax-1.0.0.tgz#7af8f303645e9bd79a272e7a14ac68bc0609da73"
-  dependencies:
-    prepend-http "^1.0.1"
-
 url@^0.11.0:
   version "0.11.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/url/-/url-0.11.0.tgz#58b69ca863afc064fce38770a985d21cdb79df05"
@@ -5230,17 +4876,9 @@ util@0.10.3, util@^0.10.3:
   dependencies:
     inherits "2.0.1"
 
-uuid@^2.0.1:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-2.0.3.tgz#67e2e863797215530dff318e5bf9dcebfd47b21a"
-
 uuid@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
-
-uuid@^3.0.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.2.1.tgz#12c528bb9d58d0b9265d9a2f6f0fe8be17ff1f14"
 
 v8flags@^3.0.0:
   version "3.0.1"
@@ -5302,12 +4940,6 @@ watchpack@^1.4.0:
     async "^2.1.2"
     chokidar "^1.7.0"
     graceful-fs "^4.1.2"
-
-wcwidth@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/wcwidth/-/wcwidth-1.0.1.tgz#f0b0dcf915bc5ff1528afadb2c0e17b532da2fe8"
-  dependencies:
-    defaults "^1.0.3"
 
 webpack-merge@^4.1.0:
   version "4.1.0"
@@ -5406,35 +5038,9 @@ wrappy@1:
   version "1.0.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/wrappy/-/wrappy-1.0.2.tgz#8d63f63294cfdbc89b2610f5526e5837e83b3819"
 
-write-file-atomic@^2.0.0, write-file-atomic@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/write-file-atomic/-/write-file-atomic-2.3.0.tgz#1ff61575c2e2a4e8e510d6fa4e243cce183999ab"
-  dependencies:
-    graceful-fs "^4.1.11"
-    imurmurhash "^0.1.4"
-    signal-exit "^3.0.2"
-
 write-file-stdout@0.0.2:
   version "0.0.2"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/write-file-stdout/-/write-file-stdout-0.0.2.tgz#f9612bf139309cbb48704eede8a858ef1dfb7776"
-
-write-json-file@^2.2.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/write-json-file/-/write-json-file-2.3.0.tgz#2b64c8a33004d54b8698c76d585a77ceb61da32f"
-  dependencies:
-    detect-indent "^5.0.0"
-    graceful-fs "^4.1.2"
-    make-dir "^1.0.0"
-    pify "^3.0.0"
-    sort-keys "^2.0.0"
-    write-file-atomic "^2.0.0"
-
-write-pkg@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/write-pkg/-/write-pkg-3.1.0.tgz#030a9994cc9993d25b4e75a9f1a1923607291ce9"
-  dependencies:
-    sort-keys "^2.0.0"
-    write-json-file "^2.2.0"
 
 xtend@^4.0.0, xtend@~4.0.0, xtend@~4.0.1:
   version "4.0.1"

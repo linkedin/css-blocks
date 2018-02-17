@@ -1,19 +1,24 @@
-import { Compiler as WebpackCompiler } from "webpack";
-import * as path from "path";
 import * as  async from "async";
-import * as fs from "fs";
-import * as postcss from "postcss";
-import { Source, RawSource, SourceMapSource, ConcatSource } from "webpack-sources";
-import { RawSourceMap } from "source-map";
 import * as convertSourceMap from "convert-source-map";
-import * as debugGenerator from 'debug';
+import * as debugGenerator from "debug";
+import * as fs from "fs";
+import * as path from "path";
+import * as postcss from "postcss";
+import { RawSourceMap } from "source-map";
+import { Compiler as WebpackCompiler } from "webpack";
+import { ConcatSource, RawSource, Source, SourceMapSource } from "webpack-sources";
+
+import { WebpackAny } from "./Plugin";
+
+// tslint:disable-next-line:prefer-whatever-to-any
+export type PostcssAny = any;
 
 const debug = debugGenerator("css-blocks:webpack:assets");
 
 export type PostcssProcessor =
-    Array<postcss.Plugin<any>>
-        | ((assetPath: string) => Array<postcss.Plugin<any>>
-                                | Promise<Array<postcss.Plugin<any>>>);
+    Array<postcss.Plugin<PostcssAny>>
+        | ((assetPath: string) => Array<postcss.Plugin<PostcssAny>>
+                                | Promise<Array<postcss.Plugin<PostcssAny>>>);
 
 export type GenericProcessor =
     (source: Source, assetPath: string) => Source | Promise<Source>;
@@ -108,12 +113,12 @@ interface SourceAndMap {
 
 export class CssAssets {
   options: CssAssetsOptions;
-    constructor(options: Partial<CssAssetsOptions>) {
+  constructor(options: Partial<CssAssetsOptions>) {
         let defaultOpts: CssAssetsOptions = { cssFiles: {}, concat: {}, emitSourceMaps: true, inlineSourceMaps: false };
         this.options = Object.assign(defaultOpts, options);
     }
 
-    apply(compiler: WebpackCompiler) {
+  apply(compiler: WebpackCompiler) {
         // install assets
         // This puts assets into the compilation results but they won't be part of
         // any chunk. the cssFiles option is an object where the keys are
@@ -133,8 +138,8 @@ export class CssAssets {
                     sourcePath = asset.source;
                     chunkName = asset.chunk;
                 }
-                let chunks: any[] = compilation.chunks;
-                let chunk: any | undefined = chunkName && chunks.find(c => c.name === chunkName);
+                let chunks: WebpackAny[] = compilation.chunks;
+                let chunk: WebpackAny | undefined = chunkName && chunks.find(c => c.name === chunkName);
                 if (chunkName && !chunk) {
                     throw new Error(`No chunk named ${chunkName} found.`);
                 }
@@ -156,7 +161,7 @@ export class CssAssets {
                 } else {
                     assetFileAsSource(path.resolve(compiler.options.context, sourcePath), handleSource);
                 }
-            }, cb);
+            },            cb);
         });
         // Concatenation
         // The concat option is an object where the keys are the
@@ -174,13 +179,13 @@ export class CssAssets {
                 let inputFiles = Array.isArray(concatenation) ? concatenation : concatenation.sources;
                 let concatenationOptions = Array.isArray(concatenation) ? {sources: concatenation} : concatenation;
                 let missingFiles = inputFiles.filter(f => (!compilation.assets[f]));
-                let chunks = new Set<any>();
+                let chunks = new Set<WebpackAny>();
                 if (missingFiles.length === 0) {
                     for (let inputFile of inputFiles) {
                         let asset = compilation.assets[inputFile];
                         concatSource.add(asset);
-                        let chunksWithInputAsset = compilation.chunks.filter((chunk: any) => (<Array<string>>chunk.files).indexOf(inputFile) >= 0);
-                        chunksWithInputAsset.forEach((chunk: any) => {
+                        let chunksWithInputAsset = compilation.chunks.filter((chunk: WebpackAny) => (<Array<string>>chunk.files).indexOf(inputFile) >= 0);
+                        chunksWithInputAsset.forEach((chunk: WebpackAny) => {
                             chunks.add(chunk);
                             let files: string[] = chunk.files;
                             chunk.files = files.filter(file => file !== inputFile);
@@ -206,7 +211,7 @@ export class CssAssets {
             if (postProcessResults.length > 0) {
                 Promise.all(postProcessResults).then(() => {
                     cb();
-                }, error => {
+                },                                   error => {
                     cb(error);
                 });
             } else {
@@ -325,11 +330,11 @@ function sourceAndMap(asset: Source): SourceAndMap {
 }
 
 function makePostcssProcessor (
-    plugins: PostcssProcessor
+    plugins: PostcssProcessor,
 ): GenericProcessor {
     return (asset: Source, assetPath: string) => {
         let { source, map } = sourceAndMap(asset);
-        let pluginsPromise: Promise<Array<postcss.Plugin<any>>>;
+        let pluginsPromise: Promise<Array<postcss.Plugin<PostcssAny>>>;
         if (typeof plugins === "function") {
             pluginsPromise = Promise.resolve(plugins(assetPath));
         } else {
@@ -343,7 +348,7 @@ function makePostcssProcessor (
             let processor = postcss(plugins);
             let result = processor.process(source, {
                 to: assetPath,
-                map: { prev: map, inline: false, annotation: false }
+                map: { prev: map, inline: false, annotation: false },
             });
 
             return result.then((result) => {

@@ -1,18 +1,20 @@
-import * as postcss from 'postcss';
-import * as propParser from 'css-property-parser';
 import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
-import { Style } from './Block';
-import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR, BlockPath } from "../BlockSyntax";
-import * as errors from '../errors';
+import * as propParser from "css-property-parser";
+import * as postcss from "postcss";
+
+import { BLOCK_PROP_NAMES, BlockPath, RESOLVE_RE, SELF_SELECTOR } from "../BlockSyntax";
 import { sourceLocation } from "../SourceLocation";
+import * as errors from "../errors";
+
+import { Style } from "./Block";
 
 // Convenience types to help our code read better.
 export type Pseudo = string;
 export type Property = string;
 
 export type Declaration = {
-  node: postcss.Declaration,
-  value: string,
+  node: postcss.Declaration;
+  value: string;
 };
 
 export type Resolution = {
@@ -47,7 +49,7 @@ export class Ruleset {
   declarations = new MultiMap<Property, Declaration>();
   resolutions  = new MultiMap<Property, Style>();
 
-  constructor(file: string, node: postcss.Rule, style: Style){
+  constructor(file: string, node: postcss.Rule, style: Style) {
     this.file = file;
     this.node = node;
     this.style = style;
@@ -59,7 +61,7 @@ export class Ruleset {
    * @param  style  The Style object this property should resolve to.
    */
   addResolution(property: Property, style: Style): void {
-    let expanded = expandProp(property, 'inherit');
+    let expanded = expandProp(property, "inherit");
     for (let prop of Object.keys(expanded)) {
       this.resolutions.set(prop, style);
     }
@@ -117,28 +119,28 @@ export class RulesetContainer {
           if (!otherBlock) {
             throw new errors.InvalidBlockSyntax(
               `No Block named "${blockPath.block}" found in scope.`,
-              sourceLocation(file, decl)
+              sourceLocation(file, decl),
             );
           }
 
           if (!other) {
             throw new errors.InvalidBlockSyntax(
               `No Style "${blockPath.path}" found on Block "${otherBlock.name}".`,
-              sourceLocation(file, decl)
+              sourceLocation(file, decl),
             );
           }
 
-          if ( other.block === style.block ) {
+          if (other.block === style.block) {
             throw new errors.InvalidBlockSyntax(
               `Cannot resolve conflicts with your own block.`,
-              sourceLocation(file, decl)
+              sourceLocation(file, decl),
             );
           }
 
           if (other && other.block.isAncestorOf(style.block)) {
             throw new errors.InvalidBlockSyntax(
               `Cannot resolve conflicts with ancestors of your own block.`,
-              sourceLocation(file, decl)
+              sourceLocation(file, decl),
             );
           }
 
@@ -167,7 +169,7 @@ export class RulesetContainer {
    * @returns A set of Ruleset objects.
    */
   getRulesets(prop: string, pseudo?: string): Set<Ruleset> {
-    if (!pseudo){
+    if (!pseudo) {
       let res: Ruleset[] = [];
       for (let pseudo of this.getPseudos()) {
         res = [...res, ...this.concerns.get(pseudo, prop)];
@@ -216,7 +218,7 @@ export class RulesetContainer {
           yield {
             node: rule.node,
             property,
-            resolution: style
+            resolution: style,
           };
         }
       }

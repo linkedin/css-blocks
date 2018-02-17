@@ -1,23 +1,25 @@
-import { inspect } from 'util';
-import { Style } from '../Block';
-import { assertNever, objectValues, Maybe, maybe} from "@opticss/util";
 import {
   BooleanExpression,
   isAndExpression,
   isBooleanExpression,
   isNotExpression,
   isOrExpression,
+  isSimpleTagname,
   RewriteMapping as OptimizedMapping,
   SimpleAttribute,
   SimpleTagname,
-  isSimpleTagname
 } from "@opticss/template-api";
-import { ClassRewrite, IndexedClassRewrite } from './ClassRewrite';
+import { assertNever, Maybe, maybe, objectValues } from "@opticss/util";
+import { inspect } from "util";
+
+import { Style } from "../Block";
+
+import { ClassRewrite, IndexedClassRewrite } from "./ClassRewrite";
 
 export class IndexedClassMapping implements IndexedClassRewrite<Style> {
   inputs: Style[];
   staticClasses: string[];
-  private map: { [k: string]: BooleanExpression<number> | undefined; };
+  private map: { [k: string]: BooleanExpression<number> | undefined };
   private _inputMap: Map<Style, number>;
   constructor(inputs: Style[], staticClasses: string[], map: {[k: string]: BooleanExpression<number> | undefined}) {
     this.inputs = inputs;
@@ -40,21 +42,23 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
 
   static fromOptimizer(
     classRewrite: OptimizedMapping,
-    classMap: Map<string, Style>
+    classMap: Map<string, Style>,
   ): IndexedClassMapping {
     // TODO: move this renumbering to opticss?
     let indexSet = new Set<number>();
-    let dynClasses = classRewrite.dynamicAttributes.class!;
+    let dynClasses = classRewrite.dynamicAttributes.class;
     objectValues(dynClasses).forEach(expr => indexesUsed(indexSet, expr!));
     let usedIndexes = [...indexSet].sort((a, b) => a < b ? -1 : 1);
     let adjustments = new Array<number>();
-    usedIndexes.reduce(([missing, last], n) => {
-      missing = missing + (n - last - 1);
-      adjustments[n] = missing;
-      return [missing, n];
-    }, [0, -1]);
+    usedIndexes.reduce(
+      ([missing, last], n) => {
+        missing = missing + (n - last - 1);
+        adjustments[n] = missing;
+        return [missing, n];
+      },
+      [0, -1]);
 
-    function renumberer(i: number | BooleanExpression<number>, n: number, arr: number[]) {
+    function renumberer(i: ExprItem, n: number, arr: ExprItem[]) {
       if (typeof i === "number") {
         arr[n] = i - adjustments[i];
       } else {
@@ -62,12 +66,12 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
       }
     }
 
-    let inputs = classRewrite.inputs.filter((_,n) => indexSet.has(n)).map((_,n, inputs) => processExpressionLiteral(n, inputs, classMap));
-    objectValues(classRewrite.dynamicAttributes.class!).forEach(expr => renumber(renumberer, expr!));
+    let inputs = classRewrite.inputs.filter((_, n) => indexSet.has(n)).map((_, n, inputs) => processExpressionLiteral(n, inputs, classMap));
+    objectValues(classRewrite.dynamicAttributes.class).forEach(expr => renumber(renumberer, expr!));
     return new IndexedClassMapping(
       inputs,
-      classRewrite.staticAttributes.class!,
-      classRewrite.dynamicAttributes.class!
+      classRewrite.staticAttributes.class,
+      classRewrite.dynamicAttributes.class,
     );
   }
 
@@ -99,7 +103,7 @@ export class RewriteMapping implements ClassRewrite<Style> {
 
   static fromOptimizer(
     classRewrite: OptimizedMapping,
-    classMap: Map<string, Style>
+    classMap: Map<string, Style>,
   ): RewriteMapping {
     let staticClasses = classRewrite.staticAttributes.class;
     let dynamicClasses = classRewrite.dynamicAttributes.class;
@@ -133,7 +137,10 @@ function indexesUsed(indexes: Set<number>, expression: BooleanExpression<number>
   }
 }
 
-function renumber(renumberer: any, expression: BooleanExpression<number>) {
+type ExprItem = number | BooleanExpression<number>;
+type Renumberer = (i: ExprItem, n: number, arr: ExprItem[]) => void;
+
+function renumber(renumberer: Renumberer, expression: BooleanExpression<number>) {
   if (isAndExpression(expression)) {
     expression.and.forEach(renumberer);
   } else if (isOrExpression(expression)) {
@@ -150,7 +157,7 @@ function renumber(renumberer: any, expression: BooleanExpression<number>) {
 function processExpression(
   expression: BooleanExpression<number>,
   inputs: Array<SimpleTagname | SimpleAttribute>,
-  classMap: Map<string, Style>
+  classMap: Map<string, Style>,
 ): BooleanExpression<Style> {
   if (isAndExpression(expression)) {
     return {and: expression.and.map(e =>  isBooleanExpression(e) ? processExpression(e, inputs, classMap) : processExpressionLiteral(e, inputs, classMap))};

@@ -1,10 +1,11 @@
-import { AST, print } from '@glimmer/syntax';
-import { Block, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader, DynamicClasses, BlockClass, SubState, } from "css-blocks";
-import { ResolvedFile } from "./GlimmerProject";
-import { cssBlockError } from "./utils";
+import { AST, print } from "@glimmer/syntax";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import { assertNever, ObjectDictionary } from "@opticss/util";
+import { Block, BlockClass, DynamicClasses, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader, SubState } from "css-blocks";
 import * as debugGenerator from "debug";
+
+import { ResolvedFile } from "./GlimmerProject";
+import { cssBlockError } from "./utils";
 
 export type TernaryExpression = AST.Expression;
 export type StringExpression = AST.MustacheStatement | AST.ConcatStatement;
@@ -13,16 +14,16 @@ export type TemplateElement  = ElementAnalysis<BooleanExpression, StringExpressi
 export type AnalysisElement  = ElementAnalysis<null, null, null>;
 
 type RewriteAnalysis = {
-  element: TemplateElement,
-  storeConditionals: true
+  element: TemplateElement;
+  storeConditionals: true;
 } | {
-  element: AnalysisElement,
-  storeConditionals: false
+  element: AnalysisElement;
+  storeConditionals: false;
 };
 
 const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
-const STYLE_IF: 'style-if' = 'style-if';
-const STYLE_UNLESS: 'style-unless' = 'style-unless';
+const STYLE_IF: "style-if" = "style-if";
+const STYLE_UNLESS: "style-unless" = "style-unless";
 
 const debug = debugGenerator("css-blocks:glimmer:analyzer");
 
@@ -46,10 +47,11 @@ export class ElementAnalyzer {
     return element;
   }
 
+  // tslint:disable-next-line:prefer-whatever-to-any
   private debugAnalysis(node: AST.ElementNode, atRootElement: boolean, element: ElementAnalysis<any, any, any>) {
     if (!debug.enabled) return;
-    let startTag = `<${node.tag} ${node.attributes.map(a => print(a)).join(' ')}>`;
-    debug(`Element ${startTag} is ${atRootElement ? 'the root ' : 'a sub'}element at ${this.debugTemplateLocation(node)}`);
+    let startTag = `<${node.tag} ${node.attributes.map(a => print(a)).join(" ")}>`;
+    debug(`Element ${startTag} is ${atRootElement ? "the root " : "a sub"}element at ${this.debugTemplateLocation(node)}`);
     debug(`↳ Analyzed as: ${element.forOptimizer(this.cssBlocksOpts)[0].toString()}`);
   }
 
@@ -100,7 +102,7 @@ export class ElementAnalyzer {
   private lookupClass(name: string, node: AST.Node): BlockClass {
     let found = this.block.lookup(name);
     if (!found && !/\./.test(name)) {
-      found = this.block.lookup('.' + name);
+      found = this.block.lookup("." + name);
     }
     if (found) {
       return <BlockClass>found;
@@ -133,7 +135,7 @@ export class ElementAnalyzer {
         let helperType = isStyleIfHelper(statement);
 
         // If this is a `{{style-if}}` or `{{style-unless}}` helper:
-        if ( helperType ) {
+        if (helperType) {
           let condition = statement.params[0];
           let whenTrue: Array<BlockClass> | undefined = undefined;
           let whenFalse: Array<BlockClass> | undefined = undefined;
@@ -187,7 +189,7 @@ export class ElementAnalyzer {
     blockName: string | undefined,
     stateName: string,
     node: AST.AttrNode,
-    analysis: RewriteAnalysis
+    analysis: RewriteAnalysis,
   ): void {
     let stateBlock = blockName ? this.block.getReferencedBlock(blockName) : this.block;
     if (stateBlock === null) {
@@ -260,18 +262,18 @@ function isStringLiteral(value: AST.Node | undefined): value is AST.StringLitera
   return value !== undefined && value.type === "StringLiteral";
 }
 function isConcatStatement(value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement): value is AST.ConcatStatement {
-  return value.type === 'ConcatStatement';
+  return value.type === "ConcatStatement";
 }
 function isTextNode(value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement): value is AST.TextNode {
-  return value.type === 'TextNode';
+  return value.type === "TextNode";
 }
 function isMustacheStatement(value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement): value is AST.MustacheStatement {
-  return value.type === 'MustacheStatement';
+  return value.type === "MustacheStatement";
 }
 
-function isStyleIfHelper( node: AST.MustacheStatement ): "style-if" | "style-unless" | undefined {
-  if ( node.path.type !== 'PathExpression' ) { return undefined; }
-  let parts: string[] = (<AST.PathExpression>node.path).parts;
+function isStyleIfHelper(node: AST.MustacheStatement): "style-if" | "style-unless" | undefined {
+  if (node.path.type !== "PathExpression") { return undefined; }
+  let parts: string[] = (node.path).parts;
   if (parts.length > 0) {
     let name = parts[0];
     if (name === STYLE_IF || name === STYLE_UNLESS) {
@@ -300,9 +302,9 @@ function nodeLocation(node: AST.Node): SourceLocation {
 
 type BranchStyles = Array<BlockClass> | undefined;
 
-function dynamicClasses( condition: null, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<null>;
-function dynamicClasses( condition: AST.Expression, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<TernaryExpression>;
-function dynamicClasses( condition: AST.Expression | null, whenTrue: BranchStyles, whenFalse: BranchStyles,): DynamicClasses<TernaryExpression | null> {
+function dynamicClasses(condition: null, whenTrue: BranchStyles, whenFalse: BranchStyles): DynamicClasses<null>;
+function dynamicClasses(condition: AST.Expression, whenTrue: BranchStyles, whenFalse: BranchStyles): DynamicClasses<TernaryExpression>;
+function dynamicClasses(condition: AST.Expression | null, whenTrue: BranchStyles, whenFalse: BranchStyles): DynamicClasses<TernaryExpression | null> {
   if (whenTrue && whenFalse) {
     return { condition, whenTrue, whenFalse };
   } else if (whenTrue) {
@@ -310,6 +312,6 @@ function dynamicClasses( condition: AST.Expression | null, whenTrue: BranchStyle
   } else if (whenFalse) {
     return { condition, whenFalse };
   } else {
-    throw new Error('sometimes type checkers are dumb');
+    throw new Error("sometimes type checkers are dumb");
   }
 }

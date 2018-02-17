@@ -1,8 +1,9 @@
-import * as postcss from 'postcss';
-import * as errors from '../../errors';
-import { sourceLocation } from "../../SourceLocation";
+import * as postcss from "postcss";
+
 import { Block } from "../../Block";
 import { IMPLEMENTS } from "../../BlockSyntax";
+import { sourceLocation } from "../../SourceLocation";
+import * as errors from "../../errors";
 
 /**
  * For each `implements` property found in the passed ruleset, track the foreign
@@ -11,7 +12,7 @@ import { IMPLEMENTS } from "../../BlockSyntax";
  * @param sourceFile  Source file name, used for error output.
  * @param rule Ruleset to crawl
  */
-export default async function implementsBlock(rule: postcss.Root, block: Block, sourceFile: string) {
+export async function implementBlock(rule: postcss.Root, block: Block, sourceFile: string) {
   rule.walkDecls(IMPLEMENTS, (decl) => {
     let refNames = decl.value.split(/,\s*/);
     refNames.forEach((refName) => {
@@ -23,6 +24,6 @@ export default async function implementsBlock(rule: postcss.Root, block: Block, 
     });
   });
 
-  // Validate that all rules from external block this block impelemnets are...implemented
+  // Validate that all rules from external block this block implements are...implemented
   block.checkImplementations();
 }

@@ -1,7 +1,8 @@
-import { Style } from "../Block";
 import { MultiMap } from "@opticss/util";
+
+import { Style } from "../Block";
 import { SELF_SELECTOR } from "../BlockSyntax";
-import { shorthandsFor, longhandsFor } from "../shortHandProps";
+import { longhandsFor, shorthandsFor } from "../shortHandProps";
 
 export type Conflict = [string, string];
 
@@ -55,11 +56,12 @@ export function detectConflicts(obj1: Style, obj2: Style): Conflicts<Conflict> {
   let otherPseudos = obj2.rulesets.getPseudos();
   for (let pseudo of obj1.rulesets.getPseudos()) {
     if (!otherPseudos.has(pseudo)) { continue; }
-    conflicts.conflicts.set(pseudo,
+    conflicts.conflicts.set(
+      pseudo,
       ...detectPropertyConflicts(
         obj1.rulesets.getProperties(pseudo),
-        obj2.rulesets.getProperties(pseudo)
-      )
+        obj2.rulesets.getProperties(pseudo),
+      ),
     );
   }
   return conflicts;

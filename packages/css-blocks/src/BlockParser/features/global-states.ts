@@ -1,13 +1,14 @@
-import * as postcss from 'postcss';
-import * as errors from '../../errors';
-import selectorParser = require('postcss-selector-parser');
 import { parseSelector } from "opticss";
-import { stateParser } from "../block-intermediates";
-import { sourceLocation as loc } from "../../SourceLocation";
+import * as postcss from "postcss";
+import selectorParser = require("postcss-selector-parser");
+
 import { Block } from "../../Block";
 import { BLOCK_GLOBAL } from "../../BlockSyntax";
+import { sourceLocation as loc } from "../../SourceLocation";
+import * as errors from "../../errors";
+import { stateParser } from "../block-intermediates";
 
-export default async function globalStates(root: postcss.Root, block: Block, file: string): Promise<Block> {
+export async function globalStates(root: postcss.Root, block: Block, file: string): Promise<Block> {
   root.walkAtRules(BLOCK_GLOBAL, (atRule) => {
 
     let selectors = parseSelector(atRule.params.trim());
@@ -24,7 +25,7 @@ export default async function globalStates(root: postcss.Root, block: Block, fil
       } else {
         throw new errors.InvalidBlockSyntax(
           `Illegal global state declaration: ${atRule.toString()}`,
-          loc(file, atRule)
+          loc(file, atRule),
         );
       }
     }

@@ -1,8 +1,9 @@
-import * as postcss from 'postcss';
-import * as errors from '../../errors';
-import { sourceLocation } from "../../SourceLocation";
+import * as postcss from "postcss";
+
 import { Block } from "../../Block";
 import { EXTENDS } from "../../BlockSyntax";
+import { sourceLocation } from "../../SourceLocation";
+import * as errors from "../../errors";
 
 /**
  * For each `extends` property found in the passed ruleset, set the block's base
@@ -11,7 +12,7 @@ import { EXTENDS } from "../../BlockSyntax";
  * @param sourceFile  Source file name, used for error output.
  * @param rule Ruleset to crawl.
  */
-export default async function extendBlock(rule: postcss.Root, block: Block, sourceFile: string) {
+export async function extendBlock(rule: postcss.Root, block: Block, sourceFile: string) {
   rule.walkDecls(EXTENDS, (decl) => {
     if (block.base) {
       throw new errors.InvalidBlockSyntax(`A block can only be extended once.`, sourceLocation(sourceFile, decl));

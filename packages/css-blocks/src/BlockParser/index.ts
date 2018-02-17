@@ -1,22 +1,22 @@
-import * as postcss from 'postcss';
-import { PluginOptions } from "../options";
-import { OptionsReader } from "../OptionsReader";
+import * as postcss from "postcss";
+
 import { Block } from "../Block";
 import { IBlockFactory } from "../BlockFactory/IBlockFactory";
-import * as errors from '../errors';
-export { PluginOptions } from "../options";
+import { OptionsReader } from "../OptionsReader";
+import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
+import { PluginOptions } from "../options";
 import { Syntax } from "../preprocessing";
 
-import disallowImportant from "./features/disallow-important";
-import discoverName from "./features/discover-name";
-import globalStates from "./features/global-states";
-import constructBlock from "./features/construct-block";
-import processDebugStatements from "./features/process-debug-statements";
-import resolveReferences from "./features/resolve-references";
-import assertForeignGlobalState from "./features/assert-foreign-global-state";
-import extendBlock from "./features/extend-block";
-import implementBlock from "./features/implement-block";
+import { assertForeignGlobalState } from "./features/assert-foreign-global-state";
+import { constructBlock } from "./features/construct-block";
+import { disallowImportant } from "./features/disallow-important";
+import { discoverName } from "./features/discover-name";
+import { extendBlock } from "./features/extend-block";
+import { globalStates } from "./features/global-states";
+import { implementBlock } from "./features/implement-block";
+import { processDebugStatements } from "./features/process-debug-statements";
+import { resolveReferences } from "./features/resolve-references";
 
 export {
   stateParser,
@@ -25,7 +25,7 @@ export {
   isStateNode,
   isClassNode,
   getBlockNode,
-  StateInfo
+  StateInfo,
 } from "./block-intermediates";
 
 export interface ParsedSource {
@@ -41,7 +41,7 @@ export interface ParsedSource {
  * Parser that, given a PostCSS AST will return a `Block` object. Main public
  * interface is `BlockParser.parse`.
  */
-export default class BlockParser {
+export class BlockParser {
   private opts: OptionsReader;
   private factory: IBlockFactory;
 

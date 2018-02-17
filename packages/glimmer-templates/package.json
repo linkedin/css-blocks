@@ -11,10 +11,11 @@
   ],
   "scripts": {
     "test": "mocha --opts test/mocha.opts dist/test",
-    "compile": "rm -rf dist && tsc -p test/tsconfig.json",
-    "pretest": "npm run compile && npm run tslint",
-    "prepublish": "npm run compile",
-    "tslint": "tslint --project tsconfig.json --type-check",
+    "compile": "rm -rf dist && tsc -p tsconfig.json",
+    "pretest": "npm run compile && npm run lint",
+    "prepublish": "npm run compile && tslint --project . -c tslint.release.json",
+    "lint": "tslint --project . -c tslint.cli.json",
+    "lintfix": "tslint --project . -c tslint.cli.json --fix",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs .",
@@ -43,6 +44,7 @@
   },
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/glimmer-templates#readme",
   "devDependencies": {
+    "@css-blocks/code-style": "^0.17.0",
     "@types/chai": "^3.5.2",
     "@types/debug": "0.0.29",
     "@types/mocha": "^2.2.41",
@@ -55,9 +57,9 @@
     "remap-istanbul": "^0.9.5",
     "source-map-support": "^0.4.15",
     "ts-node": "^3.0.4",
-    "tslint": "^5.4.3",
+    "tslint": "^5.9.1",
     "typedoc": "^0.7.1",
-    "typescript": "^2.6.1",
+    "typescript": "^2.7.1",
     "watch": "^1.0.2"
   },
   "dependencies": {

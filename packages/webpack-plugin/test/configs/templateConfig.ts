@@ -1,28 +1,29 @@
-import { Configuration as WebpackConfiguration } from "webpack";
-import * as merge from "webpack-merge";
-import * as postcss from "postcss";
-import * as path from "path";
-import { config as defaultOutputConfig } from "./defaultOutputConfig";
-import { CssBlocksPlugin, CssAssets } from "../../src/index";
-import {
-  Block,
-  MultiTemplateAnalyzer,
-  StyleAnalysis,
-  MetaTemplateAnalysis,
-  TemplateAnalysis,
-  BlockFactory,
-  PluginOptionsReader
-} from "css-blocks";
-import {
-  TemplateInfo,
-  SerializedTemplateInfo,
-  TemplateInfoFactory,
-} from "@opticss/template-api";
 import {
   POSITION_UNKNOWN,
 } from "@opticss/element-analysis";
+import {
+  SerializedTemplateInfo,
+  TemplateInfo,
+  TemplateInfoFactory,
+} from "@opticss/template-api";
+import {
+  Block,
+  BlockFactory,
+  MetaTemplateAnalysis,
+  MultiTemplateAnalyzer,
+  PluginOptionsReader,
+  StyleAnalysis,
+  TemplateAnalysis,
+} from "css-blocks";
+import * as path from "path";
+import * as postcss from "postcss";
+import { Configuration as WebpackConfiguration } from "webpack";
+import * as merge from "webpack-merge";
 
+import { CssAssets, CssBlocksPlugin } from "../../src/index";
 import { BLOCK_FIXTURES_DIRECTORY } from "../util/testPaths";
+
+import { config as defaultOutputConfig } from "./defaultOutputConfig";
 
 declare module "@opticss/template-api" {
   interface TemplateTypes {
@@ -43,7 +44,7 @@ export class TestTemplateInfo implements TemplateInfo<"WebpackPlugin.TestTemplat
     return {
       type: this.type,
       identifier: this.identifier,
-      data: [ this.index ]
+      data: [ this.index ],
     };
   }
   static deserialize(identifier: string, index: number): TestTemplateInfo {
@@ -120,30 +121,30 @@ export function config(): Promise<WebpackConfiguration> {
 
     let cssBlocks = new CssBlocksPlugin({
       outputCssFile: "css-blocks.css",
-      analyzer: new TestTemplateAnalyzer(analysis, factory)
+      analyzer: new TestTemplateAnalyzer(analysis, factory),
     });
 
     return merge(defaultOutputConfig(), {
       entry: "./test/fixtures/javascripts/foo.js",
       output: {
-        filename: "bundle.template.js"
+        filename: "bundle.template.js",
       },
       module: {
         rules: [
           {
             test: /\.css$/,
             exclude: /\.block\.css$/,
-            use: { loader: "css-loader" }
-          }
-        ]
+            use: { loader: "css-loader" },
+          },
+        ],
       },
       plugins: [
         cssBlocks,
         new CssAssets({
           emitSourceMaps: true,
-          inlineSourceMaps: false
-        })
-      ]
+          inlineSourceMaps: false,
+        }),
+      ],
     });
   });
 }

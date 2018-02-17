@@ -1,52 +1,54 @@
 import {
+  SerializedTemplateInfo,
+  TemplateInfo,
+  TemplateInfoFactory,
+} from "@opticss/template-api";
+import { Maybe, none, whatever } from "@opticss/util";
+import { File } from "babel-types";
+import {
   Block,
   MetaTemplateAnalysis,
   TemplateAnalysis,
-} from 'css-blocks';
-import { File } from 'babel-types';
-import {
-  TemplateInfo,
-  TemplateInfoFactory,
-  SerializedTemplateInfo,
-} from '@opticss/template-api';
+} from "css-blocks";
 
-declare module '@opticss/template-api' {
+declare module "@opticss/template-api" {
   interface TemplateTypes {
-    'Opticss.JSXTemplate': JSXTemplate;
+    "Opticss.JSXTemplate": JSXTemplate;
   }
 }
 
-export class JSXTemplate implements TemplateInfo<'Opticss.JSXTemplate'> {
+export class JSXTemplate implements TemplateInfo<"Opticss.JSXTemplate"> {
   identifier: string;
-  type: 'Opticss.JSXTemplate' = 'Opticss.JSXTemplate';
+  type: "Opticss.JSXTemplate" = "Opticss.JSXTemplate";
   data: string;
-  ast: File;
+  ast: Maybe<File>;
 
   constructor(identifier: string, data: string) {
     this.identifier = identifier;
     this.data = data;
+    this.ast = none("The template was not yet parsed.");
   }
 
-  static deserialize(identifier: string, ..._data: any[]): JSXTemplate {
-    return new JSXTemplate(identifier, _data[0]);
+  static deserialize(identifier: string, ..._data: whatever[]): JSXTemplate {
+    return new JSXTemplate(identifier, <string>_data[0]);
   }
 
-  serialize(): SerializedTemplateInfo<'Opticss.JSXTemplate'> {
+  serialize(): SerializedTemplateInfo<"Opticss.JSXTemplate"> {
     return {
       type: this.type,
       identifier: this.identifier,
-      data: [ this.data ]
+      data: [ this.data ],
     };
   }
 }
 
-TemplateInfoFactory.constructors['Opticss.JSXTemplate'] = JSXTemplate.deserialize;
+TemplateInfoFactory.constructors["Opticss.JSXTemplate"] = JSXTemplate.deserialize;
 
 /**
 * Extension of the default css-bocks analytics object to store blocks and other
 * files discovered in the dependency tree.
 */
-export default class Analysis extends TemplateAnalysis<'Opticss.JSXTemplate'> {
+export class Analysis extends TemplateAnalysis<"Opticss.JSXTemplate"> {
 
   template: JSXTemplate;
   parent: MetaAnalysis;
@@ -54,9 +56,7 @@ export default class Analysis extends TemplateAnalysis<'Opticss.JSXTemplate'> {
 
   constructor(template: JSXTemplate, parent: MetaAnalysis) {
     super(template);
-    // super(template, {
-    //   'no-class-pairs': false
-    // });
+    this.template = template;
     this.parent = parent;
   }
 
@@ -92,7 +92,9 @@ export class MetaAnalysis extends MetaTemplateAnalysis {
 
   getAnalysis(idx: number): Analysis {
     let analysis = this.analyses[idx];
-    if (analysis.template.type === 'Opticss.JSXTemplate') {
+    if (analysis.template.type === "Opticss.JSXTemplate") {
+      // Cast through any to force return type.
+      // tslint:disable-next-line:prefer-whatever-to-any
       return (<any>analysis) as Analysis;
     } else {
       throw new Error(`analysis at ${idx} is not a jsx analysis`);

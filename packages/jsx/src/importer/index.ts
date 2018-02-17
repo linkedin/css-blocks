@@ -1,32 +1,30 @@
-import * as fs from 'fs';
-import * as path from 'path';
-
-import { Block, BlockFactory } from 'css-blocks';
-import { NodePath } from 'babel-traverse';
+import { NodePath } from "babel-traverse";
 import {
+  ClassDeclaration,
+  Function,
   ImportDeclaration,
+  isIdentifier,
+  isImportDefaultSpecifier,
+  isImportNamespaceSpecifier,
+  isImportSpecifier,
   VariableDeclaration,
   VariableDeclarator,
-  Function,
-  Identifier,
-  isIdentifier,
-  ClassDeclaration,
-  isImportDefaultSpecifier,
-  isImportSpecifier,
-  isImportNamespaceSpecifier
-} from 'babel-types';
+} from "babel-types";
+import { Block, BlockFactory } from "css-blocks";
+import * as debugGenerator from "debug";
+import * as fs from "fs";
+import * as path from "path";
 
-import Analysis, { JSXTemplate } from '../utils/Analysis';
-import { parseFileWith, JSXAnalyzerOptions } from '../index';
-import isBlockFilename from '../utils/isBlockFilename';
-import { TemplateImportError, ErrorLocation } from '../utils/Errors';
-import * as debugGenerator from 'debug';
+import { JSXAnalyzerOptions, parseFileWith } from "../index";
+import { Analysis, JSXTemplate } from "../utils/Analysis";
+import { ErrorLocation, TemplateImportError } from "../utils/Errors";
+import { isBlockFilename } from "../utils/isBlockFilename";
 
-const debug = debugGenerator('css-blocks:jsx');
+const debug = debugGenerator("css-blocks:jsx");
 
-const DEFAULT_IDENTIFIER = 'default';
+const DEFAULT_IDENTIFIER = "default";
 const VALID_FILE_EXTENSIONS = {
-  '.jsx': 1, '.tsx': 1
+  ".jsx": 1, ".tsx": 1,
 };
 
 interface BlockRegistry {
@@ -38,9 +36,9 @@ interface BlockRegistry {
  * @param name The Block name in question.
  * @param registry The registry to check.
  */
-function throwIfRegistered(name: string, blockRegistry: BlockRegistry, loc: ErrorLocation){
+function throwIfRegistered(name: string, blockRegistry: BlockRegistry, loc: ErrorLocation) {
   // TODO: Location reporting in errors.
-  if ( blockRegistry[name] ) {
+  if (blockRegistry[name]) {
     throw new TemplateImportError(`Block identifier "${name}" cannot be re-defined in any scope once imported.`, loc);
   }
 }
@@ -55,7 +53,7 @@ function throwIfRegistered(name: string, blockRegistry: BlockRegistry, loc: Erro
  * @param analysis The Analysis object used to parse this file.
  * @param blockFactory The BlockFactory we will use to ensure the Blocks and BlockPromised we wait for are singletons.
  */
-export default function importer(file: JSXTemplate, analysis: Analysis, blockFactory: BlockFactory, options: JSXAnalyzerOptions) {
+export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: BlockFactory, options: JSXAnalyzerOptions) {
 
   // Keep a running record of local block names while traversing so we can check
   // for name conflicts elsewhere in the file.
@@ -71,8 +69,8 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
       let filePath = nodePath.node.source.value;
       let specifiers = nodePath.node.specifiers;
 
-      for ( let key in aliases ) {
-        if ( filePath.indexOf(key) === 0 ) {
+      for (let key in aliases) {
+        if (filePath.indexOf(key) === 0) {
           filePath = filePath.replace(key, aliases[key]);
           break;
         }
@@ -86,10 +84,10 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
       // and typescript file extensions – require.resolve will not pick them up.
       let parsedPath = path.parse(absoluteFilePath);
       delete parsedPath.base;
-      if ( !parsedPath.ext ) {
+      if (!parsedPath.ext) {
         for (let key in VALID_FILE_EXTENSIONS) {
           parsedPath.ext = key;
-          if ( fs.existsSync(path.format(parsedPath)) ){
+          if (fs.existsSync(path.format(parsedPath))) {
             break;
           }
           delete parsedPath.ext;
@@ -98,7 +96,7 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
       absoluteFilePath = path.format(parsedPath);
 
       // If this is a jsx or tsx file, parse it with the same analysis object.
-      if ( fs.existsSync(absoluteFilePath) && VALID_FILE_EXTENSIONS[parsedPath.ext] ) {
+      if (fs.existsSync(absoluteFilePath) && VALID_FILE_EXTENSIONS[parsedPath.ext]) {
         debug(`Analyzing discovered dependency: ${absoluteFilePath}`);
         analysis.parent.analysisPromises.push(parseFileWith(absoluteFilePath, analysis.parent, blockFactory, options));
         return;
@@ -110,10 +108,10 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
       }
 
       // TODO: Make import prefix configurable
-      filePath = filePath.replace('cssblock!', '');
+      filePath = filePath.replace("cssblock!", "");
 
       // For each specifier in this block import statement:
-      let localName = '';
+      let localName = "";
       let blockPath = path.resolve(dirname, filePath);
 
       specifiers.forEach((specifier) => {
@@ -121,8 +119,8 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
         let isNamespace = isImportNamespaceSpecifier(specifier);
 
         // If is default import specifier, then fetch local name for block.
-        if (   isImportDefaultSpecifier(specifier) || isNamespace ||
-             ( isImportSpecifier(specifier) && specifier.imported.name === DEFAULT_IDENTIFIER ) ) {
+        if (isImportDefaultSpecifier(specifier) || isNamespace ||
+             (isImportSpecifier(specifier) && specifier.imported.name === DEFAULT_IDENTIFIER)) {
 
           localName = specifier.local.name;
           _localBlocks[localName] = 1;
@@ -132,32 +130,32 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
 
       // Try to fetch an existing Block Promise. If it does not exist, parse CSS Block.
       let res: Promise<Block> = analysis.parent.blockPromises[blockPath];
-      if ( !res ) {
+      if (!res) {
         res = blockFactory.getBlockFromPath(blockPath).catch((err) => {
           throw new TemplateImportError(`Error parsing block import "${filePath}". Failed with:\n\n"${err.message}"\n\n`, {
             filename: file.identifier,
             line: nodePath.node.loc.start.line,
-            column: nodePath.node.loc.start.column
+            column: nodePath.node.loc.start.column,
           });
         });
         analysis.parent.blockPromises[blockPath] = res;
       }
 
       // When block parsing is done, add to analysis object.
-      res.then((block) : Block => {
+      res.then((block): Block => {
         analysis.blocks[localName] = block;
         return block;
       })
 
       // Failures handled upstream by Promise.all() in `parseWith` method. Swallow error.
-      .catch(()=>{});
+      .catch(() => {});
 
       analysis.blockPromises.push(res);
 
     },
 
     // Ensure no Variable Declarations in this file override an imported Block name.
-    VariableDeclaration(path: NodePath<VariableDeclaration>){
+    VariableDeclaration(path: NodePath<VariableDeclaration>) {
       path.node.declarations.forEach((decl: VariableDeclarator) => {
         if (!isIdentifier(decl.id)) {
           return;
@@ -165,42 +163,44 @@ export default function importer(file: JSXTemplate, analysis: Analysis, blockFac
         throwIfRegistered(decl.id.name, _localBlocks, {
           filename: analysis.template.identifier,
           line: path.node.loc.start.line,
-          column: path.node.loc.start.column
+          column: path.node.loc.start.column,
         });
       });
     },
 
     // Ensure no Class Declarations in this file override an imported Block name.
-    ClassDeclaration(path: NodePath<ClassDeclaration>){
+    ClassDeclaration(path: NodePath<ClassDeclaration>) {
       if (!isIdentifier(path.node.id)) {
         return;
       }
       throwIfRegistered(path.node.id.name, _localBlocks, {
         filename: analysis.template.identifier,
         line: path.node.loc.start.line,
-        column: path.node.loc.start.column
+        column: path.node.loc.start.column,
       });
     },
 
     // Ensure no Function Declarations in this file override an imported Block name.
-    Function(path: NodePath<Function>){
+    Function(path: NodePath<Function>) {
       let node = path.node;
 
       if (isIdentifier(node.id)) {
         throwIfRegistered(node.id.name, _localBlocks, {
           filename: analysis.template.identifier,
           line: path.node.loc.start.line,
-          column: path.node.loc.start.column
+          column: path.node.loc.start.column,
         });
       }
 
-      node.params.forEach((param: Identifier) => {
-        throwIfRegistered(param.name, _localBlocks, {
-          filename: analysis.template.identifier,
-          line: path.node.loc.start.line,
-          column: path.node.loc.start.column
-        });
+      node.params.forEach((param) => {
+        if (isIdentifier(param)) {
+          throwIfRegistered(param.name, _localBlocks, {
+            filename: analysis.template.identifier,
+            line: path.node.loc.start.line,
+            column: path.node.loc.start.column,
+          });
+        }
       });
-    }
+    },
   };
 }

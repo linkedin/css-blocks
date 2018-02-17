@@ -1,19 +1,20 @@
-import { preprocess, traverse } from '@glimmer/syntax';
+import { preprocess, traverse } from "@glimmer/syntax";
 import {
   Block,
   BlockClass,
-  TemplateAnalysis as SingleTemplateStyleAnalysis,
+  BlockFactory,
   MetaTemplateAnalysis as MetaStyleAnalysis,
-  TemplateAnalyzer,
   MultiTemplateAnalyzer,
   PluginOptionsReader,
-  BlockFactory,
+  TemplateAnalysis as SingleTemplateStyleAnalysis,
+  TemplateAnalyzer,
 } from "css-blocks";
-import Project from "./project";
-import { ResolvedFile } from "./GlimmerProject";
+import * as debugGenerator from "debug";
 import DependencyAnalyzer from "glimmer-analyzer";
-import * as debugGenerator from 'debug';
-import { ElementAnalyzer } from './ElementAnalyzer';
+
+import { ElementAnalyzer } from "./ElementAnalyzer";
+import { ResolvedFile } from "./GlimmerProject";
+import { Project } from "./project";
 
 export type StateContainer = Block | BlockClass;
 
@@ -64,7 +65,7 @@ export class BaseStyleAnalyzer {
         analysis.blocks[name] = refBlock;
       });
       let localBlockNames = Object.keys(analysis.blocks).map(n => n === "" ? "<default>" : n);
-      self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(', ')}.`);
+      self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(", ")}.`);
       traverse(ast, {
         ElementNode(node) {
           elementCount++;
@@ -72,7 +73,7 @@ export class BaseStyleAnalyzer {
           let element = elementAnalyzer.analyze(node, atRootElement);
           analysis.addElement(element);
           if (self.debug.enabled) self.debug("Element analyzed:", element.forOptimizer(self.options).toString());
-        }
+        },
       });
       return analysis;
     }).catch((error) => {
@@ -86,7 +87,6 @@ export class BaseStyleAnalyzer {
 }
 
 export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements TemplateAnalyzer<"GlimmerTemplates.ResolvedFile"> {
-  project: Project;
   templateName: string;
 
   constructor(project: Project | string, templateName: string) {
@@ -114,7 +114,6 @@ export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements Templa
 }
 
 export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer implements MultiTemplateAnalyzer {
-  project: Project;
   templateNames: string[];
 
   constructor(project: Project | string, ...templateNames: string[]) {
@@ -149,7 +148,7 @@ export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer impleme
       analysisPromises.push(this.analyzeTemplate(dep));
     });
 
-    return Promise.all(analysisPromises).then((analyses)=> {
+    return Promise.all(analysisPromises).then((analyses) => {
       let metaAnalysis = new MetaStyleAnalysis();
       analyses.forEach(a => {
         if (a !== null) {

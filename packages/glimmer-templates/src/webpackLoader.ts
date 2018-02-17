@@ -1,17 +1,17 @@
-import * as debugGenerator from "debug";
 import {
+  ASTPluginBuilder,
   ASTPluginEnvironment,
-  ASTPluginBuilder
 } from "@glimmer/syntax";
+import {
+  isTemplateType,
+} from "@opticss/template-api";
 import {
   Block,
   PluginOptionsReader as CssBlocksOptionsReader,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
-import {
-  isTemplateType
-} from "@opticss/template-api";
+import * as debugGenerator from "debug";
 
 import { ResolvedFile } from "./GlimmerProject";
 import { Rewriter } from "./Rewriter";
@@ -36,6 +36,7 @@ function trackBlockDependencies(loaderContext: LoaderContext, blocks: Set<Block>
   }
 }
 
+// tslint:disable-next-line:prefer-whatever-to-any
 export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginBuilder> {
   debug(`loader adapter for:`, loaderContext.resourcePath);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
@@ -49,7 +50,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
   return Promise.all(mappingPromises)
 
   // Once done, find mapping for this template, and add this plugin as a dependency.
-  .then( (styleMappings: Array<StyleMapping | void>): MappingAndAnalysis | undefined => {
+  .then((styleMappings: Array<StyleMapping | void>): MappingAndAnalysis | undefined => {
     for (let mapping of styleMappings) {
       if (!mapping) continue; // there was an error for that one.
       if (!mapping.analyses) continue; // the mapping wasn't analyzed. (doesn't happen in this integration)
@@ -68,7 +69,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
         trackBlockDependencies(loaderContext, a.transitiveBlockDependencies(), options);
         return {
           mapping,
-          analysis: a
+          analysis: a,
         };
       }
     }
@@ -76,7 +77,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
   })
 
   // Now that we have this template's block mapping, rewrite it.
-  .then( (mappingAndAnalysis): ASTPluginBuilder => {
+  .then((mappingAndAnalysis): ASTPluginBuilder => {
     let astPlugin: ASTPluginBuilder;
 
     if (mappingAndAnalysis) {
@@ -87,15 +88,15 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
             visitor: {
               ElementNode(node) {
                 rewriter.ElementNode(node);
-              }
-            }
+              },
+            },
           };
         };
     } else {
       astPlugin = (_env: ASTPluginEnvironment) => {
         return {
           name: "css-blocks-noop",
-          visitor: {}
+          visitor: {},
         };
       };
     }

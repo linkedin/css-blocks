@@ -1,12 +1,13 @@
-import * as postcss from 'postcss';
-import * as errors from '../../errors';
-import { selectorSourceLocation as loc } from '../../SourceLocation';
-import { Block } from '../../Block';
-import selectorParser = require('postcss-selector-parser');
+import * as postcss from "postcss";
+import selectorParser = require("postcss-selector-parser");
+
+import { Block } from "../../Block";
+import { selectorSourceLocation as loc } from "../../SourceLocation";
+import * as errors from "../../errors";
 import {
-  stateParser,
   BlockType,
-  getBlockNode
+  getBlockNode,
+  stateParser,
 } from "../block-intermediates";
 
 /**
@@ -16,7 +17,7 @@ import {
  * @param rule The rule referencing the external block.
  * @param obj The parsed node making the external reference.
  */
-export default async function assertForeignGlobalState(root: postcss.Root, block: Block, file: string) {
+export async function assertForeignGlobalState(root: postcss.Root, block: Block, file: string) {
 
   root.walkRules((rule) => {
 

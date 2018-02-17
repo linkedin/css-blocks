@@ -1,23 +1,23 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as glob from 'glob';
-import * as postcss from "postcss";
 import {
+  BlockFactory,
   PluginOptions,
   PluginOptionsReader,
-  BlockFactory
 } from "css-blocks";
+import * as fs from "fs";
+import * as glob from "glob";
+import * as path from "path";
+import * as postcss from "postcss";
 
-import resMapBuilder = require('@glimmer/resolution-map-builder');
+import resMapBuilder = require("@glimmer/resolution-map-builder");
 const buildResolutionMap = resMapBuilder.buildResolutionMap;
-import Resolver, { BasicModuleRegistry } from '@glimmer/resolver';
+import Resolver, { BasicModuleRegistry } from "@glimmer/resolver";
 
-import DEFAULT_MODULE_CONFIG from './module-config';
-import GlimmerImporter from "./GlimmerImporter";
+import { GlimmerImporter } from "./GlimmerImporter";
+import { GlimmerProject, ResolvedFile, ResolvedPath } from "./GlimmerProject";
+import { MODULE_CONFIG, ModuleConfig } from "./module-config";
 import { parseSpecifier } from "./utils";
-import { GlimmerProject, ResolvedPath, ResolvedFile } from "./GlimmerProject";
 
-export default class Project implements GlimmerProject {
+export class Project implements GlimmerProject {
   projectDir: string;
   map: resMapBuilder.ResolutionMap;
   resolver: Resolver;
@@ -26,7 +26,7 @@ export default class Project implements GlimmerProject {
   blockFactory: BlockFactory;
   cssBlocksOpts: PluginOptionsReader;
 
-  constructor(projectDir: string, moduleConfig?: any, blockOpts?: PluginOptions) {
+  constructor(projectDir: string, moduleConfig?: ModuleConfig, blockOpts?: PluginOptions) {
     this.projectDir = projectDir;
     this.cssBlocksOpts = new PluginOptionsReader(blockOpts || {});
     this.blockImporter = new GlimmerImporter(this, this.cssBlocksOpts.importer);
@@ -36,17 +36,17 @@ export default class Project implements GlimmerProject {
     let { name } = pkg;
 
     let config = {
-      ...(moduleConfig || DEFAULT_MODULE_CONFIG),
+      ...(moduleConfig || MODULE_CONFIG),
       app: {
         name,
-        rootName: name
-      }
+        rootName: name,
+      },
     };
 
     let map = this.map = buildResolutionMap({
       projectDir,
       moduleConfig: config,
-      modulePrefix: name
+      modulePrefix: name,
     });
 
     this.registry = new BasicModuleRegistry(map);
@@ -78,12 +78,12 @@ export default class Project implements GlimmerProject {
     if (!relativePath) { return null; }
 
     // XXX: Is this `src` folder standard or is it based on some glimmer config?
-    let globPattern = path.join(this.projectDir, 'src', `${relativePath}.*`);
+    let globPattern = path.join(this.projectDir, "src", `${relativePath}.*`);
     let paths = glob.sync(globPattern);
     if (paths.length > 0) {
       return {
         fullPath: paths[0],
-        specifier: specifier
+        specifier: specifier,
       };
     } else {
       return null;
@@ -96,12 +96,12 @@ export default class Project implements GlimmerProject {
       return null;
     }
     let { fullPath, specifier } = resolution;
-    let contents = fs.readFileSync(fullPath, 'utf8');
+    let contents = fs.readFileSync(fullPath, "utf8");
     return new ResolvedFile(contents, specifier, fullPath);
   }
 
   relativize(fullPath: string): string {
-    return path.relative(path.join(this.projectDir, 'src'), fullPath);
+    return path.relative(path.join(this.projectDir, "src"), fullPath);
   }
 
   stylesheetFor(stylesheetName: string, fromGlimmerIdentifier?: string): ResolvedFile | undefined {
@@ -121,7 +121,7 @@ export default class Project implements GlimmerProject {
   }
 
   private loadPackageJSON(appPath: string) {
-    let pkgPath = path.join(appPath, 'package.json');
+    let pkgPath = path.join(appPath, "package.json");
     try {
       return JSON.parse(fs.readFileSync(pkgPath).toString());
     } catch (e) {

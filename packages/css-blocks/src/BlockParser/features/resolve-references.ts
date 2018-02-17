@@ -1,16 +1,17 @@
-import * as postcss from 'postcss';
-import * as errors from '../../errors';
-import { IBlockFactory } from "../../BlockFactory/IBlockFactory";
-import { sourceLocation } from "../../SourceLocation";
+import * as postcss from "postcss";
+
 import { Block } from "../../Block";
+import { IBlockFactory } from "../../BlockFactory/IBlockFactory";
 import { BLOCK_REFERENCE, CLASS_NAME_IDENT } from "../../BlockSyntax";
+import { sourceLocation } from "../../SourceLocation";
+import * as errors from "../../errors";
 
 /**
  * Resolve all block references for a given block.
  * @param block Block to resolve references for
  * @return Promise that resolves when all references have been loaded.
  */
-export default async function resolveReferences(block: Block, factory: IBlockFactory, file: string): Promise<Block> {
+export async function resolveReferences(block: Block, factory: IBlockFactory, file: string): Promise<Block> {
 
   let root: postcss.Root | undefined = block.stylesheet;
   let namedBlockReferences: Promise<[string, string, postcss.AtRule, Block]>[] = [];
@@ -21,7 +22,7 @@ export default async function resolveReferences(block: Block, factory: IBlockFac
 
   // For each `@block-reference` expression, read in the block file, parse and
   // push to block references Promise array.
-  root.walkAtRules(BLOCK_REFERENCE, (atRule: any) => {
+  root.walkAtRules(BLOCK_REFERENCE, (atRule: postcss.AtRule) => {
     let md = atRule.params.match(/^\s*((("|')?[-\w]+\3?)\s+from\s+)\s*("|')([^\4]+)\4\s*$/);
     if (!md) {
       throw new errors.InvalidBlockSyntax(
@@ -32,10 +33,10 @@ export default async function resolveReferences(block: Block, factory: IBlockFac
     let localName = md[2];
 
     // Validate our imported block name is a valid CSS identifier.
-    if ( !CLASS_NAME_IDENT.test(localName) ) {
+    if (!CLASS_NAME_IDENT.test(localName)) {
       throw new errors.InvalidBlockSyntax(
         `Illegal block name in import. ${localName} is not a legal CSS identifier.`,
-        sourceLocation(file, atRule)
+        sourceLocation(file, atRule),
       );
     }
 
@@ -55,7 +56,7 @@ export default async function resolveReferences(block: Block, factory: IBlockFac
       if (localNames[localName]) {
         throw new errors.InvalidBlockSyntax(
           `Blocks ${localNames[localName]} and ${importPath} cannot both have the name ${localName} in this scope.`,
-          sourceLocation(file, atRule)
+          sourceLocation(file, atRule),
         );
       } else {
         block.addBlockReference(localName, otherBlock);
