@@ -228,19 +228,6 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   }
 
   /**
-   * Find the closest common ancestor Block between two Styles
-   * TODO: I think there is a more efficient way to do this.
-   * @param relative  Style to compare ancestry with.
-   * @returns The Style's common Block ancestor, or null.
-   */
-  commonAncestor(relative: Style): Style | null {
-    let blockChain = new Set(...this.block.rootClass.resolveInheritance()); // lol
-    blockChain.add(this.block.rootClass);
-    let common = [relative.block.rootClass, ...relative.block.rootClass.resolveInheritance()].filter(b => blockChain.has(b));
-    return common.length ? common[0] as Style : null;
-  }
-
-  /**
    * Debug utility to help log Styles
    * @param opts  Options for rendering cssClass.
    * @returns A debug string.
