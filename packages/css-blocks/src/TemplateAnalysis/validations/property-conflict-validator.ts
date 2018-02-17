@@ -1,8 +1,8 @@
-import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
+import { MultiMap, objectValues, TwoKeyMultiMap } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import * as postcss from "postcss";
 
-import { State, Style } from "../../Block";
+import { Style } from "../../Block";
 import { Ruleset } from "../../Block/RulesetContainer";
 import {
   isBooleanState,
@@ -21,7 +21,7 @@ type ConflictMap = MultiMap<Property, Ruleset>;
 type PropMap = TwoKeyMultiMap<Pseudo, Property, Ruleset>;
 
 /**
- * Add all Rulesets from a Style to the supplied PropMap
+ * Add all rulesets from a Style to the supplied PropMap
  * @param  propToBlocks  The PropMap to add properties to.
  * @param  obj  The Style object to track.
  */
@@ -175,10 +175,10 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
   elAnalysis.dynamicStates.forEach((condition) => {
     if (isStateGroup(condition)) {
       let stateConditions: PropMap = new TwoKeyMultiMap(false);
-      (Object as whatever).values(condition.group).forEach((state: State) => {
+      for (let state of objectValues(condition.group)) {
         evaluate(state, allConditions, conflicts);
         add(stateConditions, state);
-      });
+      }
       allConditions.setAll(stateConditions);
     }
 

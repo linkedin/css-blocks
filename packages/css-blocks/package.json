@@ -47,6 +47,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
+    "outdent": "^0.4.1",
     "perfectionist": "^2.4.0",
     "postcss": "^6.0.14",
     "remap-istanbul": "^0.9.5",

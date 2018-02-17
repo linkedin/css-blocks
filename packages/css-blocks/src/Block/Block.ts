@@ -23,6 +23,7 @@ import {
   NodeAndType,
   stateParser,
 } from "../BlockParser";
+import { StateInfo } from "../BlockParser/block-intermediates";
 import { CLASS_NAME_IDENT } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
@@ -227,19 +228,6 @@ export abstract class BlockObject<StyleType extends Style, ContainerType extends
   }
 
   /**
-   * Find the closest common ancestor Block between two Styles
-   * TODO: I think there is a more efficient way to do this.
-   * @param relative  Style to compare ancestry with.
-   * @returns The Style's common Block ancestor, or null.
-   */
-  commonAncestor(relative: Style): Style | null {
-    let blockChain = new Set(...this.block.rootClass.resolveInheritance()); // lol
-    blockChain.add(this.block.rootClass);
-    let common = [relative.block.rootClass, ...relative.block.rootClass.resolveInheritance()].filter(b => blockChain.has(b));
-    return common.length ? common[0] as Style : null;
-  }
-
-  /**
    * Debug utility to help log Styles
    * @param opts  Options for rendering cssClass.
    * @returns A debug string.
@@ -360,8 +348,8 @@ export class Block
    *
    * It is not necessary or helpful to add css-block files.
    */
-  addDependency(filepath: string) {
-    this._dependencies.add(filepath);
+  addDependency(filePath: string) {
+    this._dependencies.add(filePath);
   }
 
   get dependencies(): string[] {
@@ -420,11 +408,11 @@ export class Block
    */
   checkImplementations(): void {
     for (let b of this.getImplementedBlocks()) {
-      let missingObjs: Style[] = this.checkImplementation(b);
-      let missingObjsStr = missingObjs.map(o => o.asSource()).join(", ");
-      if (missingObjs.length > 0) {
-        let s = missingObjs.length > 1 ? "s" : "";
-        throw new CssBlockError(`Missing implementation${s} for: ${missingObjsStr} from ${b.identifier}`);
+      let missing: Style[] = this.checkImplementation(b);
+      let missingStr = missing.map(o => o.asSource()).join(", ");
+      if (missing.length > 0) {
+        let s = missing.length > 1 ? "s" : "";
+        throw new CssBlockError(`Missing implementation${s} for: ${missingStr} from ${b.identifier}`);
       }
     }
   }
@@ -672,7 +660,7 @@ export class Block
   }
 
   rewriteSelector(selector: ParsedSelector, opts: OptionsReader): ParsedSelector {
-    // generating a string and reparsing ensures the internal structure is consistent
+    // generating a string and re-parsing ensures the internal structure is consistent
     // otherwise the parent/next/prev relationships will be wonky with the new nodes.
     let s = this.rewriteSelectorToString(selector, opts);
     return parseSelector(s)[0];
@@ -721,12 +709,12 @@ export class Block
    * @return ParsedSelector array
    */
   getParsedSelectors(rule: postcss.Rule): ParsedSelector[] {
-    let sels = this.parsedRuleSelectors.get(rule);
-    if (!sels) {
-      sels = parseSelector(rule);
-      this.parsedRuleSelectors.set(rule, sels);
+    let selectors = this.parsedRuleSelectors.get(rule);
+    if (!selectors) {
+      selectors = parseSelector(rule);
+      this.parsedRuleSelectors.set(rule, selectors);
     }
-    return sels;
+    return selectors;
   }
 
   /**
@@ -750,14 +738,6 @@ export function isBlock(o: object): o is Block {
  * A Map of State objects
  */
 type StateMap = ObjectDictionary<State>;
-
-/**
- * Holds state values to be passed to the StateContainer.
- */
-export interface StateInfo {
-  group?: string;
-  name: string;
-}
 
 /** Parent types for a state */
 export type StateParent = BlockClass | State;
@@ -844,8 +824,8 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
   /**
    * Group getter. Returns a list of State objects in the requested group that are defined
    * against this specific class. This does not take inheritance into account.
-   * @param stateName State group for lookup or a boolean state name if substate is not provided.
-   * @param subStateName Optional substate to filter states by.
+   * @param stateName State group for lookup or a boolean state name if sub-state is not provided.
+   * @param subStateName Optional sub-state to filter states by.
    * @returns An array of all States that were requested.
    */
   getStateOrGroup(stateName: string, subStateName?: string | undefined): Array<State> | Array<SubState> {
@@ -886,21 +866,21 @@ export class BlockClass extends BlockObject<BlockClass, Block> {
   /**
    * like getGroup but includes the states from all super blocks for the group.
    * @param group State group for lookup
-   * @param substate Optional substate to filter states by.
+   * @param subState Optional sub-state to filter states by.
    * @returns A map of resolved state names to their states for all States that were requested.
    */
-  resolveGroup(groupName: string, substate?: string | undefined): ObjectDictionary<State | SubState> | undefined {
+  resolveGroup(groupName: string, subState?: string | undefined): ObjectDictionary<State | SubState> | undefined {
     let resolution: { [name: string]: State | SubState } = {};
-    let states = this.getStateOrGroup(groupName, substate);
+    let states = this.getStateOrGroup(groupName, subState);
     for (let state of states) {
       resolution[state.name] = state;
     }
-    if (substate && resolution[substate]) {
+    if (subState && resolution[subState]) {
       return resolution;
     }
     let base = this.base;
     if (base) {
-      let baseResolution = base.resolveGroup(groupName, substate);
+      let baseResolution = base.resolveGroup(groupName, subState);
       if (baseResolution) {
         resolution = Object.assign(baseResolution, resolution); // overwrite any base definitions with their overrides.
       }

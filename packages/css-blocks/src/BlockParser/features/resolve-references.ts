@@ -22,7 +22,7 @@ export async function resolveReferences(block: Block, factory: IBlockFactory, fi
 
   // For each `@block-reference` expression, read in the block file, parse and
   // push to block references Promise array.
-  root.walkAtRules(BLOCK_REFERENCE, (atRule: whatever) => {
+  root.walkAtRules(BLOCK_REFERENCE, (atRule: postcss.AtRule) => {
     let md = atRule.params.match(/^\s*((("|')?[-\w]+\3?)\s+from\s+)\s*("|')([^\4]+)\4\s*$/);
     if (!md) {
       throw new errors.InvalidBlockSyntax(

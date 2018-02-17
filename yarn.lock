@@ -3347,6 +3347,10 @@ osenv@^0.1.4:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
 
+outdent@^0.4.1:
+  version "0.4.1"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/outdent/-/outdent-0.4.1.tgz#92dd65ff729032770e375c943dfd120025beef7e"
+
 p-finally@^1.0.0:
   version "1.0.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/p-finally/-/p-finally-1.0.0.tgz#0c1f8533aeac2e03a4fd86ee3bb656a1b1b5a92b"

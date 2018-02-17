@@ -34,7 +34,7 @@ function shouldBeParsedAsBlockSelector(rule: postcss.Rule): boolean {
   return !(rule.parent && rule.parent.type === "atrule" && (rule.parent).name === "keyframes");
 }
 
-export async function parseStyles(root: postcss.Root, block: Block, file: string): Promise<Block> {
+export async function constructBlock(root: postcss.Root, block: Block, file: string): Promise<Block> {
 
   let styleRuleTuples: Set<[Style, postcss.Rule]> = new Set();
 
@@ -49,7 +49,7 @@ export async function parseStyles(root: postcss.Root, block: Block, file: string
     try       { parsedSelectors = block.getParsedSelectors(rule); }
     catch (e) { throw new errors.InvalidBlockSyntax(e.message, sourceLocation(file, rule)); }
 
-    // Iterate over the all selectors for this rule – one for each comma seperated selector.
+    // Iterate over the all selectors for this rule – one for each comma separated selector.
     parsedSelectors.forEach((iSel) => {
 
       let keySel = iSel.key;
@@ -235,7 +235,7 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
 
 /**
  * Parses a CompoundSelector and returns the discovered Block Object. Validates
- * well-formedness of the given selector in the process.
+ * the given selector is well-formed in the process.
  * @param block The block that contains this selector we're validating.
  * @param sel The `CompoundSelector` in question.
  * @param rule The full `postcss.Rule` for nice error reporting.
@@ -244,7 +244,7 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
 function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Rule, file: string): BlockNodeAndType {
 
   // If selecting a block or tag, check that the referenced block has been imported.
-  // Otherwise, referencing a tag name is not allowd in blocks, throw an error.
+  // Otherwise, referencing a tag name is not allowed in blocks, throw an error.
   let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
   if (blockName) {
     let refBlock = block.getReferencedBlock(blockName.value!);
@@ -256,7 +256,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
     }
   }
 
-  // Targeting attributes that are not state selectors is not allowd in blocks, throw.
+  // Targeting attributes that are not state selectors is not allowed in blocks, throw.
   let nonStateAttribute = sel.nodes.find(n => n.type === selectorParser.ATTRIBUTE && !isStateNode(n));
   if (nonStateAttribute) {
     throw new errors.InvalidBlockSyntax(
@@ -307,7 +307,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
     // If selecting a state attribute, assert it is valid, save the found state,
     // and throw the appropriate error if conflicting selectors are found.
     else if (isStateNode(n)) {
-      // Assert this state node uses a valid operater if specifying a value.
+      // Assert this state node uses a valid operator if specifying a value.
       if (n.value && n.operator !== "=") {
         throw new errors.InvalidBlockSyntax(
           `A state with a value must use the = operator (found ${n.operator} instead).`,

@@ -25,7 +25,24 @@
 	],
 	"settings": {
 		"cSpell.words": [
-			"Stateful"
+			"COMBINATORS",
+			"Stateful",
+			"Validators",
+			"asdf",
+			"atrule",
+			"fdsa",
+			"pseudoclass",
+			"pseudoclasses",
+			"pseudoelement",
+			"rulesets"
+		],
+		"cSpell.ignorePaths": [
+			"**/node_modules/**",
+			"**/vscode-extension/**",
+			"**/.git/**",
+			".vscode",
+			"typings",
+			"**/package.json"
 		]
 	}
 }

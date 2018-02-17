@@ -1,22 +1,18 @@
-import { POSITION_UNKNOWN } from "@opticss/element-analysis";
-import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template, TemplateInfo } from "@opticss/template-api";
+import { Template } from "@opticss/template-api";
 import { assert } from "chai";
-import { only, skip, suite, test } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, BlockObject, State } from "../../src/Block";
+import { Block } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
-import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { SerializedTemplateAnalysis, TemplateAnalysis } from "../../src/TemplateAnalysis";
 import * as cssBlocks from "../../src/errors";
-import { ImportedFile, Importer } from "../../src/importing";
 import { PluginOptions } from "../../src/options";
 
 import { MockImportRegistry } from "./../util/MockImportRegistry";
 import { assertParseError } from "./../util/assertError";
-
-type TestElement = ElementAnalysis<null, null, null>;
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -36,7 +32,6 @@ export class TemplateAnalysisTests {
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);
@@ -66,7 +61,6 @@ export class TemplateAnalysisTests {
   @test "adding both root and a state from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
 
     let options: PluginOptions = {};
     let reader = new OptionsReader(options);

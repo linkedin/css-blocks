@@ -1,23 +1,20 @@
-import { POSITION_UNKNOWN } from "@opticss/element-analysis";
-import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template, TemplateInfo } from "@opticss/template-api";
+import { Template } from "@opticss/template-api";
 import { ObjectDictionary } from "@opticss/util";
 import { assert } from "chai";
-import { only, skip, suite, test } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, BlockObject, State, SubState } from "../../src/Block";
+import { Block, BlockClass, State, SubState } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
-import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import * as cssBlocks from "../../src/errors";
-import { ImportedFile, Importer } from "../../src/importing";
 import { PluginOptions } from "../../src/options";
 
-import { MockImportRegistry } from "./../util/MockImportRegistry";
-import { assertParseError } from "./../util/assertError";
-
-type TestElement = ElementAnalysis<null, null, null>;
+import { MockImportRegistry } from "../util/MockImportRegistry";
+import { assertParseError } from "../util/assertError";
+import { indented } from "../util/indented";
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -72,13 +69,13 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
-
-  color:
-    block-a.root (blocks/foo.block.css:3:36)
-    block-b.root (blocks/b.block.css:1:30)
-    block-b.root (blocks/b.block.css:1:42)`,
+          color:
+            block-a.root (blocks/foo.block.css:3:36)
+            block-b.root (blocks/b.block.css:1:30)
+            block-b.root (blocks/b.block.css:1:42)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, ".root", "b.root").end();
@@ -125,14 +122,14 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
-
-  color:
-    block-a.root (blocks/foo.block.css:3:36)
-    block-a.root (blocks/foo.block.css:3:49)
-    block-b.root (blocks/b.block.css:1:30)
-    block-b.root (blocks/b.block.css:1:42)`,
+          color:
+            block-a.root (blocks/foo.block.css:3:36)
+            block-a.root (blocks/foo.block.css:3:49)
+            block-b.root (blocks/b.block.css:1:30)
+            block-b.root (blocks/b.block.css:1:42)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, ".root", "b.root").end();
@@ -160,12 +157,12 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
-
-  color:
-    block-a.klass (blocks/foo.block.css:4:16)
-    block-b.klass (blocks/b.block.css:4:33)`,
+          color:
+            block-a.klass (blocks/foo.block.css:4:16)
+            block-b.klass (blocks/b.block.css:4:33)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, ".klass", "b.klass").end();
@@ -277,16 +274,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          color:
+            block-a.bar (blocks/foo.block.css:4:15)
+            block-b.foo (blocks/b.block.css:2:16)
 
-  color:
-    block-a.bar (blocks/foo.block.css:4:15)
-    block-b.foo (blocks/b.block.css:2:16)
-
-  background-color:
-    block-a.bar (blocks/foo.block.css:4:27)
-    block-b.foo (blocks/b.block.css:2:29)`,
+          background-color:
+            block-a.bar (blocks/foo.block.css:4:27)
+            block-b.foo (blocks/b.block.css:2:29)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, ".bar", "b.foo").end();
@@ -341,16 +338,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          color:
+            block-a.foo (blocks/foo.block.css:4:15)
+            block-b.root (blocks/b.block.css:1:30)
 
-  color:
-    block-a.foo (blocks/foo.block.css:4:15)
-    block-b.root (blocks/b.block.css:1:30)
-
-  background-color:
-    block-a.foo (blocks/foo.block.css:4:27)
-    block-b.root (blocks/b.block.css:1:43)`,
+          background-color:
+            block-a.foo (blocks/foo.block.css:4:27)
+            block-b.root (blocks/b.block.css:1:43)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, ".foo", "b.root").end();
@@ -438,16 +435,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          color:
+            block-a.foo (blocks/foo.block.css:4:15)
+            block-b.root (blocks/b.block.css:1:30)
 
-  color:
-    block-a.foo (blocks/foo.block.css:4:15)
-    block-b.root (blocks/b.block.css:1:30)
-
-  background-color:
-    block-a.foo (blocks/foo.block.css:4:27)
-    block-b.root (blocks/b.block.css:1:43)`,
+          background-color:
+            block-a.foo (blocks/foo.block.css:4:27)
+            block-b.root (blocks/b.block.css:1:43)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block).addDynamic([".foo"]).addDynamic(["b.root"]).end();
@@ -500,16 +497,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          color:
+            block-a.foo (blocks/foo.block.css:4:15)
+            block-b.root (blocks/b.block.css:1:30)
 
-  color:
-    block-a.foo (blocks/foo.block.css:4:15)
-    block-b.root (blocks/b.block.css:1:30)
-
-  background-color:
-    block-a.foo (blocks/foo.block.css:4:27)
-    block-b.root (blocks/b.block.css:1:43)`,
+          background-color:
+            block-a.foo (blocks/foo.block.css:4:27)
+            block-b.root (blocks/b.block.css:1:43)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block).addDynamic([".foo", "b.root"]).end();
@@ -585,16 +582,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          color:
+            block-b.root (blocks/b.block.css:1:30)
+            block-a[state|foo] (blocks/foo.block.css:4:21)
 
-  color:
-    block-b.root (blocks/b.block.css:1:30)
-    block-a[state|foo] (blocks/foo.block.css:4:21)
-
-  background-color:
-    block-b.root (blocks/b.block.css:1:43)
-    block-a[state|foo] (blocks/foo.block.css:4:33)`,
+          background-color:
+            block-b.root (blocks/b.block.css:1:43)
+            block-a[state|foo] (blocks/foo.block.css:4:33)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, ".root", "b.root").addDynamic("[state|foo]").end();
@@ -651,11 +648,12 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-  color:
-    block-a.klass[state|foo] (blocks/foo.block.css:5:27)
-    block-b.klass[state|foo] (blocks/b.block.css:4:27)`,
+          color:
+            block-a.klass[state|foo] (blocks/foo.block.css:5:27)
+            block-b.klass[state|foo] (blocks/b.block.css:4:27)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass", ".klass[state|foo]", "b.klass[state|foo]").end();
@@ -705,16 +703,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          color:
+            block-a[state|foo] (blocks/foo.block.css:4:21)
+            block-b[state|bar] (blocks/b.block.css:3:21)
 
-  color:
-    block-a[state|foo] (blocks/foo.block.css:4:21)
-    block-b[state|bar] (blocks/b.block.css:3:21)
-
-  background-color:
-    block-a[state|foo] (blocks/foo.block.css:4:33)
-    block-b[state|bar] (blocks/b.block.css:3:34)`,
+          background-color:
+            block-a[state|foo] (blocks/foo.block.css:4:33)
+            block-b[state|bar] (blocks/b.block.css:3:34)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, ".root", "b.root").addDynamic("[state|foo]").addDynamic("b[state|bar]").end();
@@ -770,16 +768,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          color:
+            block-b.root (blocks/b.block.css:2:36)
+            block-a[state|foo=one] (blocks/foo.block.css:4:25)
 
-  color:
-    block-b.root (blocks/b.block.css:2:36)
-    block-a[state|foo=one] (blocks/foo.block.css:4:25)
-
-  background-color:
-    block-b.root (blocks/b.block.css:2:49)
-    block-a[state|foo=one] (blocks/foo.block.css:4:37)`,
+          background-color:
+            block-b.root (blocks/b.block.css:2:49)
+            block-a[state|foo=one] (blocks/foo.block.css:4:37)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, ".root", "b.root").addStateGroup(".root", "foo").end();
@@ -833,20 +831,20 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          color:
+            block-b.root (blocks/b.block.css:2:36)
+            block-a[state|foo=one] (blocks/foo.block.css:4:25)
+            block-b[state|bar=one] (blocks/b.block.css:3:25)
+            block-b[state|bar=two] (blocks/b.block.css:4:25)
 
-  color:
-    block-b.root (blocks/b.block.css:2:36)
-    block-a[state|foo=one] (blocks/foo.block.css:4:25)
-    block-b[state|bar=one] (blocks/b.block.css:3:25)
-    block-b[state|bar=two] (blocks/b.block.css:4:25)
-
-  background-color:
-    block-b.root (blocks/b.block.css:2:49)
-    block-a[state|foo=one] (blocks/foo.block.css:4:40)
-    block-b[state|bar=one] (blocks/b.block.css:3:37)
-    block-b[state|bar=two] (blocks/b.block.css:4:40)`,
+          background-color:
+            block-b.root (blocks/b.block.css:2:49)
+            block-a[state|foo=one] (blocks/foo.block.css:4:40)
+            block-b[state|bar=one] (blocks/b.block.css:3:37)
+            block-b[state|bar=two] (blocks/b.block.css:4:40)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, ".root", "b.root").addStateGroup(".root", "foo").addStateGroup("b.root", "bar").end();
@@ -879,17 +877,17 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          color:
+            block-b.root (blocks/b.block.css:1:30)
+            block-c.bar (blocks/c.block.css:3:14)
+            block-a.foo (blocks/foo.block.css:5:15)
 
-  color:
-    block-b.root (blocks/b.block.css:1:30)
-    block-c.bar (blocks/c.block.css:3:14)
-    block-a.foo (blocks/foo.block.css:5:15)
-
-  background-color:
-    block-b.root (blocks/b.block.css:1:43)
-    block-a.foo (blocks/foo.block.css:5:27)`,
+          background-color:
+            block-b.root (blocks/b.block.css:1:43)
+            block-a.foo (blocks/foo.block.css:5:27)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         constructElement(block, "b.root", "c.bar").addDynamic([".foo"]).end();
@@ -898,8 +896,6 @@ export class TemplateAnalysisTests {
   }
 
   @test "conflicting roots pass when a property is explicitly resolved"() {
-    let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
     let options: PluginOptions = { importer: imports.importer() };
     let reader = new OptionsReader(options);
@@ -1010,12 +1006,12 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
-
-  color:
-    block-a.klass (blocks/foo.block.css:5:16)
-    block-b.klass (blocks/b.block.css:3:17)`,
+          color:
+            block-a.klass (blocks/foo.block.css:5:16)
+            block-b.klass (blocks/b.block.css:3:17)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
@@ -1042,16 +1038,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          background-color:
+            analysis.klass (blocks/foo.block.css:3:16)
+            b.klass (blocks/b.block.css:1:10)
 
-  background-color:
-    analysis.klass (blocks/foo.block.css:3:16)
-    b.klass (blocks/b.block.css:1:10)
-
-  border-color:
-    analysis.klass (blocks/foo.block.css:3:33)
-    b.klass (blocks/b.block.css:1:34)`,
+          border-color:
+            analysis.klass (blocks/foo.block.css:3:33)
+            b.klass (blocks/b.block.css:1:34)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
@@ -1110,16 +1106,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          background-color:
+            analysis.klass (blocks/foo.block.css:3:16)
+            b.klass (blocks/b.block.css:1:10)
 
-  background-color:
-    analysis.klass (blocks/foo.block.css:3:16)
-    b.klass (blocks/b.block.css:1:10)
-
-  border-left-color:
-    analysis.klass (blocks/foo.block.css:3:33)
-    b.klass (blocks/b.block.css:1:34)`,
+          border-left-color:
+            analysis.klass (blocks/foo.block.css:3:33)
+            b.klass (blocks/b.block.css:1:34)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
@@ -1146,16 +1142,16 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+          border-left-color:
+            analysis.klass (blocks/foo.block.css:3:43)
+            b.klass (blocks/b.block.css:1:10)
 
-  border-left-color:
-    analysis.klass (blocks/foo.block.css:3:43)
-    b.klass (blocks/b.block.css:1:10)
-
-  border-right-color:
-    analysis.klass (blocks/foo.block.css:3:16)
-    b.klass (blocks/b.block.css:1:10)`,
+          border-right-color:
+            analysis.klass (blocks/foo.block.css:3:16)
+            b.klass (blocks/b.block.css:1:10)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
@@ -1206,12 +1202,12 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
-
-  border-color:
-    a-block.klass (blocks/foo.block.css:4:16)
-    b-block.klass (blocks/b.block.css:3:16)`,
+          border-color:
+            a-block.klass (blocks/foo.block.css:4:16)
+            b-block.klass (blocks/b.block.css:3:16)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
@@ -1239,12 +1235,12 @@ export class TemplateAnalysisTests {
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
+      indented`
+        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
-
-  custom-prop:
-    block-a.klass (blocks/foo.block.css:4:16)
-    block-b.klass (blocks/b.block.css:3:16)`,
+          custom-prop:
+            block-a.klass (blocks/foo.block.css:4:16)
+            block-b.klass (blocks/b.block.css:3:16)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
@@ -1328,5 +1324,4 @@ function constructElement(block: Block, ...styles: string[]) {
       return analysis;
     },
   };
-
 }

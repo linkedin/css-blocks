@@ -12,7 +12,7 @@ import * as errors from "../../errors";
  * @param sourceFile  Source file name, used for error output.
  * @param rule Ruleset to crawl
  */
-export async function implementsBlock(rule: postcss.Root, block: Block, sourceFile: string) {
+export async function implementBlock(rule: postcss.Root, block: Block, sourceFile: string) {
   rule.walkDecls(IMPLEMENTS, (decl) => {
     let refNames = decl.value.split(/,\s*/);
     refNames.forEach((refName) => {
@@ -24,6 +24,6 @@ export async function implementsBlock(rule: postcss.Root, block: Block, sourceFi
     });
   });
 
-  // Validate that all rules from external block this block impelemnets are...implemented
+  // Validate that all rules from external block this block implements are...implemented
   block.checkImplementations();
 }

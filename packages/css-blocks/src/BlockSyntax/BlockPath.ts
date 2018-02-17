@@ -102,11 +102,11 @@ class Walker {
  */
 export class BlockPath {
   private _location: ErrorLocation | undefined;
-  private _block: BlockToken;
-  private _class: ClassToken;
-  private _state: StateToken;
+  private _block: BlockToken | undefined;
+  private _class: ClassToken | undefined;
+  private _state: StateToken | undefined;
 
-  private walker: Walker;
+  private walker: Walker | undefined;
   private tokens: Token[] = [];
 
   /**
@@ -118,7 +118,7 @@ export class BlockPath {
     if (this._location) {
       location = {
         ...this._location,
-        column: (this._location.column || 0) + this.walker.index() - len,
+        column: (this._location.column || 0) + this.walker!.index() - len,
       };
     }
     throw new BlockPathError(msg, location);
@@ -158,10 +158,10 @@ export class BlockPath {
    * with a helpful error if we encounter invalid Block Path syntax.
    * @param str The Block Path string.
    */
-  private tokenize(str: string): void {
+  private tokenize(): void {
     let char,
         working = "",
-        walker = this.walker = new Walker(str),
+        walker = this.walker!,
         token: Partial<Token> = { type: "block" };
 
     while (char = walker.next()) {
@@ -272,7 +272,8 @@ export class BlockPath {
       this.tokens = path.tokens;
     }
     else {
-      this.tokenize(path);
+      this.walker = new Walker(path);
+      this.tokenize();
     }
   }
 
@@ -324,7 +325,7 @@ export class BlockPath {
    * Return a new BlockPath without the parent-most token.
    */
   childPath() {
-    return BlockPath.from(this.tokens.slice(this._block.name ? 1 : 2));
+    return BlockPath.from(this.tokens.slice((this._block && this._block.name) ? 1 : 2));
   }
 
   /**
