@@ -1,10 +1,11 @@
-import { Node } from "./Inheritable";
+import { Node } from "./BlockTree";
 import { State } from "./State";
 import { BlockClass } from "./BlockClass";
 import { ObjectDictionary } from "@opticss/util";
 import { UNIVERSAL_STATE } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
+import { Block } from "./Block";
 
 import {
   Attr,
@@ -14,18 +15,18 @@ import {
   ValueConstant
 } from "@opticss/element-analysis";
 
-export class StateGroup extends Node<StateGroup, BlockClass, State>
+export class StateGroup extends Node<StateGroup, Block, BlockClass, State>
 {
 
   private _hasSubStates = false;
   private _universalState: State;
   private _sourceAttributes: Attr[];
 
-  constructor(name: string, parent: BlockClass) {
-    super(name, parent);
+  constructor(name: string, parent: BlockClass, root: Block) {
+    super(name, parent, root);
   }
 
-  protected newChild(name: string): State { return new State(name, this); }
+  protected newChild(name: string): State { return new State(name, this, this.block); }
 
   get hasSubStates(): boolean { return this._hasSubStates; }
   get universalState(): State { return this._universalState; }
@@ -33,14 +34,15 @@ export class StateGroup extends Node<StateGroup, BlockClass, State>
 
   states(): State[] { return this.children(); }
   statesHash(): ObjectDictionary<State> { return this.childrenHash(); }
+  statesMap(): Map<string, State> { return this.childrenMap(); }
   ensureState(name: string) {
     let state = this.ensureChild(name);
     if (name !== UNIVERSAL_STATE) { this._hasSubStates = true; }
     else { this._universalState = state; }
     return state;
   }
-  getState(name: string): State | null { return this.getChild(name); }
-  resolveState(name: string): State | null { return this.resolveChild(name); }
+  getState(name: string): State | null { return name ? this.getChild(name) : this.getChild(UNIVERSAL_STATE); }
+  resolveState(name: string): State | null { return name ? this.resolveChild(name) : this.resolveChild(UNIVERSAL_STATE); }
 
   /**
    * returns whether this state has any sub states defined directly

@@ -49,13 +49,13 @@ export class StateContainerTest extends BEMProcessor {
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
       let state = block.rootClass.getState("large");
       typedAssert.isNotNull(state).and((state) => {
-        assert.equal(state.name, "large");
+        assert.equal(state.isUniversal, true);
       });
       let classObj = block.getClass("foo");
       typedAssert.isNotNull(classObj).and(classObj => {
         let classState = classObj.getState("small");
         typedAssert.isNotNull(classState).and(classState => {
-          assert.equal(classState.name, "small");
+          assert.equal(classState.isUniversal, true);
         });
       });
     });
@@ -79,18 +79,18 @@ export class StateContainerTest extends BEMProcessor {
     let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
-      let sizeGroup: Array<State> = block.rootClass.getGroup("size");
+      let sizeGroup: Array<State> = block.rootClass.getStates("size");
       assert.equal(sizeGroup.length, 2);
       assert.includeMembers(sizeGroup.map(s => s.name), ["large", "small"]);
-      let subtateGroup: Array<State> = block.rootClass.getGroup("size", "large");
+      let subtateGroup: Array<State> = block.rootClass.getStates("size", "large");
       assert.equal(subtateGroup.length, 1);
       assert.includeMembers(subtateGroup.map(s => s.name), ["large"]);
-      let missingGroup: Array<State> = block.rootClass.getGroup("asdf");
+      let missingGroup: Array<State> = block.rootClass.getStates("asdf");
       assert.equal(missingGroup.length, 0);
-      let missingSubstate: Array<State> = block.rootClass.getGroup("size", "tiny");
+      let missingSubstate: Array<State> = block.rootClass.getStates("size", "tiny");
       assert.equal(missingSubstate.length, 0);
       typedAssert.isNotNull(block.getClass("foo")).and(classObj => {
-        let modeGroup: Array<State> = classObj.getGroup("mode");
+        let modeGroup: Array<State> = classObj.getStates("mode");
         assert.equal(modeGroup.length, 3);
         assert.includeMembers(modeGroup.map(s => s.name), ["collapsed", "minimized", "expanded"]);
       });
@@ -122,19 +122,17 @@ export class StateContainerTest extends BEMProcessor {
     let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
-      let sizeGroup = block.rootClass.resolveGroup("size") || {};
-      let sizeGroupNames = Object.keys(sizeGroup);
-      assert.equal(sizeGroupNames.length, 3);
-      assert.includeMembers(sizeGroupNames, ["large", "small", "tiny"]);
+      let sizeGroup = block.rootClass.resolveStates("size");
+      assert.equal(sizeGroup.size, 3);
+      assert.includeMembers([...sizeGroup.keys()], ["large", "small", "tiny"]);
       typedAssert.isNotNull(block.getClass("foo")).and(classObj => {
-        let modeGroup = classObj.resolveGroup("mode") || {};
-        let modeGroupNames = Object.keys(modeGroup);
-        assert.equal(modeGroupNames.length, 3);
+        let modeGroup = classObj.resolveStates("mode");
+        assert.equal(modeGroup.size, 3);
         typedAssert.isDefined(modeGroup).and(modeGroup => {
-          typedAssert.isDefined(modeGroup["collapsed"]).and(state => {
+          typedAssert.isDefined(modeGroup.get("collapsed")).and(state => {
             assert.equal(state.block, block.base);
           });
-          typedAssert.isDefined(modeGroup["minimized"]).and(state => {
+          typedAssert.isDefined(modeGroup.get("minimized")).and(state => {
             assert.equal(state.block, block);
           });
         });

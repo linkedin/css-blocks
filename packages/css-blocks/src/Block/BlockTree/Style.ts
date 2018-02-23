@@ -1,8 +1,8 @@
 import { Attr } from "@opticss/element-analysis";
 
 import { RulesetContainer } from './RulesetContainer';
-import { OptionsReader } from "../OptionsReader";
-import { unionInto } from '../util/unionInto';
+import { OptionsReader } from "../../OptionsReader";
+import { unionInto } from '../../util/unionInto';
 import { Inheritable } from "./Inheritable";
 
 /**
@@ -10,10 +10,11 @@ import { Inheritable } from "./Inheritable";
  * properties and abstract methods that extenders must implement.
  */
 export abstract class Style<
-  Self extends Style<any, any, any>,
-  Parent extends Inheritable<Parent, any, Self>,
-  Child extends Inheritable<any, Self, any> | null = null
-> extends Inheritable<Self, Parent, Child> {
+  Self extends Style<Self, Root, Parent, Child>,
+  Root extends Inheritable<Root, Root, null, any>,
+  Parent extends Inheritable<Parent, Root, any, Self>,
+  Child extends Inheritable<any, Root, Self, any> | null
+> extends Inheritable<Self, Root, Parent, Child> {
 
   public readonly rulesets: RulesetContainer;
 
@@ -23,8 +24,8 @@ export abstract class Style<
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
    */
-  constructor(name: string, parent: Parent) {
-    super(name, parent);
+  constructor(name: string, parent: Parent, root: Root) {
+    super(name, parent, root);
     this.rulesets = new RulesetContainer();
   }
 
@@ -121,19 +122,6 @@ export abstract class Style<
     return inherited;
   }
 
-  // /**
-  //  * Find the closest common ancestor Block between two Styles
-  //  * TODO: I think there is a more efficient way to do this.
-  //  * @param relative  Style to compare ancestry with.
-  //  * @returns The Style's common Block ancestor, or null.
-  //  */
-  // commonAncestor(relative: Style<Child>): Style<Child> | null {
-  //   let blockChain = new Set(...this.block.rootClass.resolveInheritance()); // lol
-  //   blockChain.add(this.block.rootClass);
-  //   let common = [relative.block.rootClass, ...relative.block.rootClass.resolveInheritance()].filter(b => blockChain.has(b));
-  //   return common.length ? common[0] as Style<Child> : null;
-  // }
-
   /**
    * Debug utility to help log Styles
    * @param opts  Options for rendering cssClass.
@@ -150,19 +138,6 @@ export abstract class Style<
   }
 }
 
-export abstract class NodeStyle<
-  Self extends Style<Self, Parent, Child>,
-  Parent extends Inheritable<Parent, any, Self>,
-  Child extends Inheritable<Child, Self, any>
-> extends Style<Self, Parent, Child> {
-  public parent: Parent;
-  protected _children: Map<string, Child>;
-}
-
-export abstract class SinkStyle <
-  Self extends Style<Self, Parent, null>,
-  Parent extends Inheritable<Parent, any, Self>
-> extends Style<Self, Parent, null> {
-  public parent: Parent;
-  protected _children: Map<string, null>;
+export function isStyle(o: any): o is Style<any, any, any, any> {
+  return o && o instanceof Style;
 }
