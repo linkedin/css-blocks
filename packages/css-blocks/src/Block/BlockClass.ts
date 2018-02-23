@@ -1,11 +1,13 @@
-import { Block } from "./Block";
-import { NodeStyle } from "./BlockTree";
-import { StateGroup } from "./StateGroup";
-import { State } from "./State";
 import { Attribute } from "@opticss/element-analysis";
+
+import { UNIVERSAL_STATE } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
-import { UNIVERSAL_STATE } from "../BlockSyntax";
+
+import { Block } from "./Block";
+import { NodeStyle } from "./BlockTree";
+import { State } from "./State";
+import { StateGroup } from "./StateGroup";
 
 /**
  * Holds state values to be passed to the StateContainer.
@@ -19,7 +21,7 @@ export interface StateInfo {
  * Represents a Class present in the Block.
  */
 export class BlockClass extends NodeStyle<BlockClass, Block, Block, StateGroup> {
-  private _sourceAttribute: Attribute;
+  private _sourceAttribute: Attribute | undefined;
 
   protected newChild(name: string): StateGroup { return new StateGroup(name, this, this.block); }
 
@@ -48,12 +50,12 @@ export class BlockClass extends NodeStyle<BlockClass, Block, Block, StateGroup> 
    * @param stateName The name of the sub-state to resolve.
    */
   resolveStates(groupName?: string): Map<string, State> {
-    let resolved: Map<string, State> = new Map;
+    let resolved: Map<string, State> = new Map();
     let chain = this.resolveInheritance();
     chain.push(this);
     for (let base of chain) {
       let groups = !groupName ? base.getGroups() : [base.getGroup(groupName)];
-      for (let group of groups ) {
+      for (let group of groups) {
         if (group && group.states()) {
           resolved = new Map([...resolved, ...group.statesMap()]);
         }
@@ -62,7 +64,7 @@ export class BlockClass extends NodeStyle<BlockClass, Block, Block, StateGroup> 
     return resolved;
   }
 
-  public booleanStates(): State[]{
+  public booleanStates(): State[] {
     let res: State[] = [];
     for (let group of this.getGroups()) {
       let state = group.getState(UNIVERSAL_STATE);
@@ -102,7 +104,7 @@ export class BlockClass extends NodeStyle<BlockClass, Block, Block, StateGroup> 
           return `${this.block.name}__${this.name}`;
         }
       default:
-        throw "this never happens";
+        throw new Error("this never happens");
     }
   }
 
@@ -125,7 +127,7 @@ export class BlockClass extends NodeStyle<BlockClass, Block, Block, StateGroup> 
    */
   allStates(): State[] {
     let result: State[] = [];
-    for (let stateContainer of this.stateGroups()){
+    for (let stateContainer of this.stateGroups()) {
       result.push(...stateContainer.states());
     }
     return result;

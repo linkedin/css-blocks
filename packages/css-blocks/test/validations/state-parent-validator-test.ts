@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, State } from "../../src/Block";
+import { Block, BlockClass } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
@@ -113,9 +113,9 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         analysis.blocks["a"] = aBlock;
         let element = analysis.startElement({ line: 10, column: 32 });
-        let klass = block.getClass('pretty') as BlockClass;
-        let state = klass.resolveState('color', 'yellow')!;
-        if (!state) { throw new Error('No state group `color` resolved'); }
+        let klass = block.getClass("pretty") as BlockClass;
+        let state = klass.resolveState("color", "yellow")!;
+        if (!state) { throw new Error("No state group `color` resolved"); }
         element.addStaticState(klass, state);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
@@ -155,8 +155,8 @@ export class TemplateAnalysisTests {
       analysis.blocks["a"] = aBlock;
       let element = analysis.startElement({ line: 10, column: 32 });
       let klass = block.getClass("pretty") as BlockClass;
-      let state = klass.resolveState('color', 'yellow');
-      if (!state) { throw new Error('No state group `color` resolved'); }
+      let state = klass.resolveState("color", "yellow");
+      if (!state) { throw new Error("No state group `color` resolved"); }
       element.addStaticClass(klass);
       element.addStaticState(klass, state);
       analysis.endElement(element);

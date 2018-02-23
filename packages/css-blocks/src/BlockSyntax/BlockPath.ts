@@ -68,13 +68,14 @@ function stringify(tokens: Token[]): string {
  * Simple utility to easily walk over string data one character at a time.
  */
 class Walker {
-  private data: string;
-  private length: number;
+  private data = "";
+  private length = 0;
   private idx = 0;
 
-  constructor(data: string) {
+  init(data: string) {
     this.data = data;
     this.length = data.length;
+    this.idx = 0;
   }
 
   next(): string { return this.data[this.idx++]; }
@@ -101,12 +102,12 @@ class Walker {
  * Parser and container object for Block Path data.
  */
 export class BlockPath {
-  private _location: ErrorLocation | undefined;
-  private _block: BlockToken | undefined;
-  private _class: ClassToken | undefined;
-  private _state: StateToken | undefined;
+  private _location?: ErrorLocation;
+  private _block?: BlockToken;
+  private _class?: ClassToken;
+  private _state?: StateToken;
 
-  private walker: Walker;
+  private walker: Walker = new Walker();
   private _tokens: Token[] = [];
   private parts: Token[] = [];
 
@@ -119,7 +120,7 @@ export class BlockPath {
     if (this._location) {
       location = {
         ...this._location,
-        column: (this._location.column || 0) + this.walker!.index() - len,
+        column: (this._location.column || 0) + this.walker.index() - len,
       };
     }
     throw new BlockPathError(msg, location);
@@ -163,7 +164,7 @@ export class BlockPath {
   private tokenize(): void {
     let char,
         working = "",
-        walker = this.walker!,
+        walker = this.walker,
         token: Partial<Token> = { type: "block" };
 
     while (char = walker.next()) {
@@ -176,7 +177,7 @@ export class BlockPath {
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           this.addToken(token, true);
-          token = { type: 'class' };
+          token = { type: "class" };
           working = "";
           break;
 
@@ -186,7 +187,7 @@ export class BlockPath {
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           this.addToken(token, true);
-          token = { type: 'state' };
+          token = { type: "state" };
           working = "";
           break;
 
@@ -274,13 +275,13 @@ export class BlockPath {
       this.parts = path.parts;
     }
     else {
-      this.walker = new Walker(path);
+      this.walker.init(path);
       this.tokenize();
     }
   }
 
   private static from(tokens: Token[]) {
-    let path = new BlockPath('');
+    let path = new BlockPath("");
     path.parts = tokens;
     return path;
   }
@@ -327,7 +328,7 @@ export class BlockPath {
    * Return a new BlockPath without the parent-most token.
    */
   childPath() {
-    return BlockPath.from(this.parts.slice(this._block.name ? 1 : 2));
+    return BlockPath.from(this.parts.slice(this._block && this._block.name ? 1 : 2));
   }
 
   /**

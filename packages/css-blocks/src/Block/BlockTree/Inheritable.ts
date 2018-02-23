@@ -1,18 +1,22 @@
 import { ObjectDictionary } from "@opticss/util";
+import { whatever } from "@opticss/util";
+
+/* tslint:disable:prefer-whatever-to-any */
+export type AnyNode = Inheritable<any, any, any, any>;
 
 export abstract class Inheritable<
   Self extends Inheritable<Self, Root, Parent, Child>,
-  Root extends Inheritable<any, Root, null, any> | null,
+  Root extends Inheritable<any, Root, null, any> | Self,
   Parent extends Inheritable<any, Root, any, Self> | null,
   Child extends Inheritable<any, Root, Self, any> | null
 > {
-
+/* tslint:enable:prefer-whatever-to-any */
   protected _name: string;
   protected _base: Self | undefined;
+  protected _baseName: string | undefined;
   protected _root: Root | Self;
-  protected _baseName: string;
-  protected _parent: Parent | undefined;
-  protected _children: Map<string, Child> = new Map;
+  protected _parent: Parent;
+  protected _children: Map<string, Child> = new Map();
 
   /**
    * Given a parent that is a base class of this style, retrieve this style's
@@ -36,15 +40,15 @@ export abstract class Inheritable<
    * @param name Name for this Inheritable instance.
    * @param parent The parent Inheritable of this node.
    */
-  constructor(name: string, parent?: Parent, root?: Root) {
+  constructor(name: string, parent: Parent, root?: Root) {
     this._name = name;
     this._parent = parent;
-    this._root = root || this.asSelf();
+    this._root = root || this.asSelf(); // `Root` is only set to `Self` for `Source` nodes.
   }
 
   public get name(): string { return this._name; }
   public get baseName(): string | undefined { return this._baseName; }
-  public get parent(): Parent | undefined { return this._parent; }
+  public get parent(): Parent { return this._parent; }
 
   /**
    * Get the style that this style inherits from, if any.
@@ -75,8 +79,9 @@ export abstract class Inheritable<
    * traverse parents and return the base block object.
    * @returns The base block in this container tree.
    */
-  public get block(): Root | Self {
-    return this._root;
+  public get block(): Root {
+    // This is a safe cast because we know root will only be set to `Self` for `Source` nodes.
+    return this._root as Root;
   }
 
   setBase(baseName: string, base: Self) {
@@ -149,7 +154,7 @@ export abstract class Inheritable<
     return this._children.get(name) as Child;
   }
 
-  protected children(): Child[]{
+  protected children(): Child[] {
     return [...this._children.values()];
   }
 
@@ -160,7 +165,7 @@ export abstract class Inheritable<
   // TODO: Cache this maybe? Convert entire model to only use hash?...
   protected childrenHash(): ObjectDictionary<Child> {
     let out = {};
-    for (let [key, value] of this._children.entries() ) {
+    for (let [key, value] of this._children.entries()) {
       out[key] = value;
     }
     return out;
@@ -169,7 +174,7 @@ export abstract class Inheritable<
   // TypeScript can't figure out that `this` is the `Self` so this private
   // method casts it in a few places where it's needed.
   private asSelf(): Self {
-    return <Self><any>this;
+    return <Self><whatever>this;
   }
 
 }

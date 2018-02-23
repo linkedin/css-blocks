@@ -1,20 +1,26 @@
 import { Attr } from "@opticss/element-analysis";
+import { whatever } from "@opticss/util";
 
-import { RulesetContainer } from './RulesetContainer';
 import { OptionsReader } from "../../OptionsReader";
-import { unionInto } from '../../util/unionInto';
+import { unionInto } from "../../util/unionInto";
+
 import { Inheritable } from "./Inheritable";
+import { RulesetContainer } from "./RulesetContainer";
 
 /**
  * Abstract class that serves as the base for all Styles. Contains basic
  * properties and abstract methods that extenders must implement.
  */
+/* tslint:disable:prefer-whatever-to-any */
+export type AnyStyle = Style<any, any, any, any>;
+
 export abstract class Style<
   Self extends Style<Self, Root, Parent, Child>,
   Root extends Inheritable<Root, Root, null, any>,
   Parent extends Inheritable<Parent, Root, any, Self>,
   Child extends Inheritable<any, Root, Self, any> | null
 > extends Inheritable<Self, Root, Parent, Child> {
+/* tslint:enable:prefer-whatever-to-any */
 
   public readonly rulesets: RulesetContainer;
 
@@ -134,10 +140,10 @@ export abstract class Style<
   // TypeScript can't figure out that `this` is the `StyleType` so this private
   // method casts it in a few places where it's needed.
   private asStyle(): Self {
-    return <Self><any>this;
+    return <Self><whatever>this;
   }
 }
 
-export function isStyle(o: any): o is Style<any, any, any, any> {
+export function isStyle(o: object): o is AnyStyle {
   return o && o instanceof Style;
 }

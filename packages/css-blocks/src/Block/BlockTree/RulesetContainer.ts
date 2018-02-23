@@ -1,13 +1,14 @@
 import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
 import * as propParser from "css-property-parser";
+import { ParsedSelector } from "opticss";
 import * as postcss from "postcss";
 
-import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR, BlockPath } from "../../BlockSyntax";
-import { isBlockClass, isState, Style } from '../index';
+import { BLOCK_PROP_NAMES, BlockPath, RESOLVE_RE, SELF_SELECTOR } from "../../BlockSyntax";
 import { sourceLocation } from "../../SourceLocation";
 import * as errors from "../../errors";
 
-import { Style } from "./Block";
+import { AnyStyle, isStyle, Style } from "./Style";
+export { Style }; // Required for Typescript
 
 // Convenience types to help our code read better.
 export type Pseudo = string;
@@ -21,7 +22,7 @@ export type Declaration = {
 export type Resolution = {
   node: postcss.Rule;
   property: string;
-  resolution: Style;
+  resolution: AnyStyle;
 };
 
 /**
@@ -45,12 +46,12 @@ function expandProp(prop: string, value: string): propParser.Declarations {
 export class Ruleset {
   file: string;
   node: postcss.Rule;
-  style: Style;
+  style: AnyStyle;
 
   declarations = new MultiMap<Property, Declaration>();
-  resolutions  = new MultiMap<Property, Style>();
+  resolutions = new MultiMap<Property, AnyStyle>();
 
-  constructor(file: string, node: postcss.Rule, style: Style) {
+  constructor(file: string, node: postcss.Rule, style: AnyStyle) {
     this.file = file;
     this.node = node;
     this.style = style;
@@ -61,7 +62,7 @@ export class Ruleset {
    * @param  property  A CSS property name.
    * @param  style  The Style object this property should resolve to.
    */
-  addResolution(property: Property, style: Style): void {
+  addResolution(property: Property, style: AnyStyle): void {
     let expanded = expandProp(property, "inherit");
     for (let prop of Object.keys(expanded)) {
       this.resolutions.set(prop, style);
@@ -73,7 +74,7 @@ export class Ruleset {
    * @param  property  A CSS property name.
    * @param  style  The Style object this property should resolve to.
    */
-  hasResolutionFor(property: Property, other: Style): boolean {
+  hasResolutionFor(property: Property, other: AnyStyle): boolean {
     return this.resolutions.hasValue(property, other);
   }
 
@@ -95,8 +96,8 @@ export class RulesetContainer {
    * @param  rule  PostCSS ruleset
    * @param  block  External block
    */
-  addRuleset(file: string, rule: postcss.Rule, style: Style) {
-    let selectors = style.block.getParsedSelectors(rule);
+  addRuleset(file: string, rule: postcss.Rule, style: AnyStyle) {
+    let selectors: ParsedSelector[] = style.block.getParsedSelectors(rule);
     selectors.forEach((selector) => {
       let ruleSet = new Ruleset(file, rule, style);
       let key = selector.key;
@@ -114,7 +115,6 @@ export class RulesetContainer {
         if (referenceStr) {
 
           let blockPath = new BlockPath(referenceStr);
-          console.log(referenceStr);
           let other = style.block.lookup(referenceStr);
           let otherBlock = style.block.getReferencedBlock(blockPath.block);
 
@@ -146,7 +146,7 @@ export class RulesetContainer {
             );
           }
 
-          if (isBlockClass(other) || isState(other)) {
+          if (isStyle(other)) {
             ruleSet.addResolution(decl.prop, other);
           }
         }
