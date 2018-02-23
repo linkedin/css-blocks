@@ -93,9 +93,9 @@ export class ConflictResolver {
 
           // Fetch the associated `Style`. If does not exist (ex: malformed selector), skip.
           let blockNode = getBlockNode(key);
-          if ( !blockNode ) { return; }
+          if (!blockNode) { return; }
           let obj: Style | null = block.nodeAndTypeToStyle(blockNode);
-          if ( !obj ) { return; }
+          if (!obj) { return; }
 
           // Fetch the set of Style conflicts. If the Style has already
           // been handled, skip.

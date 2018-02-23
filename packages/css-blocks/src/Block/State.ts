@@ -1,15 +1,17 @@
-import { assertNever } from "@opticss/util";
-import { SinkStyle } from "./BlockTree";
-import { BlockClass } from "./BlockClass";
-import { StateGroup } from "./StateGroup";
-import { OptionsReader } from "../OptionsReader";
-import { OutputMode } from "../OutputMode";
-import { UNIVERSAL_STATE } from "../BlockSyntax";
-import { Block } from "./Block";
 import {
   Attr,
-  AttributeNS
+  AttributeNS,
 } from "@opticss/element-analysis";
+import { assertNever } from "@opticss/util";
+
+import { UNIVERSAL_STATE } from "../BlockSyntax";
+import { OptionsReader } from "../OptionsReader";
+import { OutputMode } from "../OutputMode";
+
+import { Block } from "./Block";
+import { BlockClass } from "./BlockClass";
+import { SinkStyle } from "./BlockTree";
+import { StateGroup } from "./StateGroup";
 
 /**
  * States represent a state attribute selector in a particular Block.
@@ -19,7 +21,7 @@ import {
 export class State extends SinkStyle<State, Block, StateGroup> {
   isGlobal = false;
 
-  private _sourceAttributes: AttributeNS[];
+  private _sourceAttributes: AttributeNS[] | undefined;
 
   /**
    * State constructor. Provide a local name for this State, an optional group name,
@@ -47,7 +49,7 @@ export class State extends SinkStyle<State, Block, StateGroup> {
    * @returns The State's local name.
    */
   localName(): string {
-    return `${this.parent.localName()}${this.isUniversal ? '' : `-${this.name}`}`;
+    return `${this.parent.localName()}${this.isUniversal ? "" : `-${this.name}`}`;
   }
 
   asSourceAttributes(): Attr[] {
@@ -71,7 +73,7 @@ export class State extends SinkStyle<State, Block, StateGroup> {
   public cssClass(opts: OptionsReader): string {
     switch (opts.outputMode) {
       case OutputMode.BEM:
-        return `${this.parent.cssClass(opts)}${ this.isUniversal ? '' : `-${this.name}`}`;
+        return `${this.parent.cssClass(opts)}${ this.isUniversal ? "" : `-${this.name}`}`;
       default:
         return assertNever(opts.outputMode);
     }

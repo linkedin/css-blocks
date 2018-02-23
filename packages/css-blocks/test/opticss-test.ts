@@ -10,7 +10,6 @@ import {
 import {
   assert as typedAssert,
   clean,
-  ObjectDictionary,
   whatever,
 } from "@opticss/util";
 import { assert } from "chai";
@@ -18,7 +17,7 @@ import { suite, test } from "mocha-typescript";
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, State, Style, StateGroup } from "../src/Block";
+import { Block, BlockClass, State, Style } from "../src/Block";
 import { BlockCompiler } from "../src/BlockCompiler";
 import { BlockFactory } from "../src/BlockFactory";
 import { BlockParser } from "../src/BlockParser";

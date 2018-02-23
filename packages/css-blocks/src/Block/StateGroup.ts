@@ -1,26 +1,27 @@
-import { Node } from "./BlockTree";
-import { State } from "./State";
-import { BlockClass } from "./BlockClass";
+import {
+  Attr,
+  AttributeNS,
+  AttributeValueChoice,
+  ValueAbsent,
+  ValueConstant,
+} from "@opticss/element-analysis";
 import { ObjectDictionary } from "@opticss/util";
+
 import { UNIVERSAL_STATE } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
-import { Block } from "./Block";
 
-import {
-  Attr,
-  ValueAbsent,
-  AttributeNS,
-  AttributeValueChoice,
-  ValueConstant
-} from "@opticss/element-analysis";
+import { Block } from "./Block";
+import { BlockClass } from "./BlockClass";
+import { Node } from "./BlockTree";
+import { State } from "./State";
 
 export class StateGroup extends Node<StateGroup, Block, BlockClass, State>
 {
 
   private _hasSubStates = false;
-  private _universalState: State;
-  private _sourceAttributes: Attr[];
+  private _universalState: State | undefined;
+  private _sourceAttributes: Attr[] | undefined;
 
   constructor(name: string, parent: BlockClass, root: Block) {
     super(name, parent, root);
@@ -29,7 +30,7 @@ export class StateGroup extends Node<StateGroup, Block, BlockClass, State>
   protected newChild(name: string): State { return new State(name, this, this.block); }
 
   get hasSubStates(): boolean { return this._hasSubStates; }
-  get universalState(): State { return this._universalState; }
+  get universalState(): State | undefined { return this._universalState; }
   get blockClass(): BlockClass { return this.parent; }
 
   states(): State[] { return this.children(); }
@@ -58,7 +59,7 @@ export class StateGroup extends Node<StateGroup, Block, BlockClass, State>
    * @param stateName The name of the sub-state to resolve.
    */
   resolveStates(): Map<string, State> {
-    let resolved: Map<string, State> = new Map;
+    let resolved: Map<string, State> = new Map();
     for (let base of this.resolveInheritance()) {
       if (base.states()) {
         resolved = new Map([...resolved, ...base._children]);
@@ -77,7 +78,7 @@ export class StateGroup extends Node<StateGroup, Block, BlockClass, State>
    * @returns The State's attribute selector
    */
   asSource(): string {
-    return (this.blockClass.isRoot ? '' : this.blockClass.asSource()) + this.unqualifiedSource();
+    return (this.blockClass.isRoot ? "" : this.blockClass.asSource()) + this.unqualifiedSource();
   }
 
   asSourceAttributes(): Attr[] {
@@ -122,7 +123,7 @@ export class StateGroup extends Node<StateGroup, Block, BlockClass, State>
         let cssClassName = this.blockClass.cssClass(opts);
         return `${cssClassName}--${this.name}`;
       default:
-        throw "this never happens";
+        throw new Error("this never happens");
     }
   }
 
