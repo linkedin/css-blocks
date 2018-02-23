@@ -67,6 +67,7 @@
     "css-property-parser": "^1.0.5",
     "debug": "^2.6.8",
     "inline-source-map-comment": "^1.0.5",
+    "json-parse-better-errors": "^1.0.1",
     "object.values": "^1.0.4",
     "opticss": "^0.2.0",
     "postcss-selector-parser": "3.1.1",
