@@ -1,8 +1,7 @@
 import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template } from "@opticss/template-api";
-import { ObjectDictionary } from "@opticss/util";
 import { assert } from "chai";
-import { suite, test, skip, only } from "mocha-typescript";
+import { skip, suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import { Block, BlockClass, State, StateGroup } from "../src/Block";
@@ -252,8 +251,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as StateGroup, null );
-        element.addDynamicState( block.rootClass, block.rootClass.getState('bgcolor')!, null );
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as StateGroup, null);
+        element.addDynamicState(block.rootClass, block.rootClass.getState("bgcolor")!, null);
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -267,7 +266,7 @@ export class TemplateAnalysisTests {
               staticStyles: [ ],
               dynamicClasses: [ {condition: true, whenTrue: [ 0 ] } ],
               dynamicStates: [
-                { stringExpression: true, group: {'::universal': 2 }, container: 0 },
+                { stringExpression: true, group: {"::universal": 2 }, container: 0 },
                 { condition: true, state: 1, container: 0 },
               ],
             },
@@ -295,8 +294,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as StateGroup, null );
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as StateGroup, null, true );
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as StateGroup, null);
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as StateGroup, null, true);
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -357,8 +356,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as StateGroup, null );
-      element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup('bgcolor') as StateGroup, null, true );
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as StateGroup, null);
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("bgcolor") as StateGroup, null, true);
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -537,7 +536,7 @@ export class TemplateAnalysisTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
-      element.addStaticClass( block.rootClass );
+      element.addStaticClass(block.rootClass);
       element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("foo") as StateGroup, null, true);
       analysis.endElement(element);
       let result = analysis.serialize();
@@ -898,9 +897,9 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
-          let klass = block.getClass('pretty') as BlockClass;
-          let state = klass.resolveState('color', 'yellow')!;
-          element.addStaticState(klass, state );
+          let klass = block.getClass("pretty") as BlockClass;
+          let state = klass.resolveState("color", "yellow")!;
+          element.addStaticState(klass, state);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
     }));
@@ -939,9 +938,9 @@ export class TemplateAnalysisTests {
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
 
-          let klass = block.getClass('pretty') as BlockClass;
-          let state = klass.resolveState('color', 'yellow') as State;
-          element.addStaticClass( klass );
+          let klass = block.getClass("pretty") as BlockClass;
+          let state = klass.resolveState("color", "yellow") as State;
+          element.addStaticClass(klass);
           element.addStaticState(klass, state);
           analysis.endElement(element);
           assert.deepEqual(1, 1);

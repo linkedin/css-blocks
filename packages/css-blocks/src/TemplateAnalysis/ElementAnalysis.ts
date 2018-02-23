@@ -26,8 +26,8 @@ import {
   isBlockClass,
   isState,
   State,
-  Style,
   StateGroup,
+  Style,
 } from "../Block";
 import {
   OptionsReader as CssBlocksOptionsReader,
@@ -451,7 +451,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       container,
       group: group.statesHash(),
       stringExpression,
-      disallowFalsy
+      disallowFalsy,
     });
   }
   private _addDynamicGroup(style: ConditionalDependentStateGroup<StringExpression>) {

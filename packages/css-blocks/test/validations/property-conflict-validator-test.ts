@@ -1,10 +1,9 @@
 import { Template } from "@opticss/template-api";
-import { ObjectDictionary } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, State, StateGroup } from "../../src/Block";
+import { Block, BlockClass, State } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
@@ -1288,9 +1287,7 @@ function constructElement(block: Block, ...styles: string[]) {
   let element = analysis.startElement({ line: 10, column: 32 });
 
   for (let path of styles) {
-    console.log(path);
     let style = block.lookup(path);
-    console.log(style);
     if (!style) { throw Error(`Error looking up Style ${path} for test.`); }
     if (style instanceof BlockClass) {
       element.addStaticClass(style);

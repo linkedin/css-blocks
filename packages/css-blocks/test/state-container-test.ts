@@ -10,7 +10,7 @@ import {
   OptionsReader,
 } from "../src/OptionsReader";
 import cssBlocks = require("../src/cssBlocks");
-import { State, StateGroup } from "../src/index";
+import { State } from "../src/index";
 import {
   PluginOptions,
 } from "../src/options";

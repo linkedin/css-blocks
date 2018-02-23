@@ -1,37 +1,37 @@
-import * as postcss from 'postcss';
-import { ObjectDictionary, MultiMap, assertNever } from "@opticss/util";
-import selectorParser = require('postcss-selector-parser');
-
-import { FileIdentifier } from "../importing";
-import { LocalScopedContext } from "../util/LocalScope";
-import { CssBlockError } from "../errors";
-import { OptionsReader } from "../OptionsReader";
-import { CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
-
-import { Source } from "./BlockTree";
-import { BlockClass } from "./BlockClass";
-import { State } from "./State";
-import { BlockPath } from "../BlockSyntax";
-
+import { assertNever, MultiMap, ObjectDictionary } from "@opticss/util";
+import { whatever } from "@opticss/util";
 import {
-  SelectorFactory,
-  parseSelector,
+  CompoundSelector,
   ParsedSelector,
-  CompoundSelector
+  parseSelector,
+  SelectorFactory,
 } from "opticss";
+import * as postcss from "postcss";
+import selectorParser = require("postcss-selector-parser");
+
 import {
-  stateParser,
+  BlockType,
   isClassNode,
   isStateNode,
   NodeAndType,
-  BlockType
+  stateParser,
 } from "../BlockParser";
+import { CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
+import { BlockPath } from "../BlockSyntax";
+import { OptionsReader } from "../OptionsReader";
+import { CssBlockError } from "../errors";
+import { FileIdentifier } from "../importing";
+import { LocalScopedContext } from "../util/LocalScope";
+
+import { BlockClass } from "./BlockClass";
+import { Source } from "./BlockTree";
+import { State } from "./State";
 
 export type Style = BlockClass | State;
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
-  let index = s.indexOf('.');
-  if (index < 0) index = s.indexOf('[');
+  let index = s.indexOf(".");
+  if (index < 0) index = s.indexOf("[");
   if (index >= 0) {
     return [s.substr(0, index), s.substring(index)];
   }
@@ -70,7 +70,7 @@ export class Block
   get name() { return this._name; }
   set name(name: string) {
     if (this.hasHadNameReset) {
-      throw new CssBlockError('Can not set block name more than once.');
+      throw new CssBlockError("Can not set block name more than once.");
     }
     this._name = name;
     this.hasHadNameReset = true;
@@ -201,7 +201,7 @@ export class Block
       let missing: Style[] = this.checkImplementation(b);
       let paths = missing.map(o => o.asSource()).join(", ");
       if (missing.length > 0) {
-        let s = missing.length > 1 ? 's' : '';
+        let s = missing.length > 1 ? "s" : "";
         throw new CssBlockError(`Missing implementation${s} for: ${paths} from ${b.identifier}`);
       }
     }
@@ -231,7 +231,7 @@ export class Block
     return this.all().find(e => e.asSource() === sourceName);
   }
 
-  eachBlockReference(callback: (name: string, block: Block) => any) {
+  eachBlockReference(callback: (name: string, block: Block) => whatever) {
     for (let name of Object.keys(this._blockReferences)) {
       callback(name, this._blockReferences[name]);
     }
@@ -326,15 +326,15 @@ export class Block
     if (node.type === selectorParser.CLASS && node.value === ROOT_CLASS) {
       return [this.rootClass, 0];
     } else if (node.type === selectorParser.TAG) {
-      let otherBlock = this.getReferencedBlock(node.value!);
+      let otherBlock = this.getReferencedBlock(node.value);
       if (otherBlock) {
         let next = node.next();
         if (next && isClassNode(next)) {
-          let klass = otherBlock.getClass(next.value!);
+          let klass = otherBlock.getClass(next.value);
           if (klass) {
             let another = next.next();
             if (another && isStateNode(another)) {
-              let info = stateParser(<selectorParser.Attribute>another);
+              let info = stateParser(another);
               let state = klass._getState(info);
               if (state) {
                 return [state, 2];
@@ -349,7 +349,7 @@ export class Block
             return null;
           }
         } else if (next && isStateNode(next)) {
-          let info = stateParser(<selectorParser.Attribute>next);
+          let info = stateParser(next);
           let state = otherBlock.rootClass._getState(info);
           if (state) {
             return [state, 1];
@@ -363,13 +363,13 @@ export class Block
         return null;
       }
     } else if (node.type === selectorParser.CLASS) {
-      let klass = this.getClass(node.value!);
+      let klass = this.getClass(node.value);
       if (klass === null) {
         return null;
       }
       let next = node.next();
       if (next && isStateNode(next)) {
-        let info = stateParser(<selectorParser.Attribute>next);
+        let info = stateParser(next);
         let state = klass._getState(info);
         if (state === null) {
           return null;
@@ -380,7 +380,7 @@ export class Block
         return [klass, 0];
       }
     } else if (isStateNode(node)) {
-      let info = stateParser(<selectorParser.Attribute>node);
+      let info = stateParser(node);
       let state = this.rootClass._ensureState(info);
       if (state) {
         return [state, 0];
