@@ -1,5 +1,5 @@
 import { Block } from "./Block";
-import { NodeStyle } from "./Style";
+import { NodeStyle } from "./BlockTree";
 import { StateGroup } from "./StateGroup";
 import { State } from "./State";
 import { Attribute } from "@opticss/element-analysis";
@@ -18,15 +18,16 @@ export interface StateInfo {
 /**
  * Represents a Class present in the Block.
  */
-export class BlockClass extends NodeStyle<BlockClass, Block, StateGroup> {
+export class BlockClass extends NodeStyle<BlockClass, Block, Block, StateGroup> {
   private _sourceAttribute: Attribute;
 
-  protected newChild(name: string): StateGroup { return new StateGroup(name, this); }
+  protected newChild(name: string): StateGroup { return new StateGroup(name, this, this.block); }
 
   get isRoot(): boolean { return this.name === "root"; }
 
   public getGroups(): StateGroup[] { return this.children(); }
-  public getGroup(name: string, filter?: string): State[]  {
+  public getGroup(name: string): StateGroup | null { return this.getChild(name); }
+  public getStates(name: string, filter?: string): State[]  {
     let group = this.getChild(name);
     if (!group) { return []; }
     let states = group.states();
@@ -35,12 +36,30 @@ export class BlockClass extends NodeStyle<BlockClass, Block, StateGroup> {
   public ensureGroup(name: string): StateGroup { return this.ensureChild(name); }
   public resolveGroup(name: string): StateGroup | null { return this.resolveChild(name); }
   public stateGroups(): StateGroup[] { return this.children(); }
-  public resolveState(group: string, state: string): State | null {
-    let parent =  this.resolveChild(group);
-    if (parent) {
-      parent.resolveChild(state);
-    }
+  public resolveState(groupName: string, stateName = UNIVERSAL_STATE): State | null {
+    let parent = this.resolveChild(groupName);
+    if (parent) { return parent.resolveChild(stateName); }
     return null;
+  }
+
+  /**
+   * Resolves all sub-states from this state's inheritance
+   * chain. Returns an empty object if no
+   * @param stateName The name of the sub-state to resolve.
+   */
+  resolveStates(groupName?: string): Map<string, State> {
+    let resolved: Map<string, State> = new Map;
+    let chain = this.resolveInheritance();
+    chain.push(this);
+    for (let base of chain) {
+      let groups = !groupName ? base.getGroups() : [base.getGroup(groupName)];
+      for (let group of groups ) {
+        if (group && group.states()) {
+          resolved = new Map([...resolved, ...group.statesMap()]);
+        }
+      }
+    }
+    return resolved;
   }
 
   public booleanStates(): State[]{
@@ -130,7 +149,7 @@ export class BlockClass extends NodeStyle<BlockClass, Block, StateGroup> {
    * @returns An array of all States that were requested.
    */
   getState(groupName: string, stateName = UNIVERSAL_STATE): State | null {
-    let group = this.getChild(groupName);
+    let group = this.getGroup(groupName);
     return group ? group.getState(stateName) || null : null;
   }
 

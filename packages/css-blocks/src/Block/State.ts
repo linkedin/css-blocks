@@ -1,10 +1,11 @@
 import { assertNever } from "@opticss/util";
-import { SinkStyle } from "./Style";
+import { SinkStyle } from "./BlockTree";
 import { BlockClass } from "./BlockClass";
 import { StateGroup } from "./StateGroup";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 import { UNIVERSAL_STATE } from "../BlockSyntax";
+import { Block } from "./Block";
 import {
   Attr,
   AttributeNS
@@ -15,7 +16,7 @@ import {
  * A State can have sub-states that are considered to be mutually exclusive.
  * States can be designated as "global";
  */
-export class State extends SinkStyle<State, StateGroup> {
+export class State extends SinkStyle<State, Block, StateGroup> {
   isGlobal = false;
 
   private _sourceAttributes: AttributeNS[];
@@ -27,8 +28,8 @@ export class State extends SinkStyle<State, StateGroup> {
    * @param group An optional parent group name.
    * @param container The parent container of this State.
    */
-  constructor(name: string, parent: StateGroup) {
-    super(name, parent);
+  constructor(name: string, parent: StateGroup, root: Block) {
+    super(name, parent, root);
   }
 
   protected newChild(): null { return null; }
@@ -46,7 +47,7 @@ export class State extends SinkStyle<State, StateGroup> {
    * @returns The State's local name.
    */
   localName(): string {
-    return `${this.parent.localName()}--${this.name}`;
+    return `${this.parent.localName()}${this.isUniversal ? '' : `-${this.name}`}`;
   }
 
   asSourceAttributes(): Attr[] {
@@ -70,7 +71,7 @@ export class State extends SinkStyle<State, StateGroup> {
   public cssClass(opts: OptionsReader): string {
     switch (opts.outputMode) {
       case OutputMode.BEM:
-        return `${this.parent.cssClass(opts)}-${this.name}`;
+        return `${this.parent.cssClass(opts)}${ this.isUniversal ? '' : `-${this.name}`}`;
       default:
         return assertNever(opts.outputMode);
     }

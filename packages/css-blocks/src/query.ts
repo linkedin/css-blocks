@@ -24,6 +24,7 @@ export class QueryKeySelector implements Query {
     this.impl = new QueryKeySelectorImpl(new Element(tag, attrs));
   }
 
+  // Oooohhhh I don't like this! No part of Opticss should know about css-blocks data structures.
   execute(container: postcss.Container, block?: Block): ClassifiedParsedSelectors {
     return this.impl.execute(container, block);
   }

@@ -2,7 +2,7 @@ import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template } from "@opticss/template-api";
 import { ObjectDictionary } from "@opticss/util";
 import { assert } from "chai";
-import { skip, suite, test } from "mocha-typescript";
+import { suite, test, skip, only } from "mocha-typescript";
 import * as postcss from "postcss";
 
 import { Block, BlockClass, State, StateGroup } from "../src/Block";
@@ -267,7 +267,7 @@ export class TemplateAnalysisTests {
               staticStyles: [ ],
               dynamicClasses: [ {condition: true, whenTrue: [ 0 ] } ],
               dynamicStates: [
-                { stringExpression: true, group: {"color": 2 }, container: 0 },
+                { stringExpression: true, group: {'::universal': 2 }, container: 0 },
                 { condition: true, state: 1, container: 0 },
               ],
             },
@@ -295,13 +295,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-<<<<<<< HEAD
-        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as ObjectDictionary<SubState>, null);
-        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as ObjectDictionary<SubState>, null, true);
-=======
         element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as StateGroup, null );
         element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as StateGroup, null, true );
->>>>>>> feat(css-blocks): Broke up Block.ts, refactored foundational BlockObject constructs, added StateGroup concept.
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -362,13 +357,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-<<<<<<< HEAD
-        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as ObjectDictionary<SubState>, null);
-        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("bgcolor") as ObjectDictionary<SubState>, null, true);
-=======
         element.addDynamicGroup( block.rootClass, block.rootClass.resolveGroup('color') as StateGroup, null );
       element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup('bgcolor') as StateGroup, null, true );
->>>>>>> feat(css-blocks): Broke up Block.ts, refactored foundational BlockObject constructs, added StateGroup concept.
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -547,13 +537,8 @@ export class TemplateAnalysisTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       analysis.blocks[""] = block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
-<<<<<<< HEAD
-      element.addStaticClass(block.rootClass);
-      element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("foo") as ObjectDictionary<SubState>, null, true);
-=======
       element.addStaticClass( block.rootClass );
       element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("foo") as StateGroup, null, true);
->>>>>>> feat(css-blocks): Broke up Block.ts, refactored foundational BlockObject constructs, added StateGroup concept.
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -913,9 +898,9 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
-          let klass = block.getClass("pretty") as BlockClass;
-          let group = klass.resolveGroup("color")!;
-          element.addStaticState(klass, group["yellow"]);
+          let klass = block.getClass('pretty') as BlockClass;
+          let state = klass.resolveState('color', 'yellow')!;
+          element.addStaticState(klass, state );
           analysis.endElement(element);
           assert.deepEqual(1, 1);
     }));
@@ -953,17 +938,11 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
-<<<<<<< HEAD
-          let klass = block.getClass("pretty") as BlockClass;
-          let group = klass.resolveGroup("color") as {[name: string]: State};
-          element.addStaticClass(klass);
-          element.addStaticState(klass, group["yellow"]);
-=======
+
           let klass = block.getClass('pretty') as BlockClass;
-          let group = klass.resolveGroup('color') as StateGroup;
+          let state = klass.resolveState('color', 'yellow') as State;
           element.addStaticClass( klass );
-          element.addStaticState(klass, group['yellow'] );
->>>>>>> feat(css-blocks): Broke up Block.ts, refactored foundational BlockObject constructs, added StateGroup concept.
+          element.addStaticState(klass, state);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
     });
