@@ -106,8 +106,9 @@ export class BlockPath {
   private _class: ClassToken | undefined;
   private _state: StateToken | undefined;
 
-  private walker: Walker | undefined;
-  private tokens: Token[] = [];
+  private walker: Walker;
+  private _tokens: Token[] = [];
+  private parts: Token[] = [];
 
   /**
    * Throw a new BlockPathError with the given message.
@@ -128,7 +129,7 @@ export class BlockPath {
    * Used by `tokenize` to insert a newly constructed token.
    * @param token The token to insert.
    */
-  private addToken(token: Partial<Token>): void {
+  private addToken(token: Partial<Token>, isUserProvided: boolean): void {
 
     // Final validation of incoming data. Blocks may have no name. States must have a namespace.
     if (!isBlock(token) && !hasName(token)) { this.throw(ERRORS.noname); }
@@ -141,16 +142,17 @@ export class BlockPath {
     if (isClass(token)) {
       this._class = this._class ? this.throw(ERRORS.multipleOfType(token.type)) : token;
       // If no block has been added yet, automatically inject the `self` block name.
-      if (!this._block) { this.addToken({ type: "block", name: "" }); }
+      if (!this._block) { this.addToken({ type: "block", name: "" }, false); }
     }
     if (isState(token)) {
       this._state = this._state ? this.throw(ERRORS.multipleOfType(token.type)) : token;
       // If no class has been added yet, automatically inject the root class.
-      if (!this._class) { this.addToken({ type: "class", name: "root" }); }
+      if (!this._class) { this.addToken({ type: "class", name: "root" }, false); }
     }
 
     // Add the token.
-    this.tokens.push(token as Token);
+    if (isUserProvided) { this._tokens.push(token as Token); }
+    this.parts.push(token as Token);
   }
 
   /**
@@ -173,8 +175,8 @@ export class BlockPath {
           if (isState(token)) { this.throw(ERRORS.illegalCharInState(char)); }
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
-          this.addToken(token);
-          token = { type: "class" };
+          this.addToken(token, true);
+          token = { type: 'class' };
           working = "";
           break;
 
@@ -183,8 +185,8 @@ export class BlockPath {
           if (isState(token)) { this.throw(ERRORS.illegalCharInState(char)); }
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
-          this.addToken(token);
-          token = { type: "state" };
+          this.addToken(token, true);
+          token = { type: 'state' };
           working = "";
           break;
 
@@ -221,7 +223,7 @@ export class BlockPath {
             return this.throw(ERRORS.invalidIdent(working), working.length);
           }
           (hasName(token)) ? (token.value = working) : (token.name = working);
-          this.addToken(token);
+          this.addToken(token, true);
           working = "";
 
           // The character immediately following a `STATE_END` *must* be another `SEPARATORS`
@@ -251,14 +253,14 @@ export class BlockPath {
     // then it has not been properly closed.
     if (isState(token)) { this.throw(ERRORS.unclosedState); }
 
-    // Class and Block tokens are not explicitly terminated and may be sealed when we
-    // get to the end. If no class has been discovered, automatically add our root class.
+    // Class and Block tokens are not explicitly terminated and may be automatically sealed when
+    // we get to the end. If no class has been discovered, automatically add our root class.
     if (!isState(token) && working) {
       if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
       token.name = working;
-      this.addToken(token);
+      this.addToken(token, true);
     }
-    if (!this._class) { this.addToken({ type: "class", name: "root" }); }
+    if (!this._class) { this.addToken({ type: "class", name: "root" }, false); }
   }
 
   /**
@@ -269,7 +271,7 @@ export class BlockPath {
   constructor(path: string | BlockPath, location?: ErrorLocation) {
     this._location = location;
     if (path instanceof BlockPath) {
-      this.tokens = path.tokens;
+      this.parts = path.parts;
     }
     else {
       this.walker = new Walker(path);
@@ -278,8 +280,8 @@ export class BlockPath {
   }
 
   private static from(tokens: Token[]) {
-    let path = new BlockPath("");
-    path.tokens = tokens;
+    let path = new BlockPath('');
+    path.parts = tokens;
     return path;
   }
 
@@ -287,7 +289,7 @@ export class BlockPath {
    * Get the parsed Style path of this Block Path
    */
   get path(): string {
-    return stringify(this.tokens.slice(1));
+    return stringify(this.parts.slice(1));
   }
 
   /**
@@ -318,21 +320,25 @@ export class BlockPath {
    * Return a pretty-printed formatted Block Path string from the tokenized data.
    */
   toString(): string {
-    return stringify(this.tokens);
+    return stringify(this.parts);
   }
 
   /**
    * Return a new BlockPath without the parent-most token.
    */
   childPath() {
-    return BlockPath.from(this.tokens.slice((this._block && this._block.name) ? 1 : 2));
+    return BlockPath.from(this.parts.slice(this._block.name ? 1 : 2));
   }
 
   /**
    * Return a new BlockPath without the child-most token.
    */
   parentPath() {
-    return BlockPath.from(this.tokens.slice(0, -1));
+    return BlockPath.from(this.parts.slice(0, -1));
+  }
+
+  tokens(): Iterable<string> {
+    return this._tokens.slice().map((t) => t.name);
   }
 
 }

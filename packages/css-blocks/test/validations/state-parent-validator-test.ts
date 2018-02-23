@@ -113,16 +113,10 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         analysis.blocks["a"] = aBlock;
         let element = analysis.startElement({ line: 10, column: 32 });
-<<<<<<< HEAD
-        let klass = block.getClass("pretty") as BlockClass;
-        let group = klass.resolveGroup("color") as { [name: string]: State };
-        element.addStaticState(klass, group["yellow"]);
-=======
         let klass = block.getClass('pretty') as BlockClass;
-        let group = klass.resolveGroup('color');
-        if (!group) { throw new Error('No state group `color` resolved'); }
-        element.addStaticState(klass, group.getState('yellow') as State);
->>>>>>> feat(css-blocks): Broke up Block.ts, refactored foundational BlockObject constructs, added StateGroup concept.
+        let state = klass.resolveState('color', 'yellow')!;
+        if (!state) { throw new Error('No state group `color` resolved'); }
+        element.addStaticState(klass, state);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -160,18 +154,11 @@ export class TemplateAnalysisTests {
       analysis.blocks[""] = block;
       analysis.blocks["a"] = aBlock;
       let element = analysis.startElement({ line: 10, column: 32 });
-<<<<<<< HEAD
       let klass = block.getClass("pretty") as BlockClass;
-      let group = klass.resolveGroup("color") as { [name: string]: State };
+      let state = klass.resolveState('color', 'yellow');
+      if (!state) { throw new Error('No state group `color` resolved'); }
       element.addStaticClass(klass);
-      element.addStaticState(klass, group["yellow"]);
-=======
-      let klass = block.getClass('pretty') as BlockClass;
-      let group = klass.resolveGroup('color');
-      if (!group) { throw new Error('No state group `color` resolved'); }
-      element.addStaticClass(klass);
-      element.addStaticState(klass, group.getState('yellow') as State);
->>>>>>> feat(css-blocks): Broke up Block.ts, refactored foundational BlockObject constructs, added StateGroup concept.
+      element.addStaticState(klass, state);
       analysis.endElement(element);
       assert.deepEqual(1, 1);
     });
