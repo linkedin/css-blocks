@@ -1,18 +1,15 @@
 import { ObjectDictionary } from "@opticss/util";
-import { Style, Block, isBlock, isBlockClass, isState } from './index';
-
-import { BlockPath } from "../BlockSyntax";
-import { CssBlockError } from "../errors";
 
 export abstract class Inheritable<
-  Self extends Inheritable<Self, Parent, Child>,
-  Parent extends Inheritable<any, any, Self> | null = null,
-  Child extends Inheritable<any, Self, any> | null = null
+  Self extends Inheritable<Self, Root, Parent, Child>,
+  Root extends Inheritable<any, Root, null, any> | null,
+  Parent extends Inheritable<any, Root, any, Self> | null,
+  Child extends Inheritable<any, Root, Self, any> | null
 > {
 
   protected _name: string;
   protected _base: Self | undefined;
-  public _block: Block;
+  protected _root: Root | Self;
   protected _baseName: string;
   protected _parent: Parent | undefined;
   protected _children: Map<string, Child> = new Map;
@@ -23,21 +20,26 @@ export abstract class Inheritable<
    */
   protected abstract newChild(name: string): Child;
 
-  // TODO: Currently only ever returns itself if is a style. Need to get it to look other things up.
-  public lookup(path: string | BlockPath): Style | undefined {
-    path = new BlockPath(path);
-    if (isBlockClass(this) || isState(this)) return this;
-    return undefined;
-  }
+  // // TODO: Currently only ever returns itself if is a style. Need to get it to look other things up.
+  // public lookup(path: string | BlockPath): Self | Child | Descendants | undefined {
+  //   path = new BlockPath(path);
+  //   let res: Self | Child | Descendants | null = this.asSelf();
+  //   for (let part of path.tokens()) {
+  //     res = res.resolveChild(part);
+  //     if (!res) { break; }
+  //   }
+  //   return res ? res : undefined;
+  // }
 
   /**
    * Inheritable constructor
    * @param name Name for this Inheritable instance.
    * @param parent The parent Inheritable of this node.
    */
-  constructor(name: string, parent?: Parent,) {
+  constructor(name: string, parent?: Parent, root?: Root) {
     this._name = name;
     this._parent = parent;
+    this._root = root || this.asSelf();
   }
 
   public get name(): string { return this._name; }
@@ -73,11 +75,8 @@ export abstract class Inheritable<
    * traverse parents and return the base block object.
    * @returns The base block in this container tree.
    */
-  public get block(): Block {
-    if (isBlock(this)) { return this._block = this; }
-    if (this._block !== undefined) { return this._block; }
-    if (this.parent) { return this._block = this.parent.block; }
-    throw new CssBlockError("Tried to access `block` on an orphaned `Style`");
+  public get block(): Root | Self {
+    return this._root;
   }
 
   setBase(baseName: string, base: Self) {
@@ -117,6 +116,19 @@ export abstract class Inheritable<
     return state || null;
   }
 
+  // /**
+  //  * Find the closest common ancestor Block between two Styles
+  //  * TODO: I think there is a more efficient way to do this.
+  //  * @param relative  Style to compare ancestry with.
+  //  * @returns The Style's common Block ancestor, or null.
+  //  */
+  // commonAncestor(relative: Style<Child>): Style<Child> | null {
+  //   let blockChain = new Set(...this.block.rootClass.resolveInheritance()); // lol
+  //   blockChain.add(this.block.rootClass);
+  //   let common = [relative.block.rootClass, ...relative.block.rootClass.resolveInheritance()].filter(b => blockChain.has(b));
+  //   return common.length ? common[0] as Style<Child> : null;
+  // }
+
   /**
    * Given a parent that is a base class of this style, retrieve this style's
    * base style from it, if it exists. This method does not traverse into base styles.
@@ -141,6 +153,10 @@ export abstract class Inheritable<
     return [...this._children.values()];
   }
 
+  protected childrenMap(): Map<string, Child> {
+    return new Map(this._children);
+  }
+
   // TODO: Cache this maybe? Convert entire model to only use hash?...
   protected childrenHash(): ObjectDictionary<Child> {
     let out = {};
@@ -150,29 +166,10 @@ export abstract class Inheritable<
     return out;
   }
 
-}
+  // TypeScript can't figure out that `this` is the `Self` so this private
+  // method casts it in a few places where it's needed.
+  private asSelf(): Self {
+    return <Self><any>this;
+  }
 
-export abstract class Source<
-  Self extends Inheritable<Self, null, Child>,
-  Child extends Inheritable<Child, Self, any>
-> extends Inheritable<Self, null, Child> {
-  public parent: null;
-  protected _children: Map<string, Child>;
-}
-
-export abstract class Node<
-  Self extends Inheritable<Self, Parent, Child>,
-  Parent extends Inheritable<Parent, any, Self>,
-  Child extends Inheritable<Child, Self, any>
-> extends Inheritable<Self, Parent, Child> {
-  public parent: Parent;
-  protected _children: Map<string, Child>;
-}
-
-export abstract class Sink<
-  Self extends Inheritable<Self, Parent, null>,
-  Parent extends Inheritable<any, any, Self>
-> extends Inheritable<Self, Parent, null> {
-  public parent: Parent;
-  protected _children: Map<string, null>;
 }

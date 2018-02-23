@@ -1288,7 +1288,9 @@ function constructElement(block: Block, ...styles: string[]) {
   let element = analysis.startElement({ line: 10, column: 32 });
 
   for (let path of styles) {
+    console.log(path);
     let style = block.lookup(path);
+    console.log(style);
     if (!style) { throw Error(`Error looking up Style ${path} for test.`); }
     if (style instanceof BlockClass) {
       element.addStaticClass(style);

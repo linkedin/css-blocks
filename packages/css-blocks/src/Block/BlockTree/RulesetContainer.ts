@@ -2,9 +2,10 @@ import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import * as postcss from "postcss";
 
-import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR, BlockPath } from "../BlockSyntax";
-import { sourceLocation } from "../SourceLocation";
-import * as errors from "../errors";
+import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR, BlockPath } from "../../BlockSyntax";
+import { isBlockClass, isState, Style } from '../index';
+import { sourceLocation } from "../../SourceLocation";
+import * as errors from "../../errors";
 
 import { Style } from "./Block";
 
@@ -113,6 +114,7 @@ export class RulesetContainer {
         if (referenceStr) {
 
           let blockPath = new BlockPath(referenceStr);
+          console.log(referenceStr);
           let other = style.block.lookup(referenceStr);
           let otherBlock = style.block.getReferencedBlock(blockPath.block);
 
@@ -144,7 +146,9 @@ export class RulesetContainer {
             );
           }
 
-          ruleSet.addResolution(decl.prop, other);
+          if (isBlockClass(other) || isState(other)) {
+            ruleSet.addResolution(decl.prop, other);
+          }
         }
 
         // If not a resolution, add this as a tracked property on our Ruleset.
