@@ -112,23 +112,6 @@ export abstract class Style<
   }
 
   /**
-   * Compute all block objects that are implied by this block object through
-   * inheritance. Does not include this object or the styles it implies through
-   * other relationships to this object.
-   *
-   * If nothing is inherited, this returns an empty set.
-   */
-  resolveInheritance(): Self[] {
-    let inherited: Self[] = [];
-    let base: Self | undefined = this.base;
-    while (base) {
-      inherited.unshift(base);
-      base = base.base;
-    }
-    return inherited;
-  }
-
-  /**
    * Debug utility to help log Styles
    * @param opts  Options for rendering cssClass.
    * @returns A debug string.
