@@ -10,7 +10,7 @@ import { OutputMode } from "../OutputMode";
 
 import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
-import { SinkStyle } from "./BlockTree";
+import { StyleSink } from "./BlockTree";
 import { StateGroup } from "./StateGroup";
 
 /**
@@ -18,7 +18,7 @@ import { StateGroup } from "./StateGroup";
  * A State can have sub-states that are considered to be mutually exclusive.
  * States can be designated as "global";
  */
-export class State extends SinkStyle<State, Block, StateGroup> {
+export class State extends StyleSink<State, Block, StateGroup> {
   isGlobal = false;
 
   private _sourceAttributes: AttributeNS[] | undefined;
