@@ -24,7 +24,7 @@ import { FileIdentifier } from "../importing";
 import { LocalScopedContext } from "../util/LocalScope";
 
 import { BlockClass } from "./BlockClass";
-import { Source } from "./BlockTree";
+import { SourceNode } from "./BlockTree";
 import { State } from "./State";
 
 export type Style = BlockClass | State;
@@ -39,7 +39,7 @@ export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
 };
 
 export class Block
-  extends Source<Block, BlockClass>
+  extends SourceNode<Block, BlockClass>
   implements SelectorFactory {
   private _rootClass: BlockClass;
   private _blockReferences: ObjectDictionary<Block> = {};

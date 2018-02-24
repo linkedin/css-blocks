@@ -3,7 +3,7 @@ import * as propParser from "css-property-parser";
 import * as postcss from "postcss";
 
 import { Style } from "../../Block";
-import { Ruleset } from "../../Block/BlockTree";
+import { Ruleset } from "../../Block/BlockTree/RulesetContainer";
 import {
   isBooleanState,
   isFalseCondition,

@@ -5,7 +5,7 @@ import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
 import { Block } from "./Block";
-import { NodeStyle } from "./BlockTree";
+import { StyleNode } from "./BlockTree";
 import { State } from "./State";
 import { StateGroup } from "./StateGroup";
 
@@ -20,7 +20,7 @@ export interface StateInfo {
 /**
  * Represents a Class present in the Block.
  */
-export class BlockClass extends NodeStyle<BlockClass, Block, Block, StateGroup> {
+export class BlockClass extends StyleNode<BlockClass, Block, Block, StateGroup> {
   private _sourceAttribute: Attribute | undefined;
 
   protected newChild(name: string): StateGroup { return new StateGroup(name, this, this.block); }
