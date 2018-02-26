@@ -13,11 +13,13 @@
   "types": "dist",
   "scripts": {
     "compile": "rm -rf dist && tsc",
-    "pretest": "npm run compile",
-    "prepublish": "npm run compile && tslint -p . -c tslint.release.json",
-    "test": "tslint --test test/rules/*/* && npm run lint",
-    "lint": "tslint -p . -c tslint.cli.json",
-    "lintfix": "tslint -p . --fix -c tslint.cli.json"
+    "pretest": "yarn run compile",
+    "test": "tslint --test test/rules/*/*",
+    "posttest": "yarn run lint",
+    "lint": "tslint -t msbuild -p . -c tslint.cli.json",
+    "lintall": "tslint -t msbuild -p . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild -p . --fix -c tslint.cli.json",
+    "prepublish": "yarn run compile && yarn run lintall"
   },
   "bugs": {
     "url": "https://github.com/css-blocks/css-blocks/issues"

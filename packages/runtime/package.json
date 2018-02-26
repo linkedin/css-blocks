@@ -8,12 +8,14 @@
     "dist"
   ],
   "scripts": {
-    "pretest": "npm run compile && npm run lint",
+    "pretest": "yarn run compile",
+    "posttest": "yarn run lint",
     "test": "echo 'tested in @css-blocks/jsx'",
     "compile": "rm -rf dist && tsc",
-    "prepublish": "npm run compile && tslint --project . -c tslint.release.json",
-    "lint": "tslint -c tslint.cli.json --project .",
-    "lintfix": "tslint -c tslint.cli.json --project . --fix"
+    "prepublish": "yarn run compile && yarn run lintall",
+    "lint": "tslint -t msbuild -c tslint.cli.json --project .",
+    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild -c tslint.cli.json --project . --fix"
   },
   "repository": {
     "type": "git",

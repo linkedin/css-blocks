@@ -5,15 +5,17 @@
   "main": "dist/src/index.js",
   "scripts": {
     "compile": "rm -rf dist && tsc",
-    "pretest": "npm run compile && npm run lint",
-    "prepublish": "npm run compile && tslint --project . -c tslint.release.json",
-    "lint": "tslint --project . -c tslint.cli.json",
-    "lintfix": "tslint --project . -c tslint.cli.json --fix",
+    "pretest": "yarn run compile",
     "test": "mocha dist/test --opts test/mocha.opts",
+    "posttest": "yarn run lint",
+    "prepublish": "yarn run compile && yarn run lintall",
+    "lint": "tslint -t msbuild --project . -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs .",
-    "watch": "watch 'npm run test' './src' './test' --wait=3"
+    "watch": "watch 'yarn run test' './src' './test' --wait=3"
   },
   "repository": {
     "type": "git",
