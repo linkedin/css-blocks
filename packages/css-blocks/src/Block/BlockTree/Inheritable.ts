@@ -1,16 +1,32 @@
+/**
+ * The `Inheritable` module delivers the core data structure for making type safe,
+ * single-typed-children, tree nodes.
+ *
+ * This abstract class, in order to support tree nodes of *any* kind, makes creative
+ * use of the `any` type in a few places – but don't be fooled! These typing holes
+ * are *required* to be plugged by any by any implementing class by virtue of the type
+ * generics they are forced to provide when extending. By the time this abstract class
+ * is exposed to the outside world, all typing holes have been plugged and we are left
+ * with a fully typed tree structure.
+ *
+ * @module Block/BlockTree/Inheritable
+ */
 import { ObjectDictionary } from "@opticss/util";
 import { whatever } from "@opticss/util";
+
+import { SourceLocation } from "../../SourceLocation";
 
 /* tslint:disable:prefer-whatever-to-any */
 export type AnyNode = Inheritable<any, any, any, any>;
 
 export abstract class Inheritable<
   Self extends Inheritable<Self, Root, Parent, Child>,
-  Root extends Inheritable<any, Root, null, any> | Self,
-  Parent extends Inheritable<any, Root, any, Self> | null,
-  Child extends Inheritable<any, Root, Self, any> | null
+  Root extends Inheritable<any, Root, null, AnyNode> | Self,
+  Parent extends Inheritable<any, Root, AnyNode | null, Self> | null,
+  Child extends Inheritable<any, Root, Self, AnyNode | null> | null
 > {
 /* tslint:enable:prefer-whatever-to-any */
+
   protected _name: string;
   protected _base: Self | undefined;
   protected _root: Root | Self;
@@ -22,17 +38,6 @@ export abstract class Inheritable<
    * base style from it, if it exists. This method does not traverse into base styles.
    */
   protected abstract newChild(name: string): Child;
-
-  // // TODO: Currently only ever returns itself if is a style. Need to get it to look other things up.
-  // public lookup(path: string | BlockPath): Self | Child | Descendants | undefined {
-  //   path = new BlockPath(path);
-  //   let res: Self | Child | Descendants | null = this.asSelf();
-  //   for (let part of path.tokens()) {
-  //     res = res.resolveChild(part);
-  //     if (!res) { break; }
-  //   }
-  //   return res ? res : undefined;
-  // }
 
   /**
    * Inheritable constructor
@@ -74,14 +79,28 @@ export abstract class Inheritable<
   }
 
   /**
-   * traverse parents and return the base block object.
-   * @returns The base block in this container tree.
+   * Traverse parents and return the base block object.
+   * @returns The base node in this tree.
    */
   public get root(): Root {
     // This is a safe cast because we know root will only be set to `Self` for `Source` nodes.
     return this._root as Root;
   }
 
+  /**
+   * The `block` property is an alias for `root`. This isn't the dryest place to put
+   * this line, but every extension re-declared this interface itself and I wanted it
+   * in one place.
+   * @returns The base node in this tree.
+   */
+  public get block(): Root { return this.root; }
+
+  public abstract lookup(path: string, errLoc?: SourceLocation): AnyNode | undefined;
+
+  /**
+   * Sets the base node that this node inherits from. Must be of same type.
+   * @prop  base  Self  The new base node.
+   */
   public setBase(base: Self) {
     this._base = base;
   }
@@ -92,6 +111,7 @@ export abstract class Inheritable<
    * other relationships to this object.
    *
    * If nothing is inherited, this returns an empty array.
+   * @returns The array of nodes this node inherits from.
    */
   public resolveInheritance(): Self[] {
     let inherited: Self[] = [];
@@ -107,6 +127,7 @@ export abstract class Inheritable<
    * Resolves the child with the given name from this node's inheritance
    * chain. Returns undefined if the child is not found.
    * @param name The name of the child to resolve.
+   * @returns The child node, or `null`
    */
   public resolveChild(name: string): Child | null {
     let state: Child | null = this.getChild(name);
@@ -118,32 +139,32 @@ export abstract class Inheritable<
     return state || null;
   }
 
-  // /**
-  //  * Find the closest common ancestor Block between two Styles
-  //  * TODO: I think there is a more efficient way to do this.
-  //  * @param relative  Style to compare ancestry with.
-  //  * @returns The Style's common Block ancestor, or null.
-  //  */
-  // commonAncestor(relative: Style<Child>): Style<Child> | null {
-  //   let blockChain = new Set(...this.block.rootClass.resolveInheritance()); // lol
-  //   blockChain.add(this.block.rootClass);
-  //   let common = [relative.block.rootClass, ...relative.block.rootClass.resolveInheritance()].filter(b => blockChain.has(b));
-  //   return common.length ? common[0] as Style<Child> : null;
-  // }
-
   /**
-   * Given a parent that is a base class of this style, retrieve this style's
-   * base style from it, if it exists. This method does not traverse into base styles.
+   * Retrieve a child node from this object at `key`.
+   * @param key string  The key to fetch the child object from.
+   * @returns The child node.
    */
   public getChild(key: string): Child | null {
     return this._children.get(key) || null;
   }
 
+  /**
+   * Set a child node on this object at `key`.
+   * @param key string  The key to set the child object to.
+   * @returns The child node.
+   */
   public setChild(key: string, value: Child): Child {
     this._children.set(key, value);
     return value;
   }
 
+  /**
+   * Ensure a child node exists on this object at `key`. If it does not, create it.
+   * If `key` is not provided, use the child name as the key.
+   * @param name string  The name of this object to ensure.
+   * @param key string  The key at which this child object should be (optional)
+   * @returns The child node.
+   */
   public ensureChild(name: string, key?: string): Child {
     key = key !== undefined ? key : name;
     if (!this._children.has(name)) {
@@ -152,15 +173,27 @@ export abstract class Inheritable<
     return this._children.get(key) as Child;
   }
 
+  /**
+   * Returns an array of all children nodes in the order they were added.
+   * @returns The children array.
+   */
   public children(): Child[] {
     return [...this._children.values()];
   }
 
+  /**
+   * Returns a map of all children nodes at the keys they are stored..
+   * @returns The children map.
+   */
   public childrenMap(): Map<string, Child> {
     return new Map(this._children);
   }
 
-  // TODO: Cache this maybe? Convert entire model to only use hash?...
+  /**
+   * Returns a hash of all children nodes at the keys they are stored..
+   * TODO: Cache this maybe? Convert entire model to only use hash?...
+   * @returns The children hash.
+   */
   public childrenHash(): ObjectDictionary<Child> {
     let out = {};
     for (let [key, value] of this._children.entries()) {

@@ -4,7 +4,7 @@ import { whatever } from "@opticss/util";
 import { OptionsReader } from "../../OptionsReader";
 import { unionInto } from "../../util/unionInto";
 
-import { Inheritable } from "./Inheritable";
+import { AnyNode, Inheritable } from "./Inheritable";
 import { RulesetContainer } from "./RulesetContainer";
 
 /**
@@ -12,13 +12,13 @@ import { RulesetContainer } from "./RulesetContainer";
  * properties and abstract methods that extenders must implement.
  */
 /* tslint:disable:prefer-whatever-to-any */
-export type AnyStyle = Style<any, any, any, any>;
+export type AnyStyle = Style<any, AnyNode, AnyNode | null, AnyNode | null>;
 
 export abstract class Style<
   Self extends Style<Self, Root, Parent, Child>,
-  Root extends Inheritable<Root, Root, null, any>,
-  Parent extends Inheritable<Parent, Root, any, Self>,
-  Child extends Inheritable<any, Root, Self, any> | null
+  Root extends Inheritable<Root, Root, null, AnyNode>,
+  Parent extends Inheritable<any, Root, AnyNode | null, Self> | null,
+  Child extends Inheritable<any, Root, Self, AnyNode | null> | null
 > extends Inheritable<Self, Root, Parent, Child> {
 /* tslint:enable:prefer-whatever-to-any */
 
@@ -32,21 +32,15 @@ export abstract class Style<
    */
   constructor(name: string, parent: Parent) {
     super(name, parent);
-    this.rulesets = new RulesetContainer();
+    this.rulesets = new RulesetContainer(this.asStyle());
   }
 
-  get block(): Root { return this.root; }
-
   /**
-   * Return the local identifier for this `Style`.
-   * @returns The local name.
+   * Return the css selector for this `Style`.
+   * @param opts Option hash configuring output mode.
+   * @returns The CSS class.
    */
-  public abstract localName(): string;
-
-  /**
-   * Return an attribute for analysis using the authored source syntax.
-   */
-  public abstract asSourceAttributes(): Attr[];
+  public abstract cssClass(opts: OptionsReader): string;
 
   /**
    * Return the source selector this `Style` was read from.
@@ -55,11 +49,9 @@ export abstract class Style<
   public abstract asSource(): string;
 
   /**
-   * Return the css selector for this `Style`.
-   * @param opts Option hash configuring output mode.
-   * @returns The CSS class.
+   * Return an attribute for analysis using the authored source syntax.
    */
-  public abstract cssClass(opts: OptionsReader): string;
+  public abstract asSourceAttributes(): Attr[];
 
   /**
    * Returns all the classes needed to represent this block object
@@ -103,11 +95,10 @@ export abstract class Style<
   }
 
   /**
-   * Returns the styles that are directly implied by this style.
-   * Does not include the styles that this style inherits implied.
-   * Does not include the styles that this style implies inherits.
+   * Returns the styles that are implied by this style.
+   * TODO: Placeholder for when we implement class composition. (https://github.com/css-blocks/css-blocks/issues/72)
    *
-   * returns undefined if no styles are implied.
+   * @returns The Style objects, or undefined if no styles are implied.
    */
   impliedStyles(): Set<Self> | undefined {
     return undefined;
@@ -129,6 +120,6 @@ export abstract class Style<
   }
 }
 
-export function isStyle(o: object): o is AnyStyle {
-  return o && o instanceof Style;
+export function isStyle(o?: object): o is AnyStyle {
+  return !!o && o instanceof Style;
 }
