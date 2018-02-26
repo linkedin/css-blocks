@@ -1,3 +1,4 @@
+import { parseSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 
@@ -21,7 +22,7 @@ export async function assertForeignGlobalState(root: postcss.Root, block: Block,
 
   root.walkRules((rule) => {
 
-    let parsedSelectors = block.getParsedSelectors(rule);
+    let parsedSelectors = parseSelector(rule);
 
     parsedSelectors.forEach((iSel) => {
 

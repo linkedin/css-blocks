@@ -2,32 +2,34 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
 import {
-  Node,
-  SinkNode,
-  SourceNode,
+  Container,
+  SinkContainer,
+  SourceContainer,
 } from "../../../src/Block/BlockTree";
 
-class TestSource extends SourceNode<
+class TestSource extends SourceContainer<
   TestSource, // Self
   TestNode    // Children
 > {
   newChild(name: string) { return new TestNode(name, this); }
+  lookup(): undefined { return undefined; }
 }
 
-class TestNode extends Node<
+class TestNode extends Container<
   TestNode,   // Self
   TestSource, // Root
   TestSource, // Parent
   TestSink    // Children
 > {
   newChild(name: string) { return new TestSink(name, this); }
+  lookup(): undefined { return undefined; }
 }
 
-class TestSink extends SinkNode<
+class TestSink extends SinkContainer<
   TestSink,   // Self
   TestSource, // Root
   TestNode    // Parent
-> { }
+> {}
 
 @suite("BlockTree")
 export class BlockTreeTests {

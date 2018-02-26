@@ -77,6 +77,9 @@ export class State extends SinkStyle<State, Block, StateGroup> {
     }
   }
 
+  // TODO: Implement lookup relative to State.
+  public lookup(): undefined { return undefined; }
+
   /**
    * Return array self and all children.
    * @returns Array of Styles.

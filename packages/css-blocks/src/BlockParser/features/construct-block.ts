@@ -1,5 +1,5 @@
 import { assertNever } from "@opticss/util";
-import { CompoundSelector, ParsedSelector } from "opticss";
+import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 
@@ -46,7 +46,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
 
     // Fetch the parsed selectors list. Throw a helpful error if we can't parse.
     let parsedSelectors;
-    try       { parsedSelectors = block.getParsedSelectors(rule); }
+    try       { parsedSelectors = parseSelector(rule); }
     catch (e) { throw new errors.InvalidBlockSyntax(e.message, sourceLocation(file, rule)); }
 
     // Iterate over the all selectors for this rule – one for each comma separated selector.
@@ -116,7 +116,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
   // To allow self-referential block lookup when constructing ruleset concerns,
   // we need to run `addRuleset()` only *after* all Style have been created.
   for (let [style, rule] of styleRuleTuples) {
-    style.rulesets.addRuleset(file, rule, style);
+    style.rulesets.addRuleset(file, rule);
   }
 
   return block;
