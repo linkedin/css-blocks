@@ -10,7 +10,7 @@ import { OutputMode } from "../OutputMode";
 
 import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
-import { StyleSink } from "./BlockTree";
+import { SinkStyle } from "./BlockTree";
 import { StateGroup } from "./StateGroup";
 
 /**
@@ -18,7 +18,7 @@ import { StateGroup } from "./StateGroup";
  * A State can have sub-states that are considered to be mutually exclusive.
  * States can be designated as "global";
  */
-export class State extends StyleSink<State, Block, StateGroup> {
+export class State extends SinkStyle<State, Block, StateGroup> {
   isGlobal = false;
 
   private _sourceAttributes: AttributeNS[] | undefined;
@@ -30,11 +30,9 @@ export class State extends StyleSink<State, Block, StateGroup> {
    * @param group An optional parent group name.
    * @param container The parent container of this State.
    */
-  constructor(name: string, parent: StateGroup, root: Block) {
-    super(name, parent, root);
+  constructor(name: string, parent: StateGroup) {
+    super(name, parent);
   }
-
-  protected newChild(): null { return null; }
 
   get isUniversal(): boolean { return this.name === UNIVERSAL_STATE; }
 

@@ -17,11 +17,10 @@ export async function extendBlock(rule: postcss.Root, block: Block, sourceFile: 
     if (block.base) {
       throw new errors.InvalidBlockSyntax(`A block can only be extended once.`, sourceLocation(sourceFile, decl));
     }
-    let baseName = decl.value;
-    let baseBlock = block.getReferencedBlock(baseName);
+    let baseBlock = block.getReferencedBlock(decl.value);
     if (!baseBlock) {
-      throw new errors.InvalidBlockSyntax(`No block named ${baseName} found`, sourceLocation(sourceFile, decl));
+      throw new errors.InvalidBlockSyntax(`No block named ${decl.value} found`, sourceLocation(sourceFile, decl));
     }
-    block.setBase(baseName, baseBlock);
+    block.setBase(baseBlock);
   });
 }

@@ -23,7 +23,7 @@ export interface StateInfo {
 export class BlockClass extends StyleNode<BlockClass, Block, Block, StateGroup> {
   private _sourceAttribute: Attribute | undefined;
 
-  protected newChild(name: string): StateGroup { return new StateGroup(name, this, this.block); }
+  protected newChild(name: string): StateGroup { return new StateGroup(name, this); }
 
   get isRoot(): boolean { return this.name === "root"; }
 
