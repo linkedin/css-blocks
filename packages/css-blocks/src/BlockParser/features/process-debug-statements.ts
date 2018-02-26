@@ -1,3 +1,4 @@
+// tslint:disable:no-console
 import * as postcss from "postcss";
 
 import { Block } from "../../Block";
