@@ -75,7 +75,7 @@ export class ConflictResolver {
    */
   resolveInheritance(root: postcss.Root, block: Block) {
     let blockBase = block.base;
-    let blockBaseName = block.baseName;
+    let blockBaseName = block.getReferencedBlockLocalName(block.base);
 
     // If this block inherits from another block, walk every ruleset.
     if (blockBase && blockBaseName) {

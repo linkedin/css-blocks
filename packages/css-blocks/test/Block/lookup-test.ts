@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { Block } from "../src/Block";
+import { Block } from "../../src/Block";
 
 @suite("Block object lookup")
 export class LookupTests {
