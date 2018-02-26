@@ -30,10 +30,12 @@ export abstract class Style<
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
    */
-  constructor(name: string, parent: Parent, root: Root) {
-    super(name, parent, root);
+  constructor(name: string, parent: Parent) {
+    super(name, parent);
     this.rulesets = new RulesetContainer();
   }
+
+  get block(): Root { return this.root; }
 
   /**
    * Return the local identifier for this `Style`.

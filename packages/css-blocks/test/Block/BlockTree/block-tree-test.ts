@@ -1,0 +1,140 @@
+import { assert } from "chai";
+import { suite, test } from "mocha-typescript";
+
+import {
+  Node,
+  SinkNode,
+  SourceNode,
+} from "../../../src/Block/BlockTree";
+
+class TestSource extends SourceNode<
+  TestSource, // Self
+  TestNode    // Children
+> {
+  newChild(name: string) { return new TestNode(name, this); }
+}
+
+class TestNode extends Node<
+  TestNode,   // Self
+  TestSource, // Root
+  TestSource, // Parent
+  TestSink    // Children
+> {
+  newChild(name: string) { return new TestSink(name, this); }
+}
+
+class TestSink extends SinkNode<
+  TestSink,   // Self
+  TestSource, // Root
+  TestNode    // Parent
+> { }
+
+@suite("BlockTree")
+export class BlockTreeTests {
+
+  @test "initial source node tree properties are as expected"() {
+    let source = new TestSource("my-source");
+    assert.equal(source.parent, null);
+    assert.equal(source.base, undefined);
+    assert.equal(source.root, source);
+    assert.deepEqual(source.resolveInheritance(), []);
+  }
+
+  @test "newChild creates new child, does not set it"() { // Note: this is why `newChild` is protected in Blocks
+    let source = new TestSource("my-source");
+    let child = source.newChild("child-node");
+    assert.equal(source.getChild("child-node"), null);
+    assert.equal(source.resolveChild("child-node"), null);
+    assert.equal(child.parent, source);
+    assert.equal(child.base, undefined);
+    assert.equal(child.root, source);
+  }
+
+  @test "setChild adds new child to parent"() {
+    let source = new TestSource("my-source");
+    let child = source.newChild("child-node");
+    source.setChild("child-key", child);
+    assert.equal(source.getChild("child-key"), child);
+    assert.equal(source.resolveChild("child-key"), child);
+  }
+
+  @test "ensureChild creates and adds new child to parent"() {
+    let source = new TestSource("my-source");
+    let child = source.ensureChild("child-node");
+    assert.equal(source.getChild("child-node"), child);
+    assert.equal(source.resolveChild("child-node"), child);
+  }
+
+  @test "ensureChild accepts optional key"() {
+    let source = new TestSource("my-source");
+    let child = source.ensureChild("child-node", "child-key");
+    assert.equal(source.getChild("child-key"), child);
+    assert.equal(source.resolveChild("child-key"), child);
+  }
+
+  @test "ensureChild will not overwrite existing nodes"() {
+    let source = new TestSource("my-source");
+    let child1 = source.ensureChild("child-node");
+    let child2 = source.ensureChild("child-node");
+    assert.equal(child1, child2);
+  }
+
+  @test "children accessor methods work as expected"() {
+    let source = new TestSource("my-source");
+    let child1 = source.ensureChild("child1");
+    let child2 = source.ensureChild("child2");
+    let child3 = source.ensureChild("child3", "custom-key");
+
+    assert.deepEqual(source.children(), [child1, child2, child3]);
+    assert.deepEqual(source.childrenHash(), {child1, child2, "custom-key": child3});
+    assert.deepEqual(source.childrenMap(), new Map([["child1", child1], ["child2", child2], ["custom-key", child3]]));
+  }
+
+  @test "grandchildren have tree properties set as expected"() {
+    let source = new TestSource("my-source");
+    let child = source.ensureChild("child");
+    let grandchild = child.ensureChild("grandchild");
+    assert.equal(grandchild.parent, child);
+    assert.equal(grandchild.base, undefined);
+    assert.equal(grandchild.root, source);
+    assert.deepEqual(grandchild.resolveInheritance(), []);
+  }
+
+  @test "setBase creates inheritance tree for self"() {
+    let base = new TestSource("my-base");
+    let source = new TestSource("my-source");
+    source.setBase(base);
+    assert.equal(source.base, base);
+    assert.deepEqual(source.resolveInheritance(), [base]);
+  }
+
+  @test "setBase creates inheritance tree for children"() {
+    let base = new TestSource("my-base");
+    let source = new TestSource("my-source");
+    let baseChild = base.ensureChild("child");
+    let child = source.ensureChild("child");
+    let baseUnique = base.ensureChild("base-only");
+    source.setBase(base);
+
+    assert.equal(child.base, baseChild);
+    assert.equal(source.getChild("base-only"), null);
+    assert.equal(source.resolveChild("base-only"), baseUnique);
+    assert.deepEqual(child.resolveInheritance(), [baseChild]);
+  }
+
+  @test "setBase creates inheritance tree for grandchildren"() {
+    let base = new TestSource("my-base");
+    let source = new TestSource("my-source");
+    let baseChild = base.ensureChild("child");
+    let baseGrandchild = baseChild.ensureChild("grandchild");
+    let baseChildUnique = baseChild.ensureChild("base-only");
+    let child = source.ensureChild("child");
+    let grandchild = child.ensureChild("grandchild");
+    source.setBase(base);
+
+    assert.equal(grandchild.base, baseGrandchild);
+    assert.equal(source.getChild("child")!.getChild("base-only"), null);
+    assert.equal(source.getChild("child")!.resolveChild("base-only"), baseChildUnique);
+    assert.deepEqual(grandchild.resolveInheritance(), [baseGrandchild]);
+  }
+}

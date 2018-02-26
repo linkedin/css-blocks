@@ -43,6 +43,7 @@ export class Block
   implements SelectorFactory {
   private _rootClass: BlockClass;
   private _blockReferences: ObjectDictionary<Block> = {};
+  private _blockReferencesReverseLookup: Map<Block, string> = new Map();
   private _identifier: FileIdentifier;
   private _implements: Block[] = [];
   private _localScope: LocalScopedContext<Block, Style>;
@@ -63,7 +64,7 @@ export class Block
     this.parsedRuleSelectors = new WeakMap();
     this._localScope = new LocalScopedContext<Block, Style>(OBJ_REF_SPLITTER, this);
     this._dependencies = new Set<string>();
-    this._rootClass = new BlockClass(ROOT_CLASS, this, this);
+    this._rootClass = new BlockClass(ROOT_CLASS, this);
     this.addClass(this._rootClass);
   }
 
@@ -163,7 +164,7 @@ export class Block
 
   getClass(name: string): BlockClass | null { return name ? this.getChild(name) : this.getChild(ROOT_CLASS); }
   resolveClass(name: string): BlockClass | null { return name ? this.resolveChild(name) : this.resolveChild(ROOT_CLASS); }
-  newChild(name: string): BlockClass { return new BlockClass(name, this, this); }
+  newChild(name: string): BlockClass { return new BlockClass(name, this); }
 
   // Alias protected methods from `Inheritable` to Block-specific names, and expose them as a public API.
   get classes(): BlockClass[] { return this.children(); }
@@ -239,11 +240,16 @@ export class Block
 
   addBlockReference(localName: string, other: Block) {
     this._blockReferences[localName] = other;
+    this._blockReferencesReverseLookup.set(other, localName);
   }
 
   getReferencedBlock(localName: string): Block | null {
     if (localName === "") { return this; }
     return this._blockReferences[localName] || null;
+  }
+
+  getReferencedBlockLocalName(block: Block | undefined): string | null {
+    return block && this._blockReferencesReverseLookup.get(block) || null;
   }
 
   transitiveBlockDependencies(): Set<Block> {

@@ -23,11 +23,11 @@ export class StateGroup extends Node<StateGroup, Block, BlockClass, State>
   private _universalState: State | undefined;
   private _sourceAttributes: Attr[] | undefined;
 
-  constructor(name: string, parent: BlockClass, root: Block) {
-    super(name, parent, root);
+  constructor(name: string, parent: BlockClass) {
+    super(name, parent);
   }
 
-  protected newChild(name: string): State { return new State(name, this, this.block); }
+  protected newChild(name: string): State { return new State(name, this); }
 
   get hasSubStates(): boolean { return this._hasSubStates; }
   get universalState(): State | undefined { return this._universalState; }
