@@ -1,14 +1,27 @@
+/**
+ * The `RulesetContainer` module contains classes used to track declaration concerns and
+ * explicit resolutions associated with a `Style` object.
+ *
+ * Every `Style` object has a `RulesetContainer`. A `Style` object's behavior may be defined
+ * by multiple rulesets, and may have multiple stylable targets (ex: `::self`, `::before`,
+ * `::after`). Every ruleset may provide resolution guidance against another `Style` object.
+ *
+ * @module Block/BlockTree/RulesetContainer
+ */
 import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
 import * as propParser from "css-property-parser";
-import { ParsedSelector } from "opticss";
+import { ParsedSelector, parseSelector } from "opticss";
 import * as postcss from "postcss";
 
-import { BLOCK_PROP_NAMES, BlockPath, RESOLVE_RE, SELF_SELECTOR } from "../../BlockSyntax";
+import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR } from "../../BlockSyntax";
 import { sourceLocation } from "../../SourceLocation";
-import * as errors from "../../errors";
+import { InvalidBlockSyntax } from "../../errors";
 
+import { Inheritable } from "./Inheritable";
 import { AnyStyle, isStyle, Style } from "./Style";
-export { Style }; // Required for Typescript
+
+// Required for Typescript so it can "name" types in the generated types definition file.
+export { Style, Inheritable };
 
 // Convenience types to help our code read better.
 export type Pseudo = string;
@@ -85,19 +98,28 @@ export class Ruleset {
  */
 export class RulesetContainer {
 
+  // The owner `Style` of this `RulesetContainer`
+  private parent: AnyStyle;
+
   // Contains all rulesets that apply to each possible element/pseudo-element target.
   private rules: MultiMap<Pseudo, Ruleset> = new MultiMap(false);
 
   // Contains all rulesets, accessible by property concern, that apply to each possible element/pseudo-element target.
   private concerns: TwoKeyMultiMap<Pseudo, Property, Ruleset> = new TwoKeyMultiMap(false);
 
+  constructor(parent: AnyStyle) {
+    this.parent = parent;
+  }
+
   /**
    * Track all properties from a ruleset in this block's PropertyContainer.
    * @param  rule  PostCSS ruleset
    * @param  block  External block
    */
-  addRuleset(file: string, rule: postcss.Rule, style: AnyStyle) {
-    let selectors: ParsedSelector[] = style.block.getParsedSelectors(rule);
+  addRuleset(file: string, rule: postcss.Rule) {
+    let style = this.parent;
+    let selectors: ParsedSelector[] = parseSelector(rule);
+
     selectors.forEach((selector) => {
       let ruleSet = new Ruleset(file, rule, style);
       let key = selector.key;
@@ -112,43 +134,20 @@ export class RulesetContainer {
         let referenceStr = (decl.value.match(RESOLVE_RE) || [])[3];
 
         // If this is a resolution, track that this property has been resolved
+        // Resolution paths are always relative to the root node.
         if (referenceStr) {
+          let errLoc = sourceLocation(file, decl);
+          let other = style.root.lookup(referenceStr, errLoc);
 
-          let blockPath = new BlockPath(referenceStr);
-          let other = style.block.lookup(referenceStr);
-          let otherBlock = style.block.getReferencedBlock(blockPath.block);
-
-          if (!otherBlock) {
-            throw new errors.InvalidBlockSyntax(
-              `No Block named "${blockPath.block}" found in scope.`,
-              sourceLocation(file, decl),
-            );
-          }
-
-          if (!other) {
-            throw new errors.InvalidBlockSyntax(
-              `No Style "${blockPath.path}" found on Block "${otherBlock.name}".`,
-              sourceLocation(file, decl),
-            );
-          }
-
-          if (other.block === style.block) {
-            throw new errors.InvalidBlockSyntax(
-              `Cannot resolve conflicts with your own block.`,
-              sourceLocation(file, decl),
-            );
+          if (other && other.block === style.block) {
+            throw new InvalidBlockSyntax(`Cannot resolve conflicts with your own block.`, errLoc);
           }
 
           if (other && other.block.isAncestorOf(style.block)) {
-            throw new errors.InvalidBlockSyntax(
-              `Cannot resolve conflicts with ancestors of your own block.`,
-              sourceLocation(file, decl),
-            );
+            throw new InvalidBlockSyntax(`Cannot resolve conflicts with ancestors of your own block.`, errLoc);
           }
 
-          if (isStyle(other)) {
-            ruleSet.addResolution(decl.prop, other);
-          }
+          if (isStyle(other)) { ruleSet.addResolution(decl.prop, other); }
         }
 
         // If not a resolution, add this as a tracked property on our Ruleset.
@@ -166,7 +165,7 @@ export class RulesetContainer {
   }
 
   /**
-   * Retreive all Rulesets that define this Style's behavior.
+   * Retrieve all Rulesets that define this Style's behavior.
    * Filter by property concern and optional pseudo. If no pseudo
    * is provided, Rulesets from across all pseudos are returned.
    * @param  pseudo  Optional pseudo element to get Rulesets for
@@ -185,7 +184,7 @@ export class RulesetContainer {
   }
 
   /**
-   * Retreive a full Set of properties used by any Ruleset that defines this Style.
+   * Retrieve a full Set of properties used by any Ruleset that defines this Style.
    * Optional filter by pseudo. If no pseudo is provided, properties from across all
    * pseudos are returned.
    * @param  pseudo  Optional pseudo element to get properties from
