@@ -13,7 +13,6 @@ export abstract class Inheritable<
 /* tslint:enable:prefer-whatever-to-any */
   protected _name: string;
   protected _base: Self | undefined;
-  protected _baseName: string | undefined;
   protected _root: Root | Self;
   protected _parent: Parent;
   protected _children: Map<string, Child> = new Map();
@@ -40,14 +39,13 @@ export abstract class Inheritable<
    * @param name Name for this Inheritable instance.
    * @param parent The parent Inheritable of this node.
    */
-  constructor(name: string, parent: Parent, root?: Root) {
+  constructor(name: string, parent: Parent) {
     this._name = name;
     this._parent = parent;
-    this._root = root || this.asSelf(); // `Root` is only set to `Self` for `Source` nodes.
+    this._root = parent ? parent.root : this.asSelf(); // `Root` is only set to `Self` for `Source` nodes.
   }
 
   public get name(): string { return this._name; }
-  public get baseName(): string | undefined { return this._baseName; }
   public get parent(): Parent { return this._parent; }
 
   /**
@@ -79,13 +77,12 @@ export abstract class Inheritable<
    * traverse parents and return the base block object.
    * @returns The base block in this container tree.
    */
-  public get block(): Root {
+  public get root(): Root {
     // This is a safe cast because we know root will only be set to `Self` for `Source` nodes.
     return this._root as Root;
   }
 
-  setBase(baseName: string, base: Self) {
-    this._baseName = baseName;
+  public setBase(base: Self) {
     this._base = base;
   }
 
@@ -94,10 +91,10 @@ export abstract class Inheritable<
    * inheritance. Does not include this object or the styles it implies through
    * other relationships to this object.
    *
-   * If nothing is inherited, this returns an empty set.
+   * If nothing is inherited, this returns an empty array.
    */
-  resolveInheritance(): Self[] {
-    let inherited = new Array<Self>();
+  public resolveInheritance(): Self[] {
+    let inherited: Self[] = [];
     let base: Self | undefined = this.base;
     while (base) {
       inherited.unshift(base);
@@ -111,7 +108,7 @@ export abstract class Inheritable<
    * chain. Returns undefined if the child is not found.
    * @param name The name of the child to resolve.
    */
-  resolveChild(name: string): Child | null {
+  public resolveChild(name: string): Child | null {
     let state: Child | null = this.getChild(name);
     let container: Self | undefined = this.base;
     while (!state && container) {
@@ -138,32 +135,33 @@ export abstract class Inheritable<
    * Given a parent that is a base class of this style, retrieve this style's
    * base style from it, if it exists. This method does not traverse into base styles.
    */
-  protected getChild(key: string): Child | null {
+  public getChild(key: string): Child | null {
     return this._children.get(key) || null;
   }
 
-  protected setChild(key: string, value: Child): Child {
+  public setChild(key: string, value: Child): Child {
     this._children.set(key, value);
     return value;
   }
 
-  protected ensureChild(name: string): Child {
+  public ensureChild(name: string, key?: string): Child {
+    key = key !== undefined ? key : name;
     if (!this._children.has(name)) {
-      this.setChild(name, this.newChild(name));
+      this.setChild(key, this.newChild(name));
     }
-    return this._children.get(name) as Child;
+    return this._children.get(key) as Child;
   }
 
-  protected children(): Child[] {
+  public children(): Child[] {
     return [...this._children.values()];
   }
 
-  protected childrenMap(): Map<string, Child> {
+  public childrenMap(): Map<string, Child> {
     return new Map(this._children);
   }
 
   // TODO: Cache this maybe? Convert entire model to only use hash?...
-  protected childrenHash(): ObjectDictionary<Child> {
+  public childrenHash(): ObjectDictionary<Child> {
     let out = {};
     for (let [key, value] of this._children.entries()) {
       out[key] = value;
