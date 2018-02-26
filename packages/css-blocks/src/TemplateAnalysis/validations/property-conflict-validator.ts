@@ -2,8 +2,7 @@ import { MultiMap, objectValues, TwoKeyMultiMap } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import * as postcss from "postcss";
 
-import { Style } from "../../Block";
-import { Ruleset } from "../../Block/BlockTree/RulesetContainer";
+import { Ruleset, Style } from "../../Block";
 import {
   isBooleanState,
   isFalseCondition,

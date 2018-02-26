@@ -13,10 +13,10 @@ import { OutputMode } from "../OutputMode";
 
 import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
-import { Node } from "./BlockTree";
+import { Container } from "./BlockTree";
 import { State } from "./State";
 
-export class StateGroup extends Node<StateGroup, Block, BlockClass, State>
+export class StateGroup extends Container<StateGroup, Block, BlockClass, State>
 {
 
   private _hasSubStates = false;
@@ -126,6 +126,9 @@ export class StateGroup extends Node<StateGroup, Block, BlockClass, State>
         throw new Error("this never happens");
     }
   }
+
+  // TODO: Implement lookup relative to State.
+  public lookup(): undefined { return undefined; }
 
   /**
    * Return array self and all children.

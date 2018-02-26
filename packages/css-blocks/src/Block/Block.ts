@@ -4,7 +4,6 @@ import {
   CompoundSelector,
   ParsedSelector,
   parseSelector,
-  SelectorFactory,
 } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
@@ -16,15 +15,15 @@ import {
   NodeAndType,
   stateParser,
 } from "../BlockParser";
-import { CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
-import { BlockPath } from "../BlockSyntax";
+import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
-import { CssBlockError } from "../errors";
+import { SourceLocation } from "../SourceLocation";
+import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
 import { LocalScopedContext } from "../util/LocalScope";
 
 import { BlockClass } from "./BlockClass";
-import { SourceNode } from "./BlockTree";
+import { SourceContainer } from "./BlockTree";
 import { State } from "./State";
 
 export type Style = BlockClass | State;
@@ -38,9 +37,7 @@ export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
   return;
 };
 
-export class Block
-  extends SourceNode<Block, BlockClass>
-  implements SelectorFactory {
+export class Block extends SourceContainer<Block, BlockClass> {
   private _rootClass: BlockClass;
   private _blockReferences: ObjectDictionary<Block> = {};
   private _blockReferencesReverseLookup: Map<Block, string> = new Map();
@@ -51,7 +48,7 @@ export class Block
   /**
    * array of paths that this block depends on and, if changed, would
    * invalidate the compiled css of this block. This is usually only useful in
-   * preprocessed blocks.
+   * pre-processed blocks.
    */
   private _dependencies: Set<string>;
 
@@ -90,6 +87,7 @@ export class Block
       return;
     }
   }
+
   lookupLocal(name: string): Style | undefined {
     let blockRef = this._blockReferences[name];
     if (blockRef) {
@@ -120,26 +118,27 @@ export class Block
    *   A single dot by itself returns the current block.
    * @returns The Style referenced at the supplied path.
    */
-  public lookup(path: string | BlockPath): Style | undefined {
+  public lookup(path: string | BlockPath, errLoc?: SourceLocation): Style | undefined {
     path = new BlockPath(path);
     let block = this.getReferencedBlock(path.block);
-    if (!block) return undefined;
+    if (!block) {
+      if (errLoc) { throw new InvalidBlockSyntax(`No Block named "${path.block}" found in scope.`, errLoc); }
+      return undefined;
+    }
     let klass = block.resolveClass(path.class);
-    if (!klass) return undefined;
     let state;
-    if (path.state) {
+    if (klass && path.state) {
       let groupName = path.state.group ? path.state.group : path.state.name;
       let stateName = path.state.group ? path.state.name : undefined;
       state = klass.resolveState(groupName, stateName);
       if (!state) return undefined;
     }
-    return state || klass;
 
-    // for (let part of path.tokens()) {
+    if (!state && !klass && errLoc) {
+      throw new InvalidBlockSyntax(`No Style "${path.path}" found on Block "${block.name}".`, errLoc);
+    }
 
-    //   res = res.resolveChild(part);
-    //   if (!res) { break; }
-    // }
+    return state || klass || undefined;
   }
 
   /// End of methods to implement LocalScope<Block, Style>
@@ -471,23 +470,6 @@ export class Block
       }
     }
     return false;
-  }
-
-  /**
-   * TODO: Move selector cache into `parseSelector` and have consumers of this
-   *       method interface with the parseSelector utility directly.
-   * Given a PostCSS Rule, ensure it is present in this Block's parsed rule
-   * selectors cache, and return the ParsedSelector array.
-   * @param rule  PostCSS Rule
-   * @return ParsedSelector array
-   */
-  getParsedSelectors(rule: postcss.Rule): ParsedSelector[] {
-    let sels = this.parsedRuleSelectors.get(rule);
-    if (!sels) {
-      sels = parseSelector(rule);
-      this.parsedRuleSelectors.set(rule, sels);
-    }
-    return sels;
   }
 
   /**

@@ -87,7 +87,7 @@ export class ConflictResolver {
         let handledObjects = new Conflicts<Style>();
 
         // For each key selector:
-        let parsedSelectors = block.getParsedSelectors(rule);
+        let parsedSelectors = parseSelector(rule);
         parsedSelectors.forEach((sel) => {
           let key = sel.key;
 
@@ -232,7 +232,7 @@ export class ConflictResolver {
     // Something to consider: when resolving against a sub-block that has overridden a property, do we need
     // to include the base object selector(s) in the key selector as well?
     let query = new QueryKeySelector(other);
-    let result = query.execute(root, other.block);
+    let result = query.execute(root);
     let foundConflict: ConflictType = ConflictType.noConflict;
     let resolvedSelectors = new Set<string>();
     curSel.forEach((cs) => {
