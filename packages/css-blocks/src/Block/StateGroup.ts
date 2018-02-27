@@ -13,10 +13,10 @@ import { OutputMode } from "../OutputMode";
 
 import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
-import { Container } from "./BlockTree";
+import { Inheritable } from "./Inheritable";
 import { State } from "./State";
 
-export class StateGroup extends Container<StateGroup, Block, BlockClass, State>
+export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State>
 {
 
   private _hasSubStates = false;
