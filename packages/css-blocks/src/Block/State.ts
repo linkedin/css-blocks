@@ -2,7 +2,7 @@ import {
   Attr,
   AttributeNS,
 } from "@opticss/element-analysis";
-import { assertNever } from "@opticss/util";
+import { assertNever, assertNeverCalled } from "@opticss/util";
 
 import { UNIVERSAL_STATE } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
@@ -10,18 +10,20 @@ import { OutputMode } from "../OutputMode";
 
 import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
-import { SinkStyle } from "./BlockTree";
+import { RulesetContainer } from "./RulesetContainer";
 import { StateGroup } from "./StateGroup";
+import { Style } from "./Style";
 
 /**
  * States represent a state attribute selector in a particular Block.
  * A State can have sub-states that are considered to be mutually exclusive.
  * States can be designated as "global";
  */
-export class State extends SinkStyle<State, Block, StateGroup> {
+export class State extends Style<State, Block, StateGroup, never> {
   isGlobal = false;
 
   private _sourceAttributes: AttributeNS[] | undefined;
+  public readonly rulesets: RulesetContainer<State>;
 
   /**
    * State constructor. Provide a local name for this State, an optional group name,
@@ -32,6 +34,11 @@ export class State extends SinkStyle<State, Block, StateGroup> {
    */
   constructor(name: string, parent: StateGroup) {
     super(name, parent);
+    this.rulesets = new RulesetContainer(this);
+  }
+
+  newChild(): never {
+    return assertNeverCalled();
   }
 
   get isUniversal(): boolean { return this.name === UNIVERSAL_STATE; }
