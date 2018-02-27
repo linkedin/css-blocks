@@ -13,23 +13,23 @@
  */
 import { ObjectDictionary } from "@opticss/util";
 
-import { SourceLocation } from "../../SourceLocation";
+import { SourceLocation } from "../SourceLocation";
 
 /* tslint:disable:prefer-whatever-to-any */
 export type AnyNode = Inheritable<any, any, any, any>;
 
 export abstract class Inheritable<
   Self extends Inheritable<Self, Root, Parent, Child>,
-  Root extends Inheritable<any, Root, null, AnyNode> | Self,
+  Root extends Inheritable<any, Root, never, AnyNode> | Self,
   Parent extends Inheritable<any, Root, AnyNode | null, Self> | null,
-  Child extends Inheritable<any, Root, Self, AnyNode | null> | null
+  Child extends Inheritable<any, Root, Self, AnyNode | never> | never
 > {
 /* tslint:enable:prefer-whatever-to-any */
 
   protected _name: string;
   protected _base: Self | undefined;
   protected _root: Root | Self;
-  protected _parent: Parent;
+  protected _parent: Parent | null;
   protected _children: Map<string, Child> = new Map();
 
   /**
@@ -43,14 +43,17 @@ export abstract class Inheritable<
    * @param name Name for this Inheritable instance.
    * @param parent The parent Inheritable of this node.
    */
-  constructor(name: string, parent: Parent) {
+  constructor(name: string, parent?: Parent) {
     this._name = name;
-    this._parent = parent;
+    this._parent = parent || null;
     this._root = parent ? parent.root : this.asSelf(); // `Root` is only set to `Self` for `Source` nodes.
   }
 
   public get name(): string { return this._name; }
-  public get parent(): Parent { return this._parent; }
+
+  public get parent(): Parent {
+    return <Parent>this._parent;
+  }
 
   /**
    * Get the style that this style inherits from, if any.

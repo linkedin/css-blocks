@@ -1,44 +1,58 @@
+import { assertNeverCalled } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
+import { Block, BlockClass, SourceLocation } from "../../../src";
 import {
-  Container,
-  SinkContainer,
-  SourceContainer,
-} from "../../../src/Block/BlockTree";
+  RulesetContainer,
+} from "../../../src/Block";
+import { Inheritable } from "../../../src/Block/Inheritable";
+import { OptionsReader } from "../../../src/OptionsReader";
 
-class TestSource extends SourceContainer<
+type RootNode = Inheritable<
   TestSource, // Self
+  TestSource, // Root
+  never,      // Parent
+  TestNode    // Children
+>;
+
+class TestSource extends Inheritable<
+  TestSource, // Self
+  TestSource, // Root
+  never,      // Parent
   TestNode    // Children
 > {
   protected newChild(name: string) { return new TestNode(name, this); }
   lookup(): undefined { return undefined; }
-  newChildNode: SourceContainer<TestSource, TestNode>['newChild'] =
+  newChildNode: RootNode["newChild"] =
     (name: string) => this.newChild(name)
 
-  getChildNode: SourceContainer<TestSource, TestNode>['getChild'] =
+  getChildNode: RootNode["getChild"] =
     (key: string) => this.getChild(key)
 
-  resolveChildNode: SourceContainer<TestSource, TestNode>['resolveChild'] =
+  resolveChildNode: RootNode["resolveChild"] =
     (key: string) => this.resolveChild(key)
 
-  setChildNode: SourceContainer<TestSource, TestNode>['setChild'] =
+  setChildNode: RootNode["setChild"] =
     (key: string, value: TestNode) => this.setChild(key, value)
 
-  ensureChildNode: SourceContainer<TestSource, TestNode>['ensureChild'] =
+  ensureChildNode: RootNode["ensureChild"] =
     (name: string, key?: string) => this.ensureChild(name, key)
 
-  childNodes: SourceContainer<TestSource, TestNode>['children'] =
+  childNodes: RootNode["children"] =
     () => this.children()
 
-  childNodeHash: SourceContainer<TestSource, TestNode>['childrenHash'] =
+  childNodeHash: RootNode["childrenHash"] =
     () => this.childrenHash()
 
-  childNodeMap: SourceContainer<TestSource, TestNode>['childrenMap'] =
+  childNodeMap: RootNode["childrenMap"] =
     () => this.childrenMap()
 }
 
-class TestNode extends Container<
+type ContainerNode = Inheritable<TestNode, TestSource, TestSource, TestSink>;
+
+const TEST_BLOCK = new Block("test", "tree");
+class TestNode extends Inheritable<
   TestNode,   // Self
   TestSource, // Root
   TestSource, // Parent
@@ -46,19 +60,42 @@ class TestNode extends Container<
 > {
   newChild(name: string) { return new TestSink(name, this); }
   lookup(): undefined { return undefined; }
-  ensureSink: Container<TestNode, TestSource, TestSource, TestSink>['ensureChild'] =
+  ensureSink: ContainerNode["ensureChild"] =
     (name: string, key?: string) => this.ensureChild(name, key)
-  getSink: Container<TestNode, TestSource, TestSource, TestSink>['getChild'] =
+  getSink: ContainerNode["getChild"] =
     (name: string) => this.getChild(name)
-  resolveSink: Container<TestNode, TestSource, TestSource, TestSink>['resolveChild'] =
+  resolveSink: ContainerNode["resolveChild"] =
     (name: string) => this.resolveChild(name)
 }
 
-class TestSink extends SinkContainer<
-  TestSink,   // Self
+class TestSink extends Inheritable<TestSink, // Self
   TestSource, // Root
-  TestNode    // Parent
-> {}
+  TestNode, // Parent
+  never
+  > {
+  // tslint:disable-next-line:prefer-whatever-to-any
+  public lookup(_path: string, _errLoc?: SourceLocation | undefined): Inheritable<any, any, any, any> | undefined {
+    throw new Error("Method not implemented.");
+  }
+  public rulesets: RulesetContainer<BlockClass>;
+  constructor(name: string, parent: TestNode) {
+    super(name, parent);
+    this.rulesets = new RulesetContainer(new BlockClass(name, TEST_BLOCK));
+  }
+  newChild(_name: string) {
+    return assertNeverCalled();
+  }
+
+  public cssClass(_opts: OptionsReader): string {
+    throw new Error("Method not implemented.");
+  }
+  public asSource(): string {
+    throw new Error("Method not implemented.");
+  }
+  public asSourceAttributes(): Attr[] {
+    throw new Error("Method not implemented.");
+  }
+}
 
 @suite("BlockTree")
 export class BlockTreeTests {
