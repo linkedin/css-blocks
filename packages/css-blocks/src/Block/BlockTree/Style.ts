@@ -1,5 +1,4 @@
 import { Attr } from "@opticss/element-analysis";
-import { whatever } from "@opticss/util";
 
 import { OptionsReader } from "../../OptionsReader";
 import { unionInto } from "../../util/unionInto";
@@ -116,7 +115,7 @@ export abstract class Style<
   // TypeScript can't figure out that `this` is the `StyleType` so this private
   // method casts it in a few places where it's needed.
   private asStyle(): Self {
-    return <Self><whatever>this;
+    return <Self><object>this;
   }
 }
 
