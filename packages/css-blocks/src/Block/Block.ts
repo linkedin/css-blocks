@@ -23,10 +23,8 @@ import { FileIdentifier } from "../importing";
 import { LocalScopedContext } from "../util/LocalScope";
 
 import { BlockClass } from "./BlockClass";
-import { SourceContainer } from "./BlockTree";
-import { State } from "./State";
-
-export type Style = BlockClass | State;
+import { Inheritable } from "./Inheritable";
+import { Styles } from "./Styles";
 
 export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
   let index = s.indexOf(".");
@@ -37,13 +35,13 @@ export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
   return;
 };
 
-export class Block extends SourceContainer<Block, BlockClass> {
+export class Block extends Inheritable<Block, Block, never, BlockClass> {
   private _rootClass: BlockClass;
   private _blockReferences: ObjectDictionary<Block> = {};
   private _blockReferencesReverseLookup: Map<Block, string> = new Map();
   private _identifier: FileIdentifier;
   private _implements: Block[] = [];
-  private _localScope: LocalScopedContext<Block, Style>;
+  private _localScope: LocalScopedContext<Block, Styles>;
   private hasHadNameReset = false;
   /**
    * array of paths that this block depends on and, if changed, would
@@ -59,11 +57,13 @@ export class Block extends SourceContainer<Block, BlockClass> {
     super(name);
     this._identifier = identifier;
     this.parsedRuleSelectors = new WeakMap();
-    this._localScope = new LocalScopedContext<Block, Style>(OBJ_REF_SPLITTER, this);
+    this._localScope = new LocalScopedContext<Block, Styles>(OBJ_REF_SPLITTER, this);
     this._dependencies = new Set<string>();
     this._rootClass = new BlockClass(ROOT_CLASS, this);
     this.addClass(this._rootClass);
   }
+
+  get block(): Block { return this.root; }
 
   get name() { return this._name; }
   set name(name: string) {
@@ -79,7 +79,7 @@ export class Block extends SourceContainer<Block, BlockClass> {
   }
 
   /// Start of methods to implement LocalScope<Block, Style>
-  subScope(name: string): LocalScopedContext<Block, Style> | undefined {
+  subScope(name: string): LocalScopedContext<Block, Styles> | undefined {
     let block = this._blockReferences[name];
     if (block) {
       return block._localScope;
@@ -88,7 +88,7 @@ export class Block extends SourceContainer<Block, BlockClass> {
     }
   }
 
-  lookupLocal(name: string): Style | undefined {
+  lookupLocal(name: string): Styles | undefined {
     let blockRef = this._blockReferences[name];
     if (blockRef) {
       return blockRef.rootClass;
@@ -118,7 +118,7 @@ export class Block extends SourceContainer<Block, BlockClass> {
    *   A single dot by itself returns the current block.
    * @returns The Style referenced at the supplied path.
    */
-  public lookup(path: string | BlockPath, errLoc?: SourceLocation): Style | undefined {
+  public lookup(path: string | BlockPath, errLoc?: SourceLocation): Styles | undefined {
     path = new BlockPath(path);
     let block = this.getReferencedBlock(path.block);
     if (!block) {
@@ -183,8 +183,8 @@ export class Block extends SourceContainer<Block, BlockClass> {
    * @param b The block to check implementation against.
    * @returns The Styles from b that are missing in the block.
    */
-  checkImplementation(b: Block): Style[] {
-    let missing: Style[] = [];
+  checkImplementation(b: Block): Styles[] {
+    let missing: Styles[] = [];
     for (let o of b.all()) {
       if (!this.find(o.asSource())) {
         missing.push(o);
@@ -198,7 +198,7 @@ export class Block extends SourceContainer<Block, BlockClass> {
    */
   checkImplementations(): void {
     for (let b of this.getImplementedBlocks()) {
-      let missing: Style[] = this.checkImplementation(b);
+      let missing: Styles[] = this.checkImplementation(b);
       let paths = missing.map(o => o.asSource()).join(", ");
       if (missing.length > 0) {
         let s = missing.length > 1 ? "s" : "";
@@ -208,7 +208,7 @@ export class Block extends SourceContainer<Block, BlockClass> {
   }
 
   // This is a really dumb impl
-  find(sourceName: string): Style | undefined {
+  find(sourceName: string): Styles | undefined {
     let blockRefName: string | undefined;
     let md = sourceName.match(CLASS_NAME_IDENT);
     if (md && md.index === 0) {
@@ -284,8 +284,8 @@ export class Block extends SourceContainer<Block, BlockClass> {
    * @param shallow Pass true to not include inherited objects.
    * @returns Array of Styles.
    */
-  all(shallow?: boolean): Style[] {
-    let result = new Array<Style>();
+  all(shallow?: boolean): Styles[] {
+    let result = new Array<Styles>();
     for (let blockClass of this.classes) {
       result.push(...blockClass.all());
     }
@@ -295,8 +295,8 @@ export class Block extends SourceContainer<Block, BlockClass> {
     return result;
   }
 
-  merged(): MultiMap<string, Style> {
-    let map = new MultiMap<string, Style>(false);
+  merged(): MultiMap<string, Styles> {
+    let map = new MultiMap<string, Styles>(false);
     for (let obj of this.all()) {
       map.set(obj.asSource(), obj);
     }
@@ -307,7 +307,7 @@ export class Block extends SourceContainer<Block, BlockClass> {
    * Fetch a the cached `Style` from `Block` given `NodeAndType`.
    * @param obj The `NodeAndType` object to use for `Style` lookup.
    */
-  nodeAndTypeToStyle(obj: NodeAndType): Style | null {
+  nodeAndTypeToStyle(obj: NodeAndType): Styles | null {
     switch (obj.blockType) {
       case BlockType.root:
         return this.rootClass;
@@ -327,7 +327,7 @@ export class Block extends SourceContainer<Block, BlockClass> {
     }
   }
 
-  nodeAsStyle(node: selectorParser.Node): [Style, number] | null {
+  nodeAsStyle(node: selectorParser.Node): [Styles, number] | null {
     if (node.type === selectorParser.CLASS && node.value === ROOT_CLASS) {
       return [this.rootClass, 0];
     } else if (node.type === selectorParser.TAG) {
@@ -444,7 +444,7 @@ export class Block extends SourceContainer<Block, BlockClass> {
     let sortedNames = [...sourceNames].sort();
     for (let n of sortedNames) {
       if (n !== `.${ROOT_CLASS}`) {
-        let o = this.find(n) as Style;
+        let o = this.find(n) as Styles;
         result.push(o.asDebug(opts));
       }
     }

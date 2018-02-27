@@ -13,15 +13,12 @@ import * as propParser from "css-property-parser";
 import { ParsedSelector, parseSelector } from "opticss";
 import * as postcss from "postcss";
 
-import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR } from "../../BlockSyntax";
-import { sourceLocation } from "../../SourceLocation";
-import { InvalidBlockSyntax } from "../../errors";
+import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR } from "../BlockSyntax";
+import { sourceLocation } from "../SourceLocation";
+import { InvalidBlockSyntax } from "../errors";
 
-import { Inheritable } from "./Inheritable";
-import { AnyStyle, isStyle, Style } from "./Style";
-
-// Required for Typescript so it can "name" types in the generated types definition file.
-export { Style, Inheritable };
+import { isStyle, Styles } from "./Styles";
+export { Styles, BlockClass, State } from "./Styles";
 
 // Convenience types to help our code read better.
 export type Pseudo = string;
@@ -32,10 +29,10 @@ export type Declaration = {
   value: string;
 };
 
-export type Resolution = {
+export type Resolution<S extends Styles = Styles> = {
   node: postcss.Rule;
   property: string;
-  resolution: AnyStyle;
+  resolution: S;
 };
 
 /**
@@ -56,15 +53,15 @@ function expandProp(prop: string, value: string): propParser.Declarations {
 /**
  * Represents an individual ruleset, its property concerns, and Style resolutions.
  */
-export class Ruleset {
+export class Ruleset<Style extends Styles = Styles> {
   file: string;
   node: postcss.Rule;
-  style: AnyStyle;
+  style: Style;
 
   declarations = new MultiMap<Property, Declaration>();
-  resolutions = new MultiMap<Property, AnyStyle>();
+  resolutions = new MultiMap<Property, Styles>();
 
-  constructor(file: string, node: postcss.Rule, style: AnyStyle) {
+  constructor(file: string, node: postcss.Rule, style: Style) {
     this.file = file;
     this.node = node;
     this.style = style;
@@ -75,7 +72,7 @@ export class Ruleset {
    * @param  property  A CSS property name.
    * @param  style  The Style object this property should resolve to.
    */
-  addResolution(property: Property, style: AnyStyle): void {
+  addResolution(property: Property, style: Styles): void {
     let expanded = expandProp(property, "inherit");
     for (let prop of Object.keys(expanded)) {
       this.resolutions.set(prop, style);
@@ -87,7 +84,7 @@ export class Ruleset {
    * @param  property  A CSS property name.
    * @param  style  The Style object this property should resolve to.
    */
-  hasResolutionFor(property: Property, other: AnyStyle): boolean {
+  hasResolutionFor(property: Property, other: Styles): boolean {
     return this.resolutions.hasValue(property, other);
   }
 
@@ -96,18 +93,18 @@ export class Ruleset {
 /**
  * Cache and interface methods for all rulesets that may apply to a Style.
  */
-export class RulesetContainer {
+export class RulesetContainer<S extends Styles> {
 
   // The owner `Style` of this `RulesetContainer`
-  private parent: AnyStyle;
+  private parent: S;
 
   // Contains all rulesets that apply to each possible element/pseudo-element target.
-  private rules: MultiMap<Pseudo, Ruleset> = new MultiMap(false);
+  private rules: MultiMap<Pseudo, Ruleset<S>> = new MultiMap(false);
 
   // Contains all rulesets, accessible by property concern, that apply to each possible element/pseudo-element target.
-  private concerns: TwoKeyMultiMap<Pseudo, Property, Ruleset> = new TwoKeyMultiMap(false);
+  private concerns: TwoKeyMultiMap<Pseudo, Property, Ruleset<S>> = new TwoKeyMultiMap(false);
 
-  constructor(parent: AnyStyle) {
+  constructor(parent: S) {
     this.parent = parent;
   }
 
@@ -171,9 +168,9 @@ export class RulesetContainer {
    * @param  pseudo  Optional pseudo element to get Rulesets for
    * @returns A set of Ruleset objects.
    */
-  getRulesets(prop: string, pseudo?: string): Set<Ruleset> {
+  getRulesets(prop: string, pseudo?: string): Set<Ruleset<S>> {
     if (!pseudo) {
-      let res: Ruleset[] = [];
+      let res: Ruleset<S>[] = [];
       for (let pseudo of this.getPseudos()) {
         res = [...res, ...this.concerns.get(pseudo, prop)];
       }
@@ -213,7 +210,7 @@ export class RulesetContainer {
    * Iterate over all stored resolutions.
    * @returns Resolution  An iterable set of Resolution objects.
    */
-  *getAllResolutions(): Iterable<Resolution> {
+  *getAllResolutions(): Iterable<Resolution<Styles>> {
     let ruleSets = this.rules.individualValues();
     for (let rule of ruleSets) {
       for (let [property, styles] of rule.resolutions) {

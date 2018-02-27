@@ -5,9 +5,11 @@ import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
 import { Block } from "./Block";
-import { StyleNode } from "./BlockTree";
+import { RulesetContainer } from "./RulesetContainer";
 import { State } from "./State";
 import { StateGroup } from "./StateGroup";
+import { Style } from "./Style";
+import { Styles } from "./Styles";
 
 /**
  * Holds state values to be passed to the StateContainer.
@@ -20,8 +22,14 @@ export interface StateInfo {
 /**
  * Represents a Class present in the Block.
  */
-export class BlockClass extends StyleNode<BlockClass, Block, Block, StateGroup> {
+export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
   private _sourceAttribute: Attribute | undefined;
+  public readonly rulesets: RulesetContainer<BlockClass>;
+
+  constructor(name: string, parent: Block) {
+    super(name, parent);
+    this.rulesets = new RulesetContainer(this);
+  }
 
   protected newChild(name: string): StateGroup { return new StateGroup(name, this); }
 
@@ -116,7 +124,7 @@ export class BlockClass extends StyleNode<BlockClass, Block, Block, StateGroup> 
    * @param shallow Pass false to not include children.
    * @returns Array of Styles.
    */
-  all(shallow?: boolean): (State | BlockClass)[] {
+  all(shallow?: boolean): Styles[] {
     let result: (State | BlockClass)[] = [this];
     if (!shallow) {
       result = result.concat(this.allStates());
@@ -189,8 +197,8 @@ export class BlockClass extends StyleNode<BlockClass, Block, Block, StateGroup> 
    */
   debug(opts: OptionsReader): string[] {
     let result: string[] = [];
-    for (let state of this.all()) {
-      result.push(state.asDebug(opts));
+    for (let style of this.all()) {
+      result.push(style.asDebug(opts));
     }
     return result;
   }
