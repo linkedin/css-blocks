@@ -99,7 +99,7 @@ export abstract class Inheritable<
 
   /**
    * Sets the base node that this node inherits from. Must be of same type.
-   * @prop  base  Self  The new base node.
+   * @prop base The new base node.
    */
   public setBase(base: Self) {
     this._base = base;
@@ -129,7 +129,7 @@ export abstract class Inheritable<
    * @param name The name of the child to resolve.
    * @returns The child node, or `null`
    */
-  public resolveChild(name: string): Child | null {
+  protected resolveChild(name: string): Child | null {
     let state: Child | null = this.getChild(name);
     let container: Self | undefined = this.base;
     while (!state && container) {
@@ -144,7 +144,7 @@ export abstract class Inheritable<
    * @param key string  The key to fetch the child object from.
    * @returns The child node.
    */
-  public getChild(key: string): Child | null {
+  protected getChild(key: string): Child | null {
     return this._children.get(key) || null;
   }
 
@@ -153,7 +153,7 @@ export abstract class Inheritable<
    * @param key string  The key to set the child object to.
    * @returns The child node.
    */
-  public setChild(key: string, value: Child): Child {
+  protected setChild(key: string, value: Child): Child {
     this._children.set(key, value);
     return value;
   }
@@ -165,7 +165,7 @@ export abstract class Inheritable<
    * @param key string  The key at which this child object should be (optional)
    * @returns The child node.
    */
-  public ensureChild(name: string, key?: string): Child {
+  protected ensureChild(name: string, key?: string): Child {
     key = key !== undefined ? key : name;
     if (!this._children.has(name)) {
       this.setChild(key, this.newChild(name));
@@ -177,7 +177,7 @@ export abstract class Inheritable<
    * Returns an array of all children nodes in the order they were added.
    * @returns The children array.
    */
-  public children(): Child[] {
+  protected children(): Child[] {
     return [...this._children.values()];
   }
 
@@ -185,7 +185,7 @@ export abstract class Inheritable<
    * Returns a map of all children nodes at the keys they are stored..
    * @returns The children map.
    */
-  public childrenMap(): Map<string, Child> {
+  protected childrenMap(): Map<string, Child> {
     return new Map(this._children);
   }
 
@@ -194,7 +194,7 @@ export abstract class Inheritable<
    * TODO: Cache this maybe? Convert entire model to only use hash?...
    * @returns The children hash.
    */
-  public childrenHash(): ObjectDictionary<Child> {
+  protected childrenHash(): ObjectDictionary<Child> {
     let out = {};
     for (let [key, value] of this._children.entries()) {
       out[key] = value;
