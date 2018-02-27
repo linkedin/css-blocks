@@ -12,7 +12,6 @@
  * @module Block/BlockTree/Inheritable
  */
 import { ObjectDictionary } from "@opticss/util";
-import { whatever } from "@opticss/util";
 
 import { SourceLocation } from "../../SourceLocation";
 
@@ -205,7 +204,7 @@ export abstract class Inheritable<
   // TypeScript can't figure out that `this` is the `Self` so this private
   // method casts it in a few places where it's needed.
   private asSelf(): Self {
-    return <Self><whatever>this;
+    return <Self><object>this;
   }
 
 }
