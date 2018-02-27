@@ -40,7 +40,7 @@ export class BlockClass extends StyleNode<BlockClass, Block, Block, StateGroup> 
   public stateGroups(): StateGroup[] { return this.children(); }
   public resolveState(groupName: string, stateName = UNIVERSAL_STATE): State | null {
     let parent = this.resolveChild(groupName);
-    if (parent) { return parent.resolveChild(stateName); }
+    if (parent) { return parent.resolveState(stateName); }
     return null;
   }
 
