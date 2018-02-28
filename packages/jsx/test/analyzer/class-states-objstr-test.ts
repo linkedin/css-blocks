@@ -263,7 +263,7 @@ export class Test {
     `).then((_analysis: MetaAnalysis) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|awesome=wat] found on block "bar".\n  Did you mean: .pretty[state|awesome]? (7:9)');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state .pretty[state|awesome=wat] found on block "bar".\n  Did you mean: .pretty[state|awesome]? (7:9)');
     });
   }
 
