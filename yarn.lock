@@ -1480,6 +1480,14 @@ css-property-parser@^1.0.5:
     moo "^0.4.1"
     nearley "^2.11.0"
 
+css-property-parser@^1.0.6:
+  version "1.0.6"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/css-property-parser/-/css-property-parser-1.0.6.tgz#f0609a9e65f2ab429492d13b1406579e10ba0b3c"
+  dependencies:
+    fs-extra "^3.0.1"
+    moo "^0.4.1"
+    nearley "^2.11.0"
+
 css-selector-tokenizer@^0.7.0:
   version "0.7.0"
   resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/css-selector-tokenizer/-/css-selector-tokenizer-0.7.0.tgz#d85d34b7e858a6793d546e08ca4023d8dff89343"
