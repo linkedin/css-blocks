@@ -13,8 +13,8 @@ import {
   isClassNode,
   isStateNode,
   NodeAndType,
-  stateParser,
 } from "../BlockParser";
+import { stateName, stateValue } from "../BlockParser/block-intermediates";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { SourceLocation } from "../SourceLocation";
@@ -126,11 +126,10 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
       return undefined;
     }
     let klass = block.resolveClass(path.class);
+    let stateInfo = path.state;
     let state;
-    if (klass && path.state) {
-      let groupName = path.state.group ? path.state.group : path.state.name;
-      let stateName = path.state.group ? path.state.name : undefined;
-      state = klass.resolveState(groupName, stateName);
+    if (klass && stateInfo) {
+      state = klass.resolveState(stateInfo.name, stateInfo.value);
       if (!state) return undefined;
     }
 
@@ -312,18 +311,18 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
       case BlockType.root:
         return this.rootClass;
       case BlockType.state:
-        return this.rootClass._getState(stateParser(<selectorParser.Attribute>obj.node));
+        return this.rootClass.getState(stateName(obj.node), stateValue(obj.node));
       case BlockType.class:
-        return this.getClass(obj.node.value!);
+        return this.getClass(obj.node.value);
       case BlockType.classState:
         let classNode = obj.node.prev();
         let classObj = this.getClass(classNode.value!);
         if (classObj) {
-          return classObj._getState(stateParser(<selectorParser.Attribute>obj.node));
+          return classObj.getState(stateName(obj.node), stateValue(obj.node));
         }
         return null;
       default:
-        return assertNever(obj.blockType);
+        return assertNever(obj);
     }
   }
 
@@ -339,8 +338,7 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
           if (klass) {
             let another = next.next();
             if (another && isStateNode(another)) {
-              let info = stateParser(another);
-              let state = klass._getState(info);
+              let state = klass.getState(stateName(another), stateValue(another));
               if (state) {
                 return [state, 2];
               } else {
@@ -354,8 +352,7 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
             return null;
           }
         } else if (next && isStateNode(next)) {
-          let info = stateParser(next);
-          let state = otherBlock.rootClass._getState(info);
+          let state = otherBlock.rootClass.getState(stateName(next), stateValue(next));
           if (state) {
             return [state, 1];
           } else {
@@ -374,8 +371,7 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
       }
       let next = node.next();
       if (next && isStateNode(next)) {
-        let info = stateParser(next);
-        let state = klass._getState(info);
+        let state = klass.getState(stateName(next), stateValue(next));
         if (state === null) {
           return null;
         } else {
@@ -385,8 +381,7 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
         return [klass, 0];
       }
     } else if (isStateNode(node)) {
-      let info = stateParser(node);
-      let state = this.rootClass._ensureState(info);
+      let state = this.rootClass.ensureState(stateName(node), stateValue(node));
       if (state) {
         return [state, 0];
       } else {

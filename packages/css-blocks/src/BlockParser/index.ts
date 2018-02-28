@@ -19,13 +19,11 @@ import { processDebugStatements } from "./features/process-debug-statements";
 import { resolveReferences } from "./features/resolve-references";
 
 export {
-  stateParser,
   BlockType,
   NodeAndType,
   isStateNode,
   isClassNode,
   getBlockNode,
-  StateInfo,
 } from "./block-intermediates";
 
 export interface ParsedSource {

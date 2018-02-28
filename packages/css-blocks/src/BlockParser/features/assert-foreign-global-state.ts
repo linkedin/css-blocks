@@ -1,6 +1,5 @@
 import { parseSelector } from "opticss";
 import * as postcss from "postcss";
-import selectorParser = require("postcss-selector-parser");
 
 import { Block } from "../../Block";
 import { selectorSourceLocation as loc } from "../../SourceLocation";
@@ -8,7 +7,8 @@ import * as errors from "../../errors";
 import {
   BlockType,
   getBlockNode,
-  stateParser,
+  stateName,
+  stateValue,
 } from "../block-intermediates";
 
 /**
@@ -41,8 +41,8 @@ export async function assertForeignGlobalState(root: postcss.Root, block: Block,
             loc(file, rule, obj.node));
         }
 
-        // If referened block does not exist, throw.
-        let otherBlock = block.getReferencedBlock(obj.blockName);
+        // If referenced block does not exist, throw.
+        let otherBlock = block.getReferencedBlock(obj.blockName!);
         if (!otherBlock) {
           throw new errors.InvalidBlockSyntax(
             `No block named ${obj.blockName} found: ${rule.selector}`,
@@ -50,8 +50,7 @@ export async function assertForeignGlobalState(root: postcss.Root, block: Block,
         }
 
         // If state referenced does not exist on external block, throw
-        let stateInfo = stateParser(<selectorParser.Attribute>obj.node);
-        let otherState = otherBlock.rootClass._getState(stateInfo);
+        let otherState = otherBlock.rootClass.getState(stateName(obj.node), stateValue(obj.node));
         if (!otherState) {
           throw new errors.InvalidBlockSyntax(
             `No state ${obj.node.toString()} found in : ${rule.selector}`,
