@@ -66,13 +66,7 @@ export class State extends Style<State, Block, StateGroup, never> {
   }
 
   asSource(): string {
-    let attr = this.isUniversal ? `[state|${this.parent.name}]` : `[state|${this.parent.name}=${this.name}]`;
-    let blockClass = this.blockClass;
-    if (!blockClass.isRoot) {
-      return `${blockClass.asSource()}${attr}`;
-    } else {
-      return attr;
-    }
+    return this.parent.asSource(this.name);
   }
 
   public cssClass(opts: OptionsReader): string {

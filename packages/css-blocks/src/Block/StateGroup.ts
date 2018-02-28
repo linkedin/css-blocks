@@ -70,16 +70,17 @@ export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State
     return resolved;
   }
 
-  unqualifiedSource(): string {
-    return `[state|${this.name}]`;
+  unqualifiedSource(value?: string): string {
+    return `[state|${this.name}${(value && value !== UNIVERSAL_STATE) ? `=${value}` : ""}]`;
   }
 
   /**
    * Retrieve this State's selector as it appears in the Block source code.
+   * If a value is provided,
    * @returns The State's attribute selector
    */
-  asSource(): string {
-    return (this.blockClass.isRoot ? "" : this.blockClass.asSource()) + this.unqualifiedSource();
+  asSource(value?: string): string {
+    return (this.blockClass.isRoot ? "" : this.blockClass.asSource()) + this.unqualifiedSource(value);
   }
 
   asSourceAttributes(): Attr[] {
