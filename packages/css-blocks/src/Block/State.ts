@@ -1,6 +1,7 @@
 import {
   Attr,
   AttributeNS,
+  attrValues,
 } from "@opticss/element-analysis";
 import { assertNever, assertNeverCalled } from "@opticss/util";
 
@@ -59,8 +60,11 @@ export class State extends Style<State, Block, StateGroup, never> {
 
   asSourceAttributes(): Attr[] {
     if (!this._sourceAttributes) {
-      this._sourceAttributes = [];
-      this._sourceAttributes.push(new AttributeNS("state", this.parent.name, { constant: this.name }));
+      let blockClass = this.blockClass;
+      let rootIsOptional = true;
+      this._sourceAttributes = blockClass.asSourceAttributes(rootIsOptional);
+      let value = this.isUniversal ? attrValues.absent() : attrValues.constant(this.name);
+      this._sourceAttributes.push(new AttributeNS("state", this.parent.name, value));
     }
     return this._sourceAttributes.slice();
   }
