@@ -1,4 +1,4 @@
-import { Attribute } from "@opticss/element-analysis";
+import { Attribute, AttributeValue, attrValues } from "@opticss/element-analysis";
 
 import { UNIVERSAL_STATE } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
@@ -94,9 +94,13 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
    */
   public asSource(): string { return `.${this.name}`; }
 
-  public asSourceAttributes(): Attribute[] {
+  public asSourceAttributes(optionalRoot = false): Attribute[] {
     if (!this._sourceAttribute) {
-      this._sourceAttribute = new Attribute("class", { constant: this.name });
+      let value: AttributeValue = { constant: this.name };
+      if (optionalRoot && this.isRoot) {
+        value = attrValues.oneOf([value, attrValues.absent()]);
+      }
+      this._sourceAttribute = new Attribute("class", value);
     }
     return [this._sourceAttribute];
   }
