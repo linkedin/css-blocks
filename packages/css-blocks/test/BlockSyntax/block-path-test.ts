@@ -136,8 +136,8 @@ export class BlockPathTests {
     assert.equal(path.path, `.root[state|my-state="foobar"]`);
     assert.equal(path.class, "root");
     // assert.equal(path.state && path.state.namespace, "state");
-    assert.equal(path.state && path.state.group, "my-state");
-    assert.equal(path.state && path.state.name, "foobar");
+    assert.equal(path.state && path.state.name, "my-state");
+    assert.equal(path.state && path.state.value, "foobar");
   }
 
   @test "mismatched State value quotes throw"() {
@@ -325,7 +325,7 @@ export class BlockPathTests {
 
     // Quoted values may have illegal strings
     let path = new BlockPath(`block[name|foo="1bar"]`);
-    assert.equal(path.state && path.state.name, "1bar");
+    assert.equal(path.state && path.state.value, "1bar");
   }
 
   @test @skip "escaped illegal characters in identifiers are processed"() {

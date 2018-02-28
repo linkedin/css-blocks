@@ -1,13 +1,6 @@
+import { assertNever, firstOfType } from "@opticss/util";
 import { CompoundSelector } from "opticss";
 import selectorParser = require("postcss-selector-parser");
-
-/**
- * Holds state values to be passed to the StateContainer.
- */
-export interface StateInfo {
-  group?: string;
-  name: string;
-}
 
 export enum BlockType {
   root = 1,
@@ -16,29 +9,30 @@ export enum BlockType {
   classState,
 }
 
-export interface NodeAndType {
-  blockType: BlockType;
-  node: selectorParser.Node;
-}
+export type NodeAndType = {
+  blockType: BlockType.state | BlockType.classState;
+  node: selectorParser.Attribute;
+} | {
+  blockType: BlockType.root | BlockType.class;
+  node: selectorParser.ClassName;
+};
 
-export interface BlockNodeAndType extends NodeAndType {
+export type BlockNodeAndType = NodeAndType & {
   blockName?: string;
+};
+
+/** Extract a state's name from an attribute selector */
+export function stateName(attr: selectorParser.Attribute) {
+  return attr.attribute;
 }
 
-/**
- * CSS Blocks state parser.
- * @param  attr The css attribute selector that represents this state.
- * @return A `StateInfo` object that represents the state.
- */
-export function stateParser(attr: selectorParser.Attribute): StateInfo {
-  let info: StateInfo = {
-    name: attr.attribute,
-  };
+/** Extract a state's value (aka subState) from an attribute selector */
+export function stateValue(attr: selectorParser.Attribute): string | undefined {
   if (attr.value) {
-    info.group = info.name;
-    info.name = attr.value.replace(/^(["'])(.+(?=\1$))\1$/, "$2"); // Strip quotes from value
+    return attr.value.replace(/^(["'])(.+(?=\1$))\1$/, "$2");
+  } else {
+    return;
   }
-  return info;
 }
 
 /**
@@ -54,7 +48,7 @@ export function blockTypeName(t: BlockType, options?: { plural: boolean }): stri
     case BlockType.state: return isPlural ? "root-level states" : "root-level state";
     case BlockType.class: return isPlural ? "classes" : "class";
     case BlockType.classState: return isPlural ? "class states" : "class state";
-    default: return "¯\\_(ツ)_/¯";
+    default: return assertNever(t);
   }
 }
 
@@ -109,37 +103,37 @@ export function isStateNode(node: selectorParser.Node): node is selectorParser.A
  */
 export function getBlockNode(sel: CompoundSelector): BlockNodeAndType | null {
   let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
-  let n = sel.nodes.find(n => isRootNode(n));
-  if (n) {
+  let r = firstOfType(sel.nodes, isRootNode);
+  if (r) {
     return {
       blockName: blockName && blockName.value,
       blockType: BlockType.root,
-      node: n,
+      node: r,
     };
   }
-  n = sel.nodes.find(n => isStateNode(n));
-  if (n) {
-    let prev = n.prev();
+  let s = firstOfType(sel.nodes, isStateNode);
+  if (s) {
+    let prev = s.prev();
     if (prev && isClassNode(prev)) {
       return {
         blockName: blockName && blockName.value,
         blockType: BlockType.classState,
-        node: n,
+        node: s,
       };
     } else {
       return {
         blockName: blockName && blockName.value,
         blockType: BlockType.state,
-        node: n,
+        node: s,
       };
     }
   }
-  n = sel.nodes.find(n => isClassNode(n));
-  if (n) {
+  let c = firstOfType(sel.nodes, isClassNode);
+  if (c) {
     return {
       blockName: blockName && blockName.value,
       blockType: BlockType.class,
-      node: n,
+      node: c,
     };
   } else {
     return null;

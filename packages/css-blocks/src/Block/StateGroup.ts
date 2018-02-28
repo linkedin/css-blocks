@@ -36,7 +36,8 @@ export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State
   states(): State[] { return this.children(); }
   statesHash(): ObjectDictionary<State> { return this.childrenHash(); }
   statesMap(): Map<string, State> { return this.childrenMap(); }
-  ensureState(name: string) {
+  ensureState(name?: string) {
+    name = name || UNIVERSAL_STATE;
     let state = this.ensureChild(name);
     if (name !== UNIVERSAL_STATE) { this._hasSubStates = true; }
     else { this._universalState = state; }
