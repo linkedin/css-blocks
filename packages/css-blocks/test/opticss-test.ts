@@ -46,7 +46,9 @@ export class TemplateAnalysisTests {
 
   private useStates(element: ElementAnalysis<whatever, whatever, whatever>, stateContainer: BlockClass) {
     for (let group of stateContainer.getGroups()) {
-      element.addDynamicGroup(stateContainer, group, null);
+      if (group.hasResolvedStates()) {
+        element.addDynamicGroup(stateContainer, group, null);
+      }
     }
     for (let state of stateContainer.booleanStates()) {
       element.addStaticState(stateContainer, state);
