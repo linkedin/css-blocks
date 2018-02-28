@@ -1,4 +1,3 @@
-import { StateInfo } from "../BlockParser";
 import { BlockPathError, ErrorLocation } from "../errors";
 
 import { CLASS_NAME_IDENT as CSS_IDENT } from "./BlockSyntax";
@@ -11,6 +10,11 @@ interface BlockToken {
 interface ClassToken {
   type: "class";
   name: string;
+}
+
+export interface StateNameAndValue {
+  name: string;
+  value?: string;
 }
 
 export interface StateToken {
@@ -310,11 +314,10 @@ export class BlockPath {
   /**
    * Get the parsed state name of this Block Path and return the `StateInfo`
    */
-  get state(): StateInfo | undefined {
-    return this._state && {
-      group: this._state.value ? this._state.name : undefined,
-      name: this._state.value || this._state.name,
-    };
+  get state(): StateNameAndValue | undefined {
+    if (!this._state) return;
+    let {name, value} = this._state;
+    return {name, value};
   }
 
   /**

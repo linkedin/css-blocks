@@ -44,6 +44,9 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
     return filter ? states.filter(s => s.name === filter) : states;
   }
   public ensureGroup(name: string): StateGroup { return this.ensureChild(name); }
+  public ensureState(name: string, value?: string): State {
+    return this.ensureGroup(name).ensureState(value);
+  }
   public resolveGroup(name: string): StateGroup | null { return this.resolveChild(name); }
   public stateGroups(): StateGroup[] { return this.children(); }
   public resolveState(groupName: string, stateName = UNIVERSAL_STATE): State | null {
@@ -157,37 +160,17 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
   /**
    * Group getter. Returns a list of State objects in the requested group that are defined
    * against this specific class. This does not take inheritance into account.
-   * @param stateName State group for lookup or a boolean state name if substate is not provided.
-   * @param subStateName Optional substate to filter states by.
+   * @param groupName State group for lookup or a boolean state name if substate is not provided.
+   * @param stateName Optional substate to filter states by.
    * @returns An array of all States that were requested.
    */
-  getState(groupName: string, stateName = UNIVERSAL_STATE): State | null {
+  getState(groupName: string, stateName: string = UNIVERSAL_STATE): State | null {
     let group = this.getGroup(groupName);
     return group ? group.getState(stateName) || null : null;
   }
 
   getGroupsNames(): Set<string> {
     return new Set<string>([...this._children.keys()]);
-  }
-
-  /**
-   * Legacy State getter
-   * @param info The StateInfo type to lookup, contains `name` and `group`
-   * @returns The State that was requested, or undefined
-   */
-  _getState(info: StateInfo): State | null {
-    return info.group ? this.getState(info.group, info.name) : this.getState(info.name);
-  }
-
-  /**
-   * Legacy state ensurer. Ensure that a `State` with the given `StateInfo` is
-   * registered with this Block.
-   * @param info  `StateInfo` to verify exists on this `Block`
-   * @return The `State` object on this `Block`
-   */
-  _ensureState(info: StateInfo): State {
-    let state = this.ensureGroup(info.group || info.name);
-    return info.group ? state.ensureState(info.name) : state.ensureState(UNIVERSAL_STATE);
   }
 
   /**

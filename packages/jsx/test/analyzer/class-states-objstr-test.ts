@@ -204,7 +204,7 @@ export class Test {
     `).then((_analysis: MetaAnalysis) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
-      assert.equal(err.message, "[css-blocks] MalformedBlockPath: State bar.pretty.color() expects a sub-state. (9:9)");
+      assert.equal(err.message, `[css-blocks] MalformedBlockPath: State "bar.pretty[state|color]" expects a value. (9:9)`);
     });
   }
 

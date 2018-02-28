@@ -1,4 +1,4 @@
-import { ObjectDictionary, objectValues } from "@opticss/util";
+import { ObjectDictionary } from "@opticss/util";
 import { Node } from "babel-traverse";
 import {
   BooleanLiteral,
@@ -15,7 +15,7 @@ import {
   NumericLiteral,
   StringLiteral,
 } from "babel-types";
-import { Block, BlockClass, isBlockClass, State, SubState } from "css-blocks";
+import { Block, BlockClass, isBlockClass, State, StateGroup } from "css-blocks";
 import * as debugGenerator from "debug";
 
 import { ErrorLocation, MalformedBlockPath } from "../utils/Errors";
@@ -46,10 +46,10 @@ export type BlockClassResult = {
   blockClass: BlockClass;
 };
 export type BlockStateResult = BlockClassResult & {
-  state: State | SubState;
+  state: State;
 };
 export type BlockStateGroupResult = BlockClassResult & {
-  stateGroup: ObjectDictionary<SubState>;
+  stateGroup: StateGroup;
   dynamicStateExpression: Expression;
 };
 export type BlockExpressionResult = BlockClassResult
@@ -75,8 +75,8 @@ export class ExpressionReader {
   isBlockExpression: boolean;
   block: string | undefined;
   class: string | undefined;
-  state: string | undefined;
-  subState: string | undefined;
+  stateName: string | undefined;
+  stateValue: string | undefined;
   isDynamic: boolean;
   err: null | string = null;
   loc: ErrorLocation;
@@ -115,7 +115,7 @@ export class ExpressionReader {
     for (let i = 0; i < this.pathExpression.length; i++) {
 
       if (this.err) {
-        this.block = this.class = this.state = this.subState = undefined;
+        this.block = this.class = this.stateName = this.stateValue = undefined;
         break;
       }
 
@@ -127,15 +127,15 @@ export class ExpressionReader {
         debug(`Discovered invalid block expression ${this.toString()} in objstr`);
         this.err = "Nested expressions are not allowed in block expressions.";
       }
-      else if (token === CALL_START && !this.state) {
+      else if (token === CALL_START && !this.stateName) {
         // XXX This err appears to be completely swallowed?
         debug(`Discovered invalid block expression ${this.toString()} in objstr`);
         this.err = "Can not select state without a block or class.";
       }
       else if (typeof token === "string") {
-        if      (this.state) { this.subState = token; }
-        else if (this.class) { this.state = token; }
-        else if (this.block && next === CALL_START) { this.state = token; }
+        if (this.stateName) { this.stateValue = token; }
+        else if (this.class) { this.stateName = token; }
+        else if (this.block && next === CALL_START) { this.stateName = token; }
         else if (this.block) { this.class = token; }
         else { this.block = token; }
       }
@@ -184,38 +184,53 @@ export class ExpressionReader {
     blockClass = blockClass || block.rootClass;
 
     // If no state, we're done!
-    if (!this.state) {
+    if (!this.stateName) {
       debug(`Discovered BlockClass ${this.class} from expression ${this.toString()}`);
       return { block, blockClass };
     }
-    let statesContainer = blockClass;
 
-    // Fetch all matching state objects.
-    let stateGroup = statesContainer.resolveGroup(this.state, this.subState !== DYNAMIC_STATE_ID ? this.subState : undefined) || {};
-    let stateNames = Object.keys(stateGroup);
-    if (stateNames.length > 1 && this.subState !== DYNAMIC_STATE_ID) {
-      throw new MalformedBlockPath(`State ${this.toString()} expects a sub-state.`, this.loc);
-    }
+    let stateGroup = blockClass.resolveGroup(this.stateName);
 
-    // Throw a helpful error if this state / sub-state does not exist.
-    if (stateNames.length === 0) {
-      let allSubStates = statesContainer.resolveGroup(this.state) || {};
-      let knownStates = objectValues(allSubStates);
-      let message = `No state [state|${this.state}${this.subState ? "=" + this.subState : ""}] found on block "${this.block}".`;
-      if (knownStates.length === 1) {
-        message += `\n  Did you mean: ${knownStates[0].asSource()}?`;
-      } else if (knownStates.length > 0) {
-        message += `\n  Did you mean one of: ${knownStates.map(s => s.asSource()).join(", ")}?`;
+    if (!stateGroup) {
+      let message = `No state named ${this.stateName} found on class "${this.block}${blockClass.asSource()}".`;
+      let groupNames = [...blockClass.getGroupsNames()];
+      if (groupNames.length === 1) {
+        message += `\n  Did you mean: ${groupNames[0]}?`;
+      } else {
+        message += `\n  Did you mean one of: ${groupNames.sort().join(", ")}?`;
       }
       throw new MalformedBlockPath(message, this.loc);
     }
 
-    debug(`Discovered ${this.class ? "class-level" : "block-level"} state ${this.state} from expression ${this.toString()}`);
-
-    if (this.subState === DYNAMIC_STATE_ID) {
-      return { block, blockClass, stateGroup, dynamicStateExpression: this.callExpression!.arguments[0] };
+    if (this.stateValue === DYNAMIC_STATE_ID) {
+      let dynamicStateExpression: Expression = <Expression>this.callExpression!.arguments[0];
+      return { block, blockClass, stateGroup, dynamicStateExpression };
+    } else if (this.stateValue) {
+      let state = stateGroup.getState(this.stateValue);
+      if (!state) {
+        let message = `No value ${this.stateValue} found for state "${this.block}${blockClass.asSource()}[state|${this.stateName}]".`;
+        let valueNames = [...stateGroup.statesMap().keys()];
+        if (valueNames.length === 1) {
+          message += `\n  Did you mean: ${valueNames[0]}?`;
+        } else {
+          message += `\n  Did you mean one of: ${valueNames.sort().join(", ")}?`;
+        }
+        throw new MalformedBlockPath(message, this.loc);
+      }
+      return { block, blockClass, state };
     } else {
-      return { block, blockClass, state: objectValues(stateGroup)[0] };
+      let state = stateGroup.universalState;
+
+      if (!state) {
+        if (stateGroup.hasSubStates) {
+          let message = `State "${this.block}${blockClass.asSource()}[state|${this.stateName}]" expects a value.`;
+          throw new MalformedBlockPath(message, this.loc);
+        } else {
+          let message = `State "${this.block}${blockClass.asSource()}[state|${this.stateName}]" not found.`;
+          throw new MalformedBlockPath(message, this.loc);
+        }
+      }
+      return { block, blockClass, state };
     }
   }
 

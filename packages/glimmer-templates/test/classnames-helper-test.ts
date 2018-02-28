@@ -126,7 +126,7 @@ describe("Classnames Helper", () => {
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], { });
     let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
-    element.addDynamicGroup(r, {red, orange, blue}, builders.mustache(builders.string("blue")));
+    element.addDynamicGroup(r, red.parent, builders.mustache(builders.string("blue")));
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
@@ -148,7 +148,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, {red, orange, blue}, builders.mustache(builders.path("/app/foo/helperz"), [builders.string("blue")]));
+    element.addDynamicGroup(r, red.parent, builders.mustache(builders.path("/app/foo/helperz"), [builders.string("blue")]));
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
@@ -318,7 +318,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, {red, orange, blue}, builders.mustache(builders.string("blue")));
+    element.addDynamicGroup(r, red.parent, builders.mustache(builders.string("blue")));
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
@@ -345,7 +345,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(false),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, {red, orange, blue}, builders.mustache(builders.string("blue")));
+    element.addDynamicGroup(r, red.parent, builders.mustache(builders.string("blue")));
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
@@ -372,7 +372,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, {red, orange, blue}, builders.mustache(builders.undefined()));
+    element.addDynamicGroup(r, red.parent, builders.mustache(builders.undefined()));
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
@@ -399,7 +399,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, {red, orange, blue}, builders.mustache(builders.undefined()), true);
+    element.addDynamicGroup(r, red.parent, builders.mustache(builders.undefined()), true);
     element.seal();
     expect(() => {
       run(helperGenerator(rewrite, element));
@@ -433,7 +433,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(false),
       whenTrue: [ c3 ],
     });
-    element.addDynamicGroup(r, {red, orange, blue}, builders.mustache(builders.string("blue")));
+    element.addDynamicGroup(r, red.parent, builders.mustache(builders.string("blue")));
     element.seal();
     let inputs = [r, red, orange, blue, c1, c2, c3];
     let rewrite = new IndexedClassMapping(inputs, [], {
