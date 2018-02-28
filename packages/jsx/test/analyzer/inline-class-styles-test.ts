@@ -84,7 +84,7 @@ export class Test {
     ).then(() => {
       assert.equal("Should never get here", "");
     }).catch((err: Error) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|baz=biz] found on block "bar".\n  Did you mean: .foo[state|baz]? (4:47)');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state .foo[state|baz=biz] found on block "bar".\n  Did you mean: .foo[state|baz]? (4:47)');
     });
   }
 }
