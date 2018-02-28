@@ -206,7 +206,7 @@ export class ExpressionReader {
       let dynamicStateExpression: Expression = <Expression>this.callExpression!.arguments[0];
       return { block, blockClass, stateGroup, dynamicStateExpression };
     } else if (this.stateValue) {
-      let state = stateGroup.getState(this.stateValue);
+      let state = stateGroup.resolveState(this.stateValue);
       if (!state) {
         let message = `No state ${stateGroup.asSource(this.stateValue)} found on block "${this.block}".`;
         let valueNames = [...stateGroup.statesMap().values()].map(s => s.asSource());

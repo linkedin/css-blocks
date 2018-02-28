@@ -112,6 +112,10 @@ export abstract class Inheritable<
    * inheritance. Does not include this object or the styles it implies through
    * other relationships to this object.
    *
+   * The values are returned in inheritance order, with the first value
+   * returned (if any) having no base, and the the last value returned (if any)
+   * being the base of this object.
+   *
    * If nothing is inherited, this returns an empty array.
    * @returns The array of nodes this node inherits from.
    */
@@ -127,7 +131,7 @@ export abstract class Inheritable<
 
   /**
    * Resolves the child with the given name from this node's inheritance
-   * chain. Returns undefined if the child is not found.
+   * chain. Returns null if the child is not found.
    * @param name The name of the child to resolve.
    * @returns The child node, or `null`
    */
