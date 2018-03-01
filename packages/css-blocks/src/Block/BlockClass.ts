@@ -94,6 +94,14 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
    */
   public asSource(): string { return `.${this.name}`; }
 
+  /**
+   * Emit analysis attributes for the class value this
+   * block class represents in it's authored source format.
+   *
+   * @param optionalRoot The root class is optional on root-level
+   *   states. So when these attributes are being used in conjunction
+   *   with a state, this value is set to true.
+   */
   public asSourceAttributes(optionalRoot = false): Attribute[] {
     if (!this._sourceAttribute) {
       let value: AttributeValue = { constant: this.name };
