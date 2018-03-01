@@ -12,6 +12,8 @@
  * @module Block/BlockTree/Inheritable
  */
 import { ObjectDictionary } from "@opticss/util";
+import { ParsedSelector, parseSelector, SelectorFactory } from "opticss";
+import * as postcss from "postcss";
 
 /* tslint:disable:prefer-whatever-to-any */
 export type AnyNode = Inheritable<any, any, any, any>;
@@ -21,7 +23,7 @@ export abstract class Inheritable<
   Root extends Inheritable<any, Root, never, AnyNode> | Self,
   Parent extends Inheritable<any, Root, AnyNode | null, Self> | null,
   Child extends Inheritable<any, Root, Self, AnyNode | never> | never
-> {
+> implements SelectorFactory {
 /* tslint:enable:prefer-whatever-to-any */
 
   protected _name: string;
@@ -29,6 +31,7 @@ export abstract class Inheritable<
   protected _root: Root | Self;
   protected _parent: Parent | null;
   protected _children: Map<string, Child> = new Map();
+  private readonly parsedRuleSelectors: WeakMap<postcss.Rule, ParsedSelector[]> | null;
 
   /**
    * Given a parent that is a base class of this style, retrieve this style's
@@ -44,7 +47,10 @@ export abstract class Inheritable<
   constructor(name: string, parent?: Parent) {
     this._name = name;
     this._parent = parent || null;
-    this._root = parent ? parent.root : this.asSelf(); // `Root` is only set to `Self` for `Source` nodes.
+    // `Root` is only set to `Self` for `Source` nodes.
+    this._root = parent ? parent.root : this.asSelf();
+    // `parsedRuleSelectors cache is only created if this is a root node.
+    this.parsedRuleSelectors = this.isRootNode ? new WeakMap() : null;
   }
 
   public get name(): string { return this._name; }
@@ -88,20 +94,19 @@ export abstract class Inheritable<
   }
 
   /**
+   * @returns A boolean indicating if this is the root node in the Inheritable tree or not.
+   */
+  public get isRootNode(): boolean {
+    return this._root === this.asSelf();
+  }
+
+  /**
    * The `block` property is an alias for `root`. This isn't the dryest place to put
    * this line, but every extension re-declared this interface itself and I wanted it
    * in one place.
    * @returns The base node in this tree.
    */
   public get block(): Root { return this.root; }
-
-  /**
-   * Sets the base node that this node inherits from. Must be of same type.
-   * @prop base The new base node.
-   */
-  public setBase(base: Self) {
-    this._base = base;
-  }
 
   /**
    * Compute all block objects that are implied by this block object through
@@ -172,7 +177,7 @@ export abstract class Inheritable<
     if (!this._children.has(name)) {
       this.setChild(key, this.newChild(name));
     }
-    return this._children.get(key) as Child;
+    return this._children.get(key)!;
   }
 
   /**
@@ -202,6 +207,27 @@ export abstract class Inheritable<
       out[key] = value;
     }
     return out;
+  }
+
+  /**
+   * Every Block tree maintains its own local cache of parsed selectors.
+   * From any sub-inheritable, or from the root inheritable itself,
+   * given a PostCSS Rule, ensure it is present in the root Block's parsed rule
+   * selectors cache, and return the ParsedSelector array.
+   * @param rule  PostCSS Rule
+   * @return ParsedSelector array
+   */
+  public getParsedSelectors(rule: postcss.Rule): ParsedSelector[] {
+    if (!this.isRootNode) {
+      return this.root.getParsedSelectors(rule);
+    }
+
+    let selectors = this.parsedRuleSelectors!.get(rule);
+    if (!selectors) {
+      selectors = parseSelector(rule);
+      this.parsedRuleSelectors!.set(rule, selectors);
+    }
+    return selectors;
   }
 
   // TypeScript can't figure out that `this` is the `Self` so this private

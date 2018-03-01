@@ -10,7 +10,7 @@
  */
 import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
 import * as propParser from "css-property-parser";
-import { ParsedSelector, parseSelector } from "opticss";
+import { ParsedSelector } from "opticss";
 import * as postcss from "postcss";
 
 import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR } from "../BlockSyntax";
@@ -115,7 +115,7 @@ export class RulesetContainer<S extends Styles> {
    */
   addRuleset(file: string, rule: postcss.Rule) {
     let style = this.parent;
-    let selectors: ParsedSelector[] = parseSelector(rule);
+    let selectors: ParsedSelector[] = style.getParsedSelectors(rule);
 
     selectors.forEach((selector) => {
       let ruleSet = new Ruleset(file, rule, style);

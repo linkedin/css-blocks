@@ -23,32 +23,77 @@ export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State
   private _universalState: State | undefined;
   private _sourceAttributes: Attr[] | undefined;
 
-  constructor(name: string, parent: BlockClass) {
-    super(name, parent);
-  }
-
   protected newChild(name: string): State { return new State(name, this); }
 
+  /**
+   * @returns If this State Group contains anything but the "Universal" State.
+   **/
   get hasSubStates(): boolean { return this._hasSubStates; }
+
+  /**
+   * @returns If this State Group only contains the "Universal" State.
+   **/
+  get isBooleanState(): boolean { return !this._hasSubStates; }
+
+  /**
+   * @returns The "Universal" State, or `undefined`.
+   **/
   get universalState(): State | undefined { return this._universalState; }
+
+  /**
+   * @returns This State's parent `BlockClass`
+   **/
   get blockClass(): BlockClass { return this.parent; }
 
+  /**
+   * @returns An array of all `State`s contained in this `StateGroup`.
+   **/
   states(): State[] { return this.children(); }
+
+  /**
+   * @returns A hash of all `State`s contained in this `StateGroup`.
+   **/
   statesHash(): ObjectDictionary<State> { return this.childrenHash(); }
+
+  /**
+   * @returns An Map of all `State`s contained in this `StateGroup`.
+   **/
   statesMap(): Map<string, State> { return this.childrenMap(); }
-  ensureState(name?: string) {
-    name = name || UNIVERSAL_STATE;
+
+  /**
+   * Ensures that a state of name `name` exists in this State group. If no
+   * `State` exists, one is created. If no name is passed, it ensures the
+   * "Universal" State.
+   * @param name  string  The `State` name to ensure.
+   * @returns The `State`
+   **/
+  ensureState(name: string = UNIVERSAL_STATE) {
     let state = this.ensureChild(name);
     if (name !== UNIVERSAL_STATE) { this._hasSubStates = true; }
     else { this._universalState = state; }
     return state;
   }
-  getState(name: string): State | null { return name ? this.getChild(name) : this.getChild(UNIVERSAL_STATE); }
-  resolveState(name: string): State | null { return name ? this.resolveChild(name) : this.resolveChild(UNIVERSAL_STATE); }
 
   /**
-   * returns whether this state has any sub states defined directly
-   * or inherited.
+   * Get a StateGroup's own (read: non-inherited) `State` of name
+   * `name` from this `StateGroup`. If no name is passed, it tries
+   * to retrieve the "Universal" State.
+   * @param name  string  The name of the `State` to retrieve.
+   * @returns The `State` or `undefined`.
+   **/
+  getState(name: string = UNIVERSAL_STATE): State | null { return this.getChild(name); }
+
+  /**
+   * Get a StateGroup's own or inherited`State` of name `name` from this
+   * `StateGroup` or its base. If no name is passed, it tries to retrieve
+   * the "Universal" State.
+   * @param name  string  The name of the `State` to retrieve.
+   * @returns The `State` or `undefined`.
+   **/
+  resolveState(name: string = UNIVERSAL_STATE): State | null { return this.resolveChild(name); }
+
+  /**
+   * @returns whether this state has any sub states defined directly or inherited.
    */
   hasResolvedStates(): boolean {
     return !!(this.hasSubStates || this.base && this.base.hasResolvedStates());
@@ -70,6 +115,9 @@ export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State
     return resolved;
   }
 
+  /**
+   * @returns The bare state selector with no qualifying `BlockClass` name.
+   */
   unqualifiedSource(value?: string): string {
     return `[state|${this.name}${(value && value !== UNIVERSAL_STATE) ? `=${value}` : ""}]`;
   }
@@ -86,6 +134,10 @@ export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State
     return (this.blockClass.isRoot ? "" : this.blockClass.asSource()) + this.unqualifiedSource(value);
   }
 
+  /**
+   * Emit analysis attributes for the `State` values this
+   * `StateGroup` represents in it's authored source format.
+   */
   asSourceAttributes(): Attr[] {
     if (!this._sourceAttributes) {
       this._sourceAttributes = [];
@@ -141,6 +193,10 @@ export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State
   }
 }
 
+/**
+ * @param o object  The object to test.
+ * @returns If the supplied object `o` is a `StateGroup`.
+ */
 export function isStateGroup(o: object): o is StateGroup {
   return o instanceof StateGroup;
 }

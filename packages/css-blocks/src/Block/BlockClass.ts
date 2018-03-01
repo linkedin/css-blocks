@@ -43,7 +43,23 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
     let states = group.states();
     return filter ? states.filter(s => s.name === filter) : states;
   }
+
+  /**
+   * Ensure that a `StateGroup` with the given name exists. If the `StateGroup`
+   * does not exist, it is created.
+   * @param name The State group to ensure exists.
+   * @param vallue The State's value to ensure exists.
+   * @returns The State object.
+   */
   public ensureGroup(name: string): StateGroup { return this.ensureChild(name); }
+
+  /**
+   * Ensure that a `State` within the provided group exists. If the `State`
+   * does not exist, it is created.
+   * @param name The State group to ensure exists.
+   * @param vallue The State's value to ensure exists.
+   * @returns The State object.
+   */
   public ensureState(name: string, value?: string): State {
     return this.ensureGroup(name).ensureState(value);
   }
@@ -154,16 +170,6 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
       result.push(...stateContainer.states());
     }
     return result;
-  }
-
-  /**
-   * Ensure that a `SubState` with the given `subStateName` exists belonging to
-   * the state named `stateName`. If the state does not exist, it is created.
-   * @param stateName The State's name to ensure.
-   * @param subStateName  Optional state group for lookup/registration
-   */
-  ensureSubState(groupName: string, subStateName: string): State {
-    return this.ensureGroup(groupName).ensureState(subStateName);
   }
 
   /**

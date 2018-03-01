@@ -11,7 +11,6 @@ export * from "./importing";
 export * from "./preprocessing";
 export * from "./TemplateAnalysis";
 export * from "./TemplateRewriter";
-export * from "./util/unionInto";
 
 export {
   OptionsReader as PluginOptionsReader,

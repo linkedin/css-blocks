@@ -20,28 +20,18 @@ import { OptionsReader } from "../OptionsReader";
 import { SourceLocation } from "../SourceLocation";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
-import { LocalScopedContext } from "../util/LocalScope";
 
 import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";
 import { Styles } from "./Styles";
 
-export const OBJ_REF_SPLITTER = (s: string): [string, string] | undefined => {
-  let index = s.indexOf(".");
-  if (index < 0) index = s.indexOf("[");
-  if (index >= 0) {
-    return [s.substr(0, index), s.substring(index)];
-  }
-  return;
-};
-
-export class Block extends Inheritable<Block, Block, never, BlockClass> {
+export class Block
+  extends Inheritable<Block, Block, never, BlockClass> {
   private _rootClass: BlockClass;
   private _blockReferences: ObjectDictionary<Block> = {};
   private _blockReferencesReverseLookup: Map<Block, string> = new Map();
   private _identifier: FileIdentifier;
   private _implements: Block[] = [];
-  private _localScope: LocalScopedContext<Block, Styles>;
   private hasHadNameReset = false;
   /**
    * array of paths that this block depends on and, if changed, would
@@ -51,13 +41,10 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
   private _dependencies: Set<string>;
 
   public stylesheet?: postcss.Root;
-  public readonly parsedRuleSelectors: WeakMap<postcss.Rule, ParsedSelector[]>;
 
   constructor(name: string, identifier: FileIdentifier) {
     super(name);
     this._identifier = identifier;
-    this.parsedRuleSelectors = new WeakMap();
-    this._localScope = new LocalScopedContext<Block, Styles>(OBJ_REF_SPLITTER, this);
     this._dependencies = new Set<string>();
     this._rootClass = new BlockClass(ROOT_CLASS, this);
     this.addClass(this._rootClass);
@@ -74,27 +61,16 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
     this.hasHadNameReset = true;
   }
 
+  /**
+   * Sets the base Block that this Block inherits from.
+   * @prop  base  Block  The new base Block.
+   */
+  public setBase(base: Block) {
+    this._base = base;
+  }
+
   get rootClass(): BlockClass {
     return this._rootClass;
-  }
-
-  /// Start of methods to implement LocalScope<Block, Style>
-  subScope(name: string): LocalScopedContext<Block, Styles> | undefined {
-    let block = this._blockReferences[name];
-    if (block) {
-      return block._localScope;
-    } else {
-      return;
-    }
-  }
-
-  lookupLocal(name: string): Styles | undefined {
-    let blockRef = this._blockReferences[name];
-    if (blockRef) {
-      return blockRef.rootClass;
-    } else {
-      return this.all(false).find(o => o.asSource() === name);
-    }
   }
 
   /**
@@ -139,8 +115,6 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
 
     return state || klass || undefined;
   }
-
-  /// End of methods to implement LocalScope<Block, Style>
 
   /**
    * Add an absolute, normalized path as a compilation dependency. This is used

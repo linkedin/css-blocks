@@ -1,4 +1,3 @@
-import { parseSelector } from "opticss";
 import * as postcss from "postcss";
 
 import { Block } from "../Block";
@@ -46,7 +45,7 @@ export class BlockCompiler {
       // Resolve inheritance based conflicts
       resolver.resolveInheritance(root, block);
       root.walkRules((rule) => {
-        let parsedSelectors = parseSelector(rule);
+        let parsedSelectors = block.getParsedSelectors(rule);
         rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.opts)).join(",\n");
       });
 
