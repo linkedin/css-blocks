@@ -76,8 +76,11 @@ export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State
 
   /**
    * Retrieve this State's selector as it appears in the Block source code.
-   * If a value is provided,
-   * @returns The State's attribute selector
+   *
+   * @param value If provided, it is used as the state's value whether or not
+   *   it is allowed by the known states (this is useful for constructing
+   *   error messages).
+   * @returns The State's attribute selector.
    */
   asSource(value?: string): string {
     return (this.blockClass.isRoot ? "" : this.blockClass.asSource()) + this.unqualifiedSource(value);
