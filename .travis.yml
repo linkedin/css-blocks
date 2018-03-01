@@ -1,7 +1,15 @@
+if: tag IS blank
+git:
+  depth: 1
+sudo: false
 language: node_js
 node_js:
-  - "6"
-  - "7"
   - "8"
 env:
   - CXX=g++-4.8
+
+before_install:
+  - rm yarn.lock
+  - npm install -g lerna yarn
+  - ./scripts/checkout-opticss-and-link.sh
+install: lerna bootstrap --registry=https://registry.npmjs.org/
