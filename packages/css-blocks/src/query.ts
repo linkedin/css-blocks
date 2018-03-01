@@ -8,7 +8,7 @@ import {
 } from "opticss";
 import postcss = require("postcss");
 
-import { Style } from "./Block";
+import { Block, Style } from "./Block";
 
 export interface Query {
   execute(container: postcss.Container): ClassifiedParsedSelectors;
@@ -24,8 +24,7 @@ export class QueryKeySelector implements Query {
     this.impl = new QueryKeySelectorImpl(new Element(tag, attrs));
   }
 
-  // Oooohhhh I don't like this! No part of Opticss should know about css-blocks data structures.
-  execute(container: postcss.Container): ClassifiedParsedSelectors {
-    return this.impl.execute(container);
+  execute(container: postcss.Container, block?: Block): ClassifiedParsedSelectors {
+    return this.impl.execute(container, block);
   }
 }

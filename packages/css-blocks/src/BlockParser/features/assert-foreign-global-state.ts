@@ -1,4 +1,3 @@
-import { parseSelector } from "opticss";
 import * as postcss from "postcss";
 
 import { Block } from "../../Block";
@@ -22,7 +21,7 @@ export async function assertForeignGlobalState(root: postcss.Root, block: Block,
 
   root.walkRules((rule) => {
 
-    let parsedSelectors = parseSelector(rule);
+    let parsedSelectors = block.getParsedSelectors(rule);
 
     parsedSelectors.forEach((iSel) => {
 

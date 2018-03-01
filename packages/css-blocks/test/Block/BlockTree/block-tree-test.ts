@@ -24,6 +24,9 @@ class TestSource extends Inheritable<
 > {
   protected newChild(name: string) { return new TestNode(name, this); }
   lookup(): undefined { return undefined; }
+  setBase(base: TestSource) {
+    this._base = base;
+  }
   newChildNode: RootNode["newChild"] =
     (name: string) => this.newChild(name)
 

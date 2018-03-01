@@ -19,10 +19,9 @@ import {
 } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
-import { Block, OBJ_REF_SPLITTER, Style } from "../Block";
+import { Block, Style } from "../Block";
 import { BlockFactory } from "../BlockFactory";
 import { OptionsReader } from "../OptionsReader";
-import { CustomLocalScope } from "../util/LocalScope";
 
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
 import { StyleAnalysis } from "./StyleAnalysis";
@@ -338,10 +337,14 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       blockPromises.push(promise);
     });
     return Promise.all(blockPromises).then(values => {
-      let localScope = new CustomLocalScope<Block, Style>(OBJ_REF_SPLITTER);
+
+      // Create a temporary block so we can take advantage of `Block.lookup`
+      // to easily resolve all BlockPaths referenced in the serialized analysis.
+      // TODO: We may want to abstract this so we're not making a temporary block.
+      let localScope = new Block("analysis-block", "tmp");
       values.forEach(o => {
         analysis.blocks[o.name] = o.block;
-        localScope.setSubScope(o.name, o.block);
+        localScope.addBlockReference(o.name, o.block);
       });
       let objects = new Array<Style>();
       serializedAnalysis.stylesFound.forEach(s => {

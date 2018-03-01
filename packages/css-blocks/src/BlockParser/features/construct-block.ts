@@ -1,5 +1,5 @@
 import { assertNever } from "@opticss/util";
-import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
+import { CompoundSelector, ParsedSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 
@@ -35,6 +35,20 @@ function shouldBeParsedAsBlockSelector(rule: postcss.Rule): boolean {
   return !(rule.parent && rule.parent.type === "atrule" && (rule.parent).name === "keyframes");
 }
 
+/**
+ * Pull getParsedSelectors try-catch out to prevent de-opt of main walkRules function.
+ * @param block Block  The block to fetch ParsedSelectors from.
+ * @param rule  postcss.Rule  The postcss rule to parse.
+ * @param file  string  The filepath of the file we are parsing for error reporting.
+ * @returns The ParsedSelector array.
+ **/
+function getParsedSelectors(block: Block, rule: postcss.Rule, file: string): ParsedSelector[] {
+  let res;
+  try { res = block.getParsedSelectors(rule); }
+  catch (e) { throw new errors.InvalidBlockSyntax(e.message, sourceLocation(file, rule)); }
+  return res;
+}
+
 export async function constructBlock(root: postcss.Root, block: Block, file: string): Promise<Block> {
 
   let styleRuleTuples: Set<[Style, postcss.Rule]> = new Set();
@@ -46,9 +60,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
     if (!shouldBeParsedAsBlockSelector(rule)) { return; }
 
     // Fetch the parsed selectors list. Throw a helpful error if we can't parse.
-    let parsedSelectors;
-    try       { parsedSelectors = parseSelector(rule); }
-    catch (e) { throw new errors.InvalidBlockSyntax(e.message, sourceLocation(file, rule)); }
+    let parsedSelectors = getParsedSelectors(block, rule, file);
 
     // Iterate over the all selectors for this rule – one for each comma separated selector.
     parsedSelectors.forEach((iSel) => {
@@ -355,9 +367,9 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
         }
       }
       return found;
-    },
+  },
     null,
-  );
+);
 
   // If no rules found in selector, we have a problem. Throw.
   if (!result) {
