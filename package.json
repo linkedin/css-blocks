@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "commitmsg": "commitlint -e $GIT_PARAMS"
+    "commitmsg": "commitlint -e $GIT_PARAMS",
+    "ci": "lerna run test"
   },
   "devDependencies": {
     "@commitlint/cli": "^6.1.0",
