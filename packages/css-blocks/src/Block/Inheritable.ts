@@ -13,8 +13,6 @@
  */
 import { ObjectDictionary } from "@opticss/util";
 
-import { SourceLocation } from "../SourceLocation";
-
 /* tslint:disable:prefer-whatever-to-any */
 export type AnyNode = Inheritable<any, any, any, any>;
 
@@ -96,8 +94,6 @@ export abstract class Inheritable<
    * @returns The base node in this tree.
    */
   public get block(): Root { return this.root; }
-
-  public abstract lookup(path: string, errLoc?: SourceLocation): AnyNode | undefined;
 
   /**
    * Sets the base node that this node inherits from. Must be of same type.
