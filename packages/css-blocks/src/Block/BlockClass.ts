@@ -131,9 +131,6 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
     }
   }
 
-  // TODO: Implement lookup relative to BlockClass.
-  public lookup(): undefined { return undefined; }
-
   /**
    * Return array self and all children.
    * @param shallow Pass false to not include children.

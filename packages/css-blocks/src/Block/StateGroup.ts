@@ -132,9 +132,6 @@ export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State
     }
   }
 
-  // TODO: Implement lookup relative to State.
-  public lookup(): undefined { return undefined; }
-
   /**
    * Return array self and all children.
    * @returns Array of Styles.
