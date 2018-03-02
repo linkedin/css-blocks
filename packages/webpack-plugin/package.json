@@ -70,15 +70,15 @@
     "webpack-merge": "^4.1.0"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.2.0",
-    "@opticss/template-api": "^0.2.0",
+    "@opticss/element-analysis": "link:../../build/opticss/packages/element-analysis",
+    "@opticss/template-api": "link:../../build/opticss/packages/template-api",
     "async": "^2.4.1",
     "convert-source-map": "^1.5.0",
     "css-blocks": "^0.17.0",
     "debug": "^2.6.8",
     "install": "^0.10.1",
     "loader-utils": "^1.0.1",
-    "opticss": "^0.2.0",
+    "opticss": "link:../../build/opticss/packages/opticss",
     "postcss": "^6.0.14",
     "source-map": "^0.5.6",
     "tapable": "^0.2.5",
