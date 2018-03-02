@@ -4,12 +4,14 @@ const path = require("path");
 const fs = require("fs")
 let args = process.argv.slice(2);
 let opts = {
-  hard: false,
+  mode: null,
   opticssDir: null,
 };
 function processArg(arg) {
   if (arg === "--hard") {
-    opts.hard = true;
+    opts.mode = "hard";
+  } else if (arg === "--version") {
+    opts.mode = "version";
   } else if (arg.startsWith("-")) {
     throw new Error(`unrecognize option: ${arg}`);
   } else if (opts.opticssDir === null) {
@@ -23,6 +25,9 @@ while (args.length > 0) {
   processArg(args.shift());
 }
 
+if (!opts.mode) {
+  opts.mode = "symlink"
+}
 if (!opts.opticssDir) {
   throw new Error("No directory for opticss provided.");
 }
@@ -99,6 +104,15 @@ function setDependencyToFile(name, dependencyDir, pkg) {
   }
 }
 
+function setDependencyToVersion(name, version, pkg) {
+  if (pkg.dependencies[name]) {
+    pkg.dependencies[name] = `^${version}`;
+  }
+  if (pkg.devDependencies[name]) {
+    pkg.devDependencies[name] = `^${version}`;
+  }
+}
+
 function hardlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
   for (let depDir of dependencyPackageDirs) {
     let pkg = getPackageJson(depDir);
@@ -117,14 +131,40 @@ function hardlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, di
   }
 }
 
-if (opts.hard) {
+function updateVersions(dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
+  for (let depDir of dependencyPackageDirs) {
+    let pkg = getPackageJson(depDir);
+    let name = pkg.name;
+    let version = pkg.version;
+    let depDirs = depToPackages[name];
+    if (depDirs) {
+      for (let dir of depDirs) {
+        setDependencyToVersion(name, version, dirToJSON[dir])
+      }
+    }
+  }
+  for (let dir of dependentPackageDirs) {
+    let pkg = dirToJSON[dir];
+    let updated = JSON.stringify(pkg, null, 2);
+    fs.writeFileSync(path.join(dir,"package.json"), updated);
+  }
+}
+
+if (opts.mode === "hard") {
   let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
   let opticssDirs = getLernaPackageDirs(opts.opticssDir)
   let blocksDeps = analyzeMonorepoDependencies(blocksDirs);
   let opticssDeps = analyzeMonorepoDependencies(opticssDirs)
   hardlink(opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
+  symlink(opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
   hardlink(opticssDirs, opticssDirs, opticssDeps.depToPackages, opticssDeps.dirToJSON);
-} else {
+  symlink(opticssDirs, opticssDirs, opticssDeps.depToPackages, opticssDeps.dirToJSON);
+} else if (opts.mode === "version") {
+  let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
+  let opticssDirs = getLernaPackageDirs(opts.opticssDir)
+  let blocksDeps = analyzeMonorepoDependencies(blocksDirs);
+  updateVersions(opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
+} else if (opts.mode === "symlink") {
   let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
   let opticssDirs = getLernaPackageDirs(opts.opticssDir)
   let blocksDeps = analyzeMonorepoDependencies(blocksDirs);
