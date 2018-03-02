@@ -39,7 +39,11 @@ for (let dir of getLernaPackageDirs(opticssDir)) {
   let name = pkg.name;
   let depDirs = depToPackages[name];
   if (depDirs) {
-    console.log(childProcess.execSync(`cd ${dir} && yarn unlink`, {encoding: "utf8"}));
+    try {
+      console.log(childProcess.execSync(`cd ${dir} && yarn unlink`, {encoding: "utf8"}));
+    } catch (e) {
+      //ignore
+    }
     console.log(childProcess.execSync(`cd ${dir} && yarn link`, {encoding: "utf8"}));
     console.log(`linking ${name}@${pkg.version} to shared packages`);
     console.log(childProcess.execSync(`cd ${blocksDir} && yarn link ${name}`, {encoding: "utf8"}));
