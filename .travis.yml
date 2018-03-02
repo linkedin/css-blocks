@@ -17,3 +17,5 @@ install:
   - lerna bootstrap --registry=https://registry.npmjs.org/
   - ./scripts/link-to-opticss.js --version build/opticss
   - ./scripts/link-to-opticss.js --symlink build/opticss
+
+script: lerna run test
