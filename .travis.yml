@@ -9,7 +9,6 @@ env:
   - CXX=g++-4.8
 
 before_install:
-  - rm yarn.lock
   - npm install -g lerna yarn
   - ./scripts/checkout-opticss.sh build/opticss
   - ./scripts/link-to-opticss.js --hard build/opticss

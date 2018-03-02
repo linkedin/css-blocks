@@ -1,7 +1,7 @@
 import * as debugGenerator from "debug";
 import * as path from "path";
 import * as postcss from "postcss";
-import { SourceMapConsumer, SourceMapGenerator } from "source-map";
+import { RawSourceMap } from "source-map";
 import * as Tapable from "tapable";
 import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
 import { RawSource, Source, SourceMapSource } from "webpack-sources";
@@ -177,12 +177,17 @@ export class CssBlocksPlugin
         this.trace(`setting css asset: ${this.outputCssFile}`);
         let source: Source;
         if (result.optimizationResult.output.sourceMap) {
-          let consumer = new SourceMapConsumer(result.optimizationResult.output.sourceMap);
-          let map = SourceMapGenerator.fromSourceMap(consumer);
+          let resultMap = result.optimizationResult.output.sourceMap;
+          let rawSourceMap: RawSourceMap;
+          if (typeof resultMap === "string") {
+            rawSourceMap = JSON.parse(resultMap);
+          } else {
+            rawSourceMap = resultMap;
+          }
           source = new SourceMapSource(
             result.optimizationResult.output.content.toString(),
             "optimized css",
-            map.toJSON());
+            rawSourceMap);
         } else {
           source = new RawSource(result.optimizationResult.output.content.toString());
         }

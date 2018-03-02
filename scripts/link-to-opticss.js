@@ -4,12 +4,18 @@ const path = require("path");
 const fs = require("fs")
 let args = process.argv.slice(2);
 let opts = {
-  hard: false,
+  mode: null,
   opticssDir: null,
 };
 function processArg(arg) {
-  if (arg === "--hard") {
-    opts.hard = true;
+  if (arg === "--file") {
+    opts.mode = "file";
+  } else if (arg === "--hardlink") {
+    opts.mode = "link";
+  } else if (arg === "--symlink") {
+    opts.mode = "symlink";
+  } else if (arg === "--version") {
+    opts.mode = "version";
   } else if (arg.startsWith("-")) {
     throw new Error(`unrecognize option: ${arg}`);
   } else if (opts.opticssDir === null) {
@@ -23,6 +29,9 @@ while (args.length > 0) {
   processArg(args.shift());
 }
 
+if (!opts.mode) {
+  opts.mode = "symlink"
+}
 if (!opts.opticssDir) {
   throw new Error("No directory for opticss provided.");
 }
@@ -37,13 +46,10 @@ function getPackageJson(packageDir) {
   return require(path.join(packageDir, "package.json"));
 }
 
-const blocksDir = path.resolve(__dirname, "..");
-const blocksPackageDirs = getLernaPackageDirs(blocksDir);
+const CSS_BLOCKS_DIR = path.resolve(__dirname, "..");
 
-let depToPackages = {};
-let dirToJSON = {}
 
-function recordDependencies(deps, dir) {
+function recordDependencies(deps, dir, depToPackages) {
   if (!deps) return;
   for (let dep of Object.keys(deps)) {
     if (depToPackages[dep] === undefined) {
@@ -51,67 +57,101 @@ function recordDependencies(deps, dir) {
     }
     depToPackages[dep].push(dir);
   }
+  return depToPackages;
 }
 
-for (let dir of blocksPackageDirs) {
-  let pkg = getPackageJson(dir);
-  dirToJSON[dir] = pkg;
-  recordDependencies(pkg.dependencies, dir);
-  recordDependencies(pkg.devDependencies, dir);
+
+function analyzeMonorepoDependencies(dirs) {
+  let dirToJSON = {};
+  let depToPackages = {};
+  for (let dir of dirs) {
+    let pkg = getPackageJson(dir);
+    dirToJSON[dir] = pkg;
+    recordDependencies(pkg.dependencies, dir, depToPackages);
+    recordDependencies(pkg.devDependencies, dir, depToPackages);
+  }
+
+  return {
+    dirToJSON,
+    depToPackages,
+  };
 }
 
-function symlink() {
-  for (let dir of getLernaPackageDirs(opts.opticssDir)) {
+function symlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
+  for (let dir of dependencyPackageDirs) {
     let pkg = getPackageJson(dir);
     let name = pkg.name;
-    let depDirs = depToPackages[name];
-    if (depDirs) {
-      try {
-        console.log(childProcess.execSync(`cd ${dir} && yarn unlink`, {encoding: "utf8"}));
-      } catch (e) {
-        //ignore
-      }
-      console.log(childProcess.execSync(`cd ${dir} && yarn link`, {encoding: "utf8"}));
-      console.log(`linking ${name}@${pkg.version} to shared packages`);
-      console.log(childProcess.execSync(`cd ${blocksDir} && yarn link ${name}`, {encoding: "utf8"}));
-      for (let depDir of depDirs) {
-        console.log(`linking ${name}@${pkg.version} to ${path.relative(path.resolve("."), depDir)}`);
-        console.log(childProcess.execSync(`cd ${depDir} && yarn link ${name}`, {encoding: "utf8"}));
-      }
+
+    try {
+      console.log(childProcess.execSync(`cd ${dir} && yarn unlink`, {encoding: "utf8"}));
+    } catch (e) {
+      //ignore
     }
+    console.log(childProcess.execSync(`cd ${dir} && yarn link`, {encoding: "utf8"}));
+    console.log(`linking ${name}@${pkg.version} to shared packages`);
+    console.log(childProcess.execSync(`cd ${CSS_BLOCKS_DIR} && yarn link ${name}`, {encoding: "utf8"}));
+
+    // let depDirs = depToPackages[name];
+    // if (depDirs) {
+    //   for (let depDir of depDirs) {
+    //     console.log(`linking ${name}@${pkg.version} to ${path.relative(path.resolve("."), depDir)}`);
+    //     console.log(childProcess.execSync(`cd ${depDir} && yarn link ${name}`, {encoding: "utf8"}));
+    //   }
+    // }
   }
 }
 
-function setDependencyToFile(name, dependencyDir, dependentDir) {
-  let pkg = dirToJSON[dependentDir];
+function setDependencyToFile(protocol, name, dependencyDir, pkg) {
   if (pkg.dependencies[name]) {
-    pkg.dependencies[name] = `file:${dependencyDir}`;
+    pkg.dependencies[name] = `${protocol}:${dependencyDir}`;
   }
   if (pkg.devDependencies[name]) {
-    pkg.devDependencies[name] = `file:${dependencyDir}`;
+    pkg.devDependencies[name] = `${protocol}:${dependencyDir}`;
   }
 }
 
-function hardlink() {
-  for (let depDir of getLernaPackageDirs(opts.opticssDir)) {
+function setDependencyToVersion(name, version, pkg) {
+  if (pkg.dependencies[name]) {
+    pkg.dependencies[name] = `^${version}`;
+  }
+  if (pkg.devDependencies[name]) {
+    pkg.devDependencies[name] = `^${version}`;
+  }
+}
+
+function updatePackageJsons(protocol, dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
+  for (let depDir of dependencyPackageDirs) {
     let pkg = getPackageJson(depDir);
     let name = pkg.name;
+    let version = pkg.version;
     let depDirs = depToPackages[name];
     if (depDirs) {
       for (let dir of depDirs) {
-        setDependencyToFile(name, depDir, dir)
+        if (protocol === "file" || protocol == "link") {
+          setDependencyToFile(protocol, name, path.relative(dir, depDir), dirToJSON[dir])
+        } else if (protocol === "version") {
+          setDependencyToVersion(name, version, dirToJSON[dir])
+        }
       }
     }
   }
-  for (let dir of blocksPackageDirs) {
+  for (let dir of dependentPackageDirs) {
     let pkg = dirToJSON[dir];
     let updated = JSON.stringify(pkg, null, 2);
     fs.writeFileSync(path.join(dir,"package.json"), updated);
   }
 }
 
-if (opts.hard) {
-  hardlink();
-} else {
-  symlink();
+if (opts.mode === "file" || opts.mode === "link" || opts.mode === "version") {
+  let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
+  let opticssDirs = getLernaPackageDirs(opts.opticssDir)
+  let blocksDeps = analyzeMonorepoDependencies(blocksDirs);
+  let opticssDeps = analyzeMonorepoDependencies(opticssDirs)
+  updatePackageJsons(opts.mode, opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
+  updatePackageJsons(opts.mode, opticssDirs, opticssDirs, opticssDeps.depToPackages, opticssDeps.dirToJSON);
+} else if (opts.mode === "symlink") {
+  let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
+  let opticssDirs = getLernaPackageDirs(opts.opticssDir)
+  let blocksDeps = analyzeMonorepoDependencies(blocksDirs);
+  symlink(opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
 }
