@@ -50,6 +50,15 @@ class TestSource extends Inheritable<
 
   childNodeMap: RootNode["childrenMap"] =
     () => this.childrenMap()
+
+  resolveChildNodes: RootNode["children"] =
+    () => this.resolveChildren()
+
+  resolveChildNodeHash: RootNode["childrenHash"] =
+    () => this.resolveChildrenHash()
+
+  resolveChildNodeMap: RootNode["childrenMap"] =
+    () => this.resolveChildrenMap()
 }
 
 type ContainerNode = Inheritable<TestNode, TestSource, TestSource, TestSink>;
@@ -191,6 +200,13 @@ export class BlockTreeTests {
     assert.equal(source.getChildNode("base-only"), null);
     assert.equal(source.resolveChildNode("base-only"), baseUnique);
     assert.deepEqual(child.resolveInheritance(), [baseChild]);
+
+    assert.deepEqual(source.childNodes(), [child]);
+    assert.deepEqual(source.childNodeHash(), {"child": child});
+    assert.deepEqual([...source.childNodeMap().values()], [child]);
+    assert.deepEqual(source.resolveChildNodes(), [child, baseUnique]);
+    assert.deepEqual(source.resolveChildNodeHash(), { child, "base-only": baseUnique });
+    assert.deepEqual([...source.resolveChildNodeMap().values()], [child, baseUnique]);
   }
 
   @test "setBase creates inheritance tree for grandchildren"() {

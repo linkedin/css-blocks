@@ -276,68 +276,6 @@ export class TemplateAnalysisTests {
     });
   }
 
-  @test "adding the same styles more than once doesn't duplicate the styles found"() {
-    let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-
-    let options: PluginOptions = { importer: imports.importer() };
-    let reader = new OptionsReader(options);
-
-    let css = `
-      [state|color=red]    { color: red; }
-      [state|color=blue]   { color: blue; }
-      [state|bgcolor=red]  { color: red; }
-      [state|bgcolor=blue] { color: blue; }
-    `;
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        analysis.blocks[""] = block;
-        let element: TestElement = analysis.startElement({ line: 10, column: 32 });
-        element.addStaticClass(block.rootClass);
-        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as StateGroup, null);
-        element.addDynamicGroup(block.rootClass, block.rootClass.resolveGroup("color") as StateGroup, null, true);
-        analysis.endElement(element);
-
-        let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
-          blocks: {"": "blocks/foo.block.css"},
-          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-          stylesFound: [
-            ".root",
-            "[state|color=blue]",
-            "[state|color=red]",
-          ],
-          elements: {
-            "a": {
-              "sourceLocation": {
-                "start": { filename: "templates/my-template.hbs", "column": 32, "line": 10 },
-              },
-              "staticStyles": [ 0 ],
-              "dynamicClasses": [],
-              "dynamicStates": [
-                {
-                  "stringExpression": true,
-                  "group": {
-                    "blue": 1,
-                    "red": 2,
-                  },
-                },
-                {
-                  "stringExpression": true,
-                  "disallowFalsy": true,
-                  "group": {
-                    "blue": 1,
-                    "red": 2,
-                  },
-                },
-              ],
-            },
-          },
-        };
-
-        assert.deepEqual(result, expectedResult);
-    });
-  }
   @test "multiple exclusive dynamic values added using enumerate correlations correctly in analysis"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
