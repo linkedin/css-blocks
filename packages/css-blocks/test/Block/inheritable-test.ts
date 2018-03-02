@@ -166,7 +166,7 @@ export class InheritableTests {
 
     assert.deepEqual(source.childNodes(), [child1, child2, child3]);
     assert.deepEqual(source.childNodeHash(), {child1, child2, "custom-key": child3});
-    assert.deepEqual(source.childNodeMap(), new Map([["child1", child1], ["child2", child2], ["custom-key", child3]]));
+    assert.deepEqual([...source.childNodeMap().entries()], [["child1", child1], ["child2", child2], ["custom-key", child3]]);
   }
 
   @test "grandchildren have tree properties set as expected"() {
