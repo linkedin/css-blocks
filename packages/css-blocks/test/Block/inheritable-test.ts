@@ -2,12 +2,10 @@ import { assertNeverCalled } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { Block, BlockClass, SourceLocation } from "../../../src";
-import {
-  RulesetContainer,
-} from "../../../src/Block";
-import { Inheritable } from "../../../src/Block/Inheritable";
-import { OptionsReader } from "../../../src/OptionsReader";
+import { Block, BlockClass, SourceLocation } from "../../src";
+import { RulesetContainer } from "../../src/Block";
+import { Inheritable } from "../../src/Block/Inheritable";
+import { OptionsReader } from "../../src/OptionsReader";
 
 type RootNode = Inheritable<
   TestSource, // Self
@@ -80,7 +78,8 @@ class TestNode extends Inheritable<
     (name: string) => this.resolveChild(name)
 }
 
-class TestSink extends Inheritable<TestSink, // Self
+class TestSink extends Inheritable<
+  TestSink, // Self
   TestSource, // Root
   TestNode, // Parent
   never
@@ -109,8 +108,8 @@ class TestSink extends Inheritable<TestSink, // Self
   }
 }
 
-@suite("BlockTree")
-export class BlockTreeTests {
+@suite("Inheritable")
+export class InheritableTests {
 
   @test "initial source node tree properties are as expected"() {
     let source = new TestSource("my-source");
