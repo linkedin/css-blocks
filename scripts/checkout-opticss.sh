@@ -17,5 +17,7 @@ then
 else
   git clone -b $BRANCH --depth 1 git@github.com:css-blocks/opticss.git $OPTICSS_DIR
 fi
-cd $OPTICSS_DIR && lerna bootstrap --registry=https://registry.npmjs.org/
+cd $OPTICSS_DIR
+lerna bootstrap --registry=https://registry.npmjs.org/
+lerna run compile
 cd -

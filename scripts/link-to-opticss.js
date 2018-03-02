@@ -8,8 +8,12 @@ let opts = {
   opticssDir: null,
 };
 function processArg(arg) {
-  if (arg === "--hard") {
-    opts.mode = "hard";
+  if (arg === "--file") {
+    opts.mode = "file";
+  } else if (arg === "--hardlink") {
+    opts.mode = "link";
+  } else if (arg === "--symlink") {
+    opts.mode = "symlink";
   } else if (arg === "--version") {
     opts.mode = "version";
   } else if (arg.startsWith("-")) {
@@ -77,30 +81,32 @@ function symlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, dir
   for (let dir of dependencyPackageDirs) {
     let pkg = getPackageJson(dir);
     let name = pkg.name;
-    let depDirs = depToPackages[name];
-    if (depDirs) {
-      try {
-        console.log(childProcess.execSync(`cd ${dir} && yarn unlink`, {encoding: "utf8"}));
-      } catch (e) {
-        //ignore
-      }
-      console.log(childProcess.execSync(`cd ${dir} && yarn link`, {encoding: "utf8"}));
-      console.log(`linking ${name}@${pkg.version} to shared packages`);
-      console.log(childProcess.execSync(`cd ${CSS_BLOCKS_DIR} && yarn link ${name}`, {encoding: "utf8"}));
-      for (let depDir of depDirs) {
-        console.log(`linking ${name}@${pkg.version} to ${path.relative(path.resolve("."), depDir)}`);
-        console.log(childProcess.execSync(`cd ${depDir} && yarn link ${name}`, {encoding: "utf8"}));
-      }
+
+    try {
+      console.log(childProcess.execSync(`cd ${dir} && yarn unlink`, {encoding: "utf8"}));
+    } catch (e) {
+      //ignore
     }
+    console.log(childProcess.execSync(`cd ${dir} && yarn link`, {encoding: "utf8"}));
+    console.log(`linking ${name}@${pkg.version} to shared packages`);
+    console.log(childProcess.execSync(`cd ${CSS_BLOCKS_DIR} && yarn link ${name}`, {encoding: "utf8"}));
+
+    // let depDirs = depToPackages[name];
+    // if (depDirs) {
+    //   for (let depDir of depDirs) {
+    //     console.log(`linking ${name}@${pkg.version} to ${path.relative(path.resolve("."), depDir)}`);
+    //     console.log(childProcess.execSync(`cd ${depDir} && yarn link ${name}`, {encoding: "utf8"}));
+    //   }
+    // }
   }
 }
 
-function setDependencyToFile(name, dependencyDir, pkg) {
+function setDependencyToFile(protocol, name, dependencyDir, pkg) {
   if (pkg.dependencies[name]) {
-    pkg.dependencies[name] = `link:${dependencyDir}`;
+    pkg.dependencies[name] = `${protocol}:${dependencyDir}`;
   }
   if (pkg.devDependencies[name]) {
-    pkg.devDependencies[name] = `link:${dependencyDir}`;
+    pkg.devDependencies[name] = `${protocol}:${dependencyDir}`;
   }
 }
 
@@ -113,25 +119,7 @@ function setDependencyToVersion(name, version, pkg) {
   }
 }
 
-function hardlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
-  for (let depDir of dependencyPackageDirs) {
-    let pkg = getPackageJson(depDir);
-    let name = pkg.name;
-    let depDirs = depToPackages[name];
-    if (depDirs) {
-      for (let dir of depDirs) {
-        setDependencyToFile(name, path.relative(dir, depDir), dirToJSON[dir])
-      }
-    }
-  }
-  for (let dir of dependentPackageDirs) {
-    let pkg = dirToJSON[dir];
-    let updated = JSON.stringify(pkg, null, 2);
-    fs.writeFileSync(path.join(dir,"package.json"), updated);
-  }
-}
-
-function updateVersions(dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
+function updatePackageJsons(protocol, dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
   for (let depDir of dependencyPackageDirs) {
     let pkg = getPackageJson(depDir);
     let name = pkg.name;
@@ -139,7 +127,11 @@ function updateVersions(dependencyPackageDirs, dependentPackageDirs, depToPackag
     let depDirs = depToPackages[name];
     if (depDirs) {
       for (let dir of depDirs) {
-        setDependencyToVersion(name, version, dirToJSON[dir])
+        if (protocol === "file" || protocol == "link") {
+          setDependencyToFile(protocol, name, path.relative(dir, depDir), dirToJSON[dir])
+        } else if (protocol === "version") {
+          setDependencyToVersion(name, version, dirToJSON[dir])
+        }
       }
     }
   }
@@ -150,20 +142,13 @@ function updateVersions(dependencyPackageDirs, dependentPackageDirs, depToPackag
   }
 }
 
-if (opts.mode === "hard") {
+if (opts.mode === "file" || opts.mode === "link" || opts.mode === "version") {
   let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
   let opticssDirs = getLernaPackageDirs(opts.opticssDir)
   let blocksDeps = analyzeMonorepoDependencies(blocksDirs);
   let opticssDeps = analyzeMonorepoDependencies(opticssDirs)
-  hardlink(opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
-  symlink(opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
-  hardlink(opticssDirs, opticssDirs, opticssDeps.depToPackages, opticssDeps.dirToJSON);
-  symlink(opticssDirs, opticssDirs, opticssDeps.depToPackages, opticssDeps.dirToJSON);
-} else if (opts.mode === "version") {
-  let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
-  let opticssDirs = getLernaPackageDirs(opts.opticssDir)
-  let blocksDeps = analyzeMonorepoDependencies(blocksDirs);
-  updateVersions(opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
+  updatePackageJsons(opts.mode, opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
+  updatePackageJsons(opts.mode, opticssDirs, opticssDirs, opticssDeps.depToPackages, opticssDeps.dirToJSON);
 } else if (opts.mode === "symlink") {
   let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
   let opticssDirs = getLernaPackageDirs(opts.opticssDir)
