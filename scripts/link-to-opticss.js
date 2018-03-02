@@ -37,13 +37,10 @@ function getPackageJson(packageDir) {
   return require(path.join(packageDir, "package.json"));
 }
 
-const blocksDir = path.resolve(__dirname, "..");
-const blocksPackageDirs = getLernaPackageDirs(blocksDir);
+const CSS_BLOCKS_DIR = path.resolve(__dirname, "..");
 
-let depToPackages = {};
-let dirToJSON = {}
 
-function recordDependencies(deps, dir) {
+function recordDependencies(deps, dir, depToPackages) {
   if (!deps) return;
   for (let dep of Object.keys(deps)) {
     if (depToPackages[dep] === undefined) {
@@ -51,17 +48,28 @@ function recordDependencies(deps, dir) {
     }
     depToPackages[dep].push(dir);
   }
+  return depToPackages;
 }
 
-for (let dir of blocksPackageDirs) {
-  let pkg = getPackageJson(dir);
-  dirToJSON[dir] = pkg;
-  recordDependencies(pkg.dependencies, dir);
-  recordDependencies(pkg.devDependencies, dir);
+
+function analyzeMonorepoDependencies(dirs) {
+  let dirToJSON = {};
+  let depToPackages = {};
+  for (let dir of dirs) {
+    let pkg = getPackageJson(dir);
+    dirToJSON[dir] = pkg;
+    recordDependencies(pkg.dependencies, dir, depToPackages);
+    recordDependencies(pkg.devDependencies, dir, depToPackages);
+  }
+
+  return {
+    dirToJSON,
+    depToPackages,
+  };
 }
 
-function symlink() {
-  for (let dir of getLernaPackageDirs(opts.opticssDir)) {
+function symlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
+  for (let dir of dependencyPackageDirs) {
     let pkg = getPackageJson(dir);
     let name = pkg.name;
     let depDirs = depToPackages[name];
@@ -73,7 +81,7 @@ function symlink() {
       }
       console.log(childProcess.execSync(`cd ${dir} && yarn link`, {encoding: "utf8"}));
       console.log(`linking ${name}@${pkg.version} to shared packages`);
-      console.log(childProcess.execSync(`cd ${blocksDir} && yarn link ${name}`, {encoding: "utf8"}));
+      console.log(childProcess.execSync(`cd ${CSS_BLOCKS_DIR} && yarn link ${name}`, {encoding: "utf8"}));
       for (let depDir of depDirs) {
         console.log(`linking ${name}@${pkg.version} to ${path.relative(path.resolve("."), depDir)}`);
         console.log(childProcess.execSync(`cd ${depDir} && yarn link ${name}`, {encoding: "utf8"}));
@@ -82,8 +90,7 @@ function symlink() {
   }
 }
 
-function setDependencyToFile(name, dependencyDir, dependentDir) {
-  let pkg = dirToJSON[dependentDir];
+function setDependencyToFile(name, dependencyDir, pkg) {
   if (pkg.dependencies[name]) {
     pkg.dependencies[name] = `file:${dependencyDir}`;
   }
@@ -92,18 +99,18 @@ function setDependencyToFile(name, dependencyDir, dependentDir) {
   }
 }
 
-function hardlink() {
-  for (let depDir of getLernaPackageDirs(opts.opticssDir)) {
+function hardlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
+  for (let depDir of dependencyPackageDirs) {
     let pkg = getPackageJson(depDir);
     let name = pkg.name;
     let depDirs = depToPackages[name];
     if (depDirs) {
       for (let dir of depDirs) {
-        setDependencyToFile(name, depDir, dir)
+        setDependencyToFile(name, depDir, dirToJSON[dir])
       }
     }
   }
-  for (let dir of blocksPackageDirs) {
+  for (let dir of dependentPackageDirs) {
     let pkg = dirToJSON[dir];
     let updated = JSON.stringify(pkg, null, 2);
     fs.writeFileSync(path.join(dir,"package.json"), updated);
@@ -111,7 +118,15 @@ function hardlink() {
 }
 
 if (opts.hard) {
-  hardlink();
+  let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
+  let opticssDirs = getLernaPackageDirs(opts.opticssDir)
+  let blocksDeps = analyzeMonorepoDependencies(blocksDirs);
+  let opticssDeps = analyzeMonorepoDependencies(opticssDirs)
+  hardlink(opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
+  hardlink(opticssDirs, opticssDirs, opticssDeps.depToPackages, opticssDeps.dirToJSON);
 } else {
-  symlink();
+  let blocksDirs = getLernaPackageDirs(CSS_BLOCKS_DIR)
+  let opticssDirs = getLernaPackageDirs(opts.opticssDir)
+  let blocksDeps = analyzeMonorepoDependencies(blocksDirs);
+  symlink(opticssDirs, blocksDirs, blocksDeps.depToPackages, blocksDeps.dirToJSON);
 }
