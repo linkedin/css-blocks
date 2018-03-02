@@ -11,5 +11,6 @@ env:
 before_install:
   - rm yarn.lock
   - npm install -g lerna yarn
-  - ./scripts/checkout-opticss-and-link.sh
+  - ./scripts/checkout-opticss.sh build/opticss
+  - ./scripts/link-to-opticss.js --hard build/opticss
 install: lerna bootstrap --registry=https://registry.npmjs.org/
