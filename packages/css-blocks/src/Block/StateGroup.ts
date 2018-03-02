@@ -54,11 +54,13 @@ export class StateGroup extends Inheritable<StateGroup, Block, BlockClass, State
    * @returns A hash of all `State`s contained in this `StateGroup`.
    **/
   statesHash(): ObjectDictionary<State> { return this.childrenHash(); }
+  resolveStatesHash(): ObjectDictionary<State> { return this.resolveChildrenHash(); }
 
   /**
    * @returns An Map of all `State`s contained in this `StateGroup`.
    **/
   statesMap(): Map<string, State> { return this.childrenMap(); }
+  resolveStatesMap(): Map<string, State> { return this.resolveChildrenMap(); }
 
   /**
    * Ensures that a state of name `name` exists in this State group. If no

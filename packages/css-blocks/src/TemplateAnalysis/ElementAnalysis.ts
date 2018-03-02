@@ -449,7 +449,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     this.assertSealed(false);
     this.addedStyles.push({
       container,
-      group: group.statesHash(),
+      group: group.resolveStatesHash(),
       stringExpression,
       disallowFalsy,
     });

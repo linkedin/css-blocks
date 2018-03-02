@@ -181,11 +181,20 @@ export abstract class Inheritable<
   }
 
   /**
-   * Returns an array of all children nodes in the order they were added.
+   * Returns an array of all children nodes in the order they were added for Self.
    * @returns The children array.
    */
   protected children(): Child[] {
     return [...this._children.values()];
+  }
+
+  /**
+   * Returns an array of all children nodes in the order they were added for
+   * self and all inherited children.
+   * @returns The children array.
+   */
+  protected resolveChildren(): Child[] {
+    return [...this.resolveChildrenMap().values()];
   }
 
   /**
@@ -197,13 +206,40 @@ export abstract class Inheritable<
   }
 
   /**
+   * Returns a map of all children nodes at the keys they are stored..
+   * @returns The children map.
+   */
+  protected resolveChildrenMap(): Map<string, Child> {
+    let inheritance = [...this.resolveInheritance(), this.asSelf()];
+    let out = new Map();
+    for (let o of inheritance) {
+      for (let [key, value] of o._children.entries()) {
+        out.set(key, value);
+      }
+    }
+    return out;
+  }
+
+  /**
    * Returns a hash of all children nodes at the keys they are stored..
    * TODO: Cache this maybe? Convert entire model to only use hash?...
    * @returns The children hash.
    */
   protected childrenHash(): ObjectDictionary<Child> {
     let out = {};
-    for (let [key, value] of this._children.entries()) {
+    for (let [key, value] of this._children) {
+      out[key] = value;
+    }
+    return out;
+  }
+
+  /**
+   * Returns a map of all children nodes at the keys they are stored..
+   * @returns The children map.
+   */
+  protected resolveChildrenHash(): ObjectDictionary<Child> {
+    let out = {};
+    for (let [key, value] of this.resolveChildrenMap()) {
       out[key] = value;
     }
     return out;

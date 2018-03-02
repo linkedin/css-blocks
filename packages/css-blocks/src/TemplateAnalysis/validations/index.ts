@@ -7,6 +7,7 @@ import { Validator } from "./Validator";
 import { classPairsValidator } from "./class-pairs-validator";
 import { propertyConflictValidator } from "./property-conflict-validator";
 import { rootClassValidator } from "./root-class-validator";
+import { stateGroupValidator } from "./state-group-validator";
 import { stateParentValidator } from "./state-parent-validator";
 
 export * from "./class-pairs-validator";
@@ -18,6 +19,7 @@ export interface TemplateValidators {
   "no-root-classes": Validator;
   "no-class-pairs": Validator;
   "no-state-orphans": Validator;
+  "no-duplicate-state-groups": Validator;
   "no-required-resolution": Validator;
   [name: string]: Validator;
 }
@@ -30,6 +32,7 @@ const VALIDATORS: TemplateValidators = {
   "no-root-classes": rootClassValidator,
   "no-class-pairs": classPairsValidator,
   "no-state-orphans": stateParentValidator,
+  "no-duplicate-state-groups": stateGroupValidator,
   "no-required-resolution": propertyConflictValidator,
 };
 
@@ -37,6 +40,7 @@ const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
   "no-root-classes": true,
   "no-class-pairs": true,
   "no-state-orphans": true,
+  "no-duplicate-state-groups": true,
   "no-required-resolution": true,
 };
 
