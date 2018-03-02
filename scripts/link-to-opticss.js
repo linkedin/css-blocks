@@ -92,10 +92,10 @@ function symlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, dir
 
 function setDependencyToFile(name, dependencyDir, pkg) {
   if (pkg.dependencies[name]) {
-    pkg.dependencies[name] = `file:${dependencyDir}`;
+    pkg.dependencies[name] = `link:${dependencyDir}`;
   }
   if (pkg.devDependencies[name]) {
-    pkg.devDependencies[name] = `file:${dependencyDir}`;
+    pkg.devDependencies[name] = `link:${dependencyDir}`;
   }
 }
 
@@ -106,7 +106,7 @@ function hardlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, di
     let depDirs = depToPackages[name];
     if (depDirs) {
       for (let dir of depDirs) {
-        setDependencyToFile(name, depDir, dirToJSON[dir])
+        setDependencyToFile(name, path.relative(dir, depDir), dirToJSON[dir])
       }
     }
   }
