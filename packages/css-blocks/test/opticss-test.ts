@@ -2,13 +2,10 @@ import {
   POSITION_UNKNOWN,
 } from "@opticss/element-analysis";
 import {
-  AndExpression,
-  BooleanExpression,
   isAndExpression,
   Template,
 } from "@opticss/template-api";
 import {
-  assert as typedAssert,
   clean,
   ObjectDictionary,
   whatever,
@@ -18,7 +15,7 @@ import { suite, test } from "mocha-typescript";
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, State, Style } from "../src/Block";
+import { Block, BlockClass, State } from "../src/Block";
 import { BlockCompiler } from "../src/BlockCompiler";
 import { BlockFactory } from "../src/BlockFactory";
 import { BlockParser } from "../src/BlockParser";
@@ -115,10 +112,17 @@ export class TemplateAnalysisTests {
         assert.deepEqual([...rewrite2.staticClasses].sort(), ["c"]);
         assert.deepEqual([...rewrite2.dynamicClasses].sort(), ["e", "f"]);
         let expr = rewrite2.dynamicClass("e");
-        typedAssert.isType<BooleanExpression<Style>, AndExpression<Style>>(isAndExpression, expr).and(expr => {
+        if (isAndExpression(expr)) {
           assert.deepEqual(expr.and.length, 1);
           assert.deepEqual(expr.and[0], block.find(".asdf[state|larger]")!);
-        });
+        } else {
+          assert.isTrue(false, "Expected and expression");
+        }
+        // This isn't compiling right now :(
+        // typedAssert.isType<Partial<BooleanExpression<Style>>, BooleanExpression<Style>, AndExpression<Style>>(isAndExpression, expr).and(expr => {
+        //   assert.deepEqual(expr.and.length, 1);
+        //   assert.deepEqual(expr.and[0], block.find(".asdf[state|larger]")!);
+        // });
       });
     });
   }

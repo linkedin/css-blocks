@@ -6,6 +6,7 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from "@opticss/template-api";
+import { whatever } from "@opticss/util";
 import {
   Block,
   BlockFactory,
@@ -47,8 +48,8 @@ export class TestTemplateInfo implements TemplateInfo<"WebpackPlugin.TestTemplat
       data: [ this.index ],
     };
   }
-  static deserialize(identifier: string, index: number): TestTemplateInfo {
-    return new TestTemplateInfo(identifier, index);
+  static deserialize(identifier: string, index: whatever): TestTemplateInfo {
+    return new TestTemplateInfo(identifier, <number>index);
   }
 }
 

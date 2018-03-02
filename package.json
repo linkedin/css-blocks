@@ -149,7 +149,6 @@
     "combined-stream": "1.0.6",
     "delayed-stream": "1.0.0",
     "estraverse": "4.2.0",
-    "@glimmer/resolution-map-builder": "0.5.1",
     "@types/babel-types": "7.0.1",
     "define-property": "2.0.2",
     "extend-shallow": "3.0.2",

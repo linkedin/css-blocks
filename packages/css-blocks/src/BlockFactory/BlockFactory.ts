@@ -262,7 +262,7 @@ export class BlockFactory implements IBlockFactory {
 function sourceMapFromProcessedFile(result: ProcessedFile): RawSourceMap | string | undefined {
   let sourceMap: RawSourceMap | string | undefined = result.sourceMap;
   if (!sourceMap && (<postcss.Result>result.content).map) {
-    sourceMap = <RawSourceMap>(<postcss.Result>result.content).map.toJSON();
+    sourceMap = (<postcss.Result>result.content).map.toJSON();
   }
   return sourceMap;
 }

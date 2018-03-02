@@ -17,7 +17,7 @@ let queueInstanceId = 1;
  * needed.
  */
 export class PromiseQueue<WorkItem, Result> {
-  private queue: AsyncQueue<PendingWork<WorkItem, Result>>;
+  private queue: async.AsyncQueue<PendingWork<WorkItem, Result>>;
   private queueId: number;
   private jobId: number;
   private draining: Promise<void> | undefined;

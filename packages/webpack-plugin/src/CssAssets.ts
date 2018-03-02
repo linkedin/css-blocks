@@ -156,10 +156,10 @@ export class CssAssets {
                     }
                 };
                 if (Array.isArray(sourcePath)) {
-                    const sourcePaths = sourcePath.map(sourcePath => path.resolve(compiler.options.context, sourcePath));
+                    const sourcePaths = sourcePath.map(sourcePath => path.resolve(compiler.options.context!, sourcePath));
                     assetFilesAsSource(sourcePaths, handleSource);
                 } else {
-                    assetFileAsSource(path.resolve(compiler.options.context, sourcePath), handleSource);
+                    assetFileAsSource(path.resolve(compiler.options.context!, sourcePath), handleSource);
                 }
             },            cb);
         });

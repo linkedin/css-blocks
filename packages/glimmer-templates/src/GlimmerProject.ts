@@ -9,6 +9,7 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from "@opticss/template-api";
+import { whatever } from "@opticss/util";
 import {
   BlockFactory,
   Importer,
@@ -47,8 +48,8 @@ export class ResolvedFile implements TemplateInfo<"GlimmerTemplates.ResolvedFile
       ],
     };
   }
-  static deserialize(identifier: string, str: string, fullPath: string): ResolvedFile {
-    return new ResolvedFile(str, identifier, fullPath);
+  static deserialize(identifier: string, str: whatever, fullPath: whatever): ResolvedFile {
+    return new ResolvedFile(<string>str, identifier, <string>fullPath);
   }
 }
 
