@@ -37,7 +37,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|test] { color: red; }
     `;
     return assertParseError(
@@ -87,7 +87,7 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/a.css",
-      `.root { color: blue; }
+      `:scope { color: blue; }
       .pretty { color: red; }
       .pretty[state|color=yellow] {
         color: yellow;
@@ -99,7 +99,7 @@ export class TemplateAnalysisTests {
 
     let css = `
       @block-reference a from "a.css";
-      .root { extends: a; }
+      :scope { extends: a; }
       .pretty[state|color=black] {
         color: black;
       }
@@ -131,7 +131,7 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/a.css",
-      `.root { color: blue; }
+      `:scope { color: blue; }
       .pretty { color: red; }
       .pretty[state|color=yellow] {
         color: yellow;
@@ -143,7 +143,7 @@ export class TemplateAnalysisTests {
 
     let css = `
       @block-reference a from "a.css";
-      .root { extends: a; }
+      :scope { extends: a; }
       .pretty[state|color=black] {
         color: black;
       }

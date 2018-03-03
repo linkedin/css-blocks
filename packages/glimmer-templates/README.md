@@ -28,7 +28,7 @@ Given the following CSS Block definition:
 
 ```css
 @block-reference grid from "./grid.block.css";
-.root { block-name: my-component; /* ... */ }
+:scope { block-name: my-component; /* ... */ }
 [state|loading] { /* ... */ }
 .sidebar { /* ... */ }
 .sidebar[state|collapsed] { /* ... */ }
@@ -54,7 +54,7 @@ We can style a glimmer template like so:
 ```
 
 Of note here:
- - The styles for the `.root` class are automatically applied to the root element of the component (in this case: `div`).
+ - The styles for the `:scope` class are automatically applied to the root element of the component (in this case: `div`).
  - Classes and states from referenced blocks are prefixed with the name of the block (in this case: `grid`)
  - The only expressions allowed in `class` attributes are the CSS Blocks specific `{{style-if}}` and `{{style-unless}}` helpers. Otherwise, a build time error is thrown.
 
@@ -162,4 +162,4 @@ analyzer.analyze().then((analysis) => {
 ## To Do
 
 * Default the name for a component's main block stylesheet to the name of the component so that
-  `.root { block-name: name-of-component; }` is not required.
+  `:scope { block-name: name-of-component; }` is not required.

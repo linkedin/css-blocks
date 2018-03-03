@@ -15,7 +15,7 @@ export class Test {
   @test "Can set className dynamically"() {
     mock({
       "bar.block.css": `
-        .root { color: red; }
+        :scope { color: red; }
         .foo { color: blue; }
         .foo[state|happy] { color: balloons; }
       `,
@@ -40,7 +40,7 @@ export class Test {
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar.foo[state|happy]", "bar.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar.foo[state|happy]", "bar:scope"]);
 
       let aAnalysis = analysis.elements.a;
       assert.deepEqual(aAnalysis.dynamicClasses, []);
@@ -61,7 +61,7 @@ export class Test {
 
   @test "Classes on objstr calls are tracked when applied"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -87,7 +87,7 @@ export class Test {
 
   @test "Empty objstr calls throw"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -105,7 +105,7 @@ export class Test {
 
   @test "Objstr calls with non-object-literal input throw"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -127,7 +127,7 @@ export class Test {
 
   @test "Multiple classes from the same block on objstr calls are an error."() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; } .baz { color: red; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; } .baz { color: red; }",
     });
 
     return parse(`
@@ -152,8 +152,8 @@ export class Test {
 
   @test "Multiple classes from different blocks on objstr calls are tracked when applied"() {
     mock({
-      "foo.block.css": ".root { color: red; } .biz { color: blue; } .baz { color: red; }",
-      "bar.block.css": ".root { color: red; } .biz { color: blue; } .baz { color: red; }",
+      "foo.block.css": ":scope { color: red; } .biz { color: blue; } .baz { color: red; }",
+      "bar.block.css": ":scope { color: red; } .biz { color: blue; } .baz { color: red; }",
     });
 
     return parse(`
@@ -181,7 +181,7 @@ export class Test {
 
   @test "An objstr call with no css-block styles are allowed"() {
     mock({
-      "foo.block.css": ".root { color: red; } .biz { color: blue; } .baz { color: red; }",
+      "foo.block.css": ":scope { color: red; } .biz { color: blue; } .baz { color: red; }",
     });
 
     return parse(`
@@ -208,7 +208,7 @@ export class Test {
 
   @test "Objstr function name may be renamed at import"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -229,7 +229,7 @@ export class Test {
 
   @test "Objstr call throws if objstr is not imported"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -252,7 +252,7 @@ export class Test {
 
   @test "cannot set objstr to a new function"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -278,7 +278,7 @@ export class Test {
 
   @test "Overly complex expressions to reference a CSS Block throw"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -303,7 +303,7 @@ export class Test {
 
   @test "Objstr lookup understands scope"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`

@@ -37,7 +37,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|test=foo] { color: red; }
       [state|test=bar] { color: blue; }
     `;
@@ -63,7 +63,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|test=foo] { color: red; }
       [state|test=bar] { color: blue; }
     `;
@@ -89,7 +89,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|test=foo] { color: red; }
       [state|test=bar] { color: blue; }
     `;
@@ -115,7 +115,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|test=foo] { color: red; }
       [state|test=bar] { color: blue; }
     `;

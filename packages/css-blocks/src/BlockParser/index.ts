@@ -89,7 +89,7 @@ export class BlockParser {
     await constructBlock(root, block, debugIdent);
     // Verify that external blocks referenced have been imported, have defined the state being selected, and have marked it as a global state.
     await assertForeignGlobalState(root, block, debugIdent);
-    // Construct block extentions and validate.
+    // Construct block extensions and validate.
     await extendBlock(root, block, debugIdent);
     // Validate that all required Styles are implemented.
     await implementBlock(root, block, debugIdent);

@@ -14,7 +14,7 @@ export class Test {
 
   @test "Elements can hand inline dynamic styles"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -28,7 +28,7 @@ export class Test {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
@@ -37,7 +37,7 @@ export class Test {
   @test "with classes and states are tracked when applied"() {
     mock({
       "bar.block.css": `
-        .root { color: red; }
+        :scope { color: red; }
         .foo { color: blue; }
         .foo[state|always] { font-weight: bold; }`,
     });
@@ -60,7 +60,7 @@ export class Test {
   }
   @test "Objstr lookup understands scope"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -79,7 +79,7 @@ export class Test {
 
   @test "handles unknown function call in class attribute"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`

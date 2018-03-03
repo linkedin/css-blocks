@@ -1,1 +1,1 @@
-{"version":3,"sources":["../../test/test/fixtures/blocks/concat-1.block.css","../../test/test/fixtures/blocks/concat-2.block.css"],"names":[],"mappings":"AAAA;EACE,aAAa;CACd;ACFD;EACE,WAAW","file":"x","sourcesContent":[".root {\n  color: black;\n}",".root {\n  color: red;\n}"]}
+{"version":3,"sources":["../../test/test/fixtures/blocks/concat-1.block.css","../../test/test/fixtures/blocks/concat-2.block.css"],"names":[],"mappings":"AAAA;EACE,aAAa;CACd;ACFD;EACE,WAAW","file":"x","sourcesContent":[":scope {\n  color: black;\n}",":scope {\n  color: red;\n}"]}

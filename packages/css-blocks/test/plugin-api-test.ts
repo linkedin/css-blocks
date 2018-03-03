@@ -19,7 +19,7 @@ export class SetupTests {
   @test "a filename is required"() {
     let cssBlocksPlugin = cssBlocks(postcss);
     let processor = cssBlocksPlugin();
-    let inputCSS = `.root {color: red;}`;
+    let inputCSS = `:scope {color: red;}`;
     return postcss([
       processor,
     ]).process(inputCSS, {}).then(() => {

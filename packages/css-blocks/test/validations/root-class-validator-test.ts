@@ -37,7 +37,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -66,7 +66,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -97,7 +97,7 @@ export class TemplateAnalysisTests {
 
     let css = `
       @block-reference a from "a.css";
-      .root { color: blue; }
+      :scope { color: blue; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
@@ -112,7 +112,7 @@ export class TemplateAnalysisTests {
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: { "": "blocks/foo.block.css", "a": "blocks/a.css" },
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs" },
-        stylesFound: [".root", "a.foo"],
+        stylesFound: [":scope", "a.foo"],
         elements: {
           a: {
             dynamicClasses: [],

@@ -10,7 +10,7 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/base.css",
-      `.root { color: purple; }
+      `:scope { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
@@ -18,7 +18,7 @@ export class BlockInheritance extends BEMProcessor {
 
     let filename = "foo/bar/inherits.css";
     let inputCSS = `@block-reference base from "./base.css";
-                    .root { extends: base; color: red; }
+                    :scope { extends: base; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}
                     @block-debug self to comment;`;
@@ -32,7 +32,7 @@ export class BlockInheritance extends BEMProcessor {
         ".inherits__foo { clear: both; }\n" +
         ".inherits__b--small { color: blue; }\n" +
         "/* Source: foo/bar/inherits.css\n" +
-        "   .root => .base .inherits\n" +
+        "   :scope => .base .inherits\n" +
         "   .b => .inherits__b\n" +
         "   .b[state|small] => .inherits__b--small\n" +
         "   .foo => .base__foo .inherits__foo\n" +
@@ -49,13 +49,13 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/base.css",
-      `.root { color: purple; }
+      `:scope { color: purple; }
        .foo   { float: left; width: 500px; }`,
     );
 
     let filename = "foo/bar/inherits.css";
     let inputCSS = `@block-reference base from "./base.css";
-                    .root { extends: base; color: red; }
+                    :scope { extends: base; color: red; }
                     .foo { clear: both; width: unset(); }`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
@@ -72,12 +72,12 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "base.css",
-      `.root { width: 100%; }`,
+      `:scope { width: 100%; }`,
     );
 
     let filename = "sub.css";
     let inputCSS = `@block-reference base from "./base.css";
-                    .root {
+                    :scope {
                       extends: base;
                       width: 80%;
                     }`;
@@ -101,7 +101,7 @@ export class BlockInheritance extends BEMProcessor {
 
     let filename = "sub.css";
     let inputCSS = `@block-reference base from "./base.css";
-                    .root {
+                    :scope {
                       extends: base;
                     }
                     .foo::after {
@@ -128,7 +128,7 @@ export class BlockInheritance extends BEMProcessor {
 
     let filename = "sub.css";
     let inputCSS = `@block-reference base from "./base.css";
-                    .root { extends: base; }
+                    :scope { extends: base; }
                     .nav { margin: 15px; }
                     .nav + .nav { margin-bottom: 5px; }`;
 
@@ -155,7 +155,7 @@ export class BlockInheritance extends BEMProcessor {
 
     let filename = "sub.css";
     let inputCSS = `@block-reference base from "./base.css";
-                    .root { extends: base; }
+                    :scope { extends: base; }
                     .nav:active, .nav:hover { color: blue; }`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
@@ -175,12 +175,12 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "base.css",
-      `.root { border: 1px solid black; }`,
+      `:scope { border: 1px solid black; }`,
     );
 
     let filename = "sub.css";
     let inputCSS = `@block-reference base from "./base.css";
-                    .root {
+                    :scope {
                       extends: base;
                       border-color: green;
                     }`;

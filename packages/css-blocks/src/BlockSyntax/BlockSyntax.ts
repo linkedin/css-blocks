@@ -53,4 +53,4 @@ export const UNIVERSAL_STATE = "::universal";
 
 // Internally use the invented `root` class represents the root element styling for a block. By interpreting the
 // root selector as just another class we no longer have to store styling information it on the `Block` object..
-export const ROOT_CLASS = "root";
+export const ROOT_CLASS = ":scope";

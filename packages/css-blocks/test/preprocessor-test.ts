@@ -41,7 +41,7 @@ export class PreprocessorTest {
     let preprocessors: Preprocessors = {
       other: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
-          content: `.root { block-name: ${content}; color: red; }`,
+          content: `:scope { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },
@@ -63,7 +63,7 @@ export class PreprocessorTest {
     let preprocessors: Preprocessors = {
       other: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
-          content: `.root { block-name: ${content}; color: red; }`,
+          content: `:scope { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },
@@ -95,7 +95,7 @@ export class PreprocessorTest {
     let preprocessors: Preprocessors = {
       other: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
-          content: `.root { block-name: ${content}; color: red; }`,
+          content: `:scope { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },

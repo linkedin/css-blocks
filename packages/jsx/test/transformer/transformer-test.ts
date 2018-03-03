@@ -61,7 +61,7 @@ export class Test {
   @test "Root styles with and without .root are rewritten correctly."() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
       `,
     });
 
@@ -88,7 +88,7 @@ export class Test {
   @test "States with sub-states are transformed using string input"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
           color: yellow;
@@ -127,7 +127,7 @@ export class Test {
   @test "States with sub-states are transformed using boolean input"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=true] {
           color: yellow;
@@ -162,7 +162,7 @@ export class Test {
   @test "States with sub-states are transformed using numerical input"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=100] {
           color: yellow;
@@ -197,7 +197,7 @@ export class Test {
   @test "States with dynamic sub-states are transformed"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
           color: yellow;
@@ -247,7 +247,7 @@ export class Test {
   @test "States with dynamic sub-states are transformed when only a single sub-state exists"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|bool] { color: red; }
         .pretty[state|color=yellow] {
@@ -300,7 +300,7 @@ export class Test {
   @test "States with dynamic sub-states containing complex expression are transformed to the simplest possible output"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellowColor] {
           color: yellow;
@@ -355,11 +355,11 @@ export class Test {
   @test "Gracefully handles conflicting BlockObject names."() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
       `,
       "foo.block.css": `
-        .root { color: white; }
+        :scope { color: white; }
         .pretty { color: black; }
       `,
     });
@@ -386,7 +386,7 @@ export class Test {
   @test "Can set className dynamically"() {
     mock({
       "bar.block.css": `
-        .root { color: red; }
+        :scope { color: red; }
         .foo { color: blue; }
         .foo[state|happy] { color: balloons; }
       `,
@@ -430,7 +430,7 @@ export class Test {
   @test "Doesn't explode with empty blocks."() {
     mock({
       "foo.block.css": `
-        .root { }
+        :scope { }
         [state|cool] { }
       `,
     });
@@ -459,8 +459,8 @@ export class Test {
 
   @test "Left over references to the block are an error"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
-      "foo.block.css": ".root { font-family: sans-serif; } .big { font-size: 28px; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
+      "foo.block.css": ":scope { font-family: sans-serif; } .big { font-size: 28px; }",
     });
 
     let code = `

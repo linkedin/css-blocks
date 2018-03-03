@@ -24,7 +24,7 @@ export class BlockInterfaceTests extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/base.css",
-      `.root { color: purple; }
+      `:scope { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
@@ -32,7 +32,7 @@ export class BlockInterfaceTests extends BEMProcessor {
 
     let filename = "foo/bar/implements.css";
     let inputCSS = `@block-reference base from "./base.css";
-                    .root { implements: base; color: red; }
+                    :scope { implements: base; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}`;
 
@@ -49,14 +49,14 @@ export class BlockInterfaceTests extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/base.css",
-      `.root { color: purple; }
+      `:scope { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
     );
     imports.registerSource(
       "foo/bar/other.css",
-      `.root { color: purple; }
+      `:scope { color: purple; }
       [state|medium] { font-size: 20px; }
       .foo   { float: left;   }
       .foo[state|medium] { font-size: 5px; }`,
@@ -65,7 +65,7 @@ export class BlockInterfaceTests extends BEMProcessor {
     let filename = "foo/bar/implements.css";
     let inputCSS = `@block-reference base from "./base.css";
                     @block-reference other from "./other.css";
-                    .root { implements: base, other; color: red; }
+                    :scope { implements: base, other; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}
                     [state|large] { }
