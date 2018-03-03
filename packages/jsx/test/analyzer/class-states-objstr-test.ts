@@ -15,7 +15,7 @@ export class Test {
   @test "States with sub-states are tracked"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
           color: yellow;
@@ -47,7 +47,7 @@ export class Test {
   @test "When provided state value is dynamic, state object is registered as dynamic"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
           color: yellow;
@@ -83,13 +83,13 @@ export class Test {
     mock({
       "bar.block.css": `
         @block-reference foo from "./foo.block.css";
-        .root { extends: foo; }
+        :scope { extends: foo; }
         .pretty[state|color=black] {
           color: black;
         }
       `,
       "foo.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=green] {
           color: green;
@@ -122,13 +122,13 @@ export class Test {
     mock({
       "bar.block.css": `
         @block-reference foo from "./foo.block.css";
-        .root { extends: foo; }
+        :scope { extends: foo; }
         .pretty[state|color=black] {
           color: black;
         }
       `,
       "foo.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=green] {
           color: green;
@@ -158,13 +158,13 @@ export class Test {
     mock({
       "bar.block.css": `
         @block-reference foo from "./foo.block.css";
-        .root { extends: foo; }
+        :scope { extends: foo; }
         .pretty[state|color=black] {
           color: black;
         }
       `,
       "foo.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
           color: yellow;
@@ -204,13 +204,13 @@ export class Test {
     mock({
       "bar.block.css": `
         @block-reference foo from "./foo.block.css";
-        .root { extends: foo; }
+        :scope { extends: foo; }
         .pretty[state|color=black] {
           color: black;
         }
       `,
       "foo.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
           color: yellow;
@@ -243,7 +243,7 @@ export class Test {
   @test "Boolean states register"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|awesome] {
           color: yellow;
@@ -275,7 +275,7 @@ export class Test {
   @test "Accessing sub-state on boolean state throws"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|awesome] {
           color: yellow;

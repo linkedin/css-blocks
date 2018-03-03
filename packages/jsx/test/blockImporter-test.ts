@@ -22,7 +22,7 @@ export class Test {
 
   @test "imports for css-block files are registered using default syntax"() {
     mock({
-      "bar.block.css": ".root { color: red; }",
+      "bar.block.css": ":scope { color: red; }",
     });
     return parse(`import bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.blockDependencies().size, 1);
@@ -32,7 +32,7 @@ export class Test {
 
   @test "imports for css-block files are registered using explicit default import"() {
     mock({
-      "bar.block.css": ".root { color: red; }",
+      "bar.block.css": ":scope { color: red; }",
     });
     return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.blockDependencies().size, 1);
@@ -42,7 +42,7 @@ export class Test {
 
   @test "imports for css-block files register explicit state object import"() {
     mock({
-      "bar.block.css": ".root { color: red; }",
+      "bar.block.css": ":scope { color: red; }",
     });
     return parse(`import bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.blockDependencies().size, 1);
@@ -52,7 +52,7 @@ export class Test {
 
   @test "imports for css-block files register explicit state object import with explicit default import"() {
     mock({
-      "bar.block.css": ".root { color: red; }",
+      "bar.block.css": ":scope { color: red; }",
     });
     return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.blockDependencies().size, 1);
@@ -62,7 +62,7 @@ export class Test {
 
   @test 'imports for css-block files are registered using "as" syntax'() {
     mock({
-      "bar.block.css": ".root { color: red; }",
+      "bar.block.css": ":scope { color: red; }",
     });
     return parse(`import * as bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
       assert.equal(analysis.blockDependencies().size, 1);
@@ -72,8 +72,8 @@ export class Test {
 
   @test "imports for multiple css-block files are registered"() {
     mock({
-      "bar.block.css": ".root { color: red; }",
-      "baz.block.css": ".root { color: blue; }",
+      "bar.block.css": ":scope { color: red; }",
+      "baz.block.css": ":scope { color: blue; }",
     });
     return parse(`
       import * as bar from 'bar.block.css';
@@ -87,8 +87,8 @@ export class Test {
 
   @test "imported blocks may be renamed locally"() {
     mock({
-      "bar.block.css": ".root { color: red; }",
-      "baz.block.css": ".root { color: blue; }",
+      "bar.block.css": ":scope { color: red; }",
+      "baz.block.css": ":scope { color: blue; }",
     });
     return parse(`
       import * as foo from 'bar.block.css';
@@ -102,7 +102,7 @@ export class Test {
 
   @test "block identifiers may not be re-declaired elsewhere in the file – Function Declaration"() {
     mock({
-      "baz.block.css": ".root { color: blue; }",
+      "baz.block.css": ":scope { color: blue; }",
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -118,7 +118,7 @@ export class Test {
 
   @test "block identifiers may not be re-declaired elsewhere in the file – Variable Declaration"() {
     mock({
-      "baz.block.css": ".root { color: blue; }",
+      "baz.block.css": ":scope { color: blue; }",
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -134,7 +134,7 @@ export class Test {
 
   @test "block identifiers may not be re-declaired elsewhere in the file – Class Name"() {
     mock({
-      "baz.block.css": ".root { color: blue; }",
+      "baz.block.css": ":scope { color: blue; }",
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -150,7 +150,7 @@ export class Test {
 
   @test "block identifiers may not be re-declaired elsewhere in the file – Function Param"() {
     mock({
-      "baz.block.css": ".root { color: blue; }",
+      "baz.block.css": ":scope { color: blue; }",
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -166,7 +166,7 @@ export class Test {
 
   @test "block identifiers may not be re-declaired elsewhere in the file – Class Method Param"() {
     mock({
-      "baz.block.css": ".root { color: blue; }",
+      "baz.block.css": ":scope { color: blue; }",
     });
     return parse(`
       import biz from 'baz.block.css';
@@ -182,7 +182,7 @@ export class Test {
 
   @test "block identifiers may not be re-declaired elsewhere in the file – Object Method Param"() {
     mock({
-      "baz.block.css": ".root { color: blue; }",
+      "baz.block.css": ":scope { color: blue; }",
     });
     return parse(`
       import biz from 'baz.block.css';

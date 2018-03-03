@@ -37,16 +37,16 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; color: blue; background-color: yellow; }
+      :scope { block-name: block-a; color: blue; background-color: yellow; }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      constructElement(block, ".root", "b.root").end();
+      constructElement(block, ":scope", "b").end();
       assert.deepEqual(1, 1);
     });
   }
@@ -58,12 +58,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: red; color: blue; background: yellow; }`,
+      `:scope { block-name: block-b; color: red; color: blue; background: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; color: blue; background-color: yellow; }
+      :scope { block-name: block-a; color: blue; background-color: yellow; }
     `;
 
     return assertParseError(
@@ -72,12 +72,12 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-a.root (blocks/foo.block.css:3:36)
-            block-b.root (blocks/b.block.css:1:30)
-            block-b.root (blocks/b.block.css:1:42)`,
+            block-a:scope (blocks/foo.block.css:3:37)
+            block-b:scope (blocks/b.block.css:1:31)
+            block-b:scope (blocks/b.block.css:1:43)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").end();
+        constructElement(block, ":scope", "b").end();
         assert.deepEqual(1, 1);
       }),
     );
@@ -90,16 +90,16 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; color: blue; color: yellow; }
+      :scope { block-name: block-a; color: blue; color: yellow; }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      constructElement(block, ".root", "b.root").end();
+      constructElement(block, ":scope", "b").end();
       assert.deepEqual(1, 1);
     });
   }
@@ -111,12 +111,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: red; color: yellow; }`,
+      `:scope { block-name: block-b; color: red; color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; color: blue; color: yellow; }
+      :scope { block-name: block-a; color: blue; color: yellow; }
     `;
 
     return assertParseError(
@@ -125,13 +125,13 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-a.root (blocks/foo.block.css:3:36)
-            block-a.root (blocks/foo.block.css:3:49)
-            block-b.root (blocks/b.block.css:1:30)
-            block-b.root (blocks/b.block.css:1:42)`,
+            block-a:scope (blocks/foo.block.css:3:37)
+            block-a:scope (blocks/foo.block.css:3:50)
+            block-b:scope (blocks/b.block.css:1:31)
+            block-b:scope (blocks/b.block.css:1:43)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").end();
+        constructElement(block, ":scope", "b").end();
         assert.deepEqual(1, 1);
       }),
     );
@@ -143,14 +143,14 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: block-b; }
+      :scope { block-name: block-b; }
       .klass { color: blue; background: yellow; }
       [state|colorful] .klass { color: red; }
     `);
 
     let css = `
     @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .klass { color: blue; background-color: yellow; }
     `;
 
@@ -175,14 +175,14 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: block-b; }
+      :scope { block-name: block-b; }
       .klass { color: blue; background: yellow; }
       [state|colorful] .klass { color: red; }
     `);
 
     let css = `
     @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .klass { color: resolve('b.klass'); color: blue; background-color: yellow; }
     `;
 
@@ -199,12 +199,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; color: red; background-color: red; }
+      :scope { block-name: block-a; color: red; background-color: red; }
     `;
 
     return assertParseError(
@@ -213,15 +213,15 @@ export class TemplateAnalysisTests {
       `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
   color:
-    block-a.root (blocks/foo.block.css:3:36)
-    block-b.root (blocks/b.block.css:1:30)
+    block-a:scope (blocks/foo.block.css:3:37)
+    block-b:scope (blocks/b.block.css:1:31)
 
   background-color:
-    block-a.root (blocks/foo.block.css:3:48)
-    block-b.root (blocks/b.block.css:1:43)`,
+    block-a:scope (blocks/foo.block.css:3:49)
+    block-b:scope (blocks/b.block.css:1:44)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").end();
+        constructElement(block, ":scope", "b").end();
       }),
     );
   }
@@ -233,12 +233,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root {
+      :scope {
         block-name: block-a;
         color: resolve('b');
         color: red;
@@ -248,7 +248,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").end();
+        constructElement(block, ":scope", "b").end();
         assert.equal(1, 1);
       });
   }
@@ -260,14 +260,14 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; }
+      `:scope { block-name: block-b; }
        .foo  { color: blue; background-color: yellow; }
       `,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .bar  { color: red; background-color: red; }
     `;
 
@@ -297,14 +297,14 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; }
+      `:scope { block-name: block-b; }
        .foo  { color: blue; background-color: yellow; }
       `,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .bar  {
         color: resolve('b.foo');
         color: red;
@@ -326,12 +326,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .foo  { color: red; background-color: red; }
     `;
 
@@ -342,14 +342,14 @@ export class TemplateAnalysisTests {
 
           color:
             block-a.foo (blocks/foo.block.css:4:15)
-            block-b.root (blocks/b.block.css:1:30)
+            block-b:scope (blocks/b.block.css:1:31)
 
           background-color:
             block-a.foo (blocks/foo.block.css:4:27)
-            block-b.root (blocks/b.block.css:1:43)`,
+            block-b:scope (blocks/b.block.css:1:44)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".foo", "b.root").end();
+        constructElement(block, ".foo", "b").end();
       }),
     );
   }
@@ -361,12 +361,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .foo  {
         color: resolve('b');
         color: red;
@@ -376,7 +376,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      constructElement(block, ".foo", "b.root").end();
+      constructElement(block, ".foo", "b").end();
       assert.equal(1, 1);
     });
   }
@@ -423,12 +423,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .foo  { color: red; background-color: red; }
     `;
 
@@ -439,14 +439,14 @@ export class TemplateAnalysisTests {
 
           color:
             block-a.foo (blocks/foo.block.css:4:15)
-            block-b.root (blocks/b.block.css:1:30)
+            block-b:scope (blocks/b.block.css:1:31)
 
           background-color:
             block-a.foo (blocks/foo.block.css:4:27)
-            block-b.root (blocks/b.block.css:1:43)`,
+            block-b:scope (blocks/b.block.css:1:44)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block).addDynamic([".foo"]).addDynamic(["b.root"]).end();
+        constructElement(block).addDynamic([".foo"]).addDynamic(["b"]).end();
       }),
     );
   }
@@ -458,12 +458,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .foo  {
         color: resolve('b');
         color: red;
@@ -473,7 +473,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block).addDynamic([".foo"]).addDynamic(["b.root"]).end();
+        constructElement(block).addDynamic([".foo"]).addDynamic(["b"]).end();
         assert.equal(1, 1);
       });
   }
@@ -485,12 +485,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .foo  { color: red; background-color: red; }
     `;
 
@@ -501,14 +501,14 @@ export class TemplateAnalysisTests {
 
           color:
             block-a.foo (blocks/foo.block.css:4:15)
-            block-b.root (blocks/b.block.css:1:30)
+            block-b:scope (blocks/b.block.css:1:31)
 
           background-color:
             block-a.foo (blocks/foo.block.css:4:27)
-            block-b.root (blocks/b.block.css:1:43)`,
+            block-b:scope (blocks/b.block.css:1:44)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block).addDynamic([".foo", "b.root"]).end();
+        constructElement(block).addDynamic([".foo", "b"]).end();
       }),
     );
   }
@@ -520,12 +520,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .foo  {
         color: resolve('b');
         color: red;
@@ -535,7 +535,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      constructElement(block).addDynamic([".foo", "b.root"]).end();
+      constructElement(block).addDynamic([".foo", "b"]).end();
       assert.equal(1, 1);
     });
   }
@@ -547,17 +547,17 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .foo  { color: red; background: red; }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      constructElement(block).addDynamic([".foo"], ["b.root"]).end();
+      constructElement(block).addDynamic([".foo"], ["b"]).end();
       }).then(() => {
         assert.ok(1, "does not throw");
       });
@@ -570,12 +570,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       [state|foo] { color: red; background-color: red; }
     `;
 
@@ -585,15 +585,15 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-b.root (blocks/b.block.css:1:30)
+            block-b:scope (blocks/b.block.css:1:31)
             block-a[state|foo] (blocks/foo.block.css:4:21)
 
           background-color:
-            block-b.root (blocks/b.block.css:1:43)
+            block-b:scope (blocks/b.block.css:1:44)
             block-a[state|foo] (blocks/foo.block.css:4:33)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").addDynamic("[state|foo]").end();
+        constructElement(block, ":scope", "b").addDynamic("[state|foo]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -606,12 +606,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       [state|foo] {
         color: resolve('b');
         color: red;
@@ -621,7 +621,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      constructElement(block, ".root", "b.root").addDynamic("[state|foo]").end();
+      constructElement(block, ":scope", "b").addDynamic("[state|foo]").end();
       assert.equal(1, 1);
     });
   }
@@ -632,14 +632,14 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: block-b; }
+      :scope { block-name: block-b; }
       .klass {}
       .klass[state|foo] { color: blue; }
     `);
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .klass {}
       .klass[state|foo] { color: red; }
     `;
@@ -689,14 +689,14 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: block-b; }
+      :scope { block-name: block-b; }
       [state|bar] { color: blue; background-color: yellow; }
     `,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       [state|foo] { color: red; background-color: red; }
     `;
 
@@ -714,7 +714,7 @@ export class TemplateAnalysisTests {
             block-b[state|bar] (blocks/b.block.css:3:34)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").addDynamic("[state|foo]").addDynamic("b[state|bar]").end();
+        constructElement(block, ":scope", "b").addDynamic("[state|foo]").addDynamic("b[state|bar]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -726,14 +726,14 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: block-b; }
+      :scope { block-name: block-b; }
       [state|bar] { color: blue; background-color: yellow; }
     `,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       [state|foo] {
         color: resolve('b[state|bar]');
         color: red;
@@ -742,7 +742,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").addDynamic("[state|foo]").addDynamic("b[state|bar]").end();
+        constructElement(block, ":scope", "b").addDynamic("[state|foo]").addDynamic("b[state|bar]").end();
       }).then(() => {
         assert.equal(1, 1);
       });
@@ -754,13 +754,13 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: block-b; color: blue; background-color: yellow; }
+      :scope { block-name: block-b; color: blue; background-color: yellow; }
     `,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       [state|foo=one] { color: red; background-color: red; }
       [state|foo=two] { text-decoration: underline; }
     `;
@@ -771,15 +771,15 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-b.root (blocks/b.block.css:2:36)
+            block-b:scope (blocks/b.block.css:2:37)
             block-a[state|foo=one] (blocks/foo.block.css:4:25)
 
           background-color:
-            block-b.root (blocks/b.block.css:2:49)
+            block-b:scope (blocks/b.block.css:2:50)
             block-a[state|foo=one] (blocks/foo.block.css:4:37)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").addStateGroup(".root", "foo").end();
+        constructElement(block, ":scope", "b").addStateGroup(":scope", "foo").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -791,19 +791,19 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: block-b; color: blue; background-color: yellow; }
+      :scope { block-name: block-b; color: blue; background-color: yellow; }
     `,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       [state|foo=one] { color: resolve('b'); color: red; background-color: red; background-color: resolve('b');  }
       [state|foo=two] { text-decoration: underline; }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").addStateGroup(".root", "foo").end();
+        constructElement(block, ":scope", "b").addStateGroup(":scope", "foo").end();
       }).then(() => {
         assert.equal(1, 1);
       });
@@ -815,7 +815,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: block-b; color: blue; background-color: yellow; }
+      :scope { block-name: block-b; color: blue; background-color: yellow; }
       [state|bar=one] { color: red; background-color: red; }
       [state|bar=two] { color: yellow; background-color: purple; }
     `,
@@ -823,7 +823,7 @@ export class TemplateAnalysisTests {
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       [state|foo=one] { color: orange; background-color: green; }
       [state|foo=two] { text-decoration: underline; }
     `;
@@ -834,19 +834,19 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-b.root (blocks/b.block.css:2:36)
+            block-b:scope (blocks/b.block.css:2:37)
             block-a[state|foo=one] (blocks/foo.block.css:4:25)
             block-b[state|bar=one] (blocks/b.block.css:3:25)
             block-b[state|bar=two] (blocks/b.block.css:4:25)
 
           background-color:
-            block-b.root (blocks/b.block.css:2:49)
+            block-b:scope (blocks/b.block.css:2:50)
             block-a[state|foo=one] (blocks/foo.block.css:4:40)
             block-b[state|bar=one] (blocks/b.block.css:3:37)
             block-b[state|bar=two] (blocks/b.block.css:4:40)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ".root", "b.root").addStateGroup(".root", "foo").addStateGroup("b.root", "bar").end();
+        constructElement(block, ":scope", "b").addStateGroup(":scope", "foo").addStateGroup("b", "bar").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -859,18 +859,18 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; background-color: yellow; }`,
+      `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
     imports.registerSource("blocks/c.block.css", `
-      .root { block-name: block-c; }
+      :scope { block-name: block-c; }
       .bar { color: green; }
     `);
 
     let css = `
       @block-reference b from "./b.block.css";
       @block-reference c from "./c.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .foo  { color: red; background-color: red; }
     `;
 
@@ -880,16 +880,16 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-b.root (blocks/b.block.css:1:30)
+            block-b:scope (blocks/b.block.css:1:31)
             block-c.bar (blocks/c.block.css:3:14)
             block-a.foo (blocks/foo.block.css:5:15)
 
           background-color:
-            block-b.root (blocks/b.block.css:1:43)
+            block-b:scope (blocks/b.block.css:1:44)
             block-a.foo (blocks/foo.block.css:5:27)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, "b.root", "c.bar").addDynamic([".foo"]).end();
+        constructElement(block, "b", "c.bar").addDynamic([".foo"]).end();
       }),
     );
   }
@@ -901,16 +901,16 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; color: blue; }`,
+      `:scope { block-name: block-b; color: blue; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; color: resolve('b'); color: red; }
+      :scope { block-name: block-a; color: resolve('b'); color: red; }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-      constructElement(block, ".root", "b.root").end();
+      constructElement(block, ":scope", "b").end();
     }).then(() => {
       assert.deepEqual(1, 1);
     });
@@ -944,7 +944,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .klass:before { color: resolve('b.klass'); color: red; }
       .klass { color: red; }
     `;
@@ -965,12 +965,12 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; }`,
+      `:scope { block-name: block-b; }`,
     );
 
     let css = `
       @block-reference b from './b.block.css';
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .klass:before { color: resolve('b.klass'); color: red; }
       .klass { color: red; }
     `;
@@ -991,14 +991,14 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; }
+      `:scope { block-name: block-b; }
        .klass:before { color: yellow; }
        .klass { color: blue; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .klass:before { color: resolve('b.klass'); color: green; }
       .klass { color: red; }
     `;
@@ -1166,13 +1166,13 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: b; }
+      :scope { block-name: b; }
       .klass { background-color: blue; }
     `);
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: a; }
+      :scope { block-name: a; }
       .klass { background-color: red; background: resolve('b.klass'); }
     `;
 
@@ -1189,13 +1189,13 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: b-block; }
+      :scope { block-name: b-block; }
       .klass { border-color: blue; }
     `);
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: a-block; }
+      :scope { block-name: a-block; }
       .klass { border-color: red; border-left-color: resolve('b.klass'); }
     `;
 
@@ -1222,13 +1222,13 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     imports.registerSource("blocks/b.block.css", `
-      .root { block-name: block-b; }
+      :scope { block-name: block-b; }
       .klass { custom-prop: blue; }
     `);
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .klass { custom-prop: red; }
     `;
 
@@ -1256,13 +1256,13 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/b.block.css",
-      `.root { block-name: block-b; }
+      `:scope { block-name: block-b; }
        .klass { custom-prop: blue; }`,
     );
 
     let css = `
       @block-reference b from "./b.block.css";
-      .root { block-name: block-a; }
+      :scope { block-name: block-a; }
       .klass { custom-prop: red; custom-prop: resolve('b.klass'); }
     `;
 
@@ -1279,7 +1279,7 @@ function constructElement(block: Block, ...styles: string[]) {
   let info = new Template("templates/my-template.hbs");
   let analysis = new TemplateAnalysis(info);
 
-  analysis.blocks[""] = block;
+  analysis.blocks[":scope"] = block;
   block.eachBlockReference((name, ref) => {
     analysis.blocks[name] = ref;
   });

@@ -30,7 +30,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     let filename = "foo/bar/a-block.css";
     imports.registerSource(
       filename,
-      `.root { color: purple; }
+      `:scope { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
@@ -42,7 +42,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
-      assert.equal(block.lookup(".root"), block.rootClass);
+      assert.equal(block.lookup(":scope"), block.rootClass);
       let largeState = block.rootClass.getState("large");
       assert(largeState);
       assert.equal(block.lookup("[state|large]"), largeState);
@@ -62,7 +62,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/a-block.block.css",
-      `.root { color: purple; }
+      `:scope { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
@@ -84,7 +84,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
         assert.fail("wtf");
         return;
       }
-      assert.equal(refblock.lookup("a-block.root"), block.rootClass);
+      assert.equal(refblock.lookup("a-block"), block.rootClass);
       let largeState = block.rootClass.getState("large");
       assert(largeState);
       assert.equal(refblock.lookup("a-block[state|large]"), largeState);
@@ -104,7 +104,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/a-block.block.css",
-      `.root { color: purple; }
+      `:scope { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
@@ -126,7 +126,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
         assert.fail("wtf");
         return;
       }
-      assert.equal(refblock.lookup("my-block.root"), block.rootClass);
+      assert.equal(refblock.lookup("my-block"), block.rootClass);
       let largeState = block.rootClass.getState("large");
       assert(largeState);
       assert.equal(refblock.lookup("my-block[state|large]"), largeState);

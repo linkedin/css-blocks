@@ -1,7 +1,7 @@
 @block-reference h from "./header.css";
 @block-reference t from "./typography.css";
 
-.root {
+:scope {
     color: red;
 }
 

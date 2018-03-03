@@ -2,6 +2,8 @@ import { assertNever, firstOfType } from "@opticss/util";
 import { CompoundSelector } from "opticss";
 import selectorParser = require("postcss-selector-parser");
 
+import { ROOT_CLASS } from "../BlockSyntax";
+
 export enum BlockType {
   root = 1,
   state,
@@ -14,7 +16,7 @@ export type NodeAndType = {
   node: selectorParser.Attribute;
 } | {
   blockType: BlockType.root | BlockType.class;
-  node: selectorParser.ClassName;
+  node: selectorParser.ClassName | selectorParser.Pseudo;
 };
 
 export type BlockNodeAndType = NodeAndType & {
@@ -73,8 +75,8 @@ export function isClassLevelObject(object: NodeAndType): boolean {
 /**
  * Check if given selector node is targeting the root block node
  */
-export function isRootNode(node: selectorParser.Node): node is selectorParser.ClassName {
-  return node.type === selectorParser.CLASS && node.value === "root";
+export function isRootNode(node: selectorParser.Node): node is selectorParser.Pseudo {
+  return node.type === selectorParser.PSEUDO && node.value === ROOT_CLASS;
 }
 
 /**

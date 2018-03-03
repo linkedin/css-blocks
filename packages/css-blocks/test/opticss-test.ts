@@ -74,7 +74,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = clean`
-      .root { color: blue; font-size: 20px; }
+      :scope { color: blue; font-size: 20px; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; color: red; }

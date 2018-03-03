@@ -11,7 +11,7 @@ NOTE: To run locally, this module currently requires the latest version of `css-
 {! bar.block.css }
 
 {! .bar }
-.root {
+:scope {
   display: none;
   background-color: red;
 }
@@ -133,7 +133,7 @@ const activeTabClass = objstr({
 });
 
 return (
-  <nav class="nav.root">
+  <nav class="nav:scope">
     <a href="/feed" class="nav.logo">
       <icons.Logo />
     </a>
@@ -173,7 +173,7 @@ const style = objstr({
 });
 
 return (
-  <nav class="nav.root">
+  <nav class="nav:scope">
     <div class={style}></div>
     <div class="grid.span-6 state:nav.some-state"></div>
   </nav>

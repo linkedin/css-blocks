@@ -90,7 +90,7 @@ export class Test {
   @test "Throws when spread operator used in states."() {
     mock({
       "foo.block.css": `
-        .root { }
+        :scope { }
         [state|cool=foo] { }
       `,
     });

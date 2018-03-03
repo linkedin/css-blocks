@@ -29,7 +29,7 @@ export class BlockFactoryTests extends BEMProcessor {
     let baseFilename = "foo/bar/base.css";
     imports.registerSource(
       baseFilename,
-      `.root { color: purple; }
+      `:scope { color: purple; }
        [state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
@@ -39,7 +39,7 @@ export class BlockFactoryTests extends BEMProcessor {
     imports.registerSource(
       extendsFilename,
       `@block-reference base from "./base.css";
-       .root { extends: base; color: red; }`,
+       :scope { extends: base; color: red; }`,
     );
     let importer = imports.importer();
     let options: PluginOptions = {importer: importer};
@@ -58,7 +58,7 @@ export class BlockFactoryTests extends BEMProcessor {
     let blockFilename1 = "foo/bar/block_1.css";
     imports.registerSource(
       blockFilename1,
-      `.root {
+      `:scope {
          block-name: block;
          color: red;
        }`,
@@ -68,7 +68,7 @@ export class BlockFactoryTests extends BEMProcessor {
     imports.registerSource(
     blockFilename2,
     ` @block-reference external from "./block_1.css";
-      .root {
+      :scope {
         block-name: block;
         color: red;
       }

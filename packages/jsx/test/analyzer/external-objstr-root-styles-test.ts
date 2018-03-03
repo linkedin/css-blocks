@@ -14,7 +14,7 @@ export class Test {
 
   @test "Elements with mixed classes and block styles are errors."() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -39,7 +39,7 @@ export class Test {
 
   @test "Elements with root applied are tracked on attribute `class`"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -59,13 +59,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
   }
 
-  @test "Root block styles may be applied with `.root` on attribute `class`"() {
+  @test "Root block styles may be applied with `:scope` on attribute `class`"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -74,7 +74,7 @@ export class Test {
 
       function render(){
         let style = objstr({
-          [bar.root]: true,
+          [bar]: true,
         });
         return ( <div class={style}></div> );
       }`,
@@ -85,13 +85,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
   }
 
   @test "Elements with root applied are tracked on attribute `className`"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -111,13 +111,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
   }
 
-  @test "Root block styles may be applied with `.root` on attribute `className`"() {
+  @test "Root block styles may be applied with `:scope` on attribute `className`"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -126,7 +126,7 @@ export class Test {
 
       function render(){
         let style = objstr({
-          [bar.root]: true,
+          [bar]: true,
         });
         return ( <div className={style}></div> );
       }`,
@@ -137,13 +137,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
   }
 
   @test "Root block styles are deduped if applied to multiple valid properties"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -152,7 +152,7 @@ export class Test {
 
       function render(){
         let style = objstr({
-          [bar.root]: true,
+          [bar]: true,
         });
         return ( <div class={style} className={style}></div> );
       }`,
@@ -163,14 +163,14 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ["bar.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
   }
 
   @test "Root block styles are combined if applied to multiple valid properties"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
-      "foo.block.css": ".root { font-family: sans-serif; } .big { font-size: 28px; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
+      "foo.block.css": ":scope { font-family: sans-serif; } .big { font-size: 28px; }",
     });
 
     return parse(`
@@ -180,7 +180,7 @@ export class Test {
 
       function render(){
         let style = objstr({
-          [bar.root]: true,
+          [bar]: true,
         });
         let otherStyle = objstr({
           [foo]: true,
@@ -195,13 +195,13 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
-      assert.deepEqual(analysis.stylesFound, ["bar.root", "foo.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "foo:scope"]);
     });
   }
 
   @test "Cannot pass a style variable to a function."() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -210,7 +210,7 @@ export class Test {
 
       function render(){
         let style = objstr({
-          [bar.root]: true,
+          [bar]: true,
         });
         youShallNotPass(style);
         return ( <div class={style}></div> );
@@ -226,7 +226,7 @@ export class Test {
 
   @test "Cannot change the value of a variable used for styles to a new value"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -235,7 +235,7 @@ export class Test {
 
       function render(){
         let style = objstr({
-          [bar.root]: true,
+          [bar]: true,
         });
         style = "foo";
         return ( <div class={style}></div> );
@@ -251,7 +251,7 @@ export class Test {
 
   @test "Can console.log a style variable"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -260,7 +260,7 @@ export class Test {
 
       function render(){
         let style = objstr({
-          [bar.root]: true,
+          [bar]: true,
         });
         console.log(style);
         return ( <div class={style}></div> );
@@ -271,8 +271,8 @@ export class Test {
 
   @test "Unused objstr calls are not analyzed"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
-      "foo.block.css": ".root { font-family: sans-serif; } .big { font-size: 28px; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
+      "foo.block.css": ":scope { font-family: sans-serif; } .big { font-size: 28px; }",
     });
 
     return parse(`
@@ -282,7 +282,7 @@ export class Test {
 
       function render(){
         let style = objstr({
-          [bar.root]: true,
+          [bar]: true,
         });
         let otherStyle = objstr({
           [foo]: true,
@@ -300,7 +300,7 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
-      assert.deepEqual(analysis.stylesFound, ["bar.root", "foo.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "foo:scope"]);
     });
   }
 }

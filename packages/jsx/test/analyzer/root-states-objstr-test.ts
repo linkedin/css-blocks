@@ -15,7 +15,7 @@ export class Test {
   @test "Root states with sub-states are tracked"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         [state|color=yellow] {
           color: yellow;
         }
@@ -39,14 +39,14 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
-      assert.deepEqual(analysis.stylesFound, ["bar.root", "bar[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|color=yellow]"]);
     });
   }
 
   @test "When provided state value is dynamic, state object is registered as dynamic"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         [state|color=yellow] {
           color: yellow;
         }
@@ -73,14 +73,14 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, [{condition: true, state: 1}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ["bar.root", "bar[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|color=yellow]"]);
     });
   }
 
   @test "static states can depend on dynamic classes"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         [state|awesome] {
           color: yellow;
         }
@@ -100,7 +100,7 @@ export class Test {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar.root", "bar[state|awesome]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|awesome]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, [{condition: true, whenTrue: [0]}]);
       assert.deepEqual(elementAnalysis.dynamicStates, [{container: 0, state: 1}]);
       assert.deepEqual(elementAnalysis.staticStyles, []);
@@ -110,7 +110,7 @@ export class Test {
   @test "Boolean states register"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         [state|awesome] {
           color: yellow;
         }
@@ -130,7 +130,7 @@ export class Test {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar.root", "bar[state|awesome]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|awesome]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, [{condition: true, state: 1}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
@@ -140,7 +140,7 @@ export class Test {
   @test "Accessing sub-state on boolean state throws"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         [state|awesome] {
           color: yellow;
         }
@@ -168,7 +168,7 @@ export class Test {
   @test "Conflicting state names on root and class are handled"() {
     mock({
       "bar.block.css": `
-        .root { color: blue; }
+        :scope { color: blue; }
         [state|awesome] {
           color: yellow;
         }
@@ -198,7 +198,7 @@ export class Test {
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|awesome]", "bar.root", "bar[state|awesome]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|awesome]", "bar:scope", "bar[state|awesome]"]);
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicStates, []);

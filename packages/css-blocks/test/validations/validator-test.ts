@@ -35,7 +35,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -59,7 +59,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
     `;
     return assertParseError(
       TemplateAnalysisError,

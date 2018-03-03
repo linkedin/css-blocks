@@ -24,7 +24,7 @@ describe("Stylesheet analysis", function() {
       assert.deepEqual(serializedAnalysis.blocks, {
         "": "glimmer:stylesheet:/styled-app/components/my-app", // I think the identifier shouldn't be the resolved value from glimmer.
       });
-      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" , ".root", "[state|is-loading]"]);
+      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" , ":scope", "[state|is-loading]"]);
       let expected: ElementsAnalysis = {
         a: { tagName: "div", staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
         b: { tagName: "page-banner", staticStyles: [ ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" } } },
@@ -54,11 +54,11 @@ describe("Stylesheet analysis", function() {
         "": "glimmer:stylesheet:/styled-app/components/with-multiple-blocks",
         "h": fixture("styled-app/src/ui/components/with-multiple-blocks/header.css"),
       });
-      assert.deepEqual(analysis.stylesFound, [".root", ".world", ".world[state|thick]", "h.emphasis", "h.emphasis[state|extra]", "h.root"]);
+      assert.deepEqual(analysis.stylesFound, [".world", ".world[state|thick]", ":scope", "h.emphasis", "h.emphasis[state|extra]", "h:scope"]);
       assert.deepEqual(analysis.elements, {
-        a: { tagName: "div", staticStyles: [ 0 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        a: { tagName: "div", staticStyles: [ 2 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
         b: { tagName: "h1", staticStyles: [ 5 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
-        c: { tagName: "span", staticStyles: [ 1, 2, 3, 4 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        c: { tagName: "span", staticStyles: [ 0, 1, 3, 4 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
       });
     }).catch((error) => {
       console.error(error);
@@ -77,18 +77,18 @@ describe("Stylesheet analysis", function() {
         "h": fixture("styled-app/src/ui/components/with-dynamic-states/header.css"),
       });
       assert.deepEqual(analysis.stylesFound, [
-        ".root",
         ".world",
         ".world[state|thick]",
+        ":scope",
         "h.emphasis",
         "h.emphasis[state|style=bold]",
         "h.emphasis[state|style=italic]",
-        "h.root",
+        "h:scope",
       ]);
       assert.deepEqual(analysis.elements, {
         a: {
           tagName: "div",
-          staticStyles: [ 0 ],
+          staticStyles: [ 2 ],
           dynamicClasses: [],
           dynamicStates: [],
           sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" } },
@@ -102,10 +102,10 @@ describe("Stylesheet analysis", function() {
         },
         c: {
           tagName: "span",
-          staticStyles: [ 1, 3 ],
+          staticStyles: [ 0, 3 ],
           dynamicClasses: [],
           dynamicStates: [
-            { condition: true, state: 2 },
+            { condition: true, state: 1 },
             { stringExpression: true, group: { bold: 4, italic: 5 } },
           ],
           sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" } },
@@ -130,19 +130,19 @@ describe("Stylesheet analysis", function() {
         "t": fixture("styled-app/src/ui/components/with-dynamic-classes/typography.css"),
       });
       assert.deepEqual(analysis.stylesFound, [
-        ".root",
         ".world",
         ".world[state|thick]",
+        ":scope",
         "h.emphasis",
         "h.emphasis[state|style=bold]",
         "h.emphasis[state|style=italic]",
-        "h.root",
+        "h:scope",
         "t.underline",
       ]);
       assert.deepEqual(analysis.elements, {
         a: {
           tagName: "div",
-          staticStyles: [ 0 ],
+          staticStyles: [ 2 ],
           dynamicClasses: [],
           dynamicStates: [],
           sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" } },
@@ -157,9 +157,9 @@ describe("Stylesheet analysis", function() {
         c: {
           tagName: "span",
           staticStyles: [ 3, 7 ],
-          dynamicClasses: [ {condition: true, whenTrue: [ 1 ]} ],
+          dynamicClasses: [ {condition: true, whenTrue: [ 0 ]} ],
           dynamicStates: [
-            { condition: true, state: 2, container: 1 },
+            { condition: true, state: 1, container: 0 },
             { stringExpression: true, group: { bold: 4, italic: 5 } },
           ],
           sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" } },
@@ -167,21 +167,21 @@ describe("Stylesheet analysis", function() {
         d: {
           tagName: "div",
           staticStyles: [],
-          dynamicClasses: [ { condition: true, whenTrue: [ 1 ], whenFalse: [ 3 ]} ],
+          dynamicClasses: [ { condition: true, whenTrue: [ 0 ], whenFalse: [ 3 ]} ],
           dynamicStates: [],
           sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         e: {
           tagName: "div",
           staticStyles: [],
-          dynamicClasses: [ { condition: true, whenTrue: [ 3 ], whenFalse: [ 1 ]} ],
+          dynamicClasses: [ { condition: true, whenTrue: [ 3 ], whenFalse: [ 0 ]} ],
           dynamicStates: [],
           sourceLocation: { start: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         f: {
           tagName: "div",
           staticStyles: [],
-          dynamicClasses: [ { condition: true, whenFalse: [ 1 ]} ],
+          dynamicClasses: [ { condition: true, whenFalse: [ 0 ]} ],
           dynamicStates: [],
           sourceLocation: { start: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },

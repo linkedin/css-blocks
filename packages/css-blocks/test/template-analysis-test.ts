@@ -37,7 +37,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -51,7 +51,7 @@ export class TemplateAnalysisTests {
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".root"],
+        stylesFound: [":scope"],
         elements: {
           "a": {
             staticStyles: [ 0 ],
@@ -69,7 +69,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -83,7 +83,7 @@ export class TemplateAnalysisTests {
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".root"],
+        stylesFound: [":scope"],
         elements: {
           a: {
             tagName: "div",
@@ -103,7 +103,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -144,7 +144,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -155,7 +155,7 @@ export class TemplateAnalysisTests {
       let element = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block1.rootClass);
       analysis.endElement(element);
-      return this.parseBlock(`.root { border: 1px solid black; }`, "blocks/bar.block.css").then(([block2, _]) => {
+      return this.parseBlock(`:scope { border: 1px solid black; }`, "blocks/bar.block.css").then(([block2, _]) => {
         analysis.blocks["ref"] = block2;
         let element = analysis.startElement(POSITION_UNKNOWN);
         element.addStaticClass(block2.rootClass);
@@ -176,7 +176,7 @@ export class TemplateAnalysisTests {
             },
           },
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-          stylesFound: [".root", "ref.root"],
+          stylesFound: [":scope", "ref:scope"],
         };
         assert.deepEqual(result, expectedResult);
       });
@@ -198,7 +198,7 @@ export class TemplateAnalysisTests {
     let css = `
       @block-reference a from "a.css";
 
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -259,7 +259,7 @@ export class TemplateAnalysisTests {
         let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css"},
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-          stylesFound: [".root", "[state|bgcolor]", "[state|color]"],
+          stylesFound: [":scope", "[state|bgcolor]", "[state|color]"],
           elements: {
             a: {
               sourceLocation: { start: { filename: "templates/my-template.hbs", line: 10, column: 32 } },
@@ -303,7 +303,7 @@ export class TemplateAnalysisTests {
           blocks: {"": "blocks/foo.block.css"},
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [
-            ".root",
+            ":scope",
             "[state|bgcolor=blue]",
             "[state|bgcolor=red]",
             "[state|color=blue]",
@@ -356,7 +356,7 @@ export class TemplateAnalysisTests {
     let css = `
       @block-reference a from "a.css";
 
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -413,7 +413,7 @@ export class TemplateAnalysisTests {
     let css = `
       @block-reference a from "a.css";
 
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
       .fdsa { font-size: resolve('a.foo[state|bar]'); font-size: 22px; }
@@ -465,7 +465,7 @@ export class TemplateAnalysisTests {
     let css = `
       @block-reference a from "a.css";
 
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo=red] { color: red; }
       [state|foo=purple] { color: purple; }
       .asdf { font-size: 20px; }
@@ -481,7 +481,7 @@ export class TemplateAnalysisTests {
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".root", "[state|foo=purple]", "[state|foo=red]"],
+        stylesFound: [":scope", "[state|foo=purple]", "[state|foo=red]"],
         elements: {
           a: {
             staticStyles: [ 0 ],
@@ -513,7 +513,7 @@ export class TemplateAnalysisTests {
     let css = `
       @block-reference a from "a.css";
 
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
       .fdsa { font-size: 22px; font-size: resolve('a.foo[state|bar]'); }
@@ -583,7 +583,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -611,7 +611,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -635,7 +635,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
@@ -656,7 +656,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -685,7 +685,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
@@ -716,7 +716,7 @@ export class TemplateAnalysisTests {
 
     let css = `
       @block-reference a from "a.css";
-      .root { color: blue; }
+      :scope { color: blue; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
@@ -731,7 +731,7 @@ export class TemplateAnalysisTests {
         let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
           blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-          stylesFound: [".root", "a.foo"],
+          stylesFound: [":scope", "a.foo"],
           elements: {
             a: {
               dynamicClasses: [],
@@ -759,7 +759,7 @@ export class TemplateAnalysisTests {
     let reader = new OptionsReader(options);
 
     let css = `
-      .root { color: blue; }
+      :scope { color: blue; }
       [state|test] { color: red; }
     `;
     return assertParseError(
@@ -809,7 +809,7 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/a.css",
-      `.root { color: blue; }
+      `:scope { color: blue; }
       .pretty { color: red; }
       .pretty[state|color=yellow] {
         color: yellow;
@@ -821,7 +821,7 @@ export class TemplateAnalysisTests {
 
     let css = `
       @block-reference a from "a.css";
-      .root { extends: a; }
+      :scope { extends: a; }
       .pretty[state|color=black] {
         color: black;
       }
@@ -852,7 +852,7 @@ export class TemplateAnalysisTests {
 
     imports.registerSource(
       "blocks/a.css",
-      `.root { color: blue; }
+      `:scope { color: blue; }
       .pretty { color: red; }
       .pretty[state|color=yellow] {
         color: yellow;
@@ -864,7 +864,7 @@ export class TemplateAnalysisTests {
 
     let css = `
       @block-reference a from "a.css";
-      .root { extends: a; }
+      :scope { extends: a; }
       .pretty[state|color=black] {
         color: black;
       }
@@ -888,7 +888,7 @@ export class TemplateAnalysisTests {
   /*
   @test "analysis can be serialized and deserialized"() {
     let source = `
-      .root {}
+      :scope {}
       .myclass {}
       [state|a-state] {}
       .myclass[state|a-sub-state] {}
@@ -919,7 +919,7 @@ export class TemplateAnalysisTests {
       let analysis = new TemplateAnalysis(template);
       analysis.blocks["a"] = block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
-      element.addStaticClass(block.find(".root") as Block);
+      element.addStaticClass(block.find(":scope") as Block);
       analysis.endElement(element);
       element = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.find(".myclass") as BlockClass);

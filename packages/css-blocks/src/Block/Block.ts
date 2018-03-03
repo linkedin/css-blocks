@@ -14,7 +14,7 @@ import {
   isStateNode,
   NodeAndType,
 } from "../BlockParser";
-import { stateName, stateValue } from "../BlockParser/block-intermediates";
+import { isRootNode, stateName, stateValue } from "../BlockParser/block-intermediates";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { SourceLocation } from "../SourceLocation";
@@ -301,7 +301,7 @@ export class Block
   }
 
   nodeAsStyle(node: selectorParser.Node): [Styles, number] | null {
-    if (node.type === selectorParser.CLASS && node.value === ROOT_CLASS) {
+    if (isRootNode(node)) {
       return [this.rootClass, 0];
     } else if (node.type === selectorParser.TAG) {
       let otherBlock = this.getReferencedBlock(node.value);
@@ -412,7 +412,7 @@ export class Block
     let sourceNames = new Set<string>(this.all().map(s => s.asSource()));
     let sortedNames = [...sourceNames].sort();
     for (let n of sortedNames) {
-      if (n !== `.${ROOT_CLASS}`) {
+      if (n !== ROOT_CLASS) {
         let o = this.find(n) as Styles;
         result.push(o.asDebug(opts));
       }

@@ -24,7 +24,7 @@ export class KeyQueryTests {
     });
   }
   @test "the block as a key selector"() {
-    let css = `.root { color: red; }`;
+    let css = `:scope { color: red; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.rootClass);
@@ -33,8 +33,8 @@ export class KeyQueryTests {
     });
   }
   @test "handles psuedoelements"() {
-    let css = `.root { color: red; }
-               .root::before { content: 'b'; }`;
+    let css = `:scope { color: red; }
+               :scope::before { content: 'b'; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.rootClass);

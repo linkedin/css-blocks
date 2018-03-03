@@ -1,6 +1,6 @@
 @block-reference h from "header.css";
 
-.root {
+:scope {
     color: red;
 }
 

@@ -246,14 +246,14 @@ A state is attached to a single class in the block and describes how that
 class changes when the element is in that state. The names of states are
 scoped to their class and the styles they provide can target only elements
 assigned to that classname. The exception to this is for states that belong
-to the block `.root` class. In general, CSS Blocks restricts the use of
+to the block `:scope` class. In general, CSS Blocks restricts the use of
 combinators in selectors with a preference for unscoped selectors that are
 fast and optimization friendly (See Rules & Constraints below). One of the
 primary exceptions to this is that root states can be used in selectors as a
 scope for classes and other states within the block. So when you find
 yourself thinking that you absolutely need to use a descendant or child
 combinator then you should imagine that use case as a state for a block's
- `.root` class.
+ `:scope` class.
 
 It is important to think of States as part of the public API that describe
 how a block and the classes within it can vary. By keeping all the
@@ -371,10 +371,10 @@ Syntax
 
 ### The root element
 
-Styles can be attached to a block's root element with the class `.root`. The
-`.root` class can be used in selectors in combination with itself as well as
+Styles can be attached to a block's root element with the class `:scope`. The
+`:scope` class can be used in selectors in combination with itself as well as
 in media queries and other @-rules. However, some block-specific syntax may
-only be put into a simple ruleset where the selector is exactly `.root`; it
+only be put into a simple ruleset where the selector is exactly `:scope`; it
 is convention to have only one such ruleset near the top of your block's
 file.
 
@@ -458,7 +458,7 @@ automatically generate a unique name for BEM output mode.
 `shared.block.css`
 
 ```css
-.root {
+:scope {
   block-name: my-block;
   color: blue;
 }
@@ -472,7 +472,7 @@ automatically generate a unique name for BEM output mode.
 ```css
 @block-reference shared from "../shared.block.css";
 
-.root {
+:scope {
   block-name: my-block;
   background-color: blue;
 }
@@ -541,10 +541,10 @@ with a specific selector in the block. In fact, it is an abstraction that can ca
 the CSS blocks compiler to consider many selectors in a block that involve the specific
 block object.
 
-  - `.root` represents the block root for the current block.
+  - `:scope` represents the block root for the current block.
   - `a-block-reference.root` represents the block root for the
     block that has a `@block-reference` as `a-block-reference` from the current
-    block. In many cases, the `.root` can be safely omitted.
+    block. In many cases, the `:scope` can be safely omitted.
   - `[state|foo]` or `[state|foo=bar]` represent the
     root state named `foo` or the state named `foo` with the substate of `bar`.
   - `a-block-reference[state|foo]` or `a-block-reference[state|foo=bar]`
@@ -602,7 +602,7 @@ Rather than having to specify the block root, a block class can declare itself t
 
 ```css
 // tab.block.css
-.root {
+:scope {
   background-color: gray;
   color: black;
   flex: 1 1 content;
@@ -631,7 +631,7 @@ Rather than having to specify the block root, a block class can declare itself t
 
 // tabs.block.css
 @block-reference tab from "tab.block.css";
-.root {
+:scope {
   display: flex;
 }
 
@@ -693,13 +693,13 @@ other block:
 And now that block can be referenced within this file by the name
 `another`.
 
-To inherit, you must set the property `extends` inside the block's `.root`
+To inherit, you must set the property `extends` inside the block's `:scope`
 class to the name of the block you wish to inherit.
 
 ```css
 @block-refererence another from "./another-block.block.css";
 
-.root {
+:scope {
   extends: another;
 }
 ```
@@ -727,7 +727,7 @@ a block `implements` one or more blocks.
 ```css
 @block-reference base from "./base.block.css";
 @block-reference other from "./other.block.css";
-.root { implements: base, other; color: red; }
+:scope { implements: base, other; color: red; }
 ```
 
 Now if there are any states, classes or substates in those other blocks
@@ -1231,7 +1231,7 @@ of the same value in the key selector the following resolution is created:
 
 ```css
 @block-reference base from "./base.block.css";
-.root { extends: base; }
+:scope { extends: base; }
 .foo {
   color: resolve("base.foo");
   color: blue; // conflicts with color value(s) in a selector targeting base.foo
@@ -1340,7 +1340,7 @@ change the source authoring. Here's our form example from above written with Sas
 
 ```scss
 $base-size: 1em;
-.root {
+:scope {
   block-name: my-form;
   margin: 2 * $base-size 0;
   padding: $base-size $base-size / 2;
@@ -1438,7 +1438,7 @@ the current component's styles:
 ```css
 @block-reference icons from "../../shared/styles/icons/dark.block.css";
 
-.root {
+:scope {
   border: 1px solid black;
   overflow: auto;
 }
@@ -1453,7 +1453,7 @@ the current component's styles:
 `my-component/template.hbs`
 
 ```hbs
-<div class="icons.root" state:icons.hoverable state:icons.dark>
+<div class="icons:scope" state:icons.hoverable state:icons.dark>
   <div class="icon icons.new">New File</div>
   <div class="icon icons.save">Save File</div>
   <div class="icon icons.undo">Undo</div>

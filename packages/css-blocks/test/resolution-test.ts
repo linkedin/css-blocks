@@ -106,7 +106,7 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "grid.css",
-      `.root {
+      `:scope {
          display: grid;
          grid-template-areas: "nav     nav  nav  nav"
                               "sidebar main main main"; }
@@ -224,7 +224,7 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "grid.css",
-      `.root {
+      `:scope {
          display: grid;
          grid-template-areas: "nav     nav  nav  nav"
                               "sidebar main main main"; }
@@ -377,7 +377,7 @@ export class BlockInheritance extends BEMProcessor {
     imports.registerSource(
       "other.css",
       `@block-reference base from "base.css";
-       .root { extends: base; }
+       :scope { extends: base; }
        .nav { border: 1px solid black; color: red; }`,
     );
 
@@ -409,7 +409,7 @@ export class BlockInheritance extends BEMProcessor {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "other.css",
-      `.root { border: 1px solid black; width: 100%; }`,
+      `:scope { border: 1px solid black; width: 100%; }`,
     );
 
     let filename = "conflicts.css";
@@ -418,7 +418,7 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                       border: resolve("other");
                       width: 100px;
-                      width: resolve("other.root");
+                      width: resolve("other:scope");
                     }`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
@@ -623,7 +623,7 @@ export class BlockInheritance extends BEMProcessor {
 
     let filename = "conflicts.css";
     let inputCSS = `@block-reference super from "super.css";
-                    .root { extends: super; }
+                    :scope { extends: super; }
                     .article {
                       color: green;
                       color: resolve("super.main");

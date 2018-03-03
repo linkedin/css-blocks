@@ -1,6 +1,9 @@
 import { BlockPathError, ErrorLocation } from "../errors";
 
-import { CLASS_NAME_IDENT as CSS_IDENT } from "./BlockSyntax";
+import {
+  CLASS_NAME_IDENT as CSS_IDENT,
+  ROOT_CLASS,
+} from "./BlockSyntax";
 
 interface BlockToken {
   type: "block";
@@ -42,8 +45,9 @@ const NAMESPACE_END = "|";
 const VALUE_START = "=";
 const SINGLE_QUOTE = `'`;
 const DOUBLE_QUOTE = `"`;
+const PSEUDO_BEGIN = ":";
 const WHITESPACE_REGEXP = /\s/g;
-const SEPARATORS = new Set([CLASS_BEGIN, STATE_BEGIN]);
+const SEPARATORS = new Set([CLASS_BEGIN, STATE_BEGIN, PSEUDO_BEGIN]);
 
 export const ERRORS = {
   whitespace: "Whitespace is only allowed in quoted state values",
@@ -62,7 +66,7 @@ function stringify(tokens: Token[]): string {
   let out = "";
   for (let token of tokens) {
          if (isBlock(token)) { out += token.name; }
-    else if (isClass(token)) { out += `.${token.name}`; }
+    else if (isClass(token)) { out += token.name === ROOT_CLASS ? token.name : `.${token.name}`; }
     else if (isState(token)) { out += `[${token.namespace}|${token.name}${token.value ? `="${token.value}"` : ""}]`; }
   }
   return out;
@@ -115,6 +119,8 @@ export class BlockPath {
   private _tokens: Token[] = [];
   private parts: Token[] = [];
 
+  public readonly original: string;
+
   /**
    * Throw a new BlockPathError with the given message.
    * @param msg The error message.
@@ -152,7 +158,7 @@ export class BlockPath {
     if (isState(token)) {
       this._state = this._state ? this.throw(ERRORS.multipleOfType(token.type)) : token;
       // If no class has been added yet, automatically inject the root class.
-      if (!this._class) { this.addToken({ type: "class", name: "root" }, false); }
+      if (!this._class) { this.addToken({ type: "class", name: ROOT_CLASS }, false); }
     }
 
     // Add the token.
@@ -174,6 +180,20 @@ export class BlockPath {
     while (char = walker.next()) {
 
       switch (true) {
+
+        case char === PSEUDO_BEGIN:
+          if (!isBlock(token)) { return this.throw(ERRORS.invalidIdent(PSEUDO_BEGIN), working.length); }
+          token.name = working;
+          this.addToken(token, true);
+          working = `${PSEUDO_BEGIN}${walker.consume(SEPARATORS)}`;
+          if (working === ROOT_CLASS) {
+            this.addToken({ type: "class", name: ROOT_CLASS }, true);
+            working = "";
+            break;
+          }
+          else {
+            return this.throw(ERRORS.invalidIdent(working), working.length);
+          }
 
         // If a period, we've finished the previous token and are now building a class name.
         case char === CLASS_BEGIN:
@@ -265,7 +285,7 @@ export class BlockPath {
       token.name = working;
       this.addToken(token, true);
     }
-    if (!this._class) { this.addToken({ type: "class", name: "root" }, false); }
+    if (!this._class) { this.addToken({ type: "class", name: ROOT_CLASS }, false); }
   }
 
   /**
@@ -275,6 +295,7 @@ export class BlockPath {
    */
   constructor(path: string | BlockPath, location?: ErrorLocation) {
     this._location = location;
+    this.original = path.toString();
     if (path instanceof BlockPath) {
       this.parts = path.parts;
     }
@@ -308,7 +329,7 @@ export class BlockPath {
    * Get the parsed class name of this Block Path
    */
   get class(): string {
-    return this._class && this._class.name || "root";
+    return this._class && this._class.name || ROOT_CLASS;
   }
 
   /**

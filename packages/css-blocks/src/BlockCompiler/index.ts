@@ -1,6 +1,7 @@
 import * as postcss from "postcss";
 
 import { Block } from "../Block";
+import { ROOT_CLASS } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
 import { PluginOptions } from "../options";
@@ -33,7 +34,7 @@ export class BlockCompiler {
       root.walkAtRules("block-reference", (atRule) => {
         atRule.remove();
       });
-      root.walkRules(/\.root/, (rule) => {
+      root.walkRules(ROOT_CLASS, (rule) => {
         rule.walkDecls(/^(extends|implements|block-name)$/, (decl) => {
           decl.remove();
         });

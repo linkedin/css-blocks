@@ -1,6 +1,6 @@
 import { Attribute, AttributeValue, attrValues } from "@opticss/element-analysis";
 
-import { UNIVERSAL_STATE } from "../BlockSyntax";
+import { ROOT_CLASS, UNIVERSAL_STATE } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
@@ -33,7 +33,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
 
   protected newChild(name: string): StateGroup { return new StateGroup(name, this); }
 
-  get isRoot(): boolean { return this.name === "root"; }
+  get isRoot(): boolean { return this.name === ROOT_CLASS; }
 
   public getGroups(): StateGroup[] { return this.children(); }
   public getGroup(name: string): StateGroup | null { return this.getChild(name); }
@@ -48,7 +48,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
    * Ensure that a `StateGroup` with the given name exists. If the `StateGroup`
    * does not exist, it is created.
    * @param name The State group to ensure exists.
-   * @param vallue The State's value to ensure exists.
+   * @param value The State's value to ensure exists.
    * @returns The State object.
    */
   public ensureGroup(name: string): StateGroup { return this.ensureChild(name); }
@@ -108,7 +108,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
    * Export as original class name.
    * @returns String representing original class.
    */
-  public asSource(): string { return `.${this.name}`; }
+  public asSource(): string { return this.isRoot ? ROOT_CLASS : `.${this.name}`; }
 
   /**
    * Emit analysis attributes for the class value this

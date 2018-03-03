@@ -14,7 +14,7 @@ export class Test {
 
   @test "Elements with classes applied are tracked"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -25,7 +25,7 @@ export class Test {
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar:scope"]);
       assert.deepEqual(analysis.elements.a.staticStyles, [1]);
       assert.deepEqual(analysis.elements.b.staticStyles, [0]);
     });
@@ -33,7 +33,7 @@ export class Test {
 
   @test 'Elements with classes applied are tracked on property "className"'() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
     });
 
     return parse(`
@@ -44,7 +44,7 @@ export class Test {
     ).then((metaAnalysis: MetaAnalysis) => {
       let result = metaAnalysis.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar.root"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar:scope"]);
       assert.deepEqual(analysis.elements.a.staticStyles, [1]);
       assert.deepEqual(analysis.elements.b.staticStyles, [0]);
     });
@@ -52,7 +52,7 @@ export class Test {
 
   @test "Unrecognized classes throw"() {
     mock({
-      "bar.block.css": ".root { color: red; } .foo { color: blue; } .bar { float: left; }",
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; } .bar { float: left; }",
     });
 
     return parse(`
@@ -63,14 +63,14 @@ export class Test {
     ).then(() => {
       assert.equal("Should never get here", "");
     }).catch((err: Error) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No class named "baz" found on block "bar". Did you mean one of: .root, .foo, .bar (4:47)');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: No class named "baz" found on block "bar". Did you mean one of: :scope, .foo, .bar (4:47)');
     });
   }
 
   @test "Throw when referencing non-existent sub-state"() {
     mock({
       "bar.block.css": `
-        .root { color: red; }
+        :scope { color: red; }
         .foo { color: blue; }
         .baz { color: yellow; }
         .foo[state|baz] { color: red; }`,
