@@ -2,7 +2,7 @@ import { assertNever, firstOfType } from "@opticss/util";
 import { CompoundSelector } from "opticss";
 import selectorParser = require("postcss-selector-parser");
 
-import { ROOT_CLASS } from "../BlockSyntax";
+import { ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
 
 export enum BlockType {
   root = 1,
@@ -94,7 +94,7 @@ export function isClassNode(node: selectorParser.Node): node is selectorParser.C
  * @return True if state selector, false if not.
  */
 export function isStateNode(node: selectorParser.Node): node is selectorParser.Attribute {
-  return node.type === selectorParser.ATTRIBUTE && (node).namespace === "state";
+  return node.type === selectorParser.ATTRIBUTE && (node).namespace === STATE_NAMESPACE;
 }
 
 /**
