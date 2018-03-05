@@ -1,8 +1,4 @@
 {
   "$schema": "http://json.schemastore.org/tslint",
-  "extends": "./tslint.cli.json",
-  "rules": {
-    "no-debugger": true,
-    "no-console": [true, "log"]
-  }
+  "extends": "@opticss/code-style/configs/tslint.release.json"
 }

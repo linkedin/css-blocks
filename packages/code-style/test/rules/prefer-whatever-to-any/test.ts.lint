@@ -1,8 +1,0 @@
-let foo: () => any;
-               ~~~ [Using `any` is usually a bad idea. Consider using `whatever` from @opticss/util instead.]     
-
-function foo(bar: any): any {
-                  ~~~        [Using `any` is usually a bad idea. Consider using `whatever` from @opticss/util instead.]     
-                        ~~~  [Using `any` is usually a bad idea. Consider using `whatever` from @opticss/util instead.]     
-  return true;
-}

@@ -1,39 +1,4 @@
 {
   "$schema": "http://json.schemastore.org/tslint",
-  "rules": {
-    "no-var-keyword": true,
-    "adjacent-overload-signatures": true,
-    "no-for-in-array":true,
-    "prefer-whatever-to-any": true,
-    "no-reference": true,
-    "no-eval": true,
-    "no-floating-promises": true,
-    "no-invalid-template-strings": true,
-    "no-string-throw": true,
-    "switch-default": true,
-    "no-unnecessary-type-assertion": true,
-    "label-position": true,
-    "no-construct": true,
-    "no-duplicate-variable": true,
-    "no-inferrable-types": true,
-    "no-unused-expression": true,
-    "semicolon": [true, "always"],
-    "triple-equals": true,
-    "class-name": true,
-    "no-default-export": true,
-    "new-parens": true,
-    "variable-name": [
-      true,
-      "check-format",
-      "ban-keywords",
-      "allow-leading-underscore"
-    ],
-    "no-redundant-jsdoc": true,
-    "binary-expression-operand-order": true,
-    "prefer-for-of": true,
-    "max-line-length": [
-      false,
-      {"limit": 120}
-    ]
-  }
+  "extends": "@opticss/code-style/configs/tslint.interactive.json"
 }
