@@ -75,8 +75,8 @@
     "@css-blocks/runtime": "^0.17.0"
   },
   "dependencies": {
-    "@opticss/template-api": "link:../../build/opticss/packages/template-api",
-    "@opticss/util": "link:../../build/opticss/packages/util",
+    "@opticss/template-api": "^0.2.0",
+    "@opticss/util": "^0.1.1",
     "babel-traverse": "^6.24.1",
     "babel-types": "^6.24.1",
     "babylon": "^6.17.4",
@@ -84,6 +84,6 @@
     "debug": "^2.6.8",
     "minimatch": "^3.0.4",
     "object.values": "^1.0.4",
-    "opticss": "link:../../build/opticss/packages/opticss"
+    "opticss": "^0.2.0"
   }
 }
