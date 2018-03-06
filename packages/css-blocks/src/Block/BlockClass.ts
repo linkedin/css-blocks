@@ -160,8 +160,6 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
     return res;
   }
 
-  public localName(): string { return this.uid; }
-
   /**
    * Export as original class name.
    * @returns String representing original class.
