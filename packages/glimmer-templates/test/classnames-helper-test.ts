@@ -87,7 +87,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [r],
     });
-    element.addStaticState(r, s1);
+    element.addStaticAttr(r, s1);
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
@@ -108,7 +108,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [r],
     });
-    element.addDynamicState(r, s1, builders.boolean(false));
+    element.addDynamicAttr(r, s1, builders.boolean(false));
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(

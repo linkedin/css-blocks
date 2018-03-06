@@ -25,9 +25,9 @@ import {
   Conditional,
   Dependency,
   DynamicClasses,
+  HasAttrValue,
   hasDependency,
   HasGroup,
-  HasState,
   IndexedClassRewrite,
   isConditional,
   isFalseCondition,
@@ -87,7 +87,7 @@ export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: J
 
 function constructArgs(rewrite: IndexedClassRewrite<Style>, element: JSXElementAnalysis): Array<Expression> {
   let expr = new Array<Expression>();
-  expr.push(builders.number(element.dynamicClasses.length + element.dynamicStates.length));
+  expr.push(builders.number(element.dynamicClasses.length + element.dynamicAttributes.length));
   expr.push(builders.number(rewrite.dynamicClasses.length));
   expr.push(...constructSourceArgs(rewrite, element));
   expr.push(...constructOutputArgs(rewrite));
@@ -101,31 +101,31 @@ function constructSourceArgs(rewrite: IndexedClassRewrite<Style>, element: JSXEl
     expr.push(builders.number(SourceExpression.ternary));
     expr.push(...constructTernary(classes, rewrite));
   }
-  for (let stateExpr of element.dynamicStates) {
-    if (isSwitch(stateExpr)) {
-      if (hasDependency(stateExpr)) {
+  for (let attr of element.dynamicAttributes) {
+    if (isSwitch(attr)) {
+      if (hasDependency(attr)) {
         expr.push(builders.number(SourceExpression.switchWithDep));
-        expr.push(...constructDependency(stateExpr, rewrite));
+        expr.push(...constructDependency(attr, rewrite));
       } else {
         expr.push(builders.number(SourceExpression.switch));
       }
-      expr.push(...constructSwitch(stateExpr, rewrite));
+      expr.push(...constructSwitch(attr, rewrite));
     } else {
       let type = 0;
-      if (hasDependency(stateExpr)) {
+      if (hasDependency(attr)) {
         type = type | SourceExpression.dependency;
       }
-      if (isConditional(stateExpr)) {
+      if (isConditional(attr)) {
         type = type | SourceExpression.boolean;
       }
       expr.push(builders.number(type));
-      if (hasDependency(stateExpr)) {
-        expr.push(...constructDependency(stateExpr, rewrite));
+      if (hasDependency(attr)) {
+        expr.push(...constructDependency(attr, rewrite));
       }
-      if (isConditional(stateExpr)) {
-        expr.push(...constructConditional(stateExpr, rewrite));
+      if (isConditional(attr)) {
+        expr.push(...constructConditional(attr, rewrite));
       }
-      expr.push(...constructStateReferences(stateExpr, rewrite));
+      expr.push(...constructAttrReferences(attr, rewrite));
     }
   }
   return expr;
@@ -175,24 +175,24 @@ function resolveInheritance(classes: Array<BlockClass>, rewrite: IndexedClassRew
  *   3/4: number (d) of style indexes this is dependent on.
  *   4/5..((4/5)+d-1): style indexes that must be set for this to be true
  */
-function constructDependency(stateExpr: Dependency, rewrite: IndexedClassRewrite<Style>): Array<Expression> {
+function constructDependency(attr: Dependency, rewrite: IndexedClassRewrite<Style>): Array<Expression> {
   let expr = new Array<Expression>();
   expr.push(builders.number(1));
-  expr.push(builders.number(unwrap(rewrite.indexOf(stateExpr.container))));
+  expr.push(builders.number(unwrap(rewrite.indexOf(attr.container))));
   return expr;
 }
 
-function constructConditional(stateExpr: Conditional<BooleanAST> & HasState, _rewrite: IndexedClassRewrite<Style>): Array<Expression> {
+function constructConditional(attr: Conditional<BooleanAST> & HasAttrValue, _rewrite: IndexedClassRewrite<Style>): Array<Expression> {
   let expr = new Array<Expression>();
-  expr.push(stateExpr.condition);
+  expr.push(attr.condition);
   return expr;
 }
 
-function constructStateReferences(stateExpr: HasState, rewrite: IndexedClassRewrite<Style>): Array<Expression> {
+function constructAttrReferences(attr: HasAttrValue, rewrite: IndexedClassRewrite<Style>): Array<Expression> {
   let expr = new Array<Expression>();
   // TODO: inheritance
   expr.push(builders.number(1));
-  expr.push(builders.number(unwrap(rewrite.indexOf(stateExpr.state))));
+  expr.push(builders.number(unwrap(rewrite.indexOf(attr.value))));
   return expr;
 }
 /*
@@ -211,18 +211,18 @@ function constructStateReferences(stateExpr: HasState, rewrite: IndexedClassRewr
  *   2: number (s) of source styles set. s >= 1
  *   3..3+s-1: indexes of source styles set
  */
-function constructSwitch(stateExpr: Switch<StringAST> & HasGroup, rewrite: IndexedClassRewrite<Style>): Array<Expression> {
+function constructSwitch(attr: Switch<StringAST> & HasGroup, rewrite: IndexedClassRewrite<Style>): Array<Expression> {
   let expr = new Array<Expression>();
-  let values = Object.keys(stateExpr.group);
+  let values = Object.keys(attr.group);
   expr.push(builders.number(values.length));
-  if (stateExpr.disallowFalsy) {
+  if (attr.disallowFalsy) {
     expr.push(builders.number(FalsySwitchBehavior.error));
   } else {
     expr.push(builders.number(FalsySwitchBehavior.unset));
   }
-  expr.push(stateExpr.stringExpression);
+  expr.push(attr.stringExpression);
   for (let value of values) {
-    let obj = stateExpr.group[value];
+    let obj = attr.group[value];
     expr.push(builders.string(value));
     expr.push(builders.number(1));
     expr.push(builders.number(unwrap(rewrite.indexOf(obj))));

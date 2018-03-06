@@ -1,6 +1,6 @@
 import { whatever } from "@opticss/util";
 /**
- * This helpers converts input classes and states into
+ * This helpers converts input classes and state attributes into
  * runtime dynamic classes from the optimizer.
  *
  * The arguments that are passed in come from the rewriter;

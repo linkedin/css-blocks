@@ -130,10 +130,10 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
     } else if (isBlockStateResult(result)) {
       if (rightHandLiteral) {
         if (rightHandLiteral.value) {
-          element.addStaticState(result.blockClass || result.block, result.state);
+          element.addStaticAttr(result.blockClass || result.block, result.state);
         } // else ignore
       } else {
-        element.addDynamicState(result.blockClass || result.block, result.state, rightHandExpr);
+        element.addDynamicAttr(result.blockClass || result.block, result.state, rightHandExpr);
       }
     } else {
       let blockOrClass = result.blockClass || result.block;

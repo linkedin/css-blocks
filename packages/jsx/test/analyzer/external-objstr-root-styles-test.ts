@@ -57,7 +57,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
       assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
@@ -83,7 +83,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
       assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
@@ -109,7 +109,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
       assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
@@ -135,7 +135,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
       assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
@@ -161,7 +161,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
       assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
     });
@@ -193,7 +193,7 @@ export class Test {
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(Object.keys(analysis.elements), ["a"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
       assert.deepEqual(analysis.stylesFound, ["bar:scope", "foo:scope"]);
     });
@@ -298,7 +298,7 @@ export class Test {
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(Object.keys(analysis.elements), ["a"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
       assert.deepEqual(analysis.stylesFound, ["bar:scope", "foo:scope"]);
     });

@@ -204,7 +204,7 @@ export class JSXElementAnalyzer {
             if (isBlockStateGroupResult(expressionResult)) {
               element.addDynamicGroup(blockClass, expressionResult.stateGroup, expressionResult.dynamicStateExpression, false);
             } else if (isBlockStateResult(expressionResult)) {
-              element.addStaticState(blockClass, expressionResult.state);
+              element.addStaticAttr(blockClass, expressionResult.state);
             } else {
               throw new Error("internal error, not expected on a call expression");
             }

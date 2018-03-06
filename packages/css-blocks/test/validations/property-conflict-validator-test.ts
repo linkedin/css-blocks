@@ -1293,7 +1293,7 @@ function constructElement(block: Block, ...styles: string[]) {
       element.addStaticClass(style);
     }
     else if (style instanceof AttrValue) {
-      element.addStaticState(style.parent.parent, style);
+      element.addStaticAttr(style.parent.parent, style);
     }
   }
 
@@ -1301,7 +1301,7 @@ function constructElement(block: Block, ...styles: string[]) {
     addDynamic(truthy: string[] | string, falsy?: string[]) {
       if (typeof truthy === "string") {
         let state = block.lookup(truthy) as AttrValue;
-        element.addDynamicState(state.parent.parent, state, true);
+        element.addDynamicAttr(state.parent.parent, state, true);
         return this;
       }
       let truthyStyles = truthy.map(block.lookup.bind(block));

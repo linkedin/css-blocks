@@ -15,7 +15,7 @@ import {
   NumericLiteral,
   StringLiteral,
 } from "babel-types";
-import { Block, BlockClass, isBlockClass, AttrValue, Attribute } from "css-blocks";
+import { Attribute, AttrValue, Block, BlockClass, isBlockClass } from "css-blocks";
 import * as debugGenerator from "debug";
 
 import { ErrorLocation, MalformedBlockPath } from "../utils/Errors";

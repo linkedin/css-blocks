@@ -44,17 +44,17 @@ export class Test {
 
       let aAnalysis = analysis.elements.a;
       assert.deepEqual(aAnalysis.dynamicClasses, []);
-      assert.deepEqual(aAnalysis.dynamicStates, []);
+      assert.deepEqual(aAnalysis.dynamicAttributes, []);
       assert.deepEqual(aAnalysis.staticStyles, [0]);
 
       let bAnalysis = analysis.elements.b;
       assert.deepEqual(bAnalysis.dynamicClasses, []);
-      assert.deepEqual(bAnalysis.dynamicStates, []);
+      assert.deepEqual(bAnalysis.dynamicAttributes, []);
       assert.deepEqual(bAnalysis.staticStyles, [2]);
 
       let cAnalysis = analysis.elements.c;
       assert.deepEqual(cAnalysis.dynamicClasses, []);
-      assert.deepEqual(cAnalysis.dynamicStates, []);
+      assert.deepEqual(cAnalysis.dynamicAttributes, []);
       assert.deepEqual(cAnalysis.staticStyles, [0, 1]);
     });
   }
@@ -79,7 +79,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
       assert.deepEqual(analysis.stylesFound, ["bar.foo"]);
     });
@@ -173,7 +173,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
       assert.deepEqual(analysis.stylesFound, ["bar.biz", "foo.biz"]);
     });
@@ -200,7 +200,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, []);
       assert.deepEqual(analysis.stylesFound, []);
     });
@@ -324,7 +324,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, []);
       assert.deepEqual(analysis.stylesFound, []);
     });

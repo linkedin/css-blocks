@@ -41,29 +41,29 @@ export class TemplateAnalysisTests {
     });
   }
 
-  private useStates(element: ElementAnalysis<whatever, whatever, whatever>, stateContainer: BlockClass) {
-    for (let group of stateContainer.getAttributes()) {
-      if (group.hasResolvedValues()) {
-        element.addDynamicGroup(stateContainer, group, null);
+  private useAttrs(element: ElementAnalysis<whatever, whatever, whatever>, klass: BlockClass) {
+    for (let attribute of klass.getAttributes()) {
+      if (attribute.hasResolvedValues()) {
+        element.addDynamicGroup(klass, attribute, null);
       }
     }
-    for (let state of stateContainer.booleanValues()) {
-      element.addStaticState(stateContainer, state);
+    for (let attrs of klass.booleanValues()) {
+      element.addStaticAttr(klass, attrs);
     }
   }
   private useBlockStyles(
     analysis: Analysis, block: Block, blockName: string,
-    useStatesCallback?: (container: BlockClass, element: ElementAnalysis<whatever, whatever, whatever>) => void,
+    useAttrsCallback?: (container: BlockClass, element: ElementAnalysis<whatever, whatever, whatever>) => void,
   ) {
     analysis.blocks[blockName] = block;
 
     for (let c of block.classes) {
       let element = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(c);
-      if (useStatesCallback) {
-        useStatesCallback(c, element);
+      if (useAttrsCallback) {
+        useAttrsCallback(c, element);
       } else {
-        this.useStates(element, c);
+        this.useAttrs(element, c);
       }
       analysis.endElement(element);
     }
@@ -82,9 +82,9 @@ export class TemplateAnalysisTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       this.useBlockStyles(analysis, block, "", (container, el) => {
         if (container.asSource() === ".asdf") {
-          el.addDynamicState(container, block.find(".asdf[state|larger]") as AttrValue, true);
+          el.addDynamicAttr(container, block.find(".asdf[state|larger]") as AttrValue, true);
         } else {
-          this.useStates(el, container);
+          this.useAttrs(el, container);
         }
       });
       let optimizerAnalysis = analysis.forOptimizer(reader);

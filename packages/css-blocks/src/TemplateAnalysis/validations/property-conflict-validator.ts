@@ -4,9 +4,9 @@ import * as postcss from "postcss";
 
 import { Ruleset, Style } from "../../Block";
 import {
-  isBooleanState,
+  isAttrGroup,
+  isBooleanAttr,
   isFalseCondition,
-  isStateGroup,
   isTrueCondition,
 } from "../ElementAnalysis";
 
@@ -169,21 +169,21 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
 
   });
 
-  // For each dynamic state, process those in state groups independently,
-  // as they are mutually exclusive. Boolean states are evaluated directly.
-  elAnalysis.dynamicStates.forEach((condition) => {
-    if (isStateGroup(condition)) {
-      let stateConditions: PropMap = new TwoKeyMultiMap(false);
-      for (let state of objectValues(condition.group)) {
-        evaluate(state, allConditions, conflicts);
-        add(stateConditions, state);
+  // For each dynamic AttrValue, process those in their Attributes independently,
+  // as they are mutually exclusive. Boolean Attributes are evaluated directly.
+  elAnalysis.dynamicAttributes.forEach((condition) => {
+    if (isAttrGroup(condition)) {
+      let attrConditions: PropMap = new TwoKeyMultiMap(false);
+      for (let attr of objectValues(condition.group)) {
+        evaluate(attr, allConditions, conflicts);
+        add(attrConditions, attr);
       }
-      allConditions.setAll(stateConditions);
+      allConditions.setAll(attrConditions);
     }
 
-    else if (isBooleanState(condition)) {
-      evaluate(condition.state, allConditions, conflicts);
-      add(allConditions, condition.state);
+    else if (isBooleanAttr(condition)) {
+      evaluate(condition.value, allConditions, conflicts);
+      add(allConditions, condition.value);
     }
   });
 

@@ -10,11 +10,11 @@ import selectorParser = require("postcss-selector-parser");
 
 import {
   BlockType,
+  isAttributeNode,
   isClassNode,
-  isStateNode,
   NodeAndType,
 } from "../BlockParser";
-import { attrName, isRootNode } from "../BlockParser/block-intermediates";
+import { isRootNode, toAttrToken } from "../BlockParser/block-intermediates";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { SourceLocation } from "../SourceLocation";
@@ -103,17 +103,17 @@ export class Block
     }
     let klass = block.resolveClass(path.class);
     let attrInfo = path.attribute;
-    let state;
+    let attr;
     if (klass && attrInfo) {
-      state = klass.resolveValue(attrInfo);
-      if (!state) return undefined;
+      attr = klass.resolveValue(attrInfo);
+      if (!attr) return undefined;
     }
 
-    if (!state && !klass && errLoc) {
+    if (!attr && !klass && errLoc) {
       throw new InvalidBlockSyntax(`No Style "${path.path}" found on Block "${block.uid}".`, errLoc);
     }
 
-    return state || klass || undefined;
+    return attr || klass || undefined;
   }
 
   /**
@@ -283,15 +283,15 @@ export class Block
     switch (obj.blockType) {
       case BlockType.root:
         return this.rootClass;
-      case BlockType.state:
-        return this.rootClass.getValue(attrName(obj.node));
+      case BlockType.attribute:
+        return this.rootClass.getValue(toAttrToken(obj.node));
       case BlockType.class:
         return this.getClass(obj.node.value);
-      case BlockType.classState:
+      case BlockType.classAttribute:
         let classNode = obj.node.prev();
         let classObj = this.getClass(classNode.value!);
         if (classObj) {
-          return classObj.getValue(attrName(obj.node));
+          return classObj.getValue(toAttrToken(obj.node));
         }
         return null;
       default:
@@ -310,10 +310,10 @@ export class Block
           let klass = otherBlock.getClass(next.value);
           if (klass) {
             let another = next.next();
-            if (another && isStateNode(another)) {
-              let state = klass.getValue(attrName(another));
-              if (state) {
-                return [state, 2];
+            if (another && isAttributeNode(another)) {
+              let attr = klass.getValue(toAttrToken(another));
+              if (attr) {
+                return [attr, 2];
               } else {
                 return null; // this is invalid and should never happen.
               }
@@ -324,10 +324,10 @@ export class Block
           } else {
             return null;
           }
-        } else if (next && isStateNode(next)) {
-          let state = otherBlock.rootClass.getValue(attrName(next));
-          if (state) {
-            return [state, 1];
+        } else if (next && isAttributeNode(next)) {
+          let attr = otherBlock.rootClass.getValue(toAttrToken(next));
+          if (attr) {
+            return [attr, 1];
           } else {
             return null;
           }
@@ -343,20 +343,20 @@ export class Block
         return null;
       }
       let next = node.next();
-      if (next && isStateNode(next)) {
-        let state = klass.getValue(attrName(next));
-        if (state === null) {
+      if (next && isAttributeNode(next)) {
+        let attr = klass.getValue(toAttrToken(next));
+        if (attr === null) {
           return null;
         } else {
-          return [state, 1];
+          return [attr, 1];
         }
       } else {
         return [klass, 0];
       }
-    } else if (isStateNode(node)) {
-      let state = this.rootClass.ensureValue(attrName(node));
-      if (state) {
-        return [state, 0];
+    } else if (isAttributeNode(node)) {
+      let attr = this.rootClass.ensureValue(toAttrToken(node));
+      if (attr) {
+        return [attr, 0];
       } else {
         return null;
       }

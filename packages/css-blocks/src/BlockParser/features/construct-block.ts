@@ -7,17 +7,17 @@ import { Block, Style } from "../../Block";
 import { selectorSourceLocation as loc, sourceLocation } from "../../SourceLocation";
 import * as errors from "../../errors";
 import {
-  attrName,
   BlockNodeAndType,
   BlockType,
   blockTypeName,
   getBlockNode,
+  isAttributeNode,
   isClassLevelObject,
   isClassNode,
   isRootLevelObject,
   isRootNode,
-  isStateNode,
   NodeAndType,
+  toAttrToken,
 } from "../block-intermediates";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
@@ -86,15 +86,14 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
               styleRuleTuples.add([block.rootClass, rule]);
               break;
 
-            // If a local state selector, ensure the state is registered with
+            // If a local attribute selector, ensure the attribute is registered with
             // the parent block and track add all property concerns from this
-            // ruleset. If a foreign state, do nothing (validation happened earlier).
-            case BlockType.state:
+            // ruleset. If a foreign attribute, do nothing (validation happened earlier).
+            case BlockType.attribute:
               if (obj.blockName) { break; }
-              let state = block.rootClass
-                .ensureValue(attrName(obj.node));
+              let attr = block.rootClass.ensureValue(toAttrToken(obj.node));
               if (!isKey) { break; }
-              styleRuleTuples.add([state, rule]);
+              styleRuleTuples.add([attr, rule]);
               break;
 
             // If a class selector, ensure this class is registered with the
@@ -105,15 +104,15 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
               styleRuleTuples.add([blockClass, rule]);
               break;
 
-            // If a classState selector, ensure the class is registered with
-            // the parent block, and the state is registered with this class.
+            // If a classAttribute selector, ensure the class is registered with
+            // the parent block, and the attribute is registered with this class.
             // Track all property concerns from this ruleset.
-            case BlockType.classState:
+            case BlockType.classAttribute:
               let classNode = obj.node.prev();
               let classObj = block.ensureClass(classNode.value!);
-              let classState = classObj.ensureValue(attrName(obj.node));
+              let classAttr = classObj.ensureValue(toAttrToken(obj.node));
               if (!isKey) { break; }
-              styleRuleTuples.add([classState, rule]);
+              styleRuleTuples.add([classAttr, rule]);
               break;
             default:
               assertNever(obj);
@@ -270,7 +269,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
   }
 
   // Targeting attributes that are not state selectors is not allowed in blocks, throw.
-  let nonStateAttribute = sel.nodes.find(n => n.type === selectorParser.ATTRIBUTE && !isStateNode(n));
+  let nonStateAttribute = sel.nodes.find(n => n.type === selectorParser.ATTRIBUTE && !isAttributeNode(n));
   if (nonStateAttribute) {
     throw new errors.InvalidBlockSyntax(
       `Cannot select attributes other than states: ${rule.selector}`,
@@ -303,12 +302,12 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
             node: n,
           };
         } else {
-          if (found.blockType === BlockType.class || found.blockType === BlockType.classState) {
+          if (found.blockType === BlockType.class || found.blockType === BlockType.classAttribute) {
             throw new errors.InvalidBlockSyntax(
               `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
               loc(file, rule, sel.nodes[0]),
             );
-          } else if (found.blockType === BlockType.state) {
+          } else if (found.blockType === BlockType.attribute) {
             throw new errors.InvalidBlockSyntax(
               `It's redundant to specify a state with the an explicit .root: ${rule.selector}`,
               loc(file, rule, n),
@@ -319,7 +318,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
 
       // If selecting a state attribute, assert it is valid, save the found state,
       // and throw the appropriate error if conflicting selectors are found.
-      else if (isStateNode(n)) {
+      else if (isAttributeNode(n)) {
         // Assert this state node uses a valid operator if specifying a value.
         if (n.value && n.operator !== "=") {
           throw new errors.InvalidBlockSyntax(
@@ -328,9 +327,9 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
           );
         }
         if (!found) {
-          found = { node: n, blockType: BlockType.state };
+          found = { node: n, blockType: BlockType.attribute };
         } else if (found.blockType === BlockType.class) {
-          found = { node: n, blockType: BlockType.classState };
+          found = { node: n, blockType: BlockType.classAttribute };
         } else if (found.blockType === BlockType.root) {
           throw new errors.InvalidBlockSyntax(
             `It's redundant to specify a state with an explicit .root: ${rule.selector}`,
@@ -339,7 +338,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
         }
       }
 
-      // If selecting a class, save the found state, and throw the appropriate
+      // If selecting a class, save the found class, and throw the appropriate
       // error if conflicting selectors are found.
       else if (isClassNode(n)) {
         if (!found) {
@@ -358,7 +357,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
                 `Two distinct classes cannot be selected on the same element: ${rule.selector}`,
                 loc(file, rule, n));
             }
-          } else if (found.blockType === BlockType.classState || found.blockType === BlockType.state) {
+          } else if (found.blockType === BlockType.classAttribute || found.blockType === BlockType.attribute) {
             throw new errors.InvalidBlockSyntax(
               `The class must precede the state: ${rule.selector}`,
               loc(file, rule, sel.nodes[0]));

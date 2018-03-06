@@ -74,7 +74,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   styleCount(): number {
     let c = 0;
     for (let el of this.elements.values()) {
-      for (let _s of el.statesFound()) {
+      for (let _s of el.attributesFound()) {
         c++;
       }
       for (let _s of el.classesFound()) {
@@ -265,7 +265,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
         found.add(s);
         yield s;
       }
-      for (let s of el.statesFound(dynamic)) {
+      for (let s of el.attributesFound(dynamic)) {
         if (found.has(s)) continue;
         found.add(s);
         yield s;

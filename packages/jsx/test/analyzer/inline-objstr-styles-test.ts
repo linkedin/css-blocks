@@ -30,7 +30,7 @@ export class Test {
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar:scope"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
@@ -54,7 +54,7 @@ export class Test {
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar.foo[state|always]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, [{condition: true, state: 1}]);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: 1}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
