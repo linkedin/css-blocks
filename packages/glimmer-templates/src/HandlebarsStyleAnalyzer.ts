@@ -16,7 +16,7 @@ import { ElementAnalyzer } from "./ElementAnalyzer";
 import { ResolvedFile } from "./GlimmerProject";
 import { Project } from "./project";
 
-export type StateContainer = Block | BlockClass;
+export type AttributeContainer = Block | BlockClass;
 
 export class BaseStyleAnalyzer {
   project: Project;

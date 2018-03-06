@@ -27,10 +27,8 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   public readonly rulesets: RulesetContainer<AttrValue>;
 
   /**
-   * AttrValue constructor. Provide a local name for this AttrValue, an optional group name,
-   * and the parent container.
-   * @param name The local name for this state.
-   * @param group An optional parent group name.
+   * AttrValue constructor. Provide a local name for this AttrValue, and the parent container.
+   * @param name The local name for this AttrValue.
    * @param parent The parent Attribute of this AttrValue.
    */
   constructor(name: string, parent: Attribute) {
@@ -44,13 +42,13 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   get isUniversal(): boolean { return this.uid === UNIVERSAL_ATTR_VALUE; }
 
   /**
-   * Retrieve the BlockClass that this state belongs to.
+   * Retrieve the BlockClass that this AttrValue belongs to.
    * @returns The parent block class, or null.
    */
   get blockClass(): BlockClass { return this.parent.parent; }
 
   /**
-   * Retrieve this AttrValue's local name, including the optional BlockClass and group designations.
+   * Retrieve this AttrValue's local name, including the BlockClass and Attribute designations.
    * @returns The AttrValue's local name.
    */
   localName(): string {
@@ -63,7 +61,7 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
       let rootIsOptional = true;
       this._sourceAttributes = blockClass.asSourceAttributes(rootIsOptional);
       let value = this.isUniversal ? attrValues.absent() : attrValues.constant(this.uid);
-      this._sourceAttributes.push(new AttributeNS(this.parent.namespace, this.parent.name, value));
+      this._sourceAttributes.push(new AttributeNS(this.parent.namespace || "", this.parent.name, value));
     }
     return this._sourceAttributes.slice();
   }

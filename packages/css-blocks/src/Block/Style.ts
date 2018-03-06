@@ -69,7 +69,7 @@ export abstract class Style<
 
   /**
    * Return all Block Objects that are implied by this object.
-   * This takes inheritance, state/class correlations, and any
+   * This takes inheritance, attr/class correlations, and any
    * other declared links between styles into account.
    *
    * This block object is included in the returned result so the

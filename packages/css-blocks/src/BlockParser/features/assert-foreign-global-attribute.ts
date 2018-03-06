@@ -4,19 +4,19 @@ import { Block } from "../../Block";
 import { selectorSourceLocation as loc } from "../../SourceLocation";
 import * as errors from "../../errors";
 import {
-  attrName,
   BlockType,
   getBlockNode,
+  toAttrToken,
 } from "../block-intermediates";
 
 /**
- * Verify that the external block referenced by `rule` selects on a state that
+ * Verify that the external block referenced by a `rule` selects an Attribute that
  * exists in the external block and is exposed as a global.
  * @param block The current block making the external reference.
  * @param rule The rule referencing the external block.
  * @param obj The parsed node making the external reference.
  */
-export async function assertForeignGlobalState(root: postcss.Root, block: Block, file: string) {
+export async function assertForeignGlobalAttribute(root: postcss.Root, block: Block, file: string) {
 
   root.walkRules((rule) => {
 
@@ -32,8 +32,8 @@ export async function assertForeignGlobalState(root: postcss.Root, block: Block,
         // If node isn't selecting a block, move on
         if (!obj || !obj.blockName) { return; }
 
-        // If selecting something other than a state on external block, throw.
-        if (obj.blockType !== BlockType.state) {
+        // If selecting something other than an attribute on external block, throw.
+        if (obj.blockType !== BlockType.attribute) {
           throw new errors.InvalidBlockSyntax(
             `Only global states from other blocks can be used in selectors: ${rule.selector}`,
             loc(file, rule, obj.node));
@@ -48,15 +48,15 @@ export async function assertForeignGlobalState(root: postcss.Root, block: Block,
         }
 
         // If state referenced does not exist on external block, throw
-        let otherState = otherBlock.rootClass.getValue(attrName(obj.node));
-        if (!otherState) {
+        let otherAttr = otherBlock.rootClass.getValue(toAttrToken(obj.node));
+        if (!otherAttr) {
           throw new errors.InvalidBlockSyntax(
             `No state ${obj.node.toString()} found in : ${rule.selector}`,
             loc(file, rule, obj.node));
         }
 
         // If external state is not set as global, throw.
-        if (!otherState.isGlobal) {
+        if (!otherAttr.isGlobal) {
           throw new errors.InvalidBlockSyntax(
             `${obj.node.toString()} is not global: ${rule.selector}`,
             loc(file, rule, obj.node));

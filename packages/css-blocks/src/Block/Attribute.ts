@@ -7,7 +7,7 @@ import {
 } from "@opticss/element-analysis";
 import { ObjectDictionary } from "@opticss/util";
 
-import { STATE_NAMESPACE, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
+import { IAttrToken as AttrToken, STATE_NAMESPACE, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
@@ -15,11 +15,6 @@ import { AttrValue } from "./AttrValue";
 import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";
-
-export interface AttrToken {
-  namespace: string;
-  name: string;
-}
 
 function isAttrToken(o: AttrToken | string): o is AttrToken {
   return typeof o !== "string";
@@ -41,7 +36,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   protected tokenToUid(token: AttrToken): string { return attrTokenToString(token); }
 
   public get name(): string { return this.token.name; }
-  public get namespace(): string { return this.token.namespace; }
+  public get namespace(): string { return this.token.namespace || ""; }
 
   /**
    * @returns If this Attribute contains anything but the "Universal" AttrValue.
@@ -178,7 +173,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   }
 
   /**
-   * Retrieve this AttrValue's local name, including the optional BlockClass and group designations.
+   * Retrieve this AttrValue's local name, including the optional BlockClass and Attribute designations.
    * @returns The AttrValue's local name.
    */
   localName(): string {

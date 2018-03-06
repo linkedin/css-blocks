@@ -2,18 +2,17 @@ import { assertNever, firstOfType } from "@opticss/util";
 import { CompoundSelector } from "opticss";
 import selectorParser = require("postcss-selector-parser");
 
-import { AttrValueToken } from "../Block/BlockClass";
-import { ROOT_CLASS, STATE_NAMESPACE, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
+import { AttrToken, ROOT_CLASS, STATE_NAMESPACE, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
 
 export enum BlockType {
   root = 1,
-  state,
+  attribute,
   class,
-  classState,
+  classAttribute,
 }
 
 export type NodeAndType = {
-  blockType: BlockType.state | BlockType.classState;
+  blockType: BlockType.attribute | BlockType.classAttribute;
   node: selectorParser.Attribute;
 } | {
   blockType: BlockType.root | BlockType.class;
@@ -24,8 +23,8 @@ export type BlockNodeAndType = NodeAndType & {
   blockName?: string;
 };
 
-/** Extract a state's value (aka subState) from an attribute selector */
-function stateValue(attr: selectorParser.Attribute): string {
+/** Extract an Attribute's value from a `selectorParser` attribute selector */
+function attrValue(attr: selectorParser.Attribute): string {
   if (attr.value) {
     return attr.value.replace(/^(["'])(.+(?=\1$))\1$/, "$2");
   } else {
@@ -33,12 +32,14 @@ function stateValue(attr: selectorParser.Attribute): string {
   }
 }
 
-/** Extract a state's name from an attribute selector */
-export function attrName(attr: selectorParser.Attribute): AttrValueToken {
+/** Extract an Attribute's name from an attribute selector */
+export function toAttrToken(attr: selectorParser.Attribute): AttrToken {
   return {
+    type: "attribute",
     namespace: attr.namespaceString,
     name: attr.attribute,
-    value: stateValue(attr),
+    value: attrValue(attr),
+    quoted: true,
   };
 }
 
@@ -52,9 +53,9 @@ export function blockTypeName(t: BlockType, options?: { plural: boolean }): stri
   let isPlural = options && options.plural;
   switch (t) {
     case BlockType.root: return isPlural ? "block roots" : "block root";
-    case BlockType.state: return isPlural ? "root-level states" : "root-level state";
+    case BlockType.attribute: return isPlural ? "root-level states" : "root-level state";
     case BlockType.class: return isPlural ? "classes" : "class";
-    case BlockType.classState: return isPlural ? "class states" : "class state";
+    case BlockType.classAttribute: return isPlural ? "class states" : "class state";
     default: return assertNever(t);
   }
 }
@@ -65,7 +66,7 @@ export function blockTypeName(t: BlockType, options?: { plural: boolean }): stri
  * @param object The CompoundSelector's descriptor object.
  */
 export function isRootLevelObject(object: NodeAndType): boolean {
-  return object.blockType === BlockType.root || object.blockType === BlockType.state;
+  return object.blockType === BlockType.root || object.blockType === BlockType.attribute;
 }
 
 /**
@@ -74,7 +75,7 @@ export function isRootLevelObject(object: NodeAndType): boolean {
  * @param object The CompoundSelector's descriptor object.
  */
 export function isClassLevelObject(object: NodeAndType): boolean {
-  return object.blockType === BlockType.class || object.blockType === BlockType.classState;
+  return object.blockType === BlockType.class || object.blockType === BlockType.classAttribute;
 }
 
 /**
@@ -94,11 +95,11 @@ export function isClassNode(node: selectorParser.Node): node is selectorParser.C
 }
 
 /**
- * Check if given selector node is a state selector
+ * Check if given selector node is an attribute selector
  * @param  node The selector to test.
- * @return True if state selector, false if not.
+ * @return True if attribute selector, false if not.
  */
-export function isStateNode(node: selectorParser.Node): node is selectorParser.Attribute {
+export function isAttributeNode(node: selectorParser.Node): node is selectorParser.Attribute {
   return node.type === selectorParser.ATTRIBUTE && (node).namespace === STATE_NAMESPACE;
 }
 
@@ -118,19 +119,19 @@ export function getBlockNode(sel: CompoundSelector): BlockNodeAndType | null {
       node: r,
     };
   }
-  let s = firstOfType(sel.nodes, isStateNode);
+  let s = firstOfType(sel.nodes, isAttributeNode);
   if (s) {
     let prev = s.prev();
     if (prev && isClassNode(prev)) {
       return {
         blockName: blockName && blockName.value,
-        blockType: BlockType.classState,
+        blockType: BlockType.classAttribute,
         node: s,
       };
     } else {
       return {
         blockName: blockName && blockName.value,
-        blockType: BlockType.state,
+        blockType: BlockType.attribute,
         node: s,
       };
     }

@@ -28,70 +28,70 @@ export class BlockPathTests {
     assert.equal(path.path, ".class");
   }
 
-  @test "finds the block with a state"() {
-    let path = new BlockPath("block[state|my-state]");
+  @test "finds the block with a namespace"() {
+    let path = new BlockPath("block[state|my-attr]");
     assert.equal(path.block, "block");
-    assert.equal(path.path, ":scope[state|my-state]");
+    assert.equal(path.path, ":scope[state|my-attr]");
   }
 
-  @test "finds the block and class with a state"() {
-    let path = new BlockPath("block.class[state|my-state]");
+  @test "finds the block and class with a namespace"() {
+    let path = new BlockPath("block.class[state|my-attr]");
     assert.equal(path.block, "block");
-    assert.equal(path.path, ".class[state|my-state]");
+    assert.equal(path.path, ".class[state|my-attr]");
   }
 
-  @test "finds a a state with value"() {
-    let path = new BlockPath("[state|my-state=value]");
+  @test "finds a namespaced attribute with value"() {
+    let path = new BlockPath("[state|my-attr=value]");
     assert.equal(path.block, "");
-    assert.equal(path.path, `:scope[state|my-state="value"]`);
+    assert.equal(path.path, `:scope[state|my-attr="value"]`);
   }
 
-  @test "finds a state with value in single quotes"() {
-    let path = new BlockPath("[state|my-state='my value']");
+  @test "finds a namespace with value in single quotes"() {
+    let path = new BlockPath("[state|my-attr='my value']");
     assert.equal(path.block, "");
-    assert.equal(path.path, `:scope[state|my-state="my value"]`);
+    assert.equal(path.path, `:scope[state|my-attr="my value"]`);
   }
 
-  @test "finds a state with value in double quotes"() {
-    let path = new BlockPath(`[state|my-state="my value"]`);
+  @test "finds a namespace with value in double quotes"() {
+    let path = new BlockPath(`[state|my-attr="my value"]`);
     assert.equal(path.block, "");
-    assert.equal(path.path, `:scope[state|my-state="my value"]`);
+    assert.equal(path.path, `:scope[state|my-attr="my value"]`);
   }
 
-  @test "finds a class with a state and value"() {
-    let path = new BlockPath(".class[state|my-state=value]");
+  @test "finds a class with a namespace and value"() {
+    let path = new BlockPath(".class[state|my-attr=value]");
     assert.equal(path.block, "");
-    assert.equal(path.path, `.class[state|my-state="value"]`);
+    assert.equal(path.path, `.class[state|my-attr="value"]`);
   }
 
-  @test "finds a class with a state and value in single quotes"() {
-    let path = new BlockPath(".class[state|my-state='my value']");
+  @test "finds a class with a namespace and value in single quotes"() {
+    let path = new BlockPath(".class[state|my-attr='my value']");
     assert.equal(path.block, "");
-    assert.equal(path.path, `.class[state|my-state="my value"]`);
+    assert.equal(path.path, `.class[state|my-attr="my value"]`);
   }
 
-  @test "finds a class with a state and value in double quotes"() {
-    let path = new BlockPath(`.class[state|my-state="my value"]`);
+  @test "finds a class with a namespace and value in double quotes"() {
+    let path = new BlockPath(`.class[state|my-attr="my value"]`);
     assert.equal(path.block, "");
-    assert.equal(path.path, `.class[state|my-state="my value"]`);
+    assert.equal(path.path, `.class[state|my-attr="my value"]`);
   }
 
-  @test "finds the block with a class, state and value"() {
-    let path = new BlockPath("block.class[state|my-state=value]");
+  @test "finds the block with a class, namespace and value"() {
+    let path = new BlockPath("block.class[state|my-attr=value]");
     assert.equal(path.block, "block");
-    assert.equal(path.path, `.class[state|my-state="value"]`);
+    assert.equal(path.path, `.class[state|my-attr="value"]`);
   }
 
-  @test "finds the block with a class, state and value in single quotes"() {
-    let path = new BlockPath("block.class[state|my-state='my value']");
+  @test "finds the block with a class, namespace and value in single quotes"() {
+    let path = new BlockPath("block.class[state|my-attr='my value']");
     assert.equal(path.block, "block");
-    assert.equal(path.path, `.class[state|my-state="my value"]`);
+    assert.equal(path.path, `.class[state|my-attr="my value"]`);
   }
 
-  @test "finds the block with a class, state and value in double quotes"() {
-    let path = new BlockPath(`block.class[state|my-state="my value"]`);
+  @test "finds the block with a class, namespace and value in double quotes"() {
+    let path = new BlockPath(`block.class[state|my-attr="my value"]`);
     assert.equal(path.block, "block");
-    assert.equal(path.path, `.class[state|my-state="my value"]`);
+    assert.equal(path.path, `.class[state|my-attr="my value"]`);
   }
 
   @test "finds :scope when passed empty string"() {
@@ -102,46 +102,46 @@ export class BlockPathTests {
   }
 
   @test "parentPath returns the parent's path"() {
-    let path = new BlockPath("block.class[state|my-state]");
+    let path = new BlockPath("block.class[state|my-attr]");
     assert.equal(path.parentPath().toString(), "block.class");
-    path = new BlockPath(".class[state|my-state]");
+    path = new BlockPath(".class[state|my-attr]");
     assert.equal(path.parentPath().toString(), ".class");
     path = new BlockPath("block.class");
     assert.equal(path.parentPath().toString(), "block");
-    path = new BlockPath("block[state|my-state]");
+    path = new BlockPath("block[state|my-attr]");
     assert.equal(path.parentPath().toString(), "block:scope");
   }
 
   @test "childPath returns the child's path"() {
-    let path = new BlockPath("block.class[state|my-state]");
-    assert.equal(path.childPath().toString(), ".class[state|my-state]");
-    path = new BlockPath(".class[state|my-state]");
-    assert.equal(path.childPath().toString(), "[state|my-state]");
+    let path = new BlockPath("block.class[state|my-attr]");
+    assert.equal(path.childPath().toString(), ".class[state|my-attr]");
+    path = new BlockPath(".class[state|my-attr]");
+    assert.equal(path.childPath().toString(), "[state|my-attr]");
     path = new BlockPath("block.class");
     assert.equal(path.childPath().toString(), ".class");
-    path = new BlockPath("block[state|my-state]");
-    assert.equal(path.childPath().toString(), ":scope[state|my-state]");
+    path = new BlockPath("block[state|my-attr]");
+    assert.equal(path.childPath().toString(), ":scope[state|my-attr]");
   }
 
   @test "sub-path properties return expected values"() {
-    let path = new BlockPath("block.class[state|my-state]");
+    let path = new BlockPath("block.class[state|my-attr]");
     assert.equal(path.block, "block");
-    assert.equal(path.path, ".class[state|my-state]");
+    assert.equal(path.path, ".class[state|my-attr]");
     assert.equal(path.class, "class");
     assert.equal(path.attribute && path.attribute.namespace, "state");
-    assert.equal(path.attribute && path.attribute.name, "my-state");
+    assert.equal(path.attribute && path.attribute.name, "my-attr");
 
-    path = new BlockPath("block[state|my-state=foobar]");
+    path = new BlockPath("block[state|my-attr=foobar]");
     assert.equal(path.block, "block");
-    assert.equal(path.path, `:scope[state|my-state="foobar"]`);
+    assert.equal(path.path, `:scope[state|my-attr="foobar"]`);
     assert.equal(path.class, ":scope");
-    // assert.equal(path.state && path.state.namespace, "state");
+    // assert.equal(path.namespace && path.namespace.namespace, "namespace");
     assert.equal(path.attribute && path.attribute.namespace, "state");
-    assert.equal(path.attribute && path.attribute.name, "my-state");
+    assert.equal(path.attribute && path.attribute.name, "my-attr");
     assert.equal(path.attribute && path.attribute.value, "foobar");
   }
 
-  @test "mismatched State value quotes throw"() {
+  @test "mismatched namespace value quotes throw"() {
     assert.throws(
       () => {
         parseBlockPath(`.class[state|name="value']`);
@@ -169,7 +169,7 @@ export class BlockPathTests {
       ERRORS.multipleOfType("attribute"));
   }
 
-  @test "whitespace outside of quoted state values throws"() {
+  @test "whitespace outside of quoted namespace values throws"() {
     assert.throws(
       () => {
         parseBlockPath(`block. class`);
@@ -177,28 +177,28 @@ export class BlockPathTests {
       ERRORS.whitespace);
     assert.throws(
       () => {
-        parseBlockPath(`[state|my state]`);
+        parseBlockPath(`[state|my namespace]`);
       },
       ERRORS.whitespace);
     assert.throws(
       () => {
-        parseBlockPath(`[my namespace|my-state]`);
+        parseBlockPath(`[my state|my-attr]`);
       },
       ERRORS.whitespace);
     assert.throws(
       () => {
-        parseBlockPath(`[state|my-state=my value]`);
+        parseBlockPath(`[state|my-attr=my value]`);
       },
       ERRORS.whitespace);
     assert.throws(
       () => {
-        parseBlockPath(`[state|my-state=my\nvalue]`);
+        parseBlockPath(`[state|my-attr=my\nvalue]`);
       },
       ERRORS.whitespace);
   }
 
-  @test "states are required to have namespaces"() {
-    parseBlockPath(`[namespace|name=value]`);
+  @test "namespaces are required to be valid strings (currently only `state`)"() {
+    parseBlockPath(`[state|name=value]`);
 
     assert.throws(
       () => {
@@ -207,7 +207,7 @@ export class BlockPathTests {
       ERRORS.namespace);
     assert.throws(
       () => {
-        parseBlockPath(`[name=value]`);
+        parseBlockPath(`[namespace|name=value]`);
       },
       ERRORS.namespace);
   }
@@ -243,7 +243,7 @@ export class BlockPathTests {
       ERRORS.noname);
   }
 
-  @test "Illegal characters outside of state segments throw"() {
+  @test "Illegal characters outside of namespace segments throw"() {
     assert.throws(
       () => {
         parseBlockPath(`block.cla|ss`);
@@ -271,7 +271,7 @@ export class BlockPathTests {
       ERRORS.illegalCharNotInAttribute(`]`));
   }
 
-  @test "Illegal characters inside of state segments throw"() {
+  @test "Illegal characters inside of namespaced attribute segments throw"() {
     assert.throws(
       () => {
         parseBlockPath(`[state|val.ue]`);
@@ -284,7 +284,7 @@ export class BlockPathTests {
       ERRORS.illegalCharInAttribute(`[`));
   }
 
-  @test "Unterminated state selectors throw"() {
+  @test "Unterminated namespace attribute selectors throw"() {
     assert.throws(
       () => {
         parseBlockPath(`[state|name`);
@@ -325,8 +325,8 @@ export class BlockPathTests {
       `${ERRORS.invalidIdent("1bar")} (foo.scss:10:36)`);
 
     // Quoted values may have illegal strings
-    let path = new BlockPath(`block[name|foo="1bar"]`);
-    assert.equal(path.attribute && path.attribute.namespace, "name");
+    let path = new BlockPath(`block[state|foo="1bar"]`);
+    assert.equal(path.attribute && path.attribute.namespace, "state");
     assert.equal(path.attribute && path.attribute.name, "foo");
     assert.equal(path.attribute && path.attribute.value, "1bar");
   }

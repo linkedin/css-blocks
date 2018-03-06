@@ -19,6 +19,7 @@ import { ResolvedFile } from "./GlimmerProject";
 
 const DEBUG = debugGenerator("css-blocks:glimmer");
 
+// TODO: The state namespace should come from a config option.
 const STYLE_ATTR = /^(class$|state:)/;
 
 export class Rewriter implements NodeVisitor {

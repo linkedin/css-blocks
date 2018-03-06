@@ -139,13 +139,13 @@ export abstract class Inheritable<
    * @returns The child node, or `null`
    */
   protected resolveChild(name: Child["token"]): Child | null {
-    let state: Child | null = this.getChild(name);
+    let child: Child | null = this.getChild(name);
     let container: Self | undefined = this.base;
-    while (!state && container) {
-      state = container.getChild(name);
+    while (!child && container) {
+      child = container.getChild(name);
       container = container.base;
     }
-    return state || null;
+    return child || null;
   }
 
   /**

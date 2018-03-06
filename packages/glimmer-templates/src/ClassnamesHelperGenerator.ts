@@ -19,9 +19,9 @@ import {
   Conditional,
   Dependency,
   DynamicClasses,
+  HasAttrValue,
   hasDependency,
   HasGroup,
-  HasState,
   IndexedClassRewrite,
   isConditional,
   isFalseCondition,
@@ -76,7 +76,7 @@ export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: T
 // tslint:disable-next-line:prefer-whatever-to-any
 function constructArgs(rewrite: IndexedClassRewrite<any>, element: TemplateElement): AST.Expression[] {
   let expr = new Array<AST.Expression>();
-  expr.push(builders.number(element.dynamicClasses.length + element.dynamicStates.length));
+  expr.push(builders.number(element.dynamicClasses.length + element.dynamicAttributes.length));
   expr.push(builders.number(rewrite.dynamicClasses.length));
   expr.push(...constructSourceArgs(rewrite, element));
   expr.push(...constructOutputArgs(rewrite));
@@ -91,7 +91,7 @@ function constructSourceArgs(rewrite: IndexedClassRewrite<any>, element: Templat
     expr.push(builders.number(SourceExpression.ternary));
     expr.push(...constructTernary(classes, rewrite));
   }
-  for (let stateExpr of element.dynamicStates) {
+  for (let stateExpr of element.dynamicAttributes) {
     if (isSwitch(stateExpr)) {
       if (hasDependency(stateExpr)) {
         expr.push(builders.number(SourceExpression.switchWithDep));
@@ -175,17 +175,17 @@ function constructDependency(stateExpr: Dependency, rewrite: IndexedClassRewrite
   return expr;
 }
 
-function constructConditional(stateExpr: Conditional<BooleanAST> & HasState, _rewrite: IndexedClassRewrite<Style>): AST.Expression[] {
+function constructConditional(stateExpr: Conditional<BooleanAST> & HasAttrValue, _rewrite: IndexedClassRewrite<Style>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   expr.push(moustacheToBooleanExpression(stateExpr.condition));
   return expr;
 }
 
-function constructStateReferences(stateExpr: HasState, rewrite: IndexedClassRewrite<Style>): AST.Expression[] {
+function constructStateReferences(stateExpr: HasAttrValue, rewrite: IndexedClassRewrite<Style>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   // TODO: inheritance
   expr.push(builders.number(1));
-  expr.push(builders.number(unwrap(rewrite.indexOf(stateExpr.state))));
+  expr.push(builders.number(unwrap(rewrite.indexOf(stateExpr.value))));
   return expr;
 }
 /*

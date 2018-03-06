@@ -58,7 +58,7 @@ export class TemplateAnalysisTests {
     );
   }
 
-  @test "adding both root and a state from the same block to the same element is allowed"() {
+  @test "adding both root and an attribute from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
 
@@ -77,7 +77,7 @@ export class TemplateAnalysisTests {
       analysis.blocks[""] = block;
       let element = analysis.startElement({ line: 10, column: 32 });
       element.addStaticClass(block.rootClass);
-      element.addStaticState(block.rootClass, block.rootClass.getValue("[state|foo]")!);
+      element.addStaticAttr(block.rootClass, block.rootClass.getValue("[state|foo]")!);
       analysis.endElement(element);
       return [block, _];
     });
@@ -116,7 +116,7 @@ export class TemplateAnalysisTests {
         elements: {
           a: {
             dynamicClasses: [],
-            dynamicStates: [],
+            dynamicAttributes: [],
             sourceLocation: {
               start: {
                 column: 32,

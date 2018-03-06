@@ -21,6 +21,7 @@ type RewriteAnalysis = {
   storeConditionals: false;
 };
 
+// TODO: The state namespace should come from a config option.
 const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
 const STYLE_IF: "style-if" = "style-if";
 const STYLE_UNLESS: "style-unless" = "style-unless";
@@ -218,7 +219,7 @@ export class ElementAnalyzer {
       if (stateGroup && staticSubStateName) {
         state = stateGroup.resolveValue(staticSubStateName);
         if (state) {
-          analysis.element.addStaticState(container, state);
+          analysis.element.addStaticAttr(container, state);
         } else {
           throw cssBlockError(`No sub-state found named ${staticSubStateName} in state ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
         }
@@ -241,12 +242,12 @@ export class ElementAnalyzer {
             }
             let state = stateGroup.universalValue;
             if (analysis.storeConditionals) {
-              analysis.element.addDynamicState(container, state!, dynamicSubState);
+              analysis.element.addDynamicAttr(container, state!, dynamicSubState);
             } else {
-              analysis.element.addDynamicState(container,  state!, null);
+              analysis.element.addDynamicAttr(container,  state!, null);
             }
           } else {
-            analysis.element.addStaticState(container, stateGroup.universalValue!);
+            analysis.element.addStaticAttr(container, stateGroup.universalValue!);
           }
         }
       } else {

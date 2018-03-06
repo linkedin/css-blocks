@@ -8,12 +8,12 @@ import { FileIdentifier } from "../importing";
 import { PluginOptions } from "../options";
 import { Syntax } from "../preprocessing";
 
-import { assertForeignGlobalState } from "./features/assert-foreign-global-state";
+import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { constructBlock } from "./features/construct-block";
 import { disallowImportant } from "./features/disallow-important";
 import { discoverName } from "./features/discover-name";
 import { extendBlock } from "./features/extend-block";
-import { globalStates } from "./features/global-states";
+import { globalAttribute } from "./features/global-attributes";
 import { implementBlock } from "./features/implement-block";
 import { processDebugStatements } from "./features/process-debug-statements";
 import { resolveReferences } from "./features/resolve-references";
@@ -21,7 +21,7 @@ import { resolveReferences } from "./features/resolve-references";
 export {
   BlockType,
   NodeAndType,
-  isStateNode,
+  isAttributeNode,
   isClassNode,
   getBlockNode,
 } from "./block-intermediates";
@@ -83,12 +83,12 @@ export class BlockParser {
     await disallowImportant(root, sourceFile);
     // Discover and parse all block references included by this block.
     await resolveReferences(block, this.factory, sourceFile);
-    // Handle any global states defined by this block.
-    await globalStates(root, block, sourceFile);
+    // Handle any global attributes defined by this block.
+    await globalAttribute(root, block, sourceFile);
     // Parse all block styles and build block tree.
     await constructBlock(root, block, debugIdent);
-    // Verify that external blocks referenced have been imported, have defined the state being selected, and have marked it as a global state.
-    await assertForeignGlobalState(root, block, debugIdent);
+    // Verify that external blocks referenced have been imported, have defined the attribute being selected, and have marked it as a global state.
+    await assertForeignGlobalAttribute(root, block, debugIdent);
     // Construct block extensions and validate.
     await extendBlock(root, block, debugIdent);
     // Validate that all required Styles are implemented.

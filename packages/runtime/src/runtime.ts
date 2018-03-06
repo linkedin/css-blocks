@@ -37,7 +37,7 @@ type SetSource = (n: number) => void;
 type Abort = () => false;
 
 /**
- * This helpers converts input classes and states into
+ * This helpers converts input classes and state attributes into
  * runtime dynamic classes from the optimizer.
  *
  * The arguments that are passed in come from the rewriter;
@@ -105,7 +105,7 @@ type Abort = () => false;
  * produced by the analyzer/rewriter. This includes:
  *   - Having a dependency on more than one style
  *   - switch statements with defaults
- *   - switch statements where the value is not the same as the subState names
+ *   - switch statements where the value is not the same as the attribute value names
  */
 // tslint:disable-next-line:no-default-export
 export default function c(staticClasses: string | whatever[], stack?: whatever[]): string {

@@ -26,9 +26,9 @@ describe("Stylesheet analysis", function() {
       });
       assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" , ":scope", "[state|is-loading]"]);
       let expected: ElementsAnalysis = {
-        a: { tagName: "div", staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
-        b: { tagName: "page-banner", staticStyles: [ ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" } } },
-        c: { tagName: "text-editor", staticStyles: [ 0, 1 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" } }},
+        a: { tagName: "div", staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
+        b: { tagName: "page-banner", staticStyles: [], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" } } },
+        c: { tagName: "text-editor", staticStyles: [0, 1], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" } }},
       };
       assert.deepEqual(serializedAnalysis.elements, expected);
 
@@ -56,9 +56,9 @@ describe("Stylesheet analysis", function() {
       });
       assert.deepEqual(analysis.stylesFound, [".world", ".world[state|thick]", ":scope", "h.emphasis", "h.emphasis[state|extra]", "h:scope"]);
       assert.deepEqual(analysis.elements, {
-        a: { tagName: "div", staticStyles: [ 2 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
-        b: { tagName: "h1", staticStyles: [ 5 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
-        c: { tagName: "span", staticStyles: [ 0, 1, 3, 4 ], dynamicClasses: [], dynamicStates: [], sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        a: { tagName: "div", staticStyles: [2], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        b: { tagName: "h1", staticStyles: [5], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        c: { tagName: "span", staticStyles: [0, 1, 3, 4], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
       });
     }).catch((error) => {
       console.error(error);
@@ -90,22 +90,22 @@ describe("Stylesheet analysis", function() {
           tagName: "div",
           staticStyles: [ 2 ],
           dynamicClasses: [],
-          dynamicStates: [],
+          dynamicAttributes: [],
           sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" } },
         },
         b: {
           tagName: "h1",
           staticStyles: [ 6 ],
           dynamicClasses: [],
-          dynamicStates: [],
+          dynamicAttributes: [],
           sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" } },
         },
         c: {
           tagName: "span",
           staticStyles: [ 0, 3 ],
           dynamicClasses: [],
-          dynamicStates: [
-            { condition: true, state: 1 },
+          dynamicAttributes: [
+            { condition: true, value: 1 },
             { stringExpression: true, group: { bold: 4, italic: 5 } },
           ],
           sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" } },
@@ -144,22 +144,22 @@ describe("Stylesheet analysis", function() {
           tagName: "div",
           staticStyles: [ 2 ],
           dynamicClasses: [],
-          dynamicStates: [],
+          dynamicAttributes: [],
           sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         b: {
           tagName: "h1",
           staticStyles: [ 6 ],
           dynamicClasses: [],
-          dynamicStates: [],
+          dynamicAttributes: [],
           sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         c: {
           tagName: "span",
           staticStyles: [ 3, 7 ],
           dynamicClasses: [ {condition: true, whenTrue: [ 0 ]} ],
-          dynamicStates: [
-            { condition: true, state: 1, container: 0 },
+          dynamicAttributes: [
+            { condition: true, value: 1, container: 0 },
             { stringExpression: true, group: { bold: 4, italic: 5 } },
           ],
           sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" } },
@@ -168,21 +168,21 @@ describe("Stylesheet analysis", function() {
           tagName: "div",
           staticStyles: [],
           dynamicClasses: [ { condition: true, whenTrue: [ 0 ], whenFalse: [ 3 ]} ],
-          dynamicStates: [],
+          dynamicAttributes: [],
           sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         e: {
           tagName: "div",
           staticStyles: [],
           dynamicClasses: [ { condition: true, whenTrue: [ 3 ], whenFalse: [ 0 ]} ],
-          dynamicStates: [],
+          dynamicAttributes: [],
           sourceLocation: { start: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         f: {
           tagName: "div",
           staticStyles: [],
           dynamicClasses: [ { condition: true, whenFalse: [ 0 ]} ],
-          dynamicStates: [],
+          dynamicAttributes: [],
           sourceLocation: { start: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
       });

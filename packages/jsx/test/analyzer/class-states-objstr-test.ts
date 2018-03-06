@@ -38,7 +38,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
       assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
     });
@@ -73,7 +73,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, [{condition: true, state: 1}]);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: 1}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
       assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
     });
@@ -113,7 +113,7 @@ export class Test {
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=green]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, []);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
     });
   }
@@ -195,7 +195,7 @@ export class Test {
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=black]", "bar.pretty[state|color=green]", "bar.pretty[state|color=yellow]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, [{stringExpression: true, group: {black: 1, green: 2, yellow: 3}}]);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, [{stringExpression: true, group: {black: 1, green: 2, yellow: 3}}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }
@@ -267,7 +267,7 @@ export class Test {
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|awesome]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicStates, [{condition: true, state: 1}]);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: 1}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }

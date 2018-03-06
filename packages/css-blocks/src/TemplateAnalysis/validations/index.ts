@@ -4,22 +4,22 @@ import { StyleAnalysis } from "../StyleAnalysis";
 
 import { Validator } from "./Validator";
 
+import { attributeGroupValidator } from "./attribute-group-validator";
+import { attributeParentValidator } from "./attribute-parent-validator";
 import { classPairsValidator } from "./class-pairs-validator";
 import { propertyConflictValidator } from "./property-conflict-validator";
 import { rootClassValidator } from "./root-class-validator";
-import { stateGroupValidator } from "./state-group-validator";
-import { stateParentValidator } from "./state-parent-validator";
 
 export * from "./class-pairs-validator";
 export * from "./root-class-validator";
-export * from "./state-parent-validator";
+export * from "./attribute-parent-validator";
 export * from "./property-conflict-validator";
 
 export interface TemplateValidators {
   "no-root-classes": Validator;
   "no-class-pairs": Validator;
-  "no-state-orphans": Validator;
-  "no-duplicate-state-groups": Validator;
+  "no-attribute-orphans": Validator;
+  "no-duplicate-attribute-groups": Validator;
   "no-required-resolution": Validator;
   [name: string]: Validator;
 }
@@ -31,16 +31,16 @@ export type TemplateValidatorOptions = {
 const VALIDATORS: TemplateValidators = {
   "no-root-classes": rootClassValidator,
   "no-class-pairs": classPairsValidator,
-  "no-state-orphans": stateParentValidator,
-  "no-duplicate-state-groups": stateGroupValidator,
+  "no-attribute-orphans": attributeParentValidator,
+  "no-duplicate-attribute-groups": attributeGroupValidator,
   "no-required-resolution": propertyConflictValidator,
 };
 
 const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
   "no-root-classes": true,
   "no-class-pairs": true,
-  "no-state-orphans": true,
-  "no-duplicate-state-groups": true,
+  "no-attribute-orphans": true,
+  "no-duplicate-attribute-groups": true,
   "no-required-resolution": true,
 };
 
@@ -58,7 +58,7 @@ const DEFAULT_VALIDATORS: TemplateValidatorOptions = {
  *
  * `no-root-classes`: Prevent BlockClasses from being applied to the same element is their Root. Enabled by default.
  * `no-class-pairs`: Prevent two BlockClasses from the same Block from being applied together. Enabled by default.
- * `no-state-orphans`: Prevent a State from being applied without its parent BlockClass or Block. Enabled by default.
+ * `no-attribute-orphans`: Prevent an Attribute from being applied without its parent BlockClass or Block. Enabled by default.
  *
  * @param options A hash of tslint-style template validator options.
  */

@@ -3,6 +3,7 @@ import { BlockPathError, ErrorLocation } from "../errors";
 import {
   CLASS_NAME_IDENT as CSS_IDENT,
   ROOT_CLASS,
+  STATE_NAMESPACE,
   UNIVERSAL_ATTR_VALUE,
 } from "./BlockSyntax";
 
@@ -18,21 +19,22 @@ interface ClassToken {
 
 export interface AttrToken {
   type: "attribute";
-  namespace: string;
-  name: string;
-  value: string;
   quoted: boolean;
+  namespace?: string;
+  name: string;
+  value?: string;
 }
+export type IAttrToken = Pick<AttrToken, "namespace" | "name" | "value">;
 
 type Token = BlockToken | ClassToken | AttrToken;
 
 const isBlock = (token?: Partial<Token>): token is BlockToken => !!token && token.type === "block";
 const isClass = (token?: Partial<Token>): token is ClassToken => !!token && token.type === "class";
 const isAttribute = (token?: Partial<Token>): token is AttrToken  => !!token && token.type === "attribute";
-const isQuoted = (token?: Partial<Token>): boolean => isAttribute(token) && !!token.quoted;
+const isQuoted = (token?: Partial<AttrToken>): boolean => !!token && !!token.quoted;
 const isIdent = (ident?: string): boolean => !ident || CSS_IDENT.test(ident);
 const hasName = (token?: Partial<Token>): boolean => !!token && !!token.name;
-const hasNamespace = (token?: Partial<Token>): boolean => isAttribute(token) && !!token.namespace;
+const isValidNamespace = (token?: Partial<AttrToken>): boolean => !!token && (token.namespace === undefined || token.namespace === STATE_NAMESPACE);
 
 const ATTR_BEGIN = "[";
 const ATTR_END = "]";
@@ -47,7 +49,7 @@ const SEPARATORS = new Set([CLASS_BEGIN, ATTR_BEGIN, PSEUDO_BEGIN]);
 
 export const ERRORS = {
   whitespace: "Whitespace is only allowed in quoted attribute values",
-  namespace: "State attribute selectors are required to have a namespace.",
+  namespace: "State attribute selectors are required to use a valid namespace.",
   noname: "Block path segments must include a valid name",
   unclosedAttribute: "Unclosed attribute selector",
   mismatchedQuote: "No closing quote found in Block path",
@@ -140,7 +142,7 @@ export class BlockPath {
 
     // Final validation of incoming data. Blocks may have no name. State attribute must have a namespace.
     if (!isBlock(token) && !hasName(token)) { this.throw(ERRORS.noname); }
-    if (isAttribute(token) && !hasNamespace(token)) { this.throw(ERRORS.namespace); }
+    if (isAttribute(token) && !isValidNamespace(token)) { this.throw(ERRORS.namespace); }
 
     // Ensure we only have a single token of each type per block path.
     if (isBlock(token)) {

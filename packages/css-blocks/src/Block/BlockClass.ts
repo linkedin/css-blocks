@@ -2,32 +2,20 @@ import { Attribute as Attr, AttributeValue, attrValues } from "@opticss/element-
 import { MultiMap } from "@opticss/util";
 import { isString } from "util";
 
-import { ROOT_CLASS, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
+import { IAttrToken as AttrToken, ROOT_CLASS, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
 import { BlockPath } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
 import { AttrValue } from "./AttrValue";
-import { Attribute, AttrToken } from "./Attribute";
+import { Attribute } from "./Attribute";
 import { Block } from "./Block";
 import { RulesetContainer } from "./RulesetContainer";
 import { Style } from "./Style";
 import { Styles } from "./Styles";
 
-/**
- * Holds state values to be passed to the StateContainer.
- */
-export interface AttrInfo {
-  group?: string;
-  name: string;
-}
-
-export interface AttrValueToken extends AttrToken {
-  value?: string;
-}
-
-function ensureToken(input: AttrValueToken | string): AttrValueToken {
-  let token: AttrValueToken | string | undefined = input;
+function ensureToken(input: AttrToken | string): AttrToken {
+  let token: AttrToken | string | undefined = input;
   if (isString(token)) { token = new BlockPath(token).attribute; }
   if (!token) {
     throw new Error("Block path is not a valid attribute selector.");
@@ -83,29 +71,29 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
   }
 
   /**
-   * Returns all concrete states defined against this class.
+   * Returns all concrete AttrValues defined on this class.
    * Does not take inheritance into account.
    */
   allValues(): AttrValue[] {
     let result: AttrValue[] = [];
-    for (let stateContainer of this.attributes()) {
-      result.push(...stateContainer.values());
+    for (let attr of this.attributes()) {
+      result.push(...attr.values());
     }
     return result;
   }
 
   public getValues(token: AttrToken | string, filter?: string): AttrValue[] {
     token = ensureToken(token);
-    let group = this.getAttribute(token);
-    if (!group) { return []; }
-    let values = group.values();
+    let attr = this.getAttribute(token);
+    if (!attr) { return []; }
+    let values = attr.values();
     return filter ? values.filter(s => s.uid === filter) : values;
   }
 
   /**
-   * Resolves all sub-states from this state's inheritance
+   * Resolves all AttrValues from this Attribute's inheritance
    * chain. Returns an empty object if no
-   * @param stateName The name of the sub-state to resolve.
+   * @param token The AttrToken or attribute BlockPath of the Attribute to resolve.
    */
   resolveValues(token?: AttrToken | string): Map<string, AttrValue> {
     token = token ? ensureToken(token) : undefined;
@@ -124,20 +112,23 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
   }
 
   /**
-   * AttrValue getter. Returns the AttrValue object in the requested Attribute group. This does
-   * not take inheritance into account.
-   * @param groupName Attribute name for lookup.
-   * @param valueName Optional Value name to filter AttrValues by.
-   * @returns An array of all States that were requested.
+   * AttrValue getter. Returns the AttrValue object in the requested Attribute, without inheritance.
+   * @param token `AttrToken` or attribute `BlockPath` string for lookup.
+   * @returns The `AttrValue` that was requested, or null.
    */
-  public getValue(token: AttrValueToken | string): AttrValue | null {
+  public getValue(token: AttrToken | string): AttrValue | null {
     token = ensureToken(token);
     let value = token.value || UNIVERSAL_ATTR_VALUE;
-    let group = this.getAttribute(token);
-    return group ? group.getValue(value) || null : null;
+    let attr = this.getAttribute(token);
+    return attr ? attr.getValue(value) || null : null;
   }
 
-  public resolveValue(token: AttrValueToken | string): AttrValue | null {
+  /**
+   * AttrValue getter. Returns the AttrValue object in the requested Attribute, with inheritance.
+   * @param token `AttrToken` or attribute `BlockPath` string for lookup.
+   * @returns The `AttrValue` that was requested, or null.
+   */
+  public resolveValue(token: AttrToken | string): AttrValue | null {
     token = ensureToken(token);
     let value = token.value || UNIVERSAL_ATTR_VALUE;
     let parent = this.resolveAttribute(token);
@@ -146,13 +137,13 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
   }
 
   /**
-   * Ensure that an `AttrValue` within the provided group exists. If the `State`
+   * Ensure that an `AttrValue` within the provided Attribute exists. If the `AttrValue`
    * does not exist, it is created.
    * @param name The Attribute to ensure exists.
    * @param value The AttrValue's value to ensure exists.
-   * @returns The State object.
+   * @returns The AttrValue object.
    */
-  public ensureValue(token: AttrValueToken | string): AttrValue {
+  public ensureValue(token: AttrToken | string): AttrValue {
     token = ensureToken(token);
     let value = token.value || UNIVERSAL_ATTR_VALUE;
     return this.ensureAttribute(token).ensureValue(value);
@@ -160,10 +151,10 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
 
   public booleanValues(): AttrValue[] {
     let res: AttrValue[] = [];
-    for (let group of this.getAttributes()) {
-      let state = group.getValue(UNIVERSAL_ATTR_VALUE);
-      if (!group.hasValues && state) {
-        res.push(state);
+    for (let attr of this.getAttributes()) {
+      let val = attr.getValue(UNIVERSAL_ATTR_VALUE);
+      if (!attr.hasValues && val) {
+        res.push(val);
       }
     }
     return res;
@@ -182,8 +173,8 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    * block class represents in it's authored source format.
    *
    * @param optionalRoot The root class is optional on root-level
-   *   states. So when these attributes are being used in conjunction
-   *   with a state, this value is set to true.
+   *   Attributes. So when these attributes are being used in conjunction
+   *   with a Attributes, this value is set to true.
    */
   public asSourceAttributes(optionalRoot = false): Attr[] {
     if (!this._sourceAttribute) {
@@ -232,9 +223,9 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
   }
 
   /**
-   * Debug utility to help test States.
-   * @param options  Options to pass to States' asDebug method.
-   * @return Array of debug strings for these states
+   * Debug utility to help test BlockClasses.
+   * @param options  Options to pass to BlockClass' asDebug method.
+   * @return Array of debug strings for this BlockClass
    */
   debug(opts: OptionsReader): string[] {
     let result: string[] = [];

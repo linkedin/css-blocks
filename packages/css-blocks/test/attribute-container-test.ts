@@ -18,8 +18,8 @@ import {
 import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
 
-@suite("State container")
-export class StateContainerTest extends BEMProcessor {
+@suite("Attribute container")
+export class AttributeContainerTest extends BEMProcessor {
   assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
     return promise.then(
       () => {
@@ -31,7 +31,7 @@ export class StateContainerTest extends BEMProcessor {
       });
   }
 
-  @test "finds boolean states"() {
+  @test "finds boolean attributes"() {
     let imports = new MockImportRegistry();
     let filename = "foo/bar/a-block.css";
     imports.registerSource(
@@ -47,20 +47,20 @@ export class StateContainerTest extends BEMProcessor {
     let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
-      let state = block.rootClass.getValue("[state|large]");
-      typedAssert.isNotNull(state).and((state) => {
-        assert.equal(state.isUniversal, true);
+      let attr = block.rootClass.getValue("[state|large]");
+      typedAssert.isNotNull(attr).and((attr) => {
+        assert.equal(attr.isUniversal, true);
       });
       let classObj = block.getClass("foo");
       typedAssert.isNotNull(classObj).and(classObj => {
-        let classState = classObj.getValue("[state|small]");
-        typedAssert.isNotNull(classState).and(classState => {
-          assert.equal(classState.isUniversal, true);
+        let classAttr = classObj.getValue("[state|small]");
+        typedAssert.isNotNull(classAttr).and(classAttr => {
+          assert.equal(classAttr.isUniversal, true);
         });
       });
     });
   }
-  @test "finds state groups"() {
+  @test "finds attribute groups"() {
     let imports = new MockImportRegistry();
     let filename = "foo/bar/a-block.css";
     imports.registerSource(
@@ -82,13 +82,13 @@ export class StateContainerTest extends BEMProcessor {
       let sizeGroup: Array<AttrValue> = block.rootClass.getValues("[state|size]");
       assert.equal(sizeGroup.length, 2);
       assert.includeMembers(sizeGroup.map(s => s.uid), ["large", "small"]);
-      let subtateGroup: Array<AttrValue> = block.rootClass.getValues("[state|size]", "large");
-      assert.equal(subtateGroup.length, 1);
-      assert.includeMembers(subtateGroup.map(s => s.uid), ["large"]);
+      let attrGroup: Array<AttrValue> = block.rootClass.getValues("[state|size]", "large");
+      assert.equal(attrGroup.length, 1);
+      assert.includeMembers(attrGroup.map(s => s.uid), ["large"]);
       let missingGroup: Array<AttrValue> = block.rootClass.getValues("[state|asdf]");
       assert.equal(missingGroup.length, 0);
-      let missingSubstate: Array<AttrValue> = block.rootClass.getValues("[state|size]", "tiny");
-      assert.equal(missingSubstate.length, 0);
+      let noAttr: Array<AttrValue> = block.rootClass.getValues("[state|size]", "tiny");
+      assert.equal(noAttr.length, 0);
       typedAssert.isNotNull(block.getClass("foo")).and(classObj => {
         let modeGroup: Array<AttrValue> = classObj.getValues("[state|mode]");
         assert.equal(modeGroup.length, 3);
@@ -96,7 +96,7 @@ export class StateContainerTest extends BEMProcessor {
       });
     });
   }
-  @test "resolves inherited state groups"() {
+  @test "resolves inherited attribute groups"() {
     let imports = new MockImportRegistry();
     let filename = "foo/bar/sub-block.block.css";
     imports.registerSource(
@@ -129,11 +129,11 @@ export class StateContainerTest extends BEMProcessor {
         let modeGroup = classObj.resolveValues("[state|mode]");
         assert.equal(modeGroup.size, 3);
         typedAssert.isDefined(modeGroup).and(modeGroup => {
-          typedAssert.isDefined(modeGroup.get("collapsed")).and(state => {
-            assert.equal(state.block, block.base);
+          typedAssert.isDefined(modeGroup.get("collapsed")).and(attr => {
+            assert.equal(attr.block, block.base);
           });
-          typedAssert.isDefined(modeGroup.get("minimized")).and(state => {
-            assert.equal(state.block, block);
+          typedAssert.isDefined(modeGroup.get("minimized")).and(attr => {
+            assert.equal(attr.block, block);
           });
         });
       });

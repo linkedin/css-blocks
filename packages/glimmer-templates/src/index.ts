@@ -2,7 +2,7 @@ export {
   HandlebarsStyleAnalyzer,
   HandlebarsTransitiveStyleAnalyzer,
   BaseStyleAnalyzer,
-  StateContainer,
+  AttributeContainer,
 } from "./HandlebarsStyleAnalyzer";
 export { loaderAdapter } from "./webpackLoader";
 export { Rewriter } from "./Rewriter";
