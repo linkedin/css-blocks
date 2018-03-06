@@ -101,22 +101,22 @@ function symlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, dir
   }
 }
 
-function setDependencyToFile(protocol, name, dependencyDir, pkg) {
-  if (pkg.dependencies[name]) {
-    pkg.dependencies[name] = `${protocol}:${dependencyDir}`;
-  }
-  if (pkg.devDependencies[name]) {
-    pkg.devDependencies[name] = `${protocol}:${dependencyDir}`;
+function setExistingDependency(deps, name, value) {
+  if (deps && deps[name]) {
+    deps[name] = value;
   }
 }
 
+function setDependencyToFile(protocol, name, dependencyDir, pkg) {
+  let newValue = `${protocol}:${dependencyDir}`;
+  setExistingDependency(pkg.dependencies, name, newValue);
+  setExistingDependency(pkg.devDependencies, name, newValue);
+}
+
 function setDependencyToVersion(name, version, pkg) {
-  if (pkg.dependencies[name]) {
-    pkg.dependencies[name] = `^${version}`;
-  }
-  if (pkg.devDependencies[name]) {
-    pkg.devDependencies[name] = `^${version}`;
-  }
+  let newVersion = `^${version}`;
+  setExistingDependency(pkg.dependencies, name, newVersion);
+  setExistingDependency(pkg.devDependencies, name, newVersion);
 }
 
 function updatePackageJsons(protocol, dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
