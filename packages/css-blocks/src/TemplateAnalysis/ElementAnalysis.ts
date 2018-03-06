@@ -1,5 +1,5 @@
 import {
-  Attribute,
+  Attribute as Attr,
   AttributeValueChoice,
   AttributeValueChoiceOption,
   AttributeValueSet,
@@ -21,12 +21,12 @@ import {
 } from "@opticss/util";
 
 import {
+  Attribute,
+  AttrValue,
   Block,
   BlockClass,
+  isAttrValue,
   isBlockClass,
-  isState,
-  State,
-  StateGroup,
   Style,
 } from "../Block";
 import {
@@ -36,19 +36,19 @@ import {
   unionInto,
 } from "../util/unionInto";
 
-export interface HasState<StateType extends State | number = State> {
+export interface HasState<StateType extends AttrValue | number = AttrValue> {
   state: StateType;
 }
 
-export function isBooleanState(o: object): o is HasState<State | number> {
+export function isBooleanState(o: object): o is HasState<AttrValue | number> {
   return !!(<HasState>o).state;
 }
 
-export interface HasGroup<GroupType extends State | number = State> {
+export interface HasGroup<GroupType extends AttrValue | number = AttrValue> {
   group: ObjectDictionary<GroupType>;
 }
 
-export function isStateGroup(o: object): o is HasGroup<State | number> {
+export function isStateGroup(o: object): o is HasGroup<AttrValue | number> {
   return !!(<HasGroup>o).group;
 }
 
@@ -279,10 +279,10 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    */
   *statesFound(dynamic?: boolean) {
     this.assertSealed();
-    let found = new Set<State | StateGroup>();
+    let found = new Set<AttrValue | Attribute>();
     if (returnStatic(dynamic)) {
       for (let s of this.static) {
-        if (isState(s)) {
+        if (isAttrValue(s)) {
           found.add(s);
           yield s;
         }
@@ -391,7 +391,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * The state is added as dynamic and conditional on its class if that
    * class is dynamic.
    */
-  addStaticState(container: BlockClass, state: State) {
+  addStaticState(container: BlockClass, state: AttrValue) {
     this.assertSealed(false);
     this.addedStyles.push({container, state});
   }
@@ -406,7 +406,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     }
   }
 
-  private assertValidContainer(container: BlockClass, state: State | StateGroup) {
+  private assertValidContainer(container: BlockClass, state: AttrValue | Attribute) {
     if (container !== state.blockClass) {
       if (!container.resolveStyles().has(state.blockClass)) {
         throw new Error("container is not a valid container for the given state");
@@ -420,7 +420,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * @param state the state that is dynamic.
    * @param condition The AST node(s) representing this boolean expression.
    */
-  addDynamicState(container: BlockClass, state: State, condition: BooleanExpression) {
+  addDynamicState(container: BlockClass, state: AttrValue, condition: BooleanExpression) {
     this.assertSealed(false);
     this.addedStyles.push({state, container, condition});
   }
@@ -445,11 +445,11 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * @param disallowFalsy Whether a missing value is expected or should be
    *   a runtime error.
    */
-  addDynamicGroup(container: BlockClass, group: StateGroup, stringExpression: StringExpression, disallowFalsy = false) {
+  addDynamicGroup(container: BlockClass, group: Attribute, stringExpression: StringExpression, disallowFalsy = false) {
     this.assertSealed(false);
     this.addedStyles.push({
       container,
-      group: group.resolveStatesHash(),
+      group: group.resolveValuesHash(),
       stringExpression,
       disallowFalsy,
     });
@@ -660,7 +660,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     let classValue = attrValues.allOf(classes);
     let element = new Element(
       tagName,
-      [new Attribute("class", classValue)],
+      [new Attr("class", classValue)],
       this.sourceLocation,
       this.id,
     );

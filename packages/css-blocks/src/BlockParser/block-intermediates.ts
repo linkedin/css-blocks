@@ -2,7 +2,8 @@ import { assertNever, firstOfType } from "@opticss/util";
 import { CompoundSelector } from "opticss";
 import selectorParser = require("postcss-selector-parser");
 
-import { ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
+import { AttrValueToken } from "../Block/BlockClass";
+import { ROOT_CLASS, STATE_NAMESPACE, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
 
 export enum BlockType {
   root = 1,
@@ -23,18 +24,22 @@ export type BlockNodeAndType = NodeAndType & {
   blockName?: string;
 };
 
-/** Extract a state's name from an attribute selector */
-export function stateName(attr: selectorParser.Attribute) {
-  return attr.attribute;
-}
-
 /** Extract a state's value (aka subState) from an attribute selector */
-export function stateValue(attr: selectorParser.Attribute): string | undefined {
+function stateValue(attr: selectorParser.Attribute): string {
   if (attr.value) {
     return attr.value.replace(/^(["'])(.+(?=\1$))\1$/, "$2");
   } else {
-    return;
+    return UNIVERSAL_ATTR_VALUE;
   }
+}
+
+/** Extract a state's name from an attribute selector */
+export function attrName(attr: selectorParser.Attribute): AttrValueToken {
+  return {
+    namespace: attr.namespaceString,
+    name: attr.attribute,
+    value: stateValue(attr),
+  };
 }
 
 /**

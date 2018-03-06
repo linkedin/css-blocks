@@ -1,74 +1,105 @@
-import { Attribute, AttributeValue, attrValues } from "@opticss/element-analysis";
+import { Attribute as Attr, AttributeValue, attrValues } from "@opticss/element-analysis";
+import { MultiMap } from "@opticss/util";
+import { isString } from "util";
 
-import { ROOT_CLASS, UNIVERSAL_STATE } from "../BlockSyntax";
+import { ROOT_CLASS, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
+import { BlockPath } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
+import { AttrValue } from "./AttrValue";
+import { Attribute, AttrToken } from "./Attribute";
 import { Block } from "./Block";
 import { RulesetContainer } from "./RulesetContainer";
-import { State } from "./State";
-import { StateGroup } from "./StateGroup";
 import { Style } from "./Style";
 import { Styles } from "./Styles";
 
 /**
  * Holds state values to be passed to the StateContainer.
  */
-export interface StateInfo {
+export interface AttrInfo {
   group?: string;
   name: string;
+}
+
+export interface AttrValueToken extends AttrToken {
+  value?: string;
+}
+
+function ensureToken(input: AttrValueToken | string): AttrValueToken {
+  let token: AttrValueToken | string | undefined = input;
+  if (isString(token)) { token = new BlockPath(token).attribute; }
+  if (!token) {
+    throw new Error("Block path is not a valid attribute selector.");
+  }
+  return token;
 }
 
 /**
  * Represents a Class present in the Block.
  */
-export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
-  private _sourceAttribute: Attribute | undefined;
+export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
+  private _sourceAttribute: Attr | undefined;
   public readonly rulesets: RulesetContainer<BlockClass>;
+  private namespaces: MultiMap<string, Attribute> = new MultiMap();
+  private attrsByName: MultiMap<string, Attribute> = new MultiMap();
 
   constructor(name: string, parent: Block) {
     super(name, parent);
     this.rulesets = new RulesetContainer(this);
   }
 
-  protected newChild(name: string): StateGroup { return new StateGroup(name, this); }
+  protected get ChildConstructor(): typeof Attribute { return Attribute; }
 
-  get isRoot(): boolean { return this.name === ROOT_CLASS; }
+  protected newChild(token: AttrToken): Attribute {
+    let res = super.newChild(token);
+    this.namespaces.set(res.namespace, res);
+    this.attrsByName.set(res.uid, res);
+    return res;
+  }
 
-  public getGroups(): StateGroup[] { return this.children(); }
-  public getGroup(name: string): StateGroup | null { return this.getChild(name); }
-  public getStates(name: string, filter?: string): State[]  {
-    let group = this.getChild(name);
+  get isRoot(): boolean { return this.uid === ROOT_CLASS; }
+
+  public getNamespace(namespace: string): Attribute[] { return this.namespaces.get(namespace); }
+
+  public attributes(): Attribute[] { return this.children(); }
+  public getAttributes(): Attribute[] { return this.children(); }
+  public getAttribute(token: AttrToken | string): Attribute | null {
+    return this.getChild(ensureToken(token));
+  }
+
+  public resolveAttribute(token: AttrToken | string): Attribute | null {
+    return this.resolveChild(ensureToken(token));
+  }
+
+  /**
+   * Ensure that an `Attribute` with the given name exists. If the `Attribute`
+   * does not exist, it is created.
+   * @param name The Attribute to ensure exists.
+   * @returns The Attribute object.
+   */
+  public ensureAttribute(token: AttrToken | string): Attribute {
+    return this.ensureChild(ensureToken(token));
+  }
+
+  /**
+   * Returns all concrete states defined against this class.
+   * Does not take inheritance into account.
+   */
+  allValues(): AttrValue[] {
+    let result: AttrValue[] = [];
+    for (let stateContainer of this.attributes()) {
+      result.push(...stateContainer.values());
+    }
+    return result;
+  }
+
+  public getValues(token: AttrToken | string, filter?: string): AttrValue[] {
+    token = ensureToken(token);
+    let group = this.getAttribute(token);
     if (!group) { return []; }
-    let states = group.states();
-    return filter ? states.filter(s => s.name === filter) : states;
-  }
-
-  /**
-   * Ensure that a `StateGroup` with the given name exists. If the `StateGroup`
-   * does not exist, it is created.
-   * @param name The State group to ensure exists.
-   * @param value The State's value to ensure exists.
-   * @returns The State object.
-   */
-  public ensureGroup(name: string): StateGroup { return this.ensureChild(name); }
-
-  /**
-   * Ensure that a `State` within the provided group exists. If the `State`
-   * does not exist, it is created.
-   * @param name The State group to ensure exists.
-   * @param vallue The State's value to ensure exists.
-   * @returns The State object.
-   */
-  public ensureState(name: string, value?: string): State {
-    return this.ensureGroup(name).ensureState(value);
-  }
-  public resolveGroup(name: string): StateGroup | null { return this.resolveChild(name); }
-  public stateGroups(): StateGroup[] { return this.children(); }
-  public resolveState(groupName: string, stateName = UNIVERSAL_STATE): State | null {
-    let parent = this.resolveChild(groupName);
-    if (parent) { return parent.resolveState(stateName); }
-    return null;
+    let values = group.values();
+    return filter ? values.filter(s => s.uid === filter) : values;
   }
 
   /**
@@ -76,39 +107,75 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
    * chain. Returns an empty object if no
    * @param stateName The name of the sub-state to resolve.
    */
-  resolveStates(groupName?: string): Map<string, State> {
-    let resolved: Map<string, State> = new Map();
+  resolveValues(token?: AttrToken | string): Map<string, AttrValue> {
+    token = token ? ensureToken(token) : undefined;
+    let resolved: Map<string, AttrValue> = new Map();
     let chain = this.resolveInheritance();
     chain.push(this);
     for (let base of chain) {
-      let groups = !groupName ? base.getGroups() : [base.getGroup(groupName)];
-      for (let group of groups) {
-        if (group && group.states()) {
-          resolved = new Map([...resolved, ...group.statesMap()]);
+      let attributes = !token ? base.getAttributes() : [base.getAttribute(token)];
+      for (let attr of attributes) {
+        if (attr && attr.values()) {
+          resolved = new Map([...resolved, ...attr.valuesMap()]);
         }
       }
     }
     return resolved;
   }
 
-  public booleanStates(): State[] {
-    let res: State[] = [];
-    for (let group of this.getGroups()) {
-      let state = group.getState(UNIVERSAL_STATE);
-      if (!group.hasSubStates && state) {
+  /**
+   * AttrValue getter. Returns the AttrValue object in the requested Attribute group. This does
+   * not take inheritance into account.
+   * @param groupName Attribute name for lookup.
+   * @param valueName Optional Value name to filter AttrValues by.
+   * @returns An array of all States that were requested.
+   */
+  public getValue(token: AttrValueToken | string): AttrValue | null {
+    token = ensureToken(token);
+    let value = token.value || UNIVERSAL_ATTR_VALUE;
+    let group = this.getAttribute(token);
+    return group ? group.getValue(value) || null : null;
+  }
+
+  public resolveValue(token: AttrValueToken | string): AttrValue | null {
+    token = ensureToken(token);
+    let value = token.value || UNIVERSAL_ATTR_VALUE;
+    let parent = this.resolveAttribute(token);
+    if (parent) { return parent.resolveValue(value); }
+    return null;
+  }
+
+  /**
+   * Ensure that an `AttrValue` within the provided group exists. If the `State`
+   * does not exist, it is created.
+   * @param name The Attribute to ensure exists.
+   * @param value The AttrValue's value to ensure exists.
+   * @returns The State object.
+   */
+  public ensureValue(token: AttrValueToken | string): AttrValue {
+    token = ensureToken(token);
+    let value = token.value || UNIVERSAL_ATTR_VALUE;
+    return this.ensureAttribute(token).ensureValue(value);
+  }
+
+  public booleanValues(): AttrValue[] {
+    let res: AttrValue[] = [];
+    for (let group of this.getAttributes()) {
+      let state = group.getValue(UNIVERSAL_ATTR_VALUE);
+      if (!group.hasValues && state) {
         res.push(state);
       }
     }
     return res;
   }
 
-  public localName(): string { return this.name; }
+  public localName(): string { return this.uid; }
 
   /**
    * Export as original class name.
    * @returns String representing original class.
    */
-  public asSource(): string { return this.isRoot ? ROOT_CLASS : `.${this.name}`; }
+  public asSource(): string { return this.isRoot ? ROOT_CLASS : `.${this.uid}`; }
 
   /**
    * Emit analysis attributes for the class value this
@@ -118,13 +185,13 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
    *   states. So when these attributes are being used in conjunction
    *   with a state, this value is set to true.
    */
-  public asSourceAttributes(optionalRoot = false): Attribute[] {
+  public asSourceAttributes(optionalRoot = false): Attr[] {
     if (!this._sourceAttribute) {
-      let value: AttributeValue = { constant: this.name };
+      let value: AttributeValue = { constant: this.uid };
       if (optionalRoot && this.isRoot) {
         value = attrValues.oneOf([value, attrValues.absent()]);
       }
-      this._sourceAttribute = new Attribute("class", value);
+      this._sourceAttribute = new Attr("class", value);
     }
     return [this._sourceAttribute];
   }
@@ -138,9 +205,9 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
     switch (opts.outputMode) {
       case OutputMode.BEM:
         if (this.isRoot) {
-          return `${this.block.name}`;
+          return `${this.block.uid}`;
         } else {
-          return `${this.block.name}__${this.name}`;
+          return `${this.block.uid}__${this.uid}`;
         }
       default:
         throw new Error("this never happens");
@@ -153,35 +220,11 @@ export class BlockClass extends Style<BlockClass, Block, Block, StateGroup> {
    * @returns Array of Styles.
    */
   all(shallow?: boolean): Styles[] {
-    let result: (State | BlockClass)[] = [this];
+    let result: (AttrValue | BlockClass)[] = [this];
     if (!shallow) {
-      result = result.concat(this.allStates());
+      result = result.concat(this.allValues());
     }
     return result;
-  }
-
-  /**
-   * Returns all concrete states defined against this class.
-   * Does not take inheritance into account.
-   */
-  allStates(): State[] {
-    let result: State[] = [];
-    for (let stateContainer of this.stateGroups()) {
-      result.push(...stateContainer.states());
-    }
-    return result;
-  }
-
-  /**
-   * Group getter. Returns a list of State objects in the requested group that are defined
-   * against this specific class. This does not take inheritance into account.
-   * @param groupName State group for lookup or a boolean state name if substate is not provided.
-   * @param stateName Optional substate to filter states by.
-   * @returns An array of all States that were requested.
-   */
-  getState(groupName: string, stateName: string = UNIVERSAL_STATE): State | null {
-    let group = this.getGroup(groupName);
-    return group ? group.getState(stateName) || null : null;
   }
 
   getGroupsNames(): Set<string> {

@@ -15,7 +15,7 @@ import {
   NumericLiteral,
   StringLiteral,
 } from "babel-types";
-import { Block, BlockClass, isBlockClass, State, StateGroup } from "css-blocks";
+import { Block, BlockClass, isBlockClass, AttrValue, Attribute } from "css-blocks";
 import * as debugGenerator from "debug";
 
 import { ErrorLocation, MalformedBlockPath } from "../utils/Errors";
@@ -46,10 +46,10 @@ export type BlockClassResult = {
   blockClass: BlockClass;
 };
 export type BlockStateResult = BlockClassResult & {
-  state: State;
+  state: AttrValue;
 };
 export type BlockStateGroupResult = BlockClassResult & {
-  stateGroup: StateGroup;
+  stateGroup: Attribute;
   dynamicStateExpression: Expression;
 };
 export type BlockExpressionResult = BlockClassResult
@@ -189,7 +189,10 @@ export class ExpressionReader {
       return { block, blockClass };
     }
 
-    let stateGroup = blockClass.resolveGroup(this.stateName);
+    let stateGroup = blockClass.resolveAttribute({
+      namespace: "state",
+      name: this.stateName,
+    });
 
     if (!stateGroup) {
       let message = `No state named ${this.stateName} found on class "${this.block}${blockClass.asSource()}".`;
@@ -206,10 +209,10 @@ export class ExpressionReader {
       let dynamicStateExpression: Expression = <Expression>this.callExpression!.arguments[0];
       return { block, blockClass, stateGroup, dynamicStateExpression };
     } else if (this.stateValue) {
-      let state = stateGroup.resolveState(this.stateValue);
+      let state = stateGroup.resolveValue(this.stateValue);
       if (!state) {
         let message = `No state ${stateGroup.asSource(this.stateValue)} found on block "${this.block}".`;
-        let valueNames = [...stateGroup.statesMap().values()].map(s => s.asSource());
+        let valueNames = [...stateGroup.valuesMap().values()].map(s => s.asSource());
         if (valueNames.length === 1) {
           message += `\n  Did you mean: ${valueNames[0]}?`;
         } else {
@@ -219,10 +222,10 @@ export class ExpressionReader {
       }
       return { block, blockClass, state };
     } else {
-      let state = stateGroup.universalState;
+      let state = stateGroup.universalValue;
 
       if (!state) {
-        if (stateGroup.hasSubStates) {
+        if (stateGroup.hasResolvedValues) {
           let message = `State "${this.block}${blockClass.asSource()}[state|${this.stateName}]" expects a value.`;
           throw new MalformedBlockPath(message, this.loc);
         } else {

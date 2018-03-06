@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, State } from "../../src/Block";
+import { AttrValue, Block, BlockClass } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
@@ -779,7 +779,7 @@ export class TemplateAnalysisTests {
             block-a[state|foo=one] (blocks/foo.block.css:4:37)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ":scope", "b").addStateGroup(":scope", "foo").end();
+        constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -803,7 +803,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ":scope", "b").addStateGroup(":scope", "foo").end();
+        constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").end();
       }).then(() => {
         assert.equal(1, 1);
       });
@@ -846,7 +846,7 @@ export class TemplateAnalysisTests {
             block-b[state|bar=two] (blocks/b.block.css:4:40)`,
 
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
-        constructElement(block, ":scope", "b").addStateGroup(":scope", "foo").addStateGroup("b", "bar").end();
+        constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").addStateGroup("b", "[state|bar]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -1292,7 +1292,7 @@ function constructElement(block: Block, ...styles: string[]) {
     if (style instanceof BlockClass) {
       element.addStaticClass(style);
     }
-    else if (style instanceof State) {
+    else if (style instanceof AttrValue) {
       element.addStaticState(style.parent.parent, style);
     }
   }
@@ -1300,7 +1300,7 @@ function constructElement(block: Block, ...styles: string[]) {
   return {
     addDynamic(truthy: string[] | string, falsy?: string[]) {
       if (typeof truthy === "string") {
-        let state = block.lookup(truthy) as State;
+        let state = block.lookup(truthy) as AttrValue;
         element.addDynamicState(state.parent.parent, state, true);
         return this;
       }
@@ -1315,7 +1315,7 @@ function constructElement(block: Block, ...styles: string[]) {
     },
     addStateGroup(base: string, groupName: string) {
       let baseStyle = block.lookup(base) as BlockClass;
-      let group = baseStyle.resolveGroup(groupName);
+      let group = baseStyle.resolveAttribute(groupName);
       if (!group) throw new Error(`Error resolving group ${groupName}`);
       element.addDynamicGroup(baseStyle, group, {});
       return this;

@@ -14,7 +14,7 @@ import {
   isStateNode,
   NodeAndType,
 } from "../BlockParser";
-import { isRootNode, stateName, stateValue } from "../BlockParser/block-intermediates";
+import { attrName, isRootNode } from "../BlockParser/block-intermediates";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { SourceLocation } from "../SourceLocation";
@@ -27,12 +27,13 @@ import { Styles } from "./Styles";
 
 export class Block
   extends Inheritable<Block, Block, never, BlockClass> {
-  private _rootClass: BlockClass;
+
   private _blockReferences: ObjectDictionary<Block> = {};
   private _blockReferencesReverseLookup: Map<Block, string> = new Map();
   private _identifier: FileIdentifier;
   private _implements: Block[] = [];
   private hasHadNameReset = false;
+
   /**
    * array of paths that this block depends on and, if changed, would
    * invalidate the compiled css of this block. This is usually only useful in
@@ -40,24 +41,27 @@ export class Block
    */
   private _dependencies: Set<string>;
 
+  public readonly rootClass: BlockClass;
   public stylesheet?: postcss.Root;
 
   constructor(name: string, identifier: FileIdentifier) {
     super(name);
     this._identifier = identifier;
     this._dependencies = new Set<string>();
-    this._rootClass = new BlockClass(ROOT_CLASS, this);
-    this.addClass(this._rootClass);
+    this.rootClass = new BlockClass(ROOT_CLASS, this);
+    this.addClass(this.rootClass);
   }
 
-  get block(): Block { return this.root; }
+  protected get ChildConstructor(): typeof BlockClass { return BlockClass; }
 
-  get name() { return this._name; }
-  set name(name: string) {
-    if (this.hasHadNameReset) {
-      throw new CssBlockError("Can not set block name more than once.");
-    }
-    this._name = name;
+  /**
+   * Sets `uid` value of this `Block`. Block names may change depending on the
+   * value passed to its `block-name` property in `:scope`.
+   * @prop  name  string  The new uid for this `Block`.
+   */
+  public setUid(name: string): void {
+    if (this.hasHadNameReset) { throw new CssBlockError("Can not set block name more than once."); }
+    this._token = name;
     this.hasHadNameReset = true;
   }
 
@@ -69,10 +73,6 @@ export class Block
     this._base = base;
   }
 
-  get rootClass(): BlockClass {
-    return this._rootClass;
-  }
-
   /**
    * Lookup a sub-block either locally, or on a referenced foreign block.
    * @param reference
@@ -80,16 +80,16 @@ export class Block
    *     reference -> <ident> '.' <sub-reference>  // reference through sub-block <ident>
    *                | <ident>                      // reference to sub-block <ident>
    *                | '.' <class-selector>         // reference to class in this block
-   *                | <state-selector>             // reference to state in this block
+   *                | <attr-selector>             // reference to attribute in this block
    *                | '.'                          // reference to this block
    *     sub-reference -> <ident> '.' <sub-reference> // reference through sub-sub-block
    *                    | <object-selector>        // reference to object in sub-block
    *     object-selector -> <block-selector>       // reference to this sub-block
    *                      | <class-selector>       // reference to class in sub-block
-   *                      | <state-selector>       // reference to state in this sub-block
+   *                      | <attribute-selector>   // reference to attribute in this sub-block
    *     block-selector -> 'root'
    *     class-selector -> <ident>
-   *     state-selector -> '[state|' <ident> ']'
+   *     attribute-selector -> '[state|' <ident> ']'
    *     ident -> regex:[a-zA-Z_-][a-zA-Z0-9]*
    *   A single dot by itself returns the current block.
    * @returns The Style referenced at the supplied path.
@@ -102,15 +102,15 @@ export class Block
       return undefined;
     }
     let klass = block.resolveClass(path.class);
-    let stateInfo = path.state;
+    let attrInfo = path.attribute;
     let state;
-    if (klass && stateInfo) {
-      state = klass.resolveState(stateInfo.name, stateInfo.value);
+    if (klass && attrInfo) {
+      state = klass.resolveValue(attrInfo);
       if (!state) return undefined;
     }
 
     if (!state && !klass && errLoc) {
-      throw new InvalidBlockSyntax(`No Style "${path.path}" found on Block "${block.name}".`, errLoc);
+      throw new InvalidBlockSyntax(`No Style "${path.path}" found on Block "${block.uid}".`, errLoc);
     }
 
     return state || klass || undefined;
@@ -136,11 +136,10 @@ export class Block
 
   getClass(name: string): BlockClass | null { return name ? this.getChild(name) : this.getChild(ROOT_CLASS); }
   resolveClass(name: string): BlockClass | null { return name ? this.resolveChild(name) : this.resolveChild(ROOT_CLASS); }
-  newChild(name: string): BlockClass { return new BlockClass(name, this); }
 
   // Alias protected methods from `Inheritable` to Block-specific names, and expose them as a public API.
   get classes(): BlockClass[] { return this.children(); }
-  addClass(blockClass: BlockClass) { this.setChild(blockClass.name, blockClass); }
+  addClass(blockClass: BlockClass) { this.setChild(blockClass.uid, blockClass); }
   ensureClass(name: string): BlockClass { return this.ensureChild(name); }
 
   getImplementedBlocks(): Block[] {
@@ -285,14 +284,14 @@ export class Block
       case BlockType.root:
         return this.rootClass;
       case BlockType.state:
-        return this.rootClass.getState(stateName(obj.node), stateValue(obj.node));
+        return this.rootClass.getValue(attrName(obj.node));
       case BlockType.class:
         return this.getClass(obj.node.value);
       case BlockType.classState:
         let classNode = obj.node.prev();
         let classObj = this.getClass(classNode.value!);
         if (classObj) {
-          return classObj.getState(stateName(obj.node), stateValue(obj.node));
+          return classObj.getValue(attrName(obj.node));
         }
         return null;
       default:
@@ -312,7 +311,7 @@ export class Block
           if (klass) {
             let another = next.next();
             if (another && isStateNode(another)) {
-              let state = klass.getState(stateName(another), stateValue(another));
+              let state = klass.getValue(attrName(another));
               if (state) {
                 return [state, 2];
               } else {
@@ -326,7 +325,7 @@ export class Block
             return null;
           }
         } else if (next && isStateNode(next)) {
-          let state = otherBlock.rootClass.getState(stateName(next), stateValue(next));
+          let state = otherBlock.rootClass.getValue(attrName(next));
           if (state) {
             return [state, 1];
           } else {
@@ -345,7 +344,7 @@ export class Block
       }
       let next = node.next();
       if (next && isStateNode(next)) {
-        let state = klass.getState(stateName(next), stateValue(next));
+        let state = klass.getValue(attrName(next));
         if (state === null) {
           return null;
         } else {
@@ -355,7 +354,7 @@ export class Block
         return [klass, 0];
       }
     } else if (isStateNode(node)) {
-      let state = this.rootClass.ensureState(stateName(node), stateValue(node));
+      let state = this.rootClass.ensureValue(attrName(node));
       if (state) {
         return [state, 0];
       } else {
@@ -450,7 +449,7 @@ export class Block
    * @return The name of the block.
    */
   toJSON() {
-    return this._name;
+    return this._token;
   }
 }
 

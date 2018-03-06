@@ -5,44 +5,43 @@ import {
 } from "@opticss/element-analysis";
 import { assertNever, assertNeverCalled } from "@opticss/util";
 
-import { UNIVERSAL_STATE } from "../BlockSyntax";
+import { UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
+import { Attribute } from "./Attribute";
 import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
 import { RulesetContainer } from "./RulesetContainer";
-import { StateGroup } from "./StateGroup";
 import { Style } from "./Style";
 
 /**
- * States represent a state attribute selector in a particular Block.
- * A State can have sub-states that are considered to be mutually exclusive.
- * States can be designated as "global";
+ * AttrValue represent the value of an Attribute in a particular Block.
+ * An Attribute can have AttrValue that are considered to be mutually exclusive.
+ * Attributes can be designated as "global";
  */
-export class State extends Style<State, Block, StateGroup, never> {
+export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   isGlobal = false;
 
   private _sourceAttributes: AttributeNS[] | undefined;
-  public readonly rulesets: RulesetContainer<State>;
+  public readonly rulesets: RulesetContainer<AttrValue>;
 
   /**
-   * State constructor. Provide a local name for this State, an optional group name,
+   * AttrValue constructor. Provide a local name for this AttrValue, an optional group name,
    * and the parent container.
    * @param name The local name for this state.
    * @param group An optional parent group name.
-   * @param container The parent container of this State.
+   * @param parent The parent Attribute of this AttrValue.
    */
-  constructor(name: string, parent: StateGroup) {
+  constructor(name: string, parent: Attribute) {
     super(name, parent);
     this.rulesets = new RulesetContainer(this);
   }
 
-  newChild(): never {
-    return assertNeverCalled();
-  }
+  protected get ChildConstructor(): never { return assertNeverCalled(); }
+  newChild(): never { return assertNeverCalled(); }
 
-  get isUniversal(): boolean { return this.name === UNIVERSAL_STATE; }
+  get isUniversal(): boolean { return this.uid === UNIVERSAL_ATTR_VALUE; }
 
   /**
    * Retrieve the BlockClass that this state belongs to.
@@ -51,11 +50,11 @@ export class State extends Style<State, Block, StateGroup, never> {
   get blockClass(): BlockClass { return this.parent.parent; }
 
   /**
-   * Retrieve this State's local name, including the optional BlockClass and group designations.
-   * @returns The State's local name.
+   * Retrieve this AttrValue's local name, including the optional BlockClass and group designations.
+   * @returns The AttrValue's local name.
    */
   localName(): string {
-    return `${this.parent.localName()}${this.isUniversal ? "" : `-${this.name}`}`;
+    return `${this.parent.localName()}${this.isUniversal ? "" : `-${this.uid}`}`;
   }
 
   asSourceAttributes(): Attr[] {
@@ -63,37 +62,37 @@ export class State extends Style<State, Block, StateGroup, never> {
       let blockClass = this.blockClass;
       let rootIsOptional = true;
       this._sourceAttributes = blockClass.asSourceAttributes(rootIsOptional);
-      let value = this.isUniversal ? attrValues.absent() : attrValues.constant(this.name);
-      this._sourceAttributes.push(new AttributeNS("state", this.parent.name, value));
+      let value = this.isUniversal ? attrValues.absent() : attrValues.constant(this.uid);
+      this._sourceAttributes.push(new AttributeNS(this.parent.namespace, this.parent.name, value));
     }
     return this._sourceAttributes.slice();
   }
 
   asSource(): string {
-    return this.parent.asSource(this.name);
+    return this.parent.asSource(this.uid);
   }
 
   public cssClass(opts: OptionsReader): string {
     switch (opts.outputMode) {
       case OutputMode.BEM:
-        return `${this.parent.cssClass(opts)}${ this.isUniversal ? "" : `-${this.name}`}`;
+        return `${this.parent.cssClass(opts)}${ this.isUniversal ? "" : `-${this.uid}`}`;
       default:
         return assertNever(opts.outputMode);
     }
   }
 
-  // TODO: Implement lookup relative to State.
+  // TODO: Implement lookup relative to AttrValue.
   public lookup(): undefined { return undefined; }
 
   /**
    * Return array self and all children.
    * @returns Array of Styles.
    */
-  all(): State[] {
+  all(): AttrValue[] {
     return [this];
   }
 }
 
-export function isState(o: object): o is State {
-  return o instanceof State;
+export function isAttrValue(o: object): o is AttrValue {
+  return o instanceof AttrValue;
 }

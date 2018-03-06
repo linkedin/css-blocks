@@ -54,7 +54,7 @@ export class PreprocessorTest {
     let factory = new BlockFactory(reader);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
-      assert.equal(block.name, "lolwtf");
+      assert.equal(block.uid, "lolwtf");
     });
   }
   @test "processes css as a second pass when a css preprocessor is available."() {
@@ -84,7 +84,7 @@ export class PreprocessorTest {
     let factory = new BlockFactory(reader);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
-      assert.equal(block.name, "lolwtf");
+      assert.equal(block.uid, "lolwtf");
       let injectedClass = block.find(".injected");
       assert.equal(injectedClass && injectedClass.asSource(), ".injected");
     });
@@ -117,7 +117,7 @@ export class PreprocessorTest {
     let factory = new BlockFactory(reader);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
-      assert.equal(block.name, "lolwtf");
+      assert.equal(block.uid, "lolwtf");
       let injectedClass = block.find(".injected");
       assert.isUndefined(injectedClass);
     });
