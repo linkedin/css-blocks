@@ -57,6 +57,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.4.1",
     "remap-istanbul": "^0.9.5",
+    "shelljs": "^0.7.8",
     "source-map-support": "^0.4.15",
     "ts-node": "^3.0.4",
     "tslint": "^5.9.1",
@@ -78,9 +79,8 @@
     "glimmer-analyzer": "^0.2.0",
     "glob": "^7.1.2",
     "object.values": "^1.0.4",
-    "opticss": "link:../../build/opticss/packages/opticss",
-    "postcss": "^6.0.1",
-    "shelljs": "^0.7.8"
+    "opticss": "^0.2.0",
+    "postcss": "^6.0.1"
   },
   "resolutions": {
     "@types/chai": "4.1.2",
