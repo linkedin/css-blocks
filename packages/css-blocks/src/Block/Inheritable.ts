@@ -16,36 +16,35 @@ import { ParsedSelector, parseSelector, SelectorFactory } from "opticss";
 import * as postcss from "postcss";
 
 /* tslint:disable:prefer-whatever-to-any */
-export type AnyNode = Inheritable<any, any, any, any>;
+export type AnyNode = Inheritable<any, any, any, any, any>;
 
 export abstract class Inheritable<
-  Self extends Inheritable<Self, Root, Parent, Child>,
-  Root extends Inheritable<any, Root, never, AnyNode> | Self,
-  Parent extends Inheritable<any, Root, AnyNode | null, Self> | null,
-  Child extends Inheritable<any, Root, Self, AnyNode | never> | never
+  Self extends Inheritable<Self, Root, Parent, Child, Token>,
+  Root extends Inheritable<any, Root, never, AnyNode, any> | Self,
+  Parent extends Inheritable<any, Root, AnyNode | null, Self, any> | null,
+  Child extends Inheritable<any, Root, Self, AnyNode | never, any> | never,
+  Token extends any = string,
 > implements SelectorFactory {
+
+  protected abstract get ChildConstructor(): { new(token: any, parent: Self): Child } | never;
+
 /* tslint:enable:prefer-whatever-to-any */
 
-  protected _name: string;
+  private readonly parsedRuleSelectors: WeakMap<postcss.Rule, ParsedSelector[]> | null;
+
+  protected _token: Token;
   protected _base: Self | undefined;
   protected _root: Root | Self;
   protected _parent: Parent | null;
   protected _children: Map<string, Child> = new Map();
-  private readonly parsedRuleSelectors: WeakMap<postcss.Rule, ParsedSelector[]> | null;
-
-  /**
-   * Given a parent that is a base class of this style, retrieve this style's
-   * base style from it, if it exists. This method does not traverse into base styles.
-   */
-  protected abstract newChild(name: string): Child;
 
   /**
    * Inheritable constructor
    * @param name Name for this Inheritable instance.
    * @param parent The parent Inheritable of this node.
    */
-  constructor(name: string, parent?: Parent) {
-    this._name = name;
+  constructor(name: Token, parent?: Parent) {
+    this._token = name;
     this._parent = parent || null;
     // `Root` is only set to `Self` for `Source` nodes.
     this._root = parent ? parent.root : this.asSelf();
@@ -53,11 +52,30 @@ export abstract class Inheritable<
     this.parsedRuleSelectors = this.isRootNode ? new WeakMap() : null;
   }
 
-  public get name(): string { return this._name; }
+  protected tokenToUid(token: Token): string { return String(token); }
 
-  public get parent(): Parent {
-    return <Parent>this._parent;
+  protected newChild(token: Child["token"]): Child {
+    return new this.ChildConstructor(token, this.asSelf());
   }
+
+  private childToUid(token: Child["token"]): string {
+    return this.ChildConstructor.prototype.tokenToUid(token);
+  }
+
+  /** @returns The token object used to create this node. */
+  public get token(): Token { return this._token; }
+
+  /** @returns The unique name of this node. */
+  public get uid(): string { return this.tokenToUid(this._token); }
+
+  /** @returns The parent node in this tree. */
+  public get parent(): Parent { return this._parent as Parent; }
+
+  /** @returns The root node in this tree. */
+  public get root(): Root { return this._root as Root; }
+
+  /** @returns A boolean indicating if this is the root node in the Inheritable tree or not. */
+  public get isRootNode(): boolean { return this._root === this.asSelf(); }
 
   /**
    * Get the style that this style inherits from, if any.
@@ -74,7 +92,7 @@ export abstract class Inheritable<
     }
     let baseParent: Parent | undefined = this.parent.base;
     while (baseParent) {
-      let cls = baseParent ? baseParent.getChild(this.name) : undefined;
+      let cls = baseParent ? baseParent.getChild(this.asSelf().token) : undefined;
       if (cls) {
         this._base = cls;
         return cls;
@@ -82,22 +100,6 @@ export abstract class Inheritable<
       baseParent = baseParent.base;
     }
     return this._base = undefined;
-  }
-
-  /**
-   * Traverse parents and return the base block object.
-   * @returns The base node in this tree.
-   */
-  public get root(): Root {
-    // This is a safe cast because we know root will only be set to `Self` for `Source` nodes.
-    return this._root as Root;
-  }
-
-  /**
-   * @returns A boolean indicating if this is the root node in the Inheritable tree or not.
-   */
-  public get isRootNode(): boolean {
-    return this._root === this.asSelf();
   }
 
   /**
@@ -136,7 +138,7 @@ export abstract class Inheritable<
    * @param name The name of the child to resolve.
    * @returns The child node, or `null`
    */
-  protected resolveChild(name: string): Child | null {
+  protected resolveChild(name: Child["token"]): Child | null {
     let state: Child | null = this.getChild(name);
     let container: Self | undefined = this.base;
     while (!state && container) {
@@ -151,8 +153,8 @@ export abstract class Inheritable<
    * @param key string  The key to fetch the child object from.
    * @returns The child node.
    */
-  protected getChild(key: string): Child | null {
-    return this._children.get(key) || null;
+  protected getChild(name: Child["token"]): Child | null {
+    return this._children.get(this.childToUid(name)) || null;
   }
 
   /**
@@ -160,8 +162,8 @@ export abstract class Inheritable<
    * @param key string  The key to set the child object to.
    * @returns The child node.
    */
-  protected setChild(key: string, value: Child): Child {
-    this._children.set(key, value);
+  protected setChild(name: Child["token"], value: Child): Child {
+    this._children.set(this.childToUid(name), value);
     return value;
   }
 
@@ -172,10 +174,10 @@ export abstract class Inheritable<
    * @param key string  The key at which this child object should be (optional)
    * @returns The child node.
    */
-  protected ensureChild(name: string, key?: string): Child {
-    key = key !== undefined ? key : name;
-    if (!this._children.has(name)) {
-      this.setChild(key, this.newChild(name));
+  protected ensureChild(name: Child["token"], key?: string): Child {
+    key = key !== undefined ? key : this.childToUid(name);
+    if (!this._children.has(key)) {
+      this._children.set(key, this.newChild(name));
     }
     return this._children.get(key)!;
   }
@@ -266,8 +268,10 @@ export abstract class Inheritable<
     return selectors;
   }
 
-  // TypeScript can't figure out that `this` is the `Self` so this private
-  // method casts it in a few places where it's needed.
+  /**
+   * TypeScript can't figure out that `this` is the `Self` so this private
+   * method casts it in a few places where it's needed.
+   */
   private asSelf(): Self {
     return <Self><object>this;
   }

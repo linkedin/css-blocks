@@ -1,6 +1,6 @@
 import { unionInto } from "@opticss/util";
 
-import { isState, StateGroup } from "../../Block";
+import { Attribute, isAttrValue } from "../../Block";
 import { isBooleanState, isStateGroup } from "../ElementAnalysis";
 
 import { ErrorCallback, Validator } from "./Validator";
@@ -8,7 +8,7 @@ import { ErrorCallback, Validator } from "./Validator";
 /**
  * Verify that we are not applying multiple states from a single state group in the same `objstr` call.
  */
-function ensureUniqueStateGroup(discovered: Set<StateGroup>, group: StateGroup, err: ErrorCallback, track: boolean): StateGroup[] {
+function ensureUniqueStateGroup(discovered: Set<Attribute>, group: Attribute, err: ErrorCallback, track: boolean): Attribute[] {
   let groups = [...group.resolveInheritance(), group];
   for (let g of groups) {
     if (discovered.has(g)) {
@@ -26,9 +26,9 @@ function ensureUniqueStateGroup(discovered: Set<StateGroup>, group: StateGroup, 
  */
 
 export const stateGroupValidator: Validator = (analysis, _templateAnalysis, err) => {
-  let discovered: Set<StateGroup> = new Set();
+  let discovered: Set<Attribute> = new Set();
   for (let o of analysis.static) {
-    if (isState(o)) {
+    if (isAttrValue(o)) {
       ensureUniqueStateGroup(discovered, o.parent, err, true);
     }
   }
@@ -37,7 +37,7 @@ export const stateGroupValidator: Validator = (analysis, _templateAnalysis, err)
       ensureUniqueStateGroup(discovered, stat.state.parent, err, true);
     }
     if (isStateGroup(stat)) {
-      let tmp: Set<StateGroup> = new Set();
+      let tmp: Set<Attribute> = new Set();
       for (let key of Object.keys(stat.group)) {
         let state = stat.group[key];
         let vals = ensureUniqueStateGroup(discovered, state.parent, err, false);

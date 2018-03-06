@@ -1,7 +1,7 @@
 import { AST, print } from "@glimmer/syntax";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import { assertNever } from "@opticss/util";
-import { Block, BlockClass, DynamicClasses, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader, State } from "css-blocks";
+import { AttrValue, Block, BlockClass, DynamicClasses, ElementAnalysis, PluginOptionsReader as CssBlocksOptionsReader } from "css-blocks";
 import * as debugGenerator from "debug";
 
 import { ResolvedFile } from "./GlimmerProject";
@@ -210,17 +210,20 @@ export class ElementAnalyzer {
       dynamicSubState = node.value;
     }
     for (let container of containers) {
-      let stateGroup = container.resolveGroup(stateName);
-      let state: State | null | undefined = undefined;
+      let stateGroup = container.resolveAttribute({
+        namespace: "state",
+        name: stateName,
+      });
+      let state: AttrValue | null | undefined = undefined;
       if (stateGroup && staticSubStateName) {
-        state = stateGroup.resolveState(staticSubStateName);
+        state = stateGroup.resolveValue(staticSubStateName);
         if (state) {
           analysis.element.addStaticState(container, state);
         } else {
           throw cssBlockError(`No sub-state found named ${staticSubStateName} in state ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
         }
       } else if (stateGroup) {
-        if (stateGroup.hasResolvedStates()) {
+        if (stateGroup.hasResolvedValues()) {
           if (dynamicSubState) {
             if (analysis.storeConditionals) {
               analysis.element.addDynamicGroup(container, stateGroup, dynamicSubState);
@@ -236,14 +239,14 @@ export class ElementAnalyzer {
             if (dynamicSubState.type === "ConcatStatement") {
               throw cssBlockError(`The dynamic statement for a boolean state must be set to a mustache statement with no additional text surrounding it.`, dynamicSubState, this.template);
             }
-            let state = stateGroup.universalState;
+            let state = stateGroup.universalValue;
             if (analysis.storeConditionals) {
               analysis.element.addDynamicState(container, state!, dynamicSubState);
             } else {
               analysis.element.addDynamicState(container,  state!, null);
             }
           } else {
-            analysis.element.addStaticState(container, stateGroup.universalState!);
+            analysis.element.addStaticState(container, stateGroup.universalValue!);
           }
         }
       } else {

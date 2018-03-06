@@ -18,7 +18,7 @@ import { sourceLocation } from "../SourceLocation";
 import { InvalidBlockSyntax } from "../errors";
 
 import { isStyle, Styles } from "./Styles";
-export { Styles, BlockClass, State } from "./Styles";
+export { Styles, BlockClass, AttrValue } from "./Styles";
 
 // Convenience types to help our code read better.
 export type Pseudo = string;

@@ -43,13 +43,13 @@ export class LocalScopeLookupTest extends BEMProcessor {
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
       assert.equal(block.lookup(":scope"), block.rootClass);
-      let largeState = block.rootClass.getState("large");
+      let largeState = block.rootClass.getValue("[state|large]");
       assert(largeState);
       assert.equal(block.lookup("[state|large]"), largeState);
-      let fooClass = block.classes.find(c => c.name === "foo");
+      let fooClass = block.classes.find(c => c.uid === "foo");
       if (fooClass) {
         assert.equal(block.lookup(".foo"), fooClass);
-        let smallState = fooClass.getState("small");
+        let smallState = fooClass.getValue("[state|small]");
         assert(smallState);
         assert.equal(block.lookup(".foo[state|small]"), smallState);
       } else {
@@ -85,13 +85,13 @@ export class LocalScopeLookupTest extends BEMProcessor {
         return;
       }
       assert.equal(refblock.lookup("a-block"), block.rootClass);
-      let largeState = block.rootClass.getState("large");
+      let largeState = block.rootClass.getValue("[state|large]");
       assert(largeState);
       assert.equal(refblock.lookup("a-block[state|large]"), largeState);
-      let fooClass = block.classes.find(c => c.name === "foo");
+      let fooClass = block.classes.find(c => c.uid === "foo");
       if (fooClass) {
         assert.equal(refblock.lookup("a-block.foo"), fooClass);
-        let smallState = fooClass.getState("small");
+        let smallState = fooClass.getValue("[state|small]");
         assert(smallState);
         assert.equal(refblock.lookup("a-block.foo[state|small]"), smallState);
       } else {
@@ -127,13 +127,13 @@ export class LocalScopeLookupTest extends BEMProcessor {
         return;
       }
       assert.equal(refblock.lookup("my-block"), block.rootClass);
-      let largeState = block.rootClass.getState("large");
+      let largeState = block.rootClass.getValue("[state|large]");
       assert(largeState);
       assert.equal(refblock.lookup("my-block[state|large]"), largeState);
-      let fooClass = block.classes.find(c => c.name === "foo");
+      let fooClass = block.classes.find(c => c.uid === "foo");
       if (fooClass) {
         assert.equal(refblock.lookup("my-block.foo"), fooClass);
-        let smallState = fooClass.getState("small");
+        let smallState = fooClass.getValue("[state|small]");
         assert(smallState);
         assert.equal(refblock.lookup("my-block.foo[state|small]"), smallState);
       } else {

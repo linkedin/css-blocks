@@ -98,7 +98,7 @@ export class BlockPathTests {
     let path = new BlockPath("");
     assert.equal(path.block, "");
     assert.equal(path.path, ":scope");
-    assert.equal(path.state, undefined);
+    assert.equal(path.attribute, undefined);
   }
 
   @test "parentPath returns the parent's path"() {
@@ -128,16 +128,17 @@ export class BlockPathTests {
     assert.equal(path.block, "block");
     assert.equal(path.path, ".class[state|my-state]");
     assert.equal(path.class, "class");
-    // assert.equal(path.state && path.state.namespace, "state");
-    assert.equal(path.state && path.state.name, "my-state");
+    assert.equal(path.attribute && path.attribute.namespace, "state");
+    assert.equal(path.attribute && path.attribute.name, "my-state");
 
     path = new BlockPath("block[state|my-state=foobar]");
     assert.equal(path.block, "block");
     assert.equal(path.path, `:scope[state|my-state="foobar"]`);
     assert.equal(path.class, ":scope");
     // assert.equal(path.state && path.state.namespace, "state");
-    assert.equal(path.state && path.state.name, "my-state");
-    assert.equal(path.state && path.state.value, "foobar");
+    assert.equal(path.attribute && path.attribute.namespace, "state");
+    assert.equal(path.attribute && path.attribute.name, "my-state");
+    assert.equal(path.attribute && path.attribute.value, "foobar");
   }
 
   @test "mismatched State value quotes throw"() {
@@ -165,7 +166,7 @@ export class BlockPathTests {
       () => {
         parseBlockPath(`block[state|foo][state|bar]`);
       },
-      ERRORS.multipleOfType("state"));
+      ERRORS.multipleOfType("attribute"));
   }
 
   @test "whitespace outside of quoted state values throws"() {
@@ -247,27 +248,27 @@ export class BlockPathTests {
       () => {
         parseBlockPath(`block.cla|ss`);
       },
-      ERRORS.illegalCharNotInState(`|`));
+      ERRORS.illegalCharNotInAttribute(`|`));
     assert.throws(
       () => {
         parseBlockPath(`block.cla=ss`);
       },
-      ERRORS.illegalCharNotInState(`=`));
+      ERRORS.illegalCharNotInAttribute(`=`));
     assert.throws(
       () => {
         parseBlockPath(`block.cla"ss`);
       },
-      ERRORS.illegalCharNotInState(`"`));
+      ERRORS.illegalCharNotInAttribute(`"`));
     assert.throws(
       () => {
         parseBlockPath(`block.cla` + `'ss`);
       },
-      ERRORS.illegalCharNotInState(`'`));
+      ERRORS.illegalCharNotInAttribute(`'`));
     assert.throws(
       () => {
         parseBlockPath(`block.cla]ss`);
       },
-      ERRORS.illegalCharNotInState(`]`));
+      ERRORS.illegalCharNotInAttribute(`]`));
   }
 
   @test "Illegal characters inside of state segments throw"() {
@@ -275,12 +276,12 @@ export class BlockPathTests {
       () => {
         parseBlockPath(`[state|val.ue]`);
       },
-      ERRORS.illegalCharInState(`.`));
+      ERRORS.illegalCharInAttribute(`.`));
     assert.throws(
       () => {
         parseBlockPath(`[state|val[ue]`);
       },
-      ERRORS.illegalCharInState(`[`));
+      ERRORS.illegalCharInAttribute(`[`));
   }
 
   @test "Unterminated state selectors throw"() {
@@ -288,12 +289,12 @@ export class BlockPathTests {
       () => {
         parseBlockPath(`[state|name`);
       },
-      ERRORS.unclosedState);
+      ERRORS.unclosedAttribute);
     assert.throws(
       () => {
         parseBlockPath(`[state|name=value`);
       },
-      ERRORS.unclosedState);
+      ERRORS.unclosedAttribute);
   }
 
   @test "unescaped illegal characters in identifiers throw."() {
@@ -325,7 +326,9 @@ export class BlockPathTests {
 
     // Quoted values may have illegal strings
     let path = new BlockPath(`block[name|foo="1bar"]`);
-    assert.equal(path.state && path.state.value, "1bar");
+    assert.equal(path.attribute && path.attribute.namespace, "name");
+    assert.equal(path.attribute && path.attribute.name, "foo");
+    assert.equal(path.attribute && path.attribute.value, "1bar");
   }
 
   @test @skip "escaped illegal characters in identifiers are processed"() {

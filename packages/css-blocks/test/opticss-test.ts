@@ -14,7 +14,7 @@ import { suite, test } from "mocha-typescript";
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";
 
-import { Block, BlockClass, State } from "../src/Block";
+import { AttrValue, Block, BlockClass } from "../src/Block";
 import { BlockCompiler } from "../src/BlockCompiler";
 import { BlockFactory } from "../src/BlockFactory";
 import { BlockParser } from "../src/BlockParser";
@@ -42,12 +42,12 @@ export class TemplateAnalysisTests {
   }
 
   private useStates(element: ElementAnalysis<whatever, whatever, whatever>, stateContainer: BlockClass) {
-    for (let group of stateContainer.getGroups()) {
-      if (group.hasResolvedStates()) {
+    for (let group of stateContainer.getAttributes()) {
+      if (group.hasResolvedValues()) {
         element.addDynamicGroup(stateContainer, group, null);
       }
     }
-    for (let state of stateContainer.booleanStates()) {
+    for (let state of stateContainer.booleanValues()) {
       element.addStaticState(stateContainer, state);
     }
   }
@@ -82,7 +82,7 @@ export class TemplateAnalysisTests {
     return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
       this.useBlockStyles(analysis, block, "", (container, el) => {
         if (container.asSource() === ".asdf") {
-          el.addDynamicState(container, block.find(".asdf[state|larger]") as State, true);
+          el.addDynamicState(container, block.find(".asdf[state|larger]") as AttrValue, true);
         } else {
           this.useStates(el, container);
         }

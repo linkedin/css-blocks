@@ -15,10 +15,11 @@ export { RulesetContainer, Resolution, Ruleset } from "./RulesetContainer";
 /* tslint:disable:prefer-whatever-to-any */
 
 export abstract class Style<
-  Self extends Style<Self, Root, Parent, Child>,
-  Root extends Inheritable<Root, Root, never, AnyNode>,
-  Parent extends Inheritable<any, Root, AnyNode | never, Self> | never,
-  Child extends Inheritable<any, Root, Self, AnyNode | never> | never
+  Self extends Style<Self, Root, Parent, Child, Token>,
+  Root extends Inheritable<any, Root, never, AnyNode, any> | Self,
+  Parent extends Inheritable<any, Root, AnyNode | null, Self, any> | null,
+  Child extends Inheritable<any, Root, Self, AnyNode | never, any> | never,
+  Token extends any = string,
 > extends Inheritable<Self, Root, Parent, Child> {
 /* tslint:enable:prefer-whatever-to-any */
 

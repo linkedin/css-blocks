@@ -3,6 +3,7 @@ import { BlockPathError, ErrorLocation } from "../errors";
 import {
   CLASS_NAME_IDENT as CSS_IDENT,
   ROOT_CLASS,
+  UNIVERSAL_ATTR_VALUE,
 } from "./BlockSyntax";
 
 interface BlockToken {
@@ -15,31 +16,26 @@ interface ClassToken {
   name: string;
 }
 
-export interface StateNameAndValue {
-  name: string;
-  value?: string;
-}
-
-export interface StateToken {
-  type: "state";
+export interface AttrToken {
+  type: "attribute";
   namespace: string;
   name: string;
-  value?: string;
+  value: string;
   quoted: boolean;
 }
 
-type Token = BlockToken | ClassToken | StateToken;
+type Token = BlockToken | ClassToken | AttrToken;
 
 const isBlock = (token?: Partial<Token>): token is BlockToken => !!token && token.type === "block";
 const isClass = (token?: Partial<Token>): token is ClassToken => !!token && token.type === "class";
-const isState = (token?: Partial<Token>): token is StateToken  => !!token && token.type === "state";
-const isQuoted = (token?: Partial<Token>): boolean => isState(token) && !!token.quoted;
+const isAttribute = (token?: Partial<Token>): token is AttrToken  => !!token && token.type === "attribute";
+const isQuoted = (token?: Partial<Token>): boolean => isAttribute(token) && !!token.quoted;
 const isIdent = (ident?: string): boolean => !ident || CSS_IDENT.test(ident);
 const hasName = (token?: Partial<Token>): boolean => !!token && !!token.name;
-const hasNamespace = (token?: Partial<Token>): boolean => isState(token) && !!token.namespace;
+const hasNamespace = (token?: Partial<Token>): boolean => isAttribute(token) && !!token.namespace;
 
-const STATE_BEGIN = "[";
-const STATE_END = "]";
+const ATTR_BEGIN = "[";
+const ATTR_END = "]";
 const CLASS_BEGIN = ".";
 const NAMESPACE_END = "|";
 const VALUE_START = "=";
@@ -47,18 +43,18 @@ const SINGLE_QUOTE = `'`;
 const DOUBLE_QUOTE = `"`;
 const PSEUDO_BEGIN = ":";
 const WHITESPACE_REGEXP = /\s/g;
-const SEPARATORS = new Set([CLASS_BEGIN, STATE_BEGIN, PSEUDO_BEGIN]);
+const SEPARATORS = new Set([CLASS_BEGIN, ATTR_BEGIN, PSEUDO_BEGIN]);
 
 export const ERRORS = {
-  whitespace: "Whitespace is only allowed in quoted state values",
-  namespace: "State selectors are required to have a namespace.",
+  whitespace: "Whitespace is only allowed in quoted attribute values",
+  namespace: "State attribute selectors are required to have a namespace.",
   noname: "Block path segments must include a valid name",
-  unclosedState: "Unclosed state selector",
+  unclosedAttribute: "Unclosed attribute selector",
   mismatchedQuote: "No closing quote found in Block path",
   invalidIdent: (i: string) => `Invalid identifier "${i}" found in Block path.`,
   expectsSepInsteadRec: (c: string) => `Expected separator tokens "[" or ".", instead found \`${c}\``,
-  illegalCharNotInState: (c: string) => `Only state selectors may contain the \`${c}\` character.`,
-  illegalCharInState: (c: string) => `State selectors may not contain the \`${c}\` character.`,
+  illegalCharNotInAttribute: (c: string) => `Only attribute selectors may contain the \`${c}\` character.`,
+  illegalCharInAttribute: (c: string) => `Attribute selectors may not contain the \`${c}\` character.`,
   multipleOfType: (t: string) => `Can not have more than one ${t} selector in the same Block path`,
 };
 
@@ -67,7 +63,7 @@ function stringify(tokens: Token[]): string {
   for (let token of tokens) {
          if (isBlock(token)) { out += token.name; }
     else if (isClass(token)) { out += token.name === ROOT_CLASS ? token.name : `.${token.name}`; }
-    else if (isState(token)) { out += `[${token.namespace}|${token.name}${token.value ? `="${token.value}"` : ""}]`; }
+    else if (isAttribute(token)) { out += `[${token.namespace}|${token.name}${token.value && token.value !== UNIVERSAL_ATTR_VALUE ? `="${token.value}"` : ""}]`; }
   }
   return out;
 }
@@ -113,7 +109,7 @@ export class BlockPath {
   private _location?: ErrorLocation;
   private _block?: BlockToken;
   private _class?: ClassToken;
-  private _state?: StateToken;
+  private _attribute?: AttrToken;
 
   private walker: Walker = new Walker();
   private _tokens: Token[] = [];
@@ -142,9 +138,9 @@ export class BlockPath {
    */
   private addToken(token: Partial<Token>, isUserProvided: boolean): void {
 
-    // Final validation of incoming data. Blocks may have no name. States must have a namespace.
+    // Final validation of incoming data. Blocks may have no name. State attribute must have a namespace.
     if (!isBlock(token) && !hasName(token)) { this.throw(ERRORS.noname); }
-    if (isState(token) && !hasNamespace(token)) { this.throw(ERRORS.namespace); }
+    if (isAttribute(token) && !hasNamespace(token)) { this.throw(ERRORS.namespace); }
 
     // Ensure we only have a single token of each type per block path.
     if (isBlock(token)) {
@@ -155,8 +151,8 @@ export class BlockPath {
       // If no block has been added yet, automatically inject the `self` block name.
       if (!this._block) { this.addToken({ type: "block", name: "" }, false); }
     }
-    if (isState(token)) {
-      this._state = this._state ? this.throw(ERRORS.multipleOfType(token.type)) : token;
+    if (isAttribute(token)) {
+      this._attribute = this._attribute ? this.throw(ERRORS.multipleOfType(token.type)) : token;
       // If no class has been added yet, automatically inject the root class.
       if (!this._class) { this.addToken({ type: "class", name: ROOT_CLASS }, false); }
     }
@@ -197,7 +193,7 @@ export class BlockPath {
 
         // If a period, we've finished the previous token and are now building a class name.
         case char === CLASS_BEGIN:
-          if (isState(token)) { this.throw(ERRORS.illegalCharInState(char)); }
+          if (isAttribute(token)) { this.throw(ERRORS.illegalCharInAttribute(char)); }
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           this.addToken(token, true);
@@ -205,57 +201,58 @@ export class BlockPath {
           working = "";
           break;
 
-        // If the beginning of a state, we've finished the previous token and are now building a state.
-        case char === STATE_BEGIN:
-          if (isState(token)) { this.throw(ERRORS.illegalCharInState(char)); }
+        // If the beginning of a attribute, we've finished the previous token and are now building an attribute.
+        case char === ATTR_BEGIN:
+          if (isAttribute(token)) { this.throw(ERRORS.illegalCharInAttribute(char)); }
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           this.addToken(token, true);
-          token = { type: "state" };
+          token = { type: "attribute" };
           working = "";
           break;
 
-        // When we find a namespace terminator, set the namespace property of the state token we're working on.
+        // When we find a namespace terminator, set the namespace property of the attribute token we're working on.
         case char === NAMESPACE_END:
-          if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
+          if (!isAttribute(token)) { return this.throw(ERRORS.illegalCharNotInAttribute(char)); }
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.namespace = working;
           working = "";
           break;
 
-        // If the start of the value section of a state part, set the name we've been working on and move on.
+        // If the start of the value section of an attribute token, set the name we've been working on and move on.
         case char === VALUE_START:
-          if (!isState(token)) { this.throw(ERRORS.illegalCharNotInState(char)); }
+          if (!isAttribute(token)) { this.throw(ERRORS.illegalCharNotInAttribute(char)); }
           if (!working) { this.throw(ERRORS.noname); }
           if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
           token.name = working;
           working = "";
           break;
 
-        // If the opening quote of the value section of a state part, greedily consume everything between quotes.
+        // If the opening quote of the value section of an attribute token, greedily consume everything between quotes.
         case char === SINGLE_QUOTE || char === DOUBLE_QUOTE:
-          if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
+          if (!isAttribute(token)) { return this.throw(ERRORS.illegalCharNotInAttribute(char)); }
           working = walker.consume(char);
           token.quoted = true;
           if (walker.peek() !== char) { this.throw(ERRORS.mismatchedQuote); }
           walker.next(); // Throw away the other quote
           break;
 
-        // If the end of a state, set the state part we've been working on and finish.
-        case char === STATE_END:
-          if (!isState(token)) { return this.throw(ERRORS.illegalCharNotInState(char)); }
+        // If the end of an attribute, set the attribute token we've been working on and finish.
+        case char === ATTR_END:
+          if (!isAttribute(token)) { return this.throw(ERRORS.illegalCharNotInAttribute(char)); }
           if ((!hasName(token) || !isQuoted(token)) && !isIdent(working)) {
             return this.throw(ERRORS.invalidIdent(working), working.length);
           }
           (hasName(token)) ? (token.value = working) : (token.name = working);
+          token.value = token.value || UNIVERSAL_ATTR_VALUE;
           this.addToken(token, true);
           working = "";
 
-          // The character immediately following a `STATE_END` *must* be another `SEPARATORS`
+          // The character immediately following a `ATTR_END` *must* be another `SEPARATORS`
           // Depending on the next value, seed our token input
           let next = walker.next();
           if (next && !SEPARATORS.has(next)) { this.throw(ERRORS.expectsSepInsteadRec(next)); }
-          token = (next === STATE_BEGIN) ? { type: "state" } : { type: "class" };
+          token = (next === ATTR_BEGIN) ? { type: "attribute" } : { type: "class" };
           break;
 
         // We should never encounter whitespace in this switch statement.
@@ -274,13 +271,13 @@ export class BlockPath {
 
     }
 
-    // State tokens are explicitly terminated. If we are still working on a state here
-    // then it has not been properly closed.
-    if (isState(token)) { this.throw(ERRORS.unclosedState); }
+    // Attribute tokens are explicitly terminated. If we are still working on an
+    // attribute here then it has not been properly closed.
+    if (isAttribute(token)) { this.throw(ERRORS.unclosedAttribute); }
 
     // Class and Block tokens are not explicitly terminated and may be automatically sealed when
     // we get to the end. If no class has been discovered, automatically add our root class.
-    if (!isState(token) && working) {
+    if (!isAttribute(token) && working) {
       if (!isIdent(working)) { return this.throw(ERRORS.invalidIdent(working), working.length); }
       token.name = working;
       this.addToken(token, true);
@@ -333,12 +330,11 @@ export class BlockPath {
   }
 
   /**
-   * Get the parsed state name of this Block Path and return the `StateInfo`
+   * Get the parsed attribute name of this Block Path and return the `AttrInfo`
    */
-  get state(): StateNameAndValue | undefined {
-    if (!this._state) return;
-    let {name, value} = this._state;
-    return {name, value};
+  get attribute(): AttrToken | undefined {
+    if (!this._attribute) return;
+    return this._attribute;
   }
 
   /**

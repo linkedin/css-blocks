@@ -6,7 +6,7 @@ import regexpu = require("regexpu-core");
  */
 export const CLASS_NAME_IDENT = new RegExp(regexpu("^(-?(?:\\\\.|[A-Za-z_\\u{0080}-\\u{10ffff}])(?:\\\\.|[A-Za-z0-9_\\-\\u{0080}-\\u{10ffff}])*)$", "u"));
 
-// State Namespace
+// State Attribute Namespace
 export const STATE_NAMESPACE = "state";
 
 // Prop Names
@@ -49,10 +49,10 @@ export function getConstraints(value: string): string[] {
 // for any give Style instead of using different containers for the element and its pseudos.
 export const SELF_SELECTOR = "::self";
 
-// Internally use the invented `::universal` state name to represent a bare state selector with no value set.
-// This way, we can treat the universal state selector as just another `State` object instead of having to
-// special case it in the `StateGroup` Block object.
-export const UNIVERSAL_STATE = "::universal";
+// Internally use the invented `::universal` value name to represent a bare attribute selector with no value set.
+// This way, we can treat the universal value selector as just another `Value` object instead of having to
+// special case it in the `Attribute` Block object.
+export const UNIVERSAL_ATTR_VALUE = "::universal";
 
 // Internally use the invented `root` class represents the root element styling for a block. By interpreting the
 // root selector as just another class we no longer have to store styling information it on the `Block` object..

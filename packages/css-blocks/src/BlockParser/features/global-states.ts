@@ -6,7 +6,7 @@ import { Block } from "../../Block";
 import { BLOCK_GLOBAL } from "../../BlockSyntax";
 import { sourceLocation as loc } from "../../SourceLocation";
 import * as errors from "../../errors";
-import { stateName, stateValue } from "../block-intermediates";
+import { attrName } from "../block-intermediates";
 
 export async function globalStates(root: postcss.Root, block: Block, file: string): Promise<Block> {
   root.walkAtRules(BLOCK_GLOBAL, (atRule) => {
@@ -20,7 +20,7 @@ export async function globalStates(root: postcss.Root, block: Block, file: strin
       let firstNode: selectorParser.Node | undefined = selectors[0].key.nodes[0];
       if (firstNode && selectorParser.isAttribute(firstNode)) {
         let state = block.rootClass
-          .ensureState(stateName(firstNode), stateValue(firstNode));
+          .ensureValue(attrName(firstNode));
         state.isGlobal = true;
       } else {
         throw new errors.InvalidBlockSyntax(

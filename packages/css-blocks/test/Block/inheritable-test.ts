@@ -20,7 +20,7 @@ class TestSource extends Inheritable<
   never,      // Parent
   TestNode    // Children
 > {
-  protected newChild(name: string) { return new TestNode(name, this); }
+  protected get ChildConstructor(): typeof TestNode { return TestNode; }
   lookup(): undefined { return undefined; }
   setBase(base: TestSource) {
     this._base = base;
@@ -68,7 +68,7 @@ class TestNode extends Inheritable<
   TestSource, // Parent
   TestSink    // Children
 > {
-  newChild(name: string) { return new TestSink(name, this); }
+  get ChildConstructor(): typeof TestSink { return TestSink; }
   lookup(): undefined { return undefined; }
   ensureSink: ContainerNode["ensureChild"] =
     (name: string, key?: string) => this.ensureChild(name, key)
@@ -84,6 +84,8 @@ class TestSink extends Inheritable<
   TestNode, // Parent
   never
   > {
+  get ChildConstructor(): never { return assertNeverCalled(); }
+
   // tslint:disable-next-line:prefer-whatever-to-any
   public lookup(_path: string, _errLoc?: SourceLocation | undefined): Inheritable<any, any, any, any> | undefined {
     throw new Error("Method not implemented.");
@@ -92,9 +94,6 @@ class TestSink extends Inheritable<
   constructor(name: string, parent: TestNode) {
     super(name, parent);
     this.rulesets = new RulesetContainer(new BlockClass(name, TEST_BLOCK));
-  }
-  newChild(_name: string) {
-    return assertNeverCalled();
   }
 
   public cssClass(_opts: OptionsReader): string {

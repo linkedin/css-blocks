@@ -1,12 +1,12 @@
 import { isObject, whatever } from "@opticss/util";
 
+import { AttrValue, isAttrValue } from "./AttrValue";
 import { BlockClass, isBlockClass } from "./BlockClass";
-import { isState, State } from "./State";
 
 export { BlockClass } from "./BlockClass";
-export { State } from "./State";
-export type Styles = State | BlockClass;
+export { AttrValue } from "./AttrValue";
+export type Styles = AttrValue | BlockClass;
 
 export function isStyle(o: whatever): o is Styles {
-  return isObject(o) && (isBlockClass(o) || isState(o));
+  return isObject(o) && (isBlockClass(o) || isAttrValue(o));
 }

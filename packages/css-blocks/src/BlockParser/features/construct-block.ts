@@ -7,6 +7,7 @@ import { Block, Style } from "../../Block";
 import { selectorSourceLocation as loc, sourceLocation } from "../../SourceLocation";
 import * as errors from "../../errors";
 import {
+  attrName,
   BlockNodeAndType,
   BlockType,
   blockTypeName,
@@ -17,8 +18,6 @@ import {
   isRootNode,
   isStateNode,
   NodeAndType,
-  stateName,
-  stateValue,
 } from "../block-intermediates";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
@@ -93,7 +92,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
             case BlockType.state:
               if (obj.blockName) { break; }
               let state = block.rootClass
-                .ensureState(stateName(obj.node), stateValue(obj.node));
+                .ensureValue(attrName(obj.node));
               if (!isKey) { break; }
               styleRuleTuples.add([state, rule]);
               break;
@@ -112,7 +111,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
             case BlockType.classState:
               let classNode = obj.node.prev();
               let classObj = block.ensureClass(classNode.value!);
-              let classState = classObj.ensureState(stateName(obj.node), stateValue(obj.node));
+              let classState = classObj.ensureValue(attrName(obj.node));
               if (!isKey) { break; }
               styleRuleTuples.add([classState, rule]);
               break;

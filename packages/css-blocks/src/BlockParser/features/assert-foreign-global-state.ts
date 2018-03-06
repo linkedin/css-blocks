@@ -4,10 +4,9 @@ import { Block } from "../../Block";
 import { selectorSourceLocation as loc } from "../../SourceLocation";
 import * as errors from "../../errors";
 import {
+  attrName,
   BlockType,
   getBlockNode,
-  stateName,
-  stateValue,
 } from "../block-intermediates";
 
 /**
@@ -49,7 +48,7 @@ export async function assertForeignGlobalState(root: postcss.Root, block: Block,
         }
 
         // If state referenced does not exist on external block, throw
-        let otherState = otherBlock.rootClass.getState(stateName(obj.node), stateValue(obj.node));
+        let otherState = otherBlock.rootClass.getValue(attrName(obj.node));
         if (!otherState) {
           throw new errors.InvalidBlockSyntax(
             `No state ${obj.node.toString()} found in : ${rule.selector}`,
