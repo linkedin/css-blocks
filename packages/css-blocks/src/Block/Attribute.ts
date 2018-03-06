@@ -173,18 +173,6 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   }
 
   /**
-   * Retrieve this AttrValue's local name, including the optional BlockClass and Attribute designations.
-   * @returns The AttrValue's local name.
-   */
-  localName(): string {
-    if (this.blockClass.isRoot) {
-      return this.uid;
-    } else {
-      return `${this.blockClass.localName()}--${this.token.namespace}-${this.token.name}`;
-    }
-  }
-
-  /**
    * Export as new class name.
    * @param opts Option hash configuring output mode.
    * @returns String representing output class.

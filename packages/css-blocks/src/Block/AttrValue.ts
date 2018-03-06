@@ -47,14 +47,6 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
    */
   get blockClass(): BlockClass { return this.parent.parent; }
 
-  /**
-   * Retrieve this AttrValue's local name, including the BlockClass and Attribute designations.
-   * @returns The AttrValue's local name.
-   */
-  localName(): string {
-    return `${this.parent.localName()}${this.isUniversal ? "" : `-${this.uid}`}`;
-  }
-
   asSourceAttributes(): Attr[] {
     if (!this._sourceAttributes) {
       let blockClass = this.blockClass;
