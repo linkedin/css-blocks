@@ -80,7 +80,8 @@
     "glob": "^7.1.2",
     "object.values": "^1.0.4",
     "opticss": "^0.2.0",
-    "postcss": "^6.0.1"
+    "postcss": "^6.0.1",
+    "shelljs": "^0.7.8"
   },
   "resolutions": {
     "@types/chai": "4.1.2",
