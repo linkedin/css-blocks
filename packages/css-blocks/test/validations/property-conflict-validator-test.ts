@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { AttrValue, Block, BlockClass } from "../../src/Block";
+import { AttrValue, Block, BlockClass, isBlockClass, isAttrValue } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
@@ -1289,11 +1289,11 @@ function constructElement(block: Block, ...styles: string[]) {
   for (let path of styles) {
     let style = block.lookup(path);
     if (!style) { throw Error(`Error looking up Style ${path} for test.`); }
-    if (style instanceof BlockClass) {
+    if (isBlockClass(style)) {
       element.addStaticClass(style);
     }
-    else if (style instanceof AttrValue) {
-      element.addStaticAttr(style.parent.parent, style);
+    else if (isAttrValue(style)) {
+      element.addStaticAttr(style.blockClass, style);
     }
   }
 
@@ -1301,7 +1301,7 @@ function constructElement(block: Block, ...styles: string[]) {
     addDynamic(truthy: string[] | string, falsy?: string[]) {
       if (typeof truthy === "string") {
         let state = block.lookup(truthy) as AttrValue;
-        element.addDynamicAttr(state.parent.parent, state, true);
+        element.addDynamicAttr(state.blockClass, state, true);
         return this;
       }
       let truthyStyles = truthy.map(block.lookup.bind(block));

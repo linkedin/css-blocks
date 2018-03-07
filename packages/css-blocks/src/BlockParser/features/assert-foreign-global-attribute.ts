@@ -48,7 +48,7 @@ export async function assertForeignGlobalAttribute(root: postcss.Root, block: Bl
         }
 
         // If state referenced does not exist on external block, throw
-        let otherAttr = otherBlock.rootClass.getValue(toAttrToken(obj.node));
+        let otherAttr = otherBlock.rootClass.getAttributeValue(toAttrToken(obj.node));
         if (!otherAttr) {
           throw new errors.InvalidBlockSyntax(
             `No state ${obj.node.toString()} found in : ${rule.selector}`,

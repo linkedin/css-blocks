@@ -114,7 +114,7 @@ export class TemplateAnalysisTests {
       let klass = block.getClass("asdf");
       if (klass) {
         element.addStaticClass(klass);
-        let state = klass.getValue("[state|larger]");
+        let state = klass.getAttributeValue("[state|larger]");
         if (state) {
           element.addStaticAttr(klass, state);
         }
@@ -212,7 +212,7 @@ export class TemplateAnalysisTests {
       let klass = block.getClass("asdf") as BlockClass;
       element.addStaticClass(klass);
       element.addDynamicClasses({ condition: null, whenTrue: [aBlock.getClass("foo")!] });
-      element.addDynamicAttr(klass, klass.getValue("[state|larger]")!, null);
+      element.addDynamicAttr(klass, klass.getAttributeValue("[state|larger]")!, null);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -252,7 +252,7 @@ export class TemplateAnalysisTests {
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
         element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[state|color]") as Attribute, null);
-        element.addDynamicAttr(block.rootClass, block.rootClass.getValue("[state|bgcolor]")!, null);
+        element.addDynamicAttr(block.rootClass, block.rootClass.getAttributeValue("[state|bgcolor]")!, null);
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -373,8 +373,8 @@ export class TemplateAnalysisTests {
       element.addDynamicClasses({condition: null, whenTrue: [asdf], whenFalse: [fdsa, foo]});
       // This is what we do when the same state is in the template for two
       // classes that have the states of the same name.
-      element.addStaticAttr(asdf, asdf.getValue("[state|larger]")!);
-      element.addStaticAttr(fdsa, fdsa.getValue("[state|larger]")!);
+      element.addStaticAttr(asdf, asdf.getAttributeValue("[state|larger]")!);
+      element.addStaticAttr(fdsa, fdsa.getAttributeValue("[state|larger]")!);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -429,7 +429,7 @@ export class TemplateAnalysisTests {
         whenTrue: [block.getClass("asdf")!],
         whenFalse: [block.getClass("fdsa")!],
       });
-      element.addStaticAttr(klass, klass.getValue("[state|bar]")!);
+      element.addStaticAttr(klass, klass.getAttributeValue("[state|bar]")!);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
@@ -525,7 +525,7 @@ export class TemplateAnalysisTests {
       let klass = aBlock.getClass("foo") as BlockClass;
       element.addStaticClass(klass);
       element.addDynamicClasses({condition: null, whenTrue: [block.getClass("asdf")!], whenFalse: [block.getClass("fdsa")!]});
-      element.addStaticAttr(klass, klass.getValue("[state|bar]")!);
+      element.addStaticAttr(klass, klass.getAttributeValue("[state|bar]")!);
       analysis.endElement(element);
       let options: PluginOptions = {};
       let reader = new OptionsReader(options);
@@ -696,7 +696,7 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticClass(block.rootClass);
-          element.addStaticAttr(block.rootClass, block.rootClass.getValue("[state|foo]")!);
+          element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|foo]")!);
           analysis.endElement(element);
           return [block, _];
       });
@@ -768,7 +768,7 @@ export class TemplateAnalysisTests {
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
-          element.addStaticAttr(block.rootClass, block.rootClass.getValue("[state|test]")!);
+          element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test]")!);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
       }));
@@ -793,7 +793,7 @@ export class TemplateAnalysisTests {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass("foo") as BlockClass;
-          element.addStaticAttr(klass, klass.getValue("[state|test]")!);
+          element.addStaticAttr(klass, klass.getAttributeValue("[state|test]")!);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
     }));
@@ -836,7 +836,7 @@ export class TemplateAnalysisTests {
           analysis.blocks["a"] = aBlock;
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass("pretty") as BlockClass;
-          let state = klass.resolveValue("[state|color=yellow]")!;
+          let state = klass.resolveAttributeValue("[state|color=yellow]")!;
           element.addStaticAttr(klass, state);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
@@ -877,7 +877,7 @@ export class TemplateAnalysisTests {
           let element = analysis.startElement({ line: 10, column: 32 });
 
           let klass = block.getClass("pretty") as BlockClass;
-          let state = klass.resolveValue("[state|color=yellow]") as AttrValue;
+          let state = klass.resolveAttributeValue("[state|color=yellow]") as AttrValue;
           element.addStaticClass(klass);
           element.addStaticAttr(klass, state);
           analysis.endElement(element);

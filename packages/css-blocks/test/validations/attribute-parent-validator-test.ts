@@ -46,7 +46,7 @@ export class TemplateAnalysisTests {
       this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
-        element.addStaticAttr(block.rootClass, block.rootClass.getValue("[state|test]")!);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test]")!);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -71,7 +71,7 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         let klass = block.getClass("foo") as BlockClass;
-        element.addStaticAttr(klass, klass.getValue("[state|test]")!);
+        element.addStaticAttr(klass, klass.getAttributeValue("[state|test]")!);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -114,7 +114,7 @@ export class TemplateAnalysisTests {
         analysis.blocks["a"] = aBlock;
         let element = analysis.startElement({ line: 10, column: 32 });
         let klass = block.getClass("pretty") as BlockClass;
-        let state = klass.resolveValue("[state|color=yellow]")!;
+        let state = klass.resolveAttributeValue("[state|color=yellow]")!;
         if (!state) { throw new Error("No state group `color` resolved"); }
         element.addStaticAttr(klass, state);
         analysis.endElement(element);
@@ -155,7 +155,7 @@ export class TemplateAnalysisTests {
       analysis.blocks["a"] = aBlock;
       let element = analysis.startElement({ line: 10, column: 32 });
       let klass = block.getClass("pretty") as BlockClass;
-      let state = klass.resolveValue("[state|color=yellow]");
+      let state = klass.resolveAttributeValue("[state|color=yellow]");
       if (!state) { throw new Error("No state group `color` resolved"); }
       element.addStaticClass(klass);
       element.addStaticAttr(klass, state);

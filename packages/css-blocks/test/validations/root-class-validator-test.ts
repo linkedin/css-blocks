@@ -77,7 +77,7 @@ export class TemplateAnalysisTests {
       analysis.blocks[""] = block;
       let element = analysis.startElement({ line: 10, column: 32 });
       element.addStaticClass(block.rootClass);
-      element.addStaticAttr(block.rootClass, block.rootClass.getValue("[state|foo]")!);
+      element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|foo]")!);
       analysis.endElement(element);
       return [block, _];
     });

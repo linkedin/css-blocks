@@ -58,7 +58,7 @@ export class Test {
     mock.restore();
   }
 
-  @test "Root styles with and without .root are rewritten correctly."() {
+  @test "Root styles with :scope applied are rewritten correctly."() {
     mock({
       "bar.block.css": `
         :scope { color: blue; }
@@ -70,7 +70,6 @@ export class Test {
       import objstr from 'obj-str';
 
       <div class={bar}></div>;
-      <div class={bar.root}></div>;
 
     `;
 
@@ -220,7 +219,7 @@ export class Test {
         [bar.pretty.color(dynamic)]: leSigh
       });
 
-      <div class={bar.root}>
+      <div class={bar}>
       <div class={style}></div></div>;
     `;
 
@@ -269,7 +268,7 @@ export class Test {
         [bar.pretty.color(dynamic)]: true
       });
 
-      <div class={bar.root}><div class={style}></div></div>;
+      <div class={bar}><div class={style}></div></div>;
     `;
 
     return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
@@ -325,7 +324,7 @@ export class Test {
         [bar.pretty.color(\`\${dynamic}Color\`)]: conditional()
       });
 
-      <div class={bar.root}><div class={style}></div></div>;
+      <div class={bar}><div class={style}></div></div>;
     `;
 
     return parse(code, "test.jsx").then((analysis: MetaAnalysis) => {

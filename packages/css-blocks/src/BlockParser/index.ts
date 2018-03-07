@@ -13,7 +13,7 @@ import { constructBlock } from "./features/construct-block";
 import { disallowImportant } from "./features/disallow-important";
 import { discoverName } from "./features/discover-name";
 import { extendBlock } from "./features/extend-block";
-import { globalAttribute } from "./features/global-attributes";
+import { globalAttributes } from "./features/global-attributes";
 import { implementBlock } from "./features/implement-block";
 import { processDebugStatements } from "./features/process-debug-statements";
 import { resolveReferences } from "./features/resolve-references";
@@ -84,7 +84,7 @@ export class BlockParser {
     // Discover and parse all block references included by this block.
     await resolveReferences(block, this.factory, sourceFile);
     // Handle any global attributes defined by this block.
-    await globalAttribute(root, block, sourceFile);
+    await globalAttributes(root, block, sourceFile);
     // Parse all block styles and build block tree.
     await constructBlock(root, block, debugIdent);
     // Verify that external blocks referenced have been imported, have defined the attribute being selected, and have marked it as a global state.

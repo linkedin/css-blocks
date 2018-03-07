@@ -27,6 +27,7 @@ export class BlockCompiler {
       }
       let resolver = new ConflictResolver(this.opts);
       let filename = this.opts.importer.debugIdentifier(block.identifier, this.opts);
+
       // Process all debug statements for this block.
       this.processDebugStatements(filename, root, block);
 

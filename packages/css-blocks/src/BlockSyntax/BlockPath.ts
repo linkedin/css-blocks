@@ -4,7 +4,7 @@ import {
   CLASS_NAME_IDENT as CSS_IDENT,
   ROOT_CLASS,
   STATE_NAMESPACE,
-  UNIVERSAL_ATTR_VALUE,
+  ATTR_PRESENT,
 } from "./BlockSyntax";
 
 interface BlockToken {
@@ -65,7 +65,11 @@ function stringify(tokens: Token[]): string {
   for (let token of tokens) {
          if (isBlock(token)) { out += token.name; }
     else if (isClass(token)) { out += token.name === ROOT_CLASS ? token.name : `.${token.name}`; }
-    else if (isAttribute(token)) { out += `[${token.namespace}|${token.name}${token.value && token.value !== UNIVERSAL_ATTR_VALUE ? `="${token.value}"` : ""}]`; }
+    else if (isAttribute(token)) {
+      let namespace = token.namespace ? `${token.namespace}|` : "";
+      let value = token.value && token.value !== ATTR_PRESENT ? `="${token.value}"` : "";
+      out += `[${namespace}${token.name}${value}]`;
+    }
   }
   return out;
 }
@@ -246,7 +250,7 @@ export class BlockPath {
             return this.throw(ERRORS.invalidIdent(working), working.length);
           }
           (hasName(token)) ? (token.value = working) : (token.name = working);
-          token.value = token.value || UNIVERSAL_ATTR_VALUE;
+          token.value = token.value || ATTR_PRESENT;
           this.addToken(token, true);
           working = "";
 

@@ -91,7 +91,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
             // ruleset. If a foreign attribute, do nothing (validation happened earlier).
             case BlockType.attribute:
               if (obj.blockName) { break; }
-              let attr = block.rootClass.ensureValue(toAttrToken(obj.node));
+              let attr = block.rootClass.ensureAttributeValue(toAttrToken(obj.node));
               if (!isKey) { break; }
               styleRuleTuples.add([attr, rule]);
               break;
@@ -110,7 +110,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
             case BlockType.classAttribute:
               let classNode = obj.node.prev();
               let classObj = block.ensureClass(classNode.value!);
-              let classAttr = classObj.ensureValue(toAttrToken(obj.node));
+              let classAttr = classObj.ensureAttributeValue(toAttrToken(obj.node));
               if (!isKey) { break; }
               styleRuleTuples.add([classAttr, rule]);
               break;

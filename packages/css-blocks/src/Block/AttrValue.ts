@@ -1,11 +1,12 @@
 import {
   Attr,
+  Attribute as AttributeUNS,
   AttributeNS,
   attrValues,
 } from "@opticss/element-analysis";
 import { assertNever, assertNeverCalled } from "@opticss/util";
 
-import { UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
+import { ATTR_PRESENT } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
@@ -16,14 +17,14 @@ import { RulesetContainer } from "./RulesetContainer";
 import { Style } from "./Style";
 
 /**
- * AttrValue represent the value of an Attribute in a particular Block.
- * An Attribute can have AttrValue that are considered to be mutually exclusive.
- * Attributes can be designated as "global";
+ * AttrValue represents the value of an Attribute in a particular Block.
+ * An Attribute can have many AttrValue children that are considered to
+ * be mutually exclusive. Attributes can be designated as "global";
  */
 export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   isGlobal = false;
 
-  private _sourceAttributes: AttributeNS[] | undefined;
+  private _sourceAttributes: Attr[] | undefined;
   public readonly rulesets: RulesetContainer<AttrValue>;
 
   /**
@@ -39,13 +40,19 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   protected get ChildConstructor(): never { return assertNeverCalled(); }
   newChild(): never { return assertNeverCalled(); }
 
-  get isUniversal(): boolean { return this.uid === UNIVERSAL_ATTR_VALUE; }
+  get isUniversal(): boolean { return this.uid === ATTR_PRESENT; }
+
+  /**
+   * Retrieve the Attribute that this AttrValue belongs to.
+   * @returns The parent Attribute, or null.
+   */
+  get attribute(): Attribute { return this.parent; }
 
   /**
    * Retrieve the BlockClass that this AttrValue belongs to.
-   * @returns The parent block class, or null.
+   * @returns The parent BlockClass, or null.
    */
-  get blockClass(): BlockClass { return this.parent.parent; }
+  get blockClass(): BlockClass { return this.parent.blockClass; }
 
   asSourceAttributes(): Attr[] {
     if (!this._sourceAttributes) {
@@ -53,7 +60,12 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
       let rootIsOptional = true;
       this._sourceAttributes = blockClass.asSourceAttributes(rootIsOptional);
       let value = this.isUniversal ? attrValues.absent() : attrValues.constant(this.uid);
-      this._sourceAttributes.push(new AttributeNS(this.parent.namespace || "", this.parent.name, value));
+      if (this.parent.namespace) {
+        this._sourceAttributes.push(new AttributeNS(this.parent.namespace, this.parent.name, value));
+      }
+      else {
+        this._sourceAttributes.push(new AttributeUNS(this.parent.name, value));
+      }
     }
     return this._sourceAttributes.slice();
   }
@@ -70,9 +82,6 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
         return assertNever(opts.outputMode);
     }
   }
-
-  // TODO: Implement lookup relative to AttrValue.
-  public lookup(): undefined { return undefined; }
 
   /**
    * Return array self and all children.
