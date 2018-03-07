@@ -25,8 +25,7 @@ class TestSource extends Inheritable<
   setBase(base: TestSource) {
     this._base = base;
   }
-  get parent(): RootNode["parent"] { return this.parent }
-  get root(): RootNode["root"] { return this.root }
+  get root(): RootNode["root"] { return this._root; }
   newChildNode: RootNode["newChild"] =
     (name: string) => this.newChild(name)
 
@@ -72,8 +71,8 @@ class TestNode extends Inheritable<
 > {
   get ChildConstructor(): typeof TestSink { return TestSink; }
   lookup(): undefined { return undefined; }
-  get parent(): ContainerNode["parent"] { return this.parent }
-  get root(): ContainerNode["root"] { return this.root }
+  get parent(): ContainerNode["parent"] { return this._parent!; }
+  get root(): ContainerNode["root"] { return this.parent.root; }
   ensureSink: ContainerNode["ensureChild"] =
     (name: string, key?: string) => this.ensureChild(name, key)
   getSink: ContainerNode["getChild"] =
@@ -91,8 +90,8 @@ class TestSink extends Inheritable<
   never
   > {
   get ChildConstructor(): never { return assertNeverCalled(); }
-  get parent(): SinkNode["parent"] { return this.parent }
-  get root(): SinkNode["root"] { return this.root }
+  get parent(): SinkNode["parent"] { return this._parent!; }
+  get root(): SinkNode["root"] { return this.parent.root; }
   // tslint:disable-next-line:prefer-whatever-to-any
   public lookup(_path: string, _errLoc?: SourceLocation | undefined): Inheritable<any, any, any, any> | undefined {
     throw new Error("Method not implemented.");
@@ -119,7 +118,6 @@ export class InheritableTests {
 
   @test "initial source node tree properties are as expected"() {
     let source = new TestSource("my-source");
-    assert.equal(source.parent, null);
     assert.equal(source.base, undefined);
     assert.equal(source.root, source);
     assert.deepEqual(source.resolveInheritance(), []);

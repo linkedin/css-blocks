@@ -266,7 +266,7 @@ export class TemplateAnalysisTests {
               staticStyles: [ ],
               dynamicClasses: [ {condition: true, whenTrue: [ 0 ] } ],
               dynamicAttributes: [
-                { stringExpression: true, group: {"::universal": 2 }, container: 0 },
+                { stringExpression: true, group: {"::attr-present": 2 }, container: 0 },
                 { condition: true, value: 1, container: 0 },
               ],
             },

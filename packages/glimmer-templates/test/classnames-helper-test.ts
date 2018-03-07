@@ -57,7 +57,7 @@ describe("Classnames Helper", () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = b.rootClass.ensureValue("[state|enabled]");
+    let s1 = b.rootClass.ensureAttributeValue("[state|enabled]");
 
     let inputs: Style[] = [b.rootClass, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], { });
@@ -78,7 +78,7 @@ describe("Classnames Helper", () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = b.rootClass.ensureValue("[state|enabled]");
+    let s1 = b.rootClass.ensureAttributeValue("[state|enabled]");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], { });
@@ -99,7 +99,7 @@ describe("Classnames Helper", () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.ensureValue("[state|enabled]");
+    let s1 = r.ensureAttributeValue("[state|enabled]");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], { });
@@ -119,14 +119,14 @@ describe("Classnames Helper", () => {
   it("generates an ast fragment for a state group", () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.ensureValue("[state|theme=red]");
-    let orange = r.ensureValue("[state|theme=orange]");
-    let blue = r.ensureValue("[state|theme=blue]");
+    let red = r.ensureAttributeValue("[state|theme=red]");
+    let orange = r.ensureAttributeValue("[state|theme=orange]");
+    let blue = r.ensureAttributeValue("[state|theme=blue]");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], { });
     let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
-    element.addDynamicGroup(r, red.parent, builders.mustache(builders.string("blue")));
+    element.addDynamicGroup(r, red.attribute, builders.mustache(builders.string("blue")));
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
@@ -137,9 +137,9 @@ describe("Classnames Helper", () => {
   it("generates an ast fragment for a dependent state group", () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.ensureValue("[state|theme=red]");
-    let orange = r.ensureValue("[state|theme=orange]");
-    let blue = r.ensureValue("[state|theme=blue]");
+    let red = r.ensureAttributeValue("[state|theme=red]");
+    let orange = r.ensureAttributeValue("[state|theme=orange]");
+    let blue = r.ensureAttributeValue("[state|theme=blue]");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], { });
@@ -148,7 +148,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, red.parent, builders.mustache(builders.path("/app/foo/helperz"), [builders.string("blue")]));
+    element.addDynamicGroup(r, red.attribute, builders.mustache(builders.path("/app/foo/helperz"), [builders.string("blue")]));
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
@@ -160,7 +160,7 @@ describe("Classnames Helper", () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.ensureValue("[state|enabled]");
+    let s1 = r.ensureAttributeValue("[state|enabled]");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -183,7 +183,7 @@ describe("Classnames Helper", () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.ensureValue("[state|enabled]");
+    let s1 = r.ensureAttributeValue("[state|enabled]");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -206,7 +206,7 @@ describe("Classnames Helper", () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.ensureValue("[state|enabled]");
+    let s1 = r.ensureAttributeValue("[state|enabled]");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -229,7 +229,7 @@ describe("Classnames Helper", () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.ensureValue("[state|enabled]");
+    let s1 = r.ensureAttributeValue("[state|enabled]");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -252,7 +252,7 @@ describe("Classnames Helper", () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.ensureValue("[state|enabled]");
+    let s1 = r.ensureAttributeValue("[state|enabled]");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -278,7 +278,7 @@ describe("Classnames Helper", () => {
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
-    let s1 = r.ensureValue("[state|enabled]");
+    let s1 = r.ensureAttributeValue("[state|enabled]");
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -302,9 +302,9 @@ describe("Classnames Helper", () => {
   it("dependent state group is allowed when class is set", () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.ensureValue("[state|theme=red]");
-    let orange = r.ensureValue("[state|theme=orange]");
-    let blue = r.ensureValue("[state|theme=blue]");
+    let red = r.ensureAttributeValue("[state|theme=red]");
+    let orange = r.ensureAttributeValue("[state|theme=orange]");
+    let blue = r.ensureAttributeValue("[state|theme=blue]");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -318,7 +318,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, red.parent, builders.mustache(builders.string("blue")));
+    element.addDynamicGroup(r, red.attribute, builders.mustache(builders.string("blue")));
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
@@ -329,9 +329,9 @@ describe("Classnames Helper", () => {
   it("dependent state group is disabled when class is not set", () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.ensureValue("[state|theme=red]");
-    let orange = r.ensureValue("[state|theme=orange]");
-    let blue = r.ensureValue("[state|theme=blue]");
+    let red = r.ensureAttributeValue("[state|theme=red]");
+    let orange = r.ensureAttributeValue("[state|theme=orange]");
+    let blue = r.ensureAttributeValue("[state|theme=blue]");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -345,7 +345,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(false),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, red.parent, builders.mustache(builders.string("blue")));
+    element.addDynamicGroup(r, red.attribute, builders.mustache(builders.string("blue")));
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
@@ -356,9 +356,9 @@ describe("Classnames Helper", () => {
   it("dependent state group is unset when falsy", () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.ensureValue("[state|theme=red]");
-    let orange = r.ensureValue("[state|theme=orange]");
-    let blue = r.ensureValue("[state|theme=blue]");
+    let red = r.ensureAttributeValue("[state|theme=red]");
+    let orange = r.ensureAttributeValue("[state|theme=orange]");
+    let blue = r.ensureAttributeValue("[state|theme=blue]");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -372,7 +372,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, red.parent, builders.mustache(builders.undefined()));
+    element.addDynamicGroup(r, red.attribute, builders.mustache(builders.undefined()));
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
@@ -383,9 +383,9 @@ describe("Classnames Helper", () => {
   it("dependent state group errors when falsy", () => {
     let b = new Block("test", "test");
     let r = b.rootClass;
-    let red = r.ensureValue("[state|theme=red]");
-    let orange = r.ensureValue("[state|theme=orange]");
-    let blue = r.ensureValue("[state|theme=blue]");
+    let red = r.ensureAttributeValue("[state|theme=red]");
+    let orange = r.ensureAttributeValue("[state|theme=orange]");
+    let blue = r.ensureAttributeValue("[state|theme=blue]");
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], {
@@ -399,7 +399,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(true),
       whenTrue: [ r ],
     });
-    element.addDynamicGroup(r, red.parent, builders.mustache(builders.undefined()), true);
+    element.addDynamicGroup(r, red.attribute, builders.mustache(builders.undefined()), true);
     element.seal();
     expect(() => {
       run(helperGenerator(rewrite, element));
@@ -412,9 +412,9 @@ describe("Classnames Helper", () => {
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
     let c3 = b.ensureClass("class-3");
-    let red = r.ensureValue("[state|theme=red]");
-    let orange = r.ensureValue("[state|theme=orange]");
-    let blue = r.ensureValue("[state|theme=blue]");
+    let red = r.ensureAttributeValue("[state|theme=red]");
+    let orange = r.ensureAttributeValue("[state|theme=orange]");
+    let blue = r.ensureAttributeValue("[state|theme=blue]");
 
     let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
     element.addDynamicClasses({
@@ -433,7 +433,7 @@ describe("Classnames Helper", () => {
       condition: builders.boolean(false),
       whenTrue: [ c3 ],
     });
-    element.addDynamicGroup(r, red.parent, builders.mustache(builders.string("blue")));
+    element.addDynamicGroup(r, red.attribute, builders.mustache(builders.string("blue")));
     element.seal();
     let inputs = [r, red, orange, blue, c1, c2, c3];
     let rewrite = new IndexedClassMapping(inputs, [], {

@@ -1,7 +1,7 @@
 import { Attribute as Attr, AttributeValue, attrValues } from "@opticss/element-analysis";
 import { isString } from "util";
 
-import { IAttrToken as AttrToken, ROOT_CLASS, ATTR_PRESENT } from "../BlockSyntax";
+import { ATTR_PRESENT, IAttrToken as AttrToken, ROOT_CLASS } from "../BlockSyntax";
 import { BlockPath } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";

@@ -2,7 +2,7 @@ import { assertNever, firstOfType } from "@opticss/util";
 import { CompoundSelector } from "opticss";
 import selectorParser = require("postcss-selector-parser");
 
-import { AttrToken, ROOT_CLASS, STATE_NAMESPACE, ATTR_PRESENT } from "../BlockSyntax";
+import { ATTR_PRESENT, AttrToken, ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
 
 export enum BlockType {
   root = 1,
