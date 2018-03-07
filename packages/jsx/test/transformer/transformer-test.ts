@@ -70,14 +70,12 @@ export class Test {
       import objstr from 'obj-str';
 
       <div class={bar}></div>;
-
     `;
 
     return parse(code, "test.tsx").then((meta: MetaAnalysis) => {
       return transform(code, meta.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
-          <div class="a"></div>;
           <div class="a"></div>;
           `));
       });
