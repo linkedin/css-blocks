@@ -8,7 +8,7 @@ import { sourceLocation as loc } from "../../SourceLocation";
 import * as errors from "../../errors";
 import { toAttrToken } from "../block-intermediates";
 
-export async function globalAttribute(root: postcss.Root, block: Block, file: string): Promise<Block> {
+export async function globalAttributes(root: postcss.Root, block: Block, file: string): Promise<Block> {
   root.walkAtRules(BLOCK_GLOBAL, (atRule) => {
 
     let selectors = parseSelector(atRule.params.trim());
@@ -19,8 +19,7 @@ export async function globalAttribute(root: postcss.Root, block: Block, file: st
     if (selectors.length === 1 && selectors[0].key === selectors[0].selector) {
       let firstNode: selectorParser.Node | undefined = selectors[0].key.nodes[0];
       if (firstNode && selectorParser.isAttribute(firstNode)) {
-        let attr = block.rootClass
-          .ensureValue(toAttrToken(firstNode));
+        let attr = block.rootClass.ensureAttributeValue(toAttrToken(firstNode));
         attr.isGlobal = true;
       } else {
         throw new errors.InvalidBlockSyntax(

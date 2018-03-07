@@ -47,7 +47,7 @@ export class TemplateAnalysisTests {
         element.addDynamicGroup(klass, attribute, null);
       }
     }
-    for (let attrs of klass.booleanValues()) {
+    for (let attrs of klass.booleanAttributeValues()) {
       element.addStaticAttr(klass, attrs);
     }
   }

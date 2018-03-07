@@ -49,10 +49,10 @@ export function getConstraints(value: string): string[] {
 // for any give Style instead of using different containers for the element and its pseudos.
 export const SELF_SELECTOR = "::self";
 
-// Internally use the invented `::universal` value name to represent a bare attribute selector with no value set.
+// Internally use the invented `::attr-present` value name to represent a bare attribute selector with no value set.
 // This way, we can treat the universal value selector as just another `Value` object instead of having to
 // special case it in the `Attribute` Block object.
-export const UNIVERSAL_ATTR_VALUE = "::universal";
+export const ATTR_PRESENT = "::attr-present";
 
 // Internally use the invented `root` class represents the root element styling for a block. By interpreting the
 // root selector as just another class we no longer have to store styling information it on the `Block` object..

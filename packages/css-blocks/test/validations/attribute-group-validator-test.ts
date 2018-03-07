@@ -48,8 +48,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addStaticAttr(block.rootClass, block.rootClass.getValue("[state|test=foo]")!);
-        element.addStaticAttr(block.rootClass, block.rootClass.getValue("[state|test=bar]")!);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=foo]")!);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=bar]")!);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -74,8 +74,8 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addStaticAttr(block.rootClass, block.rootClass.getValue("[state|test=foo]")!);
-        element.addDynamicAttr(block.rootClass, block.rootClass.getValue("[state|test=bar]")!, true);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=foo]")!);
+        element.addDynamicAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=bar]")!, true);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -100,7 +100,7 @@ export class TemplateAnalysisTests {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addStaticAttr(block.rootClass, block.rootClass.getValue("[state|test=foo]")!);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=foo]")!);
         element.addDynamicGroup(block.rootClass, block.rootClass.getAttribute("[state|test]")!, true);
         analysis.endElement(element);
         assert.deepEqual(1, 1);

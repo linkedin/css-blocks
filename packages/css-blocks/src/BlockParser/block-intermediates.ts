@@ -2,7 +2,7 @@ import { assertNever, firstOfType } from "@opticss/util";
 import { CompoundSelector } from "opticss";
 import selectorParser = require("postcss-selector-parser");
 
-import { AttrToken, ROOT_CLASS, STATE_NAMESPACE, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
+import { AttrToken, ROOT_CLASS, STATE_NAMESPACE, ATTR_PRESENT } from "../BlockSyntax";
 
 export enum BlockType {
   root = 1,
@@ -28,7 +28,7 @@ function attrValue(attr: selectorParser.Attribute): string {
   if (attr.value) {
     return attr.value.replace(/^(["'])(.+(?=\1$))\1$/, "$2");
   } else {
-    return UNIVERSAL_ATTR_VALUE;
+    return ATTR_PRESENT;
   }
 }
 
@@ -39,7 +39,7 @@ export function toAttrToken(attr: selectorParser.Attribute): AttrToken {
     namespace: attr.namespaceString,
     name: attr.attribute,
     value: attrValue(attr),
-    quoted: true,
+    quoted: !!attr.quoted,
   };
 }
 
@@ -100,7 +100,7 @@ export function isClassNode(node: selectorParser.Node): node is selectorParser.C
  * @return True if attribute selector, false if not.
  */
 export function isAttributeNode(node: selectorParser.Node): node is selectorParser.Attribute {
-  return node.type === selectorParser.ATTRIBUTE && (node).namespace === STATE_NAMESPACE;
+  return node.type === selectorParser.ATTRIBUTE && node.namespace === STATE_NAMESPACE;
 }
 
 /**

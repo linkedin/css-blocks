@@ -169,7 +169,7 @@ export class ExpressionReader {
     }
 
     // Fetch the class referenced in this selector, if it exists.
-    if (this.class && this.class !== "root") {
+    if (this.class) {
       let found = block.lookup(`.${this.class}`) as BlockClass | undefined;
       if (!found) {
         let knownClasses = block.all(false).filter(s => isBlockClass(s)).map(c => c.asSource());

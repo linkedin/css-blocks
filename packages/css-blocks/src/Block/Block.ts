@@ -105,7 +105,7 @@ export class Block
     let attrInfo = path.attribute;
     let attr;
     if (klass && attrInfo) {
-      attr = klass.resolveValue(attrInfo);
+      attr = klass.resolveAttributeValue(attrInfo);
       if (!attr) return undefined;
     }
 
@@ -284,14 +284,14 @@ export class Block
       case BlockType.root:
         return this.rootClass;
       case BlockType.attribute:
-        return this.rootClass.getValue(toAttrToken(obj.node));
+        return this.rootClass.getAttributeValue(toAttrToken(obj.node));
       case BlockType.class:
         return this.getClass(obj.node.value);
       case BlockType.classAttribute:
         let classNode = obj.node.prev();
         let classObj = this.getClass(classNode.value!);
         if (classObj) {
-          return classObj.getValue(toAttrToken(obj.node));
+          return classObj.getAttributeValue(toAttrToken(obj.node));
         }
         return null;
       default:
@@ -311,7 +311,7 @@ export class Block
           if (klass) {
             let another = next.next();
             if (another && isAttributeNode(another)) {
-              let attr = klass.getValue(toAttrToken(another));
+              let attr = klass.getAttributeValue(toAttrToken(another));
               if (attr) {
                 return [attr, 2];
               } else {
@@ -325,7 +325,7 @@ export class Block
             return null;
           }
         } else if (next && isAttributeNode(next)) {
-          let attr = otherBlock.rootClass.getValue(toAttrToken(next));
+          let attr = otherBlock.rootClass.getAttributeValue(toAttrToken(next));
           if (attr) {
             return [attr, 1];
           } else {
@@ -344,7 +344,7 @@ export class Block
       }
       let next = node.next();
       if (next && isAttributeNode(next)) {
-        let attr = klass.getValue(toAttrToken(next));
+        let attr = klass.getAttributeValue(toAttrToken(next));
         if (attr === null) {
           return null;
         } else {
@@ -354,7 +354,7 @@ export class Block
         return [klass, 0];
       }
     } else if (isAttributeNode(node)) {
-      let attr = this.rootClass.ensureValue(toAttrToken(node));
+      let attr = this.rootClass.ensureAttributeValue(toAttrToken(node));
       if (attr) {
         return [attr, 0];
       } else {

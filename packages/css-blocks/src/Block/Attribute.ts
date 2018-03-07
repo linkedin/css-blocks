@@ -1,13 +1,14 @@
 import {
   Attr,
+  Attribute as AttributeUNS,
   AttributeNS,
   AttributeValueChoice,
   ValueAbsent,
   ValueConstant,
 } from "@opticss/element-analysis";
-import { ObjectDictionary } from "@opticss/util";
+import { ObjectDictionary, assertNever } from "@opticss/util";
 
-import { IAttrToken as AttrToken, STATE_NAMESPACE, UNIVERSAL_ATTR_VALUE } from "../BlockSyntax";
+import { IAttrToken as AttrToken, ATTR_PRESENT } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
@@ -15,15 +16,6 @@ import { AttrValue } from "./AttrValue";
 import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";
-
-function isAttrToken(o: AttrToken | string): o is AttrToken {
-  return typeof o !== "string";
-}
-
-export function attrTokenToString(token: AttrToken): string {
-  if (!isAttrToken(token)) { return String(token); }
-  return `${token.namespace}|${token.name}`;
-}
 
 export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrValue, AttrToken>
 {
@@ -33,10 +25,10 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   private _sourceAttributes: Attr[] | undefined;
 
   protected get ChildConstructor(): typeof AttrValue { return AttrValue; }
-  protected tokenToUid(token: AttrToken): string { return attrTokenToString(token); }
+  protected tokenToUid(token: AttrToken): string { return `${token.namespace}|${token.name}`; }
 
   public get name(): string { return this.token.name; }
-  public get namespace(): string { return this.token.namespace || ""; }
+  public get namespace(): string | null { return this.token.namespace || null; }
 
   /**
    * @returns If this Attribute contains anything but the "Universal" AttrValue.
@@ -62,6 +54,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
    * @returns An array of all `AttrValue`s contained in this `Attribute`.
    **/
   values(): AttrValue[] { return this.children(); }
+  resolvedValues(): AttrValue[] { return this.resolveChildren(); }
 
   /**
    * @returns A hash of all `Value`s contained in this `Attribute`.
@@ -82,9 +75,9 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
    * @param name  string  The `AttrValue` name to ensure.
    * @returns The `AttrValue`
    **/
-  ensureValue(name: string = UNIVERSAL_ATTR_VALUE) {
+  ensureValue(name: string = ATTR_PRESENT) {
     let value = this.ensureChild(name);
-    if (name !== UNIVERSAL_ATTR_VALUE) { this._hasValues = true; }
+    if (name !== ATTR_PRESENT) { this._hasValues = true; }
     else { this._universalValue = value; }
     return value;
   }
@@ -96,7 +89,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
    * @param name  string  The name of the `AttrValue` to retrieve.
    * @returns The `AttrValue` or `undefined`.
    **/
-  getValue(name: string = UNIVERSAL_ATTR_VALUE): AttrValue | null { return this.getChild(name); }
+  getValue(name: string = ATTR_PRESENT): AttrValue | null { return this.getChild(name); }
 
   /**
    * Get am Attribute's own or inherited `AttrValue` of name `name` from this
@@ -105,7 +98,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
    * @param name  string  The name of the `AttrValue` to retrieve.
    * @returns The `AttrValue` or `undefined`.
    **/
-  resolveValue(name: string = UNIVERSAL_ATTR_VALUE): AttrValue | null { return this.resolveChild(name); }
+  resolveValue(name: string = ATTR_PRESENT): AttrValue | null { return this.resolveChild(name); }
 
   /**
    * @returns whether this Attribute has any Values defined, directly or inherited.
@@ -120,13 +113,12 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
    * @returns All AttrValues this Attribute contains.
    */
   resolveValues(): Map<string, AttrValue> {
-    let resolved: Map<string, AttrValue> = new Map();
+    let resolved: Map<string, AttrValue> = new Map([...this._children]);
     for (let base of this.resolveInheritance()) {
-      if (base.values()) {
+      if (base._children.size) {
         resolved = new Map([...resolved, ...base._children]);
       }
     }
-    Object.assign(resolved, this._children);
     return resolved;
   }
 
@@ -134,7 +126,9 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
    * @returns The bare Attribute selector with no qualifying `BlockClass` name.
    */
   unqualifiedSource(value?: string): string {
-    return `[${this.token.namespace}|${this.token.name}${(value && value !== UNIVERSAL_ATTR_VALUE) ? `=${value}` : ""}]`;
+    let namespace = this.token.namespace ? `${this.token.namespace}|` : "";
+    value = (value && value !== ATTR_PRESENT) ? `=${value}` : "";
+    return `[${namespace}${this.token.name}${value}]`;
   }
 
   /**
@@ -160,14 +154,20 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
       let value: AttributeValueChoice | ValueAbsent;
       if (this.hasValues) {
         let values = new Array<ValueConstant>();
-        for (let value of this.values()) {
+        for (let value of this.resolvedValues()) {
           values.push({ constant: value.uid });
         }
         value = { oneOf: values };
       } else {
         value = { absent: true };
       }
-      this._sourceAttributes.push(new AttributeNS(STATE_NAMESPACE, this.name, value));
+
+      if (this.namespace) {
+        this._sourceAttributes.push(new AttributeNS(this.namespace, this.name, value));
+      }
+      else {
+        this._sourceAttributes.push(new AttributeUNS(this.name, value));
+      }
     }
     return this._sourceAttributes;
   }
@@ -183,7 +183,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
         let cssClassName = this.blockClass.cssClass(opts);
         return `${cssClassName}--${this.token.name}`;
       default:
-        throw new Error("this never happens");
+        return assertNever(opts.outputMode);
     }
   }
 

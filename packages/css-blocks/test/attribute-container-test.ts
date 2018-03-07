@@ -47,13 +47,13 @@ export class AttributeContainerTest extends BEMProcessor {
     let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
-      let attr = block.rootClass.getValue("[state|large]");
+      let attr = block.rootClass.getAttributeValue("[state|large]");
       typedAssert.isNotNull(attr).and((attr) => {
         assert.equal(attr.isUniversal, true);
       });
       let classObj = block.getClass("foo");
       typedAssert.isNotNull(classObj).and(classObj => {
-        let classAttr = classObj.getValue("[state|small]");
+        let classAttr = classObj.getAttributeValue("[state|small]");
         typedAssert.isNotNull(classAttr).and(classAttr => {
           assert.equal(classAttr.isUniversal, true);
         });
@@ -79,18 +79,18 @@ export class AttributeContainerTest extends BEMProcessor {
     let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
-      let sizeGroup: Array<AttrValue> = block.rootClass.getValues("[state|size]");
+      let sizeGroup: Array<AttrValue> = block.rootClass.getAttributeValues("[state|size]");
       assert.equal(sizeGroup.length, 2);
       assert.includeMembers(sizeGroup.map(s => s.uid), ["large", "small"]);
-      let attrGroup: Array<AttrValue> = block.rootClass.getValues("[state|size]", "large");
+      let attrGroup: Array<AttrValue> = block.rootClass.getAttributeValues("[state|size]", "large");
       assert.equal(attrGroup.length, 1);
       assert.includeMembers(attrGroup.map(s => s.uid), ["large"]);
-      let missingGroup: Array<AttrValue> = block.rootClass.getValues("[state|asdf]");
+      let missingGroup: Array<AttrValue> = block.rootClass.getAttributeValues("[state|asdf]");
       assert.equal(missingGroup.length, 0);
-      let noAttr: Array<AttrValue> = block.rootClass.getValues("[state|size]", "tiny");
+      let noAttr: Array<AttrValue> = block.rootClass.getAttributeValues("[state|size]", "tiny");
       assert.equal(noAttr.length, 0);
       typedAssert.isNotNull(block.getClass("foo")).and(classObj => {
-        let modeGroup: Array<AttrValue> = classObj.getValues("[state|mode]");
+        let modeGroup: Array<AttrValue> = classObj.getAttributeValues("[state|mode]");
         assert.equal(modeGroup.length, 3);
         assert.includeMembers(modeGroup.map(s => s.uid), ["collapsed", "minimized", "expanded"]);
       });
@@ -122,11 +122,11 @@ export class AttributeContainerTest extends BEMProcessor {
     let factory = new BlockFactory(reader, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
-      let sizeGroup = block.rootClass.resolveValues("[state|size]");
+      let sizeGroup = block.rootClass.resolveAttributeValues("[state|size]");
       assert.equal(sizeGroup.size, 3);
       assert.includeMembers([...sizeGroup.keys()], ["large", "small", "tiny"]);
       typedAssert.isNotNull(block.getClass("foo")).and(classObj => {
-        let modeGroup = classObj.resolveValues("[state|mode]");
+        let modeGroup = classObj.resolveAttributeValues("[state|mode]");
         assert.equal(modeGroup.size, 3);
         typedAssert.isDefined(modeGroup).and(modeGroup => {
           typedAssert.isDefined(modeGroup.get("collapsed")).and(attr => {

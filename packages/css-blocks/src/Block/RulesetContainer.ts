@@ -134,7 +134,7 @@ export class RulesetContainer<S extends Styles> {
         // Resolution paths are always relative to the root node.
         if (referenceStr) {
           let errLoc = sourceLocation(file, decl);
-          let other = style.root.lookup(referenceStr, errLoc);
+          let other = style.block.lookup(referenceStr, errLoc);
 
           if (other && other.block === style.block) {
             throw new InvalidBlockSyntax(`Cannot resolve conflicts with your own block.`, errLoc);

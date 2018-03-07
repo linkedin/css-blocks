@@ -69,13 +69,13 @@ export abstract class Inheritable<
   public get uid(): string { return this.tokenToUid(this._token); }
 
   /** @returns The parent node in this tree. */
-  public get parent(): Parent { return this._parent as Parent; }
+  protected get parent(): Parent { return this._parent as Parent; }
 
   /** @returns The root node in this tree. */
-  public get root(): Root { return this._root as Root; }
+  protected get root(): Root { return this._root as Root; }
 
   /** @returns A boolean indicating if this is the root node in the Inheritable tree or not. */
-  public get isRootNode(): boolean { return this._root === this.asSelf(); }
+  private get isRootNode(): boolean { return this._root === this.asSelf(); }
 
   /**
    * Get the style that this style inherits from, if any.
@@ -92,7 +92,7 @@ export abstract class Inheritable<
     }
     let baseParent: Parent | undefined = this.parent.base;
     while (baseParent) {
-      let cls = baseParent ? baseParent.getChild(this.asSelf().token) : undefined;
+      let cls = baseParent ? baseParent.getChild(this.token) : undefined;
       if (cls) {
         this._base = cls;
         return cls;
@@ -138,11 +138,11 @@ export abstract class Inheritable<
    * @param name The name of the child to resolve.
    * @returns The child node, or `null`
    */
-  protected resolveChild(name: Child["token"]): Child | null {
-    let child: Child | null = this.getChild(name);
+  protected resolveChild(token: Child["token"]): Child | null {
+    let child: Child | null = this.getChild(token);
     let container: Self | undefined = this.base;
     while (!child && container) {
-      child = container.getChild(name);
+      child = container.getChild(token);
       container = container.base;
     }
     return child || null;
@@ -153,8 +153,8 @@ export abstract class Inheritable<
    * @param key string  The key to fetch the child object from.
    * @returns The child node.
    */
-  protected getChild(name: Child["token"]): Child | null {
-    return this._children.get(this.childToUid(name)) || null;
+  protected getChild(token: Child["token"]): Child | null {
+    return this._children.get(this.childToUid(token)) || null;
   }
 
   /**
@@ -162,8 +162,8 @@ export abstract class Inheritable<
    * @param key string  The key to set the child object to.
    * @returns The child node.
    */
-  protected setChild(name: Child["token"], value: Child): Child {
-    this._children.set(this.childToUid(name), value);
+  protected setChild(token: Child["token"], value: Child): Child {
+    this._children.set(this.childToUid(token), value);
     return value;
   }
 
@@ -174,10 +174,10 @@ export abstract class Inheritable<
    * @param key string  The key at which this child object should be (optional)
    * @returns The child node.
    */
-  protected ensureChild(name: Child["token"], key?: string): Child {
-    key = key !== undefined ? key : this.childToUid(name);
+  protected ensureChild(token: Child["token"], key?: string): Child {
+    key = key !== undefined ? key : this.childToUid(token);
     if (!this._children.has(key)) {
-      this._children.set(key, this.newChild(name));
+      this._children.set(key, this.newChild(token));
     }
     return this._children.get(key)!;
   }

@@ -29,18 +29,18 @@ export const attributeGroupValidator: Validator = (analysis, _templateAnalysis, 
   let discovered: Set<Attribute> = new Set();
   for (let o of analysis.static) {
     if (isAttrValue(o)) {
-      ensureUniqueAttributeGroup(discovered, o.parent, err, true);
+      ensureUniqueAttributeGroup(discovered, o.attribute, err, true);
     }
   }
   for (let stat of analysis.dynamicAttributes) {
     if (isBooleanAttr(stat)) {
-      ensureUniqueAttributeGroup(discovered, stat.value.parent, err, true);
+      ensureUniqueAttributeGroup(discovered, stat.value.attribute, err, true);
     }
     if (isAttrGroup(stat)) {
       let tmp: Set<Attribute> = new Set();
       for (let key of Object.keys(stat.group)) {
         let attr = stat.group[key];
-        let values = ensureUniqueAttributeGroup(discovered, attr.parent, err, false);
+        let values = ensureUniqueAttributeGroup(discovered, attr.attribute, err, false);
         values.forEach((o) => tmp.add(o));
       }
       unionInto(discovered, tmp);
