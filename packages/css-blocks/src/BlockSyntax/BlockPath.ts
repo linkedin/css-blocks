@@ -1,10 +1,10 @@
 import { BlockPathError, ErrorLocation } from "../errors";
 
 import {
+  ATTR_PRESENT,
   CLASS_NAME_IDENT as CSS_IDENT,
   ROOT_CLASS,
   STATE_NAMESPACE,
-  ATTR_PRESENT,
 } from "./BlockSyntax";
 
 interface BlockToken {

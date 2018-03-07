@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { AttrValue, Block, BlockClass, isBlockClass, isAttrValue } from "../../src/Block";
+import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockFactory";
 import { BlockParser } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";

@@ -6,9 +6,9 @@ import {
   ValueAbsent,
   ValueConstant,
 } from "@opticss/element-analysis";
-import { ObjectDictionary, assertNever } from "@opticss/util";
+import { assertNever, ObjectDictionary } from "@opticss/util";
 
-import { IAttrToken as AttrToken, ATTR_PRESENT } from "../BlockSyntax";
+import { ATTR_PRESENT, IAttrToken as AttrToken } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { OutputMode } from "../OutputMode";
 
