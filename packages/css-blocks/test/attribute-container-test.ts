@@ -49,13 +49,13 @@ export class AttributeContainerTest extends BEMProcessor {
     return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
       let attr = block.rootClass.getAttributeValue("[state|large]");
       typedAssert.isNotNull(attr).and((attr) => {
-        assert.equal(attr.isUniversal, true);
+        assert.equal(attr.isPresenceRule, true);
       });
       let classObj = block.getClass("foo");
       typedAssert.isNotNull(classObj).and(classObj => {
         let classAttr = classObj.getAttributeValue("[state|small]");
         typedAssert.isNotNull(classAttr).and(classAttr => {
-          assert.equal(classAttr.isUniversal, true);
+          assert.equal(classAttr.isPresenceRule, true);
         });
       });
     });

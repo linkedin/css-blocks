@@ -38,25 +38,7 @@
   ],
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/css-blocks#readme",
   "devDependencies": {
-    "@css-blocks/code-style": "^0.17.0",
-    "@types/chai": "^3.5.2",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^8.9.4",
-    "chai": "^3.5.0",
-    "grunt": "^1.0.1",
-    "grunt-release": "^0.14.0",
-    "grunt-run": "^0.7.0",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.4.2",
-    "mocha-typescript": "^1.0.23",
-    "outdent": "^0.4.1",
-    "perfectionist": "^2.4.0",
-    "postcss": "^6.0.14",
-    "remap-istanbul": "^0.9.5",
-    "source-map-support": "^0.4.15",
-    "tslint": "^5.9.1",
-    "typedoc": "^0.7.1",
-    "typescript": "^2.7.1"
+    "@css-blocks/code-style": "^0.17.0"
   },
   "dependencies": {
     "@opticss/element-analysis": "file:../../../opticss/packages/element-analysis",
@@ -77,7 +59,7 @@
     "watch": "^1.0.2"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": "8"
   },
   "engineStrict": true
 }

@@ -222,7 +222,7 @@ export class ExpressionReader {
       }
       return { block, blockClass, state };
     } else {
-      let state = stateGroup.universalValue;
+      let state = stateGroup.presenceRule;
 
       if (!state) {
         if (stateGroup.hasResolvedValues) {

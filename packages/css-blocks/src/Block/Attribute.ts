@@ -21,7 +21,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
 {
 
   private _hasValues = false;
-  private _universalValue: AttrValue | undefined;
+  private _presenceRule: AttrValue | undefined;
   private _sourceAttributes: Attr[] | undefined;
 
   protected get ChildConstructor(): typeof AttrValue { return AttrValue; }
@@ -31,19 +31,19 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   public get namespace(): string | null { return this.token.namespace || null; }
 
   /**
-   * @returns If this Attribute contains anything but the "Universal" AttrValue.
+   * @returns If this Attribute contains anything but the "presence" AttrValue.
    **/
   get hasValues(): boolean { return this._hasValues; }
 
   /**
-   * @returns If this Attribute only contains the "Universal" AttrValue.
+   * @returns If this Attribute only contains the "presence" AttrValue.
    **/
   get isBooleanAttribute(): boolean { return !this._hasValues; }
 
   /**
-   * @returns The "Universal" Value, or `undefined`.
+   * @returns The "presence" Value, or `undefined`.
    **/
-  get universalValue(): AttrValue | undefined { return this._universalValue; }
+  get presenceRule(): AttrValue | undefined { return this._presenceRule; }
 
   /**
    * @returns This Attribute's parent `BlockClass`
@@ -71,21 +71,21 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   /**
    * Ensures that a AttrValue of name `name` exists in this Attribute. If no
    * `AttrValue` exists, one is created. If no name is passed, it ensures the
-   * "Universal" AttrValue.
+   * "presence" AttrValue.
    * @param name  string  The `AttrValue` name to ensure.
    * @returns The `AttrValue`
    **/
   ensureValue(name: string = ATTR_PRESENT) {
     let value = this.ensureChild(name);
     if (name !== ATTR_PRESENT) { this._hasValues = true; }
-    else { this._universalValue = value; }
+    else { this._presenceRule = value; }
     return value;
   }
 
   /**
    * Get am Attribute's own (read: non-inherited) `AttrValue` of name
    * `name` from this `Attribute`. If no name is passed, it tries
-   * to retrieve the "Universal" AttrValue.
+   * to retrieve the "presence" AttrValue.
    * @param name  string  The name of the `AttrValue` to retrieve.
    * @returns The `AttrValue` or `undefined`.
    **/
@@ -94,7 +94,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   /**
    * Get am Attribute's own or inherited `AttrValue` of name `name` from this
    * `Attribute` or its base. If no name is passed, it tries to retrieve
-   * the "Universal" AttrValue.
+   * the "presence" AttrValue.
    * @param name  string  The name of the `AttrValue` to retrieve.
    * @returns The `AttrValue` or `undefined`.
    **/
