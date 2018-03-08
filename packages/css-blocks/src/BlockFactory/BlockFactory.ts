@@ -180,7 +180,7 @@ export class BlockFactory implements IBlockFactory {
         return this.blocks[block.identifier];
       } else {
         // Ensure this block name is unique.
-        block.setUid(this.getUniqueBlockName(block.uid));
+        block.setName(this.getUniqueBlockName(block.name));
         return this.blocks[block.identifier] = block;
       }
     }).catch((error) => {

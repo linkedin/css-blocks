@@ -21,7 +21,7 @@ export function parseBlockDebug(atRule: AtRule, sourceFile: string, block: Block
   let localName = md[1];
   let outputTo = <DebugChannel>md[2];
   let ref: Block | null = block.getReferencedBlock(localName);
-  if (!ref && (localName === "self" || localName === block.uid)) {
+  if (!ref && (localName === "self" || localName === block.name)) {
     ref = block;
   }
   if (!ref) {

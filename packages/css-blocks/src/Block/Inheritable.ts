@@ -66,7 +66,7 @@ export abstract class Inheritable<
   public get token(): Token { return this._token; }
 
   /** @returns The unique name of this node. */
-  public get uid(): string { return this.tokenToUid(this._token); }
+  protected get uid(): string { return this.tokenToUid(this._token); }
 
   /** @returns The parent node in this tree. */
   protected get parent(): Parent { return this._parent as Parent; }

@@ -17,7 +17,7 @@ export async function resolveReferences(block: Block, factory: IBlockFactory, fi
   let namedBlockReferences: Promise<[string, string, postcss.AtRule, Block]>[] = [];
 
   if (!root) {
-    throw new errors.InvalidBlockSyntax(`Error finding PostCSS root for block ${block.uid}`);
+    throw new errors.InvalidBlockSyntax(`Error finding PostCSS root for block ${block.name}`);
   }
 
   // For each `@block-reference` expression, read in the block file, parse and
