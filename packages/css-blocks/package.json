@@ -59,22 +59,21 @@
     "typescript": "^2.7.1"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.2.0",
-    "@opticss/template-api": "^0.2.0",
-    "@opticss/util": "^0.1.1",
+    "@opticss/element-analysis": "file:../../../opticss/packages/element-analysis",
+    "opticss": "file:../../../opticss/packages/opticss",
+    "@opticss/template-api": "file:../../../opticss/packages/template-api",
+    "@opticss/util": "file:../../../opticss/packages/util",
     "@types/async": "^2.0.40",
     "@types/debug": "0.0.29",
-    "@types/source-map": "^0.5.0",
     "async": "^2.5.0",
     "css-property-parser": "^1.0.6",
     "debug": "^2.6.8",
     "inline-source-map-comment": "^1.0.5",
     "json-parse-better-errors": "^1.0.1",
     "object.values": "^1.0.4",
-    "opticss": "^0.2.0",
     "postcss-selector-parser": "3.1.1",
     "regexpu-core": "^4.0.11",
-    "source-map": "^0.5.7",
+    "source-map": "^0.6.1",
     "watch": "^1.0.2"
   },
   "engines": {

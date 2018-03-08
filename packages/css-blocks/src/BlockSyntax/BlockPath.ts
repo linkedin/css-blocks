@@ -17,14 +17,16 @@ interface ClassToken {
   name: string;
 }
 
-export interface AttrToken {
-  type: "attribute";
-  quoted: boolean;
+export interface IAttrToken {
   namespace?: string;
   name: string;
   value?: string;
 }
-export type IAttrToken = Pick<AttrToken, "namespace" | "name" | "value">;
+
+export interface AttrToken extends IAttrToken {
+  type: "attribute";
+  quoted: boolean;
+}
 
 type Token = BlockToken | ClassToken | AttrToken;
 

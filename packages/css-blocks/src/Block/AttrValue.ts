@@ -40,7 +40,11 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   protected get ChildConstructor(): never { return assertNeverCalled(); }
   newChild(): never { return assertNeverCalled(); }
 
-  get isUniversal(): boolean { return this.uid === ATTR_PRESENT; }
+  /** @returns The string value this AttrValue represents. */
+  get value(): string { return this.uid; }
+
+  /** @returns If this is the universal state. */
+  get isUniversal(): boolean { return this.value === ATTR_PRESENT; }
 
   /**
    * Retrieve the Attribute that this AttrValue belongs to.
@@ -59,7 +63,7 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
       let blockClass = this.blockClass;
       let rootIsOptional = true;
       this._sourceAttributes = blockClass.asSourceAttributes(rootIsOptional);
-      let value = this.isUniversal ? attrValues.absent() : attrValues.constant(this.uid);
+      let value = this.isUniversal ? attrValues.absent() : attrValues.constant(this.value);
       if (this.parent.namespace) {
         this._sourceAttributes.push(new AttributeNS(this.parent.namespace, this.parent.name, value));
       }
@@ -71,13 +75,13 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   }
 
   asSource(): string {
-    return this.parent.asSource(this.uid);
+    return this.parent.asSource(this.value);
   }
 
   public cssClass(opts: OptionsReader): string {
     switch (opts.outputMode) {
       case OutputMode.BEM:
-        return `${this.parent.cssClass(opts)}${ this.isUniversal ? "" : `-${this.uid}`}`;
+        return `${this.parent.cssClass(opts)}${ this.isUniversal ? "" : `-${this.value}`}`;
       default:
         return assertNever(opts.outputMode);
     }

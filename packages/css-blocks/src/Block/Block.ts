@@ -54,12 +54,15 @@ export class Block
 
   protected get ChildConstructor(): typeof BlockClass { return BlockClass; }
 
+  /** @returns This Block's self-proclaimed name. */
+  public get name(): string { return this.uid; }
+
   /**
-   * Sets `uid` value of this `Block`. Block names may change depending on the
+   * Sets `name` value of this `Block`. Block names may change depending on the
    * value passed to its `block-name` property in `:scope`.
    * @prop  name  string  The new uid for this `Block`.
    */
-  public setUid(name: string): void {
+  public setName(name: string): void {
     if (this.hasHadNameReset) { throw new CssBlockError("Can not set block name more than once."); }
     this._token = name;
     this.hasHadNameReset = true;
@@ -110,7 +113,7 @@ export class Block
     }
 
     if (!attr && !klass && errLoc) {
-      throw new InvalidBlockSyntax(`No Style "${path.path}" found on Block "${block.uid}".`, errLoc);
+      throw new InvalidBlockSyntax(`No Style "${path.path}" found on Block "${block.name}".`, errLoc);
     }
 
     return attr || klass || undefined;
@@ -139,7 +142,7 @@ export class Block
 
   // Alias protected methods from `Inheritable` to Block-specific names, and expose them as a public API.
   get classes(): BlockClass[] { return this.children(); }
-  addClass(blockClass: BlockClass) { this.setChild(blockClass.uid, blockClass); }
+  addClass(blockClass: BlockClass) { this.setChild(blockClass.name, blockClass); }
   ensureClass(name: string): BlockClass { return this.ensureChild(name); }
 
   getImplementedBlocks(): Block[] {

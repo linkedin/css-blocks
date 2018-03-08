@@ -43,7 +43,7 @@
     "@types/babel-generator": "^6.25.0",
     "@types/babel-template": "^6.25.0",
     "@types/babel-traverse": "^6.25.2",
-    "@types/babel-types": "^6.7.16",
+    "@types/babel-types": "^7.0.0",
     "@types/babylon": "^6.16.1",
     "@types/chai": "^3.5.2",
     "@types/debug": "0.0.29",
@@ -75,15 +75,15 @@
     "@css-blocks/runtime": "^0.17.0"
   },
   "dependencies": {
-    "@opticss/template-api": "^0.2.0",
-    "@opticss/util": "^0.1.1",
+    "@opticss/template-api": "file:../../../opticss/packages/template-api",
+    "opticss": "file:../../../opticss/packages/opticss",
+    "@opticss/util": "file:../../../opticss/packages/util",
     "babel-traverse": "^6.24.1",
     "babel-types": "^6.24.1",
     "babylon": "^6.17.4",
     "css-blocks": "^0.17.0",
     "debug": "^2.6.8",
     "minimatch": "^3.0.4",
-    "object.values": "^1.0.4",
-    "opticss": "^0.2.0"
+    "object.values": "^1.0.4"
   }
 }

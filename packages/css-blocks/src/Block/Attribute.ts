@@ -155,7 +155,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
       if (this.hasValues) {
         let values = new Array<ValueConstant>();
         for (let value of this.resolvedValues()) {
-          values.push({ constant: value.uid });
+          values.push({ constant: value.value });
         }
         value = { oneOf: values };
       } else {

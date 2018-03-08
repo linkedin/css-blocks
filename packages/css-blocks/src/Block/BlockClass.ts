@@ -36,7 +36,10 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
 
   protected get ChildConstructor(): typeof Attribute { return Attribute; }
 
-  get isRoot(): boolean { return this.uid === ROOT_CLASS; }
+  /** @returns This BlockClass' class name. */
+  public get name(): string { return this.uid; }
+
+  get isRoot(): boolean { return this.name === ROOT_CLASS; }
 
   public attributes(): Attribute[] { return this.children(); }
   public getAttributes(): Attribute[] { return this.children(); }
@@ -75,7 +78,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
     let attr = this.getAttribute(token);
     if (!attr) { return []; }
     let values = attr.values();
-    return filter ? values.filter(s => s.uid === filter) : values;
+    return filter ? values.filter(s => s.value === filter) : values;
   }
 
   /**
@@ -155,7 +158,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    * Export as original class name.
    * @returns String representing original class.
    */
-  public asSource(): string { return this.isRoot ? ROOT_CLASS : `.${this.uid}`; }
+  public asSource(): string { return this.isRoot ? ROOT_CLASS : `.${this.name}`; }
 
   /**
    * Emit analysis attributes for the class value this
@@ -167,7 +170,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    */
   public asSourceAttributes(optionalRoot = false): Attr[] {
     if (!this._sourceAttribute) {
-      let value: AttributeValue = { constant: this.uid };
+      let value: AttributeValue = { constant: this.name };
       if (optionalRoot && this.isRoot) {
         value = attrValues.oneOf([value, attrValues.absent()]);
       }
@@ -185,9 +188,9 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
     switch (opts.outputMode) {
       case OutputMode.BEM:
         if (this.isRoot) {
-          return `${this.block.uid}`;
+          return `${this.block.name}`;
         } else {
-          return `${this.block.uid}__${this.uid}`;
+          return `${this.block.name}__${this.name}`;
         }
       default:
         throw new Error("this never happens");

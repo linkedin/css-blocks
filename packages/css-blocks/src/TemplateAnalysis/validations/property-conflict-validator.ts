@@ -117,7 +117,7 @@ function printRulesetConflict(prop: string, rule: Ruleset) {
   for (let node of nodes) {
     let line = node.source.start && `:${node.source.start.line}`;
     let column = node.source.start && `:${node.source.start.column}`;
-    out.push(`    ${rule.style.block.uid}${rule.style.asSource()} (${rule.file}${line}${column})`);
+    out.push(`    ${rule.style.block.name}${rule.style.asSource()} (${rule.file}${line}${column})`);
   }
   return out.join("\n");
 }
