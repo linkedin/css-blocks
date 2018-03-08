@@ -43,8 +43,8 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   /** @returns The string value this AttrValue represents. */
   get value(): string { return this.uid; }
 
-  /** @returns If this is the universal state. */
-  get isUniversal(): boolean { return this.value === ATTR_PRESENT; }
+  /** @returns If this is the presence state. */
+  get isPresenceRule(): boolean { return this.value === ATTR_PRESENT; }
 
   /**
    * Retrieve the Attribute that this AttrValue belongs to.
@@ -63,7 +63,7 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
       let blockClass = this.blockClass;
       let rootIsOptional = true;
       this._sourceAttributes = blockClass.asSourceAttributes(rootIsOptional);
-      let value = this.isUniversal ? attrValues.absent() : attrValues.constant(this.value);
+      let value = this.isPresenceRule ? attrValues.absent() : attrValues.constant(this.value);
       if (this.parent.namespace) {
         this._sourceAttributes.push(new AttributeNS(this.parent.namespace, this.parent.name, value));
       }
@@ -81,7 +81,7 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   public cssClass(opts: OptionsReader): string {
     switch (opts.outputMode) {
       case OutputMode.BEM:
-        return `${this.parent.cssClass(opts)}${ this.isUniversal ? "" : `-${this.value}`}`;
+        return `${this.parent.cssClass(opts)}${ this.isPresenceRule ? "" : `-${this.value}`}`;
       default:
         return assertNever(opts.outputMode);
     }

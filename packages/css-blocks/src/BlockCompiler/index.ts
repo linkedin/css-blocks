@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 
 import { Block } from "../Block";
-import { ROOT_CLASS } from "../BlockSyntax";
+import { BLOCK_DEBUG, BLOCK_PROP_NAMES_RE, BLOCK_REFERENCE, ROOT_CLASS } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
 import { PluginOptions } from "../options";
@@ -32,11 +32,11 @@ export class BlockCompiler {
       this.processDebugStatements(filename, root, block);
 
       // Clean up CSS Block specific properties.
-      root.walkAtRules("block-reference", (atRule) => {
+      root.walkAtRules(BLOCK_REFERENCE, (atRule) => {
         atRule.remove();
       });
       root.walkRules(ROOT_CLASS, (rule) => {
-        rule.walkDecls(/^(extends|implements|block-name)$/, (decl) => {
+        rule.walkDecls(BLOCK_PROP_NAMES_RE, (decl) => {
           decl.remove();
         });
         if (rule.nodes === undefined || rule.nodes.length === 0) {
@@ -63,7 +63,7 @@ export class BlockCompiler {
    * @param block Block to resolve references for
    */
   public processDebugStatements(sourceFile: string, root: postcss.Root, block: Block) {
-    root.walkAtRules("block-debug", (atRule) => {
+    root.walkAtRules(BLOCK_DEBUG, (atRule) => {
       let {block: ref, channel} = parseBlockDebug(atRule, sourceFile, block);
       if (channel === "comment") {
         let debugStr = ref.debug(this.opts);

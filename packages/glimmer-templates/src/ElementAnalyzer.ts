@@ -240,14 +240,14 @@ export class ElementAnalyzer {
             if (dynamicSubState.type === "ConcatStatement") {
               throw cssBlockError(`The dynamic statement for a boolean state must be set to a mustache statement with no additional text surrounding it.`, dynamicSubState, this.template);
             }
-            let state = stateGroup.universalValue;
+            let state = stateGroup.presenceRule;
             if (analysis.storeConditionals) {
               analysis.element.addDynamicAttr(container, state!, dynamicSubState);
             } else {
               analysis.element.addDynamicAttr(container,  state!, null);
             }
           } else {
-            analysis.element.addStaticAttr(container, stateGroup.universalValue!);
+            analysis.element.addStaticAttr(container, stateGroup.presenceRule!);
           }
         }
       } else {

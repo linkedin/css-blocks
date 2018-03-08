@@ -35,41 +35,16 @@
   "bugs": {
     "url": "https://github.com/css-blocks/css-blocks/issues"
   },
+  "engines": {
+    "node": "8"
+  },
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/jsx#readme",
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0",
     "@css-blocks/runtime": "^0.17.0",
-    "@types/babel-core": "^6.25.2",
-    "@types/babel-generator": "^6.25.0",
-    "@types/babel-template": "^6.25.0",
-    "@types/babel-traverse": "^6.25.2",
-    "@types/babel-types": "^7.0.0",
-    "@types/babylon": "^6.16.1",
-    "@types/chai": "^3.5.2",
-    "@types/debug": "0.0.29",
-    "@types/minimatch": "^2.0.29",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^8.9.4",
-    "@types/prettier": "^1.8.0",
     "babel-core": "^6.25.0",
-    "chai": "^3.5.0",
-    "grunt": "^1.0.1",
-    "grunt-release": "^0.12.0",
-    "loader-utils": "^1.1.0",
-    "mocha": "^3.4.1",
-    "mocha-typescript": "^1.1.4",
-    "mock-fs": "^4.3.0",
-    "mock-require": "^2.0.2",
     "obj-str": "^1.0.0",
-    "postcss": "^6.0.9",
-    "preact": "^8.2.1",
-    "prettier": "^1.8.2",
-    "shelljs": "^0.7.8",
-    "test-console": "^1.1.0",
-    "ts-node": "^3.0.4",
-    "tslint": "^5.9.1",
-    "typescript": "^2.7.1",
-    "watch": "^1.0.2"
+    "preact": "^8.2.1"
   },
   "peerDependencies": {
     "@css-blocks/runtime": "^0.17.0"

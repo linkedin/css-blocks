@@ -52,12 +52,31 @@ export abstract class Inheritable<
     this.parsedRuleSelectors = this.isRootNode ? new WeakMap() : null;
   }
 
+  /**
+   * The `tokenToUid` method would *ideally* be a static method, but
+   * Typescript doesn't expose class generics to static methods, so it
+   * needs to be a protected method.
+   * In order to map children to generic `Tokens`, we need a way to map
+   * any given `Token` shape to a UID. By default, we stringify the token
+   * passed to us. If more complex behavior is required, this method can
+   * be overridden.
+   * @returns A unique string that represents this token.
+   */
+
   protected tokenToUid(token: Token): string { return String(token); }
 
+  /**
+   * @param token The new child object's `Token` identifier.
+   * @returns The new child object created from `token`
+   */
   protected newChild(token: Child["token"]): Child {
     return new this.ChildConstructor(token, this.asSelf());
   }
 
+  /**
+   * @param token A child object's `Token` identifier.
+   * @returns The UID of this child's `Token`.
+   */
   private childToUid(token: Child["token"]): string {
     return this.ChildConstructor.prototype.tokenToUid(token);
   }

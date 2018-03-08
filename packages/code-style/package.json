@@ -28,12 +28,10 @@
   },
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/code-style",
   "dependencies": {
-    "@opticss/code-style": "file:../../../opticss/packages/code-style",
-    "tslint": "^5.9.1",
-    "typescript": "^2.7.2"
+    "@opticss/code-style": "file:../../../opticss/packages/code-style"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": "8"
   },
   "files": [
     "configs",
