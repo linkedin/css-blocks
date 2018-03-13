@@ -6,22 +6,7 @@ import {
 
 import {
   CssBlockOptionsReadonly,
-} from "./options";
-
-declare module "./options" {
-  export interface CssBlockOptions {
-    /**
-     * A preprocessor function can be declared by syntax.
-     */
-    preprocessors: Preprocessors;
-
-    /**
-     * If a preprocessor function is declared for `css`, all blocks will be ran through it, even those that were preprocessed for another syntax.
-     * this can be disabled by setting `disablePreprocessChaining` to true.
-     */
-    disablePreprocessChaining: boolean;
-  }
-}
+} from "../options";
 
 export enum Syntax {
   sass = "sass",

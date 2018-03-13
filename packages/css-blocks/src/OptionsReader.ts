@@ -3,9 +3,7 @@ import {
   PluginOptions,
 } from "./options";
 
-import {
-  OutputMode,
-} from "./OutputMode";
+import { OutputMode } from "./OutputMode";
 
 import {
   filesystemImporter,
@@ -13,13 +11,7 @@ import {
   ImporterData,
 } from "./importing";
 
-import {
-  BlockFactory,
-} from "./BlockFactory";
-
-import {
-  Preprocessors,
-} from "./preprocessing";
+import { Preprocessors } from "./BlockParser";
 
 /**
  * Provides read-only access to options values. Provides default values if none
@@ -32,7 +24,6 @@ export class OptionsReader implements CssBlockOptionsReadonly {
   readonly data: ImporterData;
   readonly preprocessors: Preprocessors;
   readonly disablePreprocessChaining: boolean;
-  readonly factory?: BlockFactory;
   readonly maxConcurrentCompiles: number;
 
   constructor(opts: PluginOptions = {}) {

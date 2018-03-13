@@ -1,9 +1,9 @@
 import { assert } from "chai";
 import * as path from "path";
 
+import { Syntax } from "../../src/BlockParser";
 import { OptionsReader } from "../../src/OptionsReader";
 import { ImportedFile, Importer, PathBasedImporter } from "../../src/importing";
-import { Syntax } from "../../src/preprocessing";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 

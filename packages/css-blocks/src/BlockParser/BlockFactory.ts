@@ -4,25 +4,14 @@ import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
 import { Block } from "../Block";
-import { BlockParser, ParsedSource } from "../BlockParser";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
 import { CssBlockOptionsReadonly } from "../options";
-import { annotateCssContentWithSourceMap, Preprocessor, Preprocessors, ProcessedFile, Syntax, syntaxName } from "../preprocessing";
 import { PromiseQueue } from "../util/PromiseQueue";
 
-import { IBlockFactory } from "./IBlockFactory";
+import { BlockParser, ParsedSource } from "./BlockParser";
+import { annotateCssContentWithSourceMap, Preprocessor, Preprocessors, ProcessedFile, Syntax, syntaxName } from "./preprocessing";
 
 const debug = debugGenerator("css-blocks:BlockFactory");
-
-declare module "../options" {
-  export interface CssBlockOptions {
-    /**
-     * Depending on how css blocks are compiled, it may be necessary for a factory to be provided to the options
-     * to ensure that instances are reused for compilation. Failing to do this can cause static analysis errors.
-     */
-    factory?: BlockFactory;
-  }
-}
 
 interface PreprocessJob {
   preprocessor: Preprocessor;
@@ -42,23 +31,17 @@ interface ErrorWithErrNum {
  *
  * This also ensures that importers and preprocessors are correctly used when loading a block file.
  */
-export class BlockFactory implements IBlockFactory {
+export class BlockFactory {
   postcssImpl: typeof postcss;
   importer: Importer;
   options: CssBlockOptionsReadonly;
-  blockNames: {[name: string]: number};
+  blockNames: { [name: string]: number };
   parser: BlockParser;
   preprocessors: Preprocessors;
-  private promises: {
-    [identifier: string]: Promise<Block>;
-  };
-  private blocks: {
-    [identifier: string]: Block;
-  };
-  private paths: {
-    [path: string]: string;
-  };
 
+  private promises: { [identifier: string]: Promise<Block> };
+  private blocks: { [identifier: string]: Block };
+  private paths: { [path: string]: string };
   private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
   constructor(options: CssBlockOptionsReadonly, postcssImpl = postcss) {
@@ -81,6 +64,11 @@ export class BlockFactory implements IBlockFactory {
     this.promises = {};
     this.blockNames = {};
   }
+
+  parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
+    return this.parser.parse(root, identifier, name);
+  }
+
   /**
    * In some cases (like when using preprocessors with native bindings), it may
    * be necessary to wait until the block factory has completed current
@@ -100,104 +88,100 @@ export class BlockFactory implements IBlockFactory {
       throw new Error(`An absolute path is required. Got: ${filePath}.`);
     }
     filePath = path.resolve(filePath);
+
     let identifier: FileIdentifier | undefined = this.paths[filePath];
-    if (identifier && this.promises[identifier]) {
-      return this.promises[identifier];
-    } else {
-      identifier = identifier || this.importer.identifier(null, filePath, this.options);
-      return this._getBlockPromise(identifier);
-    }
+    if (identifier && this.promises[identifier]) { return this.promises[identifier]; }
+
+    identifier = identifier || this.importer.identifier(null, filePath, this.options);
+    return this._getBlockPromise(identifier);
   }
+
   getBlock(identifier: FileIdentifier): Promise<Block> {
-    if (this.promises[identifier]) {
-      return this.promises[identifier];
-    } else {
-      return this._getBlockPromise(identifier);
-    }
+    if (this.promises[identifier]) { return this.promises[identifier]; }
+    return this._getBlockPromise(identifier);
   }
+
   _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
-    let importPromise = this.importer.import(identifier, this.options);
 
-    let blockPromise = importPromise.then(file => {
-      let realFilename = this.importer.filesystemPath(file.identifier, this.options);
-      if (realFilename) {
-        if (this.paths[realFilename]) {
-          if (this.paths[realFilename] !== file.identifier) {
+    return this.promises[identifier] = this.importer.import(identifier, this.options)
+
+      // Parse the file into a `Block`.
+      .then(file => {
+
+        // If the file identifier maps back to a real filename, ensure it is actually unique.
+        let realFilename = this.importer.filesystemPath(file.identifier, this.options);
+        if (realFilename) {
+          if (this.paths[realFilename] && this.paths[realFilename] !== file.identifier) {
             throw new Error(`The same block file was returned with different identifiers: ${this.paths[realFilename]} and ${file.identifier}`);
+          } else {
+            this.paths[realFilename] = file.identifier;
           }
-        } else {
-          this.paths[realFilename] = file.identifier;
         }
-        if (!this.promises[file.identifier]) {
-          this.promises[file.identifier] = blockPromise;
-        }
-      }
-      // skip preprocessing if we can.
-      if (this.blocks[file.identifier]) {
-        return this.blocks[file.identifier];
-      }
-      let filename: string = realFilename || this.importer.debugIdentifier(file.identifier, this.options);
-      let preprocessor = this.preprocessor(file);
-      let preprocessPromise = this.preprocessQueue.enqueue({
-        preprocessor,
-        filename,
-        contents: file.contents,
-      });
-      let resultPromise: Promise<[ProcessedFile, postcss.Result]> = preprocessPromise.then(preprocessResult => {
-        let sourceMap = sourceMapFromProcessedFile(preprocessResult);
-        let content = preprocessResult.content;
-        if (sourceMap) {
-          content = annotateCssContentWithSourceMap(content, sourceMap);
-        }
-        return new Promise<postcss.Result>((resolve, reject) => {
-          this.postcssImpl().process(content, { from: filename }).then(resolve, reject);
-        }).then(result => {
-          let res: [ProcessedFile, postcss.Result] = [preprocessResult, result];
-          return res;
-        });
-      });
-      return resultPromise.then(([preprocessedResult, result]) => {
-        // skip parsing if we can.
-        if (this.blocks[file.identifier]) {
-          return this.blocks[file.identifier];
-        }
-        let source: ParsedSource = {
-          identifier: file.identifier,
-          defaultName: file.defaultName,
-          parseResult: result,
-          originalSource: file.contents,
-          originalSyntax: file.syntax,
-          dependencies: preprocessedResult.dependencies || [],
-        };
-        return this.parser.parseSource(source).then(block => {
-          return block;
-        });
-      });
-    }).then(block => {
 
-      // last check  to make sure we don't return a new instance
-      if (this.blocks[block.identifier]) {
-        return this.blocks[block.identifier];
-      } else {
+        // Skip preprocessing if we can.
+        if (this.blocks[file.identifier]) { return this.blocks[file.identifier]; }
+
+        // Preprocess the file.
+        let filename: string = realFilename || this.importer.debugIdentifier(file.identifier, this.options);
+        let preprocessor = this.preprocessor(file);
+        return this.preprocessQueue.enqueue({
+          preprocessor,
+          filename,
+          contents: file.contents,
+        })
+
+          // Run through PostCSS.
+          .then(async (preprocessResult): Promise<[ProcessedFile, postcss.Result]> => {
+            let sourceMap = sourceMapFromProcessedFile(preprocessResult);
+            let content = preprocessResult.content;
+            if (sourceMap) {
+              content = annotateCssContentWithSourceMap(content, sourceMap);
+            }
+            let result = await this.postcssImpl().process(content, { from: filename });
+            return [preprocessResult, result];
+          })
+
+          .then(([preprocessedResult, result]) => {
+            // skip parsing if we can.
+            if (this.blocks[file.identifier]) { return this.blocks[file.identifier]; }
+            let source: ParsedSource = {
+              identifier: file.identifier,
+              defaultName: file.defaultName,
+              parseResult: result,
+              originalSource: file.contents,
+              originalSyntax: file.syntax,
+              dependencies: preprocessedResult.dependencies || [],
+            };
+            return this.parser.parseSource(source);
+          });
+      })
+
+      .then(block => {
+
+        // last check  to make sure we don't return a new instance
+        if (this.blocks[block.identifier]) { return this.blocks[block.identifier]; }
+
         // Ensure this block name is unique.
         block.setName(this.getUniqueBlockName(block.name));
         return this.blocks[block.identifier] = block;
-      }
-    }).catch((error) => {
-      if (this.preprocessQueue.activeJobCount > 0) {
-        debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
-        return this.preprocessQueue.drain().then(() => {
-          debug(`Drain complete. Raising error.`);
+
+      })
+
+      .catch((error) => {
+        if (this.preprocessQueue.activeJobCount > 0) {
+          debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
+          return this.preprocessQueue.drain().then(() => {
+            debug(`Drain complete. Raising error.`);
+            throw error;
+          });
+        } else {
+          debug(`Block error. There are no preprocessing jobs. raising.`);
           throw error;
-        });
-      } else {
-        debug(`Block error. There are no preprocessing jobs. raising.`);
-        throw error;
-      }
-    });
-    this.promises[identifier] = blockPromise;
-    return blockPromise;
+        }
+      });
+
   }
+
   getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Promise<Block> {
     let importer = this.importer;
     let fromPath = importer.debugIdentifier(fromIdentifier, this.options);

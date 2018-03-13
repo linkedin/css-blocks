@@ -5,9 +5,7 @@ import { OptionsReader } from "../OptionsReader";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { ElementAnalysis } from "../TemplateAnalysis/ElementAnalysis";
 
-import {
-  IndexedClassRewrite,
-} from "./ClassRewrite";
+import { IndexedClassRewrite } from "./ClassRewrite";
 import { IndexedClassMapping, RewriteMapping } from "./RewriteMapping";
 export class StyleMapping {
   /** The analyses that were used to create this mapping. */
@@ -17,7 +15,12 @@ export class StyleMapping {
   private options: OptionsReader;
   private optimizedMap: OptimizedMapping;
 
-  constructor(optimizedMap: OptimizedMapping, blocks: Iterable<Block>, options: OptionsReader, analyses?: Array<TemplateAnalysis<keyof TemplateTypes>>) {
+  constructor(
+    optimizedMap: OptimizedMapping,
+    blocks: Iterable<Block>,
+    options: OptionsReader,
+    analyses?: Array<TemplateAnalysis<keyof TemplateTypes>>,
+  ) {
     this.options = options;
     this.optimizedMap = optimizedMap;
     this.blocks = new Set(blocks);

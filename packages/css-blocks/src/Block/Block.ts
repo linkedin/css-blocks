@@ -14,7 +14,7 @@ import {
   isClassNode,
   NodeAndType,
 } from "../BlockParser";
-import { isRootNode, toAttrToken } from "../BlockParser/block-intermediates";
+import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { SourceLocation } from "../SourceLocation";

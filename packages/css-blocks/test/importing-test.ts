@@ -3,6 +3,7 @@ import * as fs from "fs";
 import { IHookCallbackContext } from "mocha";
 import * as path from "path";
 
+import { Syntax } from "../src/BlockParser";
 import {
   OptionsReader,
 } from "../src/OptionsReader";
@@ -15,9 +16,6 @@ import {
   CssBlockOptions,
   CssBlockOptionsReadonly,
 } from "../src/options";
-import {
-  Syntax,
-} from "../src/preprocessing";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.resolve(FIXTURES, "filesystemImporter");

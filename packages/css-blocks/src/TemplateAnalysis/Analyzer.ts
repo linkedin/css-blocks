@@ -1,6 +1,6 @@
 import { TemplateTypes } from "@opticss/template-api";
 
-import { BlockFactory } from "../BlockFactory";
+import { BlockFactory } from "../BlockParser";
 
 import { MetaTemplateAnalysis } from "./MetaAnalysis";
 import { TemplateAnalysis } from "./TemplateAnalysis";
