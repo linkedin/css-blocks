@@ -33,7 +33,12 @@ export class Rewriter implements NodeVisitor {
 
   private elementAnalyzer: ElementAnalyzer;
 
-  constructor(syntax: Syntax, styleMapping: StyleMapping, analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile">, cssBlocksOpts: CssBlocksOpts) {
+  constructor(
+    syntax: Syntax,
+    styleMapping: StyleMapping,
+    analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile">,
+    cssBlocksOpts: CssBlocksOpts,
+  ) {
     this.syntax        = syntax;
     this.analysis      = analysis;
     this.template      = <ResolvedFile>analysis.template;

@@ -1,5 +1,4 @@
 export * from "./Block";
-export * from "./BlockFactory";
 export * from "./errors";
 export * from "./SourceLocation";
 export * from "./options";
@@ -8,7 +7,6 @@ export * from "./BlockCompiler";
 export * from "./OutputMode";
 export * from "./query";
 export * from "./importing";
-export * from "./preprocessing";
 export * from "./TemplateAnalysis";
 export * from "./TemplateRewriter";
 

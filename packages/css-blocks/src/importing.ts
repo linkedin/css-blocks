@@ -2,12 +2,8 @@ import { whatever } from "@opticss/util";
 import * as fs from "fs";
 import * as path from "path";
 
-import {
-  CssBlockOptionsReadonly,
-} from "./options";
-import {
-  Syntax,
-} from "./preprocessing";
+import { Syntax } from "./BlockParser";
+import { CssBlockOptionsReadonly } from "./options";
 
 declare module "./options" {
   export interface CssBlockOptions {
@@ -24,7 +20,7 @@ export interface ImporterData {
  * A FileIdentifier is a string with a whatever internal encoding is needed to uniquely resolve
  * a file or relative importPath against the identifier by an importer. FileIdentifiers may be
  * serialized across processes and should not encode any transient state. If an importer
- * wraps another importer, it is responsible for mangling and demangling the import identifier to
+ * wraps another importer, it is responsible for mangling and de-mangling the import identifier to
  * ensure that the namespaces of the importers do not collide.
  *
  * Care should be taken to ensure that the same block file is never returned

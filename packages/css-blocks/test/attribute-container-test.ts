@@ -5,7 +5,7 @@ import * as postcss from "postcss";
 
 import {
   BlockFactory,
-} from "../src/BlockFactory";
+} from "../src/BlockParser";
 import {
   OptionsReader,
 } from "../src/OptionsReader";

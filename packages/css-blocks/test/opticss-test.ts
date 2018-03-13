@@ -16,8 +16,7 @@ import * as postcss from "postcss";
 
 import { AttrValue, Block, BlockClass } from "../src/Block";
 import { BlockCompiler } from "../src/BlockCompiler";
-import { BlockFactory } from "../src/BlockFactory";
-import { BlockParser } from "../src/BlockParser";
+import { BlockFactory } from "../src/BlockParser";
 import { OptionsReader } from "../src/OptionsReader";
 import { TemplateAnalysis } from "../src/TemplateAnalysis";
 import { ElementAnalysis } from "../src/TemplateAnalysis/ElementAnalysis";
@@ -34,9 +33,8 @@ export class TemplateAnalysisTests {
     let options: PluginOptions = opts || {};
     let reader = new OptionsReader(options);
     let factory = new BlockFactory(reader, postcss);
-    let blockParser = new BlockParser(options, factory);
     let root = postcss.parse(css, {from: filename});
-    return blockParser.parse(root, filename, blockName).then((block) => {
+    return factory.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
     });
   }

@@ -1,17 +1,17 @@
 import * as postcss from "postcss";
 
 import { Block } from "../../Block";
-import { IBlockFactory } from "../../BlockFactory/IBlockFactory";
 import { BLOCK_REFERENCE, CLASS_NAME_IDENT } from "../../BlockSyntax";
 import { sourceLocation } from "../../SourceLocation";
 import * as errors from "../../errors";
+import { BlockFactory } from "../index";
 
 /**
  * Resolve all block references for a given block.
  * @param block Block to resolve references for
  * @return Promise that resolves when all references have been loaded.
  */
-export async function resolveReferences(block: Block, factory: IBlockFactory, file: string): Promise<Block> {
+export async function resolveReferences(block: Block, factory: BlockFactory, file: string): Promise<Block> {
 
   let root: postcss.Root | undefined = block.stylesheet;
   let namedBlockReferences: Promise<[string, string, postcss.AtRule, Block]>[] = [];

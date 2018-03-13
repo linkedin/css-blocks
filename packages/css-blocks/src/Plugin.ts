@@ -1,8 +1,7 @@
 import * as postcss from "postcss";
 
 import { BlockCompiler } from "./BlockCompiler";
-import { BlockFactory } from "./BlockFactory";
-import { BlockParser } from "./BlockParser";
+import { BlockFactory } from "./BlockParser";
 import { OptionsReader } from "./OptionsReader";
 import * as errors from "./errors";
 import { PluginOptions } from "./options";
@@ -16,8 +15,8 @@ export class Plugin {
   private postcss: typeof postcss;
 
   /**
-   * @param	postcssImpl	PostCSS instance to use
-   * @param	opts	Optional plugin config options
+   * @param  postcssImpl  PostCSS instance to use
+   * @param  opts  Optional plugin config options
    */
   constructor(postcssImpl: typeof postcss, opts?: PluginOptions) {
     this.opts = new OptionsReader(opts);
@@ -26,8 +25,8 @@ export class Plugin {
 
   /**
    * Main processing entrypoint for PostCSS Plugin
-   * @param	root	PostCSS AST
-   * @param	result	Provides the result of the PostCSS transformations
+   * @param  root  PostCSS AST
+   * @param  result  Provides the result of the PostCSS transformations
    */
   public process(root: postcss.Root, result: postcss.Result) {
 
@@ -39,13 +38,12 @@ export class Plugin {
       throw new errors.MissingSourcePath();
     }
 
-    let factory = this.opts.factory || new BlockFactory(this.opts, this.postcss);
     // Fetch block name from importer
     let identifier = this.opts.importer.identifier(null, sourceFile, this.opts);
     let defaultName: string = this.opts.importer.defaultName(identifier, this.opts);
-    let blockParser = new BlockParser(this.opts, factory);
+    let factory = new BlockFactory(this.opts, this.postcss);
 
-    return blockParser.parse(root, sourceFile, defaultName).then((block) => {
+    return factory.parse(root, sourceFile, defaultName).then((block) => {
       let compiler = new BlockCompiler(postcss, this.opts);
       compiler.compile(block, root);
     });

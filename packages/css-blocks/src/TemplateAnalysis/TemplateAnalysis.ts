@@ -20,7 +20,7 @@ import {
 import { IdentGenerator } from "opticss";
 
 import { Block, Style } from "../Block";
-import { BlockFactory } from "../BlockFactory";
+import { BlockFactory } from "../BlockParser";
 import { OptionsReader } from "../OptionsReader";
 
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
