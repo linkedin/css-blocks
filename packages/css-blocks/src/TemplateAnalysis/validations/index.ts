@@ -1,9 +1,10 @@
+import { ObjectDictionary } from "@opticss/util";
+
 import * as errors from "../../errors";
 import { ElementAnalysis } from "../ElementAnalysis";
 import { StyleAnalysis } from "../StyleAnalysis";
 
 import { Validator } from "./Validator";
-
 import { attributeGroupValidator } from "./attribute-group-validator";
 import { attributeParentValidator } from "./attribute-parent-validator";
 import { classPairsValidator } from "./class-pairs-validator";
@@ -15,13 +16,12 @@ export * from "./root-class-validator";
 export * from "./attribute-parent-validator";
 export * from "./property-conflict-validator";
 
-export interface TemplateValidators {
+export interface TemplateValidators extends ObjectDictionary<Validator> {
   "no-root-classes": Validator;
   "no-class-pairs": Validator;
   "no-attribute-orphans": Validator;
   "no-duplicate-attribute-groups": Validator;
   "no-required-resolution": Validator;
-  [name: string]: Validator;
 }
 
 export type TemplateValidatorOptions = {

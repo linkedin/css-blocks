@@ -279,7 +279,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   serialize(): SerializedTemplateAnalysis<K> {
     let blocks = {};
     let stylesFound: string[] = [];
-    let elements: { [id: string]: SerializedElementAnalysis } = {};
+    let elements: ObjectDictionary<SerializedElementAnalysis> = {};
     let template = this.template.serialize();
     let styleNameMap = new Map<Style, string>();
     let styleIndexes = new Map<Style, number>();

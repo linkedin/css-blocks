@@ -1,3 +1,4 @@
+import { ObjectDictionary } from "@opticss/util";
 import * as debugGenerator from "debug";
 import * as path from "path";
 import * as postcss from "postcss";
@@ -35,13 +36,13 @@ export class BlockFactory {
   postcssImpl: typeof postcss;
   importer: Importer;
   options: CssBlockOptionsReadonly;
-  blockNames: { [name: string]: number };
+  blockNames: ObjectDictionary<number>;
   parser: BlockParser;
   preprocessors: Preprocessors;
 
-  private promises: { [identifier: string]: Promise<Block> };
-  private blocks: { [identifier: string]: Block };
-  private paths: { [path: string]: string };
+  private promises: ObjectDictionary<Promise<Block>>;
+  private blocks: ObjectDictionary<Block>;
+  private paths: ObjectDictionary<string>;
   private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
   constructor(options: CssBlockOptionsReadonly, postcssImpl = postcss) {

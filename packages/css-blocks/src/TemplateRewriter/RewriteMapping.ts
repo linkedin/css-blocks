@@ -9,19 +9,20 @@ import {
   SimpleAttribute,
   SimpleTagname,
 } from "@opticss/template-api";
-import { assertNever, Maybe, maybe, objectValues } from "@opticss/util";
+import { assertNever, Maybe, maybe, ObjectDictionary, objectValues } from "@opticss/util";
 import { inspect } from "util";
 
 import { Style } from "../Block";
 
 import { ClassRewrite, IndexedClassRewrite } from "./ClassRewrite";
 
+export type ClassExpressionMap = ObjectDictionary<BooleanExpression<number> | undefined>;
 export class IndexedClassMapping implements IndexedClassRewrite<Style> {
   inputs: Style[];
   staticClasses: string[];
-  private map: { [k: string]: BooleanExpression<number> | undefined };
+  private map: ClassExpressionMap;
   private _inputMap: Map<Style, number>;
-  constructor(inputs: Style[], staticClasses: string[], map: {[k: string]: BooleanExpression<number> | undefined}) {
+  constructor(inputs: Style[], staticClasses: string[], map: ClassExpressionMap) {
     this.inputs = inputs;
     this.staticClasses = staticClasses;
     this._inputMap = new Map<Style, number>();

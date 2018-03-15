@@ -9,6 +9,7 @@ import { RawSource, Source, SourceMapSource } from "webpack-sources";
 import {
   TemplateTypes,
 } from "@opticss/template-api";
+import { ObjectDictionary } from "@opticss/util";
 import {
   Block,
   BlockCompiler,
@@ -58,9 +59,7 @@ export interface BlockCompilationComplete {
   optimizerActions: Actions;
 }
 
-interface Assets {
-  [key: string]: Source;
-}
+type Assets = ObjectDictionary<Source>;
 
 interface CompilationResult {
   optimizationResult: OptimizationResult;

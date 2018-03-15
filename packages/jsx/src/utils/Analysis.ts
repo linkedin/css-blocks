@@ -3,7 +3,7 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from "@opticss/template-api";
-import { Maybe, none, whatever } from "@opticss/util";
+import { Maybe, none, ObjectDictionary, whatever } from "@opticss/util";
 import { File } from "babel-types";
 import {
   Block,
@@ -69,7 +69,7 @@ export class MetaAnalysis extends MetaTemplateAnalysis {
 
   files: JSXTemplate[] = [];
   analysisPromises: Promise<Analysis>[] = [];
-  blockPromises: { [path: string]: Promise<Block> } = {};
+  blockPromises: ObjectDictionary<Promise<Block>> = {};
 
   fileCount(): number {
     return this.analyses.length;

@@ -1,4 +1,4 @@
+import { ObjectDictionary } from "@opticss/util";
+
 import { WebpackAny } from "./Plugin";
-export interface LoaderOptions {
-    [opt: string]: WebpackAny;
-}
+export type LoaderOptions = ObjectDictionary<WebpackAny>;

@@ -1,17 +1,13 @@
 import { assert } from "chai";
 import * as path from "path";
 
+import { ObjectDictionary } from "@opticss/util";
 import { ImportedFile, Importer, PathBasedImporter, PluginOptionsReader, Syntax } from "css-blocks";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 
-export interface SourceRegistry {
-  [sourcePath: string]: string;
-}
-
-export interface ImportedFiles {
-  [sourcePath: string]: boolean;
-}
+export type SourceRegistry = ObjectDictionary<string>;
+export type ImportedFiles = ObjectDictionary<boolean>;
 
 export class MockImporter extends PathBasedImporter {
   registry: MockImportRegistry;

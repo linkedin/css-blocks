@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import {
-  some, unwrap,
+  ObjectDictionary, some, unwrap,
 } from "@opticss/util";
 import traverse from "babel-traverse";
 import * as babylon from "babylon";
@@ -43,7 +43,7 @@ function readFile(filename: string, encoding?: string | null): Promise<string | 
 export interface JSXAnalyzerOptions {
    baseDir: string;
    parserOptions?: object;
-   aliases?: { [alias: string]: string };
+   aliases?: ObjectDictionary<string>;
    compilationOptions?: CssBlocksOptions;
  }
 
