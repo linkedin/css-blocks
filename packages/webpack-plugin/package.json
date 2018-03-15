@@ -36,7 +36,7 @@
     "test/mocha.opts"
   ],
   "engines": {
-    "node": "8"
+    "node": ">=8"
   },
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/webpack-plugin#readme",
   "devDependencies": {

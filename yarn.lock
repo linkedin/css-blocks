@@ -206,7 +206,7 @@
   dependencies:
     "@opticss/element-analysis" "file:../../Library/Caches/Yarn/v1/npm-@opticss/element-analysis"
     "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
-    postcss "^6.0.12"
+    postcss "^6.0.13"
     typescript-collections "^1.2.5"
 
 "@opticss/util@file:../opticss/packages/util":
@@ -3879,7 +3879,7 @@ onetime@^2.0.0:
     css-property-parser "^1.0.5"
     debug "^2.6.8"
     object.values "^1.0.4"
-    postcss "^6.0.12"
+    postcss "^6.0.13"
     postcss-selector-parser "^3.1.1"
     source-map "^0.6.1"
     specificity "^0.3.2"
@@ -4362,7 +4362,7 @@ postcss@^5.0.10, postcss@^5.0.11, postcss@^5.0.12, postcss@^5.0.13, postcss@^5.0
     source-map "^0.5.6"
     supports-color "^3.2.3"
 
-postcss@^6.0.1, postcss@^6.0.12, postcss@^6.0.14:
+postcss@^6.0.1, postcss@^6.0.13, postcss@^6.0.14:
   version "6.0.19"
   resolved "https://registry.npmjs.org/postcss/-/postcss-6.0.19.tgz#76a78386f670b9d9494a655bf23ac012effd1555"
   dependencies:

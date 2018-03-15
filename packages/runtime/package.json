@@ -25,7 +25,7 @@
     "css-blocks"
   ],
   "engines": {
-    "node": "8"
+    "node": ">=8"
   },
   "author": "Chris Eppstein <chris@eppsteins.net>",
   "license": "BSD-2-Clause",
