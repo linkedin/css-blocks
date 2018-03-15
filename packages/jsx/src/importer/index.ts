@@ -1,3 +1,4 @@
+import { ObjectDictionary } from "@opticss/util";
 import { NodePath } from "babel-traverse";
 import {
   ClassDeclaration,
@@ -27,16 +28,12 @@ const VALID_FILE_EXTENSIONS = {
   ".jsx": 1, ".tsx": 1,
 };
 
-interface BlockRegistry {
-  [key: string]: number;
-}
-
 /**
- * If a given block name is in the passed BlockRegistry, throw.
+ * If a given block name is in the passed registry, throw.
  * @param name The Block name in question.
  * @param registry The registry to check.
  */
-function throwIfRegistered(name: string, blockRegistry: BlockRegistry, loc: ErrorLocation) {
+function throwIfRegistered(name: string, blockRegistry: ObjectDictionary<number>, loc: ErrorLocation) {
   // TODO: Location reporting in errors.
   if (blockRegistry[name]) {
     throw new TemplateImportError(`Block identifier "${name}" cannot be re-defined in any scope once imported.`, loc);
@@ -57,7 +54,7 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
 
   // Keep a running record of local block names while traversing so we can check
   // for name conflicts elsewhere in the file.
-  let _localBlocks: BlockRegistry = {};
+  let _localBlocks: ObjectDictionary<number> = {};
   let dirname = path.dirname(file.identifier);
   let aliases = options.aliases || {};
 

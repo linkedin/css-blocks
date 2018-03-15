@@ -1,4 +1,4 @@
-import { whatever } from "@opticss/util";
+import { ObjectDictionary, whatever } from "@opticss/util";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -12,9 +12,7 @@ declare module "./options" {
   }
 }
 
-export interface ImporterData {
-  [key: string]: whatever;
-}
+export type ImporterData = ObjectDictionary<whatever>;
 
 /**
  * A FileIdentifier is a string with a whatever internal encoding is needed to uniquely resolve
@@ -179,12 +177,7 @@ export interface Alias {
   path: string;
 }
 
-export type PathAliases = Alias[] | {
-  /**
-   * map of alias prefixes to absolute paths.
-   */
-  [alias: string]: string;
-};
+export type PathAliases = Alias[] | ObjectDictionary<string>;
 
 /**
  * The PathAliasImporter is a replacement for the fileystem importer. Relative import paths

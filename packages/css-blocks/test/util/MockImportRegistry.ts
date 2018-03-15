@@ -1,3 +1,4 @@
+import { ObjectDictionary } from "@opticss/util";
 import { assert } from "chai";
 import * as path from "path";
 
@@ -6,17 +7,12 @@ import { OptionsReader } from "../../src/OptionsReader";
 import { ImportedFile, Importer, PathBasedImporter } from "../../src/importing";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
-
-export interface SourceRegistry {
-  [sourcePath: string]: {
-    contents: string;
-    syntax: Syntax;
-  };
+export interface SourceWithSyntax {
+  contents: string;
+  syntax: Syntax;
 }
-
-export interface ImportedFiles {
-  [sourcePath: string]: boolean;
-}
+export type SourceRegistry = ObjectDictionary<SourceWithSyntax>;
+export type ImportedFiles = ObjectDictionary<boolean>;
 
 export class MockImporter extends PathBasedImporter {
   registry: MockImportRegistry;

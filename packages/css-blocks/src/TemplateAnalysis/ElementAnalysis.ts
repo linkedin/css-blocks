@@ -829,7 +829,7 @@ function serializeDynamicAttrs(c: DynamicAttrs<whatever, whatever>, styleIndexes
     stringExpression: true,
     condition: true,
     value: 0,
-    group: {} as {[n: string]: number},
+    group: {} as ObjectDictionary<number>,
     container: 0,
     disallowFalsy: false,
   };

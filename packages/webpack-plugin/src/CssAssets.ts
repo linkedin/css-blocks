@@ -1,3 +1,4 @@
+import { ObjectDictionary } from "@opticss/util";
 import * as  async from "async";
 import * as convertSourceMap from "convert-source-map";
 import * as debugGenerator from "debug";
@@ -82,17 +83,13 @@ export interface ConcatenationOptions {
  */
 export interface CssAssetsOptions {
     /** Maps css files from a source location to a webpack asset location. */
-    cssFiles: {
-        [assetPath: string]: string | CssSourceOptions;
-    };
+    cssFiles: ObjectDictionary<string | CssSourceOptions>;
     /**
      * Maps several webpack assets to a new concatenated asset and manages their
      * sourcemaps. The concatenated asset will belong to all the chunks to which
      * the assets belonged.
      */
-    concat: {
-        [concatAssetPath: string]: string[] | ConcatenationOptions;
-    };
+    concat: ObjectDictionary<string[] | ConcatenationOptions>;
 
     /**
      * When true, any source maps related to the assets are written out as

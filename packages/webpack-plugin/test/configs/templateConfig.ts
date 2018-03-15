@@ -6,7 +6,7 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from "@opticss/template-api";
-import { whatever } from "@opticss/util";
+import { ObjectDictionary, whatever } from "@opticss/util";
 import {
   Block,
   BlockFactory,
@@ -56,7 +56,7 @@ export class TestTemplateInfo implements TemplateInfo<"WebpackPlugin.TestTemplat
 TemplateInfoFactory.constructors["WebpackPlugin.TestTemplate"] = TestTemplateInfo.deserialize;
 
 class TestAnalysis extends TemplateAnalysis<"WebpackPlugin.TestTemplate"> {
-  blocks: { [name: string]: Block } = {};
+  blocks: ObjectDictionary<Block> = {};
   constructor(template: TestTemplateInfo) {
     super(template);
   }

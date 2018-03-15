@@ -1,3 +1,4 @@
+import { ObjectDictionary } from "@opticss/util";
 import * as postcss from "postcss";
 
 import { Block } from "../../Block";
@@ -51,7 +52,7 @@ export async function resolveReferences(block: Block, factory: BlockFactory, fil
 
   // When all import promises have resolved, save the block references and resolve.
   return Promise.all(namedBlockReferences).then((results) => {
-    let localNames: {[name: string]: string} = {};
+    let localNames: ObjectDictionary<string> = {};
     results.forEach(([localName, importPath, atRule, otherBlock]) => {
       if (localNames[localName]) {
         throw new errors.InvalidBlockSyntax(
