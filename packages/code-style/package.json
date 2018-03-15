@@ -31,7 +31,7 @@
     "@opticss/code-style": "file:../../../opticss/packages/code-style"
   },
   "engines": {
-    "node": "8"
+    "node": ">=8"
   },
   "files": [
     "configs",
