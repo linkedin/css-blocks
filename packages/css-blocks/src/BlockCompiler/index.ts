@@ -1,11 +1,16 @@
 import * as postcss from "postcss";
 
 import { Block } from "../Block";
-import { BLOCK_DEBUG, BLOCK_PROP_NAMES_RE, BLOCK_REFERENCE, ROOT_CLASS } from "../BlockSyntax";
+import {
+  BLOCK_DEBUG,
+  BLOCK_PROP_NAMES_RE,
+  BLOCK_REFERENCE,
+  parseBlockDebug,
+  ROOT_CLASS,
+} from "../BlockSyntax";
 import { OptionsReader } from "../OptionsReader";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
 import { PluginOptions } from "../options";
-import { parseBlockDebug } from "../parseBlockDebug";
 
 import { ConflictResolver } from "./ConflictResolver";
 /**

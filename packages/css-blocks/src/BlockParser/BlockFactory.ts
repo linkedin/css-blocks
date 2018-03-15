@@ -58,6 +58,7 @@ export class BlockFactory {
       return item.preprocessor(item.filename, item.contents, this.options);
     });
   }
+
   reset() {
     this.blocks = {};
     this.paths = {};
