@@ -21,7 +21,7 @@ export class OptionsReader implements CssBlockOptionsReadonly {
   readonly outputMode: OutputMode;
   readonly importer: Importer;
   readonly rootDir: string;
-  readonly data: ImporterData;
+  readonly importerData: ImporterData;
   readonly preprocessors: Preprocessors;
   readonly disablePreprocessChaining: boolean;
   readonly maxConcurrentCompiles: number;
@@ -30,7 +30,7 @@ export class OptionsReader implements CssBlockOptionsReadonly {
     this.outputMode = opts.outputMode || OutputMode.BEM;
     this.importer = opts.importer || filesystemImporter;
     this.rootDir = opts.rootDir || process.cwd();
-    this.data = opts.data || {};
+    this.importerData = opts.importerData || {};
     this.preprocessors = opts.preprocessors || {};
     this.disablePreprocessChaining = !!opts.disablePreprocessChaining;
     this.maxConcurrentCompiles = opts.maxConcurrentCompiles || 4;

@@ -8,7 +8,7 @@ import { CssBlockOptionsReadonly } from "./options";
 declare module "./options" {
   export interface CssBlockOptions {
     importer: Importer;
-    data: ImporterData;
+    importerData: ImporterData;
   }
 }
 
