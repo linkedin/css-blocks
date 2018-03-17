@@ -1,10 +1,10 @@
 import * as postcss from "postcss";
 
 import { Block } from "../Block";
-import { OptionsReader } from "../OptionsReader";
+import { normalizeOptions } from "../normalizeOptions";
 import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
-import { PluginOptions } from "../options";
+import { SparseOptions, ReadonlyOptions } from "../options";
 
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { constructBlock } from "./features/construct-block";
@@ -32,11 +32,11 @@ export interface ParsedSource {
  * interface is `BlockParser.parse`.
  */
 export class BlockParser {
-  private opts: OptionsReader;
+  private opts: ReadonlyOptions;
   private factory: BlockFactory;
 
-  constructor(opts: PluginOptions, factory: BlockFactory) {
-    this.opts = new OptionsReader(opts);
+  constructor(opts: SparseOptions, factory: BlockFactory) {
+    this.opts = normalizeOptions(opts);
     this.factory = factory;
   }
 

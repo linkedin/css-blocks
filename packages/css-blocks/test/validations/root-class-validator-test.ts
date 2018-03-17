@@ -5,10 +5,10 @@ import * as postcss from "postcss";
 
 import { Block } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockParser";
-import { OptionsReader } from "../../src/OptionsReader";
+import { normalizeOptions } from "../../src/normalizeOptions";
 import { SerializedTemplateAnalysis, TemplateAnalysis } from "../../src/TemplateAnalysis";
 import * as cssBlocks from "../../src/errors";
-import { PluginOptions } from "../../src/options";
+import { SparseOptions } from "../../src/options";
 
 import { MockImportRegistry } from "./../util/MockImportRegistry";
 import { assertParseError } from "./../util/assertError";
@@ -17,10 +17,9 @@ type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Root Class Validator")
 export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: PluginOptions, blockName = "analysis"): Promise<BlockAndRoot> {
-    let options: PluginOptions = opts || {};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+  private parseBlock(css: string, filename: string, opts?: SparseOptions, blockName = "analysis"): Promise<BlockAndRoot> {
+    let options = normalizeOptions(opts);
+    let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, { from: filename });
     return factory.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
@@ -30,9 +29,7 @@ export class TemplateAnalysisTests {
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-
-    let options: PluginOptions = {};
-    let reader = new OptionsReader(options);
+    let options = {};
 
     let css = `
       :scope { color: blue; }
@@ -45,7 +42,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       "Cannot put block classes on the block's root element (templates/my-template.hbs:10:32)",
-      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]): [Block, postcss.Container] => {
+      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]): [Block, postcss.Container] => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
@@ -59,9 +56,7 @@ export class TemplateAnalysisTests {
   @test "adding both root and an attribute from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-
-    let options: PluginOptions = {};
-    let reader = new OptionsReader(options);
+    let options = {};
 
     let css = `
       :scope { color: blue; }
@@ -71,7 +66,7 @@ export class TemplateAnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]): [Block, postcss.Container] => {
+    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]): [Block, postcss.Container] => {
       analysis.blocks[""] = block;
       let element = analysis.startElement({ line: 10, column: 32 });
       element.addStaticClass(block.rootClass);
@@ -85,19 +80,18 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
+    let options = { importer: imports.importer() };
+
     imports.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }`,
     );
 
-    let options: PluginOptions = { importer: imports.importer() };
-    let reader = new OptionsReader(options);
-
     let css = `
       @block-reference a from "a.css";
       :scope { color: blue; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       analysis.blocks[""] = block;
       analysis.blocks["a"] = aBlock;

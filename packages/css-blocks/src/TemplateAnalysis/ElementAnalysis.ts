@@ -30,8 +30,8 @@ import {
   Style,
 } from "../Block";
 import {
-  OptionsReader as CssBlocksOptionsReader,
-} from "../OptionsReader";
+  ReadonlyOptions
+} from "../options";
 import {
   unionInto,
 } from "../util/unionInto";
@@ -606,7 +606,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * assumed to be unique per Style across all blocks -- so these
    * maps can be merged safely.
    */
-  forOptimizer(options: CssBlocksOptionsReader): [Element, Map<string, Style>] {
+  forOptimizer(options: ReadonlyOptions): [Element, Map<string, Style>] {
     this.assertSealed();
     let tagValue = this.tagName ? attrValues.constant(this.tagName) : attrValues.unknown();
     let tagName = new Tagname(tagValue);
@@ -770,7 +770,7 @@ function addToSet(
 
 type ClassMapper = (style: Style) => ValueConstant | AttributeValueSet;
 function mapClasses(
-  options: CssBlocksOptionsReader,
+  options: ReadonlyOptions,
   map: Map<string, Style>,
   style: Style,
 ): ValueConstant | AttributeValueSet {
@@ -790,7 +790,7 @@ function mapClasses(
 
 type ChoiceMapper = (includeAbsent: boolean, ...styles: Style[]) => AttributeValueChoice;
 function mapChoiceClasses(
-  options: CssBlocksOptionsReader,
+  options: ReadonlyOptions,
   map: Map<string, Style>,
   includeAbsent: boolean,
   ...styles: Style[],

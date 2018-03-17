@@ -12,7 +12,7 @@ import {
   BlockFactory,
   MetaTemplateAnalysis,
   MultiTemplateAnalyzer,
-  PluginOptionsReader,
+  normalizeOptions,
   StyleAnalysis,
   TemplateAnalysis,
 } from "css-blocks";
@@ -105,8 +105,8 @@ function fixture(name: string) {
 }
 
 export function config(): Promise<WebpackConfiguration> {
-  let reader = new PluginOptionsReader({});
-  let factory = new BlockFactory(reader, postcss);
+  let blockOpts = normalizeOptions({});
+  let factory = new BlockFactory(blockOpts, postcss);
   let block1 = factory.getBlock(fixture("concat-1"));
   let block2 = factory.getBlock(fixture("concat-2"));
   return Promise.all([block1, block2]).then(blocks => {

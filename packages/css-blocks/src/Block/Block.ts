@@ -16,7 +16,7 @@ import {
 } from "../BlockParser";
 import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
-import { OptionsReader } from "../OptionsReader";
+import { ReadonlyOptions } from "../options";
 import { SourceLocation } from "../SourceLocation";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
@@ -367,7 +367,7 @@ export class Block
     return null;
   }
 
-  rewriteSelectorNodes(nodes: selectorParser.Node[], opts: OptionsReader): selectorParser.Node[] {
+  rewriteSelectorNodes(nodes: selectorParser.Node[], opts: ReadonlyOptions): selectorParser.Node[] {
     let newNodes: selectorParser.Node[] = [];
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
@@ -382,7 +382,7 @@ export class Block
     return newNodes;
   }
 
-  rewriteSelectorToString(selector: ParsedSelector, opts: OptionsReader): string {
+  rewriteSelectorToString(selector: ParsedSelector, opts: ReadonlyOptions): string {
     let firstNewSelector = new CompoundSelector();
     let newSelector = firstNewSelector;
     let newCurrentSelector = newSelector;
@@ -402,14 +402,14 @@ export class Block
     return firstNewSelector.toString();
   }
 
-  rewriteSelector(selector: ParsedSelector, opts: OptionsReader): ParsedSelector {
+  rewriteSelector(selector: ParsedSelector, opts: ReadonlyOptions): ParsedSelector {
     // generating a string and re-parsing ensures the internal structure is consistent
     // otherwise the parent/next/prev relationships will be wonky with the new nodes.
     let s = this.rewriteSelectorToString(selector, opts);
     return parseSelector(s)[0];
   }
 
-  debug(opts: OptionsReader): string[] {
+  debug(opts: ReadonlyOptions): string[] {
     let result: string[] = [`Source: ${this.identifier}`, this.rootClass.asDebug(opts)];
     let sourceNames = new Set<string>(this.all().map(s => s.asSource()));
     let sortedNames = [...sourceNames].sort();

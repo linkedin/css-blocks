@@ -5,26 +5,24 @@ import * as path from "path";
 
 import { Syntax } from "../src/BlockParser";
 import {
-  OptionsReader,
-} from "../src/OptionsReader";
+  normalizeOptions,
+} from "../src/normalizeOptions";
 import {
   filesystemImporter,
   Importer,
   PathAliasImporter,
 } from "../src/importing";
 import {
-  CssBlockOptions,
-  CssBlockOptionsReadonly,
+  SparseOptions,
+  ReadonlyOptions,
 } from "../src/options";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.resolve(FIXTURES, "filesystemImporter");
 const ALIAS_FIXTURES = path.resolve(FIXTURES, "pathAliasImporter");
 
-function getOptions(options?: Partial<CssBlockOptions>): CssBlockOptionsReadonly {
-  options = options || {};
-  options.rootDir = path.join(FSI_FIXTURES);
-  return new OptionsReader(options || {});
+function getOptions(options?: SparseOptions): ReadonlyOptions {
+  return normalizeOptions(options, {rootDir: path.join(FSI_FIXTURES)});
 }
 
 function testFSImporter(name: string, importer: Importer) {

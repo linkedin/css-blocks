@@ -6,7 +6,7 @@ import selectorParser = require("postcss-selector-parser");
 import { Block, Style } from "../Block";
 import { getBlockNode } from "../BlockParser";
 import { RESOLVE_RE } from "../BlockSyntax";
-import { OptionsReader } from "../OptionsReader";
+import { ReadonlyOptions } from "../options";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
 import * as errors from "../errors";
 import { QueryKeySelector } from "../query";
@@ -61,9 +61,9 @@ function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
  * resolves property values accordingly.
  */
 export class ConflictResolver {
-  readonly opts: OptionsReader;
+  readonly opts: ReadonlyOptions;
 
-  constructor(opts: OptionsReader) {
+  constructor(opts: ReadonlyOptions) {
     this.opts = opts;
   }
 

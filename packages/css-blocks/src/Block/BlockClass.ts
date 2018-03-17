@@ -3,7 +3,7 @@ import { isString } from "util";
 
 import { ATTR_PRESENT, IAttrToken as AttrToken, ROOT_CLASS } from "../BlockSyntax";
 import { BlockPath } from "../BlockSyntax";
-import { OptionsReader } from "../OptionsReader";
+import { ReadonlyOptions } from "../options";
 import { OutputMode } from "../OutputMode";
 
 import { AttrValue } from "./AttrValue";
@@ -184,7 +184,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    * @param opts Option hash configuring output mode.
    * @returns String representing output class.
    */
-  public cssClass(opts: OptionsReader): string {
+  public cssClass(opts: ReadonlyOptions): string {
     switch (opts.outputMode) {
       case OutputMode.BEM:
         if (this.isRoot) {
@@ -219,7 +219,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    * @param options  Options to pass to BlockClass' asDebug method.
    * @return Array of debug strings for this BlockClass
    */
-  debug(opts: OptionsReader): string[] {
+  debug(opts: ReadonlyOptions): string[] {
     let result: string[] = [];
     for (let style of this.all()) {
       result.push(style.asDebug(opts));

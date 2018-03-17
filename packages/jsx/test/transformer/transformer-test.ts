@@ -2,7 +2,7 @@ import c$$ from "@css-blocks/runtime";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as babel from "babel-core";
 import { assert } from "chai";
-import { BlockCompiler, CssBlockOptions, PluginOptionsReader, StyleMapping } from "css-blocks";
+import { BlockCompiler, SparseOptions, StyleMapping, normalizeOptions } from "css-blocks";
 import { skip, suite, test } from "mocha-typescript";
 import { OptiCSSOptions, OptimizationResult, Optimizer  } from "opticss";
 import * as postcss from "postcss";
@@ -22,21 +22,21 @@ function minify(s: string) {
   return prettier.format(s).replace(/\n\n/mg, "\n");
 }
 
-function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: Partial<CssBlockOptions> = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult; css: OptimizationResult}> {
+function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: SparseOptions = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult; css: OptimizationResult}> {
   let filename = analysis.template.identifier;
   let optimizer = new Optimizer(optimizationOpts, templateOpts);
-  let reader = new PluginOptionsReader(cssBlocksOptions);
-  optimizer.addAnalysis(analysis.forOptimizer(reader));
+  let blockOpts = normalizeOptions(cssBlocksOptions);
+  optimizer.addAnalysis(analysis.forOptimizer(blockOpts));
   let blocks = analysis.transitiveBlockDependencies();
-  let compiler = new BlockCompiler(postcss, reader);
+  let compiler = new BlockCompiler(postcss, blockOpts);
   for (let block of blocks) {
     optimizer.addSource({
-      content: compiler.compile(block, block.stylesheet!).toResult({to: reader.importer.filesystemPath(block.identifier, reader) || undefined}),
+      content: compiler.compile(block, block.stylesheet!).toResult({to: blockOpts.importer.filesystemPath(block.identifier, blockOpts) || undefined}),
     });
   }
   return optimizer.optimize("optimized.css").then(result => {
     let rewriter = new Transformer.Rewriter();
-    rewriter.blocks[filename] = new StyleMapping(result.styleMapping, blocks, reader, [analysis]);
+    rewriter.blocks[filename] = new StyleMapping(result.styleMapping, blocks, blockOpts, [analysis]);
     let babelResult = babel.transform(code, {
       filename: filename,
       plugins: [

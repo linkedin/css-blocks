@@ -6,7 +6,8 @@ import { RawSourceMap } from "source-map";
 
 import { Block } from "../Block";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
-import { CssBlockOptionsReadonly } from "../options";
+import { ReadonlyOptions, SparseOptions } from "../options";
+import { normalizeOptions } from "../normalizeOptions";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";
@@ -35,7 +36,7 @@ interface ErrorWithErrNum {
 export class BlockFactory {
   postcssImpl: typeof postcss;
   importer: Importer;
-  options: CssBlockOptionsReadonly;
+  options: ReadonlyOptions;
   blockNames: ObjectDictionary<number>;
   parser: BlockParser;
   preprocessors: Preprocessors;
@@ -45,9 +46,9 @@ export class BlockFactory {
   private paths: ObjectDictionary<string>;
   private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
-  constructor(options: CssBlockOptionsReadonly, postcssImpl = postcss) {
+  constructor(options: SparseOptions, postcssImpl = postcss) {
     this.postcssImpl = postcssImpl;
-    this.options = options;
+    this.options = normalizeOptions(options);
     this.importer = this.options.importer;
     this.preprocessors = this.options.preprocessors;
     this.parser = new BlockParser(options, this);
@@ -216,7 +217,7 @@ export class BlockFactory {
     if (firstPreprocessor) {
       if (syntax !== Syntax.css && this.preprocessors.css && !this.options.disablePreprocessChaining) {
         let cssProcessor = this.preprocessors.css;
-        preprocessor = (fullPath: string, content: string, options: CssBlockOptionsReadonly): Promise<ProcessedFile> => {
+        preprocessor = (fullPath: string, content: string, options: ReadonlyOptions): Promise<ProcessedFile> => {
           return firstPreprocessor!(fullPath, content, options).then(result => {
             let content = result.content.toString();
             return cssProcessor(fullPath, content, options, sourceMapFromProcessedFile(result)).then(result2 => {
@@ -234,7 +235,7 @@ export class BlockFactory {
     } else if (syntax !== Syntax.css) {
       throw new Error(`No preprocessor provided for ${syntaxName(syntax)}.`);
     } else {
-      preprocessor = (_fullPath: string, content: string, _options: CssBlockOptionsReadonly): Promise<ProcessedFile> => {
+      preprocessor = (_fullPath: string, content: string, _options: ReadonlyOptions): Promise<ProcessedFile> => {
         return Promise.resolve({
           content: content,
         });

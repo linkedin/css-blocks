@@ -19,7 +19,7 @@ import {
   Statement,
   stringLiteral,
 } from "babel-types";
-import { PluginOptionsReader, StyleMapping } from "css-blocks";
+import { ReadonlyOptions, StyleMapping } from "css-blocks";
 // import { TemplateAnalysisError } from '../utils/Errors';
 import * as debugGenerator from "debug";
 
@@ -43,7 +43,7 @@ export interface CssBlocksVisitor {
   filename: string;
   mapping: StyleMapping;
   analysis: Analysis;
-  cssBlockOptions: PluginOptionsReader;
+  cssBlockOptions: ReadonlyOptions;
   shouldProcess: boolean;
 }
 

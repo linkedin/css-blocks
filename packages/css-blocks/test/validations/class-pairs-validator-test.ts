@@ -4,20 +4,19 @@ import * as postcss from "postcss";
 
 import { Block } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockParser";
-import { OptionsReader } from "../../src/OptionsReader";
+import { normalizeOptions } from "../../src/normalizeOptions";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import * as cssBlocks from "../../src/errors";
-import { PluginOptions } from "../../src/options";
+import { SparseOptions } from "../../src/options";
 import { assertParseError } from "../util/assertError";
 
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Class Pairs Validator")
 export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: PluginOptions, blockName = "analysis"): Promise<BlockAndRoot> {
-    let options: PluginOptions = opts || {};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+  private parseBlock(css: string, filename: string, opts?: SparseOptions, blockName = "analysis"): Promise<BlockAndRoot> {
+    let options = normalizeOptions(opts);
+    let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, { from: filename });
     return factory.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
@@ -28,8 +27,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
 
-    let options: PluginOptions = {};
-    let reader = new OptionsReader(options);
+    let options = normalizeOptions({});
 
     let css = `
       :scope { color: blue; }
@@ -42,7 +40,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       `Classes "fdsa" and "asdf" from the same block are not allowed on the same element at the same time. (templates/my-template.hbs:10:11)`,
-      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 11 });
         element.addStaticClass(block.getClass("asdf")!);

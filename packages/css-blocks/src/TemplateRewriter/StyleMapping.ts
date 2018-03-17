@@ -1,7 +1,7 @@
 import { StyleMapping as OptimizedMapping, TemplateTypes } from "@opticss/template-api";
 
 import { Block, Style } from "../Block";
-import { OptionsReader } from "../OptionsReader";
+import { ReadonlyOptions } from "../options";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { ElementAnalysis } from "../TemplateAnalysis/ElementAnalysis";
 
@@ -12,13 +12,13 @@ export class StyleMapping {
   analyses: Array<TemplateAnalysis<keyof TemplateTypes>> | undefined;
   /** The blocks that were used to create this mapping. */
   blocks: Set<Block>;
-  private options: OptionsReader;
+  private options: ReadonlyOptions;
   private optimizedMap: OptimizedMapping;
 
   constructor(
     optimizedMap: OptimizedMapping,
     blocks: Iterable<Block>,
-    options: OptionsReader,
+    options: ReadonlyOptions,
     analyses?: Array<TemplateAnalysis<keyof TemplateTypes>>,
   ) {
     this.options = options;

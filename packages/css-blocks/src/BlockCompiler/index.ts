@@ -8,9 +8,9 @@ import {
   parseBlockDebug,
   ROOT_CLASS,
 } from "../BlockSyntax";
-import { OptionsReader } from "../OptionsReader";
+import { normalizeOptions } from "../normalizeOptions";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
-import { PluginOptions } from "../options";
+import { SparseOptions, ReadonlyOptions } from "../options";
 
 import { ConflictResolver } from "./ConflictResolver";
 /**
@@ -18,11 +18,11 @@ import { ConflictResolver } from "./ConflictResolver";
  * interface is `BlockParser.parse`.
  */
 export class BlockCompiler {
-  private opts: OptionsReader;
+  private opts: ReadonlyOptions;
   private postcss: typeof postcss;
 
-  constructor(postcssImpl: typeof postcss, opts?: PluginOptions) {
-    this.opts = new OptionsReader(opts);
+  constructor(postcssImpl: typeof postcss, opts?: SparseOptions) {
+    this.opts = normalizeOptions(opts);
     this.postcss = postcssImpl;
   }
 

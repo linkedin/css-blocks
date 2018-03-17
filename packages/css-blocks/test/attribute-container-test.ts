@@ -7,13 +7,10 @@ import {
   BlockFactory,
 } from "../src/BlockParser";
 import {
-  OptionsReader,
-} from "../src/OptionsReader";
+  normalizeOptions
+} from "../src/normalizeOptions";
 import cssBlocks = require("../src/cssBlocks");
 import { AttrValue } from "../src/index";
-import {
-  PluginOptions,
-} from "../src/options";
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
@@ -42,11 +39,10 @@ export class AttributeContainerTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+    let options = normalizeOptions({importer});
+    let factory = new BlockFactory(options, postcss);
 
-    return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
+    return factory.getBlock(importer.identifier(null, filename, options)).then(block => {
       let attr = block.rootClass.getAttributeValue("[state|large]");
       typedAssert.isNotNull(attr).and((attr) => {
         assert.equal(attr.isPresenceRule, true);
@@ -74,11 +70,10 @@ export class AttributeContainerTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+    let options = normalizeOptions({importer});
+    let factory = new BlockFactory(options, postcss);
 
-    return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
+    return factory.getBlock(importer.identifier(null, filename, options)).then(block => {
       let sizeGroup: Array<AttrValue> = block.rootClass.getAttributeValues("[state|size]");
       assert.equal(sizeGroup.length, 2);
       assert.includeMembers(sizeGroup.map(s => s.value), ["large", "small"]);
@@ -117,11 +112,10 @@ export class AttributeContainerTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+    let options = normalizeOptions({importer});
+    let factory = new BlockFactory(options, postcss);
 
-    return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
+    return factory.getBlock(importer.identifier(null, filename, options)).then(block => {
       let sizeGroup = block.rootClass.resolveAttributeValues("[state|size]");
       assert.equal(sizeGroup.size, 3);
       assert.includeMembers([...sizeGroup.keys()], ["large", "small", "tiny"]);

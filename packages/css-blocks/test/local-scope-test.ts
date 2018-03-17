@@ -4,8 +4,7 @@ import * as postcss from "postcss";
 
 import {
   BlockFactory,
-  PluginOptions,
-  PluginOptionsReader,
+  normalizeOptions,
 } from "../src";
 import cssBlocks = require("../src/cssBlocks");
 
@@ -37,11 +36,10 @@ export class LocalScopeLookupTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new PluginOptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+    let options = normalizeOptions({importer});
+    let factory = new BlockFactory(options, postcss);
 
-    return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
+    return factory.getBlock(importer.identifier(null, filename, options)).then(block => {
       assert.equal(block.lookup(":scope"), block.rootClass);
       let largeState = block.rootClass.getAttributeValue("[state|large]");
       assert(largeState);
@@ -74,11 +72,10 @@ export class LocalScopeLookupTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new PluginOptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+    let options = normalizeOptions({importer});
+    let factory = new BlockFactory(options, postcss);
 
-    return factory.getBlock(importer.identifier(null, filename, reader)).then(refblock => {
+    return factory.getBlock(importer.identifier(null, filename, options)).then(refblock => {
       let block = refblock.getReferencedBlock("a-block");
       if (block === null) {
         assert.fail("wtf");
@@ -116,11 +113,10 @@ export class LocalScopeLookupTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new PluginOptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+    let options = normalizeOptions({importer});
+    let factory = new BlockFactory(options, postcss);
 
-    return factory.getBlock(importer.identifier(null, filename, reader)).then(refblock => {
+    return factory.getBlock(importer.identifier(null, filename, options)).then(refblock => {
       let block = refblock.getReferencedBlock("my-block");
       if (block === null) {
         assert.fail("wtf");

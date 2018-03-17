@@ -3,10 +3,10 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { Syntax } from "./BlockParser";
-import { CssBlockOptionsReadonly } from "./options";
+import { ReadonlyOptions } from "./options";
 
 declare module "./options" {
-  export interface CssBlockOptions {
+  export interface Options {
     importer: Importer;
     importerData: ImporterData;
   }
@@ -61,47 +61,47 @@ export interface Importer {
    * compute a unique identifier for a given import path. If `fromIdentifier` is provided,
    * the importPath can be relative to the file that is identified by it.
    */
-  identifier(fromIdentifier: FileIdentifier | null, importPath: string, options: CssBlockOptionsReadonly): FileIdentifier;
+  identifier(fromIdentifier: FileIdentifier | null, importPath: string, options: ReadonlyOptions): FileIdentifier;
   /**
    * import the file with the given metadata and return a string and meta data for it.
    */
-  import(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Promise<ImportedFile>;
+  import(identifier: FileIdentifier, options: ReadonlyOptions): Promise<ImportedFile>;
   /**
    * the default name of the block used unless the block specifies one itself.
    */
-  defaultName(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string;
+  defaultName(identifier: FileIdentifier, options: ReadonlyOptions): string;
   /**
    * If a file identifier has an on-disk representation, return an absolute path to it.
    */
-  filesystemPath(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string | null;
+  filesystemPath(identifier: FileIdentifier, options: ReadonlyOptions): string | null;
   /**
    * Returns a string meant for human consumption that identifies the file.
    * As is used in debug statements and error reporting. Unlike filesystemPath,
    * this needn't resolve to an actual file or be an absolute path.
    */
-  debugIdentifier(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string;
+  debugIdentifier(identifier: FileIdentifier, options: ReadonlyOptions): string;
   /**
    * returns the syntax the contents are written in.
    */
-  syntax(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Syntax;
+  syntax(identifier: FileIdentifier, options: ReadonlyOptions): Syntax;
 }
 
 export abstract class PathBasedImporter implements Importer {
-  identifier(fromFile: string | null, importPath: string, options: CssBlockOptionsReadonly): string {
+  identifier(fromFile: string | null, importPath: string, options: ReadonlyOptions): string {
     let fromDir = fromFile ? path.dirname(fromFile) : options.rootDir;
     return path.resolve(fromDir, importPath);
   }
-  defaultName(identifier: string, _options: CssBlockOptionsReadonly): string {
+  defaultName(identifier: string, _options: ReadonlyOptions): string {
     let name = path.parse(identifier).name;
     if (name.endsWith(".block")) {
       name = name.substr(0, name.length - 6);
     }
     return name;
   }
-  filesystemPath(identifier: FileIdentifier, _options: CssBlockOptionsReadonly): string | null {
+  filesystemPath(identifier: FileIdentifier, _options: ReadonlyOptions): string | null {
     return identifier;
   }
-  syntax(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Syntax {
+  syntax(identifier: FileIdentifier, options: ReadonlyOptions): Syntax {
     let filename = this.filesystemPath(identifier, options);
     if (filename) {
       let ext = path.extname(filename).substring(1);
@@ -123,21 +123,21 @@ export abstract class PathBasedImporter implements Importer {
       return Syntax.other;
     }
   }
-  debugIdentifier(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string {
+  debugIdentifier(identifier: FileIdentifier, options: ReadonlyOptions): string {
     return path.relative(options.rootDir, identifier);
   }
-  abstract import(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Promise<ImportedFile>;
+  abstract import(identifier: FileIdentifier, options: ReadonlyOptions): Promise<ImportedFile>;
 }
 
 export class FilesystemImporter extends PathBasedImporter {
-  filesystemPath(identifier: FileIdentifier, _options: CssBlockOptionsReadonly): string | null {
+  filesystemPath(identifier: FileIdentifier, _options: ReadonlyOptions): string | null {
     if (path.isAbsolute(identifier) && existsSync(identifier)) {
       return identifier;
     } else {
       return null;
     }
   }
-  import(identifier: FileIdentifier, options: CssBlockOptionsReadonly): Promise<ImportedFile> {
+  import(identifier: FileIdentifier, options: ReadonlyOptions): Promise<ImportedFile> {
     return new Promise((resolve, reject) => {
       fs.readFile(identifier, "utf-8", (err: whatever, data: string) => {
         if (err) {
@@ -211,7 +211,7 @@ export class PathAliasImporter extends FilesystemImporter {
       return b.path.length - a.path.length;
     });
   }
-  identifier(from: FileIdentifier | null, importPath: string, options: CssBlockOptionsReadonly) {
+  identifier(from: FileIdentifier | null, importPath: string, options: ReadonlyOptions) {
     if (path.isAbsolute(importPath)) {
       return importPath;
     }
@@ -231,7 +231,7 @@ export class PathAliasImporter extends FilesystemImporter {
       return path.resolve(options.rootDir, importPath);
     }
   }
-  debugIdentifier(identifier: FileIdentifier, options: CssBlockOptionsReadonly): string {
+  debugIdentifier(identifier: FileIdentifier, options: ReadonlyOptions): string {
     let alias = this.aliases.find(a => identifier.startsWith(a.path));
     if (alias) {
       return path.join(alias.alias, path.relative(alias.path, identifier));

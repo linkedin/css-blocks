@@ -9,7 +9,7 @@ import {
 import { assertNever, ObjectDictionary } from "@opticss/util";
 
 import { ATTR_PRESENT, IAttrToken as AttrToken } from "../BlockSyntax";
-import { OptionsReader } from "../OptionsReader";
+import { ReadonlyOptions } from "../options";
 import { OutputMode } from "../OutputMode";
 
 import { AttrValue } from "./AttrValue";
@@ -177,7 +177,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
    * @param opts Option hash configuring output mode.
    * @returns String representing output class.
    */
-  cssClass(opts: OptionsReader) {
+  cssClass(opts: ReadonlyOptions) {
     switch (opts.outputMode) {
       case OutputMode.BEM:
         let cssClassName = this.blockClass.cssClass(opts);

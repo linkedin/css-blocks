@@ -4,8 +4,7 @@ import * as postcss from "postcss";
 
 import cssBlocks, {
   BlockFactory,
-  PluginOptions,
-  PluginOptionsReader,
+  normalizeOptions,
 } from "../src";
 
 import { BEMProcessor } from "./util/BEMProcessor";
@@ -42,11 +41,10 @@ export class BlockFactoryTests extends BEMProcessor {
        :scope { extends: base; color: red; }`,
     );
     let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new PluginOptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
-    let extendsBlockPromise = factory.getBlock(importer.identifier(null, extendsFilename, reader));
-    let baseBlockPromise = factory.getBlock(importer.identifier(null, baseFilename, reader));
+    let options = normalizeOptions({importer});
+    let factory = new BlockFactory(options, postcss);
+    let extendsBlockPromise = factory.getBlock(importer.identifier(null, extendsFilename, options));
+    let baseBlockPromise = factory.getBlock(importer.identifier(null, baseFilename, options));
     return Promise.all([extendsBlockPromise, baseBlockPromise]).then(([extendsBlock, baseBlock]) => {
       assert.strictEqual(extendsBlock.base, baseBlock);
     });
@@ -75,12 +73,11 @@ export class BlockFactoryTests extends BEMProcessor {
     `);
 
     let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new PluginOptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+    let options = normalizeOptions({importer});
+    let factory = new BlockFactory(options, postcss);
 
-    let blockPromise1 = factory.getBlock(importer.identifier(null, blockFilename1, reader));
-    let blockPromise2 = factory.getBlock(importer.identifier(null, blockFilename2, reader));
+    let blockPromise1 = factory.getBlock(importer.identifier(null, blockFilename1, options));
+    let blockPromise2 = factory.getBlock(importer.identifier(null, blockFilename2, options));
     return Promise.all([blockPromise1, blockPromise2]).then(([block1, block2]) => {
       assert.equal(block1.name, "block");
       assert.equal(block2.name, "block-2");

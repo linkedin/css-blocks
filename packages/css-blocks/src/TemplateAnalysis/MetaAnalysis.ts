@@ -7,7 +7,7 @@ import { whatever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 import { Block, Style } from "../Block";
-import { OptionsReader } from "../OptionsReader";
+import { ReadonlyOptions } from "../options";
 
 import { StyleAnalysis } from "./StyleAnalysis";
 import { SerializedTemplateAnalysis, TemplateAnalysis } from "./index";
@@ -108,7 +108,7 @@ export class MetaTemplateAnalysis implements StyleAnalysis {
     return { analyses };
   }
 
-  forOptimizer(opts: OptionsReader): Array<OptimizedTemplateAnalysis<keyof TemplateTypes>> {
+  forOptimizer(opts: ReadonlyOptions): Array<OptimizedTemplateAnalysis<keyof TemplateTypes>> {
     let analyses = new Array<OptimizedTemplateAnalysis<keyof TemplateTypes>>();
     this.eachAnalysis(a => {
       analyses.push(a.forOptimizer(opts));

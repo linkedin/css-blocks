@@ -2,9 +2,9 @@ import { Preprocessors } from "./BlockParser";
 import { OutputMode } from "./OutputMode";
 
 /**
- * Options used by css-blocks for compilation and analysis.
+ * Options used by css-blocks for compilation.
  */
-export interface CssBlockOptions {
+export interface Options {
   outputMode: OutputMode;
   rootDir: string;
   /**
@@ -27,6 +27,10 @@ export interface CssBlockOptions {
 /**
  * Valid user-provided options for the CSS Blocks plugin.
  */
-export type PluginOptions = Partial<Readonly<CssBlockOptions>>;
+export type SparseOptions = Partial<Readonly<Options>>;
 
-export type CssBlockOptionsReadonly = Readonly<CssBlockOptions>;
+/**
+ * Options that can/will be read but not changed. Default
+ * values will have already been provided.
+ */
+export type ReadonlyOptions = Readonly<Options>;

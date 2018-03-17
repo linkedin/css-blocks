@@ -15,8 +15,8 @@ import {
   BlockCompiler,
   MetaTemplateAnalysis,
   MultiTemplateAnalyzer,
-  PluginOptions as CssBlocksOptions,
-  PluginOptionsReader as CssBlocksOptionsReader,
+  SparseOptions as CssBlocksOptions,
+  normalizeOptions,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
@@ -195,7 +195,7 @@ export class CssBlocksPlugin
         let completion: BlockCompilationComplete = {
           compilation: compilation,
           assetPath: this.outputCssFile,
-          mapping: new StyleMapping(result.optimizationResult.styleMapping, result.blocks, new CssBlocksOptionsReader(this.compilationOptions), result.analyses),
+          mapping: new StyleMapping(result.optimizationResult.styleMapping, result.blocks, normalizeOptions(this.compilationOptions), result.analyses),
           optimizerActions: result.optimizationResult.actions,
         };
         return completion;
@@ -253,8 +253,7 @@ export class CssBlocksPlugin
   }
 
   private compileBlocks(analysis: MetaTemplateAnalysis, cssOutputName: string): Promise<CompilationResult> {
-    let options: CssBlocksOptions = this.compilationOptions;
-    let reader = new CssBlocksOptionsReader(options);
+    let options = normalizeOptions(this.compilationOptions);
     let blockCompiler = new BlockCompiler(postcss, options);
     let numBlocks = 0;
     let optimizer = new Optimizer(this.optimizationOptions, analysis.optimizationOptions());
@@ -266,7 +265,7 @@ export class CssBlocksPlugin
         let root = blockCompiler.compile(block, block.stylesheet, analysis);
         let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
         // TODO: handle a sourcemap from compiling the block file via a preprocessor.
-        let filename = reader.importer.filesystemPath(block.identifier, reader) || reader.importer.debugIdentifier(block.identifier, reader);
+        let filename = options.importer.filesystemPath(block.identifier, options) || options.importer.debugIdentifier(block.identifier, options);
         optimizer.addSource({
           content: result.css,
           filename,
@@ -280,7 +279,7 @@ export class CssBlocksPlugin
       this.trace(`Adding analysis for ${a.template.identifier} to optimizer.`);
       this.trace(`Analysis for ${a.template.identifier} has ${a.elementCount()} elements.`);
       analyses.push(a);
-      optimizer.addAnalysis(a.forOptimizer(reader));
+      optimizer.addAnalysis(a.forOptimizer(options));
     });
     this.trace(`compiled ${numBlocks} blocks.`);
     return optimizer.optimize(cssOutputName).then(optimizationResult => {

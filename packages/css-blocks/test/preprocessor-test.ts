@@ -2,13 +2,12 @@ import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import { RawSourceMap } from "source-map";
 
-import { OptionsReader } from "../src/OptionsReader";
+import { normalizeOptions } from "../src/normalizeOptions";
 import {
   BlockFactory,
-  CssBlockOptionsReadonly,
-  PluginOptions,
   Preprocessors,
   ProcessedFile,
+  ReadonlyOptions,
   Syntax,
 } from "../src/index";
 
@@ -21,11 +20,9 @@ export class PreprocessorTest {
   @test "raises an error if a file that isn't css is missing a preprocessor."() {
     let registry = new MockImportRegistry();
     registry.registerSource("foo.block.styl", `my-stylus-var = 10px`, Syntax.stylus);
-    let options: PluginOptions = {
-      importer: registry.importer(),
-    };
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader);
+    let importer = registry.importer();
+    let options = normalizeOptions({importer});
+    let factory = new BlockFactory(options);
     return factory.getBlock("foo.block.styl").then(
       (_block) => {
         throw new Error("exception not raised!");
@@ -39,19 +36,16 @@ export class PreprocessorTest {
     let registry = new MockImportRegistry();
     registry.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
     let preprocessors: Preprocessors = {
-      other: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
+      other: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `:scope { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },
     };
-    let options: PluginOptions = {
-      importer: registry.importer(),
-      preprocessors,
-    };
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader);
+    let importer = registry.importer();
+    let options = normalizeOptions({importer, preprocessors});
+    let factory = new BlockFactory(options);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
       assert.equal(block.name, "lolwtf");
@@ -61,13 +55,13 @@ export class PreprocessorTest {
     let registry = new MockImportRegistry();
     registry.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
     let preprocessors: Preprocessors = {
-      other: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
+      other: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `:scope { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },
-      css: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
+      css: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `${content} .injected { width: 100%; }`,
         };
@@ -75,13 +69,9 @@ export class PreprocessorTest {
       },
 
     };
-    let options: PluginOptions = {
-      importer: registry.importer(),
-      preprocessors,
-    };
-
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader);
+    let importer = registry.importer();
+    let options = normalizeOptions({importer, preprocessors});
+    let factory = new BlockFactory(options);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
       assert.equal(block.name, "lolwtf");
@@ -93,13 +83,13 @@ export class PreprocessorTest {
     let registry = new MockImportRegistry();
     registry.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
     let preprocessors: Preprocessors = {
-      other: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
+      other: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `:scope { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },
-      css: (_fullPath: string, content: string, _options: CssBlockOptionsReadonly, _sourceMap?: RawSourceMap | string) => {
+      css: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `${content} .injected { width: 100%; }`,
         };
@@ -107,14 +97,12 @@ export class PreprocessorTest {
       },
 
     };
-    let options: PluginOptions = {
+    let options = normalizeOptions({
       importer: registry.importer(),
       preprocessors,
       disablePreprocessChaining: true,
-    };
-
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader);
+    });
+    let factory = new BlockFactory(options);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
       assert.equal(block.name, "lolwtf");

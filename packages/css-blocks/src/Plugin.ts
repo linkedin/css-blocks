@@ -2,24 +2,24 @@ import * as postcss from "postcss";
 
 import { BlockCompiler } from "./BlockCompiler";
 import { BlockFactory } from "./BlockParser";
-import { OptionsReader } from "./OptionsReader";
+import { normalizeOptions } from "./normalizeOptions";
 import * as errors from "./errors";
-import { PluginOptions } from "./options";
-export { PluginOptions } from "./options";
+import { SparseOptions, ReadonlyOptions } from "./options";
+export { SparseOptions } from "./options";
 
 /**
  * CSS Blocks PostCSS plugin.
  */
 export class Plugin {
-  private opts: OptionsReader;
+  private opts: ReadonlyOptions;
   private postcss: typeof postcss;
 
   /**
    * @param  postcssImpl  PostCSS instance to use
    * @param  opts  Optional plugin config options
    */
-  constructor(postcssImpl: typeof postcss, opts?: PluginOptions) {
-    this.opts = new OptionsReader(opts);
+  constructor(postcssImpl: typeof postcss, opts?: SparseOptions) {
+    this.opts = normalizeOptions(opts);
     this.postcss = postcssImpl;
   }
 
