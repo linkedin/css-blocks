@@ -6,7 +6,7 @@ import { Syntax } from "./BlockParser";
 import { ReadonlyOptions } from "./options";
 
 declare module "./options" {
-  export interface Options {
+  export interface Configuration {
     importer: Importer;
     importerData: ImporterData;
   }

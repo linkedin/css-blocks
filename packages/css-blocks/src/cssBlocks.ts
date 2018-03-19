@@ -3,13 +3,13 @@ import * as postcss from "postcss";
 import { OutputMode } from "./OutputMode";
 import { Plugin } from "./Plugin";
 import { CssBlockError, InvalidBlockSyntax, MissingSourcePath } from "./errors";
-import { Options } from "./options";
+import { Configuration } from "./options";
 
 // This is ugly but it's the only thing I have been able to make work.
 // I welcome a patch that cleans this up.
 
 type temp = {
-  (postcssImpl: typeof postcss): (opts?: Partial<Readonly<Options>>) => postcss.Plugin<Partial<Readonly<Options>>>;
+  (postcssImpl: typeof postcss): (opts?: Partial<Readonly<Configuration>>) => postcss.Plugin<Partial<Readonly<Configuration>>>;
   OutputMode: typeof OutputMode;
   CssBlockError: typeof CssBlockError;
   InvalidBlockSyntax: typeof InvalidBlockSyntax;
@@ -19,7 +19,7 @@ type temp = {
 function makeApi(): temp {
   let cssBlocks: temp;
   cssBlocks = <temp>function(postcssImpl: typeof postcss) {
-    return (opts?: Partial<Readonly<Options>>) => {
+    return (opts?: Partial<Readonly<Configuration>>) => {
       let plugin = new Plugin(postcssImpl, opts);
       return plugin.process.bind(plugin);
     };
