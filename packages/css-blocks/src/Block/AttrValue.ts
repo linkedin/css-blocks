@@ -7,8 +7,8 @@ import {
 import { assertNever, assertNeverCalled } from "@opticss/util";
 
 import { ATTR_PRESENT } from "../BlockSyntax";
-import { ReadonlyOptions } from "../options";
 import { OutputMode } from "../OutputMode";
+import { ReadonlyOptions } from "../options";
 
 import { Attribute } from "./Attribute";
 import { Block } from "./Block";

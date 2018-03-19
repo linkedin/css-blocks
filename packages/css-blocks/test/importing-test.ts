@@ -5,16 +5,16 @@ import * as path from "path";
 
 import { Syntax } from "../src/BlockParser";
 import {
-  normalizeOptions,
-} from "../src/normalizeOptions";
-import {
   filesystemImporter,
   Importer,
   PathAliasImporter,
 } from "../src/importing";
 import {
-  SparseOptions,
+  normalizeOptions,
+} from "../src/normalizeOptions";
+import {
   ReadonlyOptions,
+  SparseOptions,
 } from "../src/options";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");

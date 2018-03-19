@@ -2,9 +2,9 @@ import * as postcss from "postcss";
 
 import { BlockCompiler } from "./BlockCompiler";
 import { BlockFactory } from "./BlockParser";
-import { normalizeOptions } from "./normalizeOptions";
 import * as errors from "./errors";
-import { SparseOptions, ReadonlyOptions } from "./options";
+import { normalizeOptions } from "./normalizeOptions";
+import { ReadonlyOptions, SparseOptions } from "./options";
 export { SparseOptions } from "./options";
 
 /**

@@ -2,7 +2,7 @@ import { assertNeverCalled } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { ReadonlyOptions, RulesetContainer, Block, BlockClass, SourceLocation } from "../../src";
+import { Block, BlockClass, ReadonlyOptions, RulesetContainer, SourceLocation } from "../../src";
 import { Inheritable } from "../../src/Block/Inheritable";
 
 type RootNode = Inheritable<

@@ -4,9 +4,9 @@ import * as postcss from "postcss";
 
 import { Block } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockParser";
-import { normalizeOptions } from "../../src/normalizeOptions";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import * as cssBlocks from "../../src/errors";
+import { normalizeOptions } from "../../src/normalizeOptions";
 import { SparseOptions } from "../../src/options";
 import { assertParseError } from "../util/assertError";
 

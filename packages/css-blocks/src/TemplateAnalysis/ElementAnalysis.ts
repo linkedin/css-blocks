@@ -30,7 +30,7 @@ import {
   Style,
 } from "../Block";
 import {
-  ReadonlyOptions
+  ReadonlyOptions,
 } from "../options";
 import {
   unionInto,

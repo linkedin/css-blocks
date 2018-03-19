@@ -9,8 +9,8 @@ import {
 import { assertNever, ObjectDictionary } from "@opticss/util";
 
 import { ATTR_PRESENT, IAttrToken as AttrToken } from "../BlockSyntax";
-import { ReadonlyOptions } from "../options";
 import { OutputMode } from "../OutputMode";
+import { ReadonlyOptions } from "../options";
 
 import { AttrValue } from "./AttrValue";
 import { Block } from "./Block";

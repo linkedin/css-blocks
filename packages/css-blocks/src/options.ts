@@ -4,7 +4,7 @@ import { OutputMode } from "./OutputMode";
 /**
  * Options used by css-blocks for compilation.
  */
-export interface Options {
+export interface Configuration {
   outputMode: OutputMode;
   rootDir: string;
   /**

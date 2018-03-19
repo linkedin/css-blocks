@@ -3,8 +3,8 @@ import { isString } from "util";
 
 import { ATTR_PRESENT, IAttrToken as AttrToken, ROOT_CLASS } from "../BlockSyntax";
 import { BlockPath } from "../BlockSyntax";
-import { ReadonlyOptions } from "../options";
 import { OutputMode } from "../OutputMode";
+import { ReadonlyOptions } from "../options";
 
 import { AttrValue } from "./AttrValue";
 import { Attribute } from "./Attribute";

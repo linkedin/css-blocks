@@ -6,9 +6,9 @@ import * as postcss from "postcss";
 
 import { Attribute, AttrValue, Block, BlockClass } from "../src/Block";
 import { BlockFactory } from "../src/BlockParser";
-import { normalizeOptions } from "../src/normalizeOptions";
 import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAnalysis";
 import * as cssBlocks from "../src/errors";
+import { normalizeOptions } from "../src/normalizeOptions";
 import { SparseOptions } from "../src/options";
 
 import { MockImportRegistry } from "./util/MockImportRegistry";
@@ -339,7 +339,6 @@ export class TemplateAnalysisTests {
       "blocks/a.css",
       `.foo { border: 3px; }`,
     );
-
 
     let css = `
       @block-reference a from "a.css";

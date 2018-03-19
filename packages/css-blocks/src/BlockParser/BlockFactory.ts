@@ -6,8 +6,8 @@ import { RawSourceMap } from "source-map";
 
 import { Block } from "../Block";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
-import { ReadonlyOptions, SparseOptions } from "../options";
 import { normalizeOptions } from "../normalizeOptions";
+import { ReadonlyOptions, SparseOptions } from "../options";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";

@@ -2,8 +2,8 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { normalizeOptions } from "../src/normalizeOptions";
 import cssBlocks = require("../src/cssBlocks");
+import { normalizeOptions } from "../src/normalizeOptions";
 
 @suite("Setting up")
 export class SetupTests {

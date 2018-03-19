@@ -8,9 +8,9 @@ import {
   parseBlockDebug,
   ROOT_CLASS,
 } from "../BlockSyntax";
-import { normalizeOptions } from "../normalizeOptions";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
-import { SparseOptions, ReadonlyOptions } from "../options";
+import { normalizeOptions } from "../normalizeOptions";
+import { ReadonlyOptions, SparseOptions } from "../options";
 
 import { ConflictResolver } from "./ConflictResolver";
 /**

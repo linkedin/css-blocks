@@ -1,9 +1,9 @@
 import { StyleMapping as OptimizedMapping, TemplateTypes } from "@opticss/template-api";
 
 import { Block, Style } from "../Block";
-import { ReadonlyOptions } from "../options";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { ElementAnalysis } from "../TemplateAnalysis/ElementAnalysis";
+import { ReadonlyOptions } from "../options";
 
 import { IndexedClassRewrite } from "./ClassRewrite";
 import { IndexedClassMapping, RewriteMapping } from "./RewriteMapping";

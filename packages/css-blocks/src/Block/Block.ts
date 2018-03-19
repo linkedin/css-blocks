@@ -16,10 +16,10 @@ import {
 } from "../BlockParser";
 import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
-import { ReadonlyOptions } from "../options";
 import { SourceLocation } from "../SourceLocation";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
+import { ReadonlyOptions } from "../options";
 
 import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";

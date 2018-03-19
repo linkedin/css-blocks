@@ -1,7 +1,6 @@
 import {
-  Options,
-  SparseOptions,
   ReadonlyOptions,
+  SparseOptions,
 } from "./options";
 
 import { OutputMode } from "./OutputMode";
@@ -14,7 +13,7 @@ import {
 
 import { Preprocessors } from "./BlockParser";
 
-const DEFAULTS: Options = {
+const DEFAULTS: ReadonlyOptions = {
   outputMode: OutputMode.BEM,
   importer: filesystemImporter,
   rootDir: process.cwd(),
@@ -29,7 +28,7 @@ const DEFAULTS: Options = {
  * passed.
  */
 class OptionsReader implements ReadonlyOptions {
-  private _opts: Options;
+  private _opts: ReadonlyOptions;
 
   constructor(options: SparseOptions = {}, defaults: SparseOptions = {}) {
     this._opts = {...DEFAULTS, ...defaults, ...options};

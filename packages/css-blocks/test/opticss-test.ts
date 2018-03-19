@@ -17,10 +17,10 @@ import * as postcss from "postcss";
 import { AttrValue, Block, BlockClass } from "../src/Block";
 import { BlockCompiler } from "../src/BlockCompiler";
 import { BlockFactory } from "../src/BlockParser";
-import { normalizeOptions } from "../src/normalizeOptions";
 import { TemplateAnalysis } from "../src/TemplateAnalysis";
 import { ElementAnalysis } from "../src/TemplateAnalysis/ElementAnalysis";
 import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
+import { normalizeOptions } from "../src/normalizeOptions";
 import { SparseOptions } from "../src/options";
 
 type BlockAndRoot = [Block, postcss.Container];
