@@ -7,7 +7,7 @@ import { whatever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 import { Block, Style } from "../Block";
-import { ResolvedConfiguration } from "../options";
+import { ResolvedConfiguration } from "../configuration";
 
 import { StyleAnalysis } from "./StyleAnalysis";
 import { SerializedTemplateAnalysis, TemplateAnalysis } from "./index";

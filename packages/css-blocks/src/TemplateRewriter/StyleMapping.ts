@@ -3,7 +3,7 @@ import { StyleMapping as OptimizedMapping, TemplateTypes } from "@opticss/templa
 import { Block, Style } from "../Block";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { ElementAnalysis } from "../TemplateAnalysis/ElementAnalysis";
-import { ResolvedConfiguration } from "../options";
+import { ResolvedConfiguration } from "../configuration";
 
 import { IndexedClassRewrite } from "./ClassRewrite";
 import { IndexedClassMapping, RewriteMapping } from "./RewriteMapping";

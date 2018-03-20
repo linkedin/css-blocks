@@ -5,17 +5,17 @@ import * as path from "path";
 
 import { Syntax } from "../src/BlockParser";
 import {
+  normalizeOptions,
+} from "../src/configuration/normalizeOptions";
+import {
+  Options,
+  ResolvedConfiguration,
+} from "../src/configuration/types";
+import {
   filesystemImporter,
   Importer,
   PathAliasImporter,
 } from "../src/importing";
-import {
-  normalizeOptions,
-} from "../src/normalizeOptions";
-import {
-  Options,
-  ResolvedConfiguration,
-} from "../src/options";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.resolve(FIXTURES, "filesystemImporter");

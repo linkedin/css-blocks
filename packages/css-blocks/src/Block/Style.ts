@@ -1,6 +1,6 @@
 import { Attr } from "@opticss/element-analysis";
 
-import { ResolvedConfiguration } from "../options";
+import { ResolvedConfiguration } from "../configuration";
 import { unionInto } from "../util/unionInto";
 
 import { AnyNode, Inheritable } from "./Inheritable";

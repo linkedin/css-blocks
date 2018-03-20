@@ -6,9 +6,8 @@ import * as postcss from "postcss";
 import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockParser";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { normalizeOptions, Options } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
-import { normalizeOptions } from "../../src/normalizeOptions";
-import { Options } from "../../src/options";
 
 import { MockImportRegistry } from "../util/MockImportRegistry";
 import { assertParseError } from "../util/assertError";

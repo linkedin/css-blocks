@@ -1,19 +1,20 @@
-import { Preprocessors } from "./BlockParser";
-import {
-  OutputMode,
-} from "./OutputMode";
+import { Preprocessors } from "../BlockParser";
 import {
   filesystemImporter,
   Importer,
   ImporterData,
-} from "./importing";
+} from "../importing";
+
+import {
+  OutputMode,
+} from "./OutputMode";
 import {
   Configuration,
   ConfigurationObjectKeys,
   ConfigurationSimpleKeys,
   Options,
   ResolvedConfiguration,
-} from "./options";
+} from "./types";
 
 const CONFIG_OBJECT_KEYS: Array<ConfigurationObjectKeys> = [
   "importerData",

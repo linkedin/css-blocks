@@ -21,7 +21,7 @@ import { IdentGenerator } from "opticss";
 
 import { Block, Style } from "../Block";
 import { BlockFactory } from "../BlockParser";
-import { ResolvedConfiguration } from "../options";
+import { ResolvedConfiguration } from "../configuration";
 
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
 import { StyleAnalysis } from "./StyleAnalysis";

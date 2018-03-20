@@ -3,7 +3,7 @@ import * as postcss from "postcss";
 
 import { Block } from "../../Block";
 import { BLOCK_DEBUG, parseBlockDebug } from "../../BlockSyntax";
-import { ResolvedConfiguration } from "../../options";
+import { ResolvedConfiguration } from "../../configuration";
 
 /**
  * Process all `@block-debug` statements, output debug statement to console or in comment as requested.

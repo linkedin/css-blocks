@@ -6,11 +6,11 @@ import * as postcss from "postcss";
 import {
   BlockFactory,
 } from "../src/BlockParser";
-import cssBlocks = require("../src/cssBlocks");
-import { AttrValue } from "../src/index";
 import {
   normalizeOptions,
-} from "../src/normalizeOptions";
+} from "../src/configuration/normalizeOptions";
+import cssBlocks = require("../src/cssBlocks");
+import { AttrValue } from "../src/index";
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";

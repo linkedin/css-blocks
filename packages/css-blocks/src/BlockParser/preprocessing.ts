@@ -6,7 +6,7 @@ import {
 
 import {
   ResolvedConfiguration,
-} from "../options";
+} from "../configuration/types";
 
 export enum Syntax {
   sass = "sass",

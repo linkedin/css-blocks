@@ -20,8 +20,7 @@ import { BlockFactory } from "../src/BlockParser";
 import { TemplateAnalysis } from "../src/TemplateAnalysis";
 import { ElementAnalysis } from "../src/TemplateAnalysis/ElementAnalysis";
 import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
-import { normalizeOptions } from "../src/normalizeOptions";
-import { Options } from "../src/options";
+import { normalizeOptions, Options } from "../src/configuration";
 
 type BlockAndRoot = [Block, postcss.Container];
 

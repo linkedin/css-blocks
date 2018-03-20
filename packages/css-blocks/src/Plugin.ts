@@ -2,10 +2,9 @@ import * as postcss from "postcss";
 
 import { BlockCompiler } from "./BlockCompiler";
 import { BlockFactory } from "./BlockParser";
+import { Options, ResolvedConfiguration } from "./configuration";
+import { normalizeOptions } from "./configuration/normalizeOptions";
 import * as errors from "./errors";
-import { normalizeOptions } from "./normalizeOptions";
-import { Options, ResolvedConfiguration } from "./options";
-export { Options } from "./options";
 
 /**
  * CSS Blocks PostCSS plugin.

@@ -9,8 +9,11 @@ import {
   ROOT_CLASS,
 } from "../BlockSyntax";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
-import { normalizeOptions } from "../normalizeOptions";
-import { Options, ResolvedConfiguration } from "../options";
+import {
+  normalizeOptions,
+  Options,
+  ResolvedConfiguration,
+} from "../configuration";
 
 import { ConflictResolver } from "./ConflictResolver";
 /**

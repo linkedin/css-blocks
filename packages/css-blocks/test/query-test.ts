@@ -4,8 +4,7 @@ import * as postcss from "postcss";
 
 import { Block } from "../src/Block";
 import { BlockFactory } from "../src/BlockParser";
-import { normalizeOptions } from "../src/normalizeOptions";
-import { Options } from "../src/options";
+import { normalizeOptions, Options } from "../src/configuration";
 import { QueryKeySelector } from "../src/query";
 
 type BlockAndRoot = [Block, postcss.Container];

@@ -1,8 +1,8 @@
 import * as perfectionist from "perfectionist";
 import * as postcss from "postcss";
 
+import { Options } from "../../src/configuration";
 import cssBlocks = require("../../src/cssBlocks");
-import { Options } from "../../src/options";
 
 export class BEMProcessor {
   process(filename: string, contents: string, cssBlocksOpts?: Options) {

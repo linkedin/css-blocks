@@ -2,6 +2,7 @@ import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import { RawSourceMap } from "source-map";
 
+import { normalizeOptions } from "../src/configuration";
 import {
   BlockFactory,
   Preprocessors,
@@ -9,7 +10,6 @@ import {
   ResolvedConfiguration,
   Syntax,
 } from "../src/index";
-import { normalizeOptions } from "../src/normalizeOptions";
 
 import {
   MockImportRegistry,

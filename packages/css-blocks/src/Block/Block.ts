@@ -17,9 +17,9 @@ import {
 import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { SourceLocation } from "../SourceLocation";
+import { ResolvedConfiguration } from "../configuration/types";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
-import { ResolvedConfiguration } from "../options";
 
 import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";

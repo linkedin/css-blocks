@@ -1,4 +1,6 @@
-import { Preprocessors } from "./BlockParser";
+import { Preprocessors } from "../BlockParser";
+import { Importer, ImporterData } from "../importing/types";
+
 import { OutputMode } from "./OutputMode";
 
 /**
@@ -13,10 +15,17 @@ export interface Configuration {
    */
   maxConcurrentCompiles: number;
   /**
-    * A preprocessor function can be declared by syntax.
-    */
+   * A preprocessor function can be declared by syntax.
+   */
   preprocessors: Preprocessors;
 
+  /**
+   * An importer is an object that is in charge of findi
+   *
+   */
+  importer: Importer;
+
+  importerData: ImporterData;
   /**
    * If a preprocessor function is declared for `css`, all blocks will be ran through it, even those that were preprocessed for another syntax.
    * this can be disabled by setting `disablePreprocessChaining` to true.

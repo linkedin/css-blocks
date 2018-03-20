@@ -4,8 +4,7 @@ import { isString } from "util";
 
 import { ATTR_PRESENT, IAttrToken as AttrToken, ROOT_CLASS } from "../BlockSyntax";
 import { BlockPath } from "../BlockSyntax";
-import { OutputMode } from "../OutputMode";
-import { ResolvedConfiguration } from "../options";
+import { OutputMode, ResolvedConfiguration } from "../configuration";
 
 import { AttrValue } from "./AttrValue";
 import { Attribute } from "./Attribute";

@@ -5,9 +5,9 @@ import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
 import { Block } from "../Block";
+import { normalizeOptions } from "../configuration/normalizeOptions";
+import { Options, ResolvedConfiguration } from "../configuration/types";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
-import { normalizeOptions } from "../normalizeOptions";
-import { Options, ResolvedConfiguration } from "../options";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";

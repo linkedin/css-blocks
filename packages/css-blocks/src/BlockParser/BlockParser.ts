@@ -1,10 +1,10 @@
 import * as postcss from "postcss";
 
 import { Block } from "../Block";
+import { normalizeOptions } from "../configuration/normalizeOptions";
+import { Options, ResolvedConfiguration } from "../configuration/types";
 import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
-import { normalizeOptions } from "../normalizeOptions";
-import { Options, ResolvedConfiguration } from "../options";
 
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { constructBlock } from "./features/construct-block";
