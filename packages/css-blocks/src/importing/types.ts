@@ -1,7 +1,7 @@
 import { ObjectDictionary, whatever } from "@opticss/util";
 
 import { Syntax } from "../BlockParser";
-import { ResolvedConfiguration } from "../configuration/types";
+import { ResolvedConfiguration } from "../configuration";
 
 export type ImporterData = ObjectDictionary<whatever>;
 

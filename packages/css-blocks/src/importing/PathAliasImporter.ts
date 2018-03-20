@@ -1,7 +1,7 @@
 import { ObjectDictionary } from "@opticss/util";
 import * as path from "path";
 
-import { ResolvedConfiguration } from "../configuration/types";
+import { ResolvedConfiguration } from "../configuration";
 
 import { FilesystemImporter } from "./FilesystemImporter";
 import { existsSync } from "./existsSync";

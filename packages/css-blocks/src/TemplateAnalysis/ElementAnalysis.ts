@@ -31,7 +31,7 @@ import {
 } from "../Block";
 import {
   ResolvedConfiguration,
-} from "../configuration/types";
+} from "../configuration";
 import {
   unionInto,
 } from "../util/unionInto";

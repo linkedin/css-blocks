@@ -7,7 +7,7 @@ import { Block, Style } from "../Block";
 import { getBlockNode } from "../BlockParser";
 import { RESOLVE_RE } from "../BlockSyntax";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
-import { ResolvedConfiguration } from "../configuration/types";
+import { ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";
 import { QueryKeySelector } from "../query";
 
