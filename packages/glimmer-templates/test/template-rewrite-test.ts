@@ -22,7 +22,6 @@ function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer): Promise<CSSAndMap
   let blockOpts = analyzer.project.cssBlocksOpts;
   return analyzer.analyze().then(analysis => {
     let blocks = analysis.transitiveBlockDependencies();
-    console.log("test opts", blockOpts);
     let optimizerAnalysis = analysis.forOptimizer(blockOpts);
     let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
     let compiler = new BlockCompiler(postcss, blockOpts);

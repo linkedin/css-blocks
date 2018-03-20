@@ -6,8 +6,8 @@ import {
 import { whatever } from "@opticss/util";
 import {
   Block,
-  normalizeOptions,
   Options as CSSBlocksOptions,
+  resolveConfiguration,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
   TemplateAnalysis,
@@ -45,7 +45,7 @@ export class Rewriter implements NodeVisitor {
     this.template      = <ResolvedFile>analysis.template;
     this.block         = analysis.blocks[""];
     this.styleMapping  = styleMapping;
-    this.cssBlocksOpts = normalizeOptions(cssBlocksOpts);
+    this.cssBlocksOpts = resolveConfiguration(cssBlocksOpts);
     this.elementCount  = 0;
     this.elementAnalyzer = new ElementAnalyzer(this.block, this.template, this.cssBlocksOpts);
   }

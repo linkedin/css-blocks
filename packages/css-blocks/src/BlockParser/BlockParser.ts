@@ -1,8 +1,7 @@
 import * as postcss from "postcss";
 
 import { Block } from "../Block";
-import { normalizeOptions } from "../configuration/normalizeOptions";
-import { Options, ResolvedConfiguration } from "../configuration/types";
+import { Options, resolveConfiguration, ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
 
@@ -36,7 +35,7 @@ export class BlockParser {
   private factory: BlockFactory;
 
   constructor(opts: Options, factory: BlockFactory) {
-    this.config = normalizeOptions(opts);
+    this.config = resolveConfiguration(opts);
     this.factory = factory;
   }
 

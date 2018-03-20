@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import { RawSourceMap } from "source-map";
 
-import { normalizeOptions } from "../src/configuration";
+import { resolveConfiguration } from "../src/configuration";
 import {
   BlockFactory,
   Preprocessors,
@@ -21,7 +21,7 @@ export class PreprocessorTest {
     let registry = new MockImportRegistry();
     registry.registerSource("foo.block.styl", `my-stylus-var = 10px`, Syntax.stylus);
     let importer = registry.importer();
-    let options = normalizeOptions({importer});
+    let options = resolveConfiguration({importer});
     let factory = new BlockFactory(options);
     return factory.getBlock("foo.block.styl").then(
       (_block) => {
@@ -44,7 +44,7 @@ export class PreprocessorTest {
       },
     };
     let importer = registry.importer();
-    let options = normalizeOptions({importer, preprocessors});
+    let options = resolveConfiguration({importer, preprocessors});
     let factory = new BlockFactory(options);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
@@ -70,7 +70,7 @@ export class PreprocessorTest {
 
     };
     let importer = registry.importer();
-    let options = normalizeOptions({importer, preprocessors});
+    let options = resolveConfiguration({importer, preprocessors});
     let factory = new BlockFactory(options);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
@@ -97,7 +97,7 @@ export class PreprocessorTest {
       },
 
     };
-    let options = normalizeOptions({
+    let options = resolveConfiguration({
       importer: registry.importer(),
       preprocessors,
       disablePreprocessChaining: true,

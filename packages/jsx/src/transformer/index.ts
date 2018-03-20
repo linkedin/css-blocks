@@ -1,5 +1,5 @@
 import { ObjectDictionary, whatever } from "@opticss/util";
-import { normalizeOptions as normalizeOptions, Options as CSSBlocksOptions, ResolvedConfiguration as CSSBlocksConfiguration, StyleMapping } from "css-blocks";
+import { Options as CSSBlocksOptions, resolveConfiguration as resolveBlocksConfiguration, ResolvedConfiguration as CSSBlocksConfiguration, StyleMapping } from "css-blocks";
 
 export interface RewriterOptions {
   meta?: ObjectDictionary<whatever>;
@@ -21,7 +21,7 @@ export class CSSBlocksJSXTransformer {
   blocks: ObjectDictionary<StyleMapping> = {};
 
   constructor(opts?: RewriterOptions) {
-    this.cssBlockOptions = normalizeOptions(opts && opts.cssBlocks && opts.cssBlocks.compilationOptions);
+    this.cssBlockOptions = resolveBlocksConfiguration(opts && opts.cssBlocks && opts.cssBlocks.compilationOptions);
     this.styleMapping = opts && opts.cssBlocks && opts.cssBlocks.styleMapping || null;
   }
 

@@ -10,8 +10,8 @@ import {
   Block,
   BlockFactory,
   MultiTemplateAnalyzer,
-  normalizeOptions as normalizeOptions,
   Options as CSSBlocksOptions,
+  resolveConfiguration as resolveBlocksOptions,
   ResolvedConfiguration as CSSBlocksConfiguration,
 } from "css-blocks";
 import * as typescript from "typescript";
@@ -216,7 +216,7 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
     this.entryPoint = entryPoint;
     this.name = name;
     this.options = options;
-    this.cssBlocksOptions = normalizeOptions(options.compilationOptions || {});
+    this.cssBlocksOptions = resolveBlocksOptions(options.compilationOptions || {});
     this._blockFactory = new BlockFactory(this.cssBlocksOptions);
   }
   analyze(): Promise<MetaAnalysis> {

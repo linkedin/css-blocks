@@ -5,7 +5,7 @@ import * as postcss from "postcss";
 import { Block } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockParser";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
-import { normalizeOptions, Options } from "../../src/configuration";
+import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
 import { assertParseError } from "../util/assertError";
 
@@ -14,7 +14,7 @@ type BlockAndRoot = [Block, postcss.Container];
 @suite("Class Pairs Validator")
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let options = normalizeOptions(opts);
+    let options = resolveConfiguration(opts);
     let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, { from: filename });
     return factory.parse(root, filename, blockName).then((block) => {
@@ -26,7 +26,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
 
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }

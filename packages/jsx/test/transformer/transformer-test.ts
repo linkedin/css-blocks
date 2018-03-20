@@ -2,7 +2,7 @@ import c$$ from "@css-blocks/runtime";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as babel from "babel-core";
 import { assert } from "chai";
-import { BlockCompiler, normalizeOptions, Options as CSSBlocksOptions, StyleMapping } from "css-blocks";
+import { BlockCompiler, Options as CSSBlocksOptions, resolveConfiguration as resolveBlocksConfiguration, StyleMapping } from "css-blocks";
 import { skip, suite, test } from "mocha-typescript";
 import { OptiCSSOptions, OptimizationResult, Optimizer  } from "opticss";
 import * as postcss from "postcss";
@@ -25,7 +25,7 @@ function minify(s: string) {
 function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: CSSBlocksOptions = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult; css: OptimizationResult}> {
   let filename = analysis.template.identifier;
   let optimizer = new Optimizer(optimizationOpts, templateOpts);
-  let blockOpts = normalizeOptions(cssBlocksOptions);
+  let blockOpts = resolveBlocksConfiguration(cssBlocksOptions);
   optimizer.addAnalysis(analysis.forOptimizer(blockOpts));
   let blocks = analysis.transitiveBlockDependencies();
   let compiler = new BlockCompiler(postcss, blockOpts);

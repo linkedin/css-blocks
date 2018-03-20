@@ -7,8 +7,8 @@ import {
   BlockFactory,
 } from "../src/BlockParser";
 import {
-  normalizeOptions,
-} from "../src/configuration/normalizeOptions";
+  resolveConfiguration,
+} from "../src/configuration";
 import cssBlocks = require("../src/cssBlocks");
 import { AttrValue } from "../src/index";
 
@@ -39,7 +39,7 @@ export class AttributeContainerTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options = normalizeOptions({importer});
+    let options = resolveConfiguration({importer});
     let factory = new BlockFactory(options, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, options)).then(block => {
@@ -70,7 +70,7 @@ export class AttributeContainerTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options = normalizeOptions({importer});
+    let options = resolveConfiguration({importer});
     let factory = new BlockFactory(options, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, options)).then(block => {
@@ -112,7 +112,7 @@ export class AttributeContainerTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options = normalizeOptions({importer});
+    let options = resolveConfiguration({importer});
     let factory = new BlockFactory(options, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, options)).then(block => {

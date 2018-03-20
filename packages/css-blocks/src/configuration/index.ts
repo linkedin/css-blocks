@@ -1,3 +1,3 @@
 export * from "./types";
 export * from "./OutputMode";
-export * from "./normalizeOptions";
+export * from "./resolver";

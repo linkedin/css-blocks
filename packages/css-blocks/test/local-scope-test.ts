@@ -4,7 +4,7 @@ import * as postcss from "postcss";
 
 import {
   BlockFactory,
-  normalizeOptions,
+  resolveConfiguration,
 } from "../src";
 import cssBlocks = require("../src/cssBlocks");
 
@@ -36,7 +36,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options = normalizeOptions({importer});
+    let options = resolveConfiguration({importer});
     let factory = new BlockFactory(options, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, options)).then(block => {
@@ -72,7 +72,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options = normalizeOptions({importer});
+    let options = resolveConfiguration({importer});
     let factory = new BlockFactory(options, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, options)).then(refblock => {
@@ -113,7 +113,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     );
 
     let importer = imports.importer();
-    let options = normalizeOptions({importer});
+    let options = resolveConfiguration({importer});
     let factory = new BlockFactory(options, postcss);
 
     return factory.getBlock(importer.identifier(null, filename, options)).then(refblock => {

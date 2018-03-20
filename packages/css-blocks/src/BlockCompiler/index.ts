@@ -10,8 +10,8 @@ import {
 } from "../BlockSyntax";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
 import {
-  normalizeOptions,
   Options,
+  resolveConfiguration,
   ResolvedConfiguration,
 } from "../configuration";
 
@@ -25,7 +25,7 @@ export class BlockCompiler {
   private postcss: typeof postcss;
 
   constructor(postcssImpl: typeof postcss, opts?: Options) {
-    this.config = normalizeOptions(opts);
+    this.config = resolveConfiguration(opts);
     this.postcss = postcssImpl;
   }
 

@@ -5,12 +5,10 @@ import * as path from "path";
 
 import { Syntax } from "../src/BlockParser";
 import {
-  normalizeOptions,
-} from "../src/configuration/normalizeOptions";
-import {
   Options,
+  resolveConfiguration,
   ResolvedConfiguration,
-} from "../src/configuration/types";
+} from "../src/configuration";
 import {
   filesystemImporter,
   Importer,
@@ -22,7 +20,7 @@ const FSI_FIXTURES = path.resolve(FIXTURES, "filesystemImporter");
 const ALIAS_FIXTURES = path.resolve(FIXTURES, "pathAliasImporter");
 
 function getOptions(options?: Options): ResolvedConfiguration {
-  return normalizeOptions(options, {rootDir: path.join(FSI_FIXTURES)});
+  return resolveConfiguration(options, {rootDir: path.join(FSI_FIXTURES)});
 }
 
 function testFSImporter(name: string, importer: Importer) {

@@ -7,7 +7,7 @@ import {
 } from "@opticss/template-api";
 import {
   Block,
-  normalizeOptions as normalizeBlockOptions,
+  resolveConfiguration as resolveBlockConfiguration,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
   TemplateAnalysis,
@@ -41,7 +41,7 @@ function trackBlockDependencies(loaderContext: LoaderContext, blocks: Set<Block>
 export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginBuilder> {
   debug(`loader adapter for:`, loaderContext.resourcePath);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
-  let options = normalizeBlockOptions(loaderContext.cssBlocks.compilationOptions);
+  let options = resolveBlockConfiguration(loaderContext.cssBlocks.compilationOptions);
   let mappingPromises = new Array<Promise<StyleMapping | void>>();
   cssFileNames.forEach(filename => {
     mappingPromises.push(loaderContext.cssBlocks.mappings[filename]);

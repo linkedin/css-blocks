@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { normalizeOptions } from "../src/configuration";
+import { resolveConfiguration } from "../src/configuration";
 import cssBlocks = require("../src/cssBlocks");
 
 @suite("Setting up")
@@ -13,7 +13,7 @@ export class SetupTests {
     assert(processor);
   }
   @test "default options"() {
-    const options = normalizeOptions({});
+    const options = resolveConfiguration({});
     assert.equal(options.outputMode, cssBlocks.OutputMode.BEM);
   }
   @test "a filename is required"() {

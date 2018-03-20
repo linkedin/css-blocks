@@ -7,7 +7,7 @@ import * as postcss from "postcss";
 import { Attribute, AttrValue, Block, BlockClass } from "../src/Block";
 import { BlockFactory } from "../src/BlockParser";
 import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAnalysis";
-import { normalizeOptions, Options } from "../src/configuration";
+import { Options, resolveConfiguration } from "../src/configuration";
 import * as cssBlocks from "../src/errors";
 
 import { MockImportRegistry } from "./util/MockImportRegistry";
@@ -20,7 +20,7 @@ type BlockAndRoot = [Block, postcss.Container];
 @suite("Template Analysis")
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let options = normalizeOptions(opts);
+    let options = resolveConfiguration(opts);
     let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, {from: filename});
     return factory.parse(root, filename, blockName).then((block) => {
@@ -28,7 +28,7 @@ export class TemplateAnalysisTests {
     });
   }
   @test "can add styles from a block"() {
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
@@ -59,7 +59,7 @@ export class TemplateAnalysisTests {
     });
   }
   @test "can add dynamic styles from a block"() {
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
@@ -92,7 +92,7 @@ export class TemplateAnalysisTests {
   }
 
   @test "can correlate styles"() {
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
@@ -132,7 +132,7 @@ export class TemplateAnalysisTests {
   @skip
   @test "uncomment"() {}
   @test "can add styles from two blocks"() {
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
@@ -179,7 +179,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     imports.registerSource(
       "blocks/a.css",
@@ -230,7 +230,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       [state|color]   { color: red; }
@@ -269,7 +269,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       [state|color=red]    { color: red; }
@@ -332,7 +332,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     imports.registerSource(
       "blocks/a.css",
@@ -393,7 +393,7 @@ export class TemplateAnalysisTests {
       `,
     );
 
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       @block-reference a from "a.css";
@@ -444,7 +444,7 @@ export class TemplateAnalysisTests {
       `,
     );
 
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       @block-reference a from "a.css";
@@ -491,7 +491,7 @@ export class TemplateAnalysisTests {
       `,
     );
 
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       @block-reference a from "a.css";
@@ -510,7 +510,7 @@ export class TemplateAnalysisTests {
       element.addDynamicClasses({condition: null, whenTrue: [block.getClass("asdf")!], whenFalse: [block.getClass("fdsa")!]});
       element.addStaticAttr(klass, klass.getAttributeValue("[state|bar]")!);
       analysis.endElement(element);
-      let options = normalizeOptions({});
+      let options = resolveConfiguration({});
       let optimizerAnalysis = analysis.forOptimizer(options);
       let result = optimizerAnalysis.serialize();
       let expectedResult: SerializedOptimizedAnalysis<"Opticss.Template"> = {
@@ -560,7 +560,7 @@ export class TemplateAnalysisTests {
   @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -586,7 +586,7 @@ export class TemplateAnalysisTests {
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { "no-class-pairs": false });
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -608,7 +608,7 @@ export class TemplateAnalysisTests {
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -627,7 +627,7 @@ export class TemplateAnalysisTests {
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -654,7 +654,7 @@ export class TemplateAnalysisTests {
   @test "adding both root and a state from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -678,7 +678,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     imports.registerSource(
       "blocks/a.css",
@@ -726,7 +726,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       :scope { color: blue; }
@@ -748,7 +748,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       .foo { color: blue; }
@@ -773,7 +773,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     imports.registerSource(
       "blocks/a.css",
@@ -815,7 +815,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     imports.registerSource(
       "blocks/a.css",
@@ -864,7 +864,7 @@ export class TemplateAnalysisTests {
     let registry = new MockImportRegistry();
     registry.registerSource("test.css", source);
     let testImporter = registry.importer();
-    let options = normalizeOptions({
+    let options = resolveConfiguration({
       importer: testImporter
     });
     let factory = new BlockFactory(options, postcss);

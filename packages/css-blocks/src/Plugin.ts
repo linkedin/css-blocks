@@ -2,8 +2,7 @@ import * as postcss from "postcss";
 
 import { BlockCompiler } from "./BlockCompiler";
 import { BlockFactory } from "./BlockParser";
-import { Options, ResolvedConfiguration } from "./configuration";
-import { normalizeOptions } from "./configuration/normalizeOptions";
+import { Options, resolveConfiguration, ResolvedConfiguration } from "./configuration";
 import * as errors from "./errors";
 
 /**
@@ -18,7 +17,7 @@ export class Plugin {
    * @param  opts  Optional plugin config options
    */
   constructor(postcssImpl: typeof postcss, opts?: Options) {
-    this.config = normalizeOptions(opts);
+    this.config = resolveConfiguration(opts);
     this.postcss = postcssImpl;
   }
 

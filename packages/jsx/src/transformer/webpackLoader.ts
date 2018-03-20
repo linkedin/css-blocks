@@ -1,6 +1,6 @@
 import {
   Block,
-  normalizeOptions,
+  resolveConfiguration as resolveBlocksConfiguration,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
 } from "css-blocks";
@@ -51,7 +51,7 @@ export function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void 
   }
 
   let cssFileNames = Object.keys(this.cssBlocks.mappings);
-  let cssBlockOpts = normalizeOptions(this.cssBlocks.compilationOptions);
+  let cssBlockOpts = resolveBlocksConfiguration(this.cssBlocks.compilationOptions);
   let metaMappingPromises: Promise<StyleMapping>[] = [];
 
   cssFileNames.forEach(filename => {

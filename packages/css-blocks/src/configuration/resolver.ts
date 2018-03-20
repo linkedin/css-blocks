@@ -16,11 +16,11 @@ import {
   ResolvedConfiguration,
 } from "./types";
 
-const CONFIG_OBJECT_KEYS: Array<ConfigurationObjectKeys> = [
+const OBJECT_KEYS: Array<ConfigurationObjectKeys> = [
   "importerData",
   "preprocessors",
 ];
-const CONFIG_SIMPLE_KEYS: Array<ConfigurationSimpleKeys> = [
+const SIMPLE_KEYS: Array<ConfigurationSimpleKeys> = [
   "outputMode",
   "importer",
   "rootDir",
@@ -36,31 +36,30 @@ const DEFAULTS: ResolvedConfiguration = {
   disablePreprocessChaining: false,
   maxConcurrentCompiles: 4,
 };
-
 /**
- * Provides read-only access to options values. Provides default values if none
- * passed.
+ * Provides read-only access to resolved configuration values.
+ * Provides default values for any unspecified configuration values.
  */
-class OptionsReader implements ResolvedConfiguration {
+class Resolver implements ResolvedConfiguration {
   private _opts: Configuration;
 
   constructor(options?: Options, defaults?: Options) {
-    this._opts = {...DEFAULTS};
+    this._opts = { ...DEFAULTS };
     this.setAll(defaults);
     this.setAll(options);
   }
   private setAll(opts: Options | undefined) {
     if (opts === undefined) return;
-    for (let k of CONFIG_SIMPLE_KEYS) {
+    for (let k of SIMPLE_KEYS) {
       let v = opts[k];
       if (v !== undefined) {
         this._opts[k] = v;
       }
     }
-    for (let k of CONFIG_OBJECT_KEYS) {
+    for (let k of OBJECT_KEYS) {
       let v = opts[k];
       if (v !== undefined) {
-        this._opts[k] = {...v};
+        this._opts[k] = { ...v };
       }
     }
   }
@@ -87,10 +86,14 @@ class OptionsReader implements ResolvedConfiguration {
   }
 }
 
-export function normalizeOptions(options: Options | undefined, defaults?: Options): ResolvedConfiguration {
-  if (options instanceof OptionsReader) {
+export function resolveConfiguration(
+  options: Options | undefined,
+  defaults?: Options,
+
+): ResolvedConfiguration {
+  if (options instanceof Resolver) {
     return options;
   } else {
-    return new OptionsReader(options, defaults);
+    return new Resolver(options, defaults);
   }
 }

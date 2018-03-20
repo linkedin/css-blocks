@@ -5,8 +5,7 @@ import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
 import { Block } from "../Block";
-import { normalizeOptions } from "../configuration/normalizeOptions";
-import { Options, ResolvedConfiguration } from "../configuration/types";
+import { Options, resolveConfiguration, ResolvedConfiguration } from "../configuration";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
 import { PromiseQueue } from "../util/PromiseQueue";
 
@@ -48,7 +47,7 @@ export class BlockFactory {
 
   constructor(options: Options, postcssImpl = postcss) {
     this.postcssImpl = postcssImpl;
-    this.configuration = normalizeOptions(options);
+    this.configuration = resolveConfiguration(options);
     this.importer = this.configuration.importer;
     this.preprocessors = this.configuration.preprocessors;
     this.parser = new BlockParser(options, this);

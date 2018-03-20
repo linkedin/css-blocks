@@ -6,7 +6,7 @@ import * as postcss from "postcss";
 import { Block, BlockClass } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockParser";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
-import { normalizeOptions, Options } from "../../src/configuration";
+import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
 
 import { MockImportRegistry } from "./../util/MockImportRegistry";
@@ -17,7 +17,7 @@ type BlockAndRoot = [Block, postcss.Container];
 @suite("State Parent Validator")
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let options = normalizeOptions(opts);
+    let options = resolveConfiguration(opts);
     let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, { from: filename });
     return factory.parse(root, filename, blockName).then((block) => {
@@ -29,7 +29,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       :scope { color: blue; }
@@ -51,7 +51,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       .foo { color: blue; }
@@ -76,7 +76,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     imports.registerSource(
       "blocks/a.css",
@@ -119,7 +119,7 @@ export class TemplateAnalysisTests {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let imports = new MockImportRegistry();
-    let options = normalizeOptions({ importer: imports.importer() });
+    let options = resolveConfiguration({ importer: imports.importer() });
 
     imports.registerSource(
       "blocks/a.css",

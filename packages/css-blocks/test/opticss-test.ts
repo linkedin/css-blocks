@@ -20,7 +20,7 @@ import { BlockFactory } from "../src/BlockParser";
 import { TemplateAnalysis } from "../src/TemplateAnalysis";
 import { ElementAnalysis } from "../src/TemplateAnalysis/ElementAnalysis";
 import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
-import { normalizeOptions, Options } from "../src/configuration";
+import { Options, resolveConfiguration } from "../src/configuration";
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -29,7 +29,7 @@ type Analysis = TemplateAnalysis<"Opticss.Template">;
 @suite("Optimization")
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "optimized"): Promise<BlockAndRoot> {
-    let options = normalizeOptions(opts);
+    let options = resolveConfiguration(opts);
     let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, {from: filename});
     return factory.parse(root, filename, blockName).then((block) => {
@@ -65,7 +65,7 @@ export class TemplateAnalysisTests {
     }
   }
   @test "optimizes css"() {
-    let options = normalizeOptions({});
+    let options = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = clean`
