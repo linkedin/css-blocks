@@ -34,3 +34,11 @@ export type Options = Partial<Readonly<Configuration>>;
  * values will have already been provided.
  */
 export type ResolvedConfiguration = Readonly<Configuration>;
+
+export type ConfigurationObjectKeys = "importerData"
+                                    | "preprocessors";
+export type ConfigurationSimpleKeys = "outputMode"
+                                    | "importer"
+                                    | "rootDir"
+                                    | "disablePreprocessChaining"
+                                    | "maxConcurrentCompiles";

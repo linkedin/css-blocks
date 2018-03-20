@@ -31,7 +31,7 @@ import {
 export interface CssBlocksWebpackOptions {
   /// The name of the instance of the plugin. Defaults to outputCssFile.
   name?: string;
-  /// The analzyer that decides what templates are analyzed and what blocks will be compiled.
+  /// The analyzer that decides what templates are analyzed and what blocks will be compiled.
   analyzer: MultiTemplateAnalyzer;
   /// The output css file for all compiled CSS Blocks. Defaults to "css-blocks.css"
   outputCssFile?: string;

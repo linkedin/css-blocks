@@ -1,18 +1,31 @@
+import { Preprocessors } from "./BlockParser";
 import {
-  Options,
-  ResolvedConfiguration,
-} from "./options";
-
-import { OutputMode } from "./OutputMode";
-
+  OutputMode,
+} from "./OutputMode";
 import {
   filesystemImporter,
   Importer,
   ImporterData,
 } from "./importing";
+import {
+  Configuration,
+  ConfigurationObjectKeys,
+  ConfigurationSimpleKeys,
+  Options,
+  ResolvedConfiguration,
+} from "./options";
 
-import { Preprocessors } from "./BlockParser";
-
+const CONFIG_OBJECT_KEYS: Array<ConfigurationObjectKeys> = [
+  "importerData",
+  "preprocessors",
+];
+const CONFIG_SIMPLE_KEYS: Array<ConfigurationSimpleKeys> = [
+  "outputMode",
+  "importer",
+  "rootDir",
+  "disablePreprocessChaining",
+  "maxConcurrentCompiles",
+];
 const DEFAULTS: ResolvedConfiguration = {
   outputMode: OutputMode.BEM,
   importer: filesystemImporter,
@@ -28,18 +41,25 @@ const DEFAULTS: ResolvedConfiguration = {
  * passed.
  */
 class OptionsReader implements ResolvedConfiguration {
-  private _opts: ResolvedConfiguration;
+  private _opts: Configuration;
 
-  constructor(options: Options = {}, defaults: Options = {}) {
+  constructor(options?: Options, defaults?: Options) {
     this._opts = {...DEFAULTS};
-    for (let k of Object.keys(defaults)) {
-      if (defaults[k] !== undefined) {
-        this._opts[k] = defaults[k];
+    this.setAll(defaults);
+    this.setAll(options);
+  }
+  private setAll(opts: Options | undefined) {
+    if (opts === undefined) return;
+    for (let k of CONFIG_SIMPLE_KEYS) {
+      let v = opts[k];
+      if (v !== undefined) {
+        this._opts[k] = v;
       }
     }
-    for (let k of Object.keys(options)) {
-      if (options[k] !== undefined) {
-        this._opts[k] = options[k];
+    for (let k of CONFIG_OBJECT_KEYS) {
+      let v = opts[k];
+      if (v !== undefined) {
+        this._opts[k] = {...v};
       }
     }
   }
