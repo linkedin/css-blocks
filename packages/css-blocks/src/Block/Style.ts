@@ -1,6 +1,6 @@
 import { Attr } from "@opticss/element-analysis";
 
-import { OptionsReader } from "../OptionsReader";
+import { ResolvedConfiguration } from "../configuration";
 import { unionInto } from "../util/unionInto";
 
 import { AnyNode, Inheritable } from "./Inheritable";
@@ -38,10 +38,10 @@ export abstract class Style<
 
   /**
    * Return the css selector for this `Style`.
-   * @param opts Option hash configuring output mode.
+   * @param config Option hash configuring output mode.
    * @returns The CSS class.
    */
-  public abstract cssClass(opts: OptionsReader): string;
+  public abstract cssClass(config: ResolvedConfiguration): string;
 
   /**
    * Return the source selector this `Style` was read from.
@@ -59,10 +59,10 @@ export abstract class Style<
    * including inherited classes.
    * @returns this object's css class and all inherited classes.
    */
-  cssClasses(opts: OptionsReader): string[] {
+  cssClasses(config: ResolvedConfiguration): string[] {
     let classes: string[] = [];
     for (let style of this.resolveStyles()) {
-      classes.push(style.cssClass(opts));
+      classes.push(style.cssClass(config));
     }
     return classes;
   }
@@ -107,11 +107,11 @@ export abstract class Style<
 
   /**
    * Debug utility to help log Styles
-   * @param opts  Options for rendering cssClass.
+   * @param config  Options for rendering cssClass.
    * @returns A debug string.
    */
-  asDebug(opts: OptionsReader) {
-    return `${this.asSource()} => ${this.cssClasses(opts).map(n => `.${n}`).join(" ")}`;
+  asDebug(config: ResolvedConfiguration) {
+    return `${this.asSource()} => ${this.cssClasses(config).map(n => `.${n}`).join(" ")}`;
   }
 
   // TypeScript can't figure out that `this` is the `StyleType` so this private

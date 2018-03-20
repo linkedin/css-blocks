@@ -1,10 +1,10 @@
 import { Attribute as Attr, AttributeValue, attrValues } from "@opticss/element-analysis";
+import { assertNever } from "@opticss/util";
 import { isString } from "util";
 
 import { ATTR_PRESENT, IAttrToken as AttrToken, ROOT_CLASS } from "../BlockSyntax";
 import { BlockPath } from "../BlockSyntax";
-import { OptionsReader } from "../OptionsReader";
-import { OutputMode } from "../OutputMode";
+import { OutputMode, ResolvedConfiguration } from "../configuration";
 
 import { AttrValue } from "./AttrValue";
 import { Attribute } from "./Attribute";
@@ -181,11 +181,11 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
 
   /**
    * Export as new class name.
-   * @param opts Option hash configuring output mode.
+   * @param config Option hash configuring output mode.
    * @returns String representing output class.
    */
-  public cssClass(opts: OptionsReader): string {
-    switch (opts.outputMode) {
+  public cssClass(config: ResolvedConfiguration): string {
+    switch (config.outputMode) {
       case OutputMode.BEM:
         if (this.isRoot) {
           return `${this.block.name}`;
@@ -193,7 +193,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
           return `${this.block.name}__${this.name}`;
         }
       default:
-        throw new Error("this never happens");
+        return assertNever(config.outputMode);
     }
   }
 
@@ -219,10 +219,10 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    * @param options  Options to pass to BlockClass' asDebug method.
    * @return Array of debug strings for this BlockClass
    */
-  debug(opts: OptionsReader): string[] {
+  debug(config: ResolvedConfiguration): string[] {
     let result: string[] = [];
     for (let style of this.all()) {
-      result.push(style.asDebug(opts));
+      result.push(style.asDebug(config));
     }
     return result;
   }

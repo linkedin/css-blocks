@@ -2,7 +2,7 @@ import { assert } from "chai";
 import * as path from "path";
 
 import { ObjectDictionary } from "@opticss/util";
-import { ImportedFile, Importer, PathBasedImporter, PluginOptionsReader, Syntax } from "css-blocks";
+import { ImportedFile, Importer, PathBasedImporter, ResolvedConfiguration as CSSBlocksConfiguration, Syntax } from "css-blocks";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 
@@ -15,7 +15,7 @@ export class MockImporter extends PathBasedImporter {
     super();
     this.registry = registry;
   }
-  identifier(fromFile: string | null, importPath: string, _options: PluginOptionsReader) {
+  identifier(fromFile: string | null, importPath: string, _options: CSSBlocksConfiguration) {
     if (fromFile) {
       let sourceDir: string = path.dirname(fromFile);
       return this.registry.relativize(path.resolve(sourceDir, importPath));
@@ -23,7 +23,7 @@ export class MockImporter extends PathBasedImporter {
       return importPath;
     }
   }
-  import(resolvedPath: string, options: PluginOptionsReader): Promise<ImportedFile> {
+  import(resolvedPath: string, options: CSSBlocksConfiguration): Promise<ImportedFile> {
     return new Promise<ImportedFile>((resolve, reject) => {
       let contents = this.registry.sources[resolvedPath];
       if (contents) {

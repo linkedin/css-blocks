@@ -4,18 +4,16 @@ import * as postcss from "postcss";
 
 import { Block } from "../src/Block";
 import { BlockFactory } from "../src/BlockParser";
-import { OptionsReader } from "../src/OptionsReader";
-import { PluginOptions } from "../src/options";
+import { Options, resolveConfiguration } from "../src/configuration";
 import { QueryKeySelector } from "../src/query";
 
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Querying")
 export class KeyQueryTests {
-  private parseBlock(css: string, filename: string, opts?: PluginOptions): Promise<BlockAndRoot> {
-    let options: PluginOptions = opts || {};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+  private parseBlock(css: string, filename: string, opts?: Options): Promise<BlockAndRoot> {
+    let config = resolveConfiguration(opts);
+    let factory = new BlockFactory(config, postcss);
     let root = postcss.parse(css, {from: filename});
     return factory.parse(root, filename, "query-test").then((block) => {
       return <BlockAndRoot>[block, root];

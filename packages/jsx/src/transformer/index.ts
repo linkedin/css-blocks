@@ -1,11 +1,11 @@
 import { ObjectDictionary, whatever } from "@opticss/util";
-import { CssBlockOptionsReadonly, PluginOptions, PluginOptionsReader, StyleMapping } from "css-blocks";
+import { Options as CSSBlocksOptions, resolveConfiguration as resolveBlocksConfiguration, ResolvedConfiguration as CSSBlocksConfiguration, StyleMapping } from "css-blocks";
 
 export interface RewriterOptions {
   meta?: ObjectDictionary<whatever>;
   cssBlocks: {
     styleMapping: StyleMapping | null;
-    compilationOptions: PluginOptions;
+    compilationOptions: CSSBlocksOptions;
   };
 }
 
@@ -17,11 +17,11 @@ export interface RewriterOptions {
 export class CSSBlocksJSXTransformer {
 
   styleMapping: StyleMapping | null;
-  cssBlockOptions: CssBlockOptionsReadonly;
+  cssBlockOptions: CSSBlocksConfiguration;
   blocks: ObjectDictionary<StyleMapping> = {};
 
   constructor(opts?: RewriterOptions) {
-    this.cssBlockOptions = new PluginOptionsReader(opts && opts.cssBlocks && opts.cssBlocks.compilationOptions);
+    this.cssBlockOptions = resolveBlocksConfiguration(opts && opts.cssBlocks && opts.cssBlocks.compilationOptions);
     this.styleMapping = opts && opts.cssBlocks && opts.cssBlocks.styleMapping || null;
   }
 

@@ -5,7 +5,7 @@ import {
   BlockFactory,
   MetaTemplateAnalysis as MetaStyleAnalysis,
   MultiTemplateAnalyzer,
-  PluginOptionsReader,
+  ResolvedConfiguration as CSSBlocksConfiguration,
   TemplateAnalysis as SingleTemplateStyleAnalysis,
   TemplateAnalyzer,
 } from "css-blocks";
@@ -21,7 +21,7 @@ export type AttributeContainer = Block | BlockClass;
 export class BaseStyleAnalyzer {
   project: Project;
   debug: debugGenerator.IDebugger;
-  options: PluginOptionsReader;
+  options: CSSBlocksConfiguration;
 
   constructor(project: Project | string) {
     if (typeof project === "string") {
@@ -30,7 +30,7 @@ export class BaseStyleAnalyzer {
       this.project = project;
     }
     this.debug = debugGenerator("css-blocks:glimmer");
-    this.options = new PluginOptionsReader(this.project.cssBlocksOpts);
+    this.options = this.project.cssBlocksOpts;
   }
 
   protected analyzeTemplate(componentName: string): Promise<SingleTemplateStyleAnalysis<"GlimmerTemplates.ResolvedFile"> | null> {

@@ -2,14 +2,10 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import cssBlocks, {
-  BlockFactory,
-  PluginOptions,
-  PluginOptionsReader,
-} from "../src";
+import cssBlocks from "../src";
 
 import { BEMProcessor } from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
+import { setupImporting } from "./util/setupImporting";
 
 @suite("Block Factory")
 export class BlockFactoryTests extends BEMProcessor {
@@ -25,7 +21,7 @@ export class BlockFactoryTests extends BEMProcessor {
   }
 
   @test "can import a block"() {
-    let imports = new MockImportRegistry();
+    let { imports, importer, config, factory } = setupImporting();
     let baseFilename = "foo/bar/base.css";
     imports.registerSource(
       baseFilename,
@@ -41,19 +37,15 @@ export class BlockFactoryTests extends BEMProcessor {
       `@block-reference base from "./base.css";
        :scope { extends: base; color: red; }`,
     );
-    let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new PluginOptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
-    let extendsBlockPromise = factory.getBlock(importer.identifier(null, extendsFilename, reader));
-    let baseBlockPromise = factory.getBlock(importer.identifier(null, baseFilename, reader));
+    let extendsBlockPromise = factory.getBlock(importer.identifier(null, extendsFilename, config));
+    let baseBlockPromise = factory.getBlock(importer.identifier(null, baseFilename, config));
     return Promise.all([extendsBlockPromise, baseBlockPromise]).then(([extendsBlock, baseBlock]) => {
       assert.strictEqual(extendsBlock.base, baseBlock);
     });
   }
 
   @test "handles blocks with the same name"() {
-    let imports = new MockImportRegistry();
+    let { imports, importer, config, factory } = setupImporting();
 
     let blockFilename1 = "foo/bar/block_1.css";
     imports.registerSource(
@@ -74,13 +66,8 @@ export class BlockFactoryTests extends BEMProcessor {
       }
     `);
 
-    let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new PluginOptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
-
-    let blockPromise1 = factory.getBlock(importer.identifier(null, blockFilename1, reader));
-    let blockPromise2 = factory.getBlock(importer.identifier(null, blockFilename2, reader));
+    let blockPromise1 = factory.getBlock(importer.identifier(null, blockFilename1, config));
+    let blockPromise2 = factory.getBlock(importer.identifier(null, blockFilename2, config));
     return Promise.all([blockPromise1, blockPromise2]).then(([block1, block2]) => {
       assert.equal(block1.name, "block");
       assert.equal(block2.name, "block-2");

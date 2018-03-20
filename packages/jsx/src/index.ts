@@ -10,8 +10,9 @@ import {
   Block,
   BlockFactory,
   MultiTemplateAnalyzer,
-  PluginOptions as CssBlocksOptions,
-  PluginOptionsReader as CssBlocksOptionsReader,
+  Options as CSSBlocksOptions,
+  resolveConfiguration as resolveBlocksOptions,
+  ResolvedConfiguration as CSSBlocksConfiguration,
 } from "css-blocks";
 import * as typescript from "typescript";
 
@@ -44,7 +45,7 @@ export interface JSXAnalyzerOptions {
    baseDir: string;
    parserOptions?: object;
    aliases?: ObjectDictionary<string>;
-   compilationOptions?: CssBlocksOptions;
+   compilationOptions?: CSSBlocksOptions;
  }
 
 const defaultOptions: JSXAnalyzerOptions = {
@@ -209,13 +210,13 @@ export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
   private entryPoint: string;
   private name: string;
   private options: JSXAnalyzerOptions;
-  private cssBlocksOptions: CssBlocksOptionsReader;
+  private cssBlocksOptions: CSSBlocksConfiguration;
 
   constructor(entryPoint: string, name: string, options: JSXAnalyzerOptions) {
     this.entryPoint = entryPoint;
     this.name = name;
     this.options = options;
-    this.cssBlocksOptions = new CssBlocksOptionsReader(options.compilationOptions || {});
+    this.cssBlocksOptions = resolveBlocksOptions(options.compilationOptions || {});
     this._blockFactory = new BlockFactory(this.cssBlocksOptions);
   }
   analyze(): Promise<MetaAnalysis> {

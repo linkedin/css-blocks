@@ -5,8 +5,8 @@ import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
 import { Block } from "../Block";
+import { Options, resolveConfiguration, ResolvedConfiguration } from "../configuration";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
-import { CssBlockOptionsReadonly } from "../options";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";
@@ -35,7 +35,7 @@ interface ErrorWithErrNum {
 export class BlockFactory {
   postcssImpl: typeof postcss;
   importer: Importer;
-  options: CssBlockOptionsReadonly;
+  configuration: ResolvedConfiguration;
   blockNames: ObjectDictionary<number>;
   parser: BlockParser;
   preprocessors: Preprocessors;
@@ -45,18 +45,18 @@ export class BlockFactory {
   private paths: ObjectDictionary<string>;
   private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
-  constructor(options: CssBlockOptionsReadonly, postcssImpl = postcss) {
+  constructor(options: Options, postcssImpl = postcss) {
     this.postcssImpl = postcssImpl;
-    this.options = options;
-    this.importer = this.options.importer;
-    this.preprocessors = this.options.preprocessors;
+    this.configuration = resolveConfiguration(options);
+    this.importer = this.configuration.importer;
+    this.preprocessors = this.configuration.preprocessors;
     this.parser = new BlockParser(options, this);
     this.blocks = {};
     this.blockNames = {};
     this.promises = {};
     this.paths = {};
-    this.preprocessQueue = new PromiseQueue(this.options.maxConcurrentCompiles, (item: PreprocessJob) => {
-      return item.preprocessor(item.filename, item.contents, this.options);
+    this.preprocessQueue = new PromiseQueue(this.configuration.maxConcurrentCompiles, (item: PreprocessJob) => {
+      return item.preprocessor(item.filename, item.contents, this.configuration);
     });
   }
 
@@ -94,7 +94,7 @@ export class BlockFactory {
     let identifier: FileIdentifier | undefined = this.paths[filePath];
     if (identifier && this.promises[identifier]) { return this.promises[identifier]; }
 
-    identifier = identifier || this.importer.identifier(null, filePath, this.options);
+    identifier = identifier || this.importer.identifier(null, filePath, this.configuration);
     return this._getBlockPromise(identifier);
   }
 
@@ -105,13 +105,13 @@ export class BlockFactory {
 
   _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
 
-    return this.promises[identifier] = this.importer.import(identifier, this.options)
+    return this.promises[identifier] = this.importer.import(identifier, this.configuration)
 
       // Parse the file into a `Block`.
       .then(file => {
 
         // If the file identifier maps back to a real filename, ensure it is actually unique.
-        let realFilename = this.importer.filesystemPath(file.identifier, this.options);
+        let realFilename = this.importer.filesystemPath(file.identifier, this.configuration);
         if (realFilename) {
           if (this.paths[realFilename] && this.paths[realFilename] !== file.identifier) {
             throw new Error(`The same block file was returned with different identifiers: ${this.paths[realFilename]} and ${file.identifier}`);
@@ -124,7 +124,7 @@ export class BlockFactory {
         if (this.blocks[file.identifier]) { return this.blocks[file.identifier]; }
 
         // Preprocess the file.
-        let filename: string = realFilename || this.importer.debugIdentifier(file.identifier, this.options);
+        let filename: string = realFilename || this.importer.debugIdentifier(file.identifier, this.configuration);
         let preprocessor = this.preprocessor(file);
         return this.preprocessQueue.enqueue({
           preprocessor,
@@ -186,8 +186,8 @@ export class BlockFactory {
 
   getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Promise<Block> {
     let importer = this.importer;
-    let fromPath = importer.debugIdentifier(fromIdentifier, this.options);
-    let identifier = importer.identifier(fromIdentifier, importPath, this.options);
+    let fromPath = importer.debugIdentifier(fromIdentifier, this.configuration);
+    let identifier = importer.identifier(fromIdentifier, importPath, this.configuration);
     return this.getBlock(identifier).catch((err: ErrorWithErrNum) => {
       if (err.code === "ENOENT") {
         err.message = `From ${fromPath}: ${err.message}`;
@@ -214,12 +214,12 @@ export class BlockFactory {
     let firstPreprocessor: Preprocessor | undefined = this.preprocessors[syntax];
     let preprocessor: Preprocessor | null = null;
     if (firstPreprocessor) {
-      if (syntax !== Syntax.css && this.preprocessors.css && !this.options.disablePreprocessChaining) {
+      if (syntax !== Syntax.css && this.preprocessors.css && !this.configuration.disablePreprocessChaining) {
         let cssProcessor = this.preprocessors.css;
-        preprocessor = (fullPath: string, content: string, options: CssBlockOptionsReadonly): Promise<ProcessedFile> => {
-          return firstPreprocessor!(fullPath, content, options).then(result => {
+        preprocessor = (fullPath: string, content: string, configuration: ResolvedConfiguration): Promise<ProcessedFile> => {
+          return firstPreprocessor!(fullPath, content, configuration).then(result => {
             let content = result.content.toString();
-            return cssProcessor(fullPath, content, options, sourceMapFromProcessedFile(result)).then(result2 => {
+            return cssProcessor(fullPath, content, configuration, sourceMapFromProcessedFile(result)).then(result2 => {
               return {
                 content: result2.content,
                 sourceMap: sourceMapFromProcessedFile(result2),
@@ -234,7 +234,7 @@ export class BlockFactory {
     } else if (syntax !== Syntax.css) {
       throw new Error(`No preprocessor provided for ${syntaxName(syntax)}.`);
     } else {
-      preprocessor = (_fullPath: string, content: string, _options: CssBlockOptionsReadonly): Promise<ProcessedFile> => {
+      preprocessor = (_fullPath: string, content: string, _options: ResolvedConfiguration): Promise<ProcessedFile> => {
         return Promise.resolve({
           content: content,
         });

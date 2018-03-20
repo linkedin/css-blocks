@@ -2,9 +2,13 @@ import { ObjectDictionary } from "@opticss/util";
 import { assert } from "chai";
 import * as path from "path";
 
-import { Syntax } from "../../src/BlockParser";
-import { OptionsReader } from "../../src/OptionsReader";
-import { ImportedFile, Importer, PathBasedImporter } from "../../src/importing";
+import {
+  ImportedFile,
+  Importer,
+  PathBasedImporter,
+  ResolvedConfiguration,
+  Syntax,
+} from "../../src";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 export interface SourceWithSyntax {
@@ -20,7 +24,7 @@ export class MockImporter extends PathBasedImporter {
     super();
     this.registry = registry;
   }
-  identifier(fromFile: string | null, importPath: string, _options: OptionsReader) {
+  identifier(fromFile: string | null, importPath: string, _options: ResolvedConfiguration) {
     if (fromFile) {
       let sourceDir: string = path.dirname(fromFile);
       return this.registry.relativize(path.resolve(sourceDir, importPath));
@@ -28,7 +32,7 @@ export class MockImporter extends PathBasedImporter {
       return importPath;
     }
   }
-  import(resolvedPath: string, options: OptionsReader): Promise<ImportedFile> {
+  import(resolvedPath: string, configuration: ResolvedConfiguration): Promise<ImportedFile> {
     return new Promise<ImportedFile>((resolve, reject) => {
       let source = this.registry.sources[resolvedPath];
       if (source) {
@@ -36,7 +40,7 @@ export class MockImporter extends PathBasedImporter {
         resolve({
           syntax: source.syntax,
           identifier: resolvedPath,
-          defaultName: this.defaultName(resolvedPath, options),
+          defaultName: this.defaultName(resolvedPath, configuration),
           contents: source.contents,
         });
       } else {

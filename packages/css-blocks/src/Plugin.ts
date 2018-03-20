@@ -2,24 +2,22 @@ import * as postcss from "postcss";
 
 import { BlockCompiler } from "./BlockCompiler";
 import { BlockFactory } from "./BlockParser";
-import { OptionsReader } from "./OptionsReader";
+import { Options, resolveConfiguration, ResolvedConfiguration } from "./configuration";
 import * as errors from "./errors";
-import { PluginOptions } from "./options";
-export { PluginOptions } from "./options";
 
 /**
  * CSS Blocks PostCSS plugin.
  */
 export class Plugin {
-  private opts: OptionsReader;
+  private config: ResolvedConfiguration;
   private postcss: typeof postcss;
 
   /**
    * @param  postcssImpl  PostCSS instance to use
    * @param  opts  Optional plugin config options
    */
-  constructor(postcssImpl: typeof postcss, opts?: PluginOptions) {
-    this.opts = new OptionsReader(opts);
+  constructor(postcssImpl: typeof postcss, opts?: Options) {
+    this.config = resolveConfiguration(opts);
     this.postcss = postcssImpl;
   }
 
@@ -39,12 +37,12 @@ export class Plugin {
     }
 
     // Fetch block name from importer
-    let identifier = this.opts.importer.identifier(null, sourceFile, this.opts);
-    let defaultName: string = this.opts.importer.defaultName(identifier, this.opts);
-    let factory = new BlockFactory(this.opts, this.postcss);
+    let identifier = this.config.importer.identifier(null, sourceFile, this.config);
+    let defaultName: string = this.config.importer.defaultName(identifier, this.config);
+    let factory = new BlockFactory(this.config, this.postcss);
 
     return factory.parse(root, sourceFile, defaultName).then((block) => {
-      let compiler = new BlockCompiler(postcss, this.opts);
+      let compiler = new BlockCompiler(postcss, this.config);
       compiler.compile(block, root);
     });
   }

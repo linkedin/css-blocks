@@ -5,22 +5,20 @@ import * as postcss from "postcss";
 
 import { Block, BlockClass } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockParser";
-import { OptionsReader } from "../../src/OptionsReader";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
-import { PluginOptions } from "../../src/options";
 
-import { MockImportRegistry } from "./../util/MockImportRegistry";
-import { assertParseError } from "./../util/assertError";
+import { assertParseError } from "../util/assertError";
+import { setupImporting } from "../util/setupImporting";
 
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("State Parent Validator")
 export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: PluginOptions, blockName = "analysis"): Promise<BlockAndRoot> {
-    let options: PluginOptions = opts || {};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
+  private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
+    let config = resolveConfiguration(opts);
+    let factory = new BlockFactory(config, postcss);
     let root = postcss.parse(css, { from: filename });
     return factory.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
@@ -30,9 +28,7 @@ export class TemplateAnalysisTests {
   @test "throws when states are applied without their parent root"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options: PluginOptions = { importer: imports.importer() };
-    let reader = new OptionsReader(options);
+    let { config } = setupImporting();
 
     let css = `
       :scope { color: blue; }
@@ -41,7 +37,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Cannot use state "[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test]")!);
@@ -53,9 +49,7 @@ export class TemplateAnalysisTests {
   @test "throws when states are applied without their parent BlockClass"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options: PluginOptions = { importer: imports.importer() };
-    let reader = new OptionsReader(options);
+    let { config } = setupImporting();
 
     let css = `
       .foo { color: blue; }
@@ -65,7 +59,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Cannot use state ".foo[state|test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         let klass = block.getClass("foo") as BlockClass;
@@ -79,9 +73,7 @@ export class TemplateAnalysisTests {
   @test "Throws when inherited states are applied without their root"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options: PluginOptions = { importer: imports.importer() };
-    let reader = new OptionsReader(options);
+    let { imports, config } = setupImporting();
 
     imports.registerSource(
       "blocks/a.css",
@@ -106,7 +98,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Cannot use state ".pretty[state|color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
         analysis.blocks[""] = block;
         analysis.blocks["a"] = aBlock;
@@ -123,9 +115,7 @@ export class TemplateAnalysisTests {
   @test "Inherited states pass validation when applied with their root"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options: PluginOptions = { importer: imports.importer() };
-    let reader = new OptionsReader(options);
+    let { imports, config } = setupImporting();
 
     imports.registerSource(
       "blocks/a.css",
@@ -147,7 +137,7 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", reader).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       analysis.blocks[""] = block;
       analysis.blocks["a"] = aBlock;

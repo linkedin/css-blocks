@@ -7,7 +7,8 @@ import {
 } from "@opticss/template-api";
 import {
   Block,
-  PluginOptionsReader as CssBlocksOptionsReader,
+  resolveConfiguration as resolveBlockConfiguration,
+  ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
@@ -27,7 +28,7 @@ type LoaderContext = {
   dependency(dep: string): void;
 };
 
-function trackBlockDependencies(loaderContext: LoaderContext, blocks: Set<Block>, options: CssBlocksOptionsReader) {
+function trackBlockDependencies(loaderContext: LoaderContext, blocks: Set<Block>, options: CSSBlocksConfiguration) {
   for (let block of blocks) {
     let sourceFile = options.importer.filesystemPath(block.identifier, options);
     if (sourceFile !== null) {
@@ -40,7 +41,7 @@ function trackBlockDependencies(loaderContext: LoaderContext, blocks: Set<Block>
 export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginBuilder> {
   debug(`loader adapter for:`, loaderContext.resourcePath);
   let cssFileNames = Object.keys(loaderContext.cssBlocks.mappings);
-  let options = new CssBlocksOptionsReader(loaderContext.cssBlocks.compilationOptions);
+  let options = resolveBlockConfiguration(loaderContext.cssBlocks.compilationOptions);
   let mappingPromises = new Array<Promise<StyleMapping | void>>();
   cssFileNames.forEach(filename => {
     mappingPromises.push(loaderContext.cssBlocks.mappings[filename]);

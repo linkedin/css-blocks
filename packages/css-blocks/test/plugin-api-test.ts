@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { OptionsReader } from "../src/OptionsReader";
+import { resolveConfiguration } from "../src/configuration";
 import cssBlocks = require("../src/cssBlocks");
 
 @suite("Setting up")
@@ -13,8 +13,8 @@ export class SetupTests {
     assert(processor);
   }
   @test "default options"() {
-    const reader = new OptionsReader({});
-    assert.equal(reader.outputMode, cssBlocks.OutputMode.BEM);
+    const config = resolveConfiguration({});
+    assert.equal(config.outputMode, cssBlocks.OutputMode.BEM);
   }
   @test "a filename is required"() {
     let cssBlocksPlugin = cssBlocks(postcss);

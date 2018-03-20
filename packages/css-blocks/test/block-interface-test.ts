@@ -5,7 +5,7 @@ import * as postcss from "postcss";
 import cssBlocks = require("../src/cssBlocks");
 
 import { BEMProcessor } from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
+import { setupImporting } from "./util/setupImporting";
 
 @suite("Block Interfaces")
 export class BlockInterfaceTests extends BEMProcessor {
@@ -21,7 +21,7 @@ export class BlockInterfaceTests extends BEMProcessor {
   }
 
   @test "can detect missing surface area"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "foo/bar/base.css",
       `:scope { color: purple; }
@@ -40,13 +40,13 @@ export class BlockInterfaceTests extends BEMProcessor {
       cssBlocks.CssBlockError,
       `Missing implementations for: [state|large], .foo[state|small] ` +
         `from foo/bar/base.css`,
-      this.process(filename, inputCSS, {importer: imports.importer()}).then(() => {
+      this.process(filename, inputCSS, config).then(() => {
         imports.assertImported("foo/bar/base.css");
       }));
   }
 
   @test "can import another block"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "foo/bar/base.css",
       `:scope { color: purple; }
@@ -75,7 +75,7 @@ export class BlockInterfaceTests extends BEMProcessor {
       cssBlocks.CssBlockError,
       `Missing implementations for: [state|medium], .foo[state|medium] ` +
         `from foo/bar/other.css`,
-      this.process(filename, inputCSS, {importer: imports.importer()}).then(() => {
+      this.process(filename, inputCSS, config).then(() => {
         imports.assertImported("foo/bar/base.css");
         imports.assertImported("foo/bar/other.css");
       }));

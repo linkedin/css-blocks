@@ -9,8 +9,7 @@ import {
 import { assertNever, ObjectDictionary } from "@opticss/util";
 
 import { ATTR_PRESENT, IAttrToken as AttrToken } from "../BlockSyntax";
-import { OptionsReader } from "../OptionsReader";
-import { OutputMode } from "../OutputMode";
+import { OutputMode, ResolvedConfiguration } from "../configuration";
 
 import { AttrValue } from "./AttrValue";
 import { Block } from "./Block";
@@ -174,16 +173,16 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
 
   /**
    * Export as new class name.
-   * @param opts Option hash configuring output mode.
+   * @param config Option hash configuring output mode.
    * @returns String representing output class.
    */
-  cssClass(opts: OptionsReader) {
-    switch (opts.outputMode) {
+  cssClass(config: ResolvedConfiguration) {
+    switch (config.outputMode) {
       case OutputMode.BEM:
-        let cssClassName = this.blockClass.cssClass(opts);
+        let cssClassName = this.blockClass.cssClass(config);
         return `${cssClassName}--${this.token.name}`;
       default:
-        return assertNever(opts.outputMode);
+        return assertNever(config.outputMode);
     }
   }
 

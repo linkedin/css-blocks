@@ -4,13 +4,13 @@ import { suite, test } from "mocha-typescript";
 import cssBlocks = require("../src/cssBlocks");
 
 import { BEMProcessor } from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertError } from "./util/assertError";
+import { setupImporting } from "./util/setupImporting";
 
 @suite("Resolves conflicts")
 export class BlockInheritance extends BEMProcessor {
   @test "Can use global states"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "app.block.css",
       `@block-global [state|is-loading];
@@ -25,7 +25,7 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("app.block.css");
       assert.deepEqual(
         result.css.toString(),
@@ -34,7 +34,7 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
   @test "Can't use non-global states"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "app.block.css",
       `[state|is-loading] .profile {
@@ -51,6 +51,6 @@ export class BlockInheritance extends BEMProcessor {
     return assertError(
       cssBlocks.InvalidBlockSyntax,
       "[state|is-loading] is not global: app[state|is-loading] .b (widget.block.css:2:24)",
-      this.process(filename, inputCSS, {importer: imports.importer()}));
+      this.process(filename, inputCSS, config));
   }
 }

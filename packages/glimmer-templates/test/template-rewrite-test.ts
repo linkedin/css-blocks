@@ -1,6 +1,6 @@
 import { preprocess, print } from "@glimmer/syntax";
 import { assert } from "chai";
-import { BlockCompiler, CssBlockOptionsReadonly, StyleMapping } from "css-blocks";
+import { BlockCompiler, ResolvedConfiguration as CSSBlocksConfiguration, StyleMapping } from "css-blocks";
 import fs = require("fs");
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";
@@ -19,30 +19,30 @@ interface CSSAndMapping {
   styleMapping: StyleMapping;
 }
 function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer): Promise<CSSAndMapping> {
-  let reader = analyzer.project.cssBlocksOpts;
+  let blockOpts = analyzer.project.cssBlocksOpts;
   return analyzer.analyze().then(analysis => {
     let blocks = analysis.transitiveBlockDependencies();
-    let optimizerAnalysis = analysis.forOptimizer(reader);
+    let optimizerAnalysis = analysis.forOptimizer(blockOpts);
     let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
-    let compiler = new BlockCompiler(postcss, reader);
+    let compiler = new BlockCompiler(postcss, blockOpts);
 
     optimizer.addAnalysis(optimizerAnalysis);
     for (let block of blocks) {
       let compiled = compiler.compile(block, block.stylesheet!, analysis);
       optimizer.addSource({
-        content: compiled.toResult({to: reader.importer.filesystemPath(block.identifier, reader)!}),
+        content: compiled.toResult({to: blockOpts.importer.filesystemPath(block.identifier, blockOpts)!}),
       });
 
     }
     return optimizer.optimize("result.css").then((optimized) => {
-      let styleMapping = new StyleMapping(optimized.styleMapping, blocks, reader, [analysis]);
+      let styleMapping = new StyleMapping(optimized.styleMapping, blocks, blockOpts, [analysis]);
       let css = optimized.output.content;
       return { css, styleMapping };
     });
   });
 }
 
-function pretendToBeWebPack(result: CSSAndMapping, templatePath: string, cssBlocksOpts: CssBlockOptionsReadonly) {
+function pretendToBeWebPack(result: CSSAndMapping, templatePath: string, cssBlocksOpts: CSSBlocksConfiguration) {
   let fakeLoaderContext = {
     resourcePath: templatePath,
     cssBlocks: {

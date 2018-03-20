@@ -1,4 +1,9 @@
-import { Block, PluginOptionsReader, StyleMapping } from "css-blocks";
+import {
+  Block,
+  resolveConfiguration as resolveBlocksConfiguration,
+  ResolvedConfiguration as CSSBlocksConfiguration,
+  StyleMapping,
+} from "css-blocks";
 import * as debugGenerator from "debug";
 
 const debug = debugGenerator("css-blocks:jsx");
@@ -8,7 +13,7 @@ type LoaderContext = {
   dependency(dep: string): void;
 };
 
-function trackBlockDependencies(loaderContext: LoaderContext, block: Block, options: PluginOptionsReader): void {
+function trackBlockDependencies(loaderContext: LoaderContext, block: Block, options: CSSBlocksConfiguration): void {
   let sourceFile = options.importer.filesystemPath(block.identifier, options);
   if (sourceFile !== null) {
     loaderContext.dependency(sourceFile);
@@ -46,7 +51,7 @@ export function CSSBlocksWebpackAdapter(this: any, source: any, map: any): void 
   }
 
   let cssFileNames = Object.keys(this.cssBlocks.mappings);
-  let cssBlockOpts: PluginOptionsReader = new PluginOptionsReader(this.cssBlocks.compilationOptions);
+  let cssBlockOpts = resolveBlocksConfiguration(this.cssBlocks.compilationOptions);
   let metaMappingPromises: Promise<StyleMapping>[] = [];
 
   cssFileNames.forEach(filename => {

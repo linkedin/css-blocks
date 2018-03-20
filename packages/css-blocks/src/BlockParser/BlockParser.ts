@@ -1,10 +1,9 @@
 import * as postcss from "postcss";
 
 import { Block } from "../Block";
-import { OptionsReader } from "../OptionsReader";
+import { Options, resolveConfiguration, ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
-import { PluginOptions } from "../options";
 
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { constructBlock } from "./features/construct-block";
@@ -32,11 +31,11 @@ export interface ParsedSource {
  * interface is `BlockParser.parse`.
  */
 export class BlockParser {
-  private opts: OptionsReader;
+  private config: ResolvedConfiguration;
   private factory: BlockFactory;
 
-  constructor(opts: PluginOptions, factory: BlockFactory) {
-    this.opts = new OptionsReader(opts);
+  constructor(opts: Options, factory: BlockFactory) {
+    this.config = resolveConfiguration(opts);
     this.factory = factory;
   }
 
@@ -60,9 +59,9 @@ export class BlockParser {
    * @param defaultName Name of block
    */
   public async parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    let importer = this.opts.importer;
-    let debugIdent = importer.debugIdentifier(identifier, this.opts);
-    let sourceFile = importer.filesystemPath(identifier, this.opts) || debugIdent;
+    let importer = this.config.importer;
+    let debugIdent = importer.debugIdentifier(identifier, this.config);
+    let sourceFile = importer.filesystemPath(identifier, this.config) || debugIdent;
 
     // Discover the block's preferred name.
     name = await discoverName(root, name, sourceFile);
@@ -86,7 +85,7 @@ export class BlockParser {
     // Validate that all required Styles are implemented.
     await implementBlock(root, block, debugIdent);
     // Log any debug statements discovered.
-    await processDebugStatements(root, block, debugIdent, this.opts);
+    await processDebugStatements(root, block, debugIdent, this.config);
 
     // Return our fully constructed block.
     return block;

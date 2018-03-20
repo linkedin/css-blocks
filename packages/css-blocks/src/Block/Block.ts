@@ -16,8 +16,8 @@ import {
 } from "../BlockParser";
 import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
-import { OptionsReader } from "../OptionsReader";
 import { SourceLocation } from "../SourceLocation";
+import { ResolvedConfiguration } from "../configuration";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
 
@@ -367,7 +367,7 @@ export class Block
     return null;
   }
 
-  rewriteSelectorNodes(nodes: selectorParser.Node[], opts: OptionsReader): selectorParser.Node[] {
+  rewriteSelectorNodes(nodes: selectorParser.Node[], config: ResolvedConfiguration): selectorParser.Node[] {
     let newNodes: selectorParser.Node[] = [];
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
@@ -375,20 +375,20 @@ export class Block
       if (result === null) {
         newNodes.push(node);
       } else {
-        newNodes.push(selectorParser.className({ value: result[0].cssClass(opts) }));
+        newNodes.push(selectorParser.className({ value: result[0].cssClass(config) }));
         i += result[1];
       }
     }
     return newNodes;
   }
 
-  rewriteSelectorToString(selector: ParsedSelector, opts: OptionsReader): string {
+  rewriteSelectorToString(selector: ParsedSelector, config: ResolvedConfiguration): string {
     let firstNewSelector = new CompoundSelector();
     let newSelector = firstNewSelector;
     let newCurrentSelector = newSelector;
     let currentSelector: CompoundSelector | undefined = selector.selector;
     do {
-      newCurrentSelector.nodes = this.rewriteSelectorNodes(currentSelector.nodes, opts);
+      newCurrentSelector.nodes = this.rewriteSelectorNodes(currentSelector.nodes, config);
       newCurrentSelector.pseudoelement = currentSelector.pseudoelement;
       if (currentSelector.next !== undefined) {
         let tempSel = newCurrentSelector;
@@ -402,21 +402,21 @@ export class Block
     return firstNewSelector.toString();
   }
 
-  rewriteSelector(selector: ParsedSelector, opts: OptionsReader): ParsedSelector {
+  rewriteSelector(selector: ParsedSelector, config: ResolvedConfiguration): ParsedSelector {
     // generating a string and re-parsing ensures the internal structure is consistent
     // otherwise the parent/next/prev relationships will be wonky with the new nodes.
-    let s = this.rewriteSelectorToString(selector, opts);
+    let s = this.rewriteSelectorToString(selector, config);
     return parseSelector(s)[0];
   }
 
-  debug(opts: OptionsReader): string[] {
-    let result: string[] = [`Source: ${this.identifier}`, this.rootClass.asDebug(opts)];
+  debug(config: ResolvedConfiguration): string[] {
+    let result: string[] = [`Source: ${this.identifier}`, this.rootClass.asDebug(config)];
     let sourceNames = new Set<string>(this.all().map(s => s.asSource()));
     let sortedNames = [...sourceNames].sort();
     for (let n of sortedNames) {
       if (n !== ROOT_CLASS) {
         let o = this.find(n) as Styles;
-        result.push(o.asDebug(opts));
+        result.push(o.asDebug(config));
       }
     }
     return result;

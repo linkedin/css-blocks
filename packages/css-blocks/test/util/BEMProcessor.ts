@@ -1,11 +1,11 @@
 import * as perfectionist from "perfectionist";
 import * as postcss from "postcss";
 
+import { Options } from "../../src/configuration";
 import cssBlocks = require("../../src/cssBlocks");
-import { PluginOptions } from "../../src/options";
 
 export class BEMProcessor {
-  process(filename: string, contents: string, cssBlocksOpts?: PluginOptions) {
+  process(filename: string, contents: string, cssBlocksOpts?: Options) {
     let processOpts = { from: filename };
     let cssBlocksProcessor = cssBlocks(postcss);
     return postcss([

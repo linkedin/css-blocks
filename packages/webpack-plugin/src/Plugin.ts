@@ -15,8 +15,8 @@ import {
   BlockCompiler,
   MetaTemplateAnalysis,
   MultiTemplateAnalyzer,
-  PluginOptions as CssBlocksOptions,
-  PluginOptionsReader as CssBlocksOptionsReader,
+  Options as CSSBlocksOptions,
+  resolveConfiguration as resolveBlocksConfiguration,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
@@ -31,12 +31,12 @@ import {
 export interface CssBlocksWebpackOptions {
   /// The name of the instance of the plugin. Defaults to outputCssFile.
   name?: string;
-  /// The analzyer that decides what templates are analyzed and what blocks will be compiled.
+  /// The analyzer that decides what templates are analyzed and what blocks will be compiled.
   analyzer: MultiTemplateAnalyzer;
   /// The output css file for all compiled CSS Blocks. Defaults to "css-blocks.css"
   outputCssFile?: string;
   /// Compilation options pass to css-blocks
-  compilationOptions?: Partial<CssBlocksOptions>;
+  compilationOptions?: CSSBlocksOptions;
   /// Optimization options passed to opticss
   optimization?: OptiCSSOptions;
 }
@@ -72,7 +72,7 @@ export class CssBlocksRewriterPlugin
   implements WebpackPlugin
 {
   parent: CssBlocksPlugin;
-  compilationOptions: CssBlocksOptions;
+  compilationOptions: CSSBlocksOptions;
   outputCssFile: string;
   name: string;
   debug: debugGenerator.IDebugger;
@@ -129,7 +129,7 @@ export class CssBlocksPlugin
   analyzer: MultiTemplateAnalyzer;
   projectDir: string;
   outputCssFile: string;
-  compilationOptions: CssBlocksOptions;
+  compilationOptions: CSSBlocksOptions;
   debug: debugGenerator.IDebugger;
 
   constructor(options: CssBlocksWebpackOptions) {
@@ -195,7 +195,7 @@ export class CssBlocksPlugin
         let completion: BlockCompilationComplete = {
           compilation: compilation,
           assetPath: this.outputCssFile,
-          mapping: new StyleMapping(result.optimizationResult.styleMapping, result.blocks, new CssBlocksOptionsReader(this.compilationOptions), result.analyses),
+          mapping: new StyleMapping(result.optimizationResult.styleMapping, result.blocks, resolveBlocksConfiguration(this.compilationOptions), result.analyses),
           optimizerActions: result.optimizationResult.actions,
         };
         return completion;
@@ -253,8 +253,7 @@ export class CssBlocksPlugin
   }
 
   private compileBlocks(analysis: MetaTemplateAnalysis, cssOutputName: string): Promise<CompilationResult> {
-    let options: CssBlocksOptions = this.compilationOptions;
-    let reader = new CssBlocksOptionsReader(options);
+    let options = resolveBlocksConfiguration(this.compilationOptions);
     let blockCompiler = new BlockCompiler(postcss, options);
     let numBlocks = 0;
     let optimizer = new Optimizer(this.optimizationOptions, analysis.optimizationOptions());
@@ -266,7 +265,7 @@ export class CssBlocksPlugin
         let root = blockCompiler.compile(block, block.stylesheet, analysis);
         let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
         // TODO: handle a sourcemap from compiling the block file via a preprocessor.
-        let filename = reader.importer.filesystemPath(block.identifier, reader) || reader.importer.debugIdentifier(block.identifier, reader);
+        let filename = options.importer.filesystemPath(block.identifier, options) || options.importer.debugIdentifier(block.identifier, options);
         optimizer.addSource({
           content: result.css,
           filename,
@@ -280,7 +279,7 @@ export class CssBlocksPlugin
       this.trace(`Adding analysis for ${a.template.identifier} to optimizer.`);
       this.trace(`Analysis for ${a.template.identifier} has ${a.elementCount()} elements.`);
       analyses.push(a);
-      optimizer.addAnalysis(a.forOptimizer(reader));
+      optimizer.addAnalysis(a.forOptimizer(options));
     });
     this.trace(`compiled ${numBlocks} blocks.`);
     return optimizer.optimize(cssOutputName).then(optimizationResult => {

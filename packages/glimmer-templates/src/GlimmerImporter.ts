@@ -1,11 +1,10 @@
 import {
-  CssBlockOptionsReadonly,
   FileIdentifier,
   filesystemImporter,
   ImportedFile,
   Importer,
   PathBasedImporter,
-  PluginOptionsReader,
+  ResolvedConfiguration as CSSBlocksConfiguration,
 } from "css-blocks";
 import * as path from "path";
 
@@ -31,7 +30,7 @@ export class GlimmerImporter extends PathBasedImporter {
       return null;
     }
   }
-  defaultName(identifier: FileIdentifier, options: PluginOptionsReader) {
+  defaultName(identifier: FileIdentifier, options: CSSBlocksConfiguration) {
     let specifier = this.demangle(identifier);
     if (specifier) {
       let parsedSpecifier = parseSpecifier(specifier);
@@ -44,7 +43,7 @@ export class GlimmerImporter extends PathBasedImporter {
       return this.otherImporter.defaultName(identifier, options);
     }
   }
-  identifier(fromFile: FileIdentifier | null, importPath: string, options: PluginOptionsReader): FileIdentifier {
+  identifier(fromFile: FileIdentifier | null, importPath: string, options: CSSBlocksConfiguration): FileIdentifier {
     let referrer = this.demangle(fromFile) || undefined;
     let resolution: ResolvedPath | null;
     try {
@@ -84,7 +83,7 @@ export class GlimmerImporter extends PathBasedImporter {
       }
     }
   }
-  filesystemPath(identifier: string, options: PluginOptionsReader): string | null {
+  filesystemPath(identifier: string, options: CSSBlocksConfiguration): string | null {
     let specifier = this.demangle(identifier);
     if (specifier) {
       let resolution = this.project.resolve(specifier);
@@ -97,7 +96,7 @@ export class GlimmerImporter extends PathBasedImporter {
       return this.otherImporter.filesystemPath(identifier, options);
     }
   }
-  debugIdentifier(identifier: string, options: CssBlockOptionsReadonly): string {
+  debugIdentifier(identifier: string, options: CSSBlocksConfiguration): string {
     let specifier = this.demangle(identifier);
     if (specifier) {
       let resolution = this.project.resolve(specifier);
@@ -110,7 +109,7 @@ export class GlimmerImporter extends PathBasedImporter {
       return this.otherImporter.debugIdentifier(identifier, options);
     }
   }
-  import(identifier: FileIdentifier, options: PluginOptionsReader): Promise<ImportedFile> {
+  import(identifier: FileIdentifier, options: CSSBlocksConfiguration): Promise<ImportedFile> {
     let specifier = this.demangle(identifier);
     if (specifier) {
       let resolution = this.project.resolveFile(specifier);

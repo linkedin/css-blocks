@@ -3,20 +3,11 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import {
-  BlockFactory,
-} from "../src/BlockParser";
-import {
-  OptionsReader,
-} from "../src/OptionsReader";
 import cssBlocks = require("../src/cssBlocks");
 import { AttrValue } from "../src/index";
-import {
-  PluginOptions,
-} from "../src/options";
 
 import { BEMProcessor } from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
+import { setupImporting } from "./util/setupImporting";
 
 @suite("Attribute container")
 export class AttributeContainerTest extends BEMProcessor {
@@ -32,7 +23,7 @@ export class AttributeContainerTest extends BEMProcessor {
   }
 
   @test "finds boolean attributes"() {
-    let imports = new MockImportRegistry();
+    let { imports, importer, config, factory } = setupImporting();
     let filename = "foo/bar/a-block.css";
     imports.registerSource(
       filename,
@@ -41,12 +32,7 @@ export class AttributeContainerTest extends BEMProcessor {
        .foo[state|small] { font-size: 5px; }`,
     );
 
-    let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
-
-    return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
+    return factory.getBlock(importer.identifier(null, filename, config)).then(block => {
       let attr = block.rootClass.getAttributeValue("[state|large]");
       typedAssert.isNotNull(attr).and((attr) => {
         assert.equal(attr.isPresenceRule, true);
@@ -60,8 +46,9 @@ export class AttributeContainerTest extends BEMProcessor {
       });
     });
   }
+
   @test "finds attribute groups"() {
-    let imports = new MockImportRegistry();
+    let { imports, importer, config, factory } = setupImporting();
     let filename = "foo/bar/a-block.css";
     imports.registerSource(
       filename,
@@ -73,12 +60,7 @@ export class AttributeContainerTest extends BEMProcessor {
        .foo[state|mode=expanded] { display: block; }`,
     );
 
-    let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
-
-    return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
+    return factory.getBlock(importer.identifier(null, filename, config)).then(block => {
       let sizeGroup: Array<AttrValue> = block.rootClass.getAttributeValues("[state|size]");
       assert.equal(sizeGroup.length, 2);
       assert.includeMembers(sizeGroup.map(s => s.value), ["large", "small"]);
@@ -97,7 +79,7 @@ export class AttributeContainerTest extends BEMProcessor {
     });
   }
   @test "resolves inherited attribute groups"() {
-    let imports = new MockImportRegistry();
+    let { imports, importer, config, factory } = setupImporting();
     let filename = "foo/bar/sub-block.block.css";
     imports.registerSource(
       "foo/bar/base-block.block.css",
@@ -116,12 +98,7 @@ export class AttributeContainerTest extends BEMProcessor {
        .foo[state|mode=minimized] { display: block; max-height: 200px; }`,
     );
 
-    let importer = imports.importer();
-    let options: PluginOptions = {importer: importer};
-    let reader = new OptionsReader(options);
-    let factory = new BlockFactory(reader, postcss);
-
-    return factory.getBlock(importer.identifier(null, filename, reader)).then(block => {
+    return factory.getBlock(importer.identifier(null, filename, config)).then(block => {
       let sizeGroup = block.rootClass.resolveAttributeValues("[state|size]");
       assert.equal(sizeGroup.size, 3);
       assert.includeMembers([...sizeGroup.keys()], ["large", "small", "tiny"]);

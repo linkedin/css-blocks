@@ -6,8 +6,9 @@ import {
 import { whatever } from "@opticss/util";
 import {
   Block,
-  PluginOptions as CssBlocksOpts,
-  PluginOptionsReader as CssBlocksOptionsReader,
+  Options as CSSBlocksOptions,
+  resolveConfiguration,
+  ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
@@ -29,7 +30,7 @@ export class Rewriter implements NodeVisitor {
   syntax: Syntax;
   block: Block;
   styleMapping: StyleMapping;
-  cssBlocksOpts: CssBlocksOptionsReader;
+  cssBlocksOpts: CSSBlocksConfiguration;
 
   private elementAnalyzer: ElementAnalyzer;
 
@@ -37,14 +38,14 @@ export class Rewriter implements NodeVisitor {
     syntax: Syntax,
     styleMapping: StyleMapping,
     analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile">,
-    cssBlocksOpts: CssBlocksOpts,
+    cssBlocksOpts: CSSBlocksOptions,
   ) {
     this.syntax        = syntax;
     this.analysis      = analysis;
     this.template      = <ResolvedFile>analysis.template;
     this.block         = analysis.blocks[""];
     this.styleMapping  = styleMapping;
-    this.cssBlocksOpts = new CssBlocksOptionsReader(cssBlocksOpts);
+    this.cssBlocksOpts = resolveConfiguration(cssBlocksOpts);
     this.elementCount  = 0;
     this.elementAnalyzer = new ElementAnalyzer(this.block, this.template, this.cssBlocksOpts);
   }

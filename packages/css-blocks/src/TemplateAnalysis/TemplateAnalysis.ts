@@ -21,7 +21,7 @@ import { IdentGenerator } from "opticss";
 
 import { Block, Style } from "../Block";
 import { BlockFactory } from "../BlockParser";
-import { OptionsReader } from "../OptionsReader";
+import { ResolvedConfiguration } from "../configuration";
 
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
 import { StyleAnalysis } from "./StyleAnalysis";
@@ -368,10 +368,10 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     });
   }
 
-  forOptimizer(opts: OptionsReader): OptimizationTemplateAnalysis<K> {
+  forOptimizer(config: ResolvedConfiguration): OptimizationTemplateAnalysis<K> {
     let optAnalysis = new OptimizationTemplateAnalysis<K>(this.template);
     for (let element of this.elements.values()) {
-      let result = element.forOptimizer(opts);
+      let result = element.forOptimizer(config);
       optAnalysis.elements.push(result[0]);
     }
     return optAnalysis;
