@@ -8,7 +8,7 @@ import { BlockFactory } from "../../src/BlockParser";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import * as cssBlocks from "../../src/errors";
 import { normalizeOptions } from "../../src/normalizeOptions";
-import { SparseOptions } from "../../src/options";
+import { Options } from "../../src/options";
 
 import { MockImportRegistry } from "../util/MockImportRegistry";
 import { assertParseError } from "../util/assertError";
@@ -18,7 +18,7 @@ type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Property Conflict Validator")
 export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: SparseOptions, blockName = "analysis"): Promise<BlockAndRoot> {
+  private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
     let options = normalizeOptions(opts);
     let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, { from: filename });
@@ -185,7 +185,7 @@ export class TemplateAnalysisTests {
 
   @test "static roots throw error when a property is unresolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -218,7 +218,7 @@ export class TemplateAnalysisTests {
 
   @test "static roots pass error when a property is explicitly resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -244,7 +244,7 @@ export class TemplateAnalysisTests {
 
   @test "static classes throw error when a property is unresolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -280,7 +280,7 @@ export class TemplateAnalysisTests {
 
   @test "static classes pass when a property is explicitly resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -308,7 +308,7 @@ export class TemplateAnalysisTests {
 
   @test "static root and class throw error when a property is unresolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -342,7 +342,7 @@ export class TemplateAnalysisTests {
 
   @test "static root and class pass when properties are explicitly unresolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -368,7 +368,7 @@ export class TemplateAnalysisTests {
 
   @test "mixed static classes and states do not throw when on the same block"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     let css = `
       .foo { color: red; }
@@ -385,7 +385,7 @@ export class TemplateAnalysisTests {
 
   @test "dynamic classes do not throw when on the same block"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     let css = `
       .foo { color: red; }
@@ -401,7 +401,7 @@ export class TemplateAnalysisTests {
 
   @test "dynamic root and class throw error when a property is unresolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -435,7 +435,7 @@ export class TemplateAnalysisTests {
 
   @test "dynamic root and class do not throw error when properties are resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -461,7 +461,7 @@ export class TemplateAnalysisTests {
 
   @test "dynamic root and class throw error when a on same side of ternary"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -495,7 +495,7 @@ export class TemplateAnalysisTests {
 
   @test "dynamic root and class do not throw error when a on same side of ternary and explicitly resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -521,7 +521,7 @@ export class TemplateAnalysisTests {
 
   @test "dynamic root and class pass when on opposite sides of ternary"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -543,7 +543,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting classes and dynamic states throw"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -578,7 +578,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting classes and dynamic states do not throw when all properties are resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -604,7 +604,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting static states throw when a property is unresolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
@@ -637,7 +637,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting static states pass when a property is explicitly resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       .klass {}
@@ -659,7 +659,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting dynamic states throw"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
@@ -695,7 +695,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting dynamic states do not throw when all properties are resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
@@ -722,7 +722,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting classes and dynamic state groups throw"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; color: blue; background-color: yellow; }
@@ -758,7 +758,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting classes and dynamic state groups do not throw when all properties are resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; color: blue; background-color: yellow; }
@@ -781,7 +781,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting dynamic state groups throw"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; color: blue; background-color: yellow; }
@@ -823,7 +823,7 @@ export class TemplateAnalysisTests {
 
   @test "multiple conflicts on same property display correct error"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -864,7 +864,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting roots pass when a property is explicitly resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -885,7 +885,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicting classes pass when a property is explicitly resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -906,7 +906,7 @@ export class TemplateAnalysisTests {
 
   @test "Block references in resolve statements that can't be resolved throw helpful error"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     let css = `
       :scope { block-name: block-a; }
@@ -925,7 +925,7 @@ export class TemplateAnalysisTests {
 
   @test "Style paths in resolve statements that can't be resolved throw helpful error"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -950,7 +950,7 @@ export class TemplateAnalysisTests {
 
   @test "resolutions don't leak out of pseudos"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -985,7 +985,7 @@ export class TemplateAnalysisTests {
 
   @test "conflict validator expands shorthands"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -1020,7 +1020,7 @@ export class TemplateAnalysisTests {
 
   @test "conflict validator expands shorthands and manages longhand re-declarations"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -1051,7 +1051,7 @@ export class TemplateAnalysisTests {
 
   @test "conflict validator expands shorthands and uses lowest common property"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -1086,7 +1086,7 @@ export class TemplateAnalysisTests {
 
   @test "conflict validator expands shorthands and manages multiple longhand conflicts"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",
@@ -1121,7 +1121,7 @@ export class TemplateAnalysisTests {
 
   @test "conflicts may be resolved by a shorthand"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: b; }
@@ -1143,7 +1143,7 @@ export class TemplateAnalysisTests {
 
   @test "shorthand conflicts cannot be resolved by a longhand"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: b-block; }
@@ -1175,7 +1175,7 @@ export class TemplateAnalysisTests {
 
   @test "conflict validation errors are thrown on custom properties"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
@@ -1207,7 +1207,7 @@ export class TemplateAnalysisTests {
 
   @test "custom properties may be resolved"() {
     let imports = new MockImportRegistry();
-    let options: SparseOptions = { importer: imports.importer() };
+    let options: Options = { importer: imports.importer() };
 
     imports.registerSource(
       "blocks/b.block.css",

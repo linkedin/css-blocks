@@ -21,7 +21,7 @@ import { TemplateAnalysis } from "../src/TemplateAnalysis";
 import { ElementAnalysis } from "../src/TemplateAnalysis/ElementAnalysis";
 import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
 import { normalizeOptions } from "../src/normalizeOptions";
-import { SparseOptions } from "../src/options";
+import { Options } from "../src/options";
 
 type BlockAndRoot = [Block, postcss.Container];
 
@@ -29,7 +29,7 @@ type Analysis = TemplateAnalysis<"Opticss.Template">;
 
 @suite("Optimization")
 export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: SparseOptions, blockName = "optimized"): Promise<BlockAndRoot> {
+  private parseBlock(css: string, filename: string, opts?: Options, blockName = "optimized"): Promise<BlockAndRoot> {
     let options = normalizeOptions(opts);
     let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, {from: filename});

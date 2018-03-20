@@ -13,7 +13,7 @@ import { whatever } from "@opticss/util";
 import {
   BlockFactory,
   Importer,
-  SparseOptions,
+  Options as CSSBlocksOptions,
 } from "css-blocks";
 
 declare module "@opticss/template-api" {
@@ -62,7 +62,7 @@ export interface GlimmerProject {
   registry: BasicModuleRegistry;
   blockImporter: Importer;
   blockFactory: BlockFactory;
-  cssBlocksOpts: SparseOptions;
+  cssBlocksOpts: CSSBlocksOptions;
 
   resolveStylesheet(glimmerIdentifier: string, fromGlimmerIdentifier?: string): ResolvedPath | null;
   resolveTemplate(glimmerIdentifier: string, fromGlimmerIdentifier?: string): ResolvedPath | null;

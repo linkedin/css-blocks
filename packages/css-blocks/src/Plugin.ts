@@ -4,8 +4,8 @@ import { BlockCompiler } from "./BlockCompiler";
 import { BlockFactory } from "./BlockParser";
 import * as errors from "./errors";
 import { normalizeOptions } from "./normalizeOptions";
-import { ResolvedConfiguration, SparseOptions } from "./options";
-export { SparseOptions } from "./options";
+import { Options, ResolvedConfiguration } from "./options";
+export { Options } from "./options";
 
 /**
  * CSS Blocks PostCSS plugin.
@@ -18,7 +18,7 @@ export class Plugin {
    * @param  postcssImpl  PostCSS instance to use
    * @param  opts  Optional plugin config options
    */
-  constructor(postcssImpl: typeof postcss, opts?: SparseOptions) {
+  constructor(postcssImpl: typeof postcss, opts?: Options) {
     this.config = normalizeOptions(opts);
     this.postcss = postcssImpl;
   }

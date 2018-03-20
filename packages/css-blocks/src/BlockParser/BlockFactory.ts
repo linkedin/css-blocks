@@ -7,7 +7,7 @@ import { RawSourceMap } from "source-map";
 import { Block } from "../Block";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
 import { normalizeOptions } from "../normalizeOptions";
-import { ResolvedConfiguration, SparseOptions } from "../options";
+import { Options, ResolvedConfiguration } from "../options";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";
@@ -46,7 +46,7 @@ export class BlockFactory {
   private paths: ObjectDictionary<string>;
   private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
-  constructor(options: SparseOptions, postcssImpl = postcss) {
+  constructor(options: Options, postcssImpl = postcss) {
     this.postcssImpl = postcssImpl;
     this.configuration = normalizeOptions(options);
     this.importer = this.configuration.importer;

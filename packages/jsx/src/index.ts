@@ -11,8 +11,8 @@ import {
   BlockFactory,
   MultiTemplateAnalyzer,
   normalizeOptions as normalizeOptions,
+  Options as CSSBlocksOptions,
   ResolvedConfiguration as CSSBlocksConfiguration,
-  SparseOptions as CssBlocksOptions,
 } from "css-blocks";
 import * as typescript from "typescript";
 
@@ -45,7 +45,7 @@ export interface JSXAnalyzerOptions {
    baseDir: string;
    parserOptions?: object;
    aliases?: ObjectDictionary<string>;
-   compilationOptions?: CssBlocksOptions;
+   compilationOptions?: CSSBlocksOptions;
  }
 
 const defaultOptions: JSXAnalyzerOptions = {

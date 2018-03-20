@@ -4,7 +4,7 @@ import { Block } from "../Block";
 import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
 import { normalizeOptions } from "../normalizeOptions";
-import { ResolvedConfiguration, SparseOptions } from "../options";
+import { Options, ResolvedConfiguration } from "../options";
 
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { constructBlock } from "./features/construct-block";
@@ -35,7 +35,7 @@ export class BlockParser {
   private config: ResolvedConfiguration;
   private factory: BlockFactory;
 
-  constructor(opts: SparseOptions, factory: BlockFactory) {
+  constructor(opts: Options, factory: BlockFactory) {
     this.config = normalizeOptions(opts);
     this.factory = factory;
   }

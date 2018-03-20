@@ -1,11 +1,11 @@
 import { ObjectDictionary, whatever } from "@opticss/util";
-import { normalizeOptions as normalizeOptions, ResolvedConfiguration as CSSBlocksConfiguration, SparseOptions as PluginOptions, StyleMapping } from "css-blocks";
+import { normalizeOptions as normalizeOptions, Options as CSSBlocksOptions, ResolvedConfiguration as CSSBlocksConfiguration, StyleMapping } from "css-blocks";
 
 export interface RewriterOptions {
   meta?: ObjectDictionary<whatever>;
   cssBlocks: {
     styleMapping: StyleMapping | null;
-    compilationOptions: PluginOptions;
+    compilationOptions: CSSBlocksOptions;
   };
 }
 

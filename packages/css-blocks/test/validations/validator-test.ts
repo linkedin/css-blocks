@@ -8,14 +8,14 @@ import { BlockFactory } from "../../src/BlockParser";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import { TemplateAnalysisError } from "../../src/errors";
 import { normalizeOptions } from "../../src/normalizeOptions";
-import { SparseOptions } from "../../src/options";
+import { Options } from "../../src/options";
 import { assertParseError } from "../util/assertError";
 
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Validators")
 export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: SparseOptions, blockName = "analysis"): Promise<BlockAndRoot> {
+  private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
     let options = normalizeOptions(opts);
     let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, { from: filename });

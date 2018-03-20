@@ -1,6 +1,6 @@
 import {
+  Options,
   ResolvedConfiguration,
-  SparseOptions,
 } from "./options";
 
 import { OutputMode } from "./OutputMode";
@@ -30,7 +30,7 @@ const DEFAULTS: ResolvedConfiguration = {
 class OptionsReader implements ResolvedConfiguration {
   private _opts: ResolvedConfiguration;
 
-  constructor(options: SparseOptions = {}, defaults: SparseOptions = {}) {
+  constructor(options: Options = {}, defaults: Options = {}) {
     this._opts = {...DEFAULTS};
     for (let k of Object.keys(defaults)) {
       if (defaults[k] !== undefined) {
@@ -66,7 +66,7 @@ class OptionsReader implements ResolvedConfiguration {
   }
 }
 
-export function normalizeOptions(options: SparseOptions | undefined, defaults?: SparseOptions): ResolvedConfiguration {
+export function normalizeOptions(options: Options | undefined, defaults?: Options): ResolvedConfiguration {
   if (options instanceof OptionsReader) {
     return options;
   } else {

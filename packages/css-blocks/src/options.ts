@@ -27,7 +27,7 @@ export interface Configuration {
 /**
  * Valid user-provided options for the CSS Blocks plugin.
  */
-export type SparseOptions = Partial<Readonly<Configuration>>;
+export type Options = Partial<Readonly<Configuration>>;
 
 /**
  * Options that can/will be read but not changed. Default

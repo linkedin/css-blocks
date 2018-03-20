@@ -5,14 +5,14 @@ import * as postcss from "postcss";
 import { Block } from "../src/Block";
 import { BlockFactory } from "../src/BlockParser";
 import { normalizeOptions } from "../src/normalizeOptions";
-import { SparseOptions } from "../src/options";
+import { Options } from "../src/options";
 import { QueryKeySelector } from "../src/query";
 
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Querying")
 export class KeyQueryTests {
-  private parseBlock(css: string, filename: string, opts?: SparseOptions): Promise<BlockAndRoot> {
+  private parseBlock(css: string, filename: string, opts?: Options): Promise<BlockAndRoot> {
     let options = normalizeOptions(opts);
     let factory = new BlockFactory(options, postcss);
     let root = postcss.parse(css, {from: filename});

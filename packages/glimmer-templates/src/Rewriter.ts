@@ -7,8 +7,8 @@ import { whatever } from "@opticss/util";
 import {
   Block,
   normalizeOptions,
+  Options as CSSBlocksOptions,
   ResolvedConfiguration as CSSBlocksConfiguration,
-  SparseOptions as CssBlocksOpts,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
@@ -38,7 +38,7 @@ export class Rewriter implements NodeVisitor {
     syntax: Syntax,
     styleMapping: StyleMapping,
     analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile">,
-    cssBlocksOpts: CssBlocksOpts,
+    cssBlocksOpts: CSSBlocksOptions,
   ) {
     this.syntax        = syntax;
     this.analysis      = analysis;

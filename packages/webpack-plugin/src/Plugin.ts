@@ -16,7 +16,7 @@ import {
   MetaTemplateAnalysis,
   MultiTemplateAnalyzer,
   normalizeOptions,
-  SparseOptions as CssBlocksOptions,
+  Options as CSSBlocksOptions,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
@@ -36,7 +36,7 @@ export interface CssBlocksWebpackOptions {
   /// The output css file for all compiled CSS Blocks. Defaults to "css-blocks.css"
   outputCssFile?: string;
   /// Compilation options pass to css-blocks
-  compilationOptions?: Partial<CssBlocksOptions>;
+  compilationOptions?: CSSBlocksOptions;
   /// Optimization options passed to opticss
   optimization?: OptiCSSOptions;
 }
@@ -72,7 +72,7 @@ export class CssBlocksRewriterPlugin
   implements WebpackPlugin
 {
   parent: CssBlocksPlugin;
-  compilationOptions: CssBlocksOptions;
+  compilationOptions: CSSBlocksOptions;
   outputCssFile: string;
   name: string;
   debug: debugGenerator.IDebugger;
@@ -129,7 +129,7 @@ export class CssBlocksPlugin
   analyzer: MultiTemplateAnalyzer;
   projectDir: string;
   outputCssFile: string;
-  compilationOptions: CssBlocksOptions;
+  compilationOptions: CSSBlocksOptions;
   debug: debugGenerator.IDebugger;
 
   constructor(options: CssBlocksWebpackOptions) {

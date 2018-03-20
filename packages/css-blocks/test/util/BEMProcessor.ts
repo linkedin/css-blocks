@@ -2,10 +2,10 @@ import * as perfectionist from "perfectionist";
 import * as postcss from "postcss";
 
 import cssBlocks = require("../../src/cssBlocks");
-import { SparseOptions } from "../../src/options";
+import { Options } from "../../src/options";
 
 export class BEMProcessor {
-  process(filename: string, contents: string, cssBlocksOpts?: SparseOptions) {
+  process(filename: string, contents: string, cssBlocksOpts?: Options) {
     let processOpts = { from: filename };
     let cssBlocksProcessor = cssBlocks(postcss);
     return postcss([
