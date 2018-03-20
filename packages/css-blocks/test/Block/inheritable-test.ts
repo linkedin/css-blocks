@@ -2,7 +2,7 @@ import { assertNeverCalled } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { Block, BlockClass, ReadonlyOptions, RulesetContainer, SourceLocation } from "../../src";
+import { Block, BlockClass, ResolvedConfiguration, RulesetContainer, SourceLocation } from "../../src";
 import { Inheritable } from "../../src/Block/Inheritable";
 
 type RootNode = Inheritable<
@@ -100,7 +100,7 @@ class TestSink extends Inheritable<
     this.rulesets = new RulesetContainer(new BlockClass(name, TEST_BLOCK));
   }
 
-  public cssClass(_opts: ReadonlyOptions): string {
+  public cssClass(_opts: ResolvedConfiguration): string {
     throw new Error("Method not implemented.");
   }
   public asSource(): string {

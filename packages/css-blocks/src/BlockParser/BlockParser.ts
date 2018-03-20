@@ -4,7 +4,7 @@ import { Block } from "../Block";
 import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
 import { normalizeOptions } from "../normalizeOptions";
-import { ReadonlyOptions, SparseOptions } from "../options";
+import { ResolvedConfiguration, SparseOptions } from "../options";
 
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { constructBlock } from "./features/construct-block";
@@ -32,7 +32,7 @@ export interface ParsedSource {
  * interface is `BlockParser.parse`.
  */
 export class BlockParser {
-  private opts: ReadonlyOptions;
+  private opts: ResolvedConfiguration;
   private factory: BlockFactory;
 
   constructor(opts: SparseOptions, factory: BlockFactory) {

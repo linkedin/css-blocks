@@ -6,7 +6,7 @@ import {
   ImportedFile,
   Importer,
   PathBasedImporter,
-  ReadonlyOptions,
+  ResolvedConfiguration,
   Syntax,
 } from "../../src";
 
@@ -24,7 +24,7 @@ export class MockImporter extends PathBasedImporter {
     super();
     this.registry = registry;
   }
-  identifier(fromFile: string | null, importPath: string, _options: ReadonlyOptions) {
+  identifier(fromFile: string | null, importPath: string, _options: ResolvedConfiguration) {
     if (fromFile) {
       let sourceDir: string = path.dirname(fromFile);
       return this.registry.relativize(path.resolve(sourceDir, importPath));
@@ -32,7 +32,7 @@ export class MockImporter extends PathBasedImporter {
       return importPath;
     }
   }
-  import(resolvedPath: string, options: ReadonlyOptions): Promise<ImportedFile> {
+  import(resolvedPath: string, options: ResolvedConfiguration): Promise<ImportedFile> {
     return new Promise<ImportedFile>((resolve, reject) => {
       let source = this.registry.sources[resolvedPath];
       if (source) {

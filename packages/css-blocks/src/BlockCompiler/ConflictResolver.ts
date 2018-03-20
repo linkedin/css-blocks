@@ -8,7 +8,7 @@ import { getBlockNode } from "../BlockParser";
 import { RESOLVE_RE } from "../BlockSyntax";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
 import * as errors from "../errors";
-import { ReadonlyOptions } from "../options";
+import { ResolvedConfiguration } from "../options";
 import { QueryKeySelector } from "../query";
 
 import { Conflicts, detectConflicts } from "./conflictDetection";
@@ -61,9 +61,9 @@ function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
  * resolves property values accordingly.
  */
 export class ConflictResolver {
-  readonly opts: ReadonlyOptions;
+  readonly opts: ResolvedConfiguration;
 
-  constructor(opts: ReadonlyOptions) {
+  constructor(opts: ResolvedConfiguration) {
     this.opts = opts;
   }
 

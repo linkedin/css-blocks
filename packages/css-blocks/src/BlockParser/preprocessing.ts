@@ -5,7 +5,7 @@ import {
 } from "source-map";
 
 import {
-  ReadonlyOptions,
+  ResolvedConfiguration,
 } from "../options";
 
 export enum Syntax {
@@ -41,7 +41,7 @@ export interface ProcessedFile {
 }
 
 // export type ContentPreprocessor = (content: string) => Promise<ProcessedFile>;
-export type Preprocessor = (fullPath: string, content: string, options: ReadonlyOptions, sourceMap?: RawSourceMap | string) => Promise<ProcessedFile>;
+export type Preprocessor = (fullPath: string, content: string, options: ResolvedConfiguration, sourceMap?: RawSourceMap | string) => Promise<ProcessedFile>;
 
 /**
  * A map of supported syntaxes to the preprocessor function for that syntax.

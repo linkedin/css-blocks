@@ -2,7 +2,7 @@ import c$$ from "@css-blocks/runtime";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as babel from "babel-core";
 import { assert } from "chai";
-import { BlockCompiler, SparseOptions, StyleMapping, normalizeOptions } from "css-blocks";
+import { BlockCompiler, normalizeOptions, SparseOptions, StyleMapping } from "css-blocks";
 import { skip, suite, test } from "mocha-typescript";
 import { OptiCSSOptions, OptimizationResult, Optimizer  } from "opticss";
 import * as postcss from "postcss";

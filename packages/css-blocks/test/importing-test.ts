@@ -13,7 +13,7 @@ import {
   normalizeOptions,
 } from "../src/normalizeOptions";
 import {
-  ReadonlyOptions,
+  ResolvedConfiguration,
   SparseOptions,
 } from "../src/options";
 
@@ -21,7 +21,7 @@ const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.resolve(FIXTURES, "filesystemImporter");
 const ALIAS_FIXTURES = path.resolve(FIXTURES, "pathAliasImporter");
 
-function getOptions(options?: SparseOptions): ReadonlyOptions {
+function getOptions(options?: SparseOptions): ResolvedConfiguration {
   return normalizeOptions(options, {rootDir: path.join(FSI_FIXTURES)});
 }
 

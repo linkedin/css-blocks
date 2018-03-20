@@ -33,4 +33,4 @@ export type SparseOptions = Partial<Readonly<Configuration>>;
  * Options that can/will be read but not changed. Default
  * values will have already been provided.
  */
-export type ReadonlyOptions = Readonly<Configuration>;
+export type ResolvedConfiguration = Readonly<Configuration>;

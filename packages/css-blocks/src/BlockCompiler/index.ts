@@ -10,7 +10,7 @@ import {
 } from "../BlockSyntax";
 import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
 import { normalizeOptions } from "../normalizeOptions";
-import { ReadonlyOptions, SparseOptions } from "../options";
+import { ResolvedConfiguration, SparseOptions } from "../options";
 
 import { ConflictResolver } from "./ConflictResolver";
 /**
@@ -18,7 +18,7 @@ import { ConflictResolver } from "./ConflictResolver";
  * interface is `BlockParser.parse`.
  */
 export class BlockCompiler {
-  private opts: ReadonlyOptions;
+  private opts: ResolvedConfiguration;
   private postcss: typeof postcss;
 
   constructor(postcssImpl: typeof postcss, opts?: SparseOptions) {

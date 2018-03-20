@@ -8,7 +8,7 @@ import { assertNever, assertNeverCalled } from "@opticss/util";
 
 import { ATTR_PRESENT } from "../BlockSyntax";
 import { OutputMode } from "../OutputMode";
-import { ReadonlyOptions } from "../options";
+import { ResolvedConfiguration } from "../options";
 
 import { Attribute } from "./Attribute";
 import { Block } from "./Block";
@@ -78,7 +78,7 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
     return this.parent.asSource(this.value);
   }
 
-  public cssClass(opts: ReadonlyOptions): string {
+  public cssClass(opts: ResolvedConfiguration): string {
     switch (opts.outputMode) {
       case OutputMode.BEM:
         return `${this.parent.cssClass(opts)}${ this.isPresenceRule ? "" : `-${this.value}`}`;

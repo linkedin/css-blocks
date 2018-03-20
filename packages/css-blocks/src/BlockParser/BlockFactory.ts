@@ -7,7 +7,7 @@ import { RawSourceMap } from "source-map";
 import { Block } from "../Block";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
 import { normalizeOptions } from "../normalizeOptions";
-import { ReadonlyOptions, SparseOptions } from "../options";
+import { ResolvedConfiguration, SparseOptions } from "../options";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";
@@ -36,7 +36,7 @@ interface ErrorWithErrNum {
 export class BlockFactory {
   postcssImpl: typeof postcss;
   importer: Importer;
-  options: ReadonlyOptions;
+  options: ResolvedConfiguration;
   blockNames: ObjectDictionary<number>;
   parser: BlockParser;
   preprocessors: Preprocessors;
@@ -217,7 +217,7 @@ export class BlockFactory {
     if (firstPreprocessor) {
       if (syntax !== Syntax.css && this.preprocessors.css && !this.options.disablePreprocessChaining) {
         let cssProcessor = this.preprocessors.css;
-        preprocessor = (fullPath: string, content: string, options: ReadonlyOptions): Promise<ProcessedFile> => {
+        preprocessor = (fullPath: string, content: string, options: ResolvedConfiguration): Promise<ProcessedFile> => {
           return firstPreprocessor!(fullPath, content, options).then(result => {
             let content = result.content.toString();
             return cssProcessor(fullPath, content, options, sourceMapFromProcessedFile(result)).then(result2 => {
@@ -235,7 +235,7 @@ export class BlockFactory {
     } else if (syntax !== Syntax.css) {
       throw new Error(`No preprocessor provided for ${syntaxName(syntax)}.`);
     } else {
-      preprocessor = (_fullPath: string, content: string, _options: ReadonlyOptions): Promise<ProcessedFile> => {
+      preprocessor = (_fullPath: string, content: string, _options: ResolvedConfiguration): Promise<ProcessedFile> => {
         return Promise.resolve({
           content: content,
         });

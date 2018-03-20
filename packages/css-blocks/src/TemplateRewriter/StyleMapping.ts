@@ -3,7 +3,7 @@ import { StyleMapping as OptimizedMapping, TemplateTypes } from "@opticss/templa
 import { Block, Style } from "../Block";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { ElementAnalysis } from "../TemplateAnalysis/ElementAnalysis";
-import { ReadonlyOptions } from "../options";
+import { ResolvedConfiguration } from "../options";
 
 import { IndexedClassRewrite } from "./ClassRewrite";
 import { IndexedClassMapping, RewriteMapping } from "./RewriteMapping";
@@ -12,13 +12,13 @@ export class StyleMapping {
   analyses: Array<TemplateAnalysis<keyof TemplateTypes>> | undefined;
   /** The blocks that were used to create this mapping. */
   blocks: Set<Block>;
-  private options: ReadonlyOptions;
+  private options: ResolvedConfiguration;
   private optimizedMap: OptimizedMapping;
 
   constructor(
     optimizedMap: OptimizedMapping,
     blocks: Iterable<Block>,
-    options: ReadonlyOptions,
+    options: ResolvedConfiguration,
     analyses?: Array<TemplateAnalysis<keyof TemplateTypes>>,
   ) {
     this.options = options;

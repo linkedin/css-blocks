@@ -1,5 +1,5 @@
 import { ObjectDictionary, whatever } from "@opticss/util";
-import { ReadonlyOptions as CssBlockOptionsReadonly, SparseOptions as PluginOptions, normalizeOptions as normalizeOptions, StyleMapping } from "css-blocks";
+import { normalizeOptions as normalizeOptions, ResolvedConfiguration as CSSBlocksConfiguration, SparseOptions as PluginOptions, StyleMapping } from "css-blocks";
 
 export interface RewriterOptions {
   meta?: ObjectDictionary<whatever>;
@@ -17,7 +17,7 @@ export interface RewriterOptions {
 export class CSSBlocksJSXTransformer {
 
   styleMapping: StyleMapping | null;
-  cssBlockOptions: CssBlockOptionsReadonly;
+  cssBlockOptions: CSSBlocksConfiguration;
   blocks: ObjectDictionary<StyleMapping> = {};
 
   constructor(opts?: RewriterOptions) {

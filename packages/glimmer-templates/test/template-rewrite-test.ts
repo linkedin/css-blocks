@@ -1,6 +1,6 @@
 import { preprocess, print } from "@glimmer/syntax";
 import { assert } from "chai";
-import { BlockCompiler, ReadonlyOptions, StyleMapping } from "css-blocks";
+import { BlockCompiler, ResolvedConfiguration as CSSBlocksConfiguration, StyleMapping } from "css-blocks";
 import fs = require("fs");
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";
@@ -22,6 +22,7 @@ function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer): Promise<CSSAndMap
   let blockOpts = analyzer.project.cssBlocksOpts;
   return analyzer.analyze().then(analysis => {
     let blocks = analysis.transitiveBlockDependencies();
+    console.log("test opts", blockOpts);
     let optimizerAnalysis = analysis.forOptimizer(blockOpts);
     let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
     let compiler = new BlockCompiler(postcss, blockOpts);
@@ -42,7 +43,7 @@ function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer): Promise<CSSAndMap
   });
 }
 
-function pretendToBeWebPack(result: CSSAndMapping, templatePath: string, cssBlocksOpts: ReadonlyOptions) {
+function pretendToBeWebPack(result: CSSAndMapping, templatePath: string, cssBlocksOpts: CSSBlocksConfiguration) {
   let fakeLoaderContext = {
     resourcePath: templatePath,
     cssBlocks: {

@@ -6,7 +6,7 @@ import {
   BlockFactory,
   Preprocessors,
   ProcessedFile,
-  ReadonlyOptions,
+  ResolvedConfiguration,
   Syntax,
 } from "../src/index";
 import { normalizeOptions } from "../src/normalizeOptions";
@@ -36,7 +36,7 @@ export class PreprocessorTest {
     let registry = new MockImportRegistry();
     registry.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
     let preprocessors: Preprocessors = {
-      other: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
+      other: (_fullPath: string, content: string, _options: ResolvedConfiguration, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `:scope { block-name: ${content}; color: red; }`,
         };
@@ -55,13 +55,13 @@ export class PreprocessorTest {
     let registry = new MockImportRegistry();
     registry.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
     let preprocessors: Preprocessors = {
-      other: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
+      other: (_fullPath: string, content: string, _options: ResolvedConfiguration, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `:scope { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },
-      css: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
+      css: (_fullPath: string, content: string, _options: ResolvedConfiguration, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `${content} .injected { width: 100%; }`,
         };
@@ -83,13 +83,13 @@ export class PreprocessorTest {
     let registry = new MockImportRegistry();
     registry.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
     let preprocessors: Preprocessors = {
-      other: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
+      other: (_fullPath: string, content: string, _options: ResolvedConfiguration, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `:scope { block-name: ${content}; color: red; }`,
         };
         return Promise.resolve(file);
       },
-      css: (_fullPath: string, content: string, _options: ReadonlyOptions, _sourceMap?: RawSourceMap | string) => {
+      css: (_fullPath: string, content: string, _options: ResolvedConfiguration, _sourceMap?: RawSourceMap | string) => {
         let file: ProcessedFile = {
           content: `${content} .injected { width: 100%; }`,
         };

@@ -4,14 +4,14 @@ import { BlockCompiler } from "./BlockCompiler";
 import { BlockFactory } from "./BlockParser";
 import * as errors from "./errors";
 import { normalizeOptions } from "./normalizeOptions";
-import { ReadonlyOptions, SparseOptions } from "./options";
+import { ResolvedConfiguration, SparseOptions } from "./options";
 export { SparseOptions } from "./options";
 
 /**
  * CSS Blocks PostCSS plugin.
  */
 export class Plugin {
-  private opts: ReadonlyOptions;
+  private opts: ResolvedConfiguration;
   private postcss: typeof postcss;
 
   /**

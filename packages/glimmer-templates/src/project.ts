@@ -1,8 +1,8 @@
 import {
   BlockFactory,
-  SparseOptions,
-  ReadonlyOptions,
   normalizeOptions,
+  ResolvedConfiguration as CSSBlocksConfiguration,
+  SparseOptions,
 } from "css-blocks";
 import * as fs from "fs";
 import * as glob from "glob";
@@ -25,13 +25,13 @@ export class Project implements GlimmerProject {
   registry: BasicModuleRegistry;
   blockImporter: GlimmerImporter;
   blockFactory: BlockFactory;
-  cssBlocksOpts: ReadonlyOptions;
+  cssBlocksOpts: CSSBlocksConfiguration;
 
   constructor(projectDir: string, moduleConfig?: ModuleConfig, blockOpts?: SparseOptions) {
     this.projectDir = projectDir;
-    this.cssBlocksOpts = normalizeOptions(blockOpts || {});
-    this.blockImporter = new GlimmerImporter(this, this.cssBlocksOpts.importer);
-    this.cssBlocksOpts = Object.assign({}, this.cssBlocksOpts, { importer: this.blockImporter });
+    let fallbackImporter = normalizeOptions(blockOpts || {}).importer;
+    this.blockImporter = new GlimmerImporter(this, fallbackImporter);
+    this.cssBlocksOpts = normalizeOptions({ importer: this.blockImporter }, blockOpts || {});
     this.blockFactory = new BlockFactory(this.cssBlocksOpts, postcss);
     let pkg = this.loadPackageJSON(projectDir);
     let { name } = pkg;

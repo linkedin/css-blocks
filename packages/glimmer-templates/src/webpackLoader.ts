@@ -7,8 +7,8 @@ import {
 } from "@opticss/template-api";
 import {
   Block,
-  ReadonlyOptions as ReadonlyCssBlockOptions,
   normalizeOptions as normalizeBlockOptions,
+  ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
@@ -28,7 +28,7 @@ type LoaderContext = {
   dependency(dep: string): void;
 };
 
-function trackBlockDependencies(loaderContext: LoaderContext, blocks: Set<Block>, options: ReadonlyCssBlockOptions) {
+function trackBlockDependencies(loaderContext: LoaderContext, blocks: Set<Block>, options: CSSBlocksConfiguration) {
   for (let block of blocks) {
     let sourceFile = options.importer.filesystemPath(block.identifier, options);
     if (sourceFile !== null) {

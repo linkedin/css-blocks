@@ -3,7 +3,7 @@ import * as postcss from "postcss";
 
 import { Block } from "../../Block";
 import { BLOCK_DEBUG, parseBlockDebug } from "../../BlockSyntax";
-import { ReadonlyOptions } from "../../options";
+import { ResolvedConfiguration } from "../../options";
 
 /**
  * Process all `@block-debug` statements, output debug statement to console or in comment as requested.
@@ -11,7 +11,7 @@ import { ReadonlyOptions } from "../../options";
  * @param root PostCSS Root for block.
  * @param block Block to resolve references for
  */
-export async function processDebugStatements(root: postcss.Root, block: Block, file: string, opts: ReadonlyOptions) {
+export async function processDebugStatements(root: postcss.Root, block: Block, file: string, opts: ResolvedConfiguration) {
   root.walkAtRules(BLOCK_DEBUG, (atRule) => {
     let { block: ref, channel } = parseBlockDebug(atRule, file, block);
     let debugStr = ref.debug(opts);

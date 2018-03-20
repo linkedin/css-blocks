@@ -19,7 +19,7 @@ import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { SourceLocation } from "../SourceLocation";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
-import { ReadonlyOptions } from "../options";
+import { ResolvedConfiguration } from "../options";
 
 import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";
@@ -367,7 +367,7 @@ export class Block
     return null;
   }
 
-  rewriteSelectorNodes(nodes: selectorParser.Node[], opts: ReadonlyOptions): selectorParser.Node[] {
+  rewriteSelectorNodes(nodes: selectorParser.Node[], opts: ResolvedConfiguration): selectorParser.Node[] {
     let newNodes: selectorParser.Node[] = [];
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
@@ -382,7 +382,7 @@ export class Block
     return newNodes;
   }
 
-  rewriteSelectorToString(selector: ParsedSelector, opts: ReadonlyOptions): string {
+  rewriteSelectorToString(selector: ParsedSelector, opts: ResolvedConfiguration): string {
     let firstNewSelector = new CompoundSelector();
     let newSelector = firstNewSelector;
     let newCurrentSelector = newSelector;
@@ -402,14 +402,14 @@ export class Block
     return firstNewSelector.toString();
   }
 
-  rewriteSelector(selector: ParsedSelector, opts: ReadonlyOptions): ParsedSelector {
+  rewriteSelector(selector: ParsedSelector, opts: ResolvedConfiguration): ParsedSelector {
     // generating a string and re-parsing ensures the internal structure is consistent
     // otherwise the parent/next/prev relationships will be wonky with the new nodes.
     let s = this.rewriteSelectorToString(selector, opts);
     return parseSelector(s)[0];
   }
 
-  debug(opts: ReadonlyOptions): string[] {
+  debug(opts: ResolvedConfiguration): string[] {
     let result: string[] = [`Source: ${this.identifier}`, this.rootClass.asDebug(opts)];
     let sourceNames = new Set<string>(this.all().map(s => s.asSource()));
     let sortedNames = [...sourceNames].sort();

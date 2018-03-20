@@ -1,6 +1,6 @@
 import { Attr } from "@opticss/element-analysis";
 
-import { ReadonlyOptions } from "../options";
+import { ResolvedConfiguration } from "../options";
 import { unionInto } from "../util/unionInto";
 
 import { AnyNode, Inheritable } from "./Inheritable";
@@ -41,7 +41,7 @@ export abstract class Style<
    * @param opts Option hash configuring output mode.
    * @returns The CSS class.
    */
-  public abstract cssClass(opts: ReadonlyOptions): string;
+  public abstract cssClass(opts: ResolvedConfiguration): string;
 
   /**
    * Return the source selector this `Style` was read from.
@@ -59,7 +59,7 @@ export abstract class Style<
    * including inherited classes.
    * @returns this object's css class and all inherited classes.
    */
-  cssClasses(opts: ReadonlyOptions): string[] {
+  cssClasses(opts: ResolvedConfiguration): string[] {
     let classes: string[] = [];
     for (let style of this.resolveStyles()) {
       classes.push(style.cssClass(opts));
@@ -110,7 +110,7 @@ export abstract class Style<
    * @param opts  Options for rendering cssClass.
    * @returns A debug string.
    */
-  asDebug(opts: ReadonlyOptions) {
+  asDebug(opts: ResolvedConfiguration) {
     return `${this.asSource()} => ${this.cssClasses(opts).map(n => `.${n}`).join(" ")}`;
   }
 

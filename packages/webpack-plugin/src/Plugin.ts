@@ -15,8 +15,8 @@ import {
   BlockCompiler,
   MetaTemplateAnalysis,
   MultiTemplateAnalyzer,
-  SparseOptions as CssBlocksOptions,
   normalizeOptions,
+  SparseOptions as CssBlocksOptions,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";

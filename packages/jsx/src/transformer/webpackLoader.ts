@@ -1,4 +1,9 @@
-import { Block, ReadonlyOptions, normalizeOptions, StyleMapping } from "css-blocks";
+import {
+  Block,
+  normalizeOptions,
+  ResolvedConfiguration as CSSBlocksConfiguration,
+  StyleMapping,
+} from "css-blocks";
 import * as debugGenerator from "debug";
 
 const debug = debugGenerator("css-blocks:jsx");
@@ -8,7 +13,7 @@ type LoaderContext = {
   dependency(dep: string): void;
 };
 
-function trackBlockDependencies(loaderContext: LoaderContext, block: Block, options: ReadonlyOptions): void {
+function trackBlockDependencies(loaderContext: LoaderContext, block: Block, options: CSSBlocksConfiguration): void {
   let sourceFile = options.importer.filesystemPath(block.identifier, options);
   if (sourceFile !== null) {
     loaderContext.dependency(sourceFile);

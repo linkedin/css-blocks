@@ -5,7 +5,7 @@ import {
   BlockFactory,
   MetaTemplateAnalysis as MetaStyleAnalysis,
   MultiTemplateAnalyzer,
-  ReadonlyOptions as ReadonlyCssBlockOptions,
+  ResolvedConfiguration as CSSBlocksConfiguration,
   TemplateAnalysis as SingleTemplateStyleAnalysis,
   TemplateAnalyzer,
 } from "css-blocks";
@@ -21,7 +21,7 @@ export type AttributeContainer = Block | BlockClass;
 export class BaseStyleAnalyzer {
   project: Project;
   debug: debugGenerator.IDebugger;
-  options: ReadonlyCssBlockOptions;
+  options: CSSBlocksConfiguration;
 
   constructor(project: Project | string) {
     if (typeof project === "string") {

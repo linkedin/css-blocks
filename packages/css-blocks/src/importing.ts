@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { Syntax } from "./BlockParser";
-import { ReadonlyOptions } from "./options";
+import { ResolvedConfiguration } from "./options";
 
 declare module "./options" {
   export interface Configuration {
@@ -61,47 +61,47 @@ export interface Importer {
    * compute a unique identifier for a given import path. If `fromIdentifier` is provided,
    * the importPath can be relative to the file that is identified by it.
    */
-  identifier(fromIdentifier: FileIdentifier | null, importPath: string, options: ReadonlyOptions): FileIdentifier;
+  identifier(fromIdentifier: FileIdentifier | null, importPath: string, options: ResolvedConfiguration): FileIdentifier;
   /**
    * import the file with the given metadata and return a string and meta data for it.
    */
-  import(identifier: FileIdentifier, options: ReadonlyOptions): Promise<ImportedFile>;
+  import(identifier: FileIdentifier, options: ResolvedConfiguration): Promise<ImportedFile>;
   /**
    * the default name of the block used unless the block specifies one itself.
    */
-  defaultName(identifier: FileIdentifier, options: ReadonlyOptions): string;
+  defaultName(identifier: FileIdentifier, options: ResolvedConfiguration): string;
   /**
    * If a file identifier has an on-disk representation, return an absolute path to it.
    */
-  filesystemPath(identifier: FileIdentifier, options: ReadonlyOptions): string | null;
+  filesystemPath(identifier: FileIdentifier, options: ResolvedConfiguration): string | null;
   /**
    * Returns a string meant for human consumption that identifies the file.
    * As is used in debug statements and error reporting. Unlike filesystemPath,
    * this needn't resolve to an actual file or be an absolute path.
    */
-  debugIdentifier(identifier: FileIdentifier, options: ReadonlyOptions): string;
+  debugIdentifier(identifier: FileIdentifier, options: ResolvedConfiguration): string;
   /**
    * returns the syntax the contents are written in.
    */
-  syntax(identifier: FileIdentifier, options: ReadonlyOptions): Syntax;
+  syntax(identifier: FileIdentifier, options: ResolvedConfiguration): Syntax;
 }
 
 export abstract class PathBasedImporter implements Importer {
-  identifier(fromFile: string | null, importPath: string, options: ReadonlyOptions): string {
+  identifier(fromFile: string | null, importPath: string, options: ResolvedConfiguration): string {
     let fromDir = fromFile ? path.dirname(fromFile) : options.rootDir;
     return path.resolve(fromDir, importPath);
   }
-  defaultName(identifier: string, _options: ReadonlyOptions): string {
+  defaultName(identifier: string, _options: ResolvedConfiguration): string {
     let name = path.parse(identifier).name;
     if (name.endsWith(".block")) {
       name = name.substr(0, name.length - 6);
     }
     return name;
   }
-  filesystemPath(identifier: FileIdentifier, _options: ReadonlyOptions): string | null {
+  filesystemPath(identifier: FileIdentifier, _options: ResolvedConfiguration): string | null {
     return identifier;
   }
-  syntax(identifier: FileIdentifier, options: ReadonlyOptions): Syntax {
+  syntax(identifier: FileIdentifier, options: ResolvedConfiguration): Syntax {
     let filename = this.filesystemPath(identifier, options);
     if (filename) {
       let ext = path.extname(filename).substring(1);
@@ -123,21 +123,21 @@ export abstract class PathBasedImporter implements Importer {
       return Syntax.other;
     }
   }
-  debugIdentifier(identifier: FileIdentifier, options: ReadonlyOptions): string {
+  debugIdentifier(identifier: FileIdentifier, options: ResolvedConfiguration): string {
     return path.relative(options.rootDir, identifier);
   }
-  abstract import(identifier: FileIdentifier, options: ReadonlyOptions): Promise<ImportedFile>;
+  abstract import(identifier: FileIdentifier, options: ResolvedConfiguration): Promise<ImportedFile>;
 }
 
 export class FilesystemImporter extends PathBasedImporter {
-  filesystemPath(identifier: FileIdentifier, _options: ReadonlyOptions): string | null {
+  filesystemPath(identifier: FileIdentifier, _options: ResolvedConfiguration): string | null {
     if (path.isAbsolute(identifier) && existsSync(identifier)) {
       return identifier;
     } else {
       return null;
     }
   }
-  import(identifier: FileIdentifier, options: ReadonlyOptions): Promise<ImportedFile> {
+  import(identifier: FileIdentifier, options: ResolvedConfiguration): Promise<ImportedFile> {
     return new Promise((resolve, reject) => {
       fs.readFile(identifier, "utf-8", (err: whatever, data: string) => {
         if (err) {
@@ -211,7 +211,7 @@ export class PathAliasImporter extends FilesystemImporter {
       return b.path.length - a.path.length;
     });
   }
-  identifier(from: FileIdentifier | null, importPath: string, options: ReadonlyOptions) {
+  identifier(from: FileIdentifier | null, importPath: string, options: ResolvedConfiguration) {
     if (path.isAbsolute(importPath)) {
       return importPath;
     }
@@ -231,7 +231,7 @@ export class PathAliasImporter extends FilesystemImporter {
       return path.resolve(options.rootDir, importPath);
     }
   }
-  debugIdentifier(identifier: FileIdentifier, options: ReadonlyOptions): string {
+  debugIdentifier(identifier: FileIdentifier, options: ResolvedConfiguration): string {
     let alias = this.aliases.find(a => identifier.startsWith(a.path));
     if (alias) {
       return path.join(alias.alias, path.relative(alias.path, identifier));

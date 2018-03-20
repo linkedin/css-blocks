@@ -1,5 +1,5 @@
 import {
-  ReadonlyOptions,
+  ResolvedConfiguration,
   SparseOptions,
 } from "./options";
 
@@ -13,7 +13,7 @@ import {
 
 import { Preprocessors } from "./BlockParser";
 
-const DEFAULTS: ReadonlyOptions = {
+const DEFAULTS: ResolvedConfiguration = {
   outputMode: OutputMode.BEM,
   importer: filesystemImporter,
   rootDir: process.cwd(),
@@ -27,11 +27,21 @@ const DEFAULTS: ReadonlyOptions = {
  * Provides read-only access to options values. Provides default values if none
  * passed.
  */
-class OptionsReader implements ReadonlyOptions {
-  private _opts: ReadonlyOptions;
+class OptionsReader implements ResolvedConfiguration {
+  private _opts: ResolvedConfiguration;
 
   constructor(options: SparseOptions = {}, defaults: SparseOptions = {}) {
-    this._opts = {...DEFAULTS, ...defaults, ...options};
+    this._opts = {...DEFAULTS};
+    for (let k of Object.keys(defaults)) {
+      if (defaults[k] !== undefined) {
+        this._opts[k] = defaults[k];
+      }
+    }
+    for (let k of Object.keys(options)) {
+      if (options[k] !== undefined) {
+        this._opts[k] = options[k];
+      }
+    }
   }
   get outputMode(): OutputMode {
     return this._opts.outputMode;
@@ -56,7 +66,7 @@ class OptionsReader implements ReadonlyOptions {
   }
 }
 
-export function normalizeOptions(options: SparseOptions | undefined, defaults?: SparseOptions): ReadonlyOptions {
+export function normalizeOptions(options: SparseOptions | undefined, defaults?: SparseOptions): ResolvedConfiguration {
   if (options instanceof OptionsReader) {
     return options;
   } else {

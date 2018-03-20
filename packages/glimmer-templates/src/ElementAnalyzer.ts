@@ -1,7 +1,7 @@
 import { AST, print } from "@glimmer/syntax";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import { assertNever } from "@opticss/util";
-import { AttrValue, Block, BlockClass, DynamicClasses, ElementAnalysis, ReadonlyOptions as ReadonlyCssBlocksOptions } from "css-blocks";
+import { AttrValue, Block, BlockClass, DynamicClasses, ElementAnalysis, ResolvedConfiguration as CSSBlocksConfiguration } from "css-blocks";
 import * as debugGenerator from "debug";
 
 import { ResolvedFile } from "./GlimmerProject";
@@ -30,9 +30,9 @@ const debug = debugGenerator("css-blocks:glimmer:analyzer");
 
 export class ElementAnalyzer {
   template: ResolvedFile;
-  cssBlocksOpts: ReadonlyCssBlocksOptions;
+  cssBlocksOpts: CSSBlocksConfiguration;
   block: Block;
-  constructor(block: Block, template: ResolvedFile, cssBlocksOpts: ReadonlyCssBlocksOptions) {
+  constructor(block: Block, template: ResolvedFile, cssBlocksOpts: CSSBlocksConfiguration) {
     this.block = block;
     this.template = template;
     this.cssBlocksOpts = cssBlocksOpts;

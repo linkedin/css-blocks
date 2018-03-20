@@ -6,9 +6,9 @@ import {
 import { whatever } from "@opticss/util";
 import {
   Block,
-  SparseOptions as CssBlocksOpts,
-  ReadonlyOptions as ReadonlyCssBlockOpts,
   normalizeOptions,
+  ResolvedConfiguration as CSSBlocksConfiguration,
+  SparseOptions as CssBlocksOpts,
   StyleMapping,
   TemplateAnalysis,
 } from "css-blocks";
@@ -30,7 +30,7 @@ export class Rewriter implements NodeVisitor {
   syntax: Syntax;
   block: Block;
   styleMapping: StyleMapping;
-  cssBlocksOpts: ReadonlyCssBlockOpts;
+  cssBlocksOpts: CSSBlocksConfiguration;
 
   private elementAnalyzer: ElementAnalyzer;
 
