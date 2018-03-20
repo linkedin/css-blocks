@@ -10,8 +10,8 @@ import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from ".
 import { Options, resolveConfiguration } from "../src/configuration";
 import * as cssBlocks from "../src/errors";
 
-import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertParseError } from "./util/assertError";
+import { setupImporting } from "./util/setupImporting";
 
 type TestElement = ElementAnalysis<null, null, null>;
 
@@ -20,15 +20,15 @@ type BlockAndRoot = [Block, postcss.Container];
 @suite("Template Analysis")
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let options = resolveConfiguration(opts);
-    let factory = new BlockFactory(options, postcss);
+    let config = resolveConfiguration(opts);
+    let factory = new BlockFactory(config, postcss);
     let root = postcss.parse(css, {from: filename});
     return factory.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
     });
   }
   @test "can add styles from a block"() {
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
@@ -37,7 +37,7 @@ export class TemplateAnalysisTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.blocks[""] = block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.rootClass);
@@ -59,7 +59,7 @@ export class TemplateAnalysisTests {
     });
   }
   @test "can add dynamic styles from a block"() {
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
@@ -68,7 +68,7 @@ export class TemplateAnalysisTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.blocks[""] = block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN, "div");
       element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
@@ -92,7 +92,7 @@ export class TemplateAnalysisTests {
   }
 
   @test "can correlate styles"() {
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
@@ -101,7 +101,7 @@ export class TemplateAnalysisTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.blocks[""] = block;
       let element = analysis.startElement(POSITION_UNKNOWN);
       let klass = block.getClass("asdf");
@@ -132,7 +132,7 @@ export class TemplateAnalysisTests {
   @skip
   @test "uncomment"() {}
   @test "can add styles from two blocks"() {
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = `
@@ -142,7 +142,7 @@ export class TemplateAnalysisTests {
       .asdf[state|larger] { font-size: 26px; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block1, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block1, _]) => {
       analysis.blocks[""] = block1;
       let element = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block1.rootClass);
@@ -178,8 +178,7 @@ export class TemplateAnalysisTests {
   @test "adding dynamic styles enumerates correlation in analysis"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = resolveConfiguration({ importer: imports.importer() });
+    let { imports, config } = setupImporting();
 
     imports.registerSource(
       "blocks/a.css",
@@ -196,7 +195,7 @@ export class TemplateAnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
@@ -229,14 +228,13 @@ export class TemplateAnalysisTests {
   @test "multiple dynamic values added using `addExclusiveStyles` enumerate correlations correctly in analysis"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = resolveConfiguration({ importer: imports.importer() });
+    let { config } = setupImporting();
 
     let css = `
       [state|color]   { color: red; }
       [state|bgcolor] { color: red; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
@@ -268,8 +266,7 @@ export class TemplateAnalysisTests {
   @test "multiple exclusive dynamic values added using enumerate correlations correctly in analysis"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = resolveConfiguration({ importer: imports.importer() });
+    let { config } = setupImporting();
 
     let css = `
       [state|color=red]    { color: red; }
@@ -277,7 +274,7 @@ export class TemplateAnalysisTests {
       [state|bgcolor=red]  { color: red; }
       [state|bgcolor=blue] { color: blue; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
@@ -331,8 +328,7 @@ export class TemplateAnalysisTests {
   @test "toggling between two classes with states of the same name"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = resolveConfiguration({ importer: imports.importer() });
+    let { imports, config } = setupImporting();
 
     imports.registerSource(
       "blocks/a.css",
@@ -349,7 +345,7 @@ export class TemplateAnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
@@ -385,15 +381,13 @@ export class TemplateAnalysisTests {
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is true"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }
        .foo[state|bar] { font-size: 26px; }
       `,
     );
-
-    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       @block-reference a from "a.css";
@@ -403,7 +397,7 @@ export class TemplateAnalysisTests {
       .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
       .fdsa { font-size: resolve('a.foo[state|bar]'); font-size: 22px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
@@ -436,15 +430,13 @@ export class TemplateAnalysisTests {
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is false"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }
        .foo[state|bar] { font-size: 26px; }
       `,
     );
-
-    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       @block-reference a from "a.css";
@@ -455,7 +447,7 @@ export class TemplateAnalysisTests {
       .asdf { font-size: 20px; }
       .fdsa { font-size: 22px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.blocks[""] = block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.rootClass);
@@ -483,15 +475,13 @@ export class TemplateAnalysisTests {
   @test "can generate an analysis for the optimizer"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }
        .foo[state|bar] { font-size: 26px; }
       `,
     );
-
-    let options = resolveConfiguration({ importer: imports.importer() });
 
     let css = `
       @block-reference a from "a.css";
@@ -501,7 +491,7 @@ export class TemplateAnalysisTests {
       .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
       .fdsa { font-size: 22px; font-size: resolve('a.foo[state|bar]'); }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options, "main").then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config, "main").then(([block, _]) => {
       analysis.blocks[""] = block;
       let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
@@ -510,8 +500,7 @@ export class TemplateAnalysisTests {
       element.addDynamicClasses({condition: null, whenTrue: [block.getClass("asdf")!], whenFalse: [block.getClass("fdsa")!]});
       element.addStaticAttr(klass, klass.getAttributeValue("[state|bar]")!);
       analysis.endElement(element);
-      let options = resolveConfiguration({});
-      let optimizerAnalysis = analysis.forOptimizer(options);
+      let optimizerAnalysis = analysis.forOptimizer(config);
       let result = optimizerAnalysis.serialize();
       let expectedResult: SerializedOptimizedAnalysis<"Opticss.Template"> = {
         template: {
@@ -560,7 +549,7 @@ export class TemplateAnalysisTests {
   @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -573,7 +562,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       `Classes "fdsa" and "asdf" from the same block are not allowed on the same element at the same time. (templates/my-template.hbs:10:11)`,
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 11});
           element.addStaticClass(block.getClass("asdf")!);
@@ -586,7 +575,7 @@ export class TemplateAnalysisTests {
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { "no-class-pairs": false });
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -596,7 +585,7 @@ export class TemplateAnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement(POSITION_UNKNOWN);
           element.addStaticClass(block.getClass("asdf")!);
@@ -608,7 +597,7 @@ export class TemplateAnalysisTests {
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -616,7 +605,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       "CUSTOM ERROR (templates/my-template.hbs:1:2)",
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 1, column: 2 });
           analysis.endElement(element);
@@ -627,7 +616,7 @@ export class TemplateAnalysisTests {
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -640,7 +629,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       "Cannot put block classes on the block's root element (templates/my-template.hbs:10:32)",
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]): [Block, postcss.Container] => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]): [Block, postcss.Container] => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticClass(block.rootClass);
@@ -654,7 +643,7 @@ export class TemplateAnalysisTests {
   @test "adding both root and a state from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
 
     let css = `
       :scope { color: blue; }
@@ -664,7 +653,7 @@ export class TemplateAnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]): [Block, postcss.Container] => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]): [Block, postcss.Container] => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticClass(block.rootClass);
@@ -677,8 +666,7 @@ export class TemplateAnalysisTests {
   @test "classes from other blocks may be added to the root element"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = resolveConfiguration({ importer: imports.importer() });
+    let { imports, config } = setupImporting();
 
     imports.registerSource(
       "blocks/a.css",
@@ -689,7 +677,7 @@ export class TemplateAnalysisTests {
       @block-reference a from "a.css";
       :scope { color: blue; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
         analysis.blocks[""] = block;
         analysis.blocks["a"] = aBlock;
@@ -725,8 +713,7 @@ export class TemplateAnalysisTests {
   @test "throws when states are applied without their parent root"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = resolveConfiguration({ importer: imports.importer() });
+    let { config } = setupImporting();
 
     let css = `
       :scope { color: blue; }
@@ -735,7 +722,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Cannot use state "[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test]")!);
@@ -747,8 +734,7 @@ export class TemplateAnalysisTests {
   @test "throws when states are applied without their parent BlockClass"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = resolveConfiguration({ importer: imports.importer() });
+    let { config } = setupImporting();
 
     let css = `
       .foo { color: blue; }
@@ -758,7 +744,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Cannot use state ".foo[state|test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           analysis.blocks[""] = block;
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass("foo") as BlockClass;
@@ -772,8 +758,7 @@ export class TemplateAnalysisTests {
   @test "Throws when inherited states are applied without their root"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = resolveConfiguration({ importer: imports.importer() });
+    let { imports, config } = setupImporting();
 
     imports.registerSource(
       "blocks/a.css",
@@ -798,7 +783,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Cannot use state ".pretty[state|color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
           analysis.blocks[""] = block;
           analysis.blocks["a"] = aBlock;
@@ -814,8 +799,7 @@ export class TemplateAnalysisTests {
   @test "Inherited states pass validation when applied with their root"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = resolveConfiguration({ importer: imports.importer() });
+    let { imports, config } = setupImporting();
 
     imports.registerSource(
       "blocks/a.css",
@@ -837,7 +821,7 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
           analysis.blocks[""] = block;
           analysis.blocks["a"] = aBlock;
@@ -864,13 +848,13 @@ export class TemplateAnalysisTests {
     let registry = new MockImportRegistry();
     registry.registerSource("test.css", source);
     let testImporter = registry.importer();
-    let options = resolveConfiguration({
+    let config = resolveConfiguration({
       importer: testImporter
     });
-    let factory = new BlockFactory(options, postcss);
+    let factory = new BlockFactory(config, postcss);
     let blockPromise = <Promise<Block>>processPromise.then(result => {
       if (result.root) {
-        let parser = new BlockParser(options, factory);
+        let parser = new BlockParser(config, factory);
         try {
           return parser.parse(result.root, "test.css", "a-block");
         } catch (e) {
@@ -904,7 +888,7 @@ export class TemplateAnalysisTests {
     let testPromise = analysisPromise.then(analysis => {
       let serialization = analysis.serialize();
       assert.deepEqual(serialization.template, {type: "Opticss.Template", identifier: "my-template.html"});
-      let factory = new BlockFactory(options, postcss);
+      let factory = new BlockFactory(config, postcss);
       return TemplateAnalysis.deserialize<"Opticss.Template">(serialization, factory).then(analysis => {
         let reserialization = analysis.serialize();
         assert.deepEqual(serialization, reserialization);

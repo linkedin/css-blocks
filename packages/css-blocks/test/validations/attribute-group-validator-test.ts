@@ -8,8 +8,8 @@ import { BlockFactory } from "../../src/BlockParser";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
+import { setupImporting } from "../util/setupImporting";
 
-import { MockImportRegistry } from "./../util/MockImportRegistry";
 import { assertParseError } from "./../util/assertError";
 
 type BlockAndRoot = [Block, postcss.Container];
@@ -17,8 +17,8 @@ type BlockAndRoot = [Block, postcss.Container];
 @suite("Attribute Group Validator")
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let options = resolveConfiguration(opts);
-    let factory = new BlockFactory(options, postcss);
+    let config = resolveConfiguration(opts);
+    let factory = new BlockFactory(config, postcss);
     let root = postcss.parse(css, { from: filename });
     return factory.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
@@ -28,9 +28,7 @@ export class TemplateAnalysisTests {
   @test "throws when two static attributes from the same group are applied"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let importer = imports.importer();
-    let options = resolveConfiguration({importer});
+    let { config } = setupImporting();
 
     let css = `
       :scope { color: blue; }
@@ -40,7 +38,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Can not apply multiple states at the same time from the exclusive state group "[state|test]". (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
@@ -54,9 +52,7 @@ export class TemplateAnalysisTests {
   @test "throws when static and dynamic attributes from the same group are applied"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let importer = imports.importer();
-    let options = resolveConfiguration({importer});
+    let { config } = setupImporting();
 
     let css = `
       :scope { color: blue; }
@@ -66,7 +62,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Can not apply multiple states at the same time from the exclusive state group "[state|test]". (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
@@ -80,9 +76,7 @@ export class TemplateAnalysisTests {
   @test "throws when static attributes and dynamic group from the same group are applied"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let importer = imports.importer();
-    let options = resolveConfiguration({importer});
+    let { config } = setupImporting();
 
     let css = `
       :scope { color: blue; }
@@ -92,7 +86,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Can not apply multiple states at the same time from the exclusive state group "[state|test]". (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
@@ -106,9 +100,7 @@ export class TemplateAnalysisTests {
   @test "throws when duplicate dynamic groups are applied"() {
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
-    let imports = new MockImportRegistry();
-    let importer = imports.importer();
-    let options = resolveConfiguration({importer});
+    let { config } = setupImporting();
 
     let css = `
       :scope { color: blue; }
@@ -118,7 +110,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Can not apply multiple states at the same time from the exclusive state group "[state|test]". (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.blocks[""] = block;
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);

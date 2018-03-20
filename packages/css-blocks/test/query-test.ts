@@ -12,8 +12,8 @@ type BlockAndRoot = [Block, postcss.Container];
 @suite("Querying")
 export class KeyQueryTests {
   private parseBlock(css: string, filename: string, opts?: Options): Promise<BlockAndRoot> {
-    let options = resolveConfiguration(opts);
-    let factory = new BlockFactory(options, postcss);
+    let config = resolveConfiguration(opts);
+    let factory = new BlockFactory(config, postcss);
     let root = postcss.parse(css, {from: filename});
     return factory.parse(root, filename, "query-test").then((block) => {
       return <BlockAndRoot>[block, root];

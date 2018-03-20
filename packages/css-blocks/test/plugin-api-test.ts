@@ -13,8 +13,8 @@ export class SetupTests {
     assert(processor);
   }
   @test "default options"() {
-    const options = resolveConfiguration({});
-    assert.equal(options.outputMode, cssBlocks.OutputMode.BEM);
+    const config = resolveConfiguration({});
+    assert.equal(config.outputMode, cssBlocks.OutputMode.BEM);
   }
   @test "a filename is required"() {
     let cssBlocksPlugin = cssBlocks(postcss);

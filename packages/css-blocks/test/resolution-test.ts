@@ -4,13 +4,13 @@ import { skip, suite, test } from "mocha-typescript";
 import cssBlocks = require("../src/cssBlocks");
 
 import { BEMProcessor } from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
 import { assertError } from "./util/assertError";
+import { setupImporting } from "./util/setupImporting";
 
 @suite("Resolves conflicts")
 export class BlockInheritance extends BEMProcessor {
   @test "results in an error betwixt properties"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "a.css",
       `.foo { border: 3px; }`,
@@ -28,12 +28,12 @@ export class BlockInheritance extends BEMProcessor {
       cssBlocks.InvalidBlockSyntax,
       "Resolving border must happen either before or after all other values for border." +
         " (conflicts.css:4:23)",
-      this.process(filename, inputCSS, {importer: imports.importer()}),
+      this.process(filename, inputCSS, config),
     );
   }
 
   @test "results in an error without concrete value"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "a.css",
       `.foo { border: 3px; }`,
@@ -49,12 +49,12 @@ export class BlockInheritance extends BEMProcessor {
       cssBlocks.InvalidBlockSyntax,
       "Cannot resolve border without a concrete value." +
         " (conflicts.css:3:23)",
-      this.process(filename, inputCSS, {importer: imports.importer()}),
+      this.process(filename, inputCSS, config),
     );
   }
 
   @test "with a yield"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `.nav { border: 1px solid black; }`,
@@ -67,7 +67,7 @@ export class BlockInheritance extends BEMProcessor {
                       border: resolve("other.nav");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -78,7 +78,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "with an override"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `.nav { border: 1px solid black; color: red; }`,
@@ -92,7 +92,7 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -103,7 +103,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution target"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "grid.css",
       `:scope {
@@ -125,7 +125,7 @@ export class BlockInheritance extends BEMProcessor {
                       font-size: resolve("grid.main");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("grid.css");
       assert.deepEqual(
         result.css.toString(),
@@ -139,7 +139,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution source"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "target.css",
       `.main    { color: blue; }
@@ -153,7 +153,7 @@ export class BlockInheritance extends BEMProcessor {
                       color: resolve("target.main");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
@@ -167,7 +167,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution source involving child combinators"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "target.css",
       `.main    { color: blue; }
@@ -181,7 +181,7 @@ export class BlockInheritance extends BEMProcessor {
                       color: resolve("target.main");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
@@ -194,7 +194,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution source both involving child combinators"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "target.css",
       `.main    { color: blue; }
@@ -208,7 +208,7 @@ export class BlockInheritance extends BEMProcessor {
                       color: resolve("target.main");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
@@ -221,7 +221,7 @@ export class BlockInheritance extends BEMProcessor {
 
   @skip
   @test "of short-hand properties conflicting with long-hand properties"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "grid.css",
       `:scope {
@@ -251,7 +251,7 @@ export class BlockInheritance extends BEMProcessor {
                       border-bottom-width: resolve("grid.nav");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("grid.css");
       assert.deepEqual(
         result.css.toString(),
@@ -266,7 +266,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "when the property is repeated all values are copied."() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `.foo { font-size: 10px; font-size: 0.5rem; }
@@ -282,7 +282,7 @@ export class BlockInheritance extends BEMProcessor {
                       font-size: resolve("other.bar");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -294,7 +294,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "doesn't concern selectors that don't conflict."() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `.foo { font-size: 10px; }
@@ -311,7 +311,7 @@ export class BlockInheritance extends BEMProcessor {
                       font-size: resolve("other.bar");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -323,7 +323,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "errors when no selectors conflict."() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `.foo { font-size: 10px; }`,
@@ -340,12 +340,12 @@ export class BlockInheritance extends BEMProcessor {
       cssBlocks.InvalidBlockSyntax,
       "There are no conflicting values for border found in any selectors targeting other.foo." +
         " (conflicts.css:3:23)",
-      this.process(filename, inputCSS, {importer: imports.importer()}),
+      this.process(filename, inputCSS, config),
     );
   }
 
   @test "doesn't create a resolution if the values are the same but it also doesn't error."() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `.nav { border: 1px solid black; }`,
@@ -358,7 +358,7 @@ export class BlockInheritance extends BEMProcessor {
                       border: resolve("other.nav");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -368,7 +368,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves conflicts against a sub-block"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "base.css",
       `.nav { border: 1px solid black; width: 100%; }
@@ -392,7 +392,7 @@ export class BlockInheritance extends BEMProcessor {
                       color: resolve("other.sidebar");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       imports.assertImported("base.css");
       assert.deepEqual(
@@ -406,7 +406,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves block roots"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `:scope { border: 1px solid black; width: 100%; }`,
@@ -421,7 +421,7 @@ export class BlockInheritance extends BEMProcessor {
                       width: resolve("other:scope");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -433,7 +433,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves root states"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `[state|foo] { width: 100%; }`,
@@ -446,7 +446,7 @@ export class BlockInheritance extends BEMProcessor {
                       width: resolve("other[state|foo]");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -457,7 +457,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves class states"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `.asdf[state|foo] { width: 100%; }`,
@@ -470,7 +470,7 @@ export class BlockInheritance extends BEMProcessor {
                       width: resolve("other.asdf[state|foo]");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -481,7 +481,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves pseduoelement override"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `.asdf::before { width: 100%; }`,
@@ -494,7 +494,7 @@ export class BlockInheritance extends BEMProcessor {
                       width: resolve("other.asdf");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -504,7 +504,7 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
   @test "resolves pseduoelement yield"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
       `.asdf::before { width: 100%; }`,
@@ -517,7 +517,7 @@ export class BlockInheritance extends BEMProcessor {
                       width: 100px;
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
@@ -528,7 +528,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "compatible but different combinators"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "target.css",
       `.adjacent + .adjacent { border: 1px; }
@@ -544,7 +544,7 @@ export class BlockInheritance extends BEMProcessor {
                     [state|ancestor] .descendant { position: absolute; position: resolve("target.child"); }
                     [state|parent] > .child { float: right; float: resolve("target.descendant"); }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
@@ -572,7 +572,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution source has adjacent selectors"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "target.css",
       `.main    { color: blue; }
@@ -586,7 +586,7 @@ export class BlockInheritance extends BEMProcessor {
                       color: resolve("target.main");
                     }`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+    return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
@@ -615,7 +615,7 @@ export class BlockInheritance extends BEMProcessor {
     );
   }
   @test "resolving to your super block is illegal"() {
-    let imports = new MockImportRegistry();
+    let { imports, config } = setupImporting();
     imports.registerSource(
       "super.css",
       `.main    { color: blue; }`,
@@ -633,7 +633,7 @@ export class BlockInheritance extends BEMProcessor {
       cssBlocks.InvalidBlockSyntax,
       "Cannot resolve conflicts with ancestors of your own block." +
         " (conflicts.css:5:23)",
-      this.process(filename, inputCSS, {importer: imports.importer()}),
+      this.process(filename, inputCSS, config),
     );
   }
 }

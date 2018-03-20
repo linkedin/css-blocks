@@ -19,30 +19,30 @@ const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.resolve(FIXTURES, "filesystemImporter");
 const ALIAS_FIXTURES = path.resolve(FIXTURES, "pathAliasImporter");
 
-function getOptions(options?: Options): ResolvedConfiguration {
+function getConfiguration(options?: Options): ResolvedConfiguration {
   return resolveConfiguration(options, {rootDir: path.join(FSI_FIXTURES)});
 }
 
 function testFSImporter(name: string, importer: Importer) {
   describe(name, () => {
     it("handles an absolute path without a from identifier", () => {
-      let options = getOptions();
+      let config = getConfiguration();
       let filename = path.resolve(FSI_FIXTURES, "a.block.css");
-      let ident = importer.identifier(null, filename, options);
-      let resolvedFilename = importer.filesystemPath(ident, options);
+      let ident = importer.identifier(null, filename, config);
+      let resolvedFilename = importer.filesystemPath(ident, config);
       assert.equal(resolvedFilename, filename);
     });
     it("handles an absolute path with a from identifier", () => {
-      let options = getOptions();
+      let config = getConfiguration();
       let relativeFilename = path.resolve(FSI_FIXTURES, "a.block.css");
       let filename = path.resolve(FSI_FIXTURES, "b.block.css");
-      let relativeIdent = importer.identifier(null, relativeFilename, options);
-      let ident = importer.identifier(relativeIdent, filename, options);
-      let resolvedFilename = importer.filesystemPath(ident, options);
+      let relativeIdent = importer.identifier(null, relativeFilename, config);
+      let ident = importer.identifier(relativeIdent, filename, config);
+      let resolvedFilename = importer.filesystemPath(ident, config);
       assert.equal(resolvedFilename, filename);
     });
     it("handles a relative path with a from identifier", () => {
-      let options = getOptions();
+      let options = getConfiguration();
       let filename = path.resolve(FSI_FIXTURES, "a.block.css");
       let ident = importer.identifier(null, filename, options);
       let relativeIdent = importer.identifier(ident, "b.block.css", options);
@@ -50,21 +50,21 @@ function testFSImporter(name: string, importer: Importer) {
       assert.equal(resolvedFilename, path.resolve(FSI_FIXTURES, "b.block.css"));
     });
     it("resolves a relative path without a from identifier against the root directory", () => {
-      let options = getOptions();
+      let options = getConfiguration();
       assert.equal(options.rootDir, FSI_FIXTURES);
       let ident = importer.identifier(null, "a.block.css", options);
       let resolvedFilename = importer.filesystemPath(ident, options);
       assert.equal(resolvedFilename, path.resolve(FSI_FIXTURES, "a.block.css"));
     });
     it("inspects relative to the root directory", () => {
-      let options = getOptions();
+      let options = getConfiguration();
       let filename = path.resolve(FSI_FIXTURES, "a.block.css");
       let ident = importer.identifier(null, filename, options);
       let inspected = importer.debugIdentifier(ident, options);
       assert.equal(inspected, "a.block.css");
     });
     it("decides syntax based on extension", () => {
-      let options = getOptions();
+      let options = getConfiguration();
       let cssIdent = importer.identifier(null, "a.block.css", options);
       assert.equal(importer.syntax(cssIdent, options), Syntax.css);
       let scssIdent = importer.identifier(null, "scss.block.scss", options);
@@ -79,7 +79,7 @@ function testFSImporter(name: string, importer: Importer) {
       assert.equal(importer.syntax(otherIdent, options), Syntax.other);
     });
     it("imports a file", async () => {
-      let options = getOptions();
+      let options = getConfiguration();
       let ident = importer.identifier(null, "a.block.css", options);
       let importedFile = await importer.import(ident, options);
       assert.deepEqual(importedFile.contents, fs.readFileSync(path.join(FSI_FIXTURES, "a.block.css"), "utf-8"));
@@ -103,7 +103,7 @@ describe("PathAliasImporter", () => {
     this.importer = new PathAliasImporter(aliases);
   });
   it("identifies relative to an alias", function() {
-      let options = getOptions();
+      let options = getConfiguration();
       let importer: Importer = this.importer;
       let ident = importer.identifier(null, "pai/alias1.block.css", options);
       let actualFilename = importer.filesystemPath(ident, options);
@@ -113,7 +113,7 @@ describe("PathAliasImporter", () => {
       assert.equal("pai/alias1.block.css", inspected);
   });
   it("produces the same identifier via different aliases", function() {
-      let options = getOptions();
+      let options = getConfiguration();
       let importer: Importer = this.importer;
       let actualFilename = path.resolve(ALIAS_FIXTURES, "alias_subdirectory", "sub.block.css");
       let ident1 = importer.identifier(null, "pai/alias_subdirectory/sub.block.css", options);
@@ -129,7 +129,7 @@ describe("PathAliasImporter", () => {
       assert.equal(inspected2, "sub/sub.block.css");
   });
   it("imports an aliased file", async function() {
-    let options = getOptions();
+    let options = getConfiguration();
     let importer: Importer = this.importer;
     let ident = importer.identifier(null, "sub/sub.block.css", options);
     let importedFile = await importer.import(ident, options);

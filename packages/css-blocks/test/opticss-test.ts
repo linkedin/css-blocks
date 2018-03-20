@@ -29,8 +29,8 @@ type Analysis = TemplateAnalysis<"Opticss.Template">;
 @suite("Optimization")
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "optimized"): Promise<BlockAndRoot> {
-    let options = resolveConfiguration(opts);
-    let factory = new BlockFactory(options, postcss);
+    let config = resolveConfiguration(opts);
+    let factory = new BlockFactory(config, postcss);
     let root = postcss.parse(css, {from: filename});
     return factory.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
@@ -65,7 +65,7 @@ export class TemplateAnalysisTests {
     }
   }
   @test "optimizes css"() {
-    let options = resolveConfiguration({});
+    let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
     let analysis = new TemplateAnalysis(info);
     let css = clean`
@@ -74,7 +74,7 @@ export class TemplateAnalysisTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; color: red; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       this.useBlockStyles(analysis, block, "", (container, el) => {
         if (container.asSource() === ".asdf") {
           el.addDynamicAttr(container, block.find(".asdf[state|larger]") as AttrValue, true);
@@ -82,9 +82,9 @@ export class TemplateAnalysisTests {
           this.useAttrs(el, container);
         }
       });
-      let optimizerAnalysis = analysis.forOptimizer(options);
+      let optimizerAnalysis = analysis.forOptimizer(config);
       let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
-      let compiler = new BlockCompiler(postcss, options);
+      let compiler = new BlockCompiler(postcss, config);
       let compiled = compiler.compile(block, block.stylesheet!, analysis);
       optimizer.addSource({
         content: compiled.toResult({to: "blocks/foo.block.css"}),
@@ -97,7 +97,7 @@ export class TemplateAnalysisTests {
           .e { color: red; }
           .f { font-size: 26px; }
         `);
-        let blockMapping = new StyleMapping(optimized.styleMapping, [block], options, [analysis]);
+        let blockMapping = new StyleMapping(optimized.styleMapping, [block], config, [analysis]);
         let it = analysis.elements.values();
         let element1 = it.next().value;
         let rewrite1 = blockMapping.rewriteMapping(element1);

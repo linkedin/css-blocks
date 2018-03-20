@@ -2,14 +2,10 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import {
-  BlockFactory,
-  resolveConfiguration,
-} from "../src";
 import cssBlocks = require("../src/cssBlocks");
 
 import { BEMProcessor } from "./util/BEMProcessor";
-import { MockImportRegistry } from "./util/MockImportRegistry";
+import { setupImporting } from "./util/setupImporting";
 
 @suite("Local Scope lookup")
 export class LocalScopeLookupTest extends BEMProcessor {
@@ -25,7 +21,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
   }
 
   @test "can look up a local object"() {
-    let imports = new MockImportRegistry();
+    let { imports, importer, config, factory } = setupImporting();
     let filename = "foo/bar/a-block.css";
     imports.registerSource(
       filename,
@@ -35,11 +31,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
        .foo[state|small] { font-size: 5px; }`,
     );
 
-    let importer = imports.importer();
-    let options = resolveConfiguration({importer});
-    let factory = new BlockFactory(options, postcss);
-
-    return factory.getBlock(importer.identifier(null, filename, options)).then(block => {
+    return factory.getBlock(importer.identifier(null, filename, config)).then(block => {
       assert.equal(block.lookup(":scope"), block.rootClass);
       let largeState = block.rootClass.getAttributeValue("[state|large]");
       assert(largeState);
@@ -57,7 +49,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
   }
 
   @test "can look up a referenced object"() {
-    let imports = new MockImportRegistry();
+    let { imports, importer, config, factory } = setupImporting();
     imports.registerSource(
       "foo/bar/a-block.block.css",
       `:scope { color: purple; }
@@ -71,11 +63,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
       `@block-reference a-block from "a-block.block.css";`,
     );
 
-    let importer = imports.importer();
-    let options = resolveConfiguration({importer});
-    let factory = new BlockFactory(options, postcss);
-
-    return factory.getBlock(importer.identifier(null, filename, options)).then(refblock => {
+    return factory.getBlock(importer.identifier(null, filename, config)).then(refblock => {
       let block = refblock.getReferencedBlock("a-block");
       if (block === null) {
         assert.fail("wtf");
@@ -98,7 +86,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
   }
 
   @test "can look up a referenced object with an aliased named"() {
-    let imports = new MockImportRegistry();
+    let { imports, importer, config, factory } = setupImporting();
     imports.registerSource(
       "foo/bar/a-block.block.css",
       `:scope { color: purple; }
@@ -112,11 +100,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
       `@block-reference my-block from "a-block.block.css";`,
     );
 
-    let importer = imports.importer();
-    let options = resolveConfiguration({importer});
-    let factory = new BlockFactory(options, postcss);
-
-    return factory.getBlock(importer.identifier(null, filename, options)).then(refblock => {
+    return factory.getBlock(importer.identifier(null, filename, config)).then(refblock => {
       let block = refblock.getReferencedBlock("my-block");
       if (block === null) {
         assert.fail("wtf");

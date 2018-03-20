@@ -17,8 +17,8 @@ type BlockAndRoot = [Block, postcss.Container];
 @suite("Root Class Validator")
 export class TemplateAnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let options = resolveConfiguration(opts);
-    let factory = new BlockFactory(options, postcss);
+    let config = resolveConfiguration(opts);
+    let factory = new BlockFactory(config, postcss);
     let root = postcss.parse(css, { from: filename });
     return factory.parse(root, filename, blockName).then((block) => {
       return <BlockAndRoot>[block, root];
