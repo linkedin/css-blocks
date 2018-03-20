@@ -606,20 +606,20 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * assumed to be unique per Style across all blocks -- so these
    * maps can be merged safely.
    */
-  forOptimizer(options: ResolvedConfiguration): [Element, Map<string, Style>] {
+  forOptimizer(configuration: ResolvedConfiguration): [Element, Map<string, Style>] {
     this.assertSealed();
     let tagValue = this.tagName ? attrValues.constant(this.tagName) : attrValues.unknown();
     let tagName = new Tagname(tagValue);
     let classes = new Array<AttributeValueSetItem>();
     let classMap = new Map<string, Style>();
     for (let style of this.allStaticStyles) {
-      let className = style.cssClass(options);
+      let className = style.cssClass(configuration);
       classes.push(attrValues.constant(className));
       classMap.set(className, style);
     }
 
-    let mapper: ClassMapper = mapClasses.bind(null, options, classMap);
-    let choices: ChoiceMapper = mapChoiceClasses.bind(null, options, classMap);
+    let mapper: ClassMapper = mapClasses.bind(null, configuration, classMap);
+    let choices: ChoiceMapper = mapChoiceClasses.bind(null, configuration, classMap);
 
     let depAttrsMap = new MultiMap<BlockClass, DynamicAttrs<BooleanExpression, StringExpression>>();
     for (let dynAttr of this.dynamicAttributes) {
@@ -770,14 +770,14 @@ function addToSet(
 
 type ClassMapper = (style: Style) => ValueConstant | AttributeValueSet;
 function mapClasses(
-  options: ResolvedConfiguration,
+  configuration: ResolvedConfiguration,
   map: Map<string, Style>,
   style: Style,
 ): ValueConstant | AttributeValueSet {
   let classes = new Array<string>();
   let resolvedStyles = style.resolveStyles();
   for (let resolvedStyle of resolvedStyles) {
-    let cls = resolvedStyle.cssClass(options);
+    let cls = resolvedStyle.cssClass(configuration);
     map.set(cls, resolvedStyle);
     classes.push(cls);
   }
@@ -790,7 +790,7 @@ function mapClasses(
 
 type ChoiceMapper = (includeAbsent: boolean, ...styles: Style[]) => AttributeValueChoice;
 function mapChoiceClasses(
-  options: ResolvedConfiguration,
+  configuration: ResolvedConfiguration,
   map: Map<string, Style>,
   includeAbsent: boolean,
   ...styles: Style[],
@@ -800,7 +800,7 @@ function mapChoiceClasses(
     choices.push(attrValues.absent());
   }
   for (let style of styles) {
-    choices.push(mapClasses(options, map, style));
+    choices.push(mapClasses(configuration, map, style));
   }
   return attrValues.oneOf(choices);
 }

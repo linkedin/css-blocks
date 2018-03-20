@@ -32,11 +32,11 @@ export interface ParsedSource {
  * interface is `BlockParser.parse`.
  */
 export class BlockParser {
-  private opts: ResolvedConfiguration;
+  private config: ResolvedConfiguration;
   private factory: BlockFactory;
 
   constructor(opts: SparseOptions, factory: BlockFactory) {
-    this.opts = normalizeOptions(opts);
+    this.config = normalizeOptions(opts);
     this.factory = factory;
   }
 
@@ -60,9 +60,9 @@ export class BlockParser {
    * @param defaultName Name of block
    */
   public async parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    let importer = this.opts.importer;
-    let debugIdent = importer.debugIdentifier(identifier, this.opts);
-    let sourceFile = importer.filesystemPath(identifier, this.opts) || debugIdent;
+    let importer = this.config.importer;
+    let debugIdent = importer.debugIdentifier(identifier, this.config);
+    let sourceFile = importer.filesystemPath(identifier, this.config) || debugIdent;
 
     // Discover the block's preferred name.
     name = await discoverName(root, name, sourceFile);
@@ -86,7 +86,7 @@ export class BlockParser {
     // Validate that all required Styles are implemented.
     await implementBlock(root, block, debugIdent);
     // Log any debug statements discovered.
-    await processDebugStatements(root, block, debugIdent, this.opts);
+    await processDebugStatements(root, block, debugIdent, this.config);
 
     // Return our fully constructed block.
     return block;

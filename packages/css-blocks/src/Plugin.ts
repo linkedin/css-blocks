@@ -11,7 +11,7 @@ export { SparseOptions } from "./options";
  * CSS Blocks PostCSS plugin.
  */
 export class Plugin {
-  private opts: ResolvedConfiguration;
+  private config: ResolvedConfiguration;
   private postcss: typeof postcss;
 
   /**
@@ -19,7 +19,7 @@ export class Plugin {
    * @param  opts  Optional plugin config options
    */
   constructor(postcssImpl: typeof postcss, opts?: SparseOptions) {
-    this.opts = normalizeOptions(opts);
+    this.config = normalizeOptions(opts);
     this.postcss = postcssImpl;
   }
 
@@ -39,12 +39,12 @@ export class Plugin {
     }
 
     // Fetch block name from importer
-    let identifier = this.opts.importer.identifier(null, sourceFile, this.opts);
-    let defaultName: string = this.opts.importer.defaultName(identifier, this.opts);
-    let factory = new BlockFactory(this.opts, this.postcss);
+    let identifier = this.config.importer.identifier(null, sourceFile, this.config);
+    let defaultName: string = this.config.importer.defaultName(identifier, this.config);
+    let factory = new BlockFactory(this.config, this.postcss);
 
     return factory.parse(root, sourceFile, defaultName).then((block) => {
-      let compiler = new BlockCompiler(postcss, this.opts);
+      let compiler = new BlockCompiler(postcss, this.config);
       compiler.compile(block, root);
     });
   }

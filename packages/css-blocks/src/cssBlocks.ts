@@ -9,7 +9,7 @@ import { Configuration } from "./options";
 // I welcome a patch that cleans this up.
 
 type temp = {
-  (postcssImpl: typeof postcss): (opts?: Partial<Readonly<Configuration>>) => postcss.Plugin<Partial<Readonly<Configuration>>>;
+  (postcssImpl: typeof postcss): (config?: Partial<Readonly<Configuration>>) => postcss.Plugin<Partial<Readonly<Configuration>>>;
   OutputMode: typeof OutputMode;
   CssBlockError: typeof CssBlockError;
   InvalidBlockSyntax: typeof InvalidBlockSyntax;
@@ -19,8 +19,8 @@ type temp = {
 function makeApi(): temp {
   let cssBlocks: temp;
   cssBlocks = <temp>function(postcssImpl: typeof postcss) {
-    return (opts?: Partial<Readonly<Configuration>>) => {
-      let plugin = new Plugin(postcssImpl, opts);
+    return (config?: Partial<Readonly<Configuration>>) => {
+      let plugin = new Plugin(postcssImpl, config);
       return plugin.process.bind(plugin);
     };
   };

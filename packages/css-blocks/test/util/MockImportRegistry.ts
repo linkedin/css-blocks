@@ -32,7 +32,7 @@ export class MockImporter extends PathBasedImporter {
       return importPath;
     }
   }
-  import(resolvedPath: string, options: ResolvedConfiguration): Promise<ImportedFile> {
+  import(resolvedPath: string, configuration: ResolvedConfiguration): Promise<ImportedFile> {
     return new Promise<ImportedFile>((resolve, reject) => {
       let source = this.registry.sources[resolvedPath];
       if (source) {
@@ -40,7 +40,7 @@ export class MockImporter extends PathBasedImporter {
         resolve({
           syntax: source.syntax,
           identifier: resolvedPath,
-          defaultName: this.defaultName(resolvedPath, options),
+          defaultName: this.defaultName(resolvedPath, configuration),
           contents: source.contents,
         });
       } else {

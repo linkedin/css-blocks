@@ -18,11 +18,11 @@ import { ConflictResolver } from "./ConflictResolver";
  * interface is `BlockParser.parse`.
  */
 export class BlockCompiler {
-  private opts: ResolvedConfiguration;
+  private config: ResolvedConfiguration;
   private postcss: typeof postcss;
 
   constructor(postcssImpl: typeof postcss, opts?: SparseOptions) {
-    this.opts = normalizeOptions(opts);
+    this.config = normalizeOptions(opts);
     this.postcss = postcssImpl;
   }
 
@@ -30,8 +30,8 @@ export class BlockCompiler {
       if (analysis) {
         // console.log("Got an analysis for compilation. I should use it probably.", analysis);
       }
-      let resolver = new ConflictResolver(this.opts);
-      let filename = this.opts.importer.debugIdentifier(block.identifier, this.opts);
+      let resolver = new ConflictResolver(this.config);
+      let filename = this.config.importer.debugIdentifier(block.identifier, this.config);
 
       // Process all debug statements for this block.
       this.processDebugStatements(filename, root, block);
@@ -53,7 +53,7 @@ export class BlockCompiler {
       resolver.resolveInheritance(root, block);
       root.walkRules((rule) => {
         let parsedSelectors = block.getParsedSelectors(rule);
-        rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.opts)).join(",\n");
+        rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config)).join(",\n");
       });
 
       resolver.resolve(root, block);
@@ -71,7 +71,7 @@ export class BlockCompiler {
     root.walkAtRules(BLOCK_DEBUG, (atRule) => {
       let {block: ref, channel} = parseBlockDebug(atRule, sourceFile, block);
       if (channel === "comment") {
-        let debugStr = ref.debug(this.opts);
+        let debugStr = ref.debug(this.config);
         atRule.replaceWith(this.postcss.comment({text: debugStr.join("\n   ")}));
       } else {
         // stderr/stdout are emitted during parse.

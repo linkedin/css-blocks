@@ -368,10 +368,10 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     });
   }
 
-  forOptimizer(opts: ResolvedConfiguration): OptimizationTemplateAnalysis<K> {
+  forOptimizer(config: ResolvedConfiguration): OptimizationTemplateAnalysis<K> {
     let optAnalysis = new OptimizationTemplateAnalysis<K>(this.template);
     for (let element of this.elements.values()) {
-      let result = element.forOptimizer(opts);
+      let result = element.forOptimizer(config);
       optAnalysis.elements.push(result[0]);
     }
     return optAnalysis;

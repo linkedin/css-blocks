@@ -174,16 +174,16 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
 
   /**
    * Export as new class name.
-   * @param opts Option hash configuring output mode.
+   * @param config Option hash configuring output mode.
    * @returns String representing output class.
    */
-  cssClass(opts: ResolvedConfiguration) {
-    switch (opts.outputMode) {
+  cssClass(config: ResolvedConfiguration) {
+    switch (config.outputMode) {
       case OutputMode.BEM:
-        let cssClassName = this.blockClass.cssClass(opts);
+        let cssClassName = this.blockClass.cssClass(config);
         return `${cssClassName}--${this.token.name}`;
       default:
-        return assertNever(opts.outputMode);
+        return assertNever(config.outputMode);
     }
   }
 

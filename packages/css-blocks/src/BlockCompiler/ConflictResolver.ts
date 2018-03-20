@@ -61,10 +61,10 @@ function updateConflict(t1: ConflictType, t2: ConflictType): ConflictType {
  * resolves property values accordingly.
  */
 export class ConflictResolver {
-  readonly opts: ResolvedConfiguration;
+  readonly config: ResolvedConfiguration;
 
-  constructor(opts: ResolvedConfiguration) {
-    this.opts = opts;
+  constructor(config: ResolvedConfiguration) {
+    this.config = config;
   }
 
   /**
@@ -242,7 +242,7 @@ export class ConflictResolver {
       // we reverse the selectors because otherwise the insertion order causes them to be backwards from the
       // source order of the target selector
       resultSelectors.reverse().forEach((s) => {
-        let newSelectors = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.opts), cs);
+        let newSelectors = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.config), cs);
         if (newSelectors === null) return;
         let newSelStr = newSelectors.join(",\n");
         // avoid duplicate selector via permutation
@@ -416,7 +416,7 @@ export class ConflictResolver {
     return mergedSelectors.map(sel => new ParsedSelector(sel));
   }
   sourceLocation(block: Block, node: postcss.Node): SourceLocation | undefined {
-    let blockPath = this.opts.importer.debugIdentifier(block.identifier, this.opts);
+    let blockPath = this.config.importer.debugIdentifier(block.identifier, this.config);
     return sourceLocation(blockPath, node);
   }
 }
