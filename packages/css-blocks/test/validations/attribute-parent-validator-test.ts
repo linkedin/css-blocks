@@ -3,9 +3,9 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block, BlockClass } from "../../src/Block";
+import { Analysis } from "../../src/Analyzer";
 import { BlockFactory } from "../../src/BlockParser";
-import { TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { Block, BlockClass } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
 
@@ -27,7 +27,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when states are applied without their parent root"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -48,7 +48,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when states are applied without their parent BlockClass"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -72,7 +72,7 @@ export class TemplateAnalysisTests {
 
   @test "Throws when inherited states are applied without their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
 
     imports.registerSource(
@@ -114,7 +114,7 @@ export class TemplateAnalysisTests {
 
   @test "Inherited states pass validation when applied with their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
 
     imports.registerSource(

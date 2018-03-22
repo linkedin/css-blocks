@@ -3,9 +3,9 @@ import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 
-import { Block, Style } from "../Block";
 import { getBlockNode } from "../BlockParser";
 import { RESOLVE_RE } from "../BlockSyntax";
+import { Block, Style } from "../BlockTree";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
 import { ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";

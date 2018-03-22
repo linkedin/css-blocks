@@ -1,13 +1,13 @@
 import { preprocess, traverse } from "@glimmer/syntax";
 import {
+  Analyzer,
   Block,
   BlockClass,
-  BlockFactory,
-  MetaTemplateAnalysis as MetaStyleAnalysis,
-  MultiTemplateAnalyzer,
   ResolvedConfiguration as CSSBlocksConfiguration,
-  TemplateAnalysis as SingleTemplateStyleAnalysis,
-  TemplateAnalyzer,
+  PluginOptions,
+  AnalysisOptions,
+  PluginOptionsReader,
+  Analysis,
 } from "css-blocks";
 import * as debugGenerator from "debug";
 import DependencyAnalyzer from "glimmer-analyzer";
@@ -18,12 +18,19 @@ import { Project } from "./project";
 
 export type AttributeContainer = Block | BlockClass;
 
-export class BaseStyleAnalyzer {
+export type TEMPLATE_TYPE = "GlimmerTemplates.ResolvedFile";
+
+export class HandlebarsAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   project: Project;
   debug: debugGenerator.IDebugger;
   options: CSSBlocksConfiguration;
 
-  constructor(project: Project | string) {
+  constructor(
+    project: Project | string,
+    options?: PluginOptions,
+    analysisOpts?: AnalysisOptions,
+  ) {
+    super(options, analysisOpts);
     if (typeof project === "string") {
       this.project = new Project(project);
     } else {
@@ -33,23 +40,45 @@ export class BaseStyleAnalyzer {
     this.options = this.project.cssBlocksOpts;
   }
 
-  protected analyzeTemplate(componentName: string): Promise<SingleTemplateStyleAnalysis<"GlimmerTemplates.ResolvedFile"> | null> {
+  reset() {
+    this.project.reset();
+  }
+
+  async analyze(...templateNames: string[]): Promise<Analysis[]> {
+
+    // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
+    let depAnalyzer = new DependencyAnalyzer(this.project.projectDir);
+
+    let components = new Set<string>();
+    let analysisPromises: Promise<Analysis>[] = [];
+    this.debug(`Analyzing all templates starting with: ${templateNames}`);
+
+    templateNames.forEach(templateName => {
+      components.add(templateName);
+      let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(templateName);
+      componentDeps.components.forEach(c => components.add(c));
+    });
+
+    this.debug(`Analyzing all components: ${[...components].join(", ")}`);
+
+    components.forEach(dep => {
+      analysisPromises.push(this.analyzeTemplate(dep));
+    });
+
+    let analyses = await Promise.all(analysisPromises);
+    analyses.forEach(a => { this.addAnalysis(a); });
+    return analyses;
+  }
+
+  protected analyzeTemplate(componentName: string): Promise<Analysis> {
     this.debug("Analyzing template: ", componentName);
-    let template: ResolvedFile;
-    try {
-      template = this.project.templateFor(componentName);
-    } catch (e) {
-      if (/Couldn't find template/.test(e.message)) {
-        return Promise.resolve(null);
-      } else {
-        throw e;
-      }
-    }
-    let analysis = new SingleTemplateStyleAnalysis(template);
+    let template: ResolvedFile = this.project.templateFor(componentName);
+    let analysis = new Analysis(template);
     let ast = preprocess(template.string);
     let elementCount = 0;
     let self = this;
     let blockIdentifier = this.project.blockImporter.identifier(template.identifier, "stylesheet:", this.options);
+    console.log("ID", blockIdentifier);
     let result = this.project.blockFactory.getBlock(blockIdentifier);
 
     return result.then((block) => {
@@ -76,86 +105,6 @@ export class BaseStyleAnalyzer {
         },
       });
       return analysis;
-    }).catch((error) => {
-      if (/File not found for stylesheet/.test(error.message)) {
-        return null;
-      } else {
-        throw error;
-      }
-    });
-  }
-}
-
-export class HandlebarsStyleAnalyzer extends BaseStyleAnalyzer implements TemplateAnalyzer<"GlimmerTemplates.ResolvedFile"> {
-  templateName: string;
-
-  constructor(project: Project | string, templateName: string) {
-    super(project);
-    this.templateName = templateName;
-  }
-
-  analyze(): Promise<SingleTemplateStyleAnalysis<"GlimmerTemplates.ResolvedFile">> {
-    return this.analyzeTemplate(this.templateName).then(result => {
-      if (result === null) {
-        throw new Error(`No stylesheet for ${this.templateName}`);
-      } else {
-        return result;
-      }
-    });
-  }
-
-  reset() {
-    this.project.reset();
-  }
-
-  get blockFactory(): BlockFactory {
-    return this.project.blockFactory;
-  }
-}
-
-export class HandlebarsTransitiveStyleAnalyzer extends BaseStyleAnalyzer implements MultiTemplateAnalyzer {
-  templateNames: string[];
-
-  constructor(project: Project | string, ...templateNames: string[]) {
-    super(project);
-    this.templateNames = templateNames;
-  }
-
-  reset() {
-    this.project.reset();
-  }
-
-  get blockFactory(): BlockFactory {
-    return this.project.blockFactory;
-  }
-
-  analyze(): Promise<MetaStyleAnalysis> {
-    let depAnalyzer = new DependencyAnalyzer(this.project.projectDir); // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
-
-    let components = new Set<string>();
-    let analysisPromises: Promise<SingleTemplateStyleAnalysis<"GlimmerTemplates.ResolvedFile"> | null>[] = [];
-    this.debug(`Analyzing all templates starting with: ${this.templateNames}`);
-
-    this.templateNames.forEach(templateName => {
-      components.add(templateName);
-      let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(templateName);
-      componentDeps.components.forEach(c => components.add(c));
-    });
-    if (this.debug.enabled) {
-      this.debug(`Analzying all components: ${[...components].join(", ")}`);
-    }
-    components.forEach(dep => {
-      analysisPromises.push(this.analyzeTemplate(dep));
-    });
-
-    return Promise.all(analysisPromises).then((analyses) => {
-      let metaAnalysis = new MetaStyleAnalysis();
-      analyses.forEach(a => {
-        if (a !== null) {
-          metaAnalysis.addAnalysis(a);
-        }
-      });
-      return metaAnalysis;
     });
   }
 }

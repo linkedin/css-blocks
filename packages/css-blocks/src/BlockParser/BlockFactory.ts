@@ -4,7 +4,7 @@ import * as path from "path";
 import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
-import { Block } from "../Block";
+import { Block } from "../BlockTree";
 import { Options, resolveConfiguration, ResolvedConfiguration } from "../configuration";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
 import { PromiseQueue } from "../util/PromiseQueue";

@@ -7,15 +7,9 @@ import { Maybe, none, ObjectDictionary, whatever } from "@opticss/util";
 import { File } from "babel-types";
 import {
   Block,
-  MetaTemplateAnalysis,
-  TemplateAnalysis,
+  Analyzer,
+  Analysis,
 } from "css-blocks";
-
-declare module "@opticss/template-api" {
-  interface TemplateTypes {
-    "Opticss.JSXTemplate": JSXTemplate;
-  }
-}
 
 export class JSXTemplate implements TemplateInfo<"Opticss.JSXTemplate"> {
   identifier: string;
@@ -65,14 +59,14 @@ export class Analysis extends TemplateAnalysis<"Opticss.JSXTemplate"> {
 /**
  * Container for file specific state for any file discovered in the dependency tree.
  */
-export class MetaAnalysis extends MetaTemplateAnalysis {
+export class MetaAnalysis extends Analyzer<"Opticss.JSXTemplate"> {
 
   files: JSXTemplate[] = [];
   analysisPromises: Promise<Analysis>[] = [];
   blockPromises: ObjectDictionary<Promise<Block>> = {};
 
   fileCount(): number {
-    return this.analyses.length;
+    return this.
   }
 
   blockCount(): number {

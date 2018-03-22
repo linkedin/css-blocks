@@ -3,9 +3,9 @@ import { Template } from "@opticss/template-api";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block } from "../../src/Block";
+import { Analysis } from "../../src/Analyzer";
 import { BlockFactory } from "../../src/BlockParser";
-import { TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { Block } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import { TemplateAnalysisError } from "../../src/errors";
 import { assertParseError } from "../util/assertError";
@@ -25,7 +25,7 @@ export class TemplateAnalysisTests {
 
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info, { "no-class-pairs": false });
+    let analysis = new Analysis(info, { "no-class-pairs": false });
     let config = resolveConfiguration({});
 
     let css = `
@@ -47,7 +47,7 @@ export class TemplateAnalysisTests {
 
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
+    let analysis = new Analysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
     let config = resolveConfiguration({});
 
     let css = `

@@ -10,7 +10,7 @@ import {
   resolveConfiguration as resolveBlockConfiguration,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
-  TemplateAnalysis,
+  Analysis,
 } from "css-blocks";
 import * as debugGenerator from "debug";
 
@@ -21,7 +21,7 @@ const debug = debugGenerator("css-blocks:glimmer");
 
 interface MappingAndAnalysis {
   mapping: StyleMapping;
-  analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile">;
+  analysis: Analysis;
 }
 
 type LoaderContext = {
@@ -66,7 +66,7 @@ export function loaderAdapter(this: any, loaderContext: any): Promise<ASTPluginB
         return false;
       });
       if (analysis) {
-        let a = <TemplateAnalysis<"GlimmerTemplates.ResolvedFile">>analysis;
+        let a = <Analysis>analysis;
         trackBlockDependencies(loaderContext, a.transitiveBlockDependencies(), options);
         return {
           mapping,

@@ -6,15 +6,11 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from "@opticss/template-api";
-import { ObjectDictionary, whatever } from "@opticss/util";
+import { whatever } from "@opticss/util";
 import {
-  Block,
   BlockFactory,
-  MetaTemplateAnalysis,
-  MultiTemplateAnalyzer,
+  Analyzer,
   resolveConfiguration as resolveBlocksConfiguration,
-  StyleAnalysis,
-  TemplateAnalysis,
 } from "css-blocks";
 import * as path from "path";
 import * as postcss from "postcss";
@@ -55,44 +51,25 @@ export class TestTemplateInfo implements TemplateInfo<"WebpackPlugin.TestTemplat
 
 TemplateInfoFactory.constructors["WebpackPlugin.TestTemplate"] = TestTemplateInfo.deserialize;
 
-class TestAnalysis extends TemplateAnalysis<"WebpackPlugin.TestTemplate"> {
-  blocks: ObjectDictionary<Block> = {};
-  constructor(template: TestTemplateInfo) {
-    super(template);
-  }
-  addBlock(name: string, block: Block) {
-    this.blocks[name] = block;
-  }
-  eachAnalysis(cb: (a: StyleAnalysis) => void) {
-    cb(this);
-  }
-  blockDependencies() {
-    let deps = new Set<Block>();
-    Object.keys(this.blocks).forEach(k => {
-      deps.add(this.blocks[k]);
-    });
-    return deps;
-  }
-  transitiveBlockDependencies() {
-    return this.blockDependencies();
-  }
-}
-
-class TestMetaTemplateAnalysis extends MetaTemplateAnalysis {
+class TestAnalyzer extends Analyzer<"WebpackPlugin.TestTemplate"> {
   constructor() {
     super();
-    this.analyses.push(new TestAnalysis(new TestTemplateInfo("test.html", 1)));
+    this.newAnalysis(new TestTemplateInfo("test.html", 1));
+  }
+  analyze(): Promise<Analyzer<"WebpackPlugin.TestTemplate">>{
+    return Promise.resolve(this);
   }
 }
 
-class TestTemplateAnalyzer implements MultiTemplateAnalyzer {
+class TestTemplateAnalyzer extends Analyzer<"WebpackPlugin.TestTemplate"> {
   blockFactory: BlockFactory;
-  analysis: TestMetaTemplateAnalysis;
-  constructor(a: TestMetaTemplateAnalysis, factory: BlockFactory) {
+  analysis: TestAnalyzer;
+  constructor(a: TestAnalyzer, factory: BlockFactory) {
+    super();
     this.analysis = a;
     this.blockFactory = factory;
   }
-  analyze(): Promise<MetaTemplateAnalysis> {
+  analyze(): Promise<Analyzer<"WebpackPlugin.TestTemplate">> {
     return Promise.resolve(this.analysis);
   }
   reset() {
@@ -110,7 +87,7 @@ export function config(): Promise<WebpackConfiguration> {
   let block1 = factory.getBlock(fixture("concat-1"));
   let block2 = factory.getBlock(fixture("concat-2"));
   return Promise.all([block1, block2]).then(blocks => {
-    let analysis = new TestMetaTemplateAnalysis();
+    let analysis = new TestAnalyzer();
     blocks.forEach((b, i) => {
       analysis.eachAnalysis(a => {
         a.blocks[`concat-${i}`] = b;

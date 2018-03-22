@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 
-import { Block } from "../../Block";
 import { IMPLEMENTS } from "../../BlockSyntax";
+import { Block } from "../../BlockTree";
 import { sourceLocation } from "../../SourceLocation";
 import * as errors from "../../errors";
 

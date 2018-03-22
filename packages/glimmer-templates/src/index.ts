@@ -1,7 +1,5 @@
 export {
-  HandlebarsStyleAnalyzer,
-  HandlebarsTransitiveStyleAnalyzer,
-  BaseStyleAnalyzer,
+  HandlebarsAnalyzer,
   AttributeContainer,
 } from "./HandlebarsStyleAnalyzer";
 export { loaderAdapter } from "./webpackLoader";

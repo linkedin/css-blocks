@@ -1,6 +1,7 @@
+import { TemplateTypes } from "@opticss/template-api";
 import * as postcss from "postcss";
 
-import { Block } from "../Block";
+import { Analyzer } from "../Analyzer";
 import {
   BLOCK_DEBUG,
   BLOCK_PROP_NAMES_RE,
@@ -8,7 +9,7 @@ import {
   parseBlockDebug,
   ROOT_CLASS,
 } from "../BlockSyntax";
-import { StyleAnalysis } from "../TemplateAnalysis/StyleAnalysis";
+import { Block } from "../BlockTree";
 import {
   Options,
   resolveConfiguration,
@@ -29,7 +30,7 @@ export class BlockCompiler {
     this.postcss = postcssImpl;
   }
 
-  compile(block: Block, root: postcss.Root, analysis?: StyleAnalysis): postcss.Root {
+  compile(block: Block, root: postcss.Root, analysis?: Analyzer<keyof TemplateTypes>): postcss.Root {
       if (analysis) {
         // console.log("Got an analysis for compilation. I should use it probably.", analysis);
       }

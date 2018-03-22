@@ -1,6 +1,6 @@
 import { unionInto } from "@opticss/util";
 
-import { Attribute, isAttrValue } from "../../Block";
+import { Attribute, isAttrValue } from "../../BlockTree";
 import { isAttrGroup, isBooleanAttr } from "../ElementAnalysis";
 
 import { ErrorCallback, Validator } from "./Validator";
