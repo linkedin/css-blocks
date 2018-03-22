@@ -1,6 +1,6 @@
 import * as postcss from "postcss";
 
-import { Block } from "../Block";
+import { Block } from "../BlockTree";
 import { Options, resolveConfiguration, ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
@@ -67,8 +67,7 @@ export class BlockParser {
     name = await discoverName(root, name, sourceFile);
 
     // Create our new Block object and save reference to the raw AST.
-    let block = new Block(name, identifier);
-    block.stylesheet = root;
+    let block = new Block(name, identifier, root);
 
     // Throw if we encounter any `!important` decls.
     await disallowImportant(root, sourceFile);

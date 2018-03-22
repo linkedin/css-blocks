@@ -9,7 +9,7 @@ import * as babylon from "babylon";
 import {
   Block,
   BlockFactory,
-  MultiTemplateAnalyzer,
+  Analyzer,
   Options as CSSBlocksOptions,
   resolveConfiguration as resolveBlocksOptions,
   ResolvedConfiguration as CSSBlocksConfiguration,
@@ -205,34 +205,34 @@ export function parseFile(file: string, factory: BlockFactory, opts: Partial<JSX
           });
 }
 
-export class CSSBlocksJSXAnalyzer implements MultiTemplateAnalyzer {
-  private _blockFactory: BlockFactory;
-  private entryPoint: string;
-  private name: string;
-  private options: JSXAnalyzerOptions;
-  private cssBlocksOptions: CSSBlocksConfiguration;
+declare module "@opticss/template-api" {
+  interface TemplateTypes {
+    "Opticss.JSXTemplate": JSXTemplate;
+  }
+}
 
-  constructor(entryPoint: string, name: string, options: JSXAnalyzerOptions) {
-    this.entryPoint = entryPoint;
+export class CSSBlocksJSXAnalyzer extends Analyzer<"Opticss.JSXTemplate"> {
+  public name: string;
+  private options: JSXAnalyzerOptions;
+
+  constructor(name: string, options: JSXAnalyzerOptions) {
+    super(options.compilationOptions);
     this.name = name;
     this.options = options;
-    this.cssBlocksOptions = resolveBlocksOptions(options.compilationOptions || {});
-    this._blockFactory = new BlockFactory(this.cssBlocksOptions);
   }
-  analyze(): Promise<MetaAnalysis> {
-    if (!this.entryPoint || !this.name) {
-      throw new JSXParseError("CSS Blocks JSX Analyzer must be passed an entry point and name.");
+
+  async analyze(...entryPoints: string[]): Promise<CSSBlocksJSXAnalyzer> {
+    if (!entryPoints.length) {
+      throw new JSXParseError("CSS Blocks JSX Analyzer must be passed at least one entry point.");
     }
-    return parseFile(this.entryPoint, this.blockFactory, this.options);
+    let promises: Promise<MetaAnalysis>[] = [];
+    for (let entryPoint of entryPoints) {
+      promises.push(parseFile(entryPoint, this.blockFactory, this.options));
+    }
+    await Promise.all(promises);
+    return this;
   }
 
-  reset() {
-    this._blockFactory.reset();
-  }
-
-  get blockFactory() {
-    return this._blockFactory;
-  }
 }
 
 // tslint:disable-next-line:no-default-export

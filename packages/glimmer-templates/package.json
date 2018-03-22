@@ -53,10 +53,10 @@
   },
 
   "dependencies": {
-    "@glimmer/compiler": "^0.29.1",
+    "@glimmer/compiler": "^0.33.0",
     "@glimmer/resolution-map-builder": "0.5.1",
-    "@glimmer/resolver": "^0.3.0",
-    "@glimmer/syntax": "^0.29.10",
+    "@glimmer/resolver": "^0.4.3",
+    "@glimmer/syntax": "^0.33.0",
     "@opticss/element-analysis": "file:../../../opticss/packages/element-analysis",
     "opticss": "file:../../../opticss/packages/opticss",
     "@opticss/template-api": "file:../../../opticss/packages/template-api",

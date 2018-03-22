@@ -1,6 +1,6 @@
 import { AtRule } from "postcss";
 
-import { Block } from "../Block";
+import { Block } from "../BlockTree";
 import { sourceLocation } from "../SourceLocation";
 import * as errors from "../errors";
 

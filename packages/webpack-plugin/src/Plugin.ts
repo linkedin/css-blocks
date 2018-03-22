@@ -5,20 +5,15 @@ import { RawSourceMap } from "source-map";
 import * as Tapable from "tapable";
 import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
 import { RawSource, Source, SourceMapSource } from "webpack-sources";
-
-import {
-  TemplateTypes,
-} from "@opticss/template-api";
 import { ObjectDictionary } from "@opticss/util";
 import {
   Block,
   BlockCompiler,
-  MetaTemplateAnalysis,
-  MultiTemplateAnalyzer,
+  Analyzer as AnalyzerType,
   Options as CSSBlocksOptions,
   resolveConfiguration as resolveBlocksConfiguration,
   StyleMapping,
-  TemplateAnalysis,
+  Analysis
 } from "css-blocks";
 import {
   Actions,
@@ -28,11 +23,16 @@ import {
   Optimizer,
 } from "opticss";
 
+import { LoaderContext } from "./context";
+
+export type Analyzer = AnalyzerType<"WebpackPlugin.TestTemplate">;
+export type PendingResult = Promise<StyleMapping | void>;
+
 export interface CssBlocksWebpackOptions {
   /// The name of the instance of the plugin. Defaults to outputCssFile.
   name?: string;
   /// The analyzer that decides what templates are analyzed and what blocks will be compiled.
-  analyzer: MultiTemplateAnalyzer;
+  analyzer: Analyzer;
   /// The output css file for all compiled CSS Blocks. Defaults to "css-blocks.css"
   outputCssFile?: string;
   /// Compilation options pass to css-blocks
@@ -64,7 +64,7 @@ type Assets = ObjectDictionary<Source>;
 interface CompilationResult {
   optimizationResult: OptimizationResult;
   blocks: Set<Block>;
-  analyses: Array<TemplateAnalysis<keyof TemplateTypes>>;
+  analyses: Array<Analysis>;
 }
 
 export class CssBlocksRewriterPlugin
@@ -76,7 +76,7 @@ export class CssBlocksRewriterPlugin
   outputCssFile: string;
   name: string;
   debug: debugGenerator.IDebugger;
-  pendingResult: Promise<StyleMapping | void> | undefined;
+  pendingResult?: PendingResult;
   constructor(parent: CssBlocksPlugin) {
     super();
     this.debug = parent.debug;
@@ -96,9 +96,9 @@ export class CssBlocksRewriterPlugin
 
   apply(compiler: WebpackCompiler) {
     compiler.plugin("compilation", (compilation: WebpackAny) => {
-      compilation.plugin("normal-module-loader", (context: WebpackAny, mod: WebpackAny) => {
+      compilation.plugin("normal-module-loader", (context: LoaderContext, mod: WebpackAny) => {
         this.trace(`preparing normal-module-loader for ${mod.resource}`);
-        context.cssBlocks = context.cssBlocks || {mappings: {}, compilationOptions: this.compilationOptions};
+        context.cssBlocks = context.cssBlocks || { mappings: {}, compilationOptions: this.compilationOptions };
 
         // If we're already waiting for a css file of this name to finish compiling, throw.
         if (context.cssBlocks.mappings[this.outputCssFile]) {
@@ -126,7 +126,7 @@ export class CssBlocksPlugin
 {
   optimizationOptions: OptiCSSOptions;
   name: string;
-  analyzer: MultiTemplateAnalyzer;
+  analyzer: Analyzer;
   projectDir: string;
   outputCssFile: string;
   compilationOptions: CSSBlocksOptions;
@@ -149,16 +149,16 @@ export class CssBlocksPlugin
     return new CssBlocksRewriterPlugin(this);
   }
 
-  private handleMake(outputPath: string, assets: Assets, compilation: WebpackAny, cb: (error?: Error) => void) {
-      // Start analysis with a clean analysis object
-      this.trace(`starting analysis.`);
-      this.analyzer.reset();
+  private async handleMake(outputPath: string, assets: Assets, compilation: WebpackAny, cb: (error?: Error) => void) {
+    // Start analysis with a clean analysis object
+    this.trace(`starting analysis.`);
+    this.analyzer.reset();
 
       // Try to run our analysis.
-      let pendingResult: Promise<StyleMapping | void> = this.analyzer.analyze()
+    let pending: PendingResult =  this.analyzer.analyze()
 
       // If analysis fails, drain our BlockFactory, add error to compilation error list and propagate.
-      .catch((err) => {
+      .catch((err: Error) => {
         this.trace(`Error during analysis. Draining queue.`);
         return this.analyzer.blockFactory.prepareForExit().then(() => {
           this.trace(`Drained. Raising error.`);
@@ -167,12 +167,12 @@ export class CssBlocksPlugin
       })
 
       // If analysis finished successfully, compile our blocks to output.
-      .then(analysis => {
+      .then((analysis: Analyzer) => {
         return this.compileBlocks(analysis, path.join(outputPath, this.outputCssFile));
       })
 
       // Add the resulting css output to our build.
-      .then(result => {
+      .then((result: CompilationResult) => {
         this.trace(`setting css asset: ${this.outputCssFile}`);
         let source: Source;
         if (result.optimizationResult.output.sourceMap) {
@@ -202,7 +202,7 @@ export class CssBlocksPlugin
       })
 
       // Notify the world when complete.
-      .then<BlockCompilationComplete>((completion) => {
+      .then((completion: BlockCompilationComplete) => {
         this.trace(`notifying of completion`);
         this.notifyComplete(completion, cb);
         this.trace(`notified of completion`);
@@ -210,27 +210,28 @@ export class CssBlocksPlugin
       })
 
       // Return just the mapping object from this promise.
-      .then(compilationResult => {
+      .then((compilationResult: BlockCompilationComplete): StyleMapping => {
         return compilationResult.mapping;
       })
 
       // If something bad happened, log the error and pretend like nothing happened
       // by notifying deps of completion and returning an empty MetaStyleMapping
       // so compilation can continue.
-      .catch((error) => {
+      .catch((error: Error) => {
         this.trace(`notifying of compilation failure`);
         compilation.errors.push(error);
         this.notifyComplete({
           error,
           compilation,
           assetPath: this.outputCssFile,
-        },                  cb);
+        }, cb);
         this.trace(`notified of compilation failure`);
       });
 
-      this.trace(`notifying of pending compilation`);
-      this.notifyPendingCompilation(pendingResult);
-      this.trace(`notified of pending compilation`);
+    this.trace(`notifying of pending compilation`);
+    this.notifyPendingCompilation(pending);
+    this.trace(`notified of pending compilation`);
+
   }
 
   apply(compiler: WebpackCompiler) {
@@ -252,17 +253,17 @@ export class CssBlocksPlugin
     this.getRewriterPlugin().apply(compiler);
   }
 
-  private compileBlocks(analysis: MetaTemplateAnalysis, cssOutputName: string): Promise<CompilationResult> {
+  private compileBlocks(analyzer: Analyzer, cssOutputName: string): Promise<CompilationResult> {
     let options = resolveBlocksConfiguration(this.compilationOptions);
     let blockCompiler = new BlockCompiler(postcss, options);
     let numBlocks = 0;
-    let optimizer = new Optimizer(this.optimizationOptions, analysis.optimizationOptions());
-    let blocks = analysis.transitiveBlockDependencies();
+    let optimizer = new Optimizer(this.optimizationOptions, analyzer.optimizationOptions);
+    let blocks = analyzer.transitiveBlockDependencies();
     for (let block of blocks) {
       if (block.stylesheet && block.identifier) {
         blocks.add(block);
         this.trace(`compiling ${block.identifier}.`);
-        let root = blockCompiler.compile(block, block.stylesheet, analysis);
+        let root = blockCompiler.compile(block, block.stylesheet, analyzer);
         let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
         // TODO: handle a sourcemap from compiling the block file via a preprocessor.
         let filename = options.importer.filesystemPath(block.identifier, options) || options.importer.debugIdentifier(block.identifier, options);
@@ -274,13 +275,12 @@ export class CssBlocksPlugin
         numBlocks++;
       }
     }
-    let analyses = new Array<TemplateAnalysis<keyof TemplateTypes>>();
-    analysis.eachAnalysis(a => {
+    let analyses = analyzer.analyses();
+    for (let a of analyses) {
       this.trace(`Adding analysis for ${a.template.identifier} to optimizer.`);
       this.trace(`Analysis for ${a.template.identifier} has ${a.elementCount()} elements.`);
-      analyses.push(a);
       optimizer.addAnalysis(a.forOptimizer(options));
-    });
+    }
     this.trace(`compiled ${numBlocks} blocks.`);
     return optimizer.optimize(cssOutputName).then(optimizationResult => {
       return {
@@ -297,29 +297,29 @@ export class CssBlocksPlugin
   /**
    * Fires when the compilation promise is available.
    */
-  onPendingCompilation(handler: (pendingResult: Promise<StyleMapping | void>) => void) {
+  onPendingCompilation(handler: (pendingResult: PendingResult) => void): void {
     this.plugin("block-compilation-pending", handler);
   }
-  private notifyPendingCompilation(pendingResult: Promise<StyleMapping | void>) {
+  private notifyPendingCompilation(pendingResult: PendingResult): void {
     this.applyPlugins("block-compilation-pending", pendingResult);
   }
   /**
    * Fires when the compilation is first started to let any listeners know that
    * their current promise is no longer valid.
    */
-  onCompilationExpiration(handler: () => void) {
+  onCompilationExpiration(handler: () => void): void {
     this.plugin("block-compilation-expired", handler);
   }
-  private notifyCompilationExpiration() {
+  private notifyCompilationExpiration(): void {
     this.applyPlugins("block-compilation-expired");
   }
   /**
    * Fires when the compilation is done.
    */
-  onComplete(handler: (result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void) => void) {
+  onComplete(handler: (result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void) => void): void {
     this.plugin("block-compilation-complete", handler);
   }
-  private notifyComplete(result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void) {
+  private notifyComplete(result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void): void {
     this.applyPluginsAsync("block-compilation-complete", result, cb);
   }
 }

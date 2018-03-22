@@ -5,7 +5,7 @@ import fs = require("fs");
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";
 
-import { HandlebarsStyleAnalyzer, loaderAdapter, Project } from "../src";
+import { HandlebarsAnalyzer, loaderAdapter, Project } from "../src";
 
 import { fixture } from "./fixtures";
 
@@ -18,24 +18,24 @@ interface CSSAndMapping {
   css: postcss.Result | string;
   styleMapping: StyleMapping;
 }
-function analyzeAndCompile(analyzer: HandlebarsStyleAnalyzer): Promise<CSSAndMapping> {
+function analyzeAndCompile(analyzer: HandlebarsAnalyzer, entry: string): Promise<CSSAndMapping> {
   let blockOpts = analyzer.project.cssBlocksOpts;
-  return analyzer.analyze().then(analysis => {
-    let blocks = analysis.transitiveBlockDependencies();
-    let optimizerAnalysis = analysis.forOptimizer(blockOpts);
+  return analyzer.analyze(entry).then(analyses => {
+    let blocks = analyzer.transitiveBlockDependencies();
+    let optimizerAnalysis = analyses[0].forOptimizer(blockOpts);
     let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
     let compiler = new BlockCompiler(postcss, blockOpts);
 
     optimizer.addAnalysis(optimizerAnalysis);
     for (let block of blocks) {
-      let compiled = compiler.compile(block, block.stylesheet!, analysis);
+      let compiled = compiler.compile(block, block.stylesheet!, analyses[0]);
       optimizer.addSource({
         content: compiled.toResult({to: blockOpts.importer.filesystemPath(block.identifier, blockOpts)!}),
       });
 
     }
     return optimizer.optimize("result.css").then((optimized) => {
-      let styleMapping = new StyleMapping(optimized.styleMapping, blocks, blockOpts, [analysis]);
+      let styleMapping = new StyleMapping(optimized.styleMapping, blocks, blockOpts, [analyses[0]]);
       let css = optimized.output.content;
       return { css, styleMapping };
     });
@@ -65,8 +65,8 @@ function pretendToBeWebPack(result: CSSAndMapping, templatePath: string, cssBloc
   });
 }
 
-function pipeline(analyzer: HandlebarsStyleAnalyzer, templatePath: string) {
-  return analyzeAndCompile(analyzer).then(result => {
+function pipeline(analyzer: HandlebarsAnalyzer, entry: string, templatePath: string) {
+  return analyzeAndCompile(analyzer, entry).then(result => {
     return pretendToBeWebPack(result, templatePath, analyzer.project.cssBlocksOpts).then(ast => {
       return { css: result.css, ast, styleMapping: result.styleMapping };
     });
@@ -78,9 +78,9 @@ describe("Template Rewriting", function() {
   it("rewrites styles from dynamic attributes", function() {
     let projectDir = fixture("styled-app");
     let project = new Project(projectDir);
-    let analyzer = new HandlebarsStyleAnalyzer(project, "with-dynamic-states");
+    let analyzer = new HandlebarsAnalyzer(project, );
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-states/template.hbs");
-    return pipeline(analyzer, templatePath).then((result) => {
+    return pipeline(analyzer, "with-dynamic-states", templatePath).then((result) => {
       let { ast } = result;
       let res = print(ast);
       // TODO why is `f` class both static and dynamic?
@@ -103,9 +103,9 @@ describe("Template Rewriting", function() {
   it("rewrites styles from dynamic classes", function() {
     let projectDir = fixture("styled-app");
     let project = new Project(projectDir);
-    let analyzer = new HandlebarsStyleAnalyzer(project, "with-dynamic-classes");
+    let analyzer = new HandlebarsAnalyzer(project);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-classes/template.hbs");
-    return pipeline(analyzer, templatePath).then((result) => {
+    return pipeline(analyzer, "with-dynamic-classes", templatePath).then((result) => {
       let { ast } = result;
       let res = print(ast);
       assert.deepEqual(minify(res), minify(`
@@ -122,9 +122,9 @@ describe("Template Rewriting", function() {
   it("rewrites styles from dynamic attributes from readme", function() {
     let projectDir = fixture("readme-app");
     let project = new Project(projectDir);
-    let analyzer = new HandlebarsStyleAnalyzer(project, "page-layout");
+    let analyzer = new HandlebarsAnalyzer(project);
     let templatePath = fixture("readme-app/src/ui/components/page-layout/template.hbs");
-    return pipeline(analyzer, templatePath).then((result) => {
+    return pipeline(analyzer, "page-layout", templatePath).then((result) => {
       let { ast } = result;
       let res = print(ast);
       assert.deepEqual(minify(res), minify(`

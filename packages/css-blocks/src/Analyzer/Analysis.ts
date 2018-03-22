@@ -19,20 +19,19 @@ import {
 } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
-import { Block, Style } from "../Block";
 import { BlockFactory } from "../BlockParser";
+import { Block, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
-import { StyleAnalysis } from "./StyleAnalysis";
 import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 
 /**
  * This interface defines a JSON friendly serialization
  * of a {TemplateAnalysis}.
  */
-export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
-  template: SerializedTemplateInfo<K>;
+export interface SerializedAnalysis {
+  template: SerializedTemplateInfo<keyof TemplateTypes>;
   blocks: ObjectDictionary<string>;
   stylesFound: string[];
   // The numbers stored in each element are an index into a stylesFound;
@@ -48,9 +47,9 @@ export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
  * 2. Call [[addExclusiveStyle addExclusiveStyle(alwaysPresent, ...style)]] for all the styles used that are mutually exclusive on the current html element.
  * 3. Call [[endElement endElement()]] when done adding styles for the current element.
  */
-export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAnalysis {
+export class Analysis {
 
-  template: TemplateInfo<K>;
+  template: TemplateInfo<keyof TemplateTypes>;
   idGenerator: IdentGenerator;
 
   /**
@@ -148,7 +147,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   /**
    * @param template The template being analyzed.
    */
-  constructor(template: TemplateInfo<K>, options?: TemplateValidatorOptions) {
+  constructor(template: TemplateInfo<keyof TemplateTypes>, options?: TemplateValidatorOptions) {
     this.idGenerator = new IdentGenerator();
     this.template = template;
     this.blocks = {};
@@ -276,7 +275,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   /**
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
    */
-  serialize(): SerializedTemplateAnalysis<K> {
+  serialize(): SerializedAnalysis {
     let blocks = {};
     let stylesFound: string[] = [];
     let elements: ObjectDictionary<SerializedElementAnalysis> = {};
@@ -310,9 +309,8 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       elements[key] = el.serialize(styleIndexes);
     });
 
-    let t: SerializedTemplateInfo<K> = template;
     // Return serialized Analysis object.
-    return { template: t, blocks, stylesFound, elements };
+    return { template, blocks, stylesFound, elements };
   }
 
   /**
@@ -321,13 +319,13 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    * @param options The plugin options that are used to parse the blocks.
    * @param postcssImpl The instance of postcss that should be used to parse the block's css.
    */
-  static deserialize<K extends keyof TemplateTypes>(
-    serializedAnalysis: SerializedTemplateAnalysis<K>,
+  static async deserialize (
+    serializedAnalysis: SerializedAnalysis,
     blockFactory: BlockFactory,
-  ): Promise<TemplateAnalysis<K>> {
+  ): Promise<Analysis> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
-    let info = TemplateInfoFactory.deserialize<K>(serializedAnalysis.template);
-    let analysis = new TemplateAnalysis(info);
+    let info = TemplateInfoFactory.deserialize<keyof TemplateTypes>(serializedAnalysis.template);
+    let analysis = new Analysis(info);
     let blockPromises = new Array<Promise<{name: string; block: Block}>>();
     blockNames.forEach(n => {
       let blockIdentifier = serializedAnalysis.blocks[n];
@@ -336,42 +334,41 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       });
       blockPromises.push(promise);
     });
-    return Promise.all(blockPromises).then(values => {
+    let values = await Promise.all(blockPromises);
 
-      // Create a temporary block so we can take advantage of `Block.lookup`
-      // to easily resolve all BlockPaths referenced in the serialized analysis.
-      // TODO: We may want to abstract this so we're not making a temporary block.
-      let localScope = new Block("analysis-block", "tmp");
-      values.forEach(o => {
-        analysis.blocks[o.name] = o.block;
-        localScope.addBlockReference(o.name, o.block);
-      });
-      let objects = new Array<Style>();
-      serializedAnalysis.stylesFound.forEach(s => {
-        let style = localScope.lookup(s);
-        if (style) {
-          objects.push(style);
-        } else {
-          throw new Error(`Cannot resolve ${s} to a block style.`);
-        }
-      });
-
-      let elementNames = Object.keys(serializedAnalysis.elements);
-      elementNames.forEach((elID) => {
-        let data = serializedAnalysis.elements[elID];
-        let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, undefined, elID);
-        analysis.elements.set(elID, element);
-      });
-
-      // tslint:disable-next-line:prefer-whatever-to-any
-      return <TemplateAnalysis<K>> <any> analysis;
+    // Create a temporary block so we can take advantage of `Block.lookup`
+    // to easily resolve all BlockPaths referenced in the serialized analysis.
+    // TODO: We may want to abstract this so we're not making a temporary block.
+    let localScope = new Block("analysis-block", "tmp");
+    values.forEach(o => {
+      analysis.blocks[o.name] = o.block;
+      localScope.addBlockReference(o.name, o.block);
     });
+    let objects = new Array<Style>();
+    serializedAnalysis.stylesFound.forEach(s => {
+      let style = localScope.lookup(s);
+      if (style) {
+        objects.push(style);
+      } else {
+        throw new Error(`Cannot resolve ${s} to a block style.`);
+      }
+    });
+
+    let elementNames = Object.keys(serializedAnalysis.elements);
+    elementNames.forEach((elID) => {
+      let data = serializedAnalysis.elements[elID];
+      let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, undefined, elID);
+      analysis.elements.set(elID, element);
+    });
+
+    // tslint:disable-next-line:prefer-whatever-to-any
+    return analysis;
   }
 
-  forOptimizer(config: ResolvedConfiguration): OptimizationTemplateAnalysis<K> {
-    let optAnalysis = new OptimizationTemplateAnalysis<K>(this.template);
+  forOptimizer(opts: ResolvedConfiguration): OptimizationTemplateAnalysis<keyof TemplateTypes> {
+    let optAnalysis = new OptimizationTemplateAnalysis<keyof TemplateTypes>(this.template);
     for (let element of this.elements.values()) {
-      let result = element.forOptimizer(config);
+      let result = element.forOptimizer(opts);
       optAnalysis.elements.push(result[0]);
     }
     return optAnalysis;

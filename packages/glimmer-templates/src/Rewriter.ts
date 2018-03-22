@@ -10,7 +10,7 @@ import {
   resolveConfiguration,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
-  TemplateAnalysis,
+  Analysis,
 } from "css-blocks";
 import * as debugGenerator from "debug";
 
@@ -25,7 +25,7 @@ const STYLE_ATTR = /^(class$|state:)/;
 
 export class Rewriter implements NodeVisitor {
   template: ResolvedFile;
-  analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile">;
+  analysis: Analysis;
   elementCount: number;
   syntax: Syntax;
   block: Block;
@@ -37,7 +37,7 @@ export class Rewriter implements NodeVisitor {
   constructor(
     syntax: Syntax,
     styleMapping: StyleMapping,
-    analysis: TemplateAnalysis<"GlimmerTemplates.ResolvedFile">,
+    analysis: Analysis,
     cssBlocksOpts: CSSBlocksOptions,
   ) {
     this.syntax        = syntax;

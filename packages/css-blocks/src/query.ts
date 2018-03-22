@@ -8,7 +8,7 @@ import {
 } from "opticss";
 import postcss = require("postcss");
 
-import { Block, Style } from "./Block";
+import { Block, Style } from "./BlockTree";
 
 export interface Query {
   execute(container: postcss.Container): ClassifiedParsedSelectors;

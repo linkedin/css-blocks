@@ -3,9 +3,9 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block } from "../../src/Block";
+import { Analysis, SerializedAnalysis } from "../../src/Analyzer";
 import { BlockFactory } from "../../src/BlockParser";
-import { SerializedTemplateAnalysis, TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { Block } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
 
@@ -15,7 +15,7 @@ import { assertParseError } from "./../util/assertError";
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Root Class Validator")
-export class TemplateAnalysisTests {
+export class AnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
     let config = resolveConfiguration(opts);
     let factory = new BlockFactory(config, postcss);
@@ -27,7 +27,7 @@ export class TemplateAnalysisTests {
 
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let options = {};
 
     let css = `
@@ -54,7 +54,7 @@ export class TemplateAnalysisTests {
 
   @test "adding both root and an attribute from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let options = {};
 
     let css = `
@@ -77,7 +77,7 @@ export class TemplateAnalysisTests {
 
   @test "classes from other blocks may be added to the root element"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let imports = new MockImportRegistry();
     let options = { importer: imports.importer() };
 
@@ -100,7 +100,7 @@ export class TemplateAnalysisTests {
       analysis.endElement(element);
 
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+      let expectedResult: SerializedAnalysis = {
         blocks: { "": "blocks/foo.block.css", "a": "blocks/a.css" },
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs" },
         stylesFound: [":scope", "a.foo"],
