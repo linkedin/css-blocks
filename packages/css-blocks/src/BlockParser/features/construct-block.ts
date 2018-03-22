@@ -3,7 +3,7 @@ import { CompoundSelector, ParsedSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 
-import { Block, Style } from "../../Block";
+import { Block, Style } from "../../BlockTree";
 import { selectorSourceLocation as loc, sourceLocation } from "../../SourceLocation";
 import * as errors from "../../errors";
 import {

@@ -3,9 +3,9 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block } from "../../src/Block";
+import { Analysis } from "../../src/Analyzer";
 import { BlockFactory } from "../../src/BlockParser";
-import { TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { Block } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
 import { setupImporting } from "../util/setupImporting";
@@ -27,7 +27,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when two static attributes from the same group are applied"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -51,7 +51,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when static and dynamic attributes from the same group are applied"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -75,7 +75,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when static attributes and dynamic group from the same group are applied"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -99,7 +99,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when duplicate dynamic groups are applied"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `

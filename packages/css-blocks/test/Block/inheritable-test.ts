@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
 import { Block, BlockClass, ResolvedConfiguration, RulesetContainer, SourceLocation } from "../../src";
-import { Inheritable } from "../../src/Block/Inheritable";
+import { Inheritable } from "../../src/BlockTree/Inheritable";
 
 type RootNode = Inheritable<
   TestSource, // Self

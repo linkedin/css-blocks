@@ -2,8 +2,8 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block } from "../src/Block";
 import { BlockFactory } from "../src/BlockParser";
+import { Block } from "../src/BlockTree";
 import { Options, resolveConfiguration } from "../src/configuration";
 import { QueryKeySelector } from "../src/query";
 

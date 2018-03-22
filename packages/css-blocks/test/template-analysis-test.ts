@@ -4,9 +4,9 @@ import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Attribute, AttrValue, Block, BlockClass } from "../src/Block";
+import { Analysis, ElementAnalysis, SerializedAnalysis } from "../src/Analyzer";
 import { BlockFactory } from "../src/BlockParser";
-import { ElementAnalysis, SerializedTemplateAnalysis, TemplateAnalysis } from "../src/TemplateAnalysis";
+import { Attribute, AttrValue, Block, BlockClass } from "../src/BlockTree";
 import { Options, resolveConfiguration } from "../src/configuration";
 import * as cssBlocks from "../src/errors";
 
@@ -18,7 +18,7 @@ type TestElement = ElementAnalysis<null, null, null>;
 type BlockAndRoot = [Block, postcss.Container];
 
 @suite("Template Analysis")
-export class TemplateAnalysisTests {
+export class AnalysisTests {
   private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
     let config = resolveConfiguration(opts);
     let factory = new BlockFactory(config, postcss);
@@ -30,7 +30,7 @@ export class TemplateAnalysisTests {
   @test "can add styles from a block"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let css = `
       :scope { color: blue; }
       [state|foo] { color: red; }
@@ -43,7 +43,7 @@ export class TemplateAnalysisTests {
       element.addStaticClass(block.rootClass);
       analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+      let expectedResult: SerializedAnalysis = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [":scope"],
@@ -61,7 +61,7 @@ export class TemplateAnalysisTests {
   @test "can add dynamic styles from a block"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let css = `
       :scope { color: blue; }
       [state|foo] { color: red; }
@@ -74,7 +74,7 @@ export class TemplateAnalysisTests {
       element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
       analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+      let expectedResult: SerializedAnalysis = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [":scope"],
@@ -94,7 +94,7 @@ export class TemplateAnalysisTests {
   @test "can correlate styles"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let css = `
       :scope { color: blue; }
       [state|foo] { color: red; }
@@ -114,7 +114,7 @@ export class TemplateAnalysisTests {
       }
       analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+      let expectedResult: SerializedAnalysis = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]"],
@@ -134,7 +134,7 @@ export class TemplateAnalysisTests {
   @test "can add styles from two blocks"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let css = `
       :scope { color: blue; }
       [state|foo] { color: red; }
@@ -153,7 +153,7 @@ export class TemplateAnalysisTests {
         element.addStaticClass(block2.rootClass);
         analysis.endElement(element);
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+        let expectedResult: SerializedAnalysis = {
           blocks: {"": "blocks/foo.block.css", "ref": "blocks/bar.block.css"},
           elements: {
             a: {
@@ -177,7 +177,7 @@ export class TemplateAnalysisTests {
 
   @test "adding dynamic styles enumerates correlation in analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
 
     imports.registerSource(
@@ -205,7 +205,7 @@ export class TemplateAnalysisTests {
       element.addDynamicAttr(klass, klass.getAttributeValue("[state|larger]")!, null);
       analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+      let expectedResult: SerializedAnalysis = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
@@ -227,7 +227,7 @@ export class TemplateAnalysisTests {
 
   @test "multiple dynamic values added using `addExclusiveStyles` enumerate correlations correctly in analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -243,7 +243,7 @@ export class TemplateAnalysisTests {
         analysis.endElement(element);
 
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+        let expectedResult: SerializedAnalysis = {
           blocks: {"": "blocks/foo.block.css"},
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [":scope", "[state|bgcolor]", "[state|color]"],
@@ -265,7 +265,7 @@ export class TemplateAnalysisTests {
 
   @test "multiple exclusive dynamic values added using enumerate correlations correctly in analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -283,7 +283,7 @@ export class TemplateAnalysisTests {
         analysis.endElement(element);
 
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+        let expectedResult: SerializedAnalysis = {
           blocks: {"": "blocks/foo.block.css"},
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [
@@ -327,7 +327,7 @@ export class TemplateAnalysisTests {
 
   @test "toggling between two classes with states of the same name"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
 
     imports.registerSource(
@@ -359,7 +359,7 @@ export class TemplateAnalysisTests {
       element.addStaticAttr(fdsa, fdsa.getAttributeValue("[state|larger]")!);
       analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+      let expectedResult: SerializedAnalysis = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]", ".fdsa", ".fdsa[state|larger]", "a.foo"],
@@ -380,7 +380,7 @@ export class TemplateAnalysisTests {
 
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is true"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
     imports.registerSource(
       "blocks/a.css",
@@ -411,7 +411,7 @@ export class TemplateAnalysisTests {
       element.addStaticAttr(klass, klass.getAttributeValue("[state|bar]")!);
       analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+      let expectedResult: SerializedAnalysis = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
@@ -429,7 +429,7 @@ export class TemplateAnalysisTests {
 
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is false"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
     imports.registerSource(
       "blocks/a.css",
@@ -454,7 +454,7 @@ export class TemplateAnalysisTests {
       element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[state|foo]") as Attribute, null, true);
       analysis.endElement(element);
       let result = analysis.serialize();
-      let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+      let expectedResult: SerializedAnalysis = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [":scope", "[state|foo=purple]", "[state|foo=red]"],
@@ -474,7 +474,7 @@ export class TemplateAnalysisTests {
   }
   @test "can generate an analysis for the optimizer"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
     imports.registerSource(
       "blocks/a.css",
@@ -548,7 +548,7 @@ export class TemplateAnalysisTests {
 
   @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let config = resolveConfiguration({});
 
     let css = `
@@ -574,7 +574,7 @@ export class TemplateAnalysisTests {
 
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info, { "no-class-pairs": false });
+    let analysis = new Analysis(info, { "no-class-pairs": false });
     let config = resolveConfiguration({});
 
     let css = `
@@ -596,7 +596,7 @@ export class TemplateAnalysisTests {
 
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
+    let analysis = new Analysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
     let config = resolveConfiguration({});
 
     let css = `
@@ -615,7 +615,7 @@ export class TemplateAnalysisTests {
 
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let config = resolveConfiguration({});
 
     let css = `
@@ -642,7 +642,7 @@ export class TemplateAnalysisTests {
 
   @test "adding both root and a state from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let config = resolveConfiguration({});
 
     let css = `
@@ -665,7 +665,7 @@ export class TemplateAnalysisTests {
 
   @test "classes from other blocks may be added to the root element"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
 
     imports.registerSource(
@@ -687,7 +687,7 @@ export class TemplateAnalysisTests {
         analysis.endElement(element);
 
         let result = analysis.serialize();
-        let expectedResult: SerializedTemplateAnalysis<"Opticss.Template"> = {
+        let expectedResult: SerializedAnalysis = {
           blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [":scope", "a.foo"],
@@ -712,7 +712,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when states are applied without their parent root"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -733,7 +733,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when states are applied without their parent BlockClass"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -757,7 +757,7 @@ export class TemplateAnalysisTests {
 
   @test "Throws when inherited states are applied without their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
 
     imports.registerSource(
@@ -798,7 +798,7 @@ export class TemplateAnalysisTests {
 
   @test "Inherited states pass validation when applied with their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
     let { imports, config } = setupImporting();
 
     imports.registerSource(
@@ -866,7 +866,7 @@ export class TemplateAnalysisTests {
     });
     let analysisPromise = blockPromise.then(block => {
       let template = new Template("my-template.html");
-      let analysis = new TemplateAnalysis(template);
+      let analysis = new Analysis(template);
       analysis.blocks["a"] = block;
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.find(":scope") as Block);
@@ -889,7 +889,7 @@ export class TemplateAnalysisTests {
       let serialization = analysis.serialize();
       assert.deepEqual(serialization.template, {type: "Opticss.Template", identifier: "my-template.html"});
       let factory = new BlockFactory(config, postcss);
-      return TemplateAnalysis.deserialize<"Opticss.Template">(serialization, factory).then(analysis => {
+      return Analysis.deserialize<"Opticss.Template">(serialization, factory).then(analysis => {
         let reserialization = analysis.serialize();
         assert.deepEqual(serialization, reserialization);
       });

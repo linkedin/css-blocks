@@ -2,9 +2,9 @@ import { Template } from "@opticss/template-api";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block } from "../../src/Block";
+import { Analysis } from "../../src/Analyzer";
 import { BlockFactory } from "../../src/BlockParser";
-import { TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { Block } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
 import { assertParseError } from "../util/assertError";
@@ -24,7 +24,7 @@ export class TemplateAnalysisTests {
 
   @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analysis = new Analysis(info);
 
     let config = resolveConfiguration({});
 

@@ -1,15 +1,15 @@
-import { StyleMapping as OptimizedMapping, TemplateTypes } from "@opticss/template-api";
+import { StyleMapping as OptimizedMapping } from "@opticss/template-api";
 
-import { Block, Style } from "../Block";
-import { TemplateAnalysis } from "../TemplateAnalysis";
-import { ElementAnalysis } from "../TemplateAnalysis/ElementAnalysis";
+import { Analysis } from "../Analyzer";
+import { ElementAnalysis } from "../Analyzer";
+import { Block, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 
 import { IndexedClassRewrite } from "./ClassRewrite";
 import { IndexedClassMapping, RewriteMapping } from "./RewriteMapping";
 export class StyleMapping {
   /** The analyses that were used to create this mapping. */
-  analyses: Array<TemplateAnalysis<keyof TemplateTypes>> | undefined;
+  analyses: Array<Analysis> | undefined;
   /** The blocks that were used to create this mapping. */
   blocks: Set<Block>;
   private configuration: ResolvedConfiguration;
@@ -19,7 +19,7 @@ export class StyleMapping {
     optimizedMap: OptimizedMapping,
     blocks: Iterable<Block>,
     configuration: ResolvedConfiguration,
-    analyses?: Array<TemplateAnalysis<keyof TemplateTypes>>,
+    analyses?: Array<Analysis>,
   ) {
     this.configuration = configuration;
     this.optimizedMap = optimizedMap;

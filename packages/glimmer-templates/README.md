@@ -1,7 +1,6 @@
 # CSS Blocks Integration for Glimmer Applications
 
-A library for doing static analysis and rewriting of css-blocks styles with
-Glimmer apps.
+The css-blocks Rewriter and Analyzer for Glimmer templates.
 
 ## Installation
 

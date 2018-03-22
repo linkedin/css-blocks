@@ -1,6 +1,6 @@
 import * as postcss from "postcss";
 
-import { Block } from "../../Block";
+import { Block } from "../../BlockTree";
 import { selectorSourceLocation as loc } from "../../SourceLocation";
 import * as errors from "../../errors";
 import {
