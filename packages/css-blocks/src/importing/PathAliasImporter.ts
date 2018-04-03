@@ -1,10 +1,10 @@
 import { ObjectDictionary } from "@opticss/util";
+import { existsSync } from "fs";
 import * as path from "path";
 
 import { ResolvedConfiguration } from "../configuration";
 
 import { FilesystemImporter } from "./FilesystemImporter";
-import { existsSync } from "./existsSync";
 import { FileIdentifier } from "./types";
 
 export interface Alias {

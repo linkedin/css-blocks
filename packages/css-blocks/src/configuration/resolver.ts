@@ -5,9 +5,7 @@ import {
   ImporterData,
 } from "../importing";
 
-import {
-  OutputMode,
-} from "./OutputMode";
+import { OutputMode } from "./OutputMode";
 import {
   Configuration,
   ConfigurationObjectKeys,

@@ -3,9 +3,7 @@ import * as path from "path";
 import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 
-import {
-  FileIdentifier, ImportedFile, Importer,
-} from "./types";
+import { FileIdentifier, ImportedFile, Importer } from "./types";
 
 export abstract class PathBasedImporter implements Importer {
   identifier(fromFile: string | null, importPath: string, configuration: ResolvedConfiguration): string {

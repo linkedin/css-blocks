@@ -28,7 +28,10 @@ Given the following CSS Block definition:
 
 ```css
 @block-reference grid from "./grid.block.css";
-:scope { block-name: my-component; /* ... */ }
+:scope {
+  block-name: my-component;
+  /* ... */
+}
 [state|loading] { /* ... */ }
 .sidebar { /* ... */ }
 .sidebar[state|collapsed] { /* ... */ }
@@ -54,6 +57,7 @@ We can style a glimmer template like so:
 ```
 
 Of note here:
+ - Templates with a corresponding Block file **must** have a root single DOM node as the base of its template.
  - The styles for the `:scope` class are automatically applied to the root element of the component (in this case: `div`).
  - Classes and states from referenced blocks are prefixed with the name of the block (in this case: `grid`)
  - The only expressions allowed in `class` attributes are the CSS Blocks specific `{{style-if}}` and `{{style-unless}}` helpers. Otherwise, a build time error is thrown.

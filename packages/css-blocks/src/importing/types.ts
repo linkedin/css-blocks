@@ -3,6 +3,11 @@ import { ObjectDictionary, whatever } from "@opticss/util";
 import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 
+/**
+ * Importers have a special `importerData` property on the CSS Blocks configuration
+ * options hash where custom importers can request for additional importer configuration
+ * to be passed. All `Importer` methods are passed the configuration hash.
+ */
 export type ImporterData = ObjectDictionary<whatever>;
 
 /**
