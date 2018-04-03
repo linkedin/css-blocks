@@ -39,7 +39,7 @@ That means you get to write ergonomic, vanilla, scoped CSS – and let the build
 
 > CSS Blocks is inspired by [CSS Modules](https://github.com/css-modules/css-modules), [BEM](http://getbem.com/) and [Atomic CSS](https://acss.io/)
 > 
-> For a full deep-dive of the project architecture, I heavily recommend you review the [CSS Blocks Architecture README](https://github.com/css-blocks/css-blocks/ARCHITECTURE.md)!
+> For a full deep-dive of the project architecture, I heavily recommend you review the [CSS Blocks Architecture README](./ARCHITECTURE.md)!
 
 # ⚙️ Supported Integrations
 
@@ -373,7 +373,7 @@ An extending block is able to re-define any property on any style it inherits fr
 > Sometimes, properties inside of a component are **so** important, that authors may want to constrain the values that extenders and implementors are able to set. In the near future, css-blocks will enable this use case through the custom `constrain()` and `range()` CSS functions. You can come help out over on Github to make this happen faster!
 
 ## Block Paths
-As your Blocks begin interacting with each other in increasingly complex ways, you will find yourself needing to reference specific classes or states on another Block, as you'll see later in this document. You do this using a small query syntax called a [Block Path](https://github.com/css-blocks/css-blocks/blob/master/packages/css-blocks/src/BlockSyntax/BlockPath.ts).
+As your Blocks begin interacting with each other in increasingly complex ways, you will find yourself needing to reference specific classes or states on another Block, as you'll see later in this document. You do this using a small query syntax called a [Block Path](./packages/css-blocks/src/BlockSyntax/BlockPath.ts).
 
 Block Paths take the form: 
 

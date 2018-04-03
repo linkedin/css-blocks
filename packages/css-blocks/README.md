@@ -12,7 +12,7 @@
 | **rootDir** | `process.cwd()` | The root directory from which all sources are relative. |
 | **outputMode** | `"BEM"` | Block file output mode. One of [OutputMode][OUTPUT_MODE] |
 | **preprocessors** | `{}` | A preprocessor function can be declared by [Syntax][SYNTAX]. |
-| **importer** | [`FilesystemImporter`](https://github.com/css-blocks/css-blocks/blob/docs/packages/css-blocks/src/importing/FilesystemImporter.ts) | A custom importer to resolve identifiers passed to `@block-reference`. |
+| **importer** | [`FilesystemImporter`](./src/importing/FilesystemImporter.ts) | A custom importer to resolve identifiers passed to `@block-reference`. |
 | **importerData** | `{}` | Additional data to make available to the importer. |
 | **maxConcurrentCompiles** | `4` | Limits block parsing and compilation to this number of threads at any one time. |
 | **disablePreprocessChaining** | `false` | If a preprocessor function is declared for `css`, all blocks will be ran through it, even those that were pre-processed for another syntax. This can be disabled by setting `disablePreprocessChaining` to true. |
@@ -200,7 +200,7 @@ CSS Blocks needs to know where to get a Block file's contents when provided a fi
 
 A custom importer may be passed to CSS Blocks via the `importer` options of the configuration object. Custom importers will understand how to resolve information about the `FileIdentifier` passed to `@block-reference` and are used to abstract application or platform specific path resolution logic.
 
-Any CSS Blocks `Importer` **must** implement the interface defined for a CSS Blocks `Importer` in [`/src/importing/types.ts`](https://github.com/css-blocks/css-blocks/blob/docs/packages/css-blocks/src/importing/types.ts). Every importer is required to have a number of introspection methods that return standard metadata for a given `FileIdentifier`:
+Any CSS Blocks `Importer` **must** implement the interface defined for a CSS Blocks `Importer` in [`/src/importing/types.ts`](./src/importing/types.ts). Every importer is required to have a number of introspection methods that return standard metadata for a given `FileIdentifier`:
 
  - **identifier**: Return a globally unique identifier for the `FileIdentifier`
  - **defaultName**: Return the default Block name to use if no `block-name` is set.
@@ -223,5 +223,5 @@ Utilities used inside the CSS Blocks repo. These are:
  - **PromiseQueue**: Enqueue a series of tasks to run in parallel. If a task fails, it will wait for all running jobs to either finish or fail before rejecting.
  - **unionInto**: Like `Object.assign`, but for Sets.
 
-[SYNTAX]: https://github.com/css-blocks/css-blocks/blob/docs/packages/css-blocks/src/BlockParser/preprocessing.ts#L11
-[OUTPUT_MODE]: https://github.com/css-blocks/css-blocks/blob/docs/packages/css-blocks/src/configuration/OutputMode.ts
+[SYNTAX]: ./src/BlockParser/preprocessing.ts#L11
+[OUTPUT_MODE]: ./src/configuration/OutputMode.ts
