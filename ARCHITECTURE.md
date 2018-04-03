@@ -100,7 +100,7 @@ At this phase, your Block files are rewritten to use globally unique class names
 
 As described in the [CSS Blocks README][CORE], `Style` objects (`BlockClasses` and `AttrValues`) conveniently map directly to BEM classes. By default, you will see BEM classes emitted in this phase.
 
-> Note: BEM is the default output mode for css-blocks – and currently the only output mode – but [other output modes](./packages/css-blocks/src/OutputMode.ts) for css-blocks may be added in the future.
+> Note: BEM is the default output mode for css-blocks – and currently the only output mode – but [other output modes](./packages/css-blocks/src/configuration/OutputMode.ts) for css-blocks may be added in the future.
 
 ## Optimization (Production Only)
 Once we have all of our style data parsed from the __Block Parsing Phase__, and all of our usage data from the __Template Analysis Phase__, *and* the compiled Block CSS files, all this information is passed off to [Opticss][OPTICSS], our standalone CSS stylesheet optimizer, for style optimization!
@@ -283,7 +283,7 @@ Provides the build system integration for [Broccoli][BROCCOLI_WEBSITE].
 ### [@css-blocks/webpack][WEBPACK]
 Provides the build system integration for [Webpack][WEBPACK_WEBSITE].
 
-### [@css-blocks/ember-cli](EMBER_CLI)
+### [@css-blocks/ember-cli][EMBER_CLI]
 Provides the build system integration for [Ember CLI][EMBER_CLI_WEBSITE].
 
 [PROJECT_HOME]: .
@@ -292,6 +292,7 @@ Provides the build system integration for [Ember CLI][EMBER_CLI_WEBSITE].
 [OPTICSS]: https://github.com/css-blocks/opticss
 [WEBPACK]: ./packages/webpack-plugin
 [BROCCOLI]: ./packages/broccoli-css-blocks
+[EMBER_CLI]: ./packages/ember-cli-css-blocks
 [JSX]: ./packages/jsx
 [GLIMMER]: ./packages/glimmer-templates
 
