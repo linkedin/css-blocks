@@ -44,7 +44,7 @@ To pull off all the features promised by css-blocks, we need to do a *lot* of wo
 ## Block Parsing
 Lets start at the very beginning – a very good place to start! In css-blocks, we start with your templates – unexpected for a CSS framework, I know! 
 
-CSS Blocks starts at the entry point template(s) passed to it by your build, and crawls the template dependency trees. Every time we encounter a referenced Block file in a template (remember: the syntax for this changes depending on the templating language), we pass it off to the [BlockFactory](./packages/css-blocks/src/BlockFactory/index.ts) for parsing. 
+CSS Blocks starts at the entry point template(s) passed to it by your build, and crawls the template dependency trees. Every time we encounter a referenced Block file in a template (remember: the syntax for this changes depending on the templating language), we pass it off to the [BlockFactory](./packages/css-blocks/src/BlockParser/BlockFactory.ts) for parsing. 
 
 The `BlockFactory` parses every Block file discovered into an internally used, intermediate data model that is well indexed, easily searchable, and manages all the complexity of Block composition, inheritance and implementation. This data model is affectionately called a [BlockTree](./packages/css-blocks/src/Block/index.ts). 
 
@@ -287,13 +287,13 @@ Provides the build system integration for [Webpack][WEBPACK_WEBSITE].
 Provides the build system integration for [Ember CLI][EMBER_CLI_WEBSITE].
 
 [PROJECT_HOME]: .
-[CORE]: ./tree/docs/packages/css-blocks
-[RUNTIME]: ./tree/docs/packages/runtime
+[CORE]: ./packages/css-blocks
+[RUNTIME]: ./packages/runtime
 [OPTICSS]: https://github.com/css-blocks/opticss
-[WEBPACK]: ./tree/docs/packages/webpack-plugin
-[BROCCOLI]: ./tree/docs/packages/broccoli-css-blocks
-[JSX]: ./tree/docs/packages/jsx
-[GLIMMER]: ./tree/docs/packages/glimmer-templates
+[WEBPACK]: ./packages/webpack-plugin
+[BROCCOLI]: ./packages/broccoli-css-blocks
+[JSX]: ./packages/jsx
+[GLIMMER]: ./packages/glimmer-templates
 
 [EMBER_CLI_WEBSITE]: ./packages/ember-cli
 [WEBPACK_WEBSITE]: https://webpack.js.org/
