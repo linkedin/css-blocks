@@ -183,7 +183,7 @@ In css-blocks, **shallow selectors** mean:
 /* ✅ Allowed! */
 :scope:hover > .my-class { /* ... */ }
 
-/* ❌ Illigal! */
+/* ❌ Illegal! */
 :scope:hover > .my-class + .my-class { /* ... */ }
 ```
 
@@ -195,7 +195,7 @@ In css-blocks, **shallow selectors** mean:
 :scope[state|active] > .my-class { /* ... */ }
 :scope[state|color=red] .my-class { /* ... */ }
 
-/* ❌ Illigal! */
+/* ❌ Illegal! */
 .container:hover > .my-class { /* ... */ }
 .container[state|active] .my-class { /* ... */ }
 .container[state|color=red] .my-class { /* ... */ }
@@ -209,7 +209,7 @@ In css-blocks, **shallow selectors** mean:
 .my-class:hover ~ .my-class { /* ... */ }
 .my-class[state|active] + .my-class { /* ... */ }
 
-/* ❌ Illigal! */
+/* ❌ Illegal! */
 :scope + .my-class { /* ... */ }
 .another-class:hover ~ .my-class { /* ... */ }
 .another-class[state|active] + .my-class { /* ... */ }
