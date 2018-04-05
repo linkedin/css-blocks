@@ -529,7 +529,7 @@ Here, we tell css-blocks to use the `color` value from `other.selector` instead 
 
 > 🔮 **Future Feature: Resolve All Shorthand **
 >
-> For straightforward resolutions where you just want to yield or assume full control of styling against another block, feel free to use the CSS `all` property to quickly override or yield to all property conflict with another block:
+> For straightforward resolutions where you just want to yield or assume full control of styling against another block, feel free to use the CSS `all` property to quickly override or yield to all property conflict with another block. The downside of doing this is that as new properties are added to another element, you don't get a chance to review them and decide:
 
 ```css
 .my-class {
@@ -537,7 +537,7 @@ Here, we tell css-blocks to use the `color` value from `other.selector` instead 
 	background: blue;
 
 	/* Yields all conflicts to `other.selector` */
-  all: resolve("other.selector"); 
+  all: resolve("other.selector");
 }
 ```
 
@@ -588,8 +588,8 @@ If we were to switch around the order a bit so our `background-color` resolution
 ```
 
 > 💡 **Feature Note: States and Pseudo-Classes**
-> 
-> **States** and **Pseudo-Classes** inherit **all**  resolutions set on their containing **Class** or `:scope`. 
+>
+> **States** and **Pseudo-Classes** inherit **all**  resolutions set on their containing **Class** or `:scope`.
 >
 > This means that in the above example, where we **yield** for `background-color`, and **override** for `color`, the button element where both classes are used will still use `hoverable.button:hover`'s `background-color`, but it's color will remain `white`, like our component styles define!
 
