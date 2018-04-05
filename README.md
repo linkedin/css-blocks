@@ -12,7 +12,7 @@ CSS Blocks is an ergonomic, component-oriented CSS authoring system that compile
 
 By combining an opinionated authoring system, build-time analysis and rewriting of templates, and a new type of CSS optimizer, css-blocks breathes new power and ease of use into the technologies and best practices that stylesheet developers already know and love.
 
-> Interested in contributing? Head over to [CONTRIBUTING.md]()!
+> Interested in contributing? Head over to [CONTRIBUTING.md](./CONTRIBUTING.md)!
 
 # Why CSS Blocks?
 With css-blocks added to your project, you receive:
