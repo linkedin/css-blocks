@@ -252,7 +252,7 @@ Here be Dragons – `@css-blocks/core` is the package that drives everything tha
 The runtime package delivers the very slim in-browser runtime that handles dynamic class application. The high-level concept of *what* the runtime does is briefly explained in the **Rewrite Phase** section above, but for a more detailed examination of how we actually execute these arbitrary binary expressions, with N number of static or dynamic classes, check out this project's README.
 
 ### [@css-blocks/code-style][RUNTIME]
-This is a utility package that provides TSLint code style rules for the project. Currently, for consistency, it simply re-exports the code style rules delivered by [@css-blocks/opticss][OPTICSS], the CSS optimizer.
+This is a utility package that provides TSLint code style rules for the project. Currently, for consistency, it simply re-exports the code style rules delivered by [@opticss/opticss][OPTICSS], the CSS optimizer.
 
 ## Template Integrations
 A core requirement of css-blocks is the ability to analyze and rewrite your application's templates. Because of language differences, every templating system will have a *slightly* different syntax when importing / referencing Blocks from a template, and for interacting with css-blocks classes / states in the markup.
