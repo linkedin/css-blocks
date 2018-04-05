@@ -60,9 +60,9 @@ In this phase we validate Block syntax and will stop the build with a helpful er
 
 At the end of a successful __Block Parsing Phase__, we are left with a collection of `Block` objects that my be used to query any and all relevant information about a Block file. Any valid `Block` may contain one to many `Style` objects that represent individual `BlockClass`es, or `AttrValue`s accessible on the `Block`. These in turn map directly back to one or more declared rulesets in the source Block file. 
 
-You can read more about `Block` objects and their associated APIs in the [Block Object README](./packages/css-blocks/src/Block/README.md).
+You can read more about `Block` objects and their associated APIs in the [CSS Blocks Core README](./packages/css-blocks/README.md).
 
-## Template Analysis 
+## Template Analysis
 Once we're finished constructing our `Block` objects, these data are passed off to a template `Analyzer` for the __Template Analysis Phase__. It is the job of the analyzer to inspect every element, in every template of the application, and report back information, like:
   
   - which styles are used;
@@ -102,7 +102,7 @@ As described in the [CSS Blocks README][CORE], `Style` objects (`BlockClasses` a
 
 > Note: BEM is the default output mode for css-blocks – and currently the only output mode – but [other output modes](./packages/css-blocks/src/configuration/OutputMode.ts) for css-blocks may be added in the future.
 
-## Optimization (Production Only)
+## Optimization (Optional)
 Once we have all of our style data parsed from the __Block Parsing Phase__, and all of our usage data from the __Template Analysis Phase__, *and* the compiled Block CSS files, all this information is passed off to [Opticss][OPTICSS], our standalone CSS stylesheet optimizer, for style optimization!
 
 I encourage you to read up about Opticss and its internals [over in its repository][OPTICSS]. However, after all is said and done, and a lot of optimization magic is run, we are returned:
@@ -111,7 +111,7 @@ I encourage you to read up about Opticss and its internals [over in its reposito
   2. a `StyleMapping` object with queryable rewrite data, described below;
   3. an `Action` queue describing every transformation step the optimizer made. 
 
-> Note: In development mode, this step is essentially a pass through. The Optimizer will return un-transformed CSS and `StyleMapping` data that is the same as the input data.
+> Note: In a non-optimized build, this step is essentially a pass through. The Optimizer will return un-transformed CSS and `StyleMapping` data that is the same as the input data.
 
 The [`StyleMapping`](./packages/css-blocks/src/TemplateRewriter/StyleMapping.ts) object returned by css-blocks after an Opticss run contains APIs that allow you to query a `RewriteMapping` for any Element analyzed during the __Analysis Phase__. This `RewriteMapping` contains all the information required to rewrite that Element from the old, pre-optimized classes, to the new, fully-optimized classes, as we will see in the __Rewrite Phase__.
 
@@ -190,7 +190,9 @@ const el2Classes = [
 ].join(' ');
 ```
 
-> Note: The above functional syntax is only here to explain the concept of `RewriteMapping`s and conditional style application! Please read about css-blocks' [Runtime Library][RUNTIME] to learn about how this dynamicism is actually represented in the browser.
+> ⁉️ **Note**
+>
+> The above functional syntax is only here to explain the concept of `RewriteMapping`s and conditional style application! Please read about css-blocks' [Runtime Library][RUNTIME] to learn about how this dynamicism is actually represented in the browser.
 
 In production mode however, these `RewriteMapping`s change! The optimized stylesheet may look something like this:
 

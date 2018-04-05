@@ -31,9 +31,14 @@ But, most importantly, CSS Blocks is **⚡️Statically Analyzable**.
 ## The ⚡️ of Static Analysis
 Static analysis means css-blocks can look at your project and know with *certainty* that any given CSS declaration will, will not, or might under certain conditions, be used on any given element in your templates. 
 
-This determinism lets us supercharge your CSS build with powerful stylesheet optimization via [Opticss](https://github.com/css-blocks/opticss), and other developer delight features that other CSS frameworks have, as of yet, been unable to provide.
+Most stylesheet architectures have to walk a fine line between performance and
+maintainability. Tilt too far in either direction and either your users or the developers
+will end up paying the cost. With CSS Blocks, you can focus on making sure your
+stylesheets are easy to maintain as your application changes, and with the new
+CSS optimizer, [OptiCSS](https://github.com/css-blocks/opticss), the small size of your
+app's production stylesheets after compression will amaze you.
 
-That means you get to write ergonomic, vanilla, scoped CSS – and let the build take care of making your stylesheets screaming fast and fantastically small.
+Gone are the days where you spend several minutes debugging your app only to discover a subtle typo that caused a selector to not match – CSS Blocks will give you a build error and suggest possible fixes. With IDE integration, projects using CSS Blocks will be able to quickly navigate to selector definitions that match your current template element and find which template elements match your current selector, autocomplete class names. With CSS Blocks new resolution system, cascade conflicts will be caught for you before you even know they exist and you will never have to fight a specificity war ever again.
 
 ![CSS Blocks Example](/css-blocks-example.png)
 
@@ -99,9 +104,9 @@ Typically, a single Block will contain styles for a particular component or conc
 A Block file may contain:
 
 ## The Scope Selector
-The scope ruleset contains styles applied to the root of the scoped style subtree. All other elements assigned styles from a Block must be contained in the subtree of the Block's root. We use the special [`:scope` pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:scope) to represent these styles.
+The scope ruleset contains styles applied to the root of the scoped style subtree. All other elements assigned styles from a Block must be contained in the document subtree of an element assigned to the block's :scope. We use the special [`:scope` pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:scope) to represent these styles.
 
-The `:scope` selector may contain the special `block-name` property so you may provide your own Block name for easy debugging and BEM class generation. If no `block-name` is provided, we will try to infer the Block name from the file name
+The `:scope` selector may contain the special `block-name` property so you may provide your own Block name for easy debugging and BEM class generation. If no `block-name` is provided, we will infer the Block name from the file name.
 
 > 💡 **Feature Note: Block Names**
 >
@@ -116,7 +121,7 @@ The `:scope` selector may contain the special `block-name` property so you may p
 ```
 
 ## Class Selectors
-Blocks may can contain other classes that may be applied to elements inside the scoped style sub-tree. These are literally class selectors! They are local to that Block and isolated from all other similarly named classes in other Blocks.
+Blocks may can contain other classes that may be applied to elements inside the scoped style sub-tree. These are just class selectors, but they are local to that Block and isolated from all other similarly named classes in other Blocks.
 
 ```css
 .sub-element { /* ... */ }
@@ -126,7 +131,7 @@ Blocks may can contain other classes that may be applied to elements inside the 
 Together, the `:scope` selector and all declared `.class` selectors define the full interface of stylable elements available to a Block's consumer.
 
 ## State Selectors
-States represent a mode or interaction state that the `:scope` or a class – call the state's **originating element** – may be in. States are written as attribute selectors with the special `state` namespace.
+States represent a mode or interaction state that the `:scope` or a class – called the state's **originating element** – may be in. States are written as attribute selectors with the special `state` namespace.
 
 ```css
 :scope { /* ... */ }
@@ -136,8 +141,14 @@ States represent a mode or interaction state that the `:scope` or a class – ca
 .sub-element[state|is-active] { /* ... */ }
 ```
 
+> **⁉️ What the pipe is going on here?**
+>
+> Once upon a time, developers fell in love with XML and thus was born xhtml, a flavor of HTML that allowed HTML elements to be mixed together with elements from other XML syntaxes like SVG and MathML. CSS went along for the ride and so, while many have never seen or used the feature, CSS has support for namespaced elements and attributes. In CSS, the `|` symbol is used to delimit between a namespace identifier (assigned by the `@namespace` at-rule) and the element or attribute name (also called a [qualified name](https://drafts.csswg.org/css-namespaces-3/#css-qualified-name)).
+>
+> In markup, instead of a pipe symbol, the colon is used to delimit a namespace identifier and a qualified name. Yes, this is confusing -- but we don't make CSS syntax, we just use it.
+
 ## Sub-State Selectors
-States on the `:scope` selector or a class selector may contain sub-states for more granular styling. Sub-states of a State are **mutually exclusive** and an element may only be in one sub-state at any given time.
+States on the `:scope` selector or a class selector may contain sub-states for more granular styling. Sub-states of a State are **mutually exclusive** and an element may only be in one sub-state of that state at any given time.
 
 ```css
 :scope { /* ... */ }
@@ -170,7 +181,7 @@ CSS Blocks implements a **strict subset of CSS**. This means we've intentionally
 
 ### 🚨 However:
 
- - `!important` is **forbidden**
+ - `!important` is **forbidden** – you won't be needing it!
  - The `tag`, non-state `[attribute]`, `#id` and `*` selectors are **forbidden** (for now!)
  - The [Logical Combinators](https://www.w3.org/TR/selectors-4/#logical-combination) `:matches()`, `:not()`, `:something()` and `:has()` are **forbidden** (for now!)
  - Selectors must remain **shallow**.
@@ -201,7 +212,7 @@ In css-blocks, **shallow selectors** mean:
 .container[state|color=red] .my-class { /* ... */ }
 ```
 
-#### 3) The Sibling Combinators' ("[+](https://developer.mozilla.org/en-US/docs/Web/CSS/Adjacent_sibling_selectors)", "[~](https://developer.mozilla.org/en-US/docs/Web/CSS/General_sibling_selectors)") context selector must target the **same class** used in the key selector.
+#### 3) The Sibling Combinators' ("[+](https://developer.mozilla.org/en-US/docs/Web/CSS/Adjacent_sibling_selectors)", "[~](https://developer.mozilla.org/en-US/docs/Web/CSS/General_sibling_selectors)") context selector must target the **same class or `:scope`** used in the key selector.
 
 ```css
 /* ✅ Allowed! */
@@ -239,7 +250,7 @@ However, whatever the implementation is, it will feel as though you're interfaci
 ```
 
 ```hbs
-{{!-- :scope selector is automagically applied to the template's wrapper element. Thanks Glimmer! --}}
+{{!-- :scope selector is automagically applied to the template's root-level element. Thanks Glimmer! --}}
 <section state:enabled={{isEnabled}}>
   <button class="button">
     <div class="icon" state:inverse={{isInverse}}></div>
@@ -280,10 +291,12 @@ Adding a `@block-reference` is as simple as this:
 ```
 
 > 🔮 **Future Feature: Node Modules Block Resolution **
-> 
+>
 > Whether you're integrating with a 3rd party library, or pulling in dependencies internal to your company, at some point you'll want to integrate with styles delivered via NPM! The resolution logic for `@block-reference`s to `node_modules` hasn't yet been implemented yet, but you can track progress (or even help out!) [over on Github]().
 
 With the above code, `block-2` now has a local reference `other-block` which points to `block-1`. We can now freely use the `other-block` identifier inside of `block-2` when we want to reference reference `block-1`. This comes in handy! Especially with features like:
+
+# Object Oriented CSS
 
 ## Block Implementation
 A Block's public interface is defined by the states and classes it styles. A Block may declare that it implements one or more other referenced Blocks' interfaces, and the compiler will ensure that all the states and classes it defines are also in the implementing Block! In this way, the compiler can guarantee it is safe to use different Blocks to style the same markup in a component.
@@ -366,12 +379,13 @@ Instead, we can simply extend the `<basic-form>` Block, and only apply the small
 > 
 > The `extends` property is only available in the `:scope` selector. If you use it in any other selector, it will be ignored.
 
-An extending block is able to re-define any property on any style it inherits from. Styles defined in the extending block will **always** take priority over the definitions 
+An extending block is able to re-define any property on any style it inherits from. CSS declarations defined in the extending Block will **always** take priority over the definitions inherited by the same named Style in the base Block.
 
 > 🔮 **Future Feature: Extension Constraints**
 > 
 > Sometimes, properties inside of a component are **so** important, that authors may want to constrain the values that extenders and implementors are able to set. In the near future, css-blocks will enable this use case through the custom `constrain()` and `range()` CSS functions. You can come help out over on Github to make this happen faster!
 
+# Style Composition
 ## Block Paths
 As your Blocks begin interacting with each other in increasingly complex ways, you will find yourself needing to reference specific classes or states on another Block, as you'll see later in this document. You do this using a small query syntax called a [Block Path](./packages/css-blocks/src/BlockSyntax/BlockPath.ts).
 
@@ -513,14 +527,15 @@ Here, we tell css-blocks to use the `color` value from `other.selector` instead 
 }
 ```
 
-### Resolve All Shorthand
-For straightforward resolutions where you just want to yield or assume full control of styling against another block, feel free to use the CSS `all` property to quickly override or yield to all property conflict with another block:
+> 🔮 **Future Feature: Resolve All Shorthand **
+>
+> For straightforward resolutions where you just want to yield or assume full control of styling against another block, feel free to use the CSS `all` property to quickly override or yield to all property conflict with another block:
 
-```
+```css
 .my-class {
 	color: red;
 	background: blue;
-	
+
 	/* Yields all conflicts to `other.selector` */
   all: resolve("other.selector"); 
 }
@@ -553,7 +568,7 @@ So, continuing with the example from the previous section –  **Composition in 
 
 Here we have told css-blocks that when our component's `.button` class is used with hoverable's `.button` class, we want our component's style declarations to win! We have declared an **override resolution** for both properties.
 
-If we were to switch around the order a bit so our `background-color` resolution comes *after* our component's declaration, it means that when these two classes are used together, hoverable's `.button` class will win!
+If we were to switch around the order a bit so our `background-color` resolution comes *after* our component's declaration, it means that when these two classes are used together, hoverable's `.button` class will win, but only for that property. This is why you will never have to fight the cascade or use `!important` ever again!
 
 ```
 /* stylesheet.css */

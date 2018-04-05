@@ -1,6 +1,12 @@
 CSS Blocks
 ==========
 
+**ATTENTION:** This is the original README that Chris wrote for for this project.
+Much of it was written before the features it talks about even existed. Some of those
+features still do not exist, and of those, some may never exist. We're in the process
+of removing this file, you probably want to be reading the [README](./README.md) instead.
+
+-------
 CSS Blocks are a way of writing highly decoupled and isolated styles that can be statically analyzed and optimized for delivery and runtime performance.
 
 In a component-oriented web application there's one pillar of web technology that doesn't quite seem to fit: Cascading Style Sheets. The goals of components are to create strong boundaries and isolated behaviors that can be composed without tight coupling. CSS is global and the desire to create visual consistency across an application seems at odds with the goal of isolation. What's more, techniques that produce styles that are kept in isolation have been at odds with browser performance: highly specific and scoped selectors have performance issues, class name mangling is bad for gzip compression, inline styles are slow, and mixins, while useful for sharing styles consistently into components, produce bloated output.
