@@ -6,6 +6,8 @@ import * as Tapable from "tapable";
 import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
 import { RawSource, Source, SourceMapSource } from "webpack-sources";
 import { ObjectDictionary } from "@opticss/util";
+import { TemplateTypes } from "@opticss/template-api";
+
 import {
   Block,
   BlockCompiler,
@@ -25,8 +27,9 @@ import {
 
 import { LoaderContext } from "./context";
 
-export type Analyzer = AnalyzerType<"WebpackPlugin.TestTemplate">;
-export type PendingResult = Promise<StyleMapping | void>;
+export type TmpType = keyof TemplateTypes;
+export type Analyzer = AnalyzerType<TmpType>;
+export type PendingResult = Promise<StyleMapping<TmpType> | void>;
 
 export interface CssBlocksWebpackOptions {
   /// The name of the instance of the plugin. Defaults to outputCssFile.
@@ -49,13 +52,13 @@ export interface BlockCompilationError {
   compilation: WebpackAny;
   assetPath: string;
   error: Error;
-  mapping?: StyleMapping;
+  mapping?: StyleMapping<TmpType>;
   optimizerActions?: Actions;
 }
 export interface BlockCompilationComplete {
   compilation: WebpackAny;
   assetPath: string;
-  mapping: StyleMapping;
+  mapping: StyleMapping<TmpType>;
   optimizerActions: Actions;
 }
 
@@ -64,7 +67,7 @@ type Assets = ObjectDictionary<Source>;
 interface CompilationResult {
   optimizationResult: OptimizationResult;
   blocks: Set<Block>;
-  analyses: Array<Analysis>;
+  analyses: Array<Analysis<TmpType>>;
 }
 
 export class CssBlocksRewriterPlugin
@@ -141,8 +144,7 @@ export class CssBlocksPlugin
     this.name = options.name || this.outputCssFile;
     this.compilationOptions = options.compilationOptions || {};
     this.projectDir = process.cwd();
-    this.optimizationOptions =
-      Object.assign({}, DEFAULT_OPTIONS, options.optimization);
+    this.optimizationOptions = Object.assign({}, DEFAULT_OPTIONS, options.optimization);
   }
 
   getRewriterPlugin(): CssBlocksRewriterPlugin {
@@ -154,9 +156,9 @@ export class CssBlocksPlugin
     this.trace(`starting analysis.`);
     this.analyzer.reset();
 
-      // Try to run our analysis.
-    let pending: PendingResult =  this.analyzer.analyze()
-
+    // Try to run our analysis.
+    let entries = compilation.options.entry as string[];
+    let pending: PendingResult = this.analyzer.analyze(...entries)
       // If analysis fails, drain our BlockFactory, add error to compilation error list and propagate.
       .catch((err: Error) => {
         this.trace(`Error during analysis. Draining queue.`);
@@ -210,7 +212,7 @@ export class CssBlocksPlugin
       })
 
       // Return just the mapping object from this promise.
-      .then((compilationResult: BlockCompilationComplete): StyleMapping => {
+      .then((compilationResult: BlockCompilationComplete): StyleMapping<TmpType> => {
         return compilationResult.mapping;
       })
 
@@ -231,7 +233,6 @@ export class CssBlocksPlugin
     this.trace(`notifying of pending compilation`);
     this.notifyPendingCompilation(pending);
     this.trace(`notified of pending compilation`);
-
   }
 
   apply(compiler: WebpackCompiler) {

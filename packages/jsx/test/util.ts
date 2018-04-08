@@ -1,14 +1,13 @@
-import { BlockFactory, Options as CSSBlocksOptions } from "css-blocks";
+import { Analyzer, Options } from "../src/index";
 
-import { JSXAnalyzerOptions, parse, parseFile } from "../src/index";
-import { MetaAnalysis } from "../src/utils/Analysis";
-
-export function testParse(data: string, filename = "", opts?: JSXAnalyzerOptions, cssBlocksOpts?: CSSBlocksOptions): Promise<MetaAnalysis> {
-   let factory = new BlockFactory(cssBlocksOpts || {});
-   return parse(filename, data, factory, opts);
+export async function testParse(data: string, filename = "", opts?: Partial<Options>): Promise<Analyzer> {
+  let analyzer = new Analyzer("test-analyzer", opts);
+  await analyzer.parse(filename, data);
+  return analyzer;
 }
 
-export function testParseFile(file: string, opts?: JSXAnalyzerOptions, cssBlocksOpts?: CSSBlocksOptions): Promise<MetaAnalysis> {
-   let factory = new BlockFactory(cssBlocksOpts || {});
-   return parseFile(file, factory, opts);
+export async function testParseFile(file: string, opts?: Partial<Options>): Promise<Analyzer> {
+  let analyzer = new Analyzer("test-analyzer", opts);
+  await analyzer.parseFile(file);
+  return analyzer;
 }

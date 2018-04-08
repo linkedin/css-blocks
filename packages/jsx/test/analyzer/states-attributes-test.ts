@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
-import { MetaAnalysis } from "../../src/utils/Analysis";
+import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
 import { testParse as parse } from "../util";
 
 const mock = require("mock-fs");
@@ -28,7 +28,7 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.color='yellow'></div>;
-    `).then((analysis: MetaAnalysis) => {
+    `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 0);
@@ -52,7 +52,7 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.color='green'></div>;
-    `).then((analysis: MetaAnalysis) => {
+    `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 0);
@@ -76,7 +76,7 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.color={leSigh}></div>;
-    `).then((analysis: MetaAnalysis) => {
+    `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 3);
       assert.equal(analysis.dynamicCount(), 2);
@@ -97,7 +97,7 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.awesome ></div>;
-    `).then((analysis: MetaAnalysis) => {
+    `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 0);
@@ -118,7 +118,7 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.awesome='true'></div>;
-    `).then((analysis: MetaAnalysis) => {
+    `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 0);
@@ -139,7 +139,7 @@ export class Test {
     return parse(`
       import bar from 'bar.block.css';
       <div class={bar.pretty} state:bar.pretty.awesome={ohMy}></div>;
-    `).then((analysis: MetaAnalysis) => {
+    `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
       assert.equal(analysis.getAnalysis(0).styleCount(), 2);
       assert.equal(analysis.dynamicCount(), 1);

@@ -20,14 +20,19 @@ import {
   Node,
   SourceLocation,
 } from "babel-types";
-import { Block } from "css-blocks";
+import { Analysis, Block } from "css-blocks";
 
-import { isCommonNameForStyling, isStyleFunction } from "../styleFunctions";
-import { MalformedBlockPath, TemplateAnalysisError } from "../utils/Errors";
-import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../utils/ExpressionReader";
-import { isConsoleLogStatement } from "../utils/isConsoleLogStatement";
+import { isCommonNameForStyling, isStyleFunction } from "../../styleFunctions";
+import { MalformedBlockPath, TemplateAnalysisError } from "../../utils/Errors";
+import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../../utils/ExpressionReader";
+import { isConsoleLogStatement } from "../../utils/isConsoleLogStatement";
 
-import { Flags, JSXElementAnalysis, newJSXElementAnalysis } from "./types";
+import { TemplateType } from "../Template";
+import { Flags, JSXElementAnalysis, newJSXElementAnalysis } from "../types";
+
+function htmlTagName(el: JSXOpeningElement): string | undefined { return (isJSXIdentifier(el.name) && el.name.name === el.name.name.toLowerCase()) ? el.name.name : undefined; }
+function isLocation(n: object): n is SourceLocation { return !!((<SourceLocation>n).start && (<SourceLocation>n).end && typeof (<SourceLocation>n).start.line === "number"); }
+function isNodePath(n: object): n is NodePath { return !!(<NodePath>n).node; }
 
 export class JSXElementAnalyzer {
   private filename: string;
@@ -112,8 +117,8 @@ export class JSXElementAnalyzer {
       loc = loc.loc;
     }
     let location: TemplateSourceLocation = {
-      start: {...loc.start},
-      end: {...loc.end},
+      start: { ...loc.start },
+      end: { ...loc.end },
     };
     location.start.filename = this.filename;
     location.end!.filename = this.filename;
@@ -272,24 +277,28 @@ export class JSXElementAnalyzer {
   }
 }
 
-function htmlTagName(el: JSXOpeningElement): string | undefined {
-  if (isJSXIdentifier(el.name) && el.name.name === el.name.name.toLowerCase()) {
-    return el.name.name;
-  }
-  return;
-}
+/**
+ * Babel visitors we can pass to `babel-traverse` to run analysis on a given JSX file.
+ * @param analysis The Analysis object to store our results in.
+ */
+export function elementVisitor(analysis: Analysis<TemplateType>): object {
+  let elementAnalyzer = new JSXElementAnalyzer(analysis.blocks, analysis.template.identifier);
 
-function isLocation(n: object): n is SourceLocation {
-  if ((<SourceLocation>n).start && (<SourceLocation>n).end && typeof (<SourceLocation>n).start.line === "number") {
-    return true;
-  } else {
-    return false;
-  }
-}
-function isNodePath(n: object): n is NodePath {
-  if ((<NodePath>n).node) {
-    return true;
-  } else {
-    return false;
-  }
+  return {
+    AssignmentExpression(path: NodePath<AssignmentExpression>): void {
+      let element = elementAnalyzer.analyzeAssignment(path);
+      if (element) analysis.addElement(element);
+    },
+    //  TODO: handle the `h()` function?
+
+    /**
+     * Primary analytics parser for Babylon. Crawls all JSX Elements and their attributes
+     * and saves all discovered block references. See README for valid JSX CSS Block APIs.
+     * @param path The JSXOpeningElement Babylon path we are processing.
+     */
+    JSXOpeningElement(path: NodePath<JSXOpeningElement>): void {
+      let element = elementAnalyzer.analyzeJSXElement(path);
+      if (element) analysis.addElement(element);
+    },
+  };
 }

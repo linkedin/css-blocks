@@ -70,41 +70,42 @@ export class HandlebarsAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     return analyses;
   }
 
-  protected analyzeTemplate(componentName: string): Promise<Analysis> {
+  protected async analyzeTemplate(componentName: string): Promise<Analysis> {
     this.debug("Analyzing template: ", componentName);
     let template: ResolvedFile = this.project.templateFor(componentName);
     let analysis = new Analysis(template);
     let ast = preprocess(template.string);
     let elementCount = 0;
     let self = this;
-    let blockIdentifier = this.project.blockImporter.identifier(template.identifier, "stylesheet:", this.options);
-    console.log("ID", blockIdentifier);
-    let result = this.project.blockFactory.getBlock(blockIdentifier);
 
-    return result.then((block) => {
-      if (!block) {
-        self.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
-        return analysis;
-      } else {
-        self.debug(`Analyzing ${componentName}. Got block for component.`);
-      }
-      let elementAnalyzer = new ElementAnalyzer(block, template, this.options);
-      analysis.blocks[""] = block;
-      block.eachBlockReference((name, refBlock) => {
-        analysis.blocks[name] = refBlock;
-      });
-      let localBlockNames = Object.keys(analysis.blocks).map(n => n === "" ? "<default>" : n);
-      self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(", ")}.`);
-      traverse(ast, {
-        ElementNode(node) {
-          elementCount++;
-          let atRootElement = (elementCount === 1);
-          let element = elementAnalyzer.analyze(node, atRootElement);
-          analysis.addElement(element);
-          if (self.debug.enabled) self.debug("Element analyzed:", element.forOptimizer(self.options).toString());
-        },
-      });
+    // Fetch the block associated with this template
+    let blockIdentifier = this.project.blockImporter.identifier(template.identifier, "stylesheet:", this.options);
+    let block = await this.project.blockFactory.getBlock(blockIdentifier);
+    if (!block) {
+      self.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
       return analysis;
+    }
+    analysis.addBlock("", block);
+    self.debug(`Analyzing ${componentName}. Got block for component.`);
+
+    // Add all transitive block dependencies
+    analysis.blocks[""] = block;
+    block.eachBlockReference((name, refBlock) => {
+      analysis.blocks[name] = refBlock;
     });
+    let localBlockNames = Object.keys(analysis.blocks).map(n => n === "" ? "<default>" : n);
+    self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(", ")}.`);
+
+    let elementAnalyzer = new ElementAnalyzer(block, template, this.options);
+    traverse(ast, {
+      ElementNode(node) {
+        elementCount++;
+        let atRootElement = (elementCount === 1);
+        let element = elementAnalyzer.analyze(node, atRootElement);
+        analysis.addElement(element);
+        if (self.debug.enabled) self.debug("Element analyzed:", element.forOptimizer(self.options).toString());
+      },
+    });
+    return analysis;
   }
 }

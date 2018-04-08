@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { MetaAnalysis } from "../../src/utils/Analysis";
+import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
 import { testParse as parse } from "../util";
 
 const mock = require("mock-fs");
@@ -32,8 +32,8 @@ export class Test {
       });
 
       <div class={style}></div>;`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
@@ -66,8 +66,8 @@ export class Test {
       });
 
       <div class={style}></div>;`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
@@ -96,8 +96,8 @@ export class Test {
         [bar.awesome()]: true
       });
       <div class={style}></div>;`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|awesome]"]);
@@ -126,8 +126,8 @@ export class Test {
         [bar.awesome()]: leSigh
       });
       <div class={style}></div>;`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|awesome]"]);
@@ -157,7 +157,7 @@ export class Test {
       });
       <div class={style}></div>;`,
     ).then(
-      (_analysis: MetaAnalysis) => {
+      (_analysis: Analyzer) => {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
@@ -195,8 +195,8 @@ export class Test {
         <span class={style2}></span>
       </div>;
       `,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|awesome]", "bar:scope", "bar[state|awesome]"]);
       let elementAnalysis = analysis.elements.a;

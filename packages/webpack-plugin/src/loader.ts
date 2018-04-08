@@ -1,10 +1,10 @@
 import { Block, ResolvedConfiguration, resolveConfiguration, StyleMapping } from "css-blocks";
 import * as loaderUtils from "loader-utils";
 import * as debugGenerator from "debug";
-const debug = debugGenerator("css-blocks:jsx");
+const debug = debugGenerator("css-blocks:webpack:loader");
 
 import { LoaderContext } from "./context";
-import { PendingResult } from "./Plugin";
+import { PendingResult, TmpType } from "./Plugin";
 
 /**
  * The css-blocks loader makes css-blocks available to webpack modules.
@@ -56,11 +56,12 @@ export function CSSBlocksWebpackAdapter(this: LoaderContext, source: any, map: a
   debug(`Waiting for ${metaMappingPromises.length} block compilations to complete...`);
   Promise.all(metaMappingPromises)
 
-    .then((mappings: (StyleMapping | void)[]) => {
-      mappings.forEach((mapping: StyleMapping | void) => {
+    .then((mappings: (StyleMapping<TmpType> | void)[]) => {
+      debug(`Completed ${metaMappingPromises.length} block compilations!`);
+      mappings.forEach((mapping: StyleMapping<TmpType> | void) => {
         if (!mapping) { return; }
         // When an css or analysis error happens the mapping seems to be undefined and generates a confusing error.
-        let styleMapping: StyleMapping | undefined = mapping && mapping.analyses && mapping.analyses.find(a => a.template.identifier === path) && mapping;
+        let styleMapping: StyleMapping<TmpType> | undefined = mapping && mapping.analyses && mapping.analyses.find(a => a.template.identifier === path) && mapping;
         if (!styleMapping) {
           return;
         }
@@ -71,12 +72,11 @@ export function CSSBlocksWebpackAdapter(this: LoaderContext, source: any, map: a
         rewriter.blocks[path] = styleMapping;
       });
 
-      debug(`Completed ${metaMappingPromises.length} block compilations!`);
-
       callback(null, source, map);
     })
 
     .catch((err) => {
+      debug(`${metaMappingPromises.length} block compilations failed with:\n\n ${err}`);
       callback(err);
     });
 

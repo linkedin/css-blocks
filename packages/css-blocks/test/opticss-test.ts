@@ -35,7 +35,7 @@ export class TemplateAnalysisTests {
     }
   }
   private useBlockStyles(
-    analysis: Analysis, block: Block, blockName: string,
+    analysis: Analysis<"Opticss.Template">, block: Block, blockName: string,
     useAttrsCallback?: (container: BlockClass, element: ElementAnalysis<whatever, whatever, whatever>) => void,
   ) {
     analysis.blocks[blockName] = block;
@@ -64,7 +64,7 @@ export class TemplateAnalysisTests {
     `;
     class TestAnalyzer extends Analyzer<"Opticss.Template"> {
       analyze(): Promise<TestAnalyzer> {
-        let analysis = new Analysis(info);
+        let analysis = this.newAnalysis(info);
         let root = postcss.parse(css, { from: filename });
 
         return this.blockFactory.parse(root, filename, "optimized").then((block: Block) => {
@@ -101,7 +101,7 @@ export class TemplateAnalysisTests {
           .f { font-size: 26px; }
         `);
         let analyses = analyzer.analyses();
-        let blockMapping = new StyleMapping(optimized.styleMapping, [block], config, analyses);
+        let blockMapping = new StyleMapping<"Opticss.Template">(optimized.styleMapping, [block], config, analyses);
         let it = analyses[0].elements.values();
         let element1 = it.next().value;
         let rewrite1 = blockMapping.rewriteMapping(element1);
