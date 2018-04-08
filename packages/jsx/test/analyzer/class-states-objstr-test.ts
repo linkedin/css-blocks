@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { MetaAnalysis } from "../../src/utils/Analysis";
+import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
 import { testParse as parse } from "../util";
 
 const mock = require("mock-fs");
@@ -33,8 +33,8 @@ export class Test {
       });
 
       <div class={style}></div>;`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
@@ -68,8 +68,8 @@ export class Test {
       });
 
       <div class={style}></div>;`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
@@ -107,8 +107,8 @@ export class Test {
       });
 
       <div class={style}></div>;`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=green]"]);
@@ -147,7 +147,7 @@ export class Test {
       });
 
       <div class={style}></div>;`,
-    ).then((_analysis: MetaAnalysis) => {
+    ).then((_analysis: Analyzer) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
       assert.equal(err.message, `[css-blocks] TemplateError: Can not apply multiple states at the same time from the exclusive state group ".pretty[state|color]". (:11:6)`);
@@ -189,8 +189,8 @@ export class Test {
 
       <div class={style}></div>;
     `,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=black]", "bar.pretty[state|color=green]", "bar.pretty[state|color=yellow]"]);
@@ -233,7 +233,7 @@ export class Test {
       });
 
       <div class={style}></div>;
-    `).then((_analysis: MetaAnalysis) => {
+    `).then((_analysis: Analyzer) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
       assert.equal(err.message, `[css-blocks] MalformedBlockPath: State "bar.pretty[state|color]" expects a value. (9:9)`);
@@ -261,8 +261,8 @@ export class Test {
       });
       <div class={style}></div>;
     `,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|awesome]"]);
@@ -292,7 +292,7 @@ export class Test {
         [bar.pretty.awesome('wat')]: leSigh
       });
       <div class={style}></div>;
-    `).then((_analysis: MetaAnalysis) => {
+    `).then((_analysis: Analyzer) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
       assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state .pretty[state|awesome=wat] found on block "bar".\n  Did you mean: .pretty[state|awesome]? (7:9)');

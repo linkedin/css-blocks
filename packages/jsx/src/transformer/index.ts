@@ -1,10 +1,17 @@
 import { ObjectDictionary, whatever } from "@opticss/util";
-import { Options as CSSBlocksOptions, resolveConfiguration as resolveBlocksConfiguration, ResolvedConfiguration as CSSBlocksConfiguration, StyleMapping } from "css-blocks";
+import {
+  Options as CSSBlocksOptions,
+  resolveConfiguration as resolveBlocksConfiguration,
+  ResolvedConfiguration as CSSBlocksConfiguration,
+  StyleMapping,
+} from "css-blocks";
+
+import { TemplateType } from "../Analyzer/Template";
 
 export interface RewriterOptions {
   meta?: ObjectDictionary<whatever>;
   cssBlocks: {
-    styleMapping: StyleMapping | null;
+    styleMapping: StyleMapping<TemplateType> | null;
     compilationOptions: CSSBlocksOptions;
   };
 }
@@ -16,9 +23,9 @@ export interface RewriterOptions {
 //       in the transformer. Remove this when that is added.
 export class CSSBlocksJSXTransformer {
 
-  styleMapping: StyleMapping | null;
+  styleMapping: StyleMapping<TemplateType> | null;
   cssBlockOptions: CSSBlocksConfiguration;
-  blocks: ObjectDictionary<StyleMapping> = {};
+  blocks: ObjectDictionary<StyleMapping<TemplateType>> = {};
 
   constructor(opts?: RewriterOptions) {
     this.cssBlockOptions = resolveBlocksConfiguration(opts && opts.cssBlocks && opts.cssBlocks.compilationOptions);

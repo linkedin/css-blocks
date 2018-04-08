@@ -20,21 +20,22 @@ import {
   stringLiteral,
 } from "babel-types";
 import {
+  Analysis,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
 } from "css-blocks";
 // import { TemplateAnalysisError } from '../utils/Errors';
 import * as debugGenerator from "debug";
 
-import { JSXElementAnalyzer } from "../analyzer/JSXElementAnalyzer";
-import { Analysis } from "../utils/Analysis";
+import { TemplateType } from "../Analyzer/Template";
+import { JSXElementAnalyzer } from "../Analyzer/visitors/element";
 import { isBlockFilename } from "../utils/isBlockFilename";
 import { isConsoleLogStatement } from "../utils/isConsoleLogStatement";
 
 import { classnamesHelper as generateClassName, HELPER_FN_NAME } from "./classNameGenerator";
 import { CSSBlocksJSXTransformer as Rewriter } from "./index";
 
-const debug = debugGenerator("css-blocks:jsx");
+const debug = debugGenerator("css-blocks:jsx:rewriter");
 
 let { parse } = require("path");
 
@@ -44,8 +45,8 @@ export interface CssBlocksVisitor {
   statementsToRemove: Array<NodePath<Statement>>;
   elementAnalyzer: JSXElementAnalyzer;
   filename: string;
-  mapping: StyleMapping;
-  analysis: Analysis;
+  mapping: StyleMapping<TemplateType>;
+  analysis: Analysis<TemplateType>;
   cssBlockOptions: CSSBlocksConfiguration;
   shouldProcess: boolean;
 }
@@ -63,11 +64,13 @@ interface BabelFile {
 
 export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginObj<CssBlocksVisitor> {
   const rewriter = transformOpts.rewriter;
+  debug(`Made Rewriter`);
 
   return function transform(): PluginObj<CssBlocksVisitor> {
 
     return {
       pre(file: BabelFile) {
+        debug(`Encountered file for rewrite: ${this.filename}`);
         this.dynamicStylesFound = false;
         this.importsToRemove = new Array<NodePath<ImportDeclaration>>();
         this.statementsToRemove = new Array<NodePath<Statement>>();

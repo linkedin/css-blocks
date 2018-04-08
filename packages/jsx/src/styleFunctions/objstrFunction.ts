@@ -13,7 +13,7 @@ import {
 } from "babel-types";
 import { Block } from "css-blocks";
 
-import { JSXElementAnalysis } from "../analyzer/types";
+import { JSXElementAnalysis } from "../Analyzer/types";
 import { TemplateAnalysisError } from "../utils/Errors";
 import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../utils/ExpressionReader";
 

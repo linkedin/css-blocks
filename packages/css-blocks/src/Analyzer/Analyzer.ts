@@ -4,7 +4,7 @@ import {
   TemplateIntegrationOptions,
   TemplateTypes,
  } from "@opticss/template-api";
-import { whatever } from "@opticss/util";
+import { MultiMap, whatever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 import { BlockFactory } from "../BlockParser";
@@ -17,7 +17,6 @@ import {
 
 import { Analysis, SerializedAnalysis } from "./Analysis";
 import { TemplateValidatorOptions } from "./validations";
-import { Configuration } from "webpack";
 
 const debug = debugGenerator("css-blocks:analyzer");
 
@@ -50,9 +49,9 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   public readonly optimizationOptions: TemplateIntegrationOptions;
   public readonly cssBlocksOptions: ResolvedConfiguration;
 
-  protected analysisMap: Map<string, Analysis>;
-  protected stylesFound: Map<Style, Analysis[]>;
-  protected dynamicStyles: Map<Style, Analysis[]>;
+  protected analysisMap: Map<string, Analysis<K>>;
+  protected staticStyles: MultiMap<Style, Analysis<K>>;
+  protected dynamicStyles: MultiMap<Style, Analysis<K>>;
 
   constructor (
     options?: Options,
@@ -63,8 +62,8 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     this.optimizationOptions = analysisOpts && analysisOpts.features || DEFAULT_OPTS;
     this.blockFactory = new BlockFactory(this.cssBlocksOptions);
     this.analysisMap = new Map();
-    this.stylesFound = new Map();
-    this.dynamicStyles = new Map();
+    this.staticStyles = new MultiMap();
+    this.dynamicStyles = new MultiMap();
   }
 
   abstract analyze(...entryPoints: string[]): Promise<Analyzer<keyof TemplateTypes>>;
@@ -72,34 +71,40 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   // TODO: We don't really want to burn the world here.
   // We need more targeted Analysis / BlockFactory invalidation.
   public reset(): void {
+    debug(`Resetting Analyzer.`);
     this.analysisMap = new Map();
-    this.stylesFound = new Map();
-    this.dynamicStyles = new Map();
+    this.staticStyles = new MultiMap();
+    this.dynamicStyles = new MultiMap();
     this.blockFactory.reset();
   }
 
-  newAnalysis(info: TemplateInfo<K>): Analysis {
-    let analysis = new Analysis(info, this.validatorOptions);
+  newAnalysis(info: TemplateInfo<K>): Analysis<K> {
+    let analysis = new Analysis<K>(info, this.validatorOptions, this);
     this.analysisMap.set(info.identifier, analysis);
     return analysis;
   }
 
-  addAnalysis(analysis: Analysis) {
-    debug(`MetaAnalysis: Adding analysis for ${analysis.template.identifier}`);
-    this.analysisMap.set(analysis.template.identifier, analysis);
-    for (let style of analysis.stylesFound()) {
-      this.addAnalysisToStyleMap(this.stylesFound, style, analysis);
-    }
-    for (let style of analysis.stylesFound(true)) {
-      this.addAnalysisToStyleMap(this.dynamicStyles, style, analysis);
-    }
+  saveStaticStyle(style: Style, analysis: Analysis<K>) {
+    this.staticStyles.set(style, analysis);
   }
+
+  saveDynamicStyle(style: Style, analysis: Analysis<K>) {
+    this.dynamicStyles.set(style, analysis);
+  }
+
+  getAnalysis(idx: number): Analysis<K> { return this.analyses()[idx]; }
 
   analysisCount(): number { return this.analysisMap.size; }
 
-  eachAnalysis(cb: (v: Analysis) => whatever) { this.analysisMap.forEach(cb); }
+  eachAnalysis(cb: (v: Analysis<K>) => whatever) { this.analysisMap.forEach(cb); }
 
-  styleCount(): number { return this.stylesFound.size; }
+  analyses(): Analysis<K>[] {
+    let analyses: Analysis<K>[] = [];
+    this.eachAnalysis(a => analyses.push(a));
+    return analyses;
+  }
+
+  styleCount(): number { return this.staticStyles.size; }
 
   dynamicCount(): number { return this.dynamicStyles.size; }
 
@@ -121,12 +126,6 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     return allBlocks;
   }
 
-  analyses(): Analysis[] {
-    let analyses: Analysis[] = [];
-    this.eachAnalysis(a => analyses.push(a));
-    return analyses;
-  }
-
   serialize(): SerializedAnalyzer {
     let analyses: SerializedAnalysis[] = [];
     this.eachAnalysis(a => {
@@ -143,13 +142,4 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     return analyses;
   }
 
-  private addAnalysisToStyleMap(map: Map<Style, Analysis[]>, style: Style, analysis: Analysis) {
-    let analyses = map.get(style);
-    if (analyses) {
-      analyses.push(analysis);
-    } else {
-      analyses = [analysis];
-    }
-    map.set(style, analyses);
-  }
 }

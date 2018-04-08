@@ -8,7 +8,6 @@ import {
 import {
   SerializedTemplateInfo,
   TemplateAnalysis as OptimizationTemplateAnalysis,
-  TemplateInfo,
   TemplateInfoFactory,
   TemplateIntegrationOptions,
   TemplateTypes,
@@ -23,6 +22,7 @@ import { BlockFactory } from "../BlockParser";
 import { Block, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 
+import { Analyzer } from "./Analyzer";
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
 import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 
@@ -47,10 +47,11 @@ export interface SerializedAnalysis {
  * 2. Call [[addExclusiveStyle addExclusiveStyle(alwaysPresent, ...style)]] for all the styles used that are mutually exclusive on the current html element.
  * 3. Call [[endElement endElement()]] when done adding styles for the current element.
  */
-export class Analysis {
+export class Analysis<K extends keyof TemplateTypes> {
 
-  template: TemplateInfo<keyof TemplateTypes>;
   idGenerator: IdentGenerator;
+  parent?: Analyzer<K>;
+  template: TemplateTypes[K];
 
   /**
    * A map from a local name for the block to the [[Block]].
@@ -59,12 +60,52 @@ export class Analysis {
    */
   blocks: ObjectDictionary<Block>;
 
+
+  /**
+   * A per-element correlation of styles used. The current correlation is added
+   * to this list when [[endElement]] is called.
+   */
+  // tslint:disable-next-line:prefer-whatever-to-any
+  elements: Map<string, ElementAnalysis<any, any, any>>;
+
+  /**
+   * The current element, created when calling [[startElement]].
+   * The current element is unset after calling [[endElement]].
+   */
+  // tslint:disable-next-line:prefer-whatever-to-any
+  currentElement: ElementAnalysis<any, any, any> | undefined;
+
+  /**
+   * Template validator instance to verify blocks applied to an element.
+   */
+  validator: TemplateValidator;
+
+  /**
+   * @param template The template being analyzed.
+   */
+  constructor(template: TemplateTypes[K], options?: TemplateValidatorOptions, parent?: Analyzer<K>,) {
+    this.idGenerator = new IdentGenerator();
+    this.parent = parent;
+    this.template = template;
+    this.blocks = {};
+    this.elements = new Map();
+    this.validator = new TemplateValidator(options);
+  }
+
   /**
    * Return the number of blocks discovered in this Template.
    */
-  blockCount(): number {
-    return Object.keys(this.blocks).length;
-  }
+  blockCount(): number { return Object.keys(this.blocks).length; }
+
+  /**
+   * Convenience setter for adding a block to the template scope.
+   */
+  addBlock(name: string, block: Block) { this.blocks[name] = block; }
+
+  /**
+   * Convenience getter for fetching a block from the template scope.
+   */
+  getBlock(name: string): Block { return this.blocks[name]; }
 
   /**
    * Return the number of styles discovered in this Analysis' Template.
@@ -84,25 +125,9 @@ export class Analysis {
   }
 
   /**
-   * A per-element correlation of styles used. The current correlation is added
-   * to this list when [[endElement]] is called.
-   */
-  // tslint:disable-next-line:prefer-whatever-to-any
-  elements: Map<string, ElementAnalysis<any, any, any>>;
-
-  /**
-   * The current element, created when calling [[startElement]].
-   * The current element is unset after calling [[endElement]].
-   */
-  // tslint:disable-next-line:prefer-whatever-to-any
-  currentElement: ElementAnalysis<any, any, any> | undefined;
-
-  /**
    * Return the number of elements discovered in this Analysis.
    */
-  elementCount(): number {
-    return this.elements.size;
-  }
+  elementCount(): number { return this.elements.size; }
 
   /**
    * Get the nth element discovered in this Analysis.
@@ -137,22 +162,6 @@ export class Analysis {
    */
   getElementById<BooleanExpression, StringExpression, TernaryExpression>(id: string): ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> | undefined {
     return this.elements.get(id);
-  }
-
-  /**
-   * Template validator instance to verify blocks applied to an element.
-   */
-  validator: TemplateValidator;
-
-  /**
-   * @param template The template being analyzed.
-   */
-  constructor(template: TemplateInfo<keyof TemplateTypes>, options?: TemplateValidatorOptions) {
-    this.idGenerator = new IdentGenerator();
-    this.template = template;
-    this.blocks = {};
-    this.elements = new Map();
-    this.validator = new TemplateValidator(options);
   }
 
   /**
@@ -218,6 +227,14 @@ export class Analysis {
     }
     this.validator.validate(this, element);
     this.elements.set(element.id, element);
+    if (this.parent) {
+      for (let s of [...element.classesFound(false), ...element.attributesFound(false)]) {
+        this.parent.saveStaticStyle(s, this);
+      }
+      for (let s of [...element.classesFound(true), ...element.attributesFound(true)]) {
+        this.parent.saveDynamicStyle(s, this);
+      }
+    }
   }
 
   /**
@@ -322,10 +339,11 @@ export class Analysis {
   static async deserialize (
     serializedAnalysis: SerializedAnalysis,
     blockFactory: BlockFactory,
-  ): Promise<Analysis> {
+    parent: Analyzer<keyof TemplateTypes>
+  ): Promise<Analysis<keyof TemplateTypes>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
     let info = TemplateInfoFactory.deserialize<keyof TemplateTypes>(serializedAnalysis.template);
-    let analysis = new Analysis(info);
+    let analysis = new Analysis(info, {}, parent);
     let blockPromises = new Array<Promise<{name: string; block: Block}>>();
     blockNames.forEach(n => {
       let blockIdentifier = serializedAnalysis.blocks[n];
