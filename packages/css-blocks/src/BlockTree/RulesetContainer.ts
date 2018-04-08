@@ -43,6 +43,7 @@ export type Resolution<S extends Styles = Styles> = {
  */
 function expandProp(prop: string, value: string): propParser.Declarations {
   let expanded: propParser.Declarations = {};
+  value = value.replace(/var\([^\)]+\)/gi, "inherit");
   if (propParser.isValidDeclaration(prop, value)) {
     expanded = propParser.expandShorthandProperty(prop, value, true, false);
   }

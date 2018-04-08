@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { MetaAnalysis } from "../../src/utils/Analysis";
+import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
 import { testParse as parse } from "../util";
 
 const mock = require("mock-fs");
@@ -22,8 +22,8 @@ export class Test {
       function render(){
         return ( <div class={bar}> <div class={bar.foo}> </div> </div> );
       }`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar:scope"]);
       assert.deepEqual(analysis.elements.a.staticStyles, [1]);
@@ -41,8 +41,8 @@ export class Test {
       function render(){
         return ( <div className={bar}> <div className={bar.foo}> </div> </div> );
       }`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar:scope"]);
       assert.deepEqual(analysis.elements.a.staticStyles, [1]);
