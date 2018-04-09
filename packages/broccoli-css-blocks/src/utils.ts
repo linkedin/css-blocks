@@ -1,6 +1,5 @@
-/* tslint:ignore:start */
+/* tslint:disable */
 export const BroccoliPlugin: BroccoliPlugin.Static = require("broccoli-plugin");
-/* tslint:ignore:end */
 export const walkSync: WalkSync = require("walk-sync");
 
 declare function require(id: string): any;

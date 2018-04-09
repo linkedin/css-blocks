@@ -1,8 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 
-import { Analyzer } from "css-blocks";
 import { TemplateTypes } from "@opticss/template-api";
+import { Analyzer } from "css-blocks";
 
 import { BroccoliPlugin } from "./utils";
 
@@ -16,9 +16,10 @@ class BroccoliBlocks extends BroccoliPlugin {
   private analyzer: Analyzer<keyof TemplateTypes>;
   private entry: string[];
 
+  // tslint:disable-next-line:prefer-whatever-to-any
   constructor(inputNode: any, options: BroccoliOptions) {
     super([inputNode], {
-      name: "broccoli-css-blocks"
+      name: "broccoli-css-blocks",
     });
     this.analyzer = options.analyzer;
     this.entry = options.entry;
@@ -35,7 +36,7 @@ class BroccoliBlocks extends BroccoliPlugin {
           path.join(this.inputPaths[0], file),
           path.join(this.outputPath, file),
         );
-      } catch(e){
+      } catch (e) {
         // This shouldn't ever happen...
         console.log("Error linking", path.join(this.inputPaths[0], file));
       }
