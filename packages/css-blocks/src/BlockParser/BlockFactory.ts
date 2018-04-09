@@ -67,8 +67,15 @@ export class BlockFactory {
     this.blockNames = {};
   }
 
+  /**
+   * Parse a `postcss.Root` into a Block object. Save the Block promise and return it.
+   * @param root The postcss.Root to parse.
+   * @param identifier A unique identifier for this Block file.
+   * @param name Default name for the block.
+   * @returns The Block object promise.
+   */
   parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    return this.parser.parse(root, identifier, name);
+    return this.promises[identifier] = this.parser.parse(root, identifier, name);
   }
 
   /**

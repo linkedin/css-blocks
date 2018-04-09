@@ -60,7 +60,6 @@ export class Analysis<K extends keyof TemplateTypes> {
    */
   blocks: ObjectDictionary<Block>;
 
-
   /**
    * A per-element correlation of styles used. The current correlation is added
    * to this list when [[endElement]] is called.
@@ -83,7 +82,7 @@ export class Analysis<K extends keyof TemplateTypes> {
   /**
    * @param template The template being analyzed.
    */
-  constructor(template: TemplateTypes[K], options?: TemplateValidatorOptions, parent?: Analyzer<K>,) {
+  constructor(template: TemplateTypes[K], options?: TemplateValidatorOptions, parent?: Analyzer<K>) {
     this.idGenerator = new IdentGenerator();
     this.parent = parent;
     this.template = template;
@@ -339,7 +338,7 @@ export class Analysis<K extends keyof TemplateTypes> {
   static async deserialize (
     serializedAnalysis: SerializedAnalysis,
     blockFactory: BlockFactory,
-    parent: Analyzer<keyof TemplateTypes>
+    parent: Analyzer<keyof TemplateTypes>,
   ): Promise<Analysis<keyof TemplateTypes>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
     let info = TemplateInfoFactory.deserialize<keyof TemplateTypes>(serializedAnalysis.template);

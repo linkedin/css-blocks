@@ -8,8 +8,8 @@ import {
 } from "@opticss/template-api";
 import { whatever } from "@opticss/util";
 import {
-  BlockFactory,
   Analyzer,
+  BlockFactory,
   resolveConfiguration as resolveBlocksConfiguration,
 } from "css-blocks";
 import * as path from "path";
@@ -51,29 +51,13 @@ export class TestTemplateInfo implements TemplateInfo<"WebpackPlugin.TestTemplat
 
 TemplateInfoFactory.constructors["WebpackPlugin.TestTemplate"] = TestTemplateInfo.deserialize;
 
-class TestAnalyzer extends Analyzer<"WebpackPlugin.TestTemplate"> {
+export class TestAnalyzer extends Analyzer<"WebpackPlugin.TestTemplate"> {
   constructor() {
     super();
     this.newAnalysis(new TestTemplateInfo("test.html", 1));
   }
-  analyze(): Promise<Analyzer<"WebpackPlugin.TestTemplate">>{
-    return Promise.resolve(this);
-  }
-}
-
-class TestTemplateAnalyzer extends Analyzer<"WebpackPlugin.TestTemplate"> {
-  blockFactory: BlockFactory;
-  analysis: TestAnalyzer;
-  constructor(a: TestAnalyzer, factory: BlockFactory) {
-    super();
-    this.analysis = a;
-    this.blockFactory = factory;
-  }
   analyze(): Promise<Analyzer<"WebpackPlugin.TestTemplate">> {
-    return Promise.resolve(this.analysis);
-  }
-  reset() {
-    // pass
+    return Promise.resolve(this);
   }
 }
 
@@ -87,9 +71,9 @@ export function config(): Promise<WebpackConfiguration> {
   let block1 = factory.getBlock(fixture("concat-1"));
   let block2 = factory.getBlock(fixture("concat-2"));
   return Promise.all([block1, block2]).then(blocks => {
-    let analysis = new TestAnalyzer();
+    let analyzer = new TestAnalyzer();
     blocks.forEach((b, i) => {
-      analysis.eachAnalysis(a => {
+      analyzer.eachAnalysis(a => {
         a.blocks[`concat-${i}`] = b;
         let el = a.startElement(POSITION_UNKNOWN);
         el.addStaticClass(b.rootClass);
@@ -99,7 +83,7 @@ export function config(): Promise<WebpackConfiguration> {
 
     let cssBlocks = new CssBlocksPlugin({
       outputCssFile: "css-blocks.css",
-      analyzer: new TestTemplateAnalyzer(analysis, factory),
+      analyzer,
     });
 
     return merge(defaultOutputConfig(), {

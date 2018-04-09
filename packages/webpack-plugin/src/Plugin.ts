@@ -1,3 +1,5 @@
+import { TemplateTypes } from "@opticss/template-api";
+import { ObjectDictionary } from "@opticss/util";
 import * as debugGenerator from "debug";
 import * as path from "path";
 import * as postcss from "postcss";
@@ -5,17 +7,15 @@ import { RawSourceMap } from "source-map";
 import * as Tapable from "tapable";
 import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
 import { RawSource, Source, SourceMapSource } from "webpack-sources";
-import { ObjectDictionary } from "@opticss/util";
-import { TemplateTypes } from "@opticss/template-api";
 
 import {
+  Analysis,
+  Analyzer as AnalyzerType,
   Block,
   BlockCompiler,
-  Analyzer as AnalyzerType,
   Options as CSSBlocksOptions,
   resolveConfiguration as resolveBlocksConfiguration,
   StyleMapping,
-  Analysis
 } from "css-blocks";
 import {
   Actions,
@@ -226,7 +226,7 @@ export class CssBlocksPlugin
           error,
           compilation,
           assetPath: this.outputCssFile,
-        }, cb);
+        },                  cb);
         this.trace(`notified of compilation failure`);
       });
 

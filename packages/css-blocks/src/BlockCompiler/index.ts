@@ -30,39 +30,39 @@ export class BlockCompiler {
     this.postcss = postcssImpl;
   }
 
-  compile(block: Block, root: postcss.Root, analysis?: Analyzer<keyof TemplateTypes>): postcss.Root {
-      if (analysis) {
-        // console.log("Got an analysis for compilation. I should use it probably.", analysis);
+  compile(block: Block, root: postcss.Root, analyzer?: Analyzer<keyof TemplateTypes>): postcss.Root {
+
+    let resolver = new ConflictResolver(this.config);
+    let filename = this.config.importer.debugIdentifier(block.identifier, this.config);
+
+    if (analyzer) { /* Do something smart with the Analyzer here */ }
+
+    // Process all debug statements for this block.
+    this.processDebugStatements(filename, root, block);
+
+    // Clean up CSS Block specific properties.
+    root.walkAtRules(BLOCK_REFERENCE, (atRule) => {
+      atRule.remove();
+    });
+    root.walkRules(ROOT_CLASS, (rule) => {
+      rule.walkDecls(BLOCK_PROP_NAMES_RE, (decl) => {
+        decl.remove();
+      });
+      if (rule.nodes === undefined || rule.nodes.length === 0) {
+        rule.remove();
       }
-      let resolver = new ConflictResolver(this.config);
-      let filename = this.config.importer.debugIdentifier(block.identifier, this.config);
+    });
 
-      // Process all debug statements for this block.
-      this.processDebugStatements(filename, root, block);
+    // Resolve inheritance based conflicts
+    resolver.resolveInheritance(root, block);
+    root.walkRules((rule) => {
+      let parsedSelectors = block.getParsedSelectors(rule);
+      rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config)).join(",\n");
+    });
 
-      // Clean up CSS Block specific properties.
-      root.walkAtRules(BLOCK_REFERENCE, (atRule) => {
-        atRule.remove();
-      });
-      root.walkRules(ROOT_CLASS, (rule) => {
-        rule.walkDecls(BLOCK_PROP_NAMES_RE, (decl) => {
-          decl.remove();
-        });
-        if (rule.nodes === undefined || rule.nodes.length === 0) {
-          rule.remove();
-        }
-      });
+    resolver.resolve(root, block);
 
-      // Resolve inheritance based conflicts
-      resolver.resolveInheritance(root, block);
-      root.walkRules((rule) => {
-        let parsedSelectors = block.getParsedSelectors(rule);
-        rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config)).join(",\n");
-      });
-
-      resolver.resolve(root, block);
-
-      return root;
+    return root;
   }
 
   /**

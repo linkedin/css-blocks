@@ -1,13 +1,12 @@
 import { preprocess, traverse } from "@glimmer/syntax";
 import {
+  Analysis,
+  AnalysisOptions,
   Analyzer,
   Block,
   BlockClass,
+  Options,
   ResolvedConfiguration as CSSBlocksConfiguration,
-  PluginOptions,
-  AnalysisOptions,
-  PluginOptionsReader,
-  Analysis,
 } from "css-blocks";
 import * as debugGenerator from "debug";
 import DependencyAnalyzer from "glimmer-analyzer";
@@ -17,17 +16,17 @@ import { ResolvedFile } from "./GlimmerProject";
 import { Project } from "./project";
 
 export type AttributeContainer = Block | BlockClass;
-
 export type TEMPLATE_TYPE = "GlimmerTemplates.ResolvedFile";
+export type GlimmerAnalysis = Analysis<TEMPLATE_TYPE>;
 
-export class HandlebarsAnalyzer extends Analyzer<TEMPLATE_TYPE> {
+export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   project: Project;
   debug: debugGenerator.IDebugger;
   options: CSSBlocksConfiguration;
 
   constructor(
     project: Project | string,
-    options?: PluginOptions,
+    options?: Options,
     analysisOpts?: AnalysisOptions,
   ) {
     super(options, analysisOpts);
@@ -44,13 +43,13 @@ export class HandlebarsAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     this.project.reset();
   }
 
-  async analyze(...templateNames: string[]): Promise<Analysis[]> {
+  async analyze(...templateNames: string[]): Promise<GlimmerAnalyzer> {
 
     // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
     let depAnalyzer = new DependencyAnalyzer(this.project.projectDir);
 
     let components = new Set<string>();
-    let analysisPromises: Promise<Analysis>[] = [];
+    let analysisPromises: Promise<GlimmerAnalysis>[] = [];
     this.debug(`Analyzing all templates starting with: ${templateNames}`);
 
     templateNames.forEach(templateName => {
@@ -65,26 +64,33 @@ export class HandlebarsAnalyzer extends Analyzer<TEMPLATE_TYPE> {
       analysisPromises.push(this.analyzeTemplate(dep));
     });
 
-    let analyses = await Promise.all(analysisPromises);
-    analyses.forEach(a => { this.addAnalysis(a); });
-    return analyses;
+    await Promise.all(analysisPromises);
+    return this;
   }
 
-  protected async analyzeTemplate(componentName: string): Promise<Analysis> {
+  private async resolveBlock(template: ResolvedFile): Promise<Block | undefined> {
+    try {
+      let blockIdentifier = this.project.blockImporter.identifier(template.identifier, "stylesheet:", this.options);
+      return await this.project.blockFactory.getBlock(blockIdentifier);
+    } catch (e) {
+      this.debug(`Analyzing ${template.identifier}. No block for component. Returning empty analysis.`);
+      return undefined;
+    }
+  }
+
+  protected async analyzeTemplate(componentName: string): Promise<GlimmerAnalysis> {
     this.debug("Analyzing template: ", componentName);
     let template: ResolvedFile = this.project.templateFor(componentName);
-    let analysis = new Analysis(template);
+    let analysis = this.newAnalysis(template);
     let ast = preprocess(template.string);
     let elementCount = 0;
     let self = this;
 
-    // Fetch the block associated with this template
-    let blockIdentifier = this.project.blockImporter.identifier(template.identifier, "stylesheet:", this.options);
-    let block = await this.project.blockFactory.getBlock(blockIdentifier);
-    if (!block) {
-      self.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
-      return analysis;
-    }
+    // Fetch the block associated with this template. If no block file for this
+    // component exists, does not exist, stop.
+    let block: Block | undefined = await this.resolveBlock(template);
+    if (!block) { return analysis; }
+
     analysis.addBlock("", block);
     self.debug(`Analyzing ${componentName}. Got block for component.`);
 

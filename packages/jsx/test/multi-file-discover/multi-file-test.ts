@@ -41,7 +41,7 @@ export class Test {
     let base = path.resolve(__dirname, "../../../test/fixtures/conflicting-local-multifile");
     return parseFile("index.tsx", { baseDir: base }).then((analyzer: Analyzer) => {
       assert.equal(analyzer.analysisCount(), 2);
-      assert.equal(analyzer.blockPromises.size, 3);
+      assert.equal(analyzer.blockPromises.size, 2);
       assert.equal(analyzer.styleCount(), 3);
     });
   }

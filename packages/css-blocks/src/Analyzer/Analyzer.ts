@@ -20,7 +20,7 @@ import { TemplateValidatorOptions } from "./validations";
 
 const debug = debugGenerator("css-blocks:analyzer");
 
-const DEFAULT_OPTS = {
+const DEFAULT_FEATURES = {
   rewriteIdents: {
     id: false,
     class: true,
@@ -59,7 +59,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   ) {
     this.cssBlocksOptions = resolveConfiguration(options);
     this.validatorOptions = analysisOpts && analysisOpts.validations || {};
-    this.optimizationOptions = analysisOpts && analysisOpts.features || DEFAULT_OPTS;
+    this.optimizationOptions = analysisOpts && analysisOpts.features || DEFAULT_FEATURES;
     this.blockFactory = new BlockFactory(this.cssBlocksOptions);
     this.analysisMap = new Map();
     this.staticStyles = new MultiMap();
