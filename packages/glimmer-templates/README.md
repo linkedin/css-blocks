@@ -158,7 +158,6 @@ analyzer.analyze().then((analysis) => {
     }
   };
   let compiledFile = precompile(template.string, options);
-  console.log(compiledFile);
 });
 ```
 

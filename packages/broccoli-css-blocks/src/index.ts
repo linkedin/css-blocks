@@ -2,17 +2,18 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { Analyzer } from "css-blocks";
+import { TemplateTypes } from "@opticss/template-api";
 
 import { BroccoliPlugin } from "./utils";
 
 interface BroccoliOptions {
   entry: string[];
-  analyzer: Analyzer<any>;
+  analyzer: Analyzer<keyof TemplateTypes>;
 }
 
 class BroccoliBlocks extends BroccoliPlugin {
 
-  private analyzer: Analyzer<any>;
+  private analyzer: Analyzer<keyof TemplateTypes>;
   private entry: string[];
 
   constructor(inputNode: any, options: BroccoliOptions) {

@@ -25,7 +25,7 @@ export interface ModuleConfig {
 export const MODULE_CONFIG: ModuleConfig = {
   "app": {
     "name": "glimmer-test",
-    "rootName": "glimmer-test"
+    "rootName": "glimmer-test",
   },
 
   "types": {
@@ -45,17 +45,15 @@ export const MODULE_CONFIG: ModuleConfig = {
       "group": "ui",
       "types": ["component", "component-test", "template", "helper", "helper-test", "stylesheet"],
       "defaultType": "component",
-      "privateCollections": ["utils"]
+      "privateCollections": ["utils"],
     },
     "styles": {
       "group": "ui",
-      "unresolvable": true
+      "unresolvable": true,
     },
-    "utils": { "unresolvable": true }
-  }
+    "utils": { "unresolvable": true },
+  },
 };
-
-
 
 /*{
   "types": {

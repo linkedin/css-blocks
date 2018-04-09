@@ -1,9 +1,9 @@
 import c$$ from "@css-blocks/runtime";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 
-import { Analysis } from "css-blocks";
 import * as babel from "babel-core";
 import { assert } from "chai";
+import { Analysis } from "css-blocks";
 import { BlockCompiler, Options as CSSBlocksOptions, resolveConfiguration as resolveBlocksConfiguration, StyleMapping } from "css-blocks";
 import { skip, suite, test } from "mocha-typescript";
 import { OptiCSSOptions, OptimizationResult, Optimizer  } from "opticss";
@@ -12,8 +12,8 @@ import * as prettier from "prettier";
 import * as testConsole from "test-console";
 
 import { Rewriter } from "../../src";
-import { makePlugin } from "../../src/transformer/babel";
 import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
+import { makePlugin } from "../../src/transformer/babel";
 import { testParse as parse } from "../util";
 
 const mock = require("mock-fs");
