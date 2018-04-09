@@ -1,5 +1,6 @@
 import {
   AST,
+  ASTPlugin,
   NodeVisitor,
   Syntax,
 } from "@glimmer/syntax";
@@ -10,39 +11,39 @@ import {
   resolveConfiguration,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
-  Analysis,
 } from "css-blocks";
 import * as debugGenerator from "debug";
 
+import { GlimmerAnalysis, TEMPLATE_TYPE } from "./Analyzer";
 import { classnamesHelper } from "./ClassnamesHelperGenerator";
 import { ElementAnalyzer } from "./ElementAnalyzer";
 import { ResolvedFile } from "./GlimmerProject";
-
 const DEBUG = debugGenerator("css-blocks:glimmer");
 
 // TODO: The state namespace should come from a config option.
 const STYLE_ATTR = /^(class$|state:)/;
+export type GlimmerStyleMapping = StyleMapping<TEMPLATE_TYPE>;
 
-export class Rewriter implements NodeVisitor {
+export class GlimmerRewriter implements ASTPlugin {
   template: ResolvedFile;
-  analysis: Analysis;
+  analysis: GlimmerAnalysis;
   elementCount: number;
   syntax: Syntax;
   block: Block;
-  styleMapping: StyleMapping;
+  styleMapping: GlimmerStyleMapping;
   cssBlocksOpts: CSSBlocksConfiguration;
 
   private elementAnalyzer: ElementAnalyzer;
 
   constructor(
     syntax: Syntax,
-    styleMapping: StyleMapping,
-    analysis: Analysis,
+    styleMapping: GlimmerStyleMapping,
+    analysis: GlimmerAnalysis,
     cssBlocksOpts: CSSBlocksOptions,
   ) {
     this.syntax        = syntax;
     this.analysis      = analysis;
-    this.template      = <ResolvedFile>analysis.template;
+    this.template      = analysis.template;
     this.block         = analysis.blocks[""];
     this.styleMapping  = styleMapping;
     this.cssBlocksOpts = resolveConfiguration(cssBlocksOpts);
@@ -54,11 +55,18 @@ export class Rewriter implements NodeVisitor {
     DEBUG(`${this.template.fullPath}: ${message}`, ...args);
   }
 
+  get name(): string { return "CSSBlocksGlimmerRewriter"; }
+  get visitor(): NodeVisitor {
+    return {
+      ElementNode: this.ElementNode.bind(this),
+    };
+  }
+
   ElementNode(node: AST.ElementNode) {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
     let element = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
-    if (DEBUG.enabled) this.debug(element.forOptimizer(this.cssBlocksOpts)[0].toString());
+    this.debug(element.forOptimizer(this.cssBlocksOpts)[0].toString());
     let rewrite = this.styleMapping.simpleRewriteMapping(element);
 
     // Remove all the source attributes for styles.

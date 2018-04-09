@@ -1,6 +1,6 @@
 import { ObjectDictionary } from "@opticss/util";
-import { loader } from "webpack";
 import { Options } from "css-blocks";
+import { loader } from "webpack";
 
 import { PendingResult } from "./Plugin";
 

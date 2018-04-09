@@ -1,9 +1,9 @@
 export {
-  HandlebarsAnalyzer,
+  GlimmerAnalysis,
+  GlimmerAnalyzer,
   AttributeContainer,
-} from "./HandlebarsStyleAnalyzer";
-export { loaderAdapter } from "./webpackLoader";
-export { Rewriter } from "./Rewriter";
+} from "./Analyzer";
+export { GlimmerRewriter, GlimmerStyleMapping } from "./Rewriter";
 export { ResolvedFile } from "./GlimmerProject";
 export { Project } from "./project";
 export { GlimmerImporter } from "./GlimmerImporter";

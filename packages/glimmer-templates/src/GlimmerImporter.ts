@@ -56,10 +56,15 @@ export class GlimmerImporter extends PathBasedImporter {
         resolution = null;
       }
     }
+
     if (resolution === null) {
       let specifier = parseSpecifier(importPath);
-      if (specifier) { // it's a glimmer specifier, just return it.
-        return `glimmer:${specifier.componentType}:${specifier.componentName}`;
+      if (specifier) {
+        // If it's a glimmer specifier, just return it.
+        if (specifier.componentName && specifier.componentType) {
+          return `glimmer:${specifier.componentType}:${specifier.componentName}`;
+        }
+        throw new Error(`Could not resolve Glimmer specifier '${referrer}' to a file.`);
       }
     }
     if (resolution) {
