@@ -1,4 +1,3 @@
-import { SourceLocation } from "@opticss/element-analysis";
 import { ObjectDictionary } from "@opticss/util";
 import { Expression } from "babel-types";
 import { ElementAnalysis } from "css-blocks";
@@ -9,7 +8,3 @@ export type TernaryExpression = Expression;
 
 export type JSXElementAnalysis = ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>;
 export type Flags = ObjectDictionary<boolean>;
-
-export function newJSXElementAnalysis(location: SourceLocation, tagName?: string, id?: string): JSXElementAnalysis {
-  return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(location, tagName, id);
-}

@@ -19,11 +19,13 @@ import { elementVisitor, importVisitor } from "./visitors";
 
 const debug = debugGenerator("css-blocks:jsx:Analyzer");
 
+export type JSXAnalaysis = Analysis<TemplateType>;
+
 export class CSSBlocksJSXAnalyzer extends Analyzer<TemplateType> {
   private options: CssBlocksJSXOptions;
 
   public name: string;
-  public analysisPromises: Map<string, Promise<Analysis<TemplateType>>>;
+  public analysisPromises: Map<string, Promise<JSXAnalaysis>>;
   public blockPromises: Map<string, Promise<Block>>;
 
   constructor(name: string, options: Partial<CssBlocksJSXOptions> = {}) {
@@ -45,7 +47,7 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TemplateType> {
     if (!entryPoints.length) {
       throw new JSXParseError("CSS Blocks JSX Analyzer must be passed at least one entry point.");
     }
-    let promises: Promise<Analysis<TemplateType>>[] = [];
+    let promises: Promise<JSXAnalaysis>[] = [];
     for (let entryPoint of entryPoints) {
       promises.push(this.parseFile(entryPoint));
     }
@@ -53,7 +55,7 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TemplateType> {
     return this;
   }
 
-  private async crawl(template: JSXTemplate): Promise<Analysis<TemplateType>> {
+  private async crawl(template: JSXTemplate): Promise<JSXAnalaysis> {
 
     // If we're already analyzing this template, return the existing analysis promise.
     if (this.analysisPromises.has(template.identifier)) {
@@ -64,7 +66,7 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TemplateType> {
     let oldDir = process.cwd();
     process.chdir(this.options.baseDir);
 
-    let analysis: Analysis<TemplateType> = this.newAnalysis(template);
+    let analysis: JSXAnalaysis = this.newAnalysis(template);
 
     // Parse the file into an AST.
     try {
@@ -93,7 +95,7 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TemplateType> {
     // for each CSS Blocks import it encounters. Every new `tsx` or `jsx` file discovered
     // will kick of another `Analyzer.parse()` for that file.
     let blockPromises: Promise<Block>[] = [];
-    let childTemplatePromises: Promise<Analysis<TemplateType>>[] = [];
+    let childTemplatePromises: Promise<JSXAnalaysis>[] = [];
     traverse(unwrap(analysis.template.ast), importVisitor(template, this, analysis, blockPromises, childTemplatePromises, this.options));
 
     // Once all blocks this file is waiting for resolve, resolve with the File object.
@@ -116,7 +118,7 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TemplateType> {
    * @param data The code string to parse.
    * @param opts Optional analytics parser options.
    */
-  public async parse(filename: string, data: string): Promise<Analysis<TemplateType>> {
+  public async parse(filename: string, data: string): Promise<JSXAnalaysis> {
 
     let template: JSXTemplate = new JSXTemplate(filename, data);
 
@@ -140,7 +142,7 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TemplateType> {
    * @param file The file path to read in and parse.
    * @param opts Optional analytics parser options.
    */
-  public parseFile(file: string): Promise<Analysis<TemplateType>> {
+  public parseFile(file: string): Promise<JSXAnalaysis> {
     file = path.resolve(this.options.baseDir, file);
     return new Promise((resolve, reject) => {
       fs.readFile(file, "utf8", (err, data) => {
