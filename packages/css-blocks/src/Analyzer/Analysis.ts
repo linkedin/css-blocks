@@ -12,10 +12,7 @@ import {
   TemplateIntegrationOptions,
   TemplateTypes,
 } from "@opticss/template-api";
-import {
-  ObjectDictionary,
-  objectValues,
-} from "@opticss/util";
+import { ObjectDictionary, objectValues } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
 import { BlockFactory } from "../BlockParser";
@@ -28,7 +25,7 @@ import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 
 /**
  * This interface defines a JSON friendly serialization
- * of a {TemplateAnalysis}.
+ * of an {Analysis}.
  */
 export interface SerializedAnalysis {
   template: SerializedTemplateInfo<keyof TemplateTypes>;
@@ -39,8 +36,8 @@ export interface SerializedAnalysis {
 }
 
 /**
- * A TemplateAnalysis performs book keeping and ensures internal consistency of the block objects referenced
- * within a template. It is designed to be used as part of an AST walk over a template.
+ * An Analysis performs book keeping and ensures internal consistency of the block objects referenced
+ * within a single template. It is designed to be used as part of an AST walk over a template.
  *
  * 1. Call [[startElement startElement()]] at the beginning of an new html element.
  * 2. Call [[addStyle addStyle(style, isDynamic)]] for all the styles used on the current html element.
@@ -93,35 +90,18 @@ export class Analysis<K extends keyof TemplateTypes> {
 
   /**
    * Return the number of blocks discovered in this Template.
-   */
+  */
   blockCount(): number { return Object.keys(this.blocks).length; }
 
   /**
    * Convenience setter for adding a block to the template scope.
    */
-  addBlock(name: string, block: Block) { this.blocks[name] = block; }
+  addBlock(name: string, block: Block): void { this.blocks[name] = block; }
 
   /**
    * Convenience getter for fetching a block from the template scope.
    */
-  getBlock(name: string): Block { return this.blocks[name]; }
-
-  /**
-   * Return the number of styles discovered in this Analysis' Template.
-   * This is slow.
-   */
-  styleCount(): number {
-    let c = 0;
-    for (let el of this.elements.values()) {
-      for (let _s of el.attributesFound()) {
-        c++;
-      }
-      for (let _s of el.classesFound()) {
-        c++;
-      }
-    }
-    return c;
-  }
+  getBlock(name: string): Block | undefined { return this.blocks[name]; }
 
   /**
    * Return the number of elements discovered in this Analysis.
@@ -140,9 +120,29 @@ export class Analysis<K extends keyof TemplateTypes> {
     return el[1];
   }
 
+  /**
+   * Return the number of styles discovered in this Analysis' Template.
+   * TODO: This is slow. We can pre-compute this as elements are added.
+   */
+  styleCount(): number {
+    let c = 0;
+    for (let el of this.elements.values()) {
+      for (let _s of el.attributesFound()) {
+        c++;
+      }
+      for (let _s of el.classesFound()) {
+        c++;
+      }
+    }
+    return c;
+  }
+
+  /**
+   * Get either the owner Analyzer's optimization options, or a default set of options.
+   */
   optimizationOptions(): TemplateIntegrationOptions {
-    // TODO: take this as an argument from the template integration.
-    return {
+    // TODO: Optimization options must be handled / propagated better.
+    return this.parent ? this.parent.optimizationOptions : {
       rewriteIdents: {
         id: false,
         class: true,
@@ -164,6 +164,7 @@ export class Analysis<K extends keyof TemplateTypes> {
   }
 
   /**
+   * Returns the local name of the provided in this Analysis' template.
    * @param block The block for which the local name should be returned.
    * @return The local name of the given block.
    */
@@ -184,10 +185,17 @@ export class Analysis<K extends keyof TemplateTypes> {
     return null;
   }
 
+  /**
+   * Get a new {ElementAnalysis} object to track an individual element's {Style}
+   * consumption in this {Analysis}' template. Every {ElementAnalysis} returned from
+   * `Analysis.startElement` must be passed to `Analysis.endElement` before startElement
+   * is called again.
+   * @param location  The {SourceLocation} of this element in the template.
+   * @param tagName  Optional. The tag name of the element being represented by this {ElementAnalysis}.
+   * @returns A new {ElementAnalysis}.
+   */
   startElement<BooleanExpression, StringExpression, TernaryExpression>(location: SourceLocation | SourcePosition, tagName?: string): ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> {
-    if (isSourcePosition(location)) {
-      location = {start: location};
-    }
+    if (isSourcePosition(location)) { location = {start: location}; }
     if (this.currentElement) {
       throw new Error("Internal Error: failure to call endElement before previous call to startElement.");
     }
@@ -195,35 +203,24 @@ export class Analysis<K extends keyof TemplateTypes> {
     return this.currentElement;
   }
 
-  endElement<BooleanExpression, StringExpression, TernaryExpression>(element: ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>, endPosition?: SourcePosition) {
+  /**
+   * Finish an {ElementAnalysis} object returned from `Analysis.startElement` to
+   * the end location in source and save {Style} usage on the parent {Analysis}.
+   * @param element  The {ElementAnalysis} we are finishing.
+   * @param endPosition  Optional. The location in code where this element tag is closed..
+   */
+  endElement<BooleanExpression, StringExpression, TernaryExpression>(element: ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>, endPosition?: SourcePosition): void {
     if (this.currentElement !== element) {
       throw new Error("Element is not the current element.");
     }
-    if (endPosition) {
-      element.sourceLocation.end = endPosition;
-    }
-    this.addElement(element);
-    this.currentElement = undefined;
-  }
-
-  private addFilename(pos: SourcePosition | undefined) {
-    if (pos && !pos.filename) {
-      pos.filename = this.template.identifier;
-    }
-  }
-
-  addElement<BooleanExpression, StringExpression, TernaryExpression>(element: ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>) {
-    if (!element.id) {
-      element.id = this.idGenerator.nextIdent();
-    }
+    if (endPosition) { element.sourceLocation.end = endPosition; }
+    if (!element.id) { element.id = this.idGenerator.nextIdent(); }
     if (this.elements.get(element.id)) {
       throw new Error(`Internal Error: an element with id = ${element.id} already exists in this analysis`);
     }
-    this.addFilename(element.sourceLocation.start);
-    this.addFilename(element.sourceLocation.end);
-    if (!element.sealed) {
-      element.seal();
-    }
+    this.ensureFilename(element.sourceLocation.start);
+    this.ensureFilename(element.sourceLocation.end);
+    if (!element.sealed) { element.seal(); }
     this.validator.validate(this, element);
     this.elements.set(element.id, element);
     if (this.parent) {
@@ -233,6 +230,18 @@ export class Analysis<K extends keyof TemplateTypes> {
       for (let s of [...element.classesFound(true), ...element.attributesFound(true)]) {
         this.parent.saveDynamicStyle(s, this);
       }
+    }
+    this.currentElement = undefined;
+  }
+
+  /**
+   * Given a {SourcePosition}, ensure that the file name is present. If not,
+   * add the template identifier.
+   * @param post  The {SourcePosition} we are validating.
+   */
+  private ensureFilename(pos: SourcePosition | undefined) {
+    if (pos && !pos.filename) {
+      pos.filename = this.template.identifier;
     }
   }
 
