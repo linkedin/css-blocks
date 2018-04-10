@@ -30,6 +30,8 @@
   "dependencies": {
     "@glimmer/compiler": "^0.33.0",
     "@glimmer/syntax": "^0.33.0",
+    "@types/bluebird": "^3.5.20",
+    "bluebird": "^3.5.1",
     "broccoli-funnel": "^2.0.1",
     "broccoli-merge-trees": "^3.0.0",
     "broccoli-plugin": "^1.3.0",

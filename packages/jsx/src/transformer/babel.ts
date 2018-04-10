@@ -88,7 +88,11 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
 
         if (this.shouldProcess) {
           debug(`Rewriting discovered dependency ${this.filename}`);
-          this.elementAnalyzer = new JSXElementAnalyzer(this.analysis.blocks, this.filename);
+          // TODO: We use this to re-analyze elements in the rewriter.
+          //       We've already done this work and should be able to
+          //       re-use the data! Unfortunately, there are problems...
+          //       See: https://github.com/css-blocks/css-blocks/issues/84
+          this.elementAnalyzer = new JSXElementAnalyzer(this.analysis, true);
         }
       },
       post() {

@@ -1,7 +1,7 @@
 import * as assert from "assert";
 
 describe("Broccoli Plugin Test", () => {
-  it("runs", () => {
+  it("runs tests", () => {
     assert.ok(1);
   });
 });

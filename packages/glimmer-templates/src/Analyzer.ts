@@ -102,13 +102,12 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     let localBlockNames = Object.keys(analysis.blocks).map(n => n === "" ? "<default>" : n);
     self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(", ")}.`);
 
-    let elementAnalyzer = new ElementAnalyzer(block, template, this.options);
+    let elementAnalyzer = new ElementAnalyzer(analysis, this.options);
     traverse(ast, {
       ElementNode(node) {
         elementCount++;
         let atRootElement = (elementCount === 1);
         let element = elementAnalyzer.analyze(node, atRootElement);
-        analysis.addElement(element);
         if (self.debug.enabled) self.debug("Element analyzed:", element.forOptimizer(self.options).toString());
       },
     });

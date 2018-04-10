@@ -48,7 +48,7 @@ export class GlimmerRewriter implements ASTPlugin {
     this.styleMapping  = styleMapping;
     this.cssBlocksOpts = resolveConfiguration(cssBlocksOpts);
     this.elementCount  = 0;
-    this.elementAnalyzer = new ElementAnalyzer(this.block, this.template, this.cssBlocksOpts);
+    this.elementAnalyzer = new ElementAnalyzer(this.analysis, this.cssBlocksOpts);
   }
 
   debug(message: string, ...args: whatever[]): void {
@@ -65,6 +65,10 @@ export class GlimmerRewriter implements ASTPlugin {
   ElementNode(node: AST.ElementNode) {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
+    // TODO: We use this to re-analyze elements in the rewriter.
+    //       We've already done this work and should be able to
+    //       re-use the data! Unfortunately, there are problems...
+    //       See: https://github.com/css-blocks/css-blocks/issues/84
     let element = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
     this.debug(element.forOptimizer(this.cssBlocksOpts)[0].toString());
     let rewrite = this.styleMapping.simpleRewriteMapping(element);

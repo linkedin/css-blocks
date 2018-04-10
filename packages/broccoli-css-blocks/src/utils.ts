@@ -1,3 +1,7 @@
+/**
+ * This file takes heavy inspiration from other Broccoli Plugins written in
+ * Typescript to provide sane typings for common Broccoli utilities.
+ */
 /* tslint:disable */
 export const BroccoliPlugin: BroccoliPlugin.Static = require("broccoli-plugin");
 export const walkSync: WalkSync = require("walk-sync");
