@@ -400,3 +400,5 @@ export class Analysis<K extends keyof TemplateTypes> {
     return optAnalysis;
   }
 }
+
+export interface IAnalysis<K extends keyof TemplateTypes> extends Analysis<K> {}
