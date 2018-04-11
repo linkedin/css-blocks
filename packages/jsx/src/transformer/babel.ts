@@ -27,7 +27,7 @@ import {
 // import { TemplateAnalysisError } from '../utils/Errors';
 import * as debugGenerator from "debug";
 
-import { TemplateType } from "../Analyzer/Template";
+import { TEMPLATE_TYPE } from "../Analyzer/Template";
 import { JSXElementAnalyzer } from "../Analyzer/visitors/element";
 import { isBlockFilename } from "../utils/isBlockFilename";
 import { isConsoleLogStatement } from "../utils/isConsoleLogStatement";
@@ -45,8 +45,8 @@ export interface CssBlocksVisitor {
   statementsToRemove: Array<NodePath<Statement>>;
   elementAnalyzer: JSXElementAnalyzer;
   filename: string;
-  mapping: StyleMapping<TemplateType>;
-  analysis: Analysis<TemplateType>;
+  mapping: StyleMapping<TEMPLATE_TYPE>;
+  analysis: Analysis<TEMPLATE_TYPE>;
   cssBlockOptions: CSSBlocksConfiguration;
   shouldProcess: boolean;
 }

@@ -37,7 +37,7 @@ export class ElementAnalyzer {
 
   constructor(analysis: GlimmerAnalysis, cssBlocksOpts: CSSBlocksConfiguration) {
     this.analysis = analysis;
-    this.block = analysis.blocks[""];
+    this.block = analysis.getBlock("")!; // Local block check done elsewhere
     this.template = analysis.template;
     this.cssBlocksOpts = cssBlocksOpts;
   }

@@ -27,8 +27,8 @@ import { TemplateValidator, TemplateValidatorOptions } from "./validations";
  * This interface defines a JSON friendly serialization
  * of an {Analysis}.
  */
-export interface SerializedAnalysis {
-  template: SerializedTemplateInfo<keyof TemplateTypes>;
+export interface SerializedAnalysis<K extends keyof TemplateTypes> {
+  template: SerializedTemplateInfo<K>;
   blocks: ObjectDictionary<string>;
   stylesFound: string[];
   // The numbers stored in each element are an index into a stylesFound;
@@ -51,13 +51,6 @@ export class Analysis<K extends keyof TemplateTypes> {
   template: TemplateTypes[K];
 
   /**
-   * A map from a local name for the block to the [[Block]].
-   * The local name must be a legal CSS ident/class name but this is not validated here.
-   * See [[CLASS_NAME_IDENT]] for help validating a legal class name.
-   */
-  blocks: ObjectDictionary<Block>;
-
-  /**
    * A per-element correlation of styles used. The current correlation is added
    * to this list when [[endElement]] is called.
    */
@@ -65,21 +58,28 @@ export class Analysis<K extends keyof TemplateTypes> {
   elements: Map<string, ElementAnalysis<any, any, any>>;
 
   /**
+   * A map from a local name for the block to the [[Block]].
+   * The local name must be a legal CSS ident/class name but this is not validated here.
+   * See [[CLASS_NAME_IDENT]] for help validating a legal class name.
+   */
+  private blocks: ObjectDictionary<Block>;
+
+  /**
    * The current element, created when calling [[startElement]].
    * The current element is unset after calling [[endElement]].
    */
   // tslint:disable-next-line:prefer-whatever-to-any
-  currentElement: ElementAnalysis<any, any, any> | undefined;
+  private currentElement: ElementAnalysis<any, any, any> | undefined;
 
   /**
    * Template validator instance to verify blocks applied to an element.
    */
-  validator: TemplateValidator;
+  private validator: TemplateValidator;
 
   /**
    * @param template The template being analyzed.
    */
-  constructor(template: TemplateTypes[K], options?: TemplateValidatorOptions, parent?: Analyzer<K>) {
+  constructor(parent: Analyzer<K>, template: TemplateTypes[K], options?: TemplateValidatorOptions) {
     this.idGenerator = new IdentGenerator();
     this.parent = parent;
     this.template = template;
@@ -96,7 +96,7 @@ export class Analysis<K extends keyof TemplateTypes> {
   /**
    * Convenience setter for adding a block to the template scope.
    */
-  addBlock(name: string, block: Block): void { this.blocks[name] = block; }
+  addBlock(name: string, block: Block): Block { return this.blocks[name] = block; }
 
   /**
    * Convenience getter for fetching a block from the template scope.
@@ -300,11 +300,11 @@ export class Analysis<K extends keyof TemplateTypes> {
   /**
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
    */
-  serialize(): SerializedAnalysis {
+  serialize(): SerializedAnalysis<K> {
     let blocks = {};
     let stylesFound: string[] = [];
     let elements: ObjectDictionary<SerializedElementAnalysis> = {};
-    let template = this.template.serialize();
+    let template = this.template.serialize() as SerializedTemplateInfo<K>;
     let styleNameMap = new Map<Style, string>();
     let styleIndexes = new Map<Style, number>();
 
@@ -325,8 +325,8 @@ export class Analysis<K extends keyof TemplateTypes> {
     });
 
     // Serialize our blocks to a map of their local names.
-    Object.keys(this.blocks).forEach((localname) => {
-      blocks[localname] = this.blocks[localname].identifier;
+    Object.keys(this.blocks).forEach((localName) => {
+      blocks[localName] = this.blocks[localName].identifier;
     });
 
     // Serialize all discovered Elements.
@@ -345,13 +345,13 @@ export class Analysis<K extends keyof TemplateTypes> {
    * @param postcssImpl The instance of postcss that should be used to parse the block's css.
    */
   static async deserialize (
-    serializedAnalysis: SerializedAnalysis,
+    serializedAnalysis: SerializedAnalysis<keyof TemplateTypes>,
     blockFactory: BlockFactory,
     parent: Analyzer<keyof TemplateTypes>,
   ): Promise<Analysis<keyof TemplateTypes>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
     let info = TemplateInfoFactory.deserialize<keyof TemplateTypes>(serializedAnalysis.template);
-    let analysis = new Analysis(info, {}, parent);
+    let analysis = parent.newAnalysis(info);
     let blockPromises = new Array<Promise<{name: string; block: Block}>>();
     blockNames.forEach(n => {
       let blockIdentifier = serializedAnalysis.blocks[n];
@@ -391,8 +391,8 @@ export class Analysis<K extends keyof TemplateTypes> {
     return analysis;
   }
 
-  forOptimizer(opts: ResolvedConfiguration): OptimizationTemplateAnalysis<keyof TemplateTypes> {
-    let optAnalysis = new OptimizationTemplateAnalysis<keyof TemplateTypes>(this.template);
+  forOptimizer(opts: ResolvedConfiguration): OptimizationTemplateAnalysis<K> {
+    let optAnalysis = new OptimizationTemplateAnalysis<K>(this.template);
     for (let element of this.elements.values()) {
       let result = element.forOptimizer(opts);
       optAnalysis.elements.push(result[0]);

@@ -17,7 +17,7 @@ import {
 import { Analysis, Block } from "css-blocks";
 import * as debugGenerator from "debug";
 
-import { JSXTemplate, TemplateType } from "../../Analyzer/Template";
+import { JSXTemplate, TEMPLATE_TYPE } from "../../Analyzer/Template";
 import { CssBlocksJSXOptions } from "../../options";
 import { ErrorLocation, TemplateImportError } from "../../utils/Errors";
 import { isBlockFilename } from "../../utils/isBlockFilename";
@@ -55,9 +55,9 @@ function throwIfRegistered(name: string, blockRegistry: ObjectDictionary<number>
 export function importVisitor(
   file: JSXTemplate,
   analyzer: CSSBlocksJSXAnalyzer,
-  analysis: Analysis<TemplateType>,
+  analysis: Analysis<TEMPLATE_TYPE>,
   blockPromises: Promise<Block>[],
-  childTemplatePromises: Promise<Analysis<TemplateType>>[],
+  childTemplatePromises: Promise<Analysis<TEMPLATE_TYPE>>[],
   options: CssBlocksJSXOptions,
 ) {
 
@@ -144,7 +144,7 @@ export function importVisitor(
 
       // When block parsing is done, add to analysis object.
       res.then((block): Block => {
-        analysis.blocks[localName] = block;
+        analysis.addBlock(localName, block);
         return block;
       })
 

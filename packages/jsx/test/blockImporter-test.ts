@@ -26,7 +26,7 @@ export class Test {
     });
     return parse(`import bar from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -36,7 +36,7 @@ export class Test {
     });
     return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -46,7 +46,7 @@ export class Test {
     });
     return parse(`import bar from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -56,7 +56,7 @@ export class Test {
     });
     return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -66,7 +66,7 @@ export class Test {
     });
     return parse(`import * as bar from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -80,8 +80,8 @@ export class Test {
       import baz from 'baz.block.css';
     `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 2);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
-      assert.equal(analysis.getAnalysis(0).blocks["baz"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("baz")!.constructor, Block);
     });
   }
 
@@ -95,8 +95,8 @@ export class Test {
       import biz from 'baz.block.css';
     `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 2);
-      assert.ok(analysis.getAnalysis(0).blocks["foo"]);
-      assert.ok(analysis.getAnalysis(0).blocks["biz"]);
+      assert.ok(analysis.getAnalysis(0).getBlock("foo"));
+      assert.ok(analysis.getAnalysis(0).getBlock("biz"));
     });
   }
 
