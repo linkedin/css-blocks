@@ -38,8 +38,8 @@ export interface AnalysisOptions {
   features?: TemplateIntegrationOptions;
 }
 
-export interface SerializedAnalyzer {
-  analyses: SerializedAnalysis[];
+export interface SerializedAnalyzer<K extends keyof TemplateTypes> {
+  analyses: SerializedAnalysis<K>[];
 }
 
 export abstract class Analyzer<K extends keyof TemplateTypes> {
@@ -66,7 +66,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     this.dynamicStyles = new MultiMap();
   }
 
-  abstract analyze(...entryPoints: string[]): Promise<Analyzer<keyof TemplateTypes>>;
+  abstract analyze(...entryPoints: string[]): Promise<Analyzer<K>>;
 
   // TODO: We don't really want to burn the world here.
   // We need more targeted Analysis / BlockFactory invalidation.
@@ -79,7 +79,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   }
 
   newAnalysis(info: TemplateInfo<K>): Analysis<K> {
-    let analysis = new Analysis<K>(info, this.validatorOptions, this);
+    let analysis = new Analysis<K>(this, info, this.validatorOptions);
     this.analysisMap.set(info.identifier, analysis);
     return analysis;
   }
@@ -126,16 +126,16 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     return allBlocks;
   }
 
-  serialize(): SerializedAnalyzer {
-    let analyses: SerializedAnalysis[] = [];
+  serialize(): SerializedAnalyzer<K> {
+    let analyses: SerializedAnalysis<K>[] = [];
     this.eachAnalysis(a => {
       analyses.push(a.serialize());
     });
     return { analyses };
   }
 
-  forOptimizer(opts: ResolvedConfiguration): OptimizationAnalysis<keyof TemplateTypes>[] {
-    let analyses = new Array<OptimizationAnalysis<keyof TemplateTypes>>();
+  forOptimizer(opts: ResolvedConfiguration): OptimizationAnalysis<K>[] {
+    let analyses = new Array<OptimizationAnalysis<K>>();
     this.eachAnalysis(a => {
       analyses.push(a.forOptimizer(opts));
     });

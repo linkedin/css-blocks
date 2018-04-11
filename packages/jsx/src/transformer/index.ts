@@ -6,12 +6,12 @@ import {
   StyleMapping,
 } from "css-blocks";
 
-import { TemplateType } from "../Analyzer/Template";
+import { TEMPLATE_TYPE } from "../Analyzer/Template";
 
 export interface RewriterOptions {
   meta?: ObjectDictionary<whatever>;
   cssBlocks: {
-    styleMapping: StyleMapping<TemplateType> | null;
+    styleMapping: StyleMapping<TEMPLATE_TYPE> | null;
     compilationOptions: CSSBlocksOptions;
   };
 }
@@ -23,9 +23,9 @@ export interface RewriterOptions {
 //       in the transformer. Remove this when that is added.
 export class CSSBlocksJSXTransformer {
 
-  styleMapping: StyleMapping<TemplateType> | null;
+  styleMapping: StyleMapping<TEMPLATE_TYPE> | null;
   cssBlockOptions: CSSBlocksConfiguration;
-  blocks: ObjectDictionary<StyleMapping<TemplateType>> = {};
+  blocks: ObjectDictionary<StyleMapping<TEMPLATE_TYPE>> = {};
 
   constructor(opts?: RewriterOptions) {
     this.cssBlockOptions = resolveBlocksConfiguration(opts && opts.cssBlocks && opts.cssBlocks.compilationOptions);

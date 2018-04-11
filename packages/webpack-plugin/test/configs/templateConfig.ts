@@ -74,7 +74,7 @@ export function config(): Promise<WebpackConfiguration> {
     let analyzer = new TestAnalyzer();
     blocks.forEach((b, i) => {
       analyzer.eachAnalysis(a => {
-        a.blocks[`concat-${i}`] = b;
+        a.addBlock(`concat-${i}`, b);
         let el = a.startElement(POSITION_UNKNOWN);
         el.addStaticClass(b.rootClass);
         a.endElement(el);

@@ -2,7 +2,6 @@ import {
   SourceLocation as TemplateSourceLocation,
   SourcePosition as TemplateSourcePosition,
 } from "@opticss/element-analysis";
-import { ObjectDictionary } from "@opticss/util";
 import { Binding, NodePath } from "babel-traverse";
 import {
   AssignmentExpression,
@@ -27,8 +26,8 @@ import { MalformedBlockPath, TemplateAnalysisError } from "../../utils/Errors";
 import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../../utils/ExpressionReader";
 import { isConsoleLogStatement } from "../../utils/isConsoleLogStatement";
 
-import { TemplateType } from "../Template";
-import { JSXAnalaysis } from "../index";
+import { TEMPLATE_TYPE } from "../Template";
+import { JSXAnalysis } from "../index";
 import { BooleanExpression, Flags, JSXElementAnalysis, StringExpression, TernaryExpression } from "../types";
 
 function htmlTagName(el: JSXOpeningElement): string | undefined { return (isJSXIdentifier(el.name) && el.name.name === el.name.name.toLowerCase()) ? el.name.name : undefined; }
@@ -36,16 +35,14 @@ function isLocation(n: object): n is SourceLocation { return !!((<SourceLocation
 function isNodePath(n: object): n is NodePath { return !!(<NodePath>n).node; }
 
 export class JSXElementAnalyzer {
+  private analysis: JSXAnalysis;
   private filename: string;
   private classProperties: Flags;
-  private blocks: ObjectDictionary<Block>;
-  private analysis: JSXAnalaysis;
   private isRewriteMode: boolean;
 
-  constructor(analysis: JSXAnalaysis, isRewriteMode = false) {
+  constructor(analysis: JSXAnalysis, isRewriteMode = false) {
     this.analysis = analysis;
     this.isRewriteMode = isRewriteMode;
-    this.blocks = analysis.blocks;
     this.filename = analysis.template.identifier;
     this.classProperties = {
       class: true,
@@ -163,7 +160,7 @@ export class JSXElementAnalyzer {
         if (identBinding.kind === "module") {
           let name = identifier.name;
           // Check if there is a block of this name imported. If so, save style and exit.
-          let block: Block | undefined = this.blocks[name];
+          let block: Block | undefined = this.analysis.getBlock(name);
           if (block) {
             element.addStaticClass(block.rootClass);
           } else {
@@ -195,7 +192,7 @@ export class JSXElementAnalyzer {
       // Discover direct references to an imported block.
       // Ex: `blockName.foo` || `blockName['bar']` || `blockName.bar()`
       let parts: ExpressionReader = new ExpressionReader(expression.node, this.filename);
-      let expressionResult = parts.getResult(this.blocks);
+      let expressionResult = parts.getResult(this.analysis);
       let blockClass = expressionResult.blockClass;
       if (isBlockStateGroupResult(expressionResult) || isBlockStateResult(expressionResult)) {
         throw new Error("internal error, not expected on a member expression");
@@ -210,7 +207,7 @@ export class JSXElementAnalyzer {
           // It's not a style helper function, assume it's a static reference to a state.
           try {
             let parts: ExpressionReader = new ExpressionReader(callExpr, this.filename);
-            let expressionResult = parts.getResult(this.blocks);
+            let expressionResult = parts.getResult(this.analysis);
             let blockClass = expressionResult.blockClass;
             if (isBlockStateGroupResult(expressionResult)) {
               element.addDynamicGroup(blockClass, expressionResult.stateGroup, expressionResult.dynamicStateExpression, false);
@@ -237,7 +234,7 @@ export class JSXElementAnalyzer {
           throw new TemplateAnalysisError(styleFn.message, styleFn.location);
         }
       } else {
-        styleFn.analyze(this.blocks, element, this.filename, styleFn, callExpr);
+        styleFn.analyze(this.analysis, element, this.filename, styleFn, callExpr);
       }
     } else {
       // TODO handle ternary expressions like style-if in handlebars?
@@ -279,7 +276,7 @@ export class JSXElementAnalyzer {
         throw new TemplateAnalysisError(styleFunc.message, { filename: this.filename, ...styleFunc.location });
       }
     }
-    styleFunc.analyze(this.blocks, element, this.filename, styleFunc, func);
+    styleFunc.analyze(this.analysis, element, this.filename, styleFunc, func);
   }
 }
 
@@ -287,7 +284,7 @@ export class JSXElementAnalyzer {
  * Babel visitors we can pass to `babel-traverse` to run analysis on a given JSX file.
  * @param analysis The Analysis object to store our results in.
  */
-export function elementVisitor(analysis: Analysis<TemplateType>): object {
+export function elementVisitor(analysis: Analysis<TEMPLATE_TYPE>): object {
   let elementAnalyzer = new JSXElementAnalyzer(analysis);
 
   return {

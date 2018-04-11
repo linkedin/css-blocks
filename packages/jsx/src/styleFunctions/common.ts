@@ -1,11 +1,10 @@
-import { ObjectDictionary } from "@opticss/util";
 import { CallExpression } from "babel-types";
-import { Block } from "css-blocks";
 
+import { JSXAnalysis } from "../Analyzer";
 import { JSXElementAnalysis } from "../Analyzer/types";
 
 export type StyleFunctionAnalyzer<StyleFunctionType> = (
-  blocks: ObjectDictionary<Block>,
+  analyzer: JSXAnalysis,
   element: JSXElementAnalysis,
   filename: string,
   styleFn: StyleFunctionType,

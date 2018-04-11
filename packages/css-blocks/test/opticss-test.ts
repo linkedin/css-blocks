@@ -38,7 +38,7 @@ export class TemplateAnalysisTests {
     analysis: Analysis<"Opticss.Template">, block: Block, blockName: string,
     useAttrsCallback?: (container: BlockClass, element: ElementAnalysis<whatever, whatever, whatever>) => void,
   ) {
-    analysis.blocks[blockName] = block;
+    analysis.addBlock(blockName, block);
 
     for (let c of block.classes) {
       let element = analysis.startElement(POSITION_UNKNOWN);

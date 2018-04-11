@@ -44,7 +44,7 @@ export class GlimmerRewriter implements ASTPlugin {
     this.syntax        = syntax;
     this.analysis      = analysis;
     this.template      = analysis.template;
-    this.block         = analysis.blocks[""];
+    this.block         = analysis.getBlock("")!; // Local block check done elsewhere
     this.styleMapping  = styleMapping;
     this.cssBlocksOpts = resolveConfiguration(cssBlocksOpts);
     this.elementCount  = 0;
