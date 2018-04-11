@@ -46,7 +46,7 @@ export interface CssBlocksVisitor {
   elementAnalyzer: JSXElementAnalyzer;
   filename: string;
   mapping: StyleMapping<TEMPLATE_TYPE>;
-  analysis: Analysis<TEMPLATE_TYPE>;
+  analysis: Analysis<TEMPLATE_TYPE> | undefined;
   cssBlockOptions: CSSBlocksConfiguration;
   shouldProcess: boolean;
 }
@@ -78,15 +78,14 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
 
         this.mapping = rewriter.blocks[this.filename];
         if (this.mapping && this.mapping.analyses) {
-          let a = this.mapping.analyses.find(a => a.template.identifier === this.filename);
-          if (a instanceof Analysis) this.analysis = a;
+          this.analysis = this.mapping.analyses.find(a => a.template.identifier === this.filename);
         } else {
           this.shouldProcess = false;
         }
         let ext = parse(this.filename).ext;
-        this.shouldProcess = CAN_PARSE_EXTENSIONS[ext] && this.analysis && this.analysis.blockCount() > 0;
+        this.shouldProcess = CAN_PARSE_EXTENSIONS[ext] && this.analysis && this.analysis.blockCount() > 0 || false;
 
-        if (this.shouldProcess) {
+        if (this.analysis && this.shouldProcess) {
           debug(`Rewriting discovered dependency ${this.filename}`);
           // TODO: We use this to re-analyze elements in the rewriter.
           //       We've already done this work and should be able to
