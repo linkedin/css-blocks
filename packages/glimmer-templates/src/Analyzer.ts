@@ -1,4 +1,5 @@
 import { preprocess, traverse } from "@glimmer/syntax";
+import { TemplateIntegrationOptions } from "@opticss/template-api";
 import {
   Analysis,
   AnalysisOptions,
@@ -40,7 +41,23 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   }
 
   reset() {
+    super.reset();
     this.project.reset();
+  }
+
+  get optimizationOptions(): TemplateIntegrationOptions {
+    return {
+      rewriteIdents: {
+        id: false,
+        class: true,
+        omitIdents: {
+          id: [],
+          class: [],
+        },
+      },
+      analyzedAttributes: ["class"],
+      analyzedTagnames: false,
+    };
   }
 
   async analyze(...templateNames: string[]): Promise<GlimmerAnalyzer> {

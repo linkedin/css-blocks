@@ -4,21 +4,18 @@ import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Analyzer, ElementAnalysis, SerializedAnalysis } from "../src/Analyzer";
+import { ElementAnalysis, SerializedAnalysis } from "../src/Analyzer";
 import { BlockFactory } from "../src/BlockParser";
 import { Attribute, AttrValue, Block, BlockClass } from "../src/BlockTree";
 import { Options, resolveConfiguration } from "../src/configuration";
 import * as cssBlocks from "../src/errors";
 
+import { TestAnalyzer } from "./util/TestAnalyzer";
 import { assertParseError } from "./util/assertError";
 import { setupImporting } from "./util/setupImporting";
 
 type TestElement = ElementAnalysis<null, null, null>;
 type TemplateType = "Opticss.Template";
-
-class TestAnalyzer extends Analyzer<"Opticss.Template"> {
-  analyze() { return Promise.resolve(this); }
-}
 
 type BlockAndRoot = [Block, postcss.Container];
 

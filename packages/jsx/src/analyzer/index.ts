@@ -1,3 +1,4 @@
+import { TemplateIntegrationOptions } from "@opticss/template-api";
 import { some, unwrap } from "@opticss/util";
 import traverse from "babel-traverse";
 import * as babylon from "babylon";
@@ -41,6 +42,21 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     super.reset();
     this.analysisPromises = new Map();
     this.blockPromises = new Map();
+  }
+
+  get optimizationOptions(): TemplateIntegrationOptions {
+    return {
+      rewriteIdents: {
+        id: false,
+        class: true,
+        omitIdents: {
+          id: [],
+          class: [],
+        },
+      },
+      analyzedAttributes: ["class"],
+      analyzedTagnames: false,
+    };
   }
 
   async analyze(...entryPoints: string[]): Promise<CSSBlocksJSXAnalyzer> {

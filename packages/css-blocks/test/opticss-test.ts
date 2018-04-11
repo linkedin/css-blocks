@@ -79,6 +79,20 @@ export class TemplateAnalysisTests {
           return this;
         });
       }
+      get optimizationOptions() {
+        return {
+          rewriteIdents: {
+            id: false,
+            class: true,
+            omitIdents: {
+              id: [],
+              class: [],
+            },
+          },
+          analyzedAttributes: ["class"],
+          analyzedTagnames: false,
+        };
+      }
     }
     let analyzer = new TestAnalyzer();
     return analyzer.analyze().then(async (analyzer: TestAnalyzer) => {
