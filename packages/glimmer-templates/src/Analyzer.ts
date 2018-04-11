@@ -95,11 +95,13 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     self.debug(`Analyzing ${componentName}. Got block for component.`);
 
     // Add all transitive block dependencies
-    analysis.blocks[""] = block;
+    let localBlockNames: string[] = [];
+    analysis.addBlock("", block);
+    localBlockNames.push("<default>");
     block.eachBlockReference((name, refBlock) => {
-      analysis.blocks[name] = refBlock;
+      analysis.addBlock(name, refBlock);
+      localBlockNames.push(name);
     });
-    let localBlockNames = Object.keys(analysis.blocks).map(n => n === "" ? "<default>" : n);
     self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(", ")}.`);
 
     let elementAnalyzer = new ElementAnalyzer(analysis, this.options);

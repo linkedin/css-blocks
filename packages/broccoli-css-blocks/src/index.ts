@@ -1,25 +1,21 @@
-import { promisifyAll } from "bluebird";
-import * as fs_tmp from "fs";
+import * as fs from "fs";
 import * as path from "path";
+import { promisify } from "util";
 
 import { TemplateTypes } from "@opticss/template-api";
 import { Analyzer } from "css-blocks";
 
 import { BroccoliPlugin } from "./utils";
 
-let fs = promisifyAll(fs_tmp);
-
-declare module "fs" {
-  export function readdirAsync(path: string): Promise<string[]>;
-  export function symlinkAsync(from: string, to: string): Promise<void>;
-}
+const readdirAsync = promisify(fs.readdirSync) as (path: string) => Promise<string[]>;
+const symlinkAsync = promisify(fs.symlinkSync) as (from: string, to: string) => Promise<void>;
 
 interface BroccoliOptions {
   entry: string[];
   analyzer: Analyzer<keyof TemplateTypes>;
 }
 
-class BroccoliBlocks extends BroccoliPlugin {
+class BroccoliCSSBlocks extends BroccoliPlugin {
 
   private analyzer: Analyzer<keyof TemplateTypes>;
   private entry: string[];
@@ -37,10 +33,10 @@ class BroccoliBlocks extends BroccoliPlugin {
 
     // This build step is just a pass-through of all files!
     // We're just analyzing right now.
-    let files = await fs.readdirAsync(this.inputPaths[0]);
+    let files = await readdirAsync(this.inputPaths[0]);
     for (let file of files) {
       try {
-        await fs.symlinkAsync(
+        await symlinkAsync(
           path.join(this.inputPaths[0], file),
           path.join(this.outputPath, file),
         );
@@ -63,4 +59,4 @@ class BroccoliBlocks extends BroccoliPlugin {
 
 }
 
-module.exports = BroccoliBlocks;
+module.exports = BroccoliCSSBlocks;

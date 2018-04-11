@@ -6,7 +6,7 @@ import {
 import { Maybe, none, whatever } from "@opticss/util";
 import { File } from "babel-types";
 
-export type TemplateType = "Opticss.JSXTemplate";
+export type TEMPLATE_TYPE = "Opticss.JSXTemplate";
 
 declare module "@opticss/template-api" {
   interface TemplateTypes {
@@ -14,9 +14,9 @@ declare module "@opticss/template-api" {
   }
 }
 
-export class JSXTemplate implements TemplateInfo<TemplateType> {
+export class JSXTemplate implements TemplateInfo<TEMPLATE_TYPE> {
   identifier: string;
-  type: TemplateType = "Opticss.JSXTemplate";
+  type: TEMPLATE_TYPE = "Opticss.JSXTemplate";
   data: string;
   ast: Maybe<File>;
 

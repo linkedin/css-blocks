@@ -3,7 +3,7 @@ import { Template } from "@opticss/template-api";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Analysis } from "../../src/Analyzer";
+import { Analyzer } from "../../src/Analyzer";
 import { BlockFactory } from "../../src/BlockParser";
 import { Block } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
@@ -11,6 +11,9 @@ import { TemplateAnalysisError } from "../../src/errors";
 import { assertParseError } from "../util/assertError";
 
 type BlockAndRoot = [Block, postcss.Container];
+class TestAnalyzer extends Analyzer<"Opticss.Template"> {
+  analyze() { return Promise.resolve(this); }
+}
 
 @suite("Validators")
 export class TemplateAnalysisTests {
@@ -25,7 +28,8 @@ export class TemplateAnalysisTests {
 
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new Analysis(info, { "no-class-pairs": false });
+    let analyzer = new TestAnalyzer({}, { validations: { "no-class-pairs": false }});
+    let analysis = analyzer.newAnalysis(info);
     let config = resolveConfiguration({});
 
     let css = `
@@ -37,7 +41,7 @@ export class TemplateAnalysisTests {
       .fdsa[state|larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
-      analysis.blocks[""] = block;
+      analysis.addBlock("", block);
       let element = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.getClass("asdf")!);
       element.addStaticClass(block.getClass("fdsa")!);
@@ -47,7 +51,8 @@ export class TemplateAnalysisTests {
 
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new Analysis(info, { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } });
+    let analyzer = new TestAnalyzer({}, { validations: { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } } });
+    let analysis = analyzer.newAnalysis(info);
     let config = resolveConfiguration({});
 
     let css = `
@@ -57,7 +62,7 @@ export class TemplateAnalysisTests {
       TemplateAnalysisError,
       "CUSTOM ERROR (templates/my-template.hbs:1:2)",
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
-        analysis.blocks[""] = block;
+        analysis.addBlock("", block);
         let element = analysis.startElement({ line: 1, column: 2 });
         analysis.endElement(element);
       }),

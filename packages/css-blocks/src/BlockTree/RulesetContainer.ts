@@ -43,6 +43,9 @@ export type Resolution<S extends Styles = Styles> = {
  */
 function expandProp(prop: string, value: string): propParser.Declarations {
   let expanded: propParser.Declarations = {};
+
+  // The PropertyParser doesn't understand CSS variables.
+  // Replace them with something it understands.
   value = value.replace(/var\([^\)]+\)/gi, "inherit");
   if (propParser.isValidDeclaration(prop, value)) {
     expanded = propParser.expandShorthandProperty(prop, value, true, false);
