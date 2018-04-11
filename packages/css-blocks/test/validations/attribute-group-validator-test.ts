@@ -3,19 +3,15 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Analyzer } from "../../src/Analyzer";
 import { BlockFactory } from "../../src/BlockParser";
 import { Block } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
+import { TestAnalyzer } from "../util/TestAnalyzer";
+import { assertParseError } from "../util/assertError";
 import { setupImporting } from "../util/setupImporting";
 
-import { assertParseError } from "./../util/assertError";
-
 type BlockAndRoot = [Block, postcss.Container];
-class TestAnalyzer extends Analyzer<"Opticss.Template"> {
-  analyze() { return Promise.resolve(this); }
-}
 
 @suite("Attribute Group Validator")
 export class TemplateAnalysisTests {
