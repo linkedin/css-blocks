@@ -3,20 +3,17 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Analyzer } from "../../src/Analyzer";
 import { BlockFactory } from "../../src/BlockParser";
 import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import { CssBlockError, TemplateAnalysisError } from "../../src/errors";
 
 import { MockImportRegistry } from "../util/MockImportRegistry";
+import { TestAnalyzer } from "../util/TestAnalyzer";
 import { assertParseError } from "../util/assertError";
 import { indented } from "../util/indented";
 
 type BlockAndRoot = [Block, postcss.Container];
-class TestAnalyzer extends Analyzer<"Opticss.Template"> {
-  analyze() { return Promise.resolve(this); }
-}
 
 @suite("Property Conflict Validator")
 export class TemplateAnalysisTests {

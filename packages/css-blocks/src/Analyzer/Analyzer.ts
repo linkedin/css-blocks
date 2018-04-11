@@ -20,19 +20,6 @@ import { TemplateValidatorOptions } from "./validations";
 
 const debug = debugGenerator("css-blocks:analyzer");
 
-const DEFAULT_FEATURES = {
-  rewriteIdents: {
-    id: false,
-    class: true,
-    omitIdents: {
-      id: [],
-      class: [],
-    },
-  },
-  analyzedAttributes: ["class"],
-  analyzedTagnames: false,
-};
-
 export interface AnalysisOptions {
   validations?: TemplateValidatorOptions;
   features?: TemplateIntegrationOptions;
@@ -46,7 +33,6 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   public readonly blockFactory: BlockFactory;
 
   public readonly validatorOptions: TemplateValidatorOptions;
-  public readonly optimizationOptions: TemplateIntegrationOptions;
   public readonly cssBlocksOptions: ResolvedConfiguration;
 
   protected analysisMap: Map<string, Analysis<K>>;
@@ -59,7 +45,6 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   ) {
     this.cssBlocksOptions = resolveConfiguration(options);
     this.validatorOptions = analysisOpts && analysisOpts.validations || {};
-    this.optimizationOptions = analysisOpts && analysisOpts.features || DEFAULT_FEATURES;
     this.blockFactory = new BlockFactory(this.cssBlocksOptions);
     this.analysisMap = new Map();
     this.staticStyles = new MultiMap();
@@ -67,6 +52,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   }
 
   abstract analyze(...entryPoints: string[]): Promise<Analyzer<K>>;
+  abstract get optimizationOptions(): TemplateIntegrationOptions;
 
   // TODO: We don't really want to burn the world here.
   // We need more targeted Analysis / BlockFactory invalidation.
@@ -134,10 +120,10 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     return { analyses };
   }
 
-  forOptimizer(opts: ResolvedConfiguration): OptimizationAnalysis<K>[] {
+  forOptimizer(config: ResolvedConfiguration): OptimizationAnalysis<K>[] {
     let analyses = new Array<OptimizationAnalysis<K>>();
     this.eachAnalysis(a => {
-      analyses.push(a.forOptimizer(opts));
+      analyses.push(a.forOptimizer(config));
     });
     return analyses;
   }

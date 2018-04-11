@@ -9,7 +9,6 @@ import {
   SerializedTemplateInfo,
   TemplateAnalysis as OptimizationTemplateAnalysis,
   TemplateInfoFactory,
-  TemplateIntegrationOptions,
   TemplateTypes,
 } from "@opticss/template-api";
 import { ObjectDictionary, objectValues } from "@opticss/util";
@@ -135,25 +134,6 @@ export class Analysis<K extends keyof TemplateTypes> {
       }
     }
     return c;
-  }
-
-  /**
-   * Get either the owner Analyzer's optimization options, or a default set of options.
-   */
-  optimizationOptions(): TemplateIntegrationOptions {
-    // TODO: Optimization options must be handled / propagated better.
-    return this.parent ? this.parent.optimizationOptions : {
-      rewriteIdents: {
-        id: false,
-        class: true,
-        omitIdents: {
-          id: [],
-          class: [],
-        },
-      },
-      analyzedAttributes: ["class"],
-      analyzedTagnames: false,
-    };
   }
 
   /**
@@ -391,10 +371,10 @@ export class Analysis<K extends keyof TemplateTypes> {
     return analysis;
   }
 
-  forOptimizer(opts: ResolvedConfiguration): OptimizationTemplateAnalysis<K> {
+  forOptimizer(config: ResolvedConfiguration): OptimizationTemplateAnalysis<K> {
     let optAnalysis = new OptimizationTemplateAnalysis<K>(this.template);
     for (let element of this.elements.values()) {
-      let result = element.forOptimizer(opts);
+      let result = element.forOptimizer(config);
       optAnalysis.elements.push(result[0]);
     }
     return optAnalysis;

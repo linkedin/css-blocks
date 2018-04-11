@@ -8,7 +8,6 @@ import {
 } from "@opticss/template-api";
 import { whatever } from "@opticss/util";
 import {
-  Analyzer,
   BlockFactory,
   resolveConfiguration as resolveBlocksConfiguration,
 } from "css-blocks";
@@ -18,6 +17,7 @@ import { Configuration as WebpackConfiguration } from "webpack";
 import * as merge from "webpack-merge";
 
 import { CssAssets, CssBlocksPlugin } from "../../src/index";
+import { TestAnalyzer } from "../util/TestAnalyzer";
 import { BLOCK_FIXTURES_DIRECTORY } from "../util/testPaths";
 
 import { config as defaultOutputConfig } from "./defaultOutputConfig";
@@ -51,16 +51,6 @@ export class TestTemplateInfo implements TemplateInfo<"WebpackPlugin.TestTemplat
 
 TemplateInfoFactory.constructors["WebpackPlugin.TestTemplate"] = TestTemplateInfo.deserialize;
 
-export class TestAnalyzer extends Analyzer<"WebpackPlugin.TestTemplate"> {
-  constructor() {
-    super();
-    this.newAnalysis(new TestTemplateInfo("test.html", 1));
-  }
-  analyze(): Promise<Analyzer<"WebpackPlugin.TestTemplate">> {
-    return Promise.resolve(this);
-  }
-}
-
 function fixture(name: string) {
   return path.resolve(BLOCK_FIXTURES_DIRECTORY, name + ".block.css");
 }
@@ -72,6 +62,7 @@ export function config(): Promise<WebpackConfiguration> {
   let block2 = factory.getBlock(fixture("concat-2"));
   return Promise.all([block1, block2]).then(blocks => {
     let analyzer = new TestAnalyzer();
+    analyzer.newAnalysis(new TestTemplateInfo("test.html", 1));
     blocks.forEach((b, i) => {
       analyzer.eachAnalysis(a => {
         a.addBlock(`concat-${i}`, b);
