@@ -42,13 +42,14 @@ export class Block
   private _dependencies: Set<string>;
 
   public readonly rootClass: BlockClass;
-  public stylesheet?: postcss.Root;
+  public stylesheet: postcss.Root | undefined;
 
-  constructor(name: string, identifier: FileIdentifier) {
+  constructor(name: string, identifier: FileIdentifier, stylesheet?: postcss.Root) {
     super(name);
     this._identifier = identifier;
     this._dependencies = new Set<string>();
     this.rootClass = new BlockClass(ROOT_CLASS, this);
+    this.stylesheet = stylesheet;
     this.addClass(this.rootClass);
   }
 

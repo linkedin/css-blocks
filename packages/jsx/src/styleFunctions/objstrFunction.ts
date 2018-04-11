@@ -1,4 +1,3 @@
-import { ObjectDictionary } from "@opticss/util";
 import { Binding } from "babel-traverse";
 import { ImportDeclaration } from "babel-types";
 import {
@@ -11,9 +10,9 @@ import {
   isSpreadElement,
   logicalExpression,
 } from "babel-types";
-import { Block } from "css-blocks";
 
-import { JSXElementAnalysis } from "../analyzer/types";
+import { JSXAnalysis } from "../Analyzer";
+import { JSXElementAnalysis } from "../Analyzer/types";
 import { TemplateAnalysisError } from "../utils/Errors";
 import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../utils/ExpressionReader";
 
@@ -56,12 +55,17 @@ export interface ObjStrStyleFunction {
  */
 export function objstrFn(binding: Binding, funcDef: ImportDeclaration): ObjStrStyleFunction | undefined {
   if (funcDef.source.value === PACKAGE_NAME) {
-    return { type: "obj-str", name: "objstr", localName: binding.identifier.name, analyze: analyzeObjstr };
+    return {
+      type: "obj-str",
+      name: "objstr",
+      localName: binding.identifier.name,
+      analyze: analyzeObjstr,
+    };
   }
   return;
 }
 
-export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXElementAnalysis, filename: string, _styleFn: ObjStrStyleFunction, func: CallExpression) {
+export function analyzeObjstr(analysis: JSXAnalysis, element: JSXElementAnalysis, filename: string, _styleFn: ObjStrStyleFunction, func: CallExpression) {
 
   // Location object for error reporting
   let loc = {
@@ -100,7 +104,7 @@ export function analyzeObjstr(blocks: ObjectDictionary<Block>, element: JSXEleme
         throw new TemplateAnalysisError(`Cannot mix class names with block styles.`, {filename, ...prop.loc.start});
       }
     }
-    let result = parts.getResult(blocks);
+    let result = parts.getResult(analysis);
     let rightHandLiteral: BooleanLiteral | undefined = undefined;
     let rightHandExpr = prop.value;
     if (isLiteral(rightHandExpr)) {

@@ -1,7 +1,9 @@
 import c$$ from "@css-blocks/runtime";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
+
 import * as babel from "babel-core";
 import { assert } from "chai";
+import { Analysis } from "css-blocks";
 import { BlockCompiler, Options as CSSBlocksOptions, resolveConfiguration as resolveBlocksConfiguration, StyleMapping } from "css-blocks";
 import { skip, suite, test } from "mocha-typescript";
 import { OptiCSSOptions, OptimizationResult, Optimizer  } from "opticss";
@@ -9,9 +11,9 @@ import * as postcss from "postcss";
 import * as prettier from "prettier";
 import * as testConsole from "test-console";
 
-import Transformer from "../../src";
+import { Rewriter } from "../../src";
+import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
 import { makePlugin } from "../../src/transformer/babel";
-import { Analysis as JSXAnalysis, MetaAnalysis } from "../../src/utils/Analysis";
 import { testParse as parse } from "../util";
 
 const mock = require("mock-fs");
@@ -22,7 +24,7 @@ function minify(s: string) {
   return prettier.format(s).replace(/\n\n/mg, "\n");
 }
 
-function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: CSSBlocksOptions = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult; css: OptimizationResult}> {
+function transform(code: string, analysis: Analysis<"Opticss.JSXTemplate">, cssBlocksOptions: CSSBlocksOptions = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult; css: OptimizationResult}> {
   let filename = analysis.template.identifier;
   let optimizer = new Optimizer(optimizationOpts, templateOpts);
   let blockOpts = resolveBlocksConfiguration(cssBlocksOptions);
@@ -35,7 +37,7 @@ function transform(code: string, analysis: JSXAnalysis, cssBlocksOptions: CSSBlo
     });
   }
   return optimizer.optimize("optimized.css").then(result => {
-    let rewriter = new Transformer.Rewriter();
+    let rewriter = new Rewriter();
     rewriter.blocks[filename] = new StyleMapping(result.styleMapping, blocks, blockOpts, [analysis]);
     let babelResult = babel.transform(code, {
       filename: filename,
@@ -72,7 +74,7 @@ export class Test {
       <div class={bar}></div>;
     `;
 
-    return parse(code, "test.tsx").then((meta: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((meta: Analyzer) => {
       return transform(code, meta.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
@@ -107,7 +109,7 @@ export class Test {
       <div class={style}></div>;
     `;
 
-    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: Analyzer) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
@@ -144,7 +146,7 @@ export class Test {
       <div class={style}></div>;
     `;
 
-    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: Analyzer) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
@@ -179,7 +181,7 @@ export class Test {
       <div class={style}></div>;
     `;
 
-    return parse(code, "test.jsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.jsx").then((analysis: Analyzer) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
@@ -221,7 +223,7 @@ export class Test {
       <div class={style}></div></div>;
     `;
 
-    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: Analyzer) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
@@ -269,7 +271,7 @@ export class Test {
       <div class={bar}><div class={style}></div></div>;
     `;
 
-    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: Analyzer) => {
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
         import c$$ from "@css-blocks/runtime";
@@ -325,7 +327,7 @@ export class Test {
       <div class={bar}><div class={style}></div></div>;
     `;
 
-    return parse(code, "test.jsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.jsx").then((analysis: Analyzer) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
@@ -369,7 +371,7 @@ export class Test {
       <div class={foo.pretty}></div>;
     `;
 
-    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: Analyzer) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
@@ -407,7 +409,7 @@ export class Test {
       }
     `;
 
-    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: Analyzer) => {
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
@@ -442,7 +444,7 @@ export class Test {
       <div class={styles}></div>;
     `;
 
-    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: Analyzer) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
@@ -474,7 +476,7 @@ export class Test {
         return ( <div class={style}></div> );
       }`;
 
-    return parse(code, "test.tsx").then((analysis: MetaAnalysis) => {
+    return parse(code, "test.tsx").then((analysis: Analyzer) => {
       let stderr = testConsole.stderr.inspect();
       return transform(code, analysis.getAnalysis(0)).then(_res => {
         let result = stderr.output;

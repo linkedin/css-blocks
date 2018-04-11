@@ -8,30 +8,25 @@ import {
 import {
   SerializedTemplateInfo,
   TemplateAnalysis as OptimizationTemplateAnalysis,
-  TemplateInfo,
   TemplateInfoFactory,
-  TemplateIntegrationOptions,
   TemplateTypes,
 } from "@opticss/template-api";
-import {
-  ObjectDictionary,
-  objectValues,
-} from "@opticss/util";
+import { ObjectDictionary, objectValues } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
-import { Block, Style } from "../Block";
 import { BlockFactory } from "../BlockParser";
+import { Block, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 
+import { Analyzer } from "./Analyzer";
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
-import { StyleAnalysis } from "./StyleAnalysis";
 import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 
 /**
  * This interface defines a JSON friendly serialization
- * of a {TemplateAnalysis}.
+ * of an {Analysis}.
  */
-export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
+export interface SerializedAnalysis<K extends keyof TemplateTypes> {
   template: SerializedTemplateInfo<K>;
   blocks: ObjectDictionary<string>;
   stylesFound: string[];
@@ -40,36 +35,93 @@ export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
 }
 
 /**
- * A TemplateAnalysis performs book keeping and ensures internal consistency of the block objects referenced
- * within a template. It is designed to be used as part of an AST walk over a template.
+ * An Analysis performs book keeping and ensures internal consistency of the block objects referenced
+ * within a single template. It is designed to be used as part of an AST walk over a template.
  *
  * 1. Call [[startElement startElement()]] at the beginning of an new html element.
  * 2. Call [[addStyle addStyle(style, isDynamic)]] for all the styles used on the current html element.
  * 2. Call [[addExclusiveStyle addExclusiveStyle(alwaysPresent, ...style)]] for all the styles used that are mutually exclusive on the current html element.
  * 3. Call [[endElement endElement()]] when done adding styles for the current element.
  */
-export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAnalysis {
+export class Analysis<K extends keyof TemplateTypes> {
 
-  template: TemplateInfo<K>;
   idGenerator: IdentGenerator;
+  parent?: Analyzer<K>;
+  template: TemplateTypes[K];
+
+  /**
+   * A per-element correlation of styles used. The current correlation is added
+   * to this list when [[endElement]] is called.
+   */
+  // tslint:disable-next-line:prefer-whatever-to-any
+  elements: Map<string, ElementAnalysis<any, any, any>>;
 
   /**
    * A map from a local name for the block to the [[Block]].
    * The local name must be a legal CSS ident/class name but this is not validated here.
    * See [[CLASS_NAME_IDENT]] for help validating a legal class name.
    */
-  blocks: ObjectDictionary<Block>;
+  private blocks: ObjectDictionary<Block>;
+
+  /**
+   * The current element, created when calling [[startElement]].
+   * The current element is unset after calling [[endElement]].
+   */
+  // tslint:disable-next-line:prefer-whatever-to-any
+  private currentElement: ElementAnalysis<any, any, any> | undefined;
+
+  /**
+   * Template validator instance to verify blocks applied to an element.
+   */
+  private validator: TemplateValidator;
+
+  /**
+   * @param template The template being analyzed.
+   */
+  constructor(parent: Analyzer<K>, template: TemplateTypes[K], options?: TemplateValidatorOptions) {
+    this.idGenerator = new IdentGenerator();
+    this.parent = parent;
+    this.template = template;
+    this.blocks = {};
+    this.elements = new Map();
+    this.validator = new TemplateValidator(options);
+  }
 
   /**
    * Return the number of blocks discovered in this Template.
+  */
+  blockCount(): number { return Object.keys(this.blocks).length; }
+
+  /**
+   * Convenience setter for adding a block to the template scope.
    */
-  blockCount(): number {
-    return Object.keys(this.blocks).length;
+  addBlock(name: string, block: Block): Block { return this.blocks[name] = block; }
+
+  /**
+   * Convenience getter for fetching a block from the template scope.
+   */
+  getBlock(name: string): Block | undefined { return this.blocks[name]; }
+
+  /**
+   * Return the number of elements discovered in this Analysis.
+   */
+  elementCount(): number { return this.elements.size; }
+
+  /**
+   * Get the nth element discovered in this Analysis.
+   */
+  getElement<BooleanExpression, StringExpression, TernaryExpression>(idx: number): ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> {
+    let mapIter = this.elements.entries();
+    let el = mapIter.next().value;
+    for (let i = 0; i < idx; i++) {
+      el = mapIter.next().value;
+    }
+    return el[1];
   }
 
   /**
    * Return the number of styles discovered in this Analysis' Template.
-   * This is slow.
+   * TODO: This is slow. We can pre-compute this as elements are added.
    */
   styleCount(): number {
     let c = 0;
@@ -85,55 +137,6 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   }
 
   /**
-   * A per-element correlation of styles used. The current correlation is added
-   * to this list when [[endElement]] is called.
-   */
-  // tslint:disable-next-line:prefer-whatever-to-any
-  elements: Map<string, ElementAnalysis<any, any, any>>;
-
-  /**
-   * The current element, created when calling [[startElement]].
-   * The current element is unset after calling [[endElement]].
-   */
-  // tslint:disable-next-line:prefer-whatever-to-any
-  currentElement: ElementAnalysis<any, any, any> | undefined;
-
-  /**
-   * Return the number of elements discovered in this Analysis.
-   */
-  elementCount(): number {
-    return this.elements.size;
-  }
-
-  /**
-   * Get the nth element discovered in this Analysis.
-   */
-  getElement<BooleanExpression, StringExpression, TernaryExpression>(idx: number): ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> {
-    let mapIter = this.elements.entries();
-    let el = mapIter.next().value;
-    for (let i = 0; i < idx; i++) {
-      el = mapIter.next().value;
-    }
-    return el[1];
-  }
-
-  optimizationOptions(): TemplateIntegrationOptions {
-    // TODO: take this as an argument from the template integration.
-    return {
-      rewriteIdents: {
-        id: false,
-        class: true,
-        omitIdents: {
-          id: [],
-          class: [],
-        },
-      },
-      analyzedAttributes: ["class"],
-      analyzedTagnames: false,
-    };
-  }
-
-  /**
    * Get an Element by ID.
    */
   getElementById<BooleanExpression, StringExpression, TernaryExpression>(id: string): ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> | undefined {
@@ -141,22 +144,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   }
 
   /**
-   * Template validator instance to verify blocks applied to an element.
-   */
-  validator: TemplateValidator;
-
-  /**
-   * @param template The template being analyzed.
-   */
-  constructor(template: TemplateInfo<K>, options?: TemplateValidatorOptions) {
-    this.idGenerator = new IdentGenerator();
-    this.template = template;
-    this.blocks = {};
-    this.elements = new Map();
-    this.validator = new TemplateValidator(options);
-  }
-
-  /**
+   * Returns the local name of the provided in this Analysis' template.
    * @param block The block for which the local name should be returned.
    * @return The local name of the given block.
    */
@@ -177,10 +165,17 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     return null;
   }
 
+  /**
+   * Get a new {ElementAnalysis} object to track an individual element's {Style}
+   * consumption in this {Analysis}' template. Every {ElementAnalysis} returned from
+   * `Analysis.startElement` must be passed to `Analysis.endElement` before startElement
+   * is called again.
+   * @param location  The {SourceLocation} of this element in the template.
+   * @param tagName  Optional. The tag name of the element being represented by this {ElementAnalysis}.
+   * @returns A new {ElementAnalysis}.
+   */
   startElement<BooleanExpression, StringExpression, TernaryExpression>(location: SourceLocation | SourcePosition, tagName?: string): ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> {
-    if (isSourcePosition(location)) {
-      location = {start: location};
-    }
+    if (isSourcePosition(location)) { location = {start: location}; }
     if (this.currentElement) {
       throw new Error("Internal Error: failure to call endElement before previous call to startElement.");
     }
@@ -188,37 +183,46 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     return this.currentElement;
   }
 
-  endElement<BooleanExpression, StringExpression, TernaryExpression>(element: ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>, endPosition?: SourcePosition) {
+  /**
+   * Finish an {ElementAnalysis} object returned from `Analysis.startElement` to
+   * the end location in source and save {Style} usage on the parent {Analysis}.
+   * @param element  The {ElementAnalysis} we are finishing.
+   * @param endPosition  Optional. The location in code where this element tag is closed..
+   */
+  endElement<BooleanExpression, StringExpression, TernaryExpression>(element: ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>, endPosition?: SourcePosition): void {
     if (this.currentElement !== element) {
       throw new Error("Element is not the current element.");
     }
-    if (endPosition) {
-      element.sourceLocation.end = endPosition;
-    }
-    this.addElement(element);
-    this.currentElement = undefined;
-  }
-
-  private addFilename(pos: SourcePosition | undefined) {
-    if (pos && !pos.filename) {
-      pos.filename = this.template.identifier;
-    }
-  }
-
-  addElement<BooleanExpression, StringExpression, TernaryExpression>(element: ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>) {
-    if (!element.id) {
-      element.id = this.idGenerator.nextIdent();
-    }
+    if (endPosition) { element.sourceLocation.end = endPosition; }
+    if (!element.id) { element.id = this.idGenerator.nextIdent(); }
     if (this.elements.get(element.id)) {
       throw new Error(`Internal Error: an element with id = ${element.id} already exists in this analysis`);
     }
-    this.addFilename(element.sourceLocation.start);
-    this.addFilename(element.sourceLocation.end);
-    if (!element.sealed) {
-      element.seal();
-    }
+    this.ensureFilename(element.sourceLocation.start);
+    this.ensureFilename(element.sourceLocation.end);
+    if (!element.sealed) { element.seal(); }
     this.validator.validate(this, element);
     this.elements.set(element.id, element);
+    if (this.parent) {
+      for (let s of [...element.classesFound(false), ...element.attributesFound(false)]) {
+        this.parent.saveStaticStyle(s, this);
+      }
+      for (let s of [...element.classesFound(true), ...element.attributesFound(true)]) {
+        this.parent.saveDynamicStyle(s, this);
+      }
+    }
+    this.currentElement = undefined;
+  }
+
+  /**
+   * Given a {SourcePosition}, ensure that the file name is present. If not,
+   * add the template identifier.
+   * @param post  The {SourcePosition} we are validating.
+   */
+  private ensureFilename(pos: SourcePosition | undefined) {
+    if (pos && !pos.filename) {
+      pos.filename = this.template.identifier;
+    }
   }
 
   /**
@@ -276,11 +280,11 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
   /**
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
    */
-  serialize(): SerializedTemplateAnalysis<K> {
+  serialize(): SerializedAnalysis<K> {
     let blocks = {};
     let stylesFound: string[] = [];
     let elements: ObjectDictionary<SerializedElementAnalysis> = {};
-    let template = this.template.serialize();
+    let template = this.template.serialize() as SerializedTemplateInfo<K>;
     let styleNameMap = new Map<Style, string>();
     let styleIndexes = new Map<Style, number>();
 
@@ -301,8 +305,8 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     });
 
     // Serialize our blocks to a map of their local names.
-    Object.keys(this.blocks).forEach((localname) => {
-      blocks[localname] = this.blocks[localname].identifier;
+    Object.keys(this.blocks).forEach((localName) => {
+      blocks[localName] = this.blocks[localName].identifier;
     });
 
     // Serialize all discovered Elements.
@@ -310,9 +314,8 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       elements[key] = el.serialize(styleIndexes);
     });
 
-    let t: SerializedTemplateInfo<K> = template;
     // Return serialized Analysis object.
-    return { template: t, blocks, stylesFound, elements };
+    return { template, blocks, stylesFound, elements };
   }
 
   /**
@@ -321,13 +324,14 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
    * @param options The plugin options that are used to parse the blocks.
    * @param postcssImpl The instance of postcss that should be used to parse the block's css.
    */
-  static deserialize<K extends keyof TemplateTypes>(
-    serializedAnalysis: SerializedTemplateAnalysis<K>,
+  static async deserialize (
+    serializedAnalysis: SerializedAnalysis<keyof TemplateTypes>,
     blockFactory: BlockFactory,
-  ): Promise<TemplateAnalysis<K>> {
+    parent: Analyzer<keyof TemplateTypes>,
+  ): Promise<Analysis<keyof TemplateTypes>> {
     let blockNames = Object.keys(serializedAnalysis.blocks);
-    let info = TemplateInfoFactory.deserialize<K>(serializedAnalysis.template);
-    let analysis = new TemplateAnalysis(info);
+    let info = TemplateInfoFactory.deserialize<keyof TemplateTypes>(serializedAnalysis.template);
+    let analysis = parent.newAnalysis(info);
     let blockPromises = new Array<Promise<{name: string; block: Block}>>();
     blockNames.forEach(n => {
       let blockIdentifier = serializedAnalysis.blocks[n];
@@ -336,36 +340,35 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
       });
       blockPromises.push(promise);
     });
-    return Promise.all(blockPromises).then(values => {
+    let values = await Promise.all(blockPromises);
 
-      // Create a temporary block so we can take advantage of `Block.lookup`
-      // to easily resolve all BlockPaths referenced in the serialized analysis.
-      // TODO: We may want to abstract this so we're not making a temporary block.
-      let localScope = new Block("analysis-block", "tmp");
-      values.forEach(o => {
-        analysis.blocks[o.name] = o.block;
-        localScope.addBlockReference(o.name, o.block);
-      });
-      let objects = new Array<Style>();
-      serializedAnalysis.stylesFound.forEach(s => {
-        let style = localScope.lookup(s);
-        if (style) {
-          objects.push(style);
-        } else {
-          throw new Error(`Cannot resolve ${s} to a block style.`);
-        }
-      });
-
-      let elementNames = Object.keys(serializedAnalysis.elements);
-      elementNames.forEach((elID) => {
-        let data = serializedAnalysis.elements[elID];
-        let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, undefined, elID);
-        analysis.elements.set(elID, element);
-      });
-
-      // tslint:disable-next-line:prefer-whatever-to-any
-      return <TemplateAnalysis<K>> <any> analysis;
+    // Create a temporary block so we can take advantage of `Block.lookup`
+    // to easily resolve all BlockPaths referenced in the serialized analysis.
+    // TODO: We may want to abstract this so we're not making a temporary block.
+    let localScope = new Block("analysis-block", "tmp");
+    values.forEach(o => {
+      analysis.blocks[o.name] = o.block;
+      localScope.addBlockReference(o.name, o.block);
     });
+    let objects = new Array<Style>();
+    serializedAnalysis.stylesFound.forEach(s => {
+      let style = localScope.lookup(s);
+      if (style) {
+        objects.push(style);
+      } else {
+        throw new Error(`Cannot resolve ${s} to a block style.`);
+      }
+    });
+
+    let elementNames = Object.keys(serializedAnalysis.elements);
+    elementNames.forEach((elID) => {
+      let data = serializedAnalysis.elements[elID];
+      let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, undefined, elID);
+      analysis.elements.set(elID, element);
+    });
+
+    // tslint:disable-next-line:prefer-whatever-to-any
+    return analysis;
   }
 
   forOptimizer(config: ResolvedConfiguration): OptimizationTemplateAnalysis<K> {
@@ -377,3 +380,5 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> implements StyleAna
     return optAnalysis;
   }
 }
+
+export interface IAnalysis<K extends keyof TemplateTypes> extends Analysis<K> {}

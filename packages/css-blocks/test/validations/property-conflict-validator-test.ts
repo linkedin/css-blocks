@@ -3,13 +3,13 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockParser";
-import { TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
-import * as cssBlocks from "../../src/errors";
+import { CssBlockError, TemplateAnalysisError } from "../../src/errors";
 
 import { MockImportRegistry } from "../util/MockImportRegistry";
+import { TestAnalyzer } from "../util/TestAnalyzer";
 import { assertParseError } from "../util/assertError";
 import { indented } from "../util/indented";
 
@@ -61,7 +61,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -112,7 +112,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -146,7 +146,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -197,7 +197,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
 
       `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -259,7 +259,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -321,7 +321,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -414,7 +414,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -474,7 +474,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -556,7 +556,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -619,7 +619,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
 
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -673,7 +673,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -736,7 +736,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -797,7 +797,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -842,7 +842,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -914,7 +914,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.CssBlockError,
+      CssBlockError,
       `No Block named "b" found in scope. (blocks/foo.block.css:3:23)`,
       this.parseBlock(css, "blocks/foo.block.css", options).then(() => {
         assert.deepEqual(1, 1);
@@ -939,7 +939,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.CssBlockError,
+      CssBlockError,
       `No Style ".klass" found on Block "block-b". (blocks/foo.block.css:4:23)`,
       this.parseBlock(css, "blocks/foo.block.css", options).then(() => {
         assert.deepEqual(1, 1);
@@ -966,7 +966,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -997,7 +997,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -1032,7 +1032,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
 
       `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -1063,7 +1063,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -1098,7 +1098,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -1156,7 +1156,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -1188,7 +1188,7 @@ export class TemplateAnalysisTests {
     `;
 
     return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+      TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
@@ -1231,11 +1231,12 @@ export class TemplateAnalysisTests {
 
 function constructElement(block: Block, ...styles: string[]) {
   let info = new Template("templates/my-template.hbs");
-  let analysis = new TemplateAnalysis(info);
+  let analyzer = new TestAnalyzer();
+  let analysis = analyzer.newAnalysis(info);
 
-  analysis.blocks[":scope"] = block;
+  analysis.addBlock(":scope", block);
   block.eachBlockReference((name, ref) => {
-    analysis.blocks[name] = ref;
+    analysis.addBlock(name, ref);
   });
 
   let element = analysis.startElement({ line: 10, column: 32 });

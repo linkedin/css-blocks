@@ -1,4 +1,4 @@
-import { Block, BlockClass, isBlockClass } from "../../Block";
+import { Block, BlockClass, isBlockClass } from "../../BlockTree";
 import { isFalseCondition, isTrueCondition } from "../ElementAnalysis";
 
 import { ErrorCallback, Validator } from "./Validator";

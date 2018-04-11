@@ -1,0 +1,4 @@
+{
+  "$schema": "http://json.schemastore.org/tslint",
+  "extends": "@css-blocks/code-style/configs/tslint.release.json"
+}

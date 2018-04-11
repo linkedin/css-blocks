@@ -2,7 +2,6 @@ import {
   SourceLocation as TemplateSourceLocation,
   SourcePosition as TemplateSourcePosition,
 } from "@opticss/element-analysis";
-import { ObjectDictionary } from "@opticss/util";
 import { Binding, NodePath } from "babel-traverse";
 import {
   AssignmentExpression,
@@ -20,30 +19,48 @@ import {
   Node,
   SourceLocation,
 } from "babel-types";
-import { Block } from "css-blocks";
+import { Analysis, Block, ElementAnalysis } from "css-blocks";
 
-import { isCommonNameForStyling, isStyleFunction } from "../styleFunctions";
-import { MalformedBlockPath, TemplateAnalysisError } from "../utils/Errors";
-import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../utils/ExpressionReader";
-import { isConsoleLogStatement } from "../utils/isConsoleLogStatement";
+import { isCommonNameForStyling, isStyleFunction } from "../../styleFunctions";
+import { MalformedBlockPath, TemplateAnalysisError } from "../../utils/Errors";
+import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../../utils/ExpressionReader";
+import { isConsoleLogStatement } from "../../utils/isConsoleLogStatement";
 
-import { Flags, JSXElementAnalysis, newJSXElementAnalysis } from "./types";
+import { TEMPLATE_TYPE } from "../Template";
+import { JSXAnalysis } from "../index";
+import { BooleanExpression, Flags, JSXElementAnalysis, StringExpression, TernaryExpression } from "../types";
+
+function htmlTagName(el: JSXOpeningElement): string | undefined { return (isJSXIdentifier(el.name) && el.name.name === el.name.name.toLowerCase()) ? el.name.name : undefined; }
+function isLocation(n: object): n is SourceLocation { return !!((<SourceLocation>n).start && (<SourceLocation>n).end && typeof (<SourceLocation>n).start.line === "number"); }
+function isNodePath(n: object): n is NodePath { return !!(<NodePath>n).node; }
 
 export class JSXElementAnalyzer {
+  private analysis: JSXAnalysis;
   private filename: string;
   private classProperties: Flags;
-  private blocks: ObjectDictionary<Block>;
+  private isRewriteMode: boolean;
 
-  constructor(blocks: ObjectDictionary<Block>, filename: string) {
-    this.blocks = blocks;
-    this.filename = filename;
+  constructor(analysis: JSXAnalysis, isRewriteMode = false) {
+    this.analysis = analysis;
+    this.isRewriteMode = isRewriteMode;
+    this.filename = analysis.template.identifier;
     this.classProperties = {
       class: true,
       className: true,
     };
   }
 
-  isClassAttribute(attr: JSXAttribute): boolean {
+  private startElement(location: TemplateSourceLocation, tagName?: string): JSXElementAnalysis {
+    if (this.isRewriteMode) { return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(location, tagName); }
+    return this.analysis.startElement<BooleanExpression, StringExpression, TernaryExpression>(location, tagName);
+  }
+
+  private endElement(element: JSXElementAnalysis) {
+    if (this.isRewriteMode) { return; }
+    return this.analysis.endElement<BooleanExpression, StringExpression, TernaryExpression>(element);
+  }
+
+  private isClassAttribute(attr: JSXAttribute): boolean {
     return isJSXIdentifier(attr.name) && this.classProperties[attr.name.name];
   }
 
@@ -51,9 +68,7 @@ export class JSXElementAnalyzer {
     let attrPath = path.get("attributes.0") as NodePath<JSXAttribute> | undefined;
     let found = new Array<NodePath<JSXAttribute>>();
     while (attrPath && attrPath.node) {
-      if (this.isClassAttribute(attrPath.node)) {
-        found.push(attrPath);
-      }
+      if (this.isClassAttribute(attrPath.node)) { found.push(attrPath); }
       // Any because the type def is incomplete
       // tslint:disable-next-line:prefer-whatever-to-any
       attrPath = (<any>attrPath).getNextSibling() as NodePath<JSXAttribute> | undefined;
@@ -65,42 +80,35 @@ export class JSXElementAnalyzer {
     let assignment = path.node;
     if (assignment.operator !== "=") return;
     let lVal = assignment.left;
+    let element: JSXElementAnalysis | undefined;
     if (isMemberExpression(lVal)) {
       let property = lVal.property;
       if (!lVal.computed && isIdentifier(property) && property.name === "className") {
-        let element = newJSXElementAnalysis(this.location(path));
+        element = this.startElement(this.location(path));
         this.analyzeClassExpression(path.get("right") as NodePath<Expression>, element);
-        if (element.hasStyles()) {
-          return element;
-        }
+        this.endElement(element);
       }
     }
-    return;
+    return element;
   }
 
   analyzeJSXElement(path: NodePath<JSXOpeningElement>): JSXElementAnalysis | undefined {
     let el = path.node;
 
     // We don't care about elements with no attributes;
-    if (!el.attributes || el.attributes.length === 0) {
-      return;
-    }
+    if (!el.attributes || el.attributes.length === 0) { return; }
 
     let classAttrs = this.classAttributePaths(path);
     // If/When we add state attributes, we should throw an error if those are set before exiting.
     if (classAttrs.length === 0) return;
 
-    let element = newJSXElementAnalysis(this.location(path), htmlTagName(el));
+    let element = this.startElement(this.location(path), htmlTagName(el));
 
-    for (let classAttr of classAttrs) {
-      this.analyzeClassAttribute(classAttr, element);
-    }
+    for (let classAttr of classAttrs) { this.analyzeClassAttribute(classAttr, element); }
 
-    // el.attributes.forEach((attr: JSXAttribute) => {
     // TODO: implement state attributes when it is supported.
-    // Look up (optionally block-scoped) states against the state containers found in the class attribute.
-    // add them here accordingly.
-    // });
+
+    this.endElement(element);
 
     return element;
   }
@@ -112,8 +120,8 @@ export class JSXElementAnalyzer {
       loc = loc.loc;
     }
     let location: TemplateSourceLocation = {
-      start: {...loc.start},
-      end: {...loc.end},
+      start: { ...loc.start },
+      end: { ...loc.end },
     };
     location.start.filename = this.filename;
     location.end!.filename = this.filename;
@@ -152,7 +160,7 @@ export class JSXElementAnalyzer {
         if (identBinding.kind === "module") {
           let name = identifier.name;
           // Check if there is a block of this name imported. If so, save style and exit.
-          let block: Block | undefined = this.blocks[name];
+          let block: Block | undefined = this.analysis.getBlock(name);
           if (block) {
             element.addStaticClass(block.rootClass);
           } else {
@@ -184,7 +192,7 @@ export class JSXElementAnalyzer {
       // Discover direct references to an imported block.
       // Ex: `blockName.foo` || `blockName['bar']` || `blockName.bar()`
       let parts: ExpressionReader = new ExpressionReader(expression.node, this.filename);
-      let expressionResult = parts.getResult(this.blocks);
+      let expressionResult = parts.getResult(this.analysis);
       let blockClass = expressionResult.blockClass;
       if (isBlockStateGroupResult(expressionResult) || isBlockStateResult(expressionResult)) {
         throw new Error("internal error, not expected on a member expression");
@@ -199,7 +207,7 @@ export class JSXElementAnalyzer {
           // It's not a style helper function, assume it's a static reference to a state.
           try {
             let parts: ExpressionReader = new ExpressionReader(callExpr, this.filename);
-            let expressionResult = parts.getResult(this.blocks);
+            let expressionResult = parts.getResult(this.analysis);
             let blockClass = expressionResult.blockClass;
             if (isBlockStateGroupResult(expressionResult)) {
               element.addDynamicGroup(blockClass, expressionResult.stateGroup, expressionResult.dynamicStateExpression, false);
@@ -226,7 +234,7 @@ export class JSXElementAnalyzer {
           throw new TemplateAnalysisError(styleFn.message, styleFn.location);
         }
       } else {
-        styleFn.analyze(this.blocks, element, this.filename, styleFn, callExpr);
+        styleFn.analyze(this.analysis, element, this.filename, styleFn, callExpr);
       }
     } else {
       // TODO handle ternary expressions like style-if in handlebars?
@@ -268,28 +276,30 @@ export class JSXElementAnalyzer {
         throw new TemplateAnalysisError(styleFunc.message, { filename: this.filename, ...styleFunc.location });
       }
     }
-    styleFunc.analyze(this.blocks, element, this.filename, styleFunc, func);
+    styleFunc.analyze(this.analysis, element, this.filename, styleFunc, func);
   }
 }
 
-function htmlTagName(el: JSXOpeningElement): string | undefined {
-  if (isJSXIdentifier(el.name) && el.name.name === el.name.name.toLowerCase()) {
-    return el.name.name;
-  }
-  return;
-}
+/**
+ * Babel visitors we can pass to `babel-traverse` to run analysis on a given JSX file.
+ * @param analysis The Analysis object to store our results in.
+ */
+export function elementVisitor(analysis: Analysis<TEMPLATE_TYPE>): object {
+  let elementAnalyzer = new JSXElementAnalyzer(analysis);
 
-function isLocation(n: object): n is SourceLocation {
-  if ((<SourceLocation>n).start && (<SourceLocation>n).end && typeof (<SourceLocation>n).start.line === "number") {
-    return true;
-  } else {
-    return false;
-  }
-}
-function isNodePath(n: object): n is NodePath {
-  if ((<NodePath>n).node) {
-    return true;
-  } else {
-    return false;
-  }
+  return {
+    AssignmentExpression(path: NodePath<AssignmentExpression>): void {
+      elementAnalyzer.analyzeAssignment(path);
+    },
+    //  TODO: handle the `h()` function?
+
+    /**
+     * Primary analytics parser for Babylon. Crawls all JSX Elements and their attributes
+     * and saves all discovered block references. See README for valid JSX CSS Block APIs.
+     * @param path The JSXOpeningElement Babylon path we are processing.
+     */
+    JSXOpeningElement(path: NodePath<JSXOpeningElement>): void {
+      elementAnalyzer.analyzeJSXElement(path);
+    },
+  };
 }

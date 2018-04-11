@@ -1,8 +1,8 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { Block } from "../../src/Block";
 import { ERRORS } from "../../src/BlockSyntax";
+import { Block } from "../../src/BlockTree";
 
 @suite("Block object lookup")
 export class LookupTests {

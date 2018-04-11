@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { Block } from "css-blocks";
 import { suite, test } from "mocha-typescript";
 
-import { MetaAnalysis } from "../src/utils/Analysis";
+import { CSSBlocksJSXAnalyzer as Analyzer } from "../src/Analyzer";
 
 import { testParse as parse } from "./util";
 
@@ -15,7 +15,7 @@ export class Test {
   }
 
   @test "imports for non-css-block related files are ignored"() {
-    return parse(`import foo from 'bar';`).then((analysis: MetaAnalysis) => {
+    return parse(`import foo from 'bar';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 0);
     });
   }
@@ -24,9 +24,9 @@ export class Test {
     mock({
       "bar.block.css": ":scope { color: red; }",
     });
-    return parse(`import bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
+    return parse(`import bar from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -34,9 +34,9 @@ export class Test {
     mock({
       "bar.block.css": ":scope { color: red; }",
     });
-    return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
+    return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -44,9 +44,9 @@ export class Test {
     mock({
       "bar.block.css": ":scope { color: red; }",
     });
-    return parse(`import bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
+    return parse(`import bar from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -54,9 +54,9 @@ export class Test {
     mock({
       "bar.block.css": ":scope { color: red; }",
     });
-    return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
+    return parse(`import { default as bar } from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -64,9 +64,9 @@ export class Test {
     mock({
       "bar.block.css": ":scope { color: red; }",
     });
-    return parse(`import * as bar from 'bar.block.css';`).then((analysis: MetaAnalysis) => {
+    return parse(`import * as bar from 'bar.block.css';`).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 1);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
     });
   }
 
@@ -78,10 +78,10 @@ export class Test {
     return parse(`
       import * as bar from 'bar.block.css';
       import baz from 'baz.block.css';
-    `).then((analysis: MetaAnalysis) => {
+    `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 2);
-      assert.equal(analysis.getAnalysis(0).blocks["bar"].constructor, Block);
-      assert.equal(analysis.getAnalysis(0).blocks["baz"].constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("bar")!.constructor, Block);
+      assert.equal(analysis.getAnalysis(0).getBlock("baz")!.constructor, Block);
     });
   }
 
@@ -93,10 +93,10 @@ export class Test {
     return parse(`
       import * as foo from 'bar.block.css';
       import biz from 'baz.block.css';
-    `).then((analysis: MetaAnalysis) => {
+    `).then((analysis: Analyzer) => {
       assert.equal(analysis.blockDependencies().size, 2);
-      assert.ok(analysis.getAnalysis(0).blocks["foo"]);
-      assert.ok(analysis.getAnalysis(0).blocks["biz"]);
+      assert.ok(analysis.getAnalysis(0).getBlock("foo"));
+      assert.ok(analysis.getAnalysis(0).getBlock("biz"));
     });
   }
 

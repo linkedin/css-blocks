@@ -1,8 +1,8 @@
 // tslint:disable:no-console
 import * as postcss from "postcss";
 
-import { Block } from "../../Block";
 import { BLOCK_DEBUG, parseBlockDebug } from "../../BlockSyntax";
+import { Block } from "../../BlockTree";
 import { ResolvedConfiguration } from "../../configuration";
 
 /**

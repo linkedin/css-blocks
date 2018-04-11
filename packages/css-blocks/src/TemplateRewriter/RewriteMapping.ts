@@ -12,7 +12,7 @@ import {
 import { assertNever, Maybe, maybe, ObjectDictionary, objectValues } from "@opticss/util";
 import { inspect } from "util";
 
-import { Style } from "../Block";
+import { Style } from "../BlockTree";
 
 import { ClassRewrite, IndexedClassRewrite } from "./ClassRewrite";
 

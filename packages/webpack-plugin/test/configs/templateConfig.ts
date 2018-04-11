@@ -6,15 +6,10 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from "@opticss/template-api";
-import { ObjectDictionary, whatever } from "@opticss/util";
+import { whatever } from "@opticss/util";
 import {
-  Block,
   BlockFactory,
-  MetaTemplateAnalysis,
-  MultiTemplateAnalyzer,
   resolveConfiguration as resolveBlocksConfiguration,
-  StyleAnalysis,
-  TemplateAnalysis,
 } from "css-blocks";
 import * as path from "path";
 import * as postcss from "postcss";
@@ -22,6 +17,7 @@ import { Configuration as WebpackConfiguration } from "webpack";
 import * as merge from "webpack-merge";
 
 import { CssAssets, CssBlocksPlugin } from "../../src/index";
+import { TestAnalyzer } from "../util/TestAnalyzer";
 import { BLOCK_FIXTURES_DIRECTORY } from "../util/testPaths";
 
 import { config as defaultOutputConfig } from "./defaultOutputConfig";
@@ -55,51 +51,6 @@ export class TestTemplateInfo implements TemplateInfo<"WebpackPlugin.TestTemplat
 
 TemplateInfoFactory.constructors["WebpackPlugin.TestTemplate"] = TestTemplateInfo.deserialize;
 
-class TestAnalysis extends TemplateAnalysis<"WebpackPlugin.TestTemplate"> {
-  blocks: ObjectDictionary<Block> = {};
-  constructor(template: TestTemplateInfo) {
-    super(template);
-  }
-  addBlock(name: string, block: Block) {
-    this.blocks[name] = block;
-  }
-  eachAnalysis(cb: (a: StyleAnalysis) => void) {
-    cb(this);
-  }
-  blockDependencies() {
-    let deps = new Set<Block>();
-    Object.keys(this.blocks).forEach(k => {
-      deps.add(this.blocks[k]);
-    });
-    return deps;
-  }
-  transitiveBlockDependencies() {
-    return this.blockDependencies();
-  }
-}
-
-class TestMetaTemplateAnalysis extends MetaTemplateAnalysis {
-  constructor() {
-    super();
-    this.analyses.push(new TestAnalysis(new TestTemplateInfo("test.html", 1)));
-  }
-}
-
-class TestTemplateAnalyzer implements MultiTemplateAnalyzer {
-  blockFactory: BlockFactory;
-  analysis: TestMetaTemplateAnalysis;
-  constructor(a: TestMetaTemplateAnalysis, factory: BlockFactory) {
-    this.analysis = a;
-    this.blockFactory = factory;
-  }
-  analyze(): Promise<MetaTemplateAnalysis> {
-    return Promise.resolve(this.analysis);
-  }
-  reset() {
-    // pass
-  }
-}
-
 function fixture(name: string) {
   return path.resolve(BLOCK_FIXTURES_DIRECTORY, name + ".block.css");
 }
@@ -110,10 +61,11 @@ export function config(): Promise<WebpackConfiguration> {
   let block1 = factory.getBlock(fixture("concat-1"));
   let block2 = factory.getBlock(fixture("concat-2"));
   return Promise.all([block1, block2]).then(blocks => {
-    let analysis = new TestMetaTemplateAnalysis();
+    let analyzer = new TestAnalyzer();
+    analyzer.newAnalysis(new TestTemplateInfo("test.html", 1));
     blocks.forEach((b, i) => {
-      analysis.eachAnalysis(a => {
-        a.blocks[`concat-${i}`] = b;
+      analyzer.eachAnalysis(a => {
+        a.addBlock(`concat-${i}`, b);
         let el = a.startElement(POSITION_UNKNOWN);
         el.addStaticClass(b.rootClass);
         a.endElement(el);
@@ -122,7 +74,7 @@ export function config(): Promise<WebpackConfiguration> {
 
     let cssBlocks = new CssBlocksPlugin({
       outputCssFile: "css-blocks.css",
-      analyzer: new TestTemplateAnalyzer(analysis, factory),
+      analyzer,
     });
 
     return merge(defaultOutputConfig(), {

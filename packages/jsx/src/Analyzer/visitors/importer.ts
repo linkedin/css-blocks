@@ -1,3 +1,6 @@
+import * as fs from "fs";
+import * as path from "path";
+
 import { ObjectDictionary } from "@opticss/util";
 import { NodePath } from "babel-traverse";
 import {
@@ -11,15 +14,14 @@ import {
   VariableDeclaration,
   VariableDeclarator,
 } from "babel-types";
-import { Block, BlockFactory } from "css-blocks";
+import { Analysis, Block } from "css-blocks";
 import * as debugGenerator from "debug";
-import * as fs from "fs";
-import * as path from "path";
 
-import { JSXAnalyzerOptions, parseFileWith } from "../index";
-import { Analysis, JSXTemplate } from "../utils/Analysis";
-import { ErrorLocation, TemplateImportError } from "../utils/Errors";
-import { isBlockFilename } from "../utils/isBlockFilename";
+import { JSXTemplate, TEMPLATE_TYPE } from "../../Analyzer/Template";
+import { CssBlocksJSXOptions } from "../../options";
+import { ErrorLocation, TemplateImportError } from "../../utils/Errors";
+import { isBlockFilename } from "../../utils/isBlockFilename";
+import { CSSBlocksJSXAnalyzer } from "../index";
 
 const debug = debugGenerator("css-blocks:jsx");
 
@@ -50,7 +52,14 @@ function throwIfRegistered(name: string, blockRegistry: ObjectDictionary<number>
  * @param analysis The Analysis object used to parse this file.
  * @param blockFactory The BlockFactory we will use to ensure the Blocks and BlockPromised we wait for are singletons.
  */
-export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: BlockFactory, options: JSXAnalyzerOptions) {
+export function importVisitor(
+  file: JSXTemplate,
+  analyzer: CSSBlocksJSXAnalyzer,
+  analysis: Analysis<TEMPLATE_TYPE>,
+  blockPromises: Promise<Block>[],
+  childTemplatePromises: Promise<Analysis<TEMPLATE_TYPE>>[],
+  options: CssBlocksJSXOptions,
+) {
 
   // Keep a running record of local block names while traversing so we can check
   // for name conflicts elsewhere in the file.
@@ -95,17 +104,12 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       // If this is a jsx or tsx file, parse it with the same analysis object.
       if (fs.existsSync(absoluteFilePath) && VALID_FILE_EXTENSIONS[parsedPath.ext]) {
         debug(`Analyzing discovered dependency: ${absoluteFilePath}`);
-        analysis.parent.analysisPromises.push(parseFileWith(absoluteFilePath, analysis.parent, blockFactory, options));
+        childTemplatePromises.push(analyzer.parseFile(absoluteFilePath));
         return;
       }
 
       // If this is not a CSS Blocks file, return.
-      if (!isBlockFilename(filePath)) {
-        return;
-      }
-
-      // TODO: Make import prefix configurable
-      filePath = filePath.replace("cssblock!", "");
+      if (!isBlockFilename(filePath)) { return; }
 
       // For each specifier in this block import statement:
       let localName = "";
@@ -126,28 +130,28 @@ export function importer(file: JSXTemplate, analysis: Analysis, blockFactory: Bl
       });
 
       // Try to fetch an existing Block Promise. If it does not exist, parse CSS Block.
-      let res: Promise<Block> = analysis.parent.blockPromises[blockPath];
+      let res: Promise<Block> = analyzer.blockPromises[blockPath];
       if (!res) {
-        res = blockFactory.getBlockFromPath(blockPath).catch((err) => {
+        res = analyzer.blockFactory.getBlockFromPath(blockPath).catch((err) => {
           throw new TemplateImportError(`Error parsing block import "${filePath}". Failed with:\n\n"${err.message}"\n\n`, {
             filename: file.identifier,
             line: nodePath.node.loc.start.line,
             column: nodePath.node.loc.start.column,
           });
         });
-        analysis.parent.blockPromises[blockPath] = res;
+        analyzer.blockPromises.set(blockPath, res);
       }
 
       // When block parsing is done, add to analysis object.
       res.then((block): Block => {
-        analysis.blocks[localName] = block;
+        analysis.addBlock(localName, block);
         return block;
       })
 
       // Failures handled upstream by Promise.all() in `parseWith` method. Swallow error.
       .catch(() => {});
 
-      analysis.blockPromises.push(res);
+      blockPromises.push(res);
 
     },
 

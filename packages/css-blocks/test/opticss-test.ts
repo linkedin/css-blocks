@@ -14,28 +14,15 @@ import { suite, test } from "mocha-typescript";
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";
 
-import { AttrValue, Block, BlockClass } from "../src/Block";
+import { Analysis, Analyzer } from "../src/Analyzer";
+import { ElementAnalysis } from "../src/Analyzer";
 import { BlockCompiler } from "../src/BlockCompiler";
-import { BlockFactory } from "../src/BlockParser";
-import { TemplateAnalysis } from "../src/TemplateAnalysis";
-import { ElementAnalysis } from "../src/TemplateAnalysis/ElementAnalysis";
+import { AttrValue, Block, BlockClass } from "../src/BlockTree";
 import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
-import { Options, resolveConfiguration } from "../src/configuration";
-
-type BlockAndRoot = [Block, postcss.Container];
-
-type Analysis = TemplateAnalysis<"Opticss.Template">;
+import { resolveConfiguration } from "../src/configuration";
 
 @suite("Optimization")
 export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: Options, blockName = "optimized"): Promise<BlockAndRoot> {
-    let config = resolveConfiguration(opts);
-    let factory = new BlockFactory(config, postcss);
-    let root = postcss.parse(css, {from: filename});
-    return factory.parse(root, filename, blockName).then((block) => {
-      return <BlockAndRoot>[block, root];
-    });
-  }
 
   private useAttrs(element: ElementAnalysis<whatever, whatever, whatever>, klass: BlockClass) {
     for (let attribute of klass.getAttributes()) {
@@ -48,10 +35,10 @@ export class TemplateAnalysisTests {
     }
   }
   private useBlockStyles(
-    analysis: Analysis, block: Block, blockName: string,
+    analysis: Analysis<"Opticss.Template">, block: Block, blockName: string,
     useAttrsCallback?: (container: BlockClass, element: ElementAnalysis<whatever, whatever, whatever>) => void,
   ) {
-    analysis.blocks[blockName] = block;
+    analysis.addBlock(blockName, block);
 
     for (let c of block.classes) {
       let element = analysis.startElement(POSITION_UNKNOWN);
@@ -67,38 +54,69 @@ export class TemplateAnalysisTests {
   @test "optimizes css"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let self = this;
+    let filename = "blocks/foo.block.css";
     let css = clean`
       :scope { color: blue; font-size: 20px; }
       [state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; color: red; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
-      this.useBlockStyles(analysis, block, "", (container, el) => {
-        if (container.asSource() === ".asdf") {
-          el.addDynamicAttr(container, block.find(".asdf[state|larger]") as AttrValue, true);
-        } else {
-          this.useAttrs(el, container);
-        }
-      });
-      let optimizerAnalysis = analysis.forOptimizer(config);
-      let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
+    class TestAnalyzer extends Analyzer<"Opticss.Template"> {
+      analyze(): Promise<TestAnalyzer> {
+        let analysis = this.newAnalysis(info);
+        let root = postcss.parse(css, { from: filename });
+
+        return this.blockFactory.parse(root, filename, "optimized").then((block: Block) => {
+          self.useBlockStyles(analysis, block, "", (container, el) => {
+            if (container.asSource() === ".asdf") {
+              el.addDynamicAttr(container, block.find(".asdf[state|larger]") as AttrValue, true);
+            } else {
+              self.useAttrs(el, container);
+            }
+          });
+        }).then(() => {
+          return this;
+        });
+      }
+      get optimizationOptions() {
+        return {
+          rewriteIdents: {
+            id: false,
+            class: true,
+            omitIdents: {
+              id: [],
+              class: [],
+            },
+          },
+          analyzedAttributes: ["class"],
+          analyzedTagnames: false,
+        };
+      }
+    }
+    let analyzer = new TestAnalyzer();
+    return analyzer.analyze().then(async (analyzer: TestAnalyzer) => {
       let compiler = new BlockCompiler(postcss, config);
-      let compiled = compiler.compile(block, block.stylesheet!, analysis);
-      optimizer.addSource({
-        content: compiled.toResult({to: "blocks/foo.block.css"}),
-      });
-      optimizer.addAnalysis(optimizerAnalysis);
-      return optimizer.optimize("result.css").then((optimized) => {
+      let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
+      let block = await analyzer.blockFactory.getBlock(filename);
+      let compiled = compiler.compile(block, block.stylesheet!, analyzer);
+      for (let analysis of analyzer.analyses()) {
+        let optimizerAnalysis = analysis.forOptimizer(config);
+        optimizer.addSource({
+          content: compiled.toResult({to: "blocks/foo.block.css"}),
+        });
+        optimizer.addAnalysis(optimizerAnalysis);
+      }
+      return optimizer.optimize("result.css").then(async (optimized) => {
         assert.deepEqual(optimized.output.content.toString().trim(), clean`
           .c { font-size: 20px; }
           .d { color: blue; }
           .e { color: red; }
           .f { font-size: 26px; }
         `);
-        let blockMapping = new StyleMapping(optimized.styleMapping, [block], config, [analysis]);
-        let it = analysis.elements.values();
+        let analyses = analyzer.analyses();
+        let blockMapping = new StyleMapping<"Opticss.Template">(optimized.styleMapping, [block], config, analyses);
+        let it = analyses[0].elements.values();
         let element1 = it.next().value;
         let rewrite1 = blockMapping.rewriteMapping(element1);
         assert.deepEqual([...rewrite1.staticClasses].sort(), ["c", "d", "e"]);

@@ -1,4 +1,3 @@
-import { ObjectDictionary } from "@opticss/util";
 import { Node } from "babel-traverse";
 import {
   BooleanLiteral,
@@ -18,8 +17,8 @@ import {
 import { Attribute, AttrValue, Block, BlockClass, isBlockClass } from "css-blocks";
 import * as debugGenerator from "debug";
 
+import { JSXAnalysis } from "../Analyzer";
 import { ErrorLocation, MalformedBlockPath } from "../utils/Errors";
-
 const debug = debugGenerator("css-blocks:jsx");
 
 const isValidSegment = /^[a-z|A-Z|_|$][a-z|A-Z|_|$|1-9]*$/;
@@ -151,7 +150,7 @@ export class ExpressionReader {
    *
    * localBlocks is a dictionary of local block names to the Block.
    */
-  getResult(localBlocks: ObjectDictionary<Block>): BlockExpressionResult {
+  getResult(analyzer: JSXAnalysis): BlockExpressionResult {
     // TODO: Consider whether some parts of this lookup can be extracted to
     // css-blocks proper so that errors and logic are consistent.
 
@@ -162,7 +161,7 @@ export class ExpressionReader {
           throw new MalformedBlockPath("No block name specified.", this.loc);
       }
     }
-    let block = localBlocks[this.block!];
+    let block = analyzer.getBlock(this.block!);
     let blockClass: BlockClass | undefined;
     if (!block) {
       throw new MalformedBlockPath(`No block named ${this.block} exists in this scope.`, this.loc);

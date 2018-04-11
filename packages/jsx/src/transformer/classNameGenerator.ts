@@ -44,7 +44,7 @@ import {
   JSXElementAnalysis,
   StringExpression as StringAST,
   TernaryExpression as TernaryAST,
-} from "../analyzer/types";
+} from "../Analyzer/types";
 
 // TODO: detect conflicts and pick an available name.
 export const HELPER_FN_NAME = "c$$";
