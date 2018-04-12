@@ -56,7 +56,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         },
       },
       analyzedAttributes: ["class"],
-      analyzedTagnames: false,
+      analyzedTagnames: true,
     };
   }
 
