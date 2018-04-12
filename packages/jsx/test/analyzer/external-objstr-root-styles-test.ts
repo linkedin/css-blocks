@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { MetaAnalysis } from "../../src/utils/Analysis";
+import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
 import { testParse as parse } from "../util";
 
 const mock = require("mock-fs");
@@ -29,7 +29,7 @@ export class Test {
         return ( <div class={style}></div> );
       }`,
     ).then(
-      (_analysis: MetaAnalysis) => {
+      (_analysis: Analyzer) => {
         assert.ok(false, "should not have succeeded.");
       },
       e => {
@@ -52,8 +52,8 @@ export class Test {
         });
         return ( <div class={style}></div> );
       }`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
@@ -78,8 +78,8 @@ export class Test {
         });
         return ( <div class={style}></div> );
       }`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
@@ -104,8 +104,8 @@ export class Test {
         });
         return ( <div className={style}></div> );
       }`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
@@ -130,8 +130,8 @@ export class Test {
         });
         return ( <div className={style}></div> );
       }`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
@@ -156,8 +156,8 @@ export class Test {
         });
         return ( <div class={style} className={style}></div> );
       }`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
@@ -187,8 +187,8 @@ export class Test {
         });
         return ( <div class={style} className={otherStyle}></div> );
       }`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(Object.keys(analysis.elements), ["a"]);
@@ -216,7 +216,7 @@ export class Test {
         return ( <div class={style}></div> );
       }`,
     ).then(
-      (_analysis: MetaAnalysis) => {
+      (_analysis: Analyzer) => {
         assert.ok(false, "should not have succeeded.");
       },
       e => {
@@ -241,7 +241,7 @@ export class Test {
         return ( <div class={style}></div> );
       }`,
     ).then(
-      (_analysis: MetaAnalysis) => {
+      (_analysis: Analyzer) => {
         assert.ok(false, "should not have succeeded.");
       },
       e => {
@@ -265,7 +265,7 @@ export class Test {
         console.log(style);
         return ( <div class={style}></div> );
       }`,
-    ).then((_analysis: MetaAnalysis) => {
+    ).then((_analysis: Analyzer) => {
     });
   }
 
@@ -292,8 +292,8 @@ export class Test {
         });
         return ( <div class={style} className={otherStyle}></div> );
       }`,
-    ).then((metaAnalysis: MetaAnalysis) => {
-      let result = metaAnalysis.serialize();
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(Object.keys(analysis.elements), ["a"]);

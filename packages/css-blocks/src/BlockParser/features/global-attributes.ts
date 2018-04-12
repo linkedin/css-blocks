@@ -2,8 +2,8 @@ import { parseSelector } from "opticss";
 import * as postcss from "postcss";
 import selectorParser = require("postcss-selector-parser");
 
-import { Block } from "../../Block";
 import { BLOCK_GLOBAL } from "../../BlockSyntax";
+import { Block } from "../../BlockTree";
 import { sourceLocation as loc } from "../../SourceLocation";
 import * as errors from "../../errors";
 import { toAttrToken } from "../block-intermediates";

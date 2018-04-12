@@ -3,12 +3,12 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as postcss from "postcss";
 
-import { Block, BlockClass } from "../../src/Block";
 import { BlockFactory } from "../../src/BlockParser";
-import { TemplateAnalysis } from "../../src/TemplateAnalysis";
+import { Block, BlockClass } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
 
+import { TestAnalyzer } from "../util/TestAnalyzer";
 import { assertParseError } from "../util/assertError";
 import { setupImporting } from "../util/setupImporting";
 
@@ -27,7 +27,8 @@ export class TemplateAnalysisTests {
 
   @test "throws when states are applied without their parent root"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analyzer = new TestAnalyzer();
+    let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -38,7 +39,7 @@ export class TemplateAnalysisTests {
       cssBlocks.TemplateAnalysisError,
       'Cannot use state "[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
-        analysis.blocks[""] = block;
+        analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test]")!);
         analysis.endElement(element);
@@ -48,7 +49,8 @@ export class TemplateAnalysisTests {
 
   @test "throws when states are applied without their parent BlockClass"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analyzer = new TestAnalyzer();
+    let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
     let css = `
@@ -60,7 +62,7 @@ export class TemplateAnalysisTests {
       cssBlocks.TemplateAnalysisError,
       'Cannot use state ".foo[state|test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
-        analysis.blocks[""] = block;
+        analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         let klass = block.getClass("foo") as BlockClass;
         element.addStaticAttr(klass, klass.getAttributeValue("[state|test]")!);
@@ -72,7 +74,8 @@ export class TemplateAnalysisTests {
 
   @test "Throws when inherited states are applied without their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analyzer = new TestAnalyzer();
+    let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 
     imports.registerSource(
@@ -99,9 +102,9 @@ export class TemplateAnalysisTests {
       cssBlocks.TemplateAnalysisError,
       'Cannot use state ".pretty[state|color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
-        let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
-        analysis.blocks[""] = block;
-        analysis.blocks["a"] = aBlock;
+        let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
+        analysis.addBlock("", block);
+        analysis.addBlock("a", aBlock);
         let element = analysis.startElement({ line: 10, column: 32 });
         let klass = block.getClass("pretty") as BlockClass;
         let state = klass.resolveAttributeValue("[state|color=yellow]")!;
@@ -114,7 +117,8 @@ export class TemplateAnalysisTests {
 
   @test "Inherited states pass validation when applied with their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analysis = new TemplateAnalysis(info);
+    let analyzer = new TestAnalyzer();
+    let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 
     imports.registerSource(
@@ -138,9 +142,9 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
-      let aBlock = analysis.blocks["a"] = block.getReferencedBlock("a") as Block;
-      analysis.blocks[""] = block;
-      analysis.blocks["a"] = aBlock;
+      let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
+      analysis.addBlock("", block);
+      analysis.addBlock("a", aBlock);
       let element = analysis.startElement({ line: 10, column: 32 });
       let klass = block.getClass("pretty") as BlockClass;
       let state = klass.resolveAttributeValue("[state|color=yellow]");

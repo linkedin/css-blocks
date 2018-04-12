@@ -28,7 +28,7 @@ import {
   isAttrValue,
   isBlockClass,
   Style,
-} from "../Block";
+} from "../BlockTree";
 import {
   ResolvedConfiguration,
 } from "../configuration";

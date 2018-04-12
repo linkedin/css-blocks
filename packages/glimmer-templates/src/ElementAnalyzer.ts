@@ -4,6 +4,7 @@ import { assertNever } from "@opticss/util";
 import { AttrValue, Block, BlockClass, DynamicClasses, ElementAnalysis, ResolvedConfiguration as CSSBlocksConfiguration } from "css-blocks";
 import * as debugGenerator from "debug";
 
+import { GlimmerAnalysis } from "./Analyzer";
 import { ResolvedFile } from "./GlimmerProject";
 import { cssBlockError } from "./utils";
 
@@ -29,17 +30,21 @@ const STYLE_UNLESS: "style-unless" = "style-unless";
 const debug = debugGenerator("css-blocks:glimmer:analyzer");
 
 export class ElementAnalyzer {
+  analysis: GlimmerAnalysis;
+  block: Block;
   template: ResolvedFile;
   cssBlocksOpts: CSSBlocksConfiguration;
-  block: Block;
-  constructor(block: Block, template: ResolvedFile, cssBlocksOpts: CSSBlocksConfiguration) {
-    this.block = block;
-    this.template = template;
+
+  constructor(analysis: GlimmerAnalysis, cssBlocksOpts: CSSBlocksConfiguration) {
+    this.analysis = analysis;
+    this.block = analysis.getBlock("")!; // Local block check done elsewhere
+    this.template = analysis.template;
     this.cssBlocksOpts = cssBlocksOpts;
   }
   analyze(node: AST.ElementNode, atRootElement: boolean): AnalysisElement {
-    let element = new ElementAnalysis<null, null, null>(nodeLocation(node), node.tag);
+    let element = this.analysis.startElement<null, null, null>(nodeLocation(node), node.tag);
     this._analyze(node, atRootElement, {element, storeConditionals: false});
+    this.analysis.endElement(element);
     return element;
   }
   analyzeForRewrite(node: AST.ElementNode, atRootElement: boolean): TemplateElement {

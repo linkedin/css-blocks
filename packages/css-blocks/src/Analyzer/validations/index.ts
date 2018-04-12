@@ -1,8 +1,9 @@
+import { TemplateTypes } from "@opticss/template-api";
 import { ObjectDictionary } from "@opticss/util";
 
 import * as errors from "../../errors";
+import { Analysis } from "../Analysis";
 import { ElementAnalysis } from "../ElementAnalysis";
-import { StyleAnalysis } from "../StyleAnalysis";
 
 import { Validator } from "./Validator";
 import { attributeGroupValidator } from "./attribute-group-validator";
@@ -94,7 +95,7 @@ export class TemplateValidator {
    * @param locInfo Location info for the elements being validated.
    */
   // tslint:disable-next-line:prefer-whatever-to-any
-  validate(templateAnalysis: StyleAnalysis, element: ElementAnalysis<any, any, any>) {
+  validate(templateAnalysis: Analysis<keyof TemplateTypes>, element: ElementAnalysis<any, any, any>) {
 
     function err (message: string, locInfo?: errors.ErrorLocation | undefined | null, details?: string) {
       throw new errors.TemplateAnalysisError(
