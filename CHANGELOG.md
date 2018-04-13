@@ -31,4 +31,4 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **rewriter:** Raise an error if there's any stray references to a block variable. ([53b0cea](https://github.com/css-blocks/css-blocks/commit/53b0cea))
 * Allow css assets to be processed after concatenation. ([8d5ff5a](https://github.com/css-blocks/css-blocks/commit/8d5ff5a))
 * Allow styles to be set to className properties for dynamic change to the class attribute. ([5df7a7e](https://github.com/css-blocks/css-blocks/commit/5df7a7e))
-* **webpack-plugin:** Extract webpack rewriting to its own plugin so that a single analysis can be used in other builds -- eg for SSR builds. ([77d6398](https://github.com/css-blocks/css-blocks/commit/77d6398))
+* **webpack:** Extract webpack rewriting to its own plugin so that a single analysis can be used in other builds -- eg for SSR builds. ([77d6398](https://github.com/css-blocks/css-blocks/commit/77d6398))

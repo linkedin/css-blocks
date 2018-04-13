@@ -29,6 +29,25 @@
     "preserveConstEnums": false,
     "newLine": "LF",
     "traceResolution": false,
-    "module": "commonjs"
+    "module": "commonjs",
+
+    "baseUrl": ".",
+    "paths": {
+      "perfectionist": [
+        "types-local/perfectionist"
+      ],
+      "postcss-selector-parser": [
+        "types-local/postcss-selector-parser"
+      ],
+      "regexpu-core": [
+        "types-local/regexpu-core"
+      ],
+      "inline-source-map-comment": [
+        "types-local/inline-source-map-comment"
+      ],
+      "loader-utils": [
+        "types-local/loader-utils"
+      ]
+    }
   }
 }

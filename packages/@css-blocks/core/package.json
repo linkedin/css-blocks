@@ -1,0 +1,64 @@
+{
+  "name": "@css-blocks/core",
+  "version": "0.17.0",
+  "description": "Fast, maintainable, optimal, component-oriented CSS.",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "compile": "tsc --version && rm -rf dist && tsc",
+    "pretest": "yarn run compile",
+    "test": "mocha dist/test --opts test/mocha.opts",
+    "posttest": "yarn run lint",
+    "prepublish": "yarn run compile && yarn run lintall",
+    "lint": "tslint -t msbuild --project . -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
+    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "typedoc --out ./docs .",
+    "watch": "watch 'yarn run test' './src' './test' --wait=3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/css-blocks/css-blocks.git"
+  },
+  "keywords": [
+    "css"
+  ],
+  "author": "Chris Eppstein",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/css-blocks/css-blocks/issues"
+  },
+  "types": "dist/src",
+  "files": [
+    "dist",
+    "types-local",
+    "*.md",
+    "test/mocha.opts"
+  ],
+  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/css-blocks#readme",
+  "devDependencies": {
+    "@css-blocks/code-style": "^0.17.0"
+  },
+  "dependencies": {
+    "@opticss/element-analysis": "file:../../../../opticss/packages/element-analysis",
+    "opticss": "file:../../../../opticss/packages/opticss",
+    "@opticss/template-api": "file:../../../../opticss/packages/template-api",
+    "@opticss/util": "file:../../../../opticss/packages/util",
+    "@types/async": "^2.0.40",
+    "@types/debug": "0.0.29",
+    "async": "^2.5.0",
+    "css-property-parser": "^1.0.6",
+    "debug": "^2.6.8",
+    "inline-source-map-comment": "^1.0.5",
+    "json-parse-better-errors": "^1.0.1",
+    "object.values": "^1.0.4",
+    "regexpu-core": "^4.0.11",
+    "source-map": "^0.6.1",
+    "watch": "^1.0.2"
+  },
+  "engines": {
+    "node": ">=8"
+  },
+  "engineStrict": true
+}
