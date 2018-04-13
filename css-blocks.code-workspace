@@ -1,22 +1,25 @@
 {
 	"folders": [
 		{
-			"path": "packages/css-blocks"
+			"path": "packages/@css-blocks/broccoli"
 		},
 		{
-			"path": "packages/glimmer-templates"
+			"path": "packages/@css-blocks/code-style"
 		},
 		{
-			"path": "packages/jsx"
+			"path": "packages/@css-blocks/core"
 		},
 		{
-			"path": "packages/runtime"
+			"path": "packages/@css-blocks/glimmer"
 		},
 		{
-			"path": "packages/webpack-plugin"
+			"path": "packages/@css-blocks/jsx"
 		},
 		{
-			"path": "packages/code-style"
+			"path": "packages/@css-blocks/runtime"
+		},
+		{
+			"path": "packages/@css-blocks/webpack"
 		},
 		{
 			"path": ".",

@@ -1,0 +1,27 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": "dist",
+    "paths": {
+      "perfectionist": [
+        "../../../../types-local/perfectionist"
+      ],
+      "regexpu-core": [
+        "../../../../types-local/regexpu-core"
+      ],
+      "inline-source-map-comment": [
+        "../../../../types-local/inline-source-map-comment"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "sanity",
+    "dist",
+    "node_modules"
+  ]
+}

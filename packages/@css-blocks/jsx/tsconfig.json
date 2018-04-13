@@ -1,0 +1,24 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "Preserve",
+    "jsxFactory": "h",
+
+    // output options
+    "outDir": "dist",
+    "baseUrl": "dist",
+    "typeRoots": [
+      "node_modules/@types",
+      "../../../node_modules/@types",
+      "../../../types-local"
+    ]
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}

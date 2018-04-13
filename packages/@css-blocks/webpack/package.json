@@ -1,0 +1,72 @@
+{
+  "name": "@css-blocks/webpack",
+  "version": "0.17.0",
+  "description": "Webpack plugin for css-blocks.",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "prepublish": "yarn run compile && yarn run lintall",
+    "compile": "rm -rf dist && tsc -p tsconfig.json",
+    "pretest": "yarn run compile",
+    "posttest": "yarn run lint",
+    "lint": "tslint -t msbuild -c tslint.cli.json --project .",
+    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild -c tslint.cli.json --project . --fix",
+    "test": "mocha dist/test --opts test/mocha.opts",
+    "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "typedoc --out ./docs .",
+    "watch": "watch 'yarn run test' './src' './test' --wait=3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/css-blocks/css-blocks.git"
+  },
+  "keywords": [
+    "css"
+  ],
+  "author": "Chris Eppstein",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/css-blocks/css-blocks/issues"
+  },
+  "types": "dist/src",
+  "files": [
+    "dist/src",
+    "*.md",
+    "test/mocha.opts"
+  ],
+  "engines": {
+    "node": ">=8"
+  },
+  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/@css-blocks/webpack#readme",
+  "devDependencies": {
+    "@css-blocks/code-style": "^0.17.0",
+    "@types/convert-source-map": "^1.3.33",
+    "@types/extract-text-webpack-plugin": "^2.1.0",
+    "@types/glob": "^5.0.30",
+    "@types/webpack": "^4.0.0",
+    "@types/webpack-merge": "4.1.2",
+    "@types/webpack-sources": "^0.1.2",
+    "css-loader": "^0.28.4",
+    "extract-text-webpack-plugin": "^2.1.2",
+    "glob": "^7.1.2",
+    "raw-loader": "^0.5.1",
+    "style-loader": "^0.18.2",
+    "webpack": "^3.0.0",
+    "webpack-merge": "^4.1.0"
+  },
+  "dependencies": {
+    "@opticss/element-analysis": "file:../../../../opticss/packages/element-analysis",
+    "opticss": "file:../../../../opticss/packages/opticss",
+    "@opticss/template-api": "file:../../../../opticss/packages/template-api",
+    "async": "^2.4.1",
+    "convert-source-map": "^1.5.0",
+    "@css-blocks/core": "^0.17.0",
+    "debug": "^2.6.8",
+    "install": "^0.10.1",
+    "loader-utils": "^1.0.1",
+    "source-map": "^0.6.1",
+    "tapable": "^0.2.5",
+    "webpack-sources": "^1.0.1"
+  }
+}
