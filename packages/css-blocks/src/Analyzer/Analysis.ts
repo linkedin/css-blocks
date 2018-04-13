@@ -1,9 +1,9 @@
 // tslint:disable-next-line:no-unused-variable Imported for Documentation link
 import {
-  isSourcePosition,
   POSITION_UNKNOWN,
   SourceLocation,
   SourcePosition,
+  isSourcePosition,
 } from "@opticss/element-analysis";
 import {
   SerializedTemplateInfo,

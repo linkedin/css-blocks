@@ -3,9 +3,9 @@ import { skip, suite, test } from "mocha-typescript";
 
 import cssBlocks = require("../src/cssBlocks");
 
+import { assertError } from "./util/assertError";
 import { BEMProcessor } from "./util/BEMProcessor";
 import { MockImportRegistry } from "./util/MockImportRegistry";
-import { assertError } from "./util/assertError";
 
 @suite("In BEM output mode")
 export class BEMOutputMode extends BEMProcessor {

@@ -14,10 +14,10 @@ import { ParsedSelector } from "opticss";
 import * as postcss from "postcss";
 
 import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR } from "../BlockSyntax";
-import { sourceLocation } from "../SourceLocation";
 import { InvalidBlockSyntax } from "../errors";
+import { sourceLocation } from "../SourceLocation";
 
-import { isStyle, Styles } from "./Styles";
+import { Styles, isStyle } from "./Styles";
 export { Styles, BlockClass, AttrValue } from "./Styles";
 
 // Convenience types to help our code read better.

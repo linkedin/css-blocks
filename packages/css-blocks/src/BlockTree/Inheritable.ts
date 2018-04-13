@@ -12,7 +12,7 @@
  * @module Block/BlockTree/Inheritable
  */
 import { ObjectDictionary } from "@opticss/util";
-import { ParsedSelector, parseSelector, SelectorFactory } from "opticss";
+import { ParsedSelector, SelectorFactory, parseSelector } from "opticss";
 import * as postcss from "postcss";
 
 /* tslint:disable:prefer-whatever-to-any */

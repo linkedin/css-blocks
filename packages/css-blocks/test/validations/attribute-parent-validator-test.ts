@@ -8,9 +8,9 @@ import { Block, BlockClass } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
 
-import { TestAnalyzer } from "../util/TestAnalyzer";
 import { assertParseError } from "../util/assertError";
 import { setupImporting } from "../util/setupImporting";
+import { TestAnalyzer } from "../util/TestAnalyzer";
 
 type BlockAndRoot = [Block, postcss.Container];
 

@@ -1,8 +1,8 @@
 import * as postcss from "postcss";
 
-import { Plugin } from "./Plugin";
 import { Configuration, OutputMode } from "./configuration";
 import { CssBlockError, InvalidBlockSyntax, MissingSourcePath } from "./errors";
+import { Plugin } from "./Plugin";
 
 // This is ugly but it's the only thing I have been able to make work.
 // I welcome a patch that cleans this up.

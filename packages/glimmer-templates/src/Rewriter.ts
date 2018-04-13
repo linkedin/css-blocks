@@ -8,9 +8,9 @@ import { whatever } from "@opticss/util";
 import {
   Block,
   Options as CSSBlocksOptions,
-  resolveConfiguration,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
+  resolveConfiguration,
 } from "css-blocks";
 import * as debugGenerator from "debug";
 

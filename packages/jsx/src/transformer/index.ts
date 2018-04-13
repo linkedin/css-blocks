@@ -1,9 +1,9 @@
 import { ObjectDictionary, whatever } from "@opticss/util";
 import {
   Options as CSSBlocksOptions,
-  resolveConfiguration as resolveBlocksConfiguration,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
+  resolveConfiguration as resolveBlocksConfiguration,
 } from "css-blocks";
 
 import { TEMPLATE_TYPE } from "../Analyzer/Template";

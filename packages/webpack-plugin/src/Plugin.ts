@@ -14,8 +14,8 @@ import {
   Block,
   BlockCompiler,
   Options as CSSBlocksOptions,
-  resolveConfiguration as resolveBlocksConfiguration,
   StyleMapping,
+  resolveConfiguration as resolveBlocksConfiguration,
 } from "css-blocks";
 import {
   Actions,

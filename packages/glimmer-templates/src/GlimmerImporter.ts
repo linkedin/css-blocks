@@ -1,10 +1,10 @@
 import {
   FileIdentifier,
-  filesystemImporter,
   ImportedFile,
   Importer,
   PathBasedImporter,
   ResolvedConfiguration as CSSBlocksConfiguration,
+  filesystemImporter,
 } from "css-blocks";
 import * as path from "path";
 

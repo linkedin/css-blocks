@@ -20,17 +20,17 @@ import {
   Dependency,
   DynamicClasses,
   HasAttrValue,
-  hasDependency,
   HasGroup,
   IndexedClassRewrite,
-  isConditional,
-  isFalseCondition,
-  isSwitch,
-  isTrueCondition,
   NotExpression,
   OrExpression,
   Style,
   Switch,
+  hasDependency,
+  isConditional,
+  isFalseCondition,
+  isSwitch,
+  isTrueCondition,
 } from "css-blocks";
 import * as debugGenerator from "debug";
 

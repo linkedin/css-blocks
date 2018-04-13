@@ -4,7 +4,7 @@ import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as babel from "babel-core";
 import { assert } from "chai";
 import { Analysis } from "css-blocks";
-import { BlockCompiler, Options as CSSBlocksOptions, resolveConfiguration as resolveBlocksConfiguration, StyleMapping } from "css-blocks";
+import { BlockCompiler, Options as CSSBlocksOptions, StyleMapping, resolveConfiguration as resolveBlocksConfiguration } from "css-blocks";
 import { skip, suite, test } from "mocha-typescript";
 import { OptiCSSOptions, OptimizationResult, Optimizer  } from "opticss";
 import * as postcss from "postcss";

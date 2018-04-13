@@ -1,10 +1,10 @@
-import { Block, resolveConfiguration, ResolvedConfiguration, StyleMapping } from "css-blocks";
+import { Block, ResolvedConfiguration, StyleMapping, resolveConfiguration } from "css-blocks";
 import * as debugGenerator from "debug";
 import * as loaderUtils from "loader-utils";
 const debug = debugGenerator("css-blocks:webpack:loader");
 
-import { PendingResult, TmpType } from "./Plugin";
 import { LoaderContext } from "./context";
+import { PendingResult, TmpType } from "./Plugin";
 
 /**
  * The css-blocks loader makes css-blocks available to webpack modules.

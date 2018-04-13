@@ -6,14 +6,14 @@ import {
   BLOCK_DEBUG,
   BLOCK_PROP_NAMES_RE,
   BLOCK_REFERENCE,
-  parseBlockDebug,
   ROOT_CLASS,
+  parseBlockDebug,
 } from "../BlockSyntax";
 import { Block } from "../BlockTree";
 import {
   Options,
-  resolveConfiguration,
   ResolvedConfiguration,
+  resolveConfiguration,
 } from "../configuration";
 
 import { ConflictResolver } from "./ConflictResolver";

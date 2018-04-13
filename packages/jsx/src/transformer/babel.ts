@@ -4,19 +4,19 @@ import {
   AssignmentExpression,
   Expression,
   Identifier,
+  ImportDeclaration,
+  JSXAttribute,
+  JSXOpeningElement,
+  Node,
+  Statement,
   identifier,
   importDeclaration,
-  ImportDeclaration,
   importDefaultSpecifier,
   isIdentifier,
   isJSXExpressionContainer,
   jSXAttribute,
-  JSXAttribute,
   jSXExpressionContainer,
   jSXIdentifier,
-  JSXOpeningElement,
-  Node,
-  Statement,
   stringLiteral,
 } from "babel-types";
 import {
@@ -32,7 +32,7 @@ import { JSXElementAnalyzer } from "../Analyzer/visitors/element";
 import { isBlockFilename } from "../utils/isBlockFilename";
 import { isConsoleLogStatement } from "../utils/isConsoleLogStatement";
 
-import { classnamesHelper as generateClassName, HELPER_FN_NAME } from "./classNameGenerator";
+import { HELPER_FN_NAME, classnamesHelper as generateClassName } from "./classNameGenerator";
 import { CSSBlocksJSXTransformer as Rewriter } from "./index";
 
 const debug = debugGenerator("css-blocks:jsx:rewriter");

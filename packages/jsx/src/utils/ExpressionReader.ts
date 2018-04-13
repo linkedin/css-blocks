@@ -3,6 +3,8 @@ import {
   BooleanLiteral,
   CallExpression,
   Expression,
+  NumericLiteral,
+  StringLiteral,
   isBooleanLiteral,
   isCallExpression,
   isIdentifier,
@@ -11,10 +13,8 @@ import {
   isMemberExpression,
   isNumericLiteral,
   isStringLiteral,
-  NumericLiteral,
-  StringLiteral,
 } from "babel-types";
-import { Attribute, AttrValue, Block, BlockClass, isBlockClass } from "css-blocks";
+import { AttrValue, Attribute, Block, BlockClass, isBlockClass } from "css-blocks";
 import * as debugGenerator from "debug";
 
 import { JSXAnalysis } from "../Analyzer";

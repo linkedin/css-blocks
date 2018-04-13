@@ -1,15 +1,15 @@
 import {
   BooleanExpression,
+  RewriteMapping as OptimizedMapping,
+  SimpleAttribute,
+  SimpleTagname,
   isAndExpression,
   isBooleanExpression,
   isNotExpression,
   isOrExpression,
   isSimpleTagname,
-  RewriteMapping as OptimizedMapping,
-  SimpleAttribute,
-  SimpleTagname,
 } from "@opticss/template-api";
-import { assertNever, Maybe, maybe, ObjectDictionary, objectValues } from "@opticss/util";
+import { Maybe, ObjectDictionary, assertNever, maybe, objectValues } from "@opticss/util";
 import { inspect } from "util";
 
 import { Style } from "../BlockTree";

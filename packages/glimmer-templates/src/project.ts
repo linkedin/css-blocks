@@ -1,8 +1,8 @@
 import {
   BlockFactory,
   Options as CSSBlocksOptions,
-  resolveConfiguration,
   ResolvedConfiguration as CSSBlocksConfiguration,
+  resolveConfiguration,
 } from "css-blocks";
 import * as fs from "fs";
 import * as glob from "glob";
