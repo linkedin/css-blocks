@@ -3,8 +3,8 @@ import { postcss } from "opticss";
 
 import { BLOCK_REFERENCE, CLASS_NAME_IDENT } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
-import * as errors from "../../errors";
 import { sourceLocation } from "../../SourceLocation";
+import * as errors from "../../errors";
 import { BlockFactory } from "../index";
 
 /**

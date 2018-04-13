@@ -14,8 +14,12 @@ import {
   Block,
   BlockCompiler,
   Options as CSSBlocksOptions,
-  StyleMapping,
   resolveConfiguration,
+  StyleMapping,
+<<<<<<< HEAD:packages/@css-blocks/webpack/src/Plugin.ts
+  resolveConfiguration,
+=======
+>>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/webpack/src/Plugin.ts
 } from "@css-blocks/core";
 import {
   Actions,

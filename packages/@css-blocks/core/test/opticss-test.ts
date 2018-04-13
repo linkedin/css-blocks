@@ -2,8 +2,8 @@ import {
   POSITION_UNKNOWN,
 } from "@opticss/element-analysis";
 import {
-  Template,
   isAndExpression,
+  Template,
 } from "@opticss/template-api";
 import {
   clean,
@@ -18,8 +18,8 @@ import { Analysis, Analyzer } from "../src/Analyzer";
 import { ElementAnalysis } from "../src/Analyzer";
 import { BlockCompiler } from "../src/BlockCompiler";
 import { AttrValue, Block, BlockClass } from "../src/BlockTree";
-import { resolveConfiguration } from "../src/configuration";
 import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
+import { resolveConfiguration } from "../src/configuration";
 
 @suite("Optimization")
 export class TemplateAnalysisTests {

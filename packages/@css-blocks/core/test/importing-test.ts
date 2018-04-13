@@ -6,13 +6,13 @@ import * as path from "path";
 import { Syntax } from "../src/BlockParser";
 import {
   Options,
-  ResolvedConfiguration,
   resolveConfiguration,
+  ResolvedConfiguration,
 } from "../src/configuration";
 import {
+  filesystemImporter,
   Importer,
   PathAliasImporter,
-  filesystemImporter,
 } from "../src/importing";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");

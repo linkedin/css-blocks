@@ -6,13 +6,13 @@ import { postcss } from "opticss";
 
 import { ElementAnalysis, SerializedAnalysis } from "../src/Analyzer";
 import { BlockFactory } from "../src/BlockParser";
-import { AttrValue, Attribute, Block, BlockClass } from "../src/BlockTree";
+import { Attribute, AttrValue, Block, BlockClass } from "../src/BlockTree";
 import { Options, resolveConfiguration } from "../src/configuration";
 import * as cssBlocks from "../src/errors";
 
+import { TestAnalyzer } from "./util/TestAnalyzer";
 import { assertParseError } from "./util/assertError";
 import { setupImporting } from "./util/setupImporting";
-import { TestAnalyzer } from "./util/TestAnalyzer";
 
 type TestElement = ElementAnalysis<null, null, null>;
 type TemplateType = "Opticss.Template";

@@ -1,8 +1,13 @@
 import {
   BlockFactory,
   Options as CSSBlocksOptions,
+<<<<<<< HEAD:packages/@css-blocks/glimmer/src/project.ts
   ResolvedConfiguration,
   resolveConfiguration,
+=======
+  resolveConfiguration,
+  ResolvedConfiguration,
+>>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/glimmer/src/project.ts
 } from "@css-blocks/core";
 import * as fs from "fs";
 import * as glob from "glob";

@@ -92,7 +92,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
 
     // Run optimization and compute StyleMapping.
     let optimized = await optimizer.optimize(this.output);
-    let styleMapping = new StyleMapping(optimized.styleMapping, blocks, options, this.analyzer.analyses());
+    let styleMapping = new StyleMapping<keyof TemplateTypes>(optimized.styleMapping, blocks, options, this.analyzer.analyses());
 
     // Attach all computed data to our magic shared memory transport object...
     this.transport.mapping = styleMapping;

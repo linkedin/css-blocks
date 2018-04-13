@@ -6,17 +6,20 @@ import {
   Dependency,
   DynamicClasses,
   HasAttrValue,
+  hasDependency,
   HasGroup,
   IndexedClassRewrite,
-  NotExpression,
-  OrExpression,
-  Style,
-  Switch,
-  hasDependency,
   isConditional,
   isFalseCondition,
   isSwitch,
   isTrueCondition,
+<<<<<<< HEAD:packages/@css-blocks/glimmer/src/ClassnamesHelperGenerator.ts
+=======
+  NotExpression,
+  OrExpression,
+  Style,
+  Switch,
+>>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/glimmer/src/ClassnamesHelperGenerator.ts
 } from "@css-blocks/core";
 import {
   AST,

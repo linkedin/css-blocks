@@ -2,7 +2,11 @@ import c$$ from "@css-blocks/runtime";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 
 import { Analysis } from "@css-blocks/core";
+<<<<<<< HEAD:packages/@css-blocks/jsx/test/transformer/transformer-test.ts
 import { BlockCompiler, Options as CSSBlocksOptions, StyleMapping, resolveConfiguration as resolveBlocksConfiguration } from "@css-blocks/core";
+=======
+import { BlockCompiler, Options as CSSBlocksOptions, resolveConfiguration as resolveBlocksConfiguration, StyleMapping } from "@css-blocks/core";
+>>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/jsx/test/transformer/transformer-test.ts
 import * as babel from "babel-core";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";

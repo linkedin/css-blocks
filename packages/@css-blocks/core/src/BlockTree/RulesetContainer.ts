@@ -11,10 +11,10 @@ import * as propParser from "css-property-parser";
 import { ParsedSelector, postcss } from "opticss";
 
 import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR } from "../BlockSyntax";
-import { InvalidBlockSyntax } from "../errors";
 import { sourceLocation } from "../SourceLocation";
+import { InvalidBlockSyntax } from "../errors";
 
-import { Styles, isStyle } from "./Styles";
+import { isStyle, Styles } from "./Styles";
 export { Styles, BlockClass, AttrValue } from "./Styles";
 
 // Convenience types to help our code read better.

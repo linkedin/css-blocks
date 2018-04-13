@@ -6,6 +6,7 @@ import {
   Dependency,
   DynamicClasses,
   HasAttrValue,
+<<<<<<< HEAD:packages/@css-blocks/jsx/src/transformer/classNameGenerator.ts
   HasGroup,
   IndexedClassRewrite,
   NotExpression,
@@ -13,10 +14,22 @@ import {
   Style,
   Switch,
   hasDependency,
+=======
+  hasDependency,
+  HasGroup,
+  IndexedClassRewrite,
+>>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/jsx/src/transformer/classNameGenerator.ts
   isConditional,
   isFalseCondition,
   isSwitch,
   isTrueCondition,
+<<<<<<< HEAD:packages/@css-blocks/jsx/src/transformer/classNameGenerator.ts
+=======
+  NotExpression,
+  OrExpression,
+  Style,
+  Switch,
+>>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/jsx/src/transformer/classNameGenerator.ts
 } from "@css-blocks/core";
 import {
   isAndExpression,
@@ -29,10 +42,10 @@ import {
   unwrap,
 } from "@opticss/util";
 import {
-  CallExpression,
-  Expression,
   arrayExpression,
+  CallExpression,
   callExpression,
+  Expression,
   identifier,
   nullLiteral,
   numericLiteral,

@@ -6,7 +6,7 @@
   "author": "Adam Miller <ammiller@linkedin.com>",
   "license": "MIT",
   "keywords": [
-    "css-blocks",
+    "@css-blocks/core",
     "css blocks",
     "broccoli-plugin"
   ],

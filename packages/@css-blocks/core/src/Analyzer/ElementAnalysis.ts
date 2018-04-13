@@ -4,14 +4,14 @@ import {
   AttributeValueChoiceOption,
   AttributeValueSet,
   AttributeValueSetItem,
+  attrValues,
   Element,
+  isConstant,
   POSITION_UNKNOWN,
   SourceLocation,
   Tagname,
   ValueAbsent,
   ValueConstant,
-  attrValues,
-  isConstant,
 } from "@opticss/element-analysis";
 import {
   MultiMap,
@@ -21,13 +21,13 @@ import {
 } from "@opticss/util";
 
 import {
-  AttrValue,
   Attribute,
+  AttrValue,
   Block,
   BlockClass,
-  Style,
   isAttrValue,
   isBlockClass,
+  Style,
 } from "../BlockTree";
 import {
   ResolvedConfiguration,
