@@ -39,7 +39,7 @@
     "debug": "^3.1.0",
     "fs-extra": "^5.0.0",
     "opticss": "file:../../../opticss/packages/opticss",
-    "postcss": "^6.0.14",
+    "postcss": "^6.0.21",
     "recursive-readdir": "^2.2.2",
     "walk-sync": "^0.3.2"
   }
