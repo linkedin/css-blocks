@@ -65,7 +65,6 @@
     "glimmer-analyzer": "^0.2.0",
     "glob": "^7.1.2",
     "object.values": "^1.0.4",
-    "opticss": "file:../../../opticss/packages/opticss",
-    "postcss": "^6.0.14"
+    "postcss": "^6.0.21"
   }
 }

@@ -230,14 +230,14 @@
 "@opticss/element-analysis@file:../opticss/packages/element-analysis":
   version "0.2.0"
   dependencies:
-    "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
+    "@opticss/util" "file:../../../Library/Caches/Yarn/v1/npm-@opticss/util"
 
 "@opticss/template-api@file:../opticss/packages/template-api":
   version "0.2.0"
   dependencies:
     "@opticss/element-analysis" "file:../../Library/Caches/Yarn/v1/npm-@opticss/element-analysis"
     "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
-    postcss "^6.0.12"
+    postcss "^6.0.13"
     typescript-collections "^1.2.5"
 
 "@opticss/util@file:../opticss/packages/util":
@@ -1122,7 +1122,7 @@ chalk@^1.0.0, chalk@^1.1.3:
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
 
-chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.0, chalk@^2.3.1:
+chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.0, chalk@^2.3.1, chalk@^2.3.2:
   version "2.3.2"
   resolved "https://registry.npmjs.org/chalk/-/chalk-2.3.2.tgz#250dc96b07491bfd601e648d66ddf5f60c7a5c65"
   dependencies:
@@ -4014,9 +4014,9 @@ onetime@^2.0.0:
 "opticss@file:../opticss/packages/opticss":
   version "0.2.0"
   dependencies:
-    "@opticss/element-analysis" "file:../../Library/Caches/Yarn/v1/element-analysis"
-    "@opticss/template-api" "file:../../Library/Caches/Yarn/v1/template-api"
-    "@opticss/util" "file:../../Library/Caches/Yarn/v1/util"
+    "@opticss/element-analysis" "file:../../../Library/Caches/Yarn/v1/element-analysis"
+    "@opticss/template-api" "file:../../../Library/Caches/Yarn/v1/template-api"
+    "@opticss/util" "file:../../../Library/Caches/Yarn/v1/util"
     "@types/debug" "0.0.29"
     concat-with-sourcemaps "^1.0.4"
     css-property-parser "^1.0.5"
@@ -4509,13 +4509,21 @@ postcss@^5.0.10, postcss@^5.0.11, postcss@^5.0.12, postcss@^5.0.13, postcss@^5.0
     source-map "^0.5.6"
     supports-color "^3.2.3"
 
-postcss@^6.0.1, postcss@^6.0.12, postcss@^6.0.14:
+postcss@^6.0.1, postcss@^6.0.13, postcss@^6.0.14:
   version "6.0.19"
   resolved "https://registry.npmjs.org/postcss/-/postcss-6.0.19.tgz#76a78386f670b9d9494a655bf23ac012effd1555"
   dependencies:
     chalk "^2.3.1"
     source-map "^0.6.1"
     supports-color "^5.2.0"
+
+postcss@^6.0.13, postcss@^6.0.21:
+  version "6.0.21"
+  resolved "https://registry.npmjs.org/postcss/-/postcss-6.0.21.tgz#8265662694eddf9e9a5960db6da33c39e4cd069d"
+  dependencies:
+    chalk "^2.3.2"
+    source-map "^0.6.1"
+    supports-color "^5.3.0"
 
 preact@^8.2.1:
   version "8.2.7"
