@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { TemplateTypes } from "@opticss/template-api";
+// import { TemplateTypes } from "@opticss/template-api";
 import { Analyzer, BlockCompiler, StyleMapping } from "css-blocks";
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";
@@ -9,16 +9,18 @@ import * as readdir from "recursive-readdir";
 
 import { BroccoliPlugin } from "./utils";
 
-interface BroccoliOptions {
+export interface BroccoliOptions {
   entry: string[];
   output: string;
-  analyzer: Analyzer<keyof TemplateTypes>;
+  // tslint:disable-next-line:prefer-whatever-to-any
+  analyzer: Analyzer<any>;
   transport: {[key: string]: object};
 }
 
 class BroccoliCSSBlocks extends BroccoliPlugin {
 
-  private analyzer: Analyzer<keyof TemplateTypes>;
+  // tslint:disable-next-line:prefer-whatever-to-any
+  private analyzer: Analyzer<any>;
   private entry: string[];
   private output: string;
   private transport: { [key: string]: object };
@@ -111,4 +113,4 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
 
 }
 
-module.exports = BroccoliCSSBlocks;
+export { BroccoliCSSBlocks };
