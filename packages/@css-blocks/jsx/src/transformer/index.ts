@@ -1,8 +1,14 @@
 import {
   Options as CSSBlocksOptions,
+<<<<<<< HEAD:packages/@css-blocks/jsx/src/transformer/index.ts
   ResolvedConfiguration,
   StyleMapping,
   resolveConfiguration,
+=======
+  resolveConfiguration,
+  ResolvedConfiguration,
+  StyleMapping,
+>>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/jsx/src/transformer/index.ts
 } from "@css-blocks/core";
 import { ObjectDictionary, whatever } from "@opticss/util";
 

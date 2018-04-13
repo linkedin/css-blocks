@@ -1,7 +1,7 @@
 import { postcss } from "opticss";
 
 import { Block } from "../BlockTree";
-import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
+import { Options, resolveConfiguration, ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
 

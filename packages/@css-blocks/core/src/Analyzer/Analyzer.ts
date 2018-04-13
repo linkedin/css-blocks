@@ -10,8 +10,8 @@ import { BlockFactory } from "../BlockParser";
 import { Block, Style } from "../BlockTree";
 import {
   Options,
-  ResolvedConfiguration,
   resolveConfiguration,
+  ResolvedConfiguration,
 } from "../configuration";
 
 import { Analysis, SerializedAnalysis } from "./Analysis";

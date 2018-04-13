@@ -1,8 +1,8 @@
 import { postcss } from "opticss";
 
 import { Block } from "../BlockTree";
-import * as errors from "../errors";
 import { sourceLocation } from "../SourceLocation";
+import * as errors from "../errors";
 
 export type DebugChannel = "comment" | "stderr" | "stdout";
 

@@ -1,8 +1,8 @@
 import { Preprocessors } from "../BlockParser";
 import {
+  filesystemImporter,
   Importer,
   ImporterData,
-  filesystemImporter,
 } from "../importing";
 
 import { OutputMode } from "./OutputMode";

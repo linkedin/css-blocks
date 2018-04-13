@@ -8,8 +8,8 @@ import { Block } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import { TemplateAnalysisError } from "../../src/errors";
 
-import { assertParseError } from "../util/assertError";
 import { TestAnalyzer } from "../util/TestAnalyzer";
+import { assertParseError } from "../util/assertError";
 
 type BlockAndRoot = [Block, postcss.Container];
 

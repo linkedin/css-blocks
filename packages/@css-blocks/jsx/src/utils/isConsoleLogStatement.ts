@@ -1,8 +1,8 @@
 import {
-  Node,
   isCallExpression,
   isIdentifier,
   isMemberExpression,
+  Node,
 } from "babel-types";
 
 export function isConsoleLogStatement(node: Node): boolean {
