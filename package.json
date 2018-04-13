@@ -31,7 +31,7 @@
     "mock-require": "^2.0.2",
     "outdent": "^0.4.1",
     "perfectionist": "^2.4.0",
-    "postcss": "^6.0.14",
+    "postcss": "^6.0.21",
     "prettier": "^1.8.2",
     "remap-istanbul": "^0.9.5",
     "source-map-support": "^0.4.15",

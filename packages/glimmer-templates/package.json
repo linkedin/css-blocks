@@ -51,7 +51,6 @@
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0"
   },
-
   "dependencies": {
     "@glimmer/compiler": "^0.33.0",
     "@glimmer/resolution-map-builder": "0.5.1",
@@ -67,6 +66,6 @@
     "glimmer-analyzer": "^0.2.0",
     "glob": "^7.1.2",
     "object.values": "^1.0.4",
-    "postcss": "^6.0.1"
+    "postcss": "^6.0.21"
   }
 }
