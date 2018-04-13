@@ -6,8 +6,8 @@ import { ATTR_PRESENT, IAttrToken as AttrToken, ROOT_CLASS } from "../BlockSynta
 import { BlockPath } from "../BlockSyntax";
 import { OutputMode, ResolvedConfiguration } from "../configuration";
 
-import { AttrValue } from "./AttrValue";
 import { Attribute } from "./Attribute";
+import { AttrValue } from "./AttrValue";
 import { Block } from "./Block";
 import { RulesetContainer } from "./RulesetContainer";
 import { Style } from "./Style";

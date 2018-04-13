@@ -6,10 +6,10 @@ import selectorParser = require("postcss-selector-parser");
 import { getBlockNode } from "../BlockParser";
 import { RESOLVE_RE } from "../BlockSyntax";
 import { Block, Style } from "../BlockTree";
-import { SourceLocation, sourceLocation } from "../SourceLocation";
 import { ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";
 import { QueryKeySelector } from "../query";
+import { SourceLocation, sourceLocation } from "../SourceLocation";
 
 import { Conflicts, detectConflicts } from "./conflictDetection";
 

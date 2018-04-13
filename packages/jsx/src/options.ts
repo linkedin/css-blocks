@@ -1,7 +1,7 @@
 import { ObjectDictionary } from "@opticss/util";
 import {
-  resolveConfiguration as resolveBlocksOptions,
   ResolvedConfiguration as CSSBlocksConfiguration,
+  resolveConfiguration as resolveBlocksOptions,
 } from "css-blocks";
 
 /**

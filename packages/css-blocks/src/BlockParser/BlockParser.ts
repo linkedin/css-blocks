@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 
 import { Block } from "../BlockTree";
-import { Options, resolveConfiguration, ResolvedConfiguration } from "../configuration";
+import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
 import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
 

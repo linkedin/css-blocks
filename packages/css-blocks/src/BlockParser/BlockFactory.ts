@@ -5,12 +5,12 @@ import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
 import { Block } from "../BlockTree";
-import { Options, resolveConfiguration, ResolvedConfiguration } from "../configuration";
+import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
 import { FileIdentifier, ImportedFile, Importer } from "../importing";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";
-import { annotateCssContentWithSourceMap, Preprocessor, Preprocessors, ProcessedFile, Syntax, syntaxName } from "./preprocessing";
+import { Preprocessor, Preprocessors, ProcessedFile, Syntax, annotateCssContentWithSourceMap, syntaxName } from "./preprocessing";
 
 const debug = debugGenerator("css-blocks:BlockFactory");
 

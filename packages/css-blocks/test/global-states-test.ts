@@ -3,8 +3,8 @@ import { suite, test } from "mocha-typescript";
 
 import cssBlocks = require("../src/cssBlocks");
 
-import { BEMProcessor } from "./util/BEMProcessor";
 import { assertError } from "./util/assertError";
+import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
 
 @suite("Resolves conflicts")
