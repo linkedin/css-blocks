@@ -1,6 +1,6 @@
 import { GlimmerAnalyzer } from "@css-blocks/glimmer-templates";
 import * as assert from "assert";
-import { buildOutput, createTempDir, TempDir } from "broccoli-test-helper";
+import { TempDir, buildOutput, createTempDir } from "broccoli-test-helper";
 
 import { BroccoliCSSBlocks } from "../src/index";
 

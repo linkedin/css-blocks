@@ -1,7 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-// import { TemplateTypes } from "@opticss/template-api";
 import { Analyzer, BlockCompiler, StyleMapping } from "css-blocks";
 import { Optimizer } from "opticss";
 import * as postcss from "postcss";

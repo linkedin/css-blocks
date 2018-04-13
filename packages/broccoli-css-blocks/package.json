@@ -7,17 +7,14 @@
   "license": "MIT",
   "keywords": ["css-blocks", "css blocks", "broccoli-plugin"],
   "scripts": {
-    "test": "../../node_modules/.bin/mocha --opts test/mocha.opts dist/test",
-    "compile": "rm -rf dist && ../../node_modules/.bin/tsc -p tsconfig.json",
+    "test": "mocha --opts test/mocha.opts dist/test",
+    "compile": "rm -rf dist && tsc -p tsconfig.json",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
     "prepublish": "yarn run compile && yarn run lintall",
-    "lint":
-      "../../node_modules/.bin/tslint -t msbuild --project . -c tslint.cli.json",
-    "lintall":
-      "../../node_modules/.bin/tslint -t msbuild --project . -c tslint.release.json",
-    "lintfix":
-      "../../node_modules/.bin/tslint -t msbuild --project . -c tslint.cli.json --fix",
+    "lint": "tslint -t msbuild --project . -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
     "coverage":
       "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap":
