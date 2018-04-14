@@ -1,5 +1,5 @@
 import { ObjectDictionary } from "@opticss/util";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { BLOCK_REFERENCE, CLASS_NAME_IDENT } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";

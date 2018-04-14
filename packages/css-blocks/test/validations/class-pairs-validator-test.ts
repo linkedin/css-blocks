@@ -1,6 +1,6 @@
 import { Template } from "@opticss/template-api";
 import { suite, test } from "mocha-typescript";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { BlockFactory } from "../../src/BlockParser";
 import { Block } from "../../src/BlockTree";

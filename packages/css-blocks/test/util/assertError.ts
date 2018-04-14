@@ -1,6 +1,6 @@
 import { whatever } from "@opticss/util";
 import { assert } from "chai";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import cssBlocks from "../../src/cssBlocks";
 

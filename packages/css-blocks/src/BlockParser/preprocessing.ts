@@ -1,5 +1,5 @@
 import * as inlineSourceMapComment from "inline-source-map-comment";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 import {
   RawSourceMap,
 } from "source-map";

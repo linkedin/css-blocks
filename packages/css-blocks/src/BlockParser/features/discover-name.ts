@@ -1,4 +1,4 @@
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { BLOCK_NAME, CLASS_NAME_IDENT } from "../../BlockSyntax";
 import * as errors from "../../errors";

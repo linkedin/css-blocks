@@ -64,7 +64,6 @@
     "debug": "^2.6.8",
     "glimmer-analyzer": "^0.2.0",
     "glob": "^7.1.2",
-    "object.values": "^1.0.4",
-    "postcss": "^6.0.21"
+    "object.values": "^1.0.4"
   }
 }

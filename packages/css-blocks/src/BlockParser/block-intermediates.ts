@@ -1,6 +1,5 @@
-import { assertNever, firstOfType } from "@opticss/util";
-import { CompoundSelector } from "opticss";
-import selectorParser = require("postcss-selector-parser");
+import { assertNever, firstOfType, whatever } from "@opticss/util";
+import { CompoundSelector, postcssSelectorParser as selectorParser } from "opticss";
 
 import { ATTR_PRESENT, AttrToken, ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
 
@@ -81,18 +80,11 @@ export function isClassLevelObject(object: NodeAndType): boolean {
 /**
  * Check if given selector node is targeting the root block node
  */
-export function isRootNode(node: selectorParser.Node): node is selectorParser.Pseudo {
-  return node.type === selectorParser.PSEUDO && node.value === ROOT_CLASS;
+export function isRootNode(node: whatever): node is selectorParser.Pseudo {
+  return selectorParser.isPseudoClass(node) && node.value === ROOT_CLASS;
 }
 
-/**
- * Check if given selector node is a class selector
- * @param  node The selector to test.
- * @return True if class selector, false if not.
- */
-export function isClassNode(node: selectorParser.Node): node is selectorParser.ClassName {
-  return node.type === selectorParser.CLASS;
-}
+export const isClassNode = selectorParser.isClassName;
 
 /**
  * Check if given selector node is an attribute selector
@@ -100,7 +92,7 @@ export function isClassNode(node: selectorParser.Node): node is selectorParser.C
  * @return True if attribute selector, false if not.
  */
 export function isAttributeNode(node: selectorParser.Node): node is selectorParser.Attribute {
-  return node.type === selectorParser.ATTRIBUTE && node.namespace === STATE_NAMESPACE;
+  return selectorParser.isAttribute(node) && node.namespace === STATE_NAMESPACE;
 }
 
 /**

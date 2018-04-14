@@ -8,9 +8,6 @@
       "perfectionist": [
         "../types-local/perfectionist"
       ],
-      "postcss-selector-parser": [
-        "../types-local/postcss-selector-parser"
-      ],
       "regexpu-core": [
         "../types-local/regexpu-core"
       ],

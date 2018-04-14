@@ -1,4 +1,4 @@
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { Configuration, OutputMode } from "./configuration";
 import { CssBlockError, InvalidBlockSyntax, MissingSourcePath } from "./errors";

@@ -10,8 +10,7 @@
  */
 import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
 import * as propParser from "css-property-parser";
-import { ParsedSelector } from "opticss";
-import * as postcss from "postcss";
+import { ParsedSelector, postcss } from "opticss";
 
 import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR } from "../BlockSyntax";
 import { InvalidBlockSyntax } from "../errors";

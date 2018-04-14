@@ -7,7 +7,7 @@ import { Analysis } from "css-blocks";
 import { BlockCompiler, Options as CSSBlocksOptions, StyleMapping, resolveConfiguration as resolveBlocksConfiguration } from "css-blocks";
 import { skip, suite, test } from "mocha-typescript";
 import { OptiCSSOptions, OptimizationResult, Optimizer  } from "opticss";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 import * as prettier from "prettier";
 import * as testConsole from "test-console";
 

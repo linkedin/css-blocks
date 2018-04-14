@@ -4,7 +4,7 @@ import * as convertSourceMap from "convert-source-map";
 import * as debugGenerator from "debug";
 import * as fs from "fs";
 import * as path from "path";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 import { RawSourceMap } from "source-map";
 import { Compiler as WebpackCompiler } from "webpack";
 import { ConcatSource, RawSource, Source, SourceMapSource } from "webpack-sources";

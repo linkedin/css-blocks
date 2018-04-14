@@ -5,8 +5,8 @@ import {
 import {
   ClassifiedParsedSelectors,
   QueryKeySelector as QueryKeySelectorImpl,
+  postcss,
 } from "opticss";
-import postcss = require("postcss");
 
 import { Block, Style } from "./BlockTree";
 

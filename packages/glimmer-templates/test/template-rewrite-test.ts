@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { BlockCompiler, StyleMapping } from "css-blocks";
 import fs = require("fs");
 import { Optimizer } from "opticss";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { GlimmerAnalyzer, GlimmerRewriter, Project } from "../src";
 

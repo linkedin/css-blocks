@@ -1,5 +1,5 @@
+import { postcss } from "opticss";
 import * as perfectionist from "perfectionist";
-import * as postcss from "postcss";
 
 import { Options } from "../../src/configuration";
 import cssBlocks = require("../../src/cssBlocks");

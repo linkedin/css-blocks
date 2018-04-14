@@ -7,7 +7,7 @@ import {
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import resMapBuilder = require("@glimmer/resolution-map-builder");
 const buildResolutionMap = resMapBuilder.buildResolutionMap;
