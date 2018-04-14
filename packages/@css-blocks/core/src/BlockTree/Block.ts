@@ -1,4 +1,4 @@
-import { assertNever, MultiMap, ObjectDictionary } from "@opticss/util";
+import { MultiMap, ObjectDictionary, assertNever } from "@opticss/util";
 import { whatever } from "@opticss/util";
 import {
   CompoundSelector,
@@ -10,16 +10,16 @@ import {
 
 import {
   BlockType,
+  NodeAndType,
   isAttributeNode,
   isClassNode,
-  NodeAndType,
 } from "../BlockParser";
 import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
-import { SourceLocation } from "../SourceLocation";
 import { ResolvedConfiguration } from "../configuration";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
+import { SourceLocation } from "../SourceLocation";
 
 import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";

@@ -1,8 +1,4 @@
-<<<<<<< HEAD:packages/@css-blocks/jsx/src/options.ts
 import { ResolvedConfiguration, resolveConfiguration } from "@css-blocks/core";
-=======
-import { resolveConfiguration, ResolvedConfiguration } from "@css-blocks/core";
->>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/jsx/src/options.ts
 import { ObjectDictionary } from "@opticss/util";
 
 /**

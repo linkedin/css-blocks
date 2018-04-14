@@ -9,16 +9,16 @@ import {
   CallExpression,
   Expression,
   Identifier,
+  JSXAttribute,
+  JSXOpeningElement,
+  Node,
+  SourceLocation,
   isCallExpression,
   isIdentifier,
   isJSXExpressionContainer,
   isJSXIdentifier,
   isMemberExpression,
   isVariableDeclarator,
-  JSXAttribute,
-  JSXOpeningElement,
-  Node,
-  SourceLocation,
 } from "babel-types";
 
 import { isCommonNameForStyling, isStyleFunction } from "../../styleFunctions";
@@ -26,8 +26,8 @@ import { MalformedBlockPath, TemplateAnalysisError } from "../../utils/Errors";
 import { ExpressionReader, isBlockStateGroupResult, isBlockStateResult } from "../../utils/ExpressionReader";
 import { isConsoleLogStatement } from "../../utils/isConsoleLogStatement";
 
-import { TEMPLATE_TYPE } from "../Template";
 import { JSXAnalysis } from "../index";
+import { TEMPLATE_TYPE } from "../Template";
 import { BooleanExpression, Flags, JSXElementAnalysis, StringExpression, TernaryExpression } from "../types";
 
 function htmlTagName(el: JSXOpeningElement): string | undefined { return (isJSXIdentifier(el.name) && el.name.name === el.name.name.toLowerCase()) ? el.name.name : undefined; }

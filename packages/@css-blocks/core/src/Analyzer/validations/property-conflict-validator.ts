@@ -1,4 +1,4 @@
-import { MultiMap, objectValues, TwoKeyMultiMap } from "@opticss/util";
+import { MultiMap, TwoKeyMultiMap, objectValues } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import { postcss } from "opticss";
 

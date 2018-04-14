@@ -1,15 +1,9 @@
 import {
   Block,
   Options as CSSBlocksOptions,
-<<<<<<< HEAD:packages/@css-blocks/glimmer/src/Rewriter.ts
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
   resolveConfiguration,
-=======
-  resolveConfiguration,
-  ResolvedConfiguration as CSSBlocksConfiguration,
-  StyleMapping,
->>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/glimmer/src/Rewriter.ts
 } from "@css-blocks/core";
 import {
   AST,

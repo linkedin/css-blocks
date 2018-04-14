@@ -125,7 +125,6 @@
     find-up "^2.1.0"
 
 "@glimmer/compiler@^0.33.0":
-<<<<<<< HEAD
   version "0.33.6"
   resolved "https://registry.npmjs.org/@glimmer/compiler/-/compiler-0.33.6.tgz#bb5948a7035f13a2c8406abffa89504d1a98ac51"
   dependencies:
@@ -133,15 +132,6 @@
     "@glimmer/syntax" "^0.33.6"
     "@glimmer/util" "^0.33.6"
     "@glimmer/wire-format" "^0.33.6"
-=======
-  version "0.33.4"
-  resolved "https://registry.npmjs.org/@glimmer/compiler/-/compiler-0.33.4.tgz#9fa1a604c5313b0b281b5351620a82e6b5e34f51"
-  dependencies:
-    "@glimmer/interfaces" "^0.33.4"
-    "@glimmer/syntax" "^0.33.4"
-    "@glimmer/util" "^0.33.4"
-    "@glimmer/wire-format" "^0.33.4"
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 "@glimmer/di@^0.2.0":
   version "0.2.0"
@@ -153,19 +143,11 @@
   dependencies:
     "@glimmer/wire-format" "^0.29.10"
 
-<<<<<<< HEAD
 "@glimmer/interfaces@^0.33.6":
   version "0.33.6"
   resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.33.6.tgz#876edf185cfcde9a40ad087df18ad35a48735451"
   dependencies:
     "@glimmer/wire-format" "^0.33.6"
-=======
-"@glimmer/interfaces@^0.33.4":
-  version "0.33.4"
-  resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.33.4.tgz#80783552d4d8b567f78ddbc3273e751fe263006b"
-  dependencies:
-    "@glimmer/wire-format" "^0.33.4"
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 "@glimmer/resolution-map-builder@0.5.1":
   version "0.5.1"
@@ -204,21 +186,12 @@
     handlebars "^4.0.6"
     simple-html-tokenizer "^0.4.1"
 
-<<<<<<< HEAD
 "@glimmer/syntax@^0.33.0", "@glimmer/syntax@^0.33.6":
   version "0.33.6"
   resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.33.6.tgz#1a1839c5f3b80333a86bba110c2af649df41a917"
   dependencies:
     "@glimmer/interfaces" "^0.33.6"
     "@glimmer/util" "^0.33.6"
-=======
-"@glimmer/syntax@^0.33.0", "@glimmer/syntax@^0.33.4":
-  version "0.33.4"
-  resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.33.4.tgz#ac824e0ccad3fd4cb9bf05d7cf6b5a9fbd8b195e"
-  dependencies:
-    "@glimmer/interfaces" "^0.33.4"
-    "@glimmer/util" "^0.33.4"
->>>>>>> feat: Enable root-level typedoc generation for the project.
     handlebars "^4.0.6"
     simple-html-tokenizer "^0.5.0"
 
@@ -226,15 +199,9 @@
   version "0.29.10"
   resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.29.10.tgz#8662daf273ffef9254b8d943d39aa396ed7225a5"
 
-<<<<<<< HEAD
 "@glimmer/util@^0.33.6":
   version "0.33.6"
   resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.33.6.tgz#cd8186286baa08ab5b754a1f49a385c312c72da0"
-=======
-"@glimmer/util@^0.33.4":
-  version "0.33.4"
-  resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.33.4.tgz#3aaabcad5cf04195917553510d2128fdce3208eb"
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 "@glimmer/wire-format@^0.29.10":
   version "0.29.10"
@@ -242,19 +209,11 @@
   dependencies:
     "@glimmer/util" "^0.29.10"
 
-<<<<<<< HEAD
 "@glimmer/wire-format@^0.33.6":
   version "0.33.6"
   resolved "https://registry.npmjs.org/@glimmer/wire-format/-/wire-format-0.33.6.tgz#51eb651528572c23eba4601770529fa8c21f5303"
   dependencies:
     "@glimmer/util" "^0.33.6"
-=======
-"@glimmer/wire-format@^0.33.4":
-  version "0.33.4"
-  resolved "https://registry.npmjs.org/@glimmer/wire-format/-/wire-format-0.33.4.tgz#782d8bc02cb0f6261b5711cef007d907831f15d5"
-  dependencies:
-    "@glimmer/util" "^0.33.4"
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 "@marionebl/sander@^0.6.0":
   version "0.6.1"
@@ -277,11 +236,7 @@
   dependencies:
     "@opticss/element-analysis" "file:../../Library/Caches/Yarn/v1/npm-@opticss/element-analysis"
     "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
-<<<<<<< HEAD
     postcss "^6.0.21"
-=======
-    postcss "^6.0.12"
->>>>>>> feat: Enable root-level typedoc generation for the project.
     typescript-collections "^1.2.5"
 
 "@opticss/util@file:../opticss/packages/util":
@@ -404,26 +359,16 @@
   resolved "https://registry.npmjs.org/@types/mocha/-/mocha-2.2.48.tgz#3523b126a0b049482e1c3c11877460f76622ffab"
 
 "@types/node@*":
-<<<<<<< HEAD
   version "9.6.6"
   resolved "https://registry.npmjs.org/@types/node/-/node-9.6.6.tgz#439b91f9caf3983cad2eef1e11f6bedcbf9431d2"
 
 "@types/node@^8.0.0":
   version "8.10.9"
   resolved "https://registry.npmjs.org/@types/node/-/node-8.10.9.tgz#b507a74a7d3eddc74a17dc35fd40d8f45dde0d6c"
-=======
-  version "9.6.5"
-  resolved "https://registry.npmjs.org/@types/node/-/node-9.6.5.tgz#ee700810fdf49ac1c399fc5980b7559b3e5a381d"
-
-"@types/node@^8.0.0":
-  version "8.10.8"
-  resolved "https://registry.npmjs.org/@types/node/-/node-8.10.8.tgz#794cba23cc9f8d9715f6543fa8827433b5f5cd3b"
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 "@types/prettier@^1.8.0":
   version "1.12.0"
   resolved "https://registry.npmjs.org/@types/prettier/-/prettier-1.12.0.tgz#61ed6bdc64386f49c9e1f179cf84ef26ddc4740c"
-<<<<<<< HEAD
 
 "@types/recursive-readdir@^2.2.0":
   version "2.2.0"
@@ -431,15 +376,6 @@
   dependencies:
     "@types/node" "*"
 
-=======
-
-"@types/recursive-readdir@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.npmjs.org/@types/recursive-readdir/-/recursive-readdir-2.2.0.tgz#b39cd5474fd58ea727fe434d5c68b7a20ba9121c"
-  dependencies:
-    "@types/node" "*"
-
->>>>>>> feat: Enable root-level typedoc generation for the project.
 "@types/shelljs@0.7.8":
   version "0.7.8"
   resolved "https://registry.npmjs.org/@types/shelljs/-/shelljs-0.7.8.tgz#4b4d6ee7926e58d7bca448a50ba442fd9f6715bd"
@@ -452,13 +388,8 @@
   resolved "https://registry.npmjs.org/@types/source-list-map/-/source-list-map-0.1.2.tgz#0078836063ffaf17412349bba364087e0ac02ec9"
 
 "@types/tapable@*":
-<<<<<<< HEAD
   version "1.0.2"
   resolved "https://registry.npmjs.org/@types/tapable/-/tapable-1.0.2.tgz#e13182e1b69871a422d7863e11a4a6f5b814a4bd"
-=======
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/@types/tapable/-/tapable-1.0.1.tgz#938bfcc018eda2f386c34e37f084e6e961c08ca6"
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 "@types/tapable@0.2.4":
   version "0.2.4"
@@ -1004,13 +935,10 @@ broccoli-merge-trees@^3.0.0:
     broccoli-plugin "^1.3.0"
     merge-trees "^2.0.0"
 
-<<<<<<< HEAD
 broccoli-node-info@1.1.0:
   version "1.1.0"
   resolved "https://registry.npmjs.org/broccoli-node-info/-/broccoli-node-info-1.1.0.tgz#3aa2e31e07e5bdb516dd25214f7c45ba1c459412"
 
-=======
->>>>>>> feat: Enable root-level typedoc generation for the project.
 broccoli-plugin@^1.3.0:
   version "1.3.0"
   resolved "https://registry.npmjs.org/broccoli-plugin/-/broccoli-plugin-1.3.0.tgz#bee704a8e42da08cb58e513aaa436efb7f0ef1ee"
@@ -1126,15 +1054,12 @@ browserslist@^1.3.6, browserslist@^1.5.2, browserslist@^1.7.6:
     caniuse-db "^1.0.30000639"
     electron-to-chromium "^1.2.7"
 
-<<<<<<< HEAD
 bser@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/bser/-/bser-2.0.0.tgz#9ac78d3ed5d915804fd87acb158bc797147a1719"
   dependencies:
     node-int64 "^0.4.0"
 
-=======
->>>>>>> feat: Enable root-level typedoc generation for the project.
 buffer-from@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/buffer-from/-/buffer-from-1.0.0.tgz#4cb8832d23612589b0406e9e2956c17f06fdf531"
@@ -1240,13 +1165,8 @@ caniuse-api@^1.5.2:
     lodash.uniq "^4.5.0"
 
 caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-<<<<<<< HEAD
   version "1.0.30000830"
   resolved "https://registry.npmjs.org/caniuse-db/-/caniuse-db-1.0.30000830.tgz#6e45255b345649fd15ff59072da1e12bb3de2f13"
-=======
-  version "1.0.30000828"
-  resolved "https://registry.npmjs.org/caniuse-db/-/caniuse-db-1.0.30000828.tgz#ed6d6f03b5a81fb291c3c0e088828b11a70948bf"
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 capture-stack-trace@^1.0.0:
   version "1.0.0"
@@ -1290,13 +1210,8 @@ chalk@^1.0.0, chalk@^1.1.3:
     supports-color "^2.0.0"
 
 chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.0, chalk@^2.3.2:
-<<<<<<< HEAD
   version "2.4.0"
   resolved "https://registry.npmjs.org/chalk/-/chalk-2.4.0.tgz#a060a297a6b57e15b61ca63ce84995daa0fe6e52"
-=======
-  version "2.3.2"
-  resolved "https://registry.npmjs.org/chalk/-/chalk-2.3.2.tgz#250dc96b07491bfd601e648d66ddf5f60c7a5c65"
->>>>>>> feat: Enable root-level typedoc generation for the project.
   dependencies:
     ansi-styles "^3.2.1"
     escape-string-regexp "^1.0.5"
@@ -1487,11 +1402,7 @@ commander@2.9.0:
   dependencies:
     graceful-readlink ">= 1.0.0"
 
-<<<<<<< HEAD
 commander@^2.12.1, commander@^2.5.0:
-=======
-commander@^2.12.1:
->>>>>>> feat: Enable root-level typedoc generation for the project.
   version "2.15.1"
   resolved "https://registry.npmjs.org/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
 
@@ -1566,19 +1477,11 @@ conventional-changelog-atom@^0.2.8:
     q "^1.5.1"
 
 conventional-changelog-cli@^1.3.13:
-<<<<<<< HEAD
   version "1.3.22"
   resolved "https://registry.npmjs.org/conventional-changelog-cli/-/conventional-changelog-cli-1.3.22.tgz#13570fe1728f56f013ff7a88878ff49d5162a405"
   dependencies:
     add-stream "^1.0.0"
     conventional-changelog "^1.1.24"
-=======
-  version "1.3.21"
-  resolved "https://registry.npmjs.org/conventional-changelog-cli/-/conventional-changelog-cli-1.3.21.tgz#f6b063102ba34c0f2bec552249ee233e0762e0a4"
-  dependencies:
-    add-stream "^1.0.0"
-    conventional-changelog "^1.1.23"
->>>>>>> feat: Enable root-level typedoc generation for the project.
     lodash "^4.2.1"
     meow "^4.0.0"
     tempfile "^1.1.1"
@@ -1589,15 +1492,9 @@ conventional-changelog-codemirror@^0.3.8:
   dependencies:
     q "^1.5.1"
 
-<<<<<<< HEAD
 conventional-changelog-core@^2.0.11:
   version "2.0.11"
   resolved "https://registry.npmjs.org/conventional-changelog-core/-/conventional-changelog-core-2.0.11.tgz#19b5fbd55a9697773ed6661f4e32030ed7e30287"
-=======
-conventional-changelog-core@^2.0.10:
-  version "2.0.10"
-  resolved "https://registry.npmjs.org/conventional-changelog-core/-/conventional-changelog-core-2.0.10.tgz#3e47565ef9d148bcdceab6de6b3651a16dd28dc8"
->>>>>>> feat: Enable root-level typedoc generation for the project.
   dependencies:
     conventional-changelog-writer "^3.0.9"
     conventional-commits-parser "^2.1.7"
@@ -1613,15 +1510,9 @@ conventional-changelog-core@^2.0.10:
     read-pkg-up "^1.0.1"
     through2 "^2.0.0"
 
-<<<<<<< HEAD
 conventional-changelog-ember@^0.3.12:
   version "0.3.12"
   resolved "https://registry.npmjs.org/conventional-changelog-ember/-/conventional-changelog-ember-0.3.12.tgz#b7d31851756d0fcb49b031dffeb6afa93b202400"
-=======
-conventional-changelog-ember@^0.3.11:
-  version "0.3.11"
-  resolved "https://registry.npmjs.org/conventional-changelog-ember/-/conventional-changelog-ember-0.3.11.tgz#56ca9b418ee9d7f089bea34307d57497420d72a6"
->>>>>>> feat: Enable root-level typedoc generation for the project.
   dependencies:
     q "^1.5.1"
 
@@ -1675,26 +1566,15 @@ conventional-changelog-writer@^3.0.9:
     split "^1.0.0"
     through2 "^2.0.0"
 
-<<<<<<< HEAD
 conventional-changelog@^1.1.24:
   version "1.1.24"
   resolved "https://registry.npmjs.org/conventional-changelog/-/conventional-changelog-1.1.24.tgz#3d94c29c960f5261c002678315b756cdd3d7d1f0"
-=======
-conventional-changelog@^1.1.23:
-  version "1.1.23"
-  resolved "https://registry.npmjs.org/conventional-changelog/-/conventional-changelog-1.1.23.tgz#4ac72af8b9ea9af260e97acf556c19d8b2da970e"
->>>>>>> feat: Enable root-level typedoc generation for the project.
   dependencies:
     conventional-changelog-angular "^1.6.6"
     conventional-changelog-atom "^0.2.8"
     conventional-changelog-codemirror "^0.3.8"
-<<<<<<< HEAD
     conventional-changelog-core "^2.0.11"
     conventional-changelog-ember "^0.3.12"
-=======
-    conventional-changelog-core "^2.0.10"
-    conventional-changelog-ember "^0.3.11"
->>>>>>> feat: Enable root-level typedoc generation for the project.
     conventional-changelog-eslint "^1.0.9"
     conventional-changelog-express "^0.3.6"
     conventional-changelog-jquery "^0.1.0"
@@ -1872,6 +1752,10 @@ css-selector-tokenizer@^0.7.0:
 cssesc@^0.1.0:
   version "0.1.0"
   resolved "https://registry.npmjs.org/cssesc/-/cssesc-0.1.0.tgz#c814903e45623371a0477b40109aaafbeeaddbb4"
+
+cssesc@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/cssesc/-/cssesc-1.0.1.tgz#ef7bd8d0229ed6a3a7051ff7771265fe7330e0a8"
 
 cssnano@^3.10.0:
   version "3.10.0"
@@ -2105,12 +1989,6 @@ domain-browser@^1.1.1:
 dot-prop@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/dot-prop/-/dot-prop-3.0.0.tgz#1b708af094a49c9a0e7dbcad790aba539dac1177"
-  dependencies:
-    is-obj "^1.0.0"
-
-dot-prop@^4.1.1:
-  version "4.2.0"
-  resolved "https://registry.npmjs.org/dot-prop/-/dot-prop-4.2.0.tgz#1f19e0c2e1aa0e32797c49799f2837ac6af69c57"
   dependencies:
     is-obj "^1.0.0"
 
@@ -2593,7 +2471,6 @@ fragment-cache@^0.2.1:
   dependencies:
     map-cache "^0.2.2"
 
-<<<<<<< HEAD
 fs-exists-sync@^0.1.0:
   version "0.1.0"
   resolved "https://registry.npmjs.org/fs-exists-sync/-/fs-exists-sync-0.1.0.tgz#982d6893af918e72d08dec9e8673ff2b5a8d6add"
@@ -2608,8 +2485,6 @@ fs-extra@^0.30.0:
     path-is-absolute "^1.0.0"
     rimraf "^2.2.8"
 
-=======
->>>>>>> feat: Enable root-level typedoc generation for the project.
 fs-extra@^3.0.1:
   version "3.0.1"
   resolved "https://registry.npmjs.org/fs-extra/-/fs-extra-3.0.1.tgz#3794f378c58b342ea7dbbb23095109c4b3b62291"
@@ -2634,11 +2509,7 @@ fs-extra@^5.0.0:
     jsonfile "^4.0.0"
     universalify "^0.1.0"
 
-<<<<<<< HEAD
 fs-tree-diff@^0.5.3, fs-tree-diff@^0.5.6:
-=======
-fs-tree-diff@^0.5.3:
->>>>>>> feat: Enable root-level typedoc generation for the project.
   version "0.5.7"
   resolved "https://registry.npmjs.org/fs-tree-diff/-/fs-tree-diff-0.5.7.tgz#315e2b098d5fe7f622880ac965b1b051868ac871"
   dependencies:
@@ -3654,13 +3525,8 @@ lcid@^1.0.0:
     invert-kv "^1.0.0"
 
 lerna@^2.5.1:
-<<<<<<< HEAD
   version "2.10.2"
   resolved "https://registry.npmjs.org/lerna/-/lerna-2.10.2.tgz#3a0d54d398360fecc5918207c6d7ab68a5443d9f"
-=======
-  version "2.10.1"
-  resolved "https://registry.npmjs.org/lerna/-/lerna-2.10.1.tgz#3b0ffe6b80d3312e8efdc7003a50d47d90ebdf03"
->>>>>>> feat: Enable root-level typedoc generation for the project.
   dependencies:
     async "^1.5.0"
     chalk "^2.1.0"
@@ -4218,13 +4084,8 @@ modify-values@^1.0.0:
   resolved "https://registry.npmjs.org/modify-values/-/modify-values-1.0.1.tgz#b3939fa605546474e3e3e3c63d64bd43b4ee6022"
 
 moment@^2.6.0:
-<<<<<<< HEAD
   version "2.22.1"
   resolved "https://registry.npmjs.org/moment/-/moment-2.22.1.tgz#529a2e9bf973f259c9643d237fda84de3a26e8ad"
-=======
-  version "2.22.0"
-  resolved "https://registry.npmjs.org/moment/-/moment-2.22.0.tgz#7921ade01017dd45186e7fee5f424f0b8663a730"
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 moo@^0.4.1:
   version "0.4.3"
@@ -4281,13 +4142,10 @@ neo-async@^2.5.0:
 next-tick@1:
   version "1.0.0"
   resolved "https://registry.npmjs.org/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
-<<<<<<< HEAD
 
 node-int64@^0.4.0:
   version "0.4.0"
   resolved "https://registry.npmjs.org/node-int64/-/node-int64-0.4.0.tgz#87a9065cdb355d3182d8f94ce11188b825c68a3b"
-=======
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 node-libs-browser@^2.0.0:
   version "2.1.0"
@@ -4493,13 +4351,8 @@ onetime@^2.0.0:
     css-property-parser "^1.0.5"
     debug "^2.6.8"
     object.values "^1.0.4"
-<<<<<<< HEAD
     postcss "^6.0.21"
     postcss-selector-parser "^4.0.0-rc.1"
-=======
-    postcss "^6.0.12"
-    postcss-selector-parser "^3.1.1"
->>>>>>> feat: Enable root-level typedoc generation for the project.
     source-map "^0.6.1"
     specificity "^0.3.2"
     typescript-collections "^1.2.5"
@@ -4944,25 +4797,19 @@ postcss-scss@^0.3.0:
   dependencies:
     postcss "^5.2.4"
 
-postcss-selector-parser@3.1.1, postcss-selector-parser@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-3.1.1.tgz#4f875f4afb0c96573d5cf4d74011aee250a7e865"
-  dependencies:
-    dot-prop "^4.1.1"
-    indexes-of "^1.0.1"
-    uniq "^1.0.1"
-
-<<<<<<< HEAD
-postcss-selector-parser@^4.0.0-rc.1:
-  version "4.0.0-rc.1"
-  resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-4.0.0-rc.1.tgz#e32edb8a8f3ca8300cb20b9207b15ef41b760f88"
-=======
 postcss-selector-parser@^2.0.0, postcss-selector-parser@^2.2.2:
   version "2.2.3"
   resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-2.2.3.tgz#f9437788606c3c9acee16ffe8d8b16297f27bb90"
->>>>>>> feat: Enable root-level typedoc generation for the project.
   dependencies:
     flatten "^1.0.2"
+    indexes-of "^1.0.1"
+    uniq "^1.0.1"
+
+postcss-selector-parser@^4.0.0-rc.1:
+  version "4.0.0-rc.1"
+  resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-4.0.0-rc.1.tgz#e32edb8a8f3ca8300cb20b9207b15ef41b760f88"
+  dependencies:
+    cssesc "^1.0.1"
     indexes-of "^1.0.1"
     uniq "^1.0.1"
 
@@ -5004,11 +4851,7 @@ postcss@^5.0.10, postcss@^5.0.11, postcss@^5.0.12, postcss@^5.0.13, postcss@^5.0
     source-map "^0.5.6"
     supports-color "^3.2.3"
 
-<<<<<<< HEAD
 postcss@^6.0.1, postcss@^6.0.21:
-=======
-postcss@^6.0.1, postcss@^6.0.12, postcss@^6.0.14, postcss@^6.0.21:
->>>>>>> feat: Enable root-level typedoc generation for the project.
   version "6.0.21"
   resolved "https://registry.npmjs.org/postcss/-/postcss-6.0.21.tgz#8265662694eddf9e9a5960db6da33c39e4cd069d"
   dependencies:
@@ -5033,13 +4876,8 @@ preserve@^0.2.0:
   resolved "https://registry.npmjs.org/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
 
 prettier@^1.8.2:
-<<<<<<< HEAD
   version "1.12.1"
   resolved "https://registry.npmjs.org/prettier/-/prettier-1.12.1.tgz#c1ad20e803e7749faf905a409d2367e06bbe7325"
-=======
-  version "1.12.0"
-  resolved "https://registry.npmjs.org/prettier/-/prettier-1.12.0.tgz#d26fc5894b9230de97629b39cae225b503724ce8"
->>>>>>> feat: Enable root-level typedoc generation for the project.
 
 private@^0.1.7:
   version "0.1.8"
@@ -5528,11 +5366,7 @@ right-align@^0.1.1:
   dependencies:
     align-text "^0.1.1"
 
-<<<<<<< HEAD
 rimraf@2, rimraf@^2.2.8, rimraf@^2.3.4, rimraf@^2.4.3, rimraf@^2.5.1, rimraf@^2.5.2, rimraf@^2.5.4, rimraf@^2.6.1, rimraf@^2.6.2:
-=======
-rimraf@2, rimraf@^2.3.4, rimraf@^2.4.3, rimraf@^2.5.1, rimraf@^2.5.2, rimraf@^2.5.4, rimraf@^2.6.1, rimraf@^2.6.2:
->>>>>>> feat: Enable root-level typedoc generation for the project.
   version "2.6.2"
   resolved "https://registry.npmjs.org/rimraf/-/rimraf-2.6.2.tgz#2ed8150d24a16ea8651e6d6ef0f47c4158ce7a36"
   dependencies:
@@ -5583,7 +5417,6 @@ safer-buffer@^2.1.0:
   version "2.1.2"
   resolved "https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
 
-<<<<<<< HEAD
 sane@^1.4.1:
   version "1.7.0"
   resolved "https://registry.npmjs.org/sane/-/sane-1.7.0.tgz#b3579bccb45c94cf20355cc81124990dfd346e30"
@@ -5596,8 +5429,6 @@ sane@^1.4.1:
     walker "~1.0.5"
     watch "~0.10.0"
 
-=======
->>>>>>> feat: Enable root-level typedoc generation for the project.
 sax@~1.2.1:
   version "1.2.4"
   resolved "https://registry.npmjs.org/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
@@ -6117,15 +5948,12 @@ tmp@0.0.28:
   dependencies:
     os-tmpdir "~1.0.1"
 
-<<<<<<< HEAD
 tmp@0.0.31:
   version "0.0.31"
   resolved "https://registry.npmjs.org/tmp/-/tmp-0.0.31.tgz#8f38ab9438e17315e5dbd8b3657e8bfb277ae4a7"
   dependencies:
     os-tmpdir "~1.0.1"
 
-=======
->>>>>>> feat: Enable root-level typedoc generation for the project.
 tmp@^0.0.33:
   version "0.0.33"
   resolved "https://registry.npmjs.org/tmp/-/tmp-0.0.33.tgz#6d34335889768d21b2bcda0aa277ced3b1bfadf9"

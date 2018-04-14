@@ -1,14 +1,14 @@
 import { Binding, NodePath } from "babel-traverse";
 import {
   CallExpression,
+  Node,
   isIdentifier,
   isImportDeclaration,
-  Node,
 } from "babel-types";
 
 import { ErrorLocation } from "../utils/Errors";
 
-import { COMMON_NAMES as COMMON_OBJSTR_NAMES, objstrFn, ObjStrStyleFunction } from "./objstrFunction";
+import { COMMON_NAMES as COMMON_OBJSTR_NAMES, ObjStrStyleFunction, objstrFn } from "./objstrFunction";
 
 export type StyleFunction = ObjStrStyleFunction;
 

@@ -5,12 +5,12 @@ import * as errors from "../../errors";
 import { Analysis } from "../Analysis";
 import { ElementAnalysis } from "../ElementAnalysis";
 
-import { Validator } from "./Validator";
 import { attributeGroupValidator } from "./attribute-group-validator";
 import { attributeParentValidator } from "./attribute-parent-validator";
 import { classPairsValidator } from "./class-pairs-validator";
 import { propertyConflictValidator } from "./property-conflict-validator";
 import { rootClassValidator } from "./root-class-validator";
+import { Validator } from "./Validator";
 
 export * from "./class-pairs-validator";
 export * from "./root-class-validator";
