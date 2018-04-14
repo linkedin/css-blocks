@@ -1,7 +1,7 @@
 import { Template } from "@opticss/template-api";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { BlockFactory } from "../../src/BlockParser";
 import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/BlockTree";

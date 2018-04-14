@@ -12,7 +12,7 @@ import {
   resolveConfiguration as resolveBlocksConfiguration,
 } from "css-blocks";
 import * as path from "path";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 import { Configuration as WebpackConfiguration } from "webpack";
 import * as merge from "webpack-merge";
 

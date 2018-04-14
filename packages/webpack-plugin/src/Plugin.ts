@@ -2,7 +2,7 @@ import { TemplateTypes } from "@opticss/template-api";
 import { ObjectDictionary } from "@opticss/util";
 import * as debugGenerator from "debug";
 import * as path from "path";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 import { RawSourceMap } from "source-map";
 import * as Tapable from "tapable";
 import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";

@@ -1,7 +1,7 @@
 import { ObjectDictionary } from "@opticss/util";
 import * as debugGenerator from "debug";
+import { postcss } from "opticss";
 import * as path from "path";
-import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
 import { Block } from "../BlockTree";

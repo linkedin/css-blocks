@@ -1,4 +1,4 @@
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";

@@ -1,5 +1,5 @@
 import { TemplateTypes } from "@opticss/template-api";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { Analyzer } from "../Analyzer";
 import {

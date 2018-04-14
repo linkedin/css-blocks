@@ -1,4 +1,4 @@
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import * as errors from "../../errors";
 import { sourceLocation as loc } from "../../SourceLocation";

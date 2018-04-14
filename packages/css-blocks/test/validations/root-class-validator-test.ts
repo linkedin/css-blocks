@@ -1,7 +1,7 @@
 import { Template } from "@opticss/template-api";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { SerializedAnalysis } from "../../src/Analyzer";
 import { BlockFactory } from "../../src/BlockParser";

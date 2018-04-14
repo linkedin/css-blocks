@@ -1,7 +1,5 @@
 import { assertNever } from "@opticss/util";
-import { CompoundSelector, ParsedSelector, parseSelector } from "opticss";
-import * as postcss from "postcss";
-import selectorParser = require("postcss-selector-parser");
+import { CompoundSelector, ParsedSelector, parseSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
 import { getBlockNode } from "../BlockParser";
 import { RESOLVE_RE } from "../BlockSyntax";
@@ -309,7 +307,7 @@ export class ConflictResolver {
    * @param s The compound selector to split.
    * @returns [ CompoundSelector, Combinator, CompoundSelector ]
    */
-  private splitSelector(s: CompoundSelector): [CompoundSelector | undefined, selectorParser.Combinator | undefined, CompoundSelector] {
+  private splitSelector(s: CompoundSelector): [CompoundSelector, selectorParser.Combinator, CompoundSelector] | [undefined, undefined, CompoundSelector] {
     s = s.clone();
     let last = s.removeLast();
     if (last) {

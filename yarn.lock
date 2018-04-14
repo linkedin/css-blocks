@@ -237,7 +237,7 @@
   dependencies:
     "@opticss/element-analysis" "file:../../../Library/Caches/Yarn/v1/npm-@opticss/element-analysis"
     "@opticss/util" "file:../../../Library/Caches/Yarn/v1/npm-@opticss/util"
-    postcss "^6.0.13"
+    postcss "^6.0.21"
     typescript-collections "^1.2.5"
 
 "@opticss/util@file:../opticss/packages/util":
@@ -1598,6 +1598,10 @@ cssesc@^0.1.0:
   version "0.1.0"
   resolved "https://registry.npmjs.org/cssesc/-/cssesc-0.1.0.tgz#c814903e45623371a0477b40109aaafbeeaddbb4"
 
+cssesc@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/cssesc/-/cssesc-1.0.1.tgz#ef7bd8d0229ed6a3a7051ff7771265fe7330e0a8"
+
 cssnano@^3.10.0:
   version "3.10.0"
   resolved "https://registry.npmjs.org/cssnano/-/cssnano-3.10.0.tgz#4f38f6cea2b9b17fa01490f23f1dc68ea65c1c38"
@@ -1818,12 +1822,6 @@ domain-browser@^1.1.1:
 dot-prop@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/dot-prop/-/dot-prop-3.0.0.tgz#1b708af094a49c9a0e7dbcad790aba539dac1177"
-  dependencies:
-    is-obj "^1.0.0"
-
-dot-prop@^4.1.1:
-  version "4.2.0"
-  resolved "https://registry.npmjs.org/dot-prop/-/dot-prop-4.2.0.tgz#1f19e0c2e1aa0e32797c49799f2837ac6af69c57"
   dependencies:
     is-obj "^1.0.0"
 
@@ -3910,8 +3908,8 @@ onetime@^2.0.0:
     css-property-parser "^1.0.5"
     debug "^2.6.8"
     object.values "^1.0.4"
-    postcss "^6.0.13"
-    postcss-selector-parser "^3.1.1"
+    postcss "^6.0.21"
+    postcss-selector-parser "^4.0.0-rc.0"
     source-map "^0.6.1"
     specificity "^0.3.2"
     typescript-collections "^1.2.5"
@@ -4339,19 +4337,19 @@ postcss-scss@^0.3.0:
   dependencies:
     postcss "^5.2.4"
 
-postcss-selector-parser@3.1.1, postcss-selector-parser@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-3.1.1.tgz#4f875f4afb0c96573d5cf4d74011aee250a7e865"
-  dependencies:
-    dot-prop "^4.1.1"
-    indexes-of "^1.0.1"
-    uniq "^1.0.1"
-
 postcss-selector-parser@^2.0.0, postcss-selector-parser@^2.2.2:
   version "2.2.3"
   resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-2.2.3.tgz#f9437788606c3c9acee16ffe8d8b16297f27bb90"
   dependencies:
     flatten "^1.0.2"
+    indexes-of "^1.0.1"
+    uniq "^1.0.1"
+
+postcss-selector-parser@^4.0.0-rc.0:
+  version "4.0.0-rc.0"
+  resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-4.0.0-rc.0.tgz#2e8441d46717280b41b85d78e0dadbf853e90d9a"
+  dependencies:
+    cssesc "^1.0.1"
     indexes-of "^1.0.1"
     uniq "^1.0.1"
 
@@ -4401,7 +4399,7 @@ postcss@^6.0.1:
     source-map "^0.6.1"
     supports-color "^5.2.0"
 
-postcss@^6.0.13, postcss@^6.0.21:
+postcss@^6.0.21:
   version "6.0.21"
   resolved "https://registry.npmjs.org/postcss/-/postcss-6.0.21.tgz#8265662694eddf9e9a5960db6da33c39e4cd069d"
   dependencies:

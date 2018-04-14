@@ -2,7 +2,7 @@ import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template } from "@opticss/template-api";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { ElementAnalysis, SerializedAnalysis } from "../src/Analyzer";
 import { BlockFactory } from "../src/BlockParser";

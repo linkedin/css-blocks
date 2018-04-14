@@ -1,5 +1,4 @@
-import * as postcss from "postcss";
-import * as selectorParser from "postcss-selector-parser";
+import { postcss, postcssSelectorParser as selectorParser } from "opticss";
 
 export interface SourceLocation {
   filename?: string;

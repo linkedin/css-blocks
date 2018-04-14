@@ -4,9 +4,9 @@ import {
   CompoundSelector,
   ParsedSelector,
   parseSelector,
+  postcss,
+  postcssSelectorParser as selectorParser,
 } from "opticss";
-import * as postcss from "postcss";
-import selectorParser = require("postcss-selector-parser");
 
 import {
   BlockType,
@@ -306,7 +306,7 @@ export class Block
   nodeAsStyle(node: selectorParser.Node): [Styles, number] | null {
     if (isRootNode(node)) {
       return [this.rootClass, 0];
-    } else if (node.type === selectorParser.TAG) {
+    } else if (selectorParser.isTag(node)) {
       let otherBlock = this.getReferencedBlock(node.value);
       if (otherBlock) {
         let next = node.next();
@@ -341,7 +341,7 @@ export class Block
       } else {
         return null;
       }
-    } else if (node.type === selectorParser.CLASS) {
+    } else if (selectorParser.isClassName(node)) {
       let klass = this.getClass(node.value);
       if (klass === null) {
         return null;
