@@ -1,13 +1,11 @@
-<<<<<<< HEAD:packages/@css-blocks/jsx/src/utils/ExpressionReader.ts
 import { AttrValue, Attribute, Block, BlockClass, isBlockClass } from "@css-blocks/core";
-=======
-import { Attribute, AttrValue, Block, BlockClass, isBlockClass } from "@css-blocks/core";
->>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/jsx/src/utils/ExpressionReader.ts
 import { Node } from "babel-traverse";
 import {
   BooleanLiteral,
   CallExpression,
   Expression,
+  NumericLiteral,
+  StringLiteral,
   isBooleanLiteral,
   isCallExpression,
   isIdentifier,
@@ -16,8 +14,6 @@ import {
   isMemberExpression,
   isNumericLiteral,
   isStringLiteral,
-  NumericLiteral,
-  StringLiteral,
 } from "babel-types";
 import * as debugGenerator from "debug";
 

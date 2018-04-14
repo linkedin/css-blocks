@@ -1,14 +1,10 @@
 import {
   FileIdentifier,
-  filesystemImporter,
   ImportedFile,
   Importer,
   PathBasedImporter,
   ResolvedConfiguration as CSSBlocksConfiguration,
-<<<<<<< HEAD:packages/@css-blocks/glimmer/src/GlimmerImporter.ts
   filesystemImporter,
-=======
->>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/glimmer/src/GlimmerImporter.ts
 } from "@css-blocks/core";
 import * as path from "path";
 

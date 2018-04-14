@@ -2,11 +2,12 @@ import { assertNever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
 import { Block, Style } from "../../BlockTree";
-import { selectorSourceLocation as loc, sourceLocation } from "../../SourceLocation";
 import * as errors from "../../errors";
+import { selectorSourceLocation as loc, sourceLocation } from "../../SourceLocation";
 import {
   BlockNodeAndType,
   BlockType,
+  NodeAndType,
   blockTypeName,
   getBlockNode,
   isAttributeNode,
@@ -14,7 +15,6 @@ import {
   isClassNode,
   isRootLevelObject,
   isRootNode,
-  NodeAndType,
   toAttrToken,
 } from "../block-intermediates";
 

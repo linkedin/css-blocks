@@ -9,19 +9,19 @@ import {
   AssignmentExpression,
   Expression,
   Identifier,
-  identifier,
   ImportDeclaration,
+  JSXAttribute,
+  JSXOpeningElement,
+  Node,
+  Statement,
+  identifier,
   importDeclaration,
   importDefaultSpecifier,
   isIdentifier,
   isJSXExpressionContainer,
-  JSXAttribute,
   jSXAttribute,
   jSXExpressionContainer,
   jSXIdentifier,
-  JSXOpeningElement,
-  Node,
-  Statement,
   stringLiteral,
 } from "babel-types";
 // import { TemplateAnalysisError } from '../utils/Errors';
@@ -32,7 +32,7 @@ import { JSXElementAnalyzer } from "../Analyzer/visitors/element";
 import { isBlockFilename } from "../utils/isBlockFilename";
 import { isConsoleLogStatement } from "../utils/isConsoleLogStatement";
 
-import { classnamesHelper as generateClassName, HELPER_FN_NAME } from "./classNameGenerator";
+import { HELPER_FN_NAME, classnamesHelper as generateClassName } from "./classNameGenerator";
 import { CSSBlocksJSXTransformer as Rewriter } from "./index";
 
 const debug = debugGenerator("css-blocks:jsx:rewriter");

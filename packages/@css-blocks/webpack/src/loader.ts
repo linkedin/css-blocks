@@ -1,21 +1,15 @@
 import {
   Block,
-<<<<<<< HEAD:packages/@css-blocks/webpack/src/loader.ts
   ResolvedConfiguration,
   StyleMapping,
   resolveConfiguration,
-=======
-  resolveConfiguration,
-  ResolvedConfiguration,
-  StyleMapping,
->>>>>>> feat: Enable root-level typedoc generation for the project.:packages/@css-blocks/webpack/src/loader.ts
 } from "@css-blocks/core";
 import * as debugGenerator from "debug";
 import * as loaderUtils from "loader-utils";
 const debug = debugGenerator("css-blocks:webpack:loader");
 
-import { PendingResult, TmpType } from "./Plugin";
 import { LoaderContext } from "./context";
+import { PendingResult, TmpType } from "./Plugin";
 
 /**
  * The css-blocks loader makes css-blocks available to webpack modules.

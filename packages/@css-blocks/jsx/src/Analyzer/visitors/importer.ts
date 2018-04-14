@@ -8,12 +8,12 @@ import {
   ClassDeclaration,
   Function,
   ImportDeclaration,
+  VariableDeclaration,
+  VariableDeclarator,
   isIdentifier,
   isImportDefaultSpecifier,
   isImportNamespaceSpecifier,
   isImportSpecifier,
-  VariableDeclaration,
-  VariableDeclarator,
 } from "babel-types";
 import * as debugGenerator from "debug";
 

@@ -2,7 +2,7 @@ import { postcss } from "opticss";
 
 import { BlockCompiler } from "./BlockCompiler";
 import { BlockFactory } from "./BlockParser";
-import { Options, resolveConfiguration, ResolvedConfiguration } from "./configuration";
+import { Options, ResolvedConfiguration, resolveConfiguration } from "./configuration";
 import * as errors from "./errors";
 
 /**
