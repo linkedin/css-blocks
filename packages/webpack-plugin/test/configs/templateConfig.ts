@@ -11,8 +11,8 @@ import {
   BlockFactory,
   resolveConfiguration as resolveBlocksConfiguration,
 } from "css-blocks";
-import * as path from "path";
 import { postcss } from "opticss";
+import * as path from "path";
 import { Configuration as WebpackConfiguration } from "webpack";
 import * as merge from "webpack-merge";
 
