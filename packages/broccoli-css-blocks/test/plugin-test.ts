@@ -20,7 +20,7 @@ describe("Broccoli Plugin Test", function() {
       assert.ok(1);
     });
 
-    it("outputs CSS file", async () => {
+    it("outputs CSS file and populates transport object", async () => {
       const entryComponentName = "Chrisrng";
 
       input.write({
@@ -46,18 +46,25 @@ describe("Broccoli Plugin Test", function() {
       });
 
       let analyzer = new GlimmerAnalyzer(input.path());
+      let transport = {};
 
       let compiler = new BroccoliCSSBlocks(input.path(), {
         entry: [entryComponentName],
         output: "src/ui/styles/css-blocks.css",
-        transport: {},
+        transport,
         analyzer,
       });
 
       let output = await buildOutput(compiler);
       let files = output.read();
 
-      assert.ok(files["src"]!["ui"]["styles"]["css-blocks.css"]);
+      assert.ok(Object.keys(transport).length, "Transport Object populated");
+      assert.ok(transport["mapping"], "Mapping property is populated in Transport Object");
+      assert.ok(transport["blocks"], "Blocks property is populated in Transport Object");
+      assert.ok(transport["analyzer"], "Analyzer property is populated in Transport Object");
+      assert.ok(transport["css"], "CSS property is populated in Transport Object");
+
+      assert.ok(files["src"]!["ui"]["styles"]["css-blocks.css"], "CSS File generated");
     });
   });
 });
