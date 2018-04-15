@@ -6,20 +6,20 @@ import { Optimizer } from "opticss";
 import * as postcss from "postcss";
 import * as readdir from "recursive-readdir";
 
+import { TemplateTypes } from "@opticss/template-api";
+
 import { BroccoliPlugin } from "./utils";
 
 export interface BroccoliOptions {
   entry: string[];
   output: string;
-  // tslint:disable-next-line:prefer-whatever-to-any
-  analyzer: Analyzer<any>;
+  analyzer: Analyzer<keyof TemplateTypes>;
   transport: {[key: string]: object};
 }
 
 class BroccoliCSSBlocks extends BroccoliPlugin {
 
-  // tslint:disable-next-line:prefer-whatever-to-any
-  private analyzer: Analyzer<any>;
+  private analyzer: Analyzer<keyof TemplateTypes>;
   private entry: string[];
   private output: string;
   private transport: { [key: string]: object };
@@ -93,7 +93,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
 
     // Run optimization and compute StyleMapping.
     let optimized = await optimizer.optimize(this.output);
-    let styleMapping = new StyleMapping<"Opticss.Template">(optimized.styleMapping, blocks, options, this.analyzer.analyses());
+    let styleMapping = new StyleMapping(optimized.styleMapping, blocks, options, this.analyzer.analyses());
 
     // Attach all computed data to our magic shared memory transport object...
     this.transport.mapping = styleMapping;
