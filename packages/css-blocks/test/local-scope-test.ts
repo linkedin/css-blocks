@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import cssBlocks = require("../src/cssBlocks");
 

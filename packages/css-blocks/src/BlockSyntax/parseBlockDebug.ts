@@ -1,4 +1,4 @@
-import { AtRule } from "postcss";
+import { postcss } from "opticss";
 
 import { Block } from "../BlockTree";
 import * as errors from "../errors";
@@ -6,7 +6,7 @@ import { sourceLocation } from "../SourceLocation";
 
 export type DebugChannel = "comment" | "stderr" | "stdout";
 
-export function parseBlockDebug(atRule: AtRule, sourceFile: string, scope: Block): { block: Block; channel: DebugChannel } {
+export function parseBlockDebug(atRule: postcss.AtRule, sourceFile: string, scope: Block): { block: Block; channel: DebugChannel } {
 
   let md = atRule.params.match(/([^\s]+) to (comment|stderr|stdout)/);
 

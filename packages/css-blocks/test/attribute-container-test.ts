@@ -1,7 +1,7 @@
 import { assert as typedAssert } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import cssBlocks = require("../src/cssBlocks");
 import { AttrValue } from "../src/index";

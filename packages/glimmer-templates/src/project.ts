@@ -6,8 +6,8 @@ import {
 } from "css-blocks";
 import * as fs from "fs";
 import * as glob from "glob";
+import { postcss } from "opticss";
 import * as path from "path";
-import * as postcss from "postcss";
 
 import resMapBuilder = require("@glimmer/resolution-map-builder");
 const buildResolutionMap = resMapBuilder.buildResolutionMap;

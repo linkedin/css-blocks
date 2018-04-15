@@ -1,5 +1,5 @@
 // tslint:disable:no-console
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { BLOCK_DEBUG, parseBlockDebug } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";

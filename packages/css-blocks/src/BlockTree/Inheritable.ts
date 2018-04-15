@@ -12,8 +12,7 @@
  * @module Block/BlockTree/Inheritable
  */
 import { ObjectDictionary } from "@opticss/util";
-import { ParsedSelector, SelectorFactory, parseSelector } from "opticss";
-import * as postcss from "postcss";
+import { ParsedSelector, SelectorFactory, parseSelector, postcss } from "opticss";
 
 /* tslint:disable:prefer-whatever-to-any */
 export type AnyNode = Inheritable<any, any, any, any, any>;

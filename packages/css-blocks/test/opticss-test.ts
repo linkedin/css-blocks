@@ -12,7 +12,7 @@ import {
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import { Optimizer } from "opticss";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { Analysis, Analyzer } from "../src/Analyzer";
 import { ElementAnalysis } from "../src/Analyzer";

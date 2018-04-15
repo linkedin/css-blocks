@@ -1,6 +1,4 @@
-import { parseSelector } from "opticss";
-import * as postcss from "postcss";
-import selectorParser = require("postcss-selector-parser");
+import { parseSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
 import { BLOCK_GLOBAL } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";

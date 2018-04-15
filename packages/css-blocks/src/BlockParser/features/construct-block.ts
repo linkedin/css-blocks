@@ -1,7 +1,5 @@
 import { assertNever } from "@opticss/util";
-import { CompoundSelector, ParsedSelector } from "opticss";
-import * as postcss from "postcss";
-import selectorParser = require("postcss-selector-parser");
+import { CompoundSelector, ParsedSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
 import { Block, Style } from "../../BlockTree";
 import * as errors from "../../errors";
@@ -257,9 +255,9 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
 
   // If selecting a block or tag, check that the referenced block has been imported.
   // Otherwise, referencing a tag name is not allowed in blocks, throw an error.
-  let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
+  let blockName = sel.nodes.find(selectorParser.isTag);
   if (blockName) {
-    let refBlock = block.getReferencedBlock(blockName.value!);
+    let refBlock = block.getReferencedBlock(blockName.value);
     if (!refBlock) {
       throw new errors.InvalidBlockSyntax(
         `Tag name selectors are not allowed: ${rule.selector}`,
@@ -269,7 +267,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
   }
 
   // Targeting attributes that are not state selectors is not allowed in blocks, throw.
-  let nonStateAttribute = sel.nodes.find(n => n.type === selectorParser.ATTRIBUTE && !isAttributeNode(n));
+  let nonStateAttribute = sel.nodes.find(n => selectorParser.isAttribute(n) && !isAttributeNode(n));
   if (nonStateAttribute) {
     throw new errors.InvalidBlockSyntax(
       `Cannot select attributes other than states: ${rule.selector}`,
@@ -279,7 +277,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
 
   // Disallow pseudoclasses that take selectors as arguments.
   sel.nodes.forEach(n => {
-    if (n.type === selectorParser.PSEUDO) {
+    if (selectorParser.isPseudoClass(n)) {
       let pseudo = n;
       if (pseudo.value === ":not" || pseudo.value === ":matches") {
         throw new errors.InvalidBlockSyntax(

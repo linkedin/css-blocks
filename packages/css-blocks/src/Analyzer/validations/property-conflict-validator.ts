@@ -1,6 +1,6 @@
 import { MultiMap, TwoKeyMultiMap, objectValues } from "@opticss/util";
 import * as propParser from "css-property-parser";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { Ruleset, Style } from "../../BlockTree";
 import {

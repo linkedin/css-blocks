@@ -1,4 +1,4 @@
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 
 import { EXTENDS } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
