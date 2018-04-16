@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import cssBlocks = require("../src/cssBlocks");
+import cssBlocks = require("./util/postcss-helper");
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";

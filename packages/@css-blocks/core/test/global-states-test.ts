@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import cssBlocks = require("../src/cssBlocks");
+import cssBlocks = require("./util/postcss-helper");
 
 import { assertError } from "./util/assertError";
 import { BEMProcessor } from "./util/BEMProcessor";
