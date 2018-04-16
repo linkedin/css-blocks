@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import cssBlocks from "../src";
+import * as cssBlocks from "../src";
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";

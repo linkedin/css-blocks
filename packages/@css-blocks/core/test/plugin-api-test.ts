@@ -3,7 +3,8 @@ import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
 import { resolveConfiguration } from "../src/configuration";
-import cssBlocks = require("../src/cssBlocks");
+
+import cssBlocks = require("./util/postcss-helper");
 
 @suite("Setting up")
 export class SetupTests {
