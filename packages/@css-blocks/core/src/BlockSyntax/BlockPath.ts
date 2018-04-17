@@ -2,7 +2,7 @@ import { BlockPathError, ErrorLocation } from "../errors";
 
 import {
   ATTR_PRESENT,
-  CLASS_NAME_IDENT as CSS_IDENT,
+  CLASS_NAME_IDENT,
   ROOT_CLASS,
   STATE_NAMESPACE,
 } from "./BlockSyntax";
@@ -17,24 +17,26 @@ interface ClassToken {
   name: string;
 }
 
-export interface IAttrToken {
+interface IAttrToken {
   namespace?: string;
+  value?: string;
   name: string;
-  value: string;
+  quoted?: boolean;
 }
 
-export interface AttrToken extends IAttrToken {
+interface AttrToken extends IAttrToken {
   type: "attribute";
-  quoted: boolean;
 }
 
 type Token = BlockToken | ClassToken | AttrToken;
+
+export { IAttrToken as AttrToken };
 
 const isBlock = (token?: Partial<Token>): token is BlockToken => !!token && token.type === "block";
 const isClass = (token?: Partial<Token>): token is ClassToken => !!token && token.type === "class";
 const isAttribute = (token?: Partial<Token>): token is AttrToken  => !!token && token.type === "attribute";
 const isQuoted = (token?: Partial<AttrToken>): boolean => !!token && !!token.quoted;
-const isIdent = (ident?: string): boolean => !ident || CSS_IDENT.test(ident);
+const isIdent = (ident?: string): boolean => !ident || CLASS_NAME_IDENT.test(ident);
 const hasName = (token?: Partial<Token>): boolean => !!token && !!token.name;
 const isValidNamespace = (token?: Partial<AttrToken>): boolean => !!token && (token.namespace === undefined || token.namespace === STATE_NAMESPACE);
 
@@ -343,7 +345,7 @@ export class BlockPath {
   /**
    * Get the parsed attribute name of this Block Path and return the `AttrInfo`
    */
-  get attribute(): AttrToken | undefined {
+  get attribute(): IAttrToken | undefined {
     if (!this._attribute) return;
     return this._attribute;
   }

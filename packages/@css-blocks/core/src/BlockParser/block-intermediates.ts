@@ -4,7 +4,8 @@ import { CompoundSelector, postcssSelectorParser as selectorParser } from "optic
 import { ATTR_PRESENT, AttrToken, ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
 
 export enum BlockType {
-  root = 1,
+  block = 1,
+  root,
   attribute,
   class,
   classAttribute,
@@ -16,6 +17,9 @@ export type NodeAndType = {
 } | {
   blockType: BlockType.root | BlockType.class;
   node: selectorParser.ClassName | selectorParser.Pseudo;
+} | {
+  blockType: BlockType.block;
+  node: selectorParser.Tag;
 };
 
 export type BlockNodeAndType = NodeAndType & {
@@ -34,7 +38,6 @@ function attrValue(attr: selectorParser.Attribute): string {
 /** Extract an Attribute's name from an attribute selector */
 export function toAttrToken(attr: selectorParser.Attribute): AttrToken {
   return {
-    type: "attribute",
     namespace: attr.namespaceString,
     name: attr.attribute,
     value: attrValue(attr),
@@ -51,6 +54,7 @@ export function toAttrToken(attr: selectorParser.Attribute): AttrToken {
 export function blockTypeName(t: BlockType, options?: { plural: boolean }): string {
   let isPlural = options && options.plural;
   switch (t) {
+    case BlockType.block: return isPlural ? "external blocks" : "external block";
     case BlockType.root: return isPlural ? "block roots" : "block root";
     case BlockType.attribute: return isPlural ? "root-level states" : "root-level state";
     case BlockType.class: return isPlural ? "classes" : "class";
@@ -60,9 +64,17 @@ export function blockTypeName(t: BlockType, options?: { plural: boolean }): stri
 }
 
 /**
+ * Test if the provided node representation is an external block.
+ * @param object The NodeAndType's descriptor object.
+ */
+export function isExternalBlock(object: NodeAndType): boolean {
+  return object.blockType === BlockType.block;
+}
+
+/**
  * Test if the provided node representation is a root level object, aka: operating
  * on the root element.
- * @param object The CompoundSelector's descriptor object.
+ * @param object The NodeAndType's descriptor object.
  */
 export function isRootLevelObject(object: NodeAndType): boolean {
   return object.blockType === BlockType.root || object.blockType === BlockType.attribute;

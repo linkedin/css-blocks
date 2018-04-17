@@ -39,7 +39,7 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
-      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar:scope[state|color=yellow]"]);
     });
   }
 
@@ -73,7 +73,7 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: 1}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar:scope[state|color=yellow]"]);
     });
   }
 
@@ -100,7 +100,7 @@ export class Test {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|awesome]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar:scope[state|awesome]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, [{condition: true, whenTrue: [0]}]);
       assert.deepEqual(elementAnalysis.dynamicAttributes, [{container: 0, value: 1}]);
       assert.deepEqual(elementAnalysis.staticStyles, []);
@@ -130,7 +130,7 @@ export class Test {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar[state|awesome]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar:scope[state|awesome]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: 1}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
@@ -198,7 +198,7 @@ export class Test {
     ).then((analyzer: Analyzer) => {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|awesome]", "bar:scope", "bar[state|awesome]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|awesome]", "bar:scope", "bar:scope[state|awesome]"]);
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, []);

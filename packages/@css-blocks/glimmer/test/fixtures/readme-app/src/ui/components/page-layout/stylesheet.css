@@ -1,6 +1,6 @@
 @block-reference grid from "./grid.css";
 :scope { color: red; width: 100vw; }
-[state|loading] { color: blue }
+:scope[state|loading] { color: blue }
 .sidebar { float: left; }
 .sidebar[state|collapsed] { display: none; }
 .main { border-right: 2px groove gray; }

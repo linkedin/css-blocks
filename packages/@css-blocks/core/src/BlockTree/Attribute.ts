@@ -8,7 +8,7 @@ import {
 } from "@opticss/element-analysis";
 import { ObjectDictionary, assertNever } from "@opticss/util";
 
-import { ATTR_PRESENT, IAttrToken as AttrToken } from "../BlockSyntax";
+import { ATTR_PRESENT, AttrToken } from "../BlockSyntax";
 import { OutputMode, ResolvedConfiguration } from "../configuration";
 
 import { AttrValue } from "./AttrValue";

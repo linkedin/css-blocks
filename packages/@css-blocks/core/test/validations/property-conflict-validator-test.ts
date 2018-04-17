@@ -1,6 +1,6 @@
 import { Template } from "@opticss/template-api";
 import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { skip, suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
 import { BlockFactory } from "../../src/BlockParser";
@@ -879,6 +879,29 @@ export class TemplateAnalysisTests {
       constructElement(block, ":scope", "b").end();
     }).then(() => {
       assert.deepEqual(1, 1);
+    });
+  }
+
+  @test @skip "multiple states on a compound selector do not throw if only one state is used"() {
+    let imports = new MockImportRegistry();
+    let options: Options = { importer: imports.importer() };
+
+    imports.registerSource(
+      "blocks/b.block.css",
+      `
+        :scope { block-name: block-a; }
+        .klass-1 { color: blue; }
+      `,
+    );
+
+    let css = `
+      @block-reference b from "./b.block.css";
+      :scope { block-name: block-a; }
+      .klass-2[state|one][state|two] { color: red; color: }
+    `;
+
+    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      constructElement(block, ".klass-2", "b.klass-1").addStateGroup(".klass-2", "[state|one]").end();
     });
   }
 
