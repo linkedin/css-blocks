@@ -2,7 +2,7 @@ import { Attribute as Attr, AttributeValue, attrValues } from "@opticss/element-
 import { assertNever } from "@opticss/util";
 import { isString } from "util";
 
-import { ATTR_PRESENT, IAttrToken as AttrToken, ROOT_CLASS } from "../BlockSyntax";
+import { ATTR_PRESENT, AttrToken, ROOT_CLASS } from "../BlockSyntax";
 import { BlockPath } from "../BlockSyntax";
 import { OutputMode, ResolvedConfiguration } from "../configuration";
 

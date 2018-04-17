@@ -11,6 +11,7 @@ import {
   isAttributeNode,
   isClassLevelObject,
   isClassNode,
+  isExternalBlock,
   isRootLevelObject,
   isRootNode,
   toAttrToken,
@@ -61,41 +62,50 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
     parsedSelectors.forEach((iSel) => {
 
       let keySel = iSel.key;
-      let currentCompoundSel: CompoundSelector | undefined = iSel.selector;
+      let sel: CompoundSelector | undefined = iSel.selector;
 
       // Assert this selector is well formed according to CSS Blocks' selector rules.
       assertValidSelector(block, rule, iSel, file);
 
       // For each `CompoundSelector` in this rule, configure the `Block` object
       // depending on the BlockType.
-      while (currentCompoundSel) {
-        
-        let isKey = (keySel === currentCompoundSel);
+      while (sel) {
+
+        let isKey = (keySel === sel);
         let blockClass: BlockClass | undefined = undefined;
         let foundStyles: Style[] = [];
 
-        for (let node of currentCompoundSel.nodes) {
-          if (isRootNode(node)){
+        // If this is an external Style, move on. These are validated
+        // in `assert-foreign-global-attribute`.
+        let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
+        if (blockName) {
+          sel = sel.next && sel.next.selector;
+          continue;
+        }
+
+        for (let node of sel.nodes) {
+          if (isRootNode(node)) {
             blockClass = block.rootClass;
           }
-          else if (isClassNode(node)){
+          else if (isClassNode(node)) {
             blockClass = block.ensureClass(node.value);
           }
-          else if (isAttributeNode(node)){
-            // The fact that a base class exists for all state selectors is validated elsewhere
+          else if (isAttributeNode(node)) {
+            // The fact that a base class exists for all state selectors is
+            // validated in `assertBlockObject`.
             foundStyles.push(blockClass!.ensureAttributeValue(toAttrToken(node)));
           }
-
         }
-          // If we haven't found any terminating states, we're targeting the discovered Block class.
-          if (blockClass && !foundStyles.length) { foundStyles.push(blockClass); }
 
-          // If this is the key selector, save this ruleset on the created style.
-          if (isKey) {
-            foundStyles.map(s => styleRuleTuples.add([s, rule]));
-          }
+        // If we haven't found any terminating states, we're targeting the discovered Block class.
+        if (blockClass && !foundStyles.length) { foundStyles.push(blockClass); }
 
-        currentCompoundSel = currentCompoundSel.next && currentCompoundSel.next.selector;
+        // If this is the key selector, save this ruleset on the created style.
+        if (isKey) {
+          foundStyles.map(s => styleRuleTuples.add([s, rule]));
+        }
+
+        sel = sel.next && sel.next.selector;
       }
     });
   });
@@ -268,6 +278,23 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
   // Test each node in selector
   let result = sel.nodes.reduce<NodeAndType | null>(
     (found, n) => {
+
+      // If this is an external Block reference, indicate we have encountered it.
+      // If this is not the first BlockType encountered, throw the appropriate error.
+      if (n.type === selectorParser.TAG) {
+        if (found === null) {
+          found = {
+            blockType: BlockType.block,
+            node: n,
+          };
+        } else {
+          throw new errors.InvalidBlockSyntax(
+            `External Block ${n} must be the first selector in "${rule.selector}"`,
+            loc(file, rule, sel.nodes[0]),
+          );
+        }
+      }
+
       // If selecting the root element, indicate we have encountered it. If this
       // is not the first BlockType encountered, throw the appropriate error
       if (isRootNode(n)) {
@@ -281,11 +308,6 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
             throw new errors.InvalidBlockSyntax(
               `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
               loc(file, rule, sel.nodes[0]),
-            );
-          } else if (found.blockType === BlockType.attribute) {
-            throw new errors.InvalidBlockSyntax(
-              `It's redundant to specify a state with the an explicit .root: ${rule.selector}`,
-              loc(file, rule, n),
             );
           }
         }
@@ -308,7 +330,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
           );
         } else if (found.blockType === BlockType.class || found.blockType === BlockType.classAttribute) {
           found = { node: n, blockType: BlockType.classAttribute };
-        } else if (found.blockType === BlockType.root || found.blockType === BlockType.attribute) {
+        } else if (found.blockType === BlockType.block || found.blockType === BlockType.root || found.blockType === BlockType.attribute) {
           found = { node: n, blockType: BlockType.attribute };
         }
       }
@@ -348,6 +370,20 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
   if (!result) {
     throw new errors.InvalidBlockSyntax(
       `Missing block object in selector component '${sel.nodes.join("")}': ${rule.selector}`,
+      loc(file, rule, sel.nodes[0]));
+  }
+
+  if (isExternalBlock(result)) {
+    let external = block.getReferencedBlock(result.node.value!);
+    if (!external) { throw new errors.InvalidBlockSyntax(``, loc(file, rule, sel.nodes[0])); }
+    let globalStates = external.rootClass.allAttributeValues().filter((a) => a.isGlobal);
+    if (!globalStates.length) {
+      throw new errors.InvalidBlockSyntax(
+        `External Block '${result.node.value}' has no global states.`,
+        loc(file, rule, sel.nodes[0]));
+    }
+    throw new errors.InvalidBlockSyntax(
+      `Missing global state selector on external Block '${result.node.value}'. Did you mean one of: ${globalStates.map((s) => s.asSource()).join(" ")}`,
       loc(file, rule, sel.nodes[0]));
   }
 

@@ -1,9 +1,9 @@
 :scope {
-    color: red;
+  color: red;
 }
 
-[state|is-loading] {
-    color: blue;
+:scope[state|is-loading] {
+  color: blue;
 }
 
 .editor {

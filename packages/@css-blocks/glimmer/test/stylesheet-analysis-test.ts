@@ -20,7 +20,7 @@ describe("Stylesheet analysis", function() {
       assert.deepEqual(serializedAnalysis.blocks, {
         "": "glimmer:stylesheet:/styled-app/components/my-app", // I think the identifier shouldn't be the resolved value from glimmer.
       });
-      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" , ":scope", "[state|is-loading]"]);
+      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" , ":scope", ":scope[state|is-loading]"]);
       let expected: ElementsAnalysis = {
         a: { tagName: "div", staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
         b: { tagName: "page-banner", staticStyles: [], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" } } },

@@ -1,7 +1,7 @@
 import { assertNever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector, parseSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
-import { isRootNode, isClassNode, isAttributeNode, toAttrToken } from "../BlockParser";
+import { isAttributeNode, isClassNode, isRootNode, toAttrToken } from "../BlockParser";
 import { RESOLVE_RE } from "../BlockSyntax";
 import { Block, BlockClass, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
