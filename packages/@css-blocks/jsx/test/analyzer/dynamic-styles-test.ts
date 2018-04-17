@@ -91,7 +91,7 @@ export class Test {
     mock({
       "foo.block.css": `
         :scope { }
-        [state|cool=foo] { }
+        :scope[state|cool=foo] { }
       `,
     });
 

@@ -25,7 +25,7 @@ export class BlockInterfaceTests extends BEMProcessor {
     imports.registerSource(
       "foo/bar/base.css",
       `:scope { color: purple; }
-       [state|large] { font-size: 20px; }
+       :scope[state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
     );
@@ -38,7 +38,7 @@ export class BlockInterfaceTests extends BEMProcessor {
 
     return this.assertError(
       cssBlocks.CssBlockError,
-      `Missing implementations for: [state|large], .foo[state|small] ` +
+      `Missing implementations for: :scope[state|large], .foo[state|small] ` +
         `from foo/bar/base.css`,
       this.process(filename, inputCSS, config).then(() => {
         imports.assertImported("foo/bar/base.css");
@@ -50,14 +50,14 @@ export class BlockInterfaceTests extends BEMProcessor {
     imports.registerSource(
       "foo/bar/base.css",
       `:scope { color: purple; }
-       [state|large] { font-size: 20px; }
+       :scope[state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
     );
     imports.registerSource(
       "foo/bar/other.css",
       `:scope { color: purple; }
-      [state|medium] { font-size: 20px; }
+      :scope[state|medium] { font-size: 20px; }
       .foo   { float: left;   }
       .foo[state|medium] { font-size: 5px; }`,
     );
@@ -68,12 +68,12 @@ export class BlockInterfaceTests extends BEMProcessor {
                     :scope { implements: base, other; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}
-                    [state|large] { }
+                    :scope[state|large] { }
                     .foo[state|small] { }`;
 
     return this.assertError(
       cssBlocks.CssBlockError,
-      `Missing implementations for: [state|medium], .foo[state|medium] ` +
+      `Missing implementations for: :scope[state|medium], .foo[state|medium] ` +
         `from foo/bar/other.css`,
       this.process(filename, inputCSS, config).then(() => {
         imports.assertImported("foo/bar/base.css");

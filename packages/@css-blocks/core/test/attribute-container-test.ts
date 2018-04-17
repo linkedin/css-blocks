@@ -27,7 +27,7 @@ export class AttributeContainerTest extends BEMProcessor {
     let filename = "foo/bar/a-block.css";
     imports.registerSource(
       filename,
-      `[state|large] { font-size: 20px; }
+      `:scope[state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
     );
@@ -52,9 +52,9 @@ export class AttributeContainerTest extends BEMProcessor {
     let filename = "foo/bar/a-block.css";
     imports.registerSource(
       filename,
-      `[state|size=large] { font-size: 20px; }
-       [state|size=small] { font-size: 10px; }
-       [state|active] { color: red; }
+      `:scope[state|size=large] { font-size: 20px; }
+       :scope[state|size=small] { font-size: 10px; }
+       :scope[state|active] { color: red; }
        .foo[state|mode=collapsed] { display: none; }
        .foo[state|mode=minimized] { display: block; max-height: 100px; }
        .foo[state|mode=expanded] { display: block; }`,
@@ -83,9 +83,9 @@ export class AttributeContainerTest extends BEMProcessor {
     let filename = "foo/bar/sub-block.block.css";
     imports.registerSource(
       "foo/bar/base-block.block.css",
-      `[state|size=large] { font-size: 20px; }
-       [state|size=small] { font-size: 10px; }
-       [state|active] { color: red; }
+      `:scope[state|size=large] { font-size: 20px; }
+       :scope[state|size=small] { font-size: 10px; }
+       :scope[state|active] { color: red; }
        .foo[state|mode=collapsed] { display: none; }
        .foo[state|mode=minimized] { display: block; max-height: 100px; }
        .foo[state|mode=expanded] { display: block; }`,
@@ -94,7 +94,7 @@ export class AttributeContainerTest extends BEMProcessor {
       filename,
       `@block-reference base-block from "base-block.block.css";
        :scope { extends: base-block; }
-       [state|size=tiny] { font-size: 6px; }
+       :scope[state|size=tiny] { font-size: 6px; }
        .foo[state|mode=minimized] { display: block; max-height: 200px; }`,
     );
 

@@ -20,7 +20,7 @@ interface ClassToken {
 export interface IAttrToken {
   namespace?: string;
   name: string;
-  value?: string;
+  value: string;
 }
 
 export interface AttrToken extends IAttrToken {
@@ -146,6 +146,8 @@ export class BlockPath {
    */
   private addToken(token: Partial<Token>, isUserProvided: boolean): void {
 
+    if (!token.type) { return; }
+
     // Final validation of incoming data. Blocks may have no name. State attribute must have a namespace.
     if (!isBlock(token) && !hasName(token)) { this.throw(ERRORS.noname); }
     if (isAttribute(token) && !isValidNamespace(token)) { this.throw(ERRORS.namespace); }
@@ -179,7 +181,7 @@ export class BlockPath {
     let char,
         working = "",
         walker = this.walker,
-        token: Partial<Token> = { type: "block" };
+        token: Partial<Token> | undefined = { type: "block" };
 
     while (char = walker.next()) {
 
@@ -193,6 +195,7 @@ export class BlockPath {
           if (working === ROOT_CLASS) {
             this.addToken({ type: "class", name: ROOT_CLASS }, true);
             working = "";
+            token = {};
             break;
           }
           else {

@@ -55,6 +55,7 @@ function evaluate(obj: Style, propToRules: PropMap, conflicts: ConflictMap) {
           // If these styles are from the same block, abort!
           if (other.style.block === self.style.block) { continue; }
 
+
           // Get the declarations for this specific property.
           let selfDecl = self.declarations.get(prop);
           let otherDecl = other.declarations.get(prop);

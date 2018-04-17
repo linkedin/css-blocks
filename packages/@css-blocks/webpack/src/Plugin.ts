@@ -70,59 +70,6 @@ interface CompilationResult {
   analyses: Array<Analysis<TmpType>>;
 }
 
-export class CssBlocksRewriterPlugin
-  extends Tapable
-  implements WebpackPlugin
-{
-  parent: CssBlocksPlugin;
-  compilationOptions: CSSBlocksOptions;
-  outputCssFile: string;
-  name: string;
-  debug: debugGenerator.IDebugger;
-  pendingResult?: PendingResult;
-  constructor(parent: CssBlocksPlugin) {
-    super();
-    this.debug = parent.debug;
-    this.outputCssFile = parent.outputCssFile;
-    this.name = parent.name;
-    this.compilationOptions = parent.compilationOptions;
-    this.parent = parent;
-    parent.onCompilationExpiration(() => {
-      this.trace(`resetting pending compilation.`);
-      this.pendingResult = undefined;
-    });
-    parent.onPendingCompilation((pendingResult) => {
-      this.trace(`received pending compilation.`);
-      this.pendingResult = pendingResult;
-    });
-  }
-
-  apply(compiler: WebpackCompiler) {
-    compiler.plugin("compilation", (compilation: WebpackAny) => {
-      compilation.plugin("normal-module-loader", (context: LoaderContext, mod: WebpackAny) => {
-        this.trace(`preparing normal-module-loader for ${mod.resource}`);
-        context.cssBlocks = context.cssBlocks || { mappings: {}, compilationOptions: this.compilationOptions };
-
-        // If we're already waiting for a css file of this name to finish compiling, throw.
-        if (context.cssBlocks.mappings[this.outputCssFile]) {
-          throw new Error(`css conflict detected. Multiple compiles writing to ${this.parent.outputCssFile}?`);
-        }
-
-        if (this.pendingResult === undefined) {
-          throw new Error(`No pending result is available yet.`);
-        }
-        context.cssBlocks.mappings[this.outputCssFile] = this.pendingResult;
-      });
-    });
-  }
-
-  trace(message: string) {
-    message = message.replace(this.parent.projectDir + "/", "");
-    this.debug(`[${this.name}] ${message}`);
-  }
-
-}
-
 export class CssBlocksPlugin
   extends Tapable
   implements WebpackPlugin
@@ -133,6 +80,7 @@ export class CssBlocksPlugin
   projectDir: string;
   outputCssFile: string;
   compilationOptions: CSSBlocksOptions;
+  pendingResult?: PendingResult;
   debug: debugGenerator.IDebugger;
 
   constructor(options: CssBlocksWebpackOptions) {
@@ -145,10 +93,6 @@ export class CssBlocksPlugin
     this.compilationOptions = options.compilationOptions || {};
     this.projectDir = process.cwd();
     this.optimizationOptions = Object.assign({}, DEFAULT_OPTIONS, options.optimization);
-  }
-
-  getRewriterPlugin(): CssBlocksRewriterPlugin {
-    return new CssBlocksRewriterPlugin(this);
   }
 
   private async handleMake(outputPath: string, assets: Assets, compilation: WebpackAny, cb: (error?: Error) => void) {
@@ -251,7 +195,42 @@ export class CssBlocksPlugin
 
     compiler.plugin("make", this.handleMake.bind(this, outputPath, assets));
 
-    this.getRewriterPlugin().apply(compiler);
+    // Once we're done, add all discovered block files to the build dependencies
+    // so this plugin is re-evaluated when they change.
+    // TODO: We get timestamp data here. We can probably intelligently re-build.
+    compiler.plugin("emit", (compilation, callback) => {
+      let discoveredFiles = [...this.analyzer.transitiveBlockDependencies()].map((b) => b.identifier);
+      compilation.fileDependencies.push(...discoveredFiles);
+      callback();
+    });
+
+    this.onCompilationExpiration(() => {
+      this.trace(`resetting pending compilation.`);
+      this.pendingResult = undefined;
+    });
+
+    this.onPendingCompilation((pendingResult) => {
+      this.trace(`received pending compilation.`);
+      this.pendingResult = pendingResult;
+    });
+
+    compiler.plugin("compilation", (compilation: WebpackAny) => {
+      compilation.plugin("normal-module-loader", (context: LoaderContext, mod: WebpackAny) => {
+        this.trace(`preparing normal-module-loader for ${mod.resource}`);
+        context.cssBlocks = context.cssBlocks || { mappings: {}, compilationOptions: this.compilationOptions };
+
+        // If we're already waiting for a css file of this name to finish compiling, throw.
+        if (context.cssBlocks.mappings[this.outputCssFile]) {
+          throw new Error(`css conflict detected. Multiple compiles writing to ${this.outputCssFile}?`);
+        }
+
+        if (this.pendingResult === undefined) {
+          throw new Error(`No pending result is available yet.`);
+        }
+        context.cssBlocks.mappings[this.outputCssFile] = this.pendingResult;
+      });
+    });
+
   }
 
   private compileBlocks(analyzer: Analyzer, cssOutputName: string): Promise<CompilationResult> {

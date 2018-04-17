@@ -11,7 +11,7 @@ export class BlockInheritance extends BEMProcessor {
     imports.registerSource(
       "foo/bar/base.css",
       `:scope { color: purple; }
-       [state|large] { font-size: 20px; }
+       :scope[state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
     );
@@ -37,7 +37,7 @@ export class BlockInheritance extends BEMProcessor {
         "   .b[state|small] => .inherits__b--small\n" +
         "   .foo => .base__foo .inherits__foo\n" +
         "   .foo[state|small] => .base__foo--small\n" +
-        "   [state|large] => .base--large */\n",
+        "   :scope[state|large] => .base--large */\n",
       );
     });
   }

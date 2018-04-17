@@ -16,7 +16,7 @@ export class Test {
     mock({
       "bar.block.css": `
         :scope { color: blue; }
-        [state|color=yellow] {
+        :scope[state|color=yellow] {
           color: yellow;
         }
       `,
@@ -47,10 +47,10 @@ export class Test {
     mock({
       "bar.block.css": `
         :scope { color: blue; }
-        [state|color=yellow] {
+        :scope[state|color=yellow] {
           color: yellow;
         }
-        [state|color=green] {
+        :scope[state|color=green] {
           color: green;
         }
       `,
@@ -81,7 +81,7 @@ export class Test {
     mock({
       "bar.block.css": `
         :scope { color: blue; }
-        [state|awesome] {
+        :scope[state|awesome] {
           color: yellow;
         }
       `,
@@ -111,7 +111,7 @@ export class Test {
     mock({
       "bar.block.css": `
         :scope { color: blue; }
-        [state|awesome] {
+        :scope[state|awesome] {
           color: yellow;
         }
       `,
@@ -141,7 +141,7 @@ export class Test {
     mock({
       "bar.block.css": `
         :scope { color: blue; }
-        [state|awesome] {
+        :scope[state|awesome] {
           color: yellow;
         }
       `,
@@ -161,7 +161,7 @@ export class Test {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
-        assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state [state|awesome=wat] found on block "bar".\n  Did you mean: [state|awesome]? (7:9)');
+        assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state :scope[state|awesome=wat] found on block "bar".\n  Did you mean: :scope[state|awesome]? (7:9)');
       });
   }
 
@@ -169,7 +169,7 @@ export class Test {
     mock({
       "bar.block.css": `
         :scope { color: blue; }
-        [state|awesome] {
+        :scope[state|awesome] {
           color: yellow;
         }
         .pretty[state|awesome] {

@@ -40,20 +40,20 @@ export class KeyQueryTests {
     });
   }
   @test "finds states as key selector"() {
-    let css = `[state|foo] { color: red; }
-               [state|foo] .a { width: 100%; }`;
+    let css = `:scope[state|foo] { color: red; }
+               :scope[state|foo] .a { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let state = block.rootClass.allAttributeValues()[0];
-        assert.equal(state.asSource(), "[state|foo]");
+        assert.equal(state.asSource(), ":scope[state|foo]");
         let q = new QueryKeySelector(state);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
     });
   }
   @test "finds classes as key selector"() {
-    let css = `[state|foo] { color: red; }
-               [state|foo] .a { width: 100%; }`;
+    let css = `:scope[state|foo] { color: red; }
+               :scope[state|foo] .a { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[1]);

@@ -1,7 +1,6 @@
-import { assertNever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
-import { Block, Style } from "../../BlockTree";
+import { Block, BlockClass, Style } from "../../BlockTree";
 import * as errors from "../../errors";
 import { selectorSourceLocation as loc, sourceLocation } from "../../SourceLocation";
 import {
@@ -9,7 +8,6 @@ import {
   BlockType,
   NodeAndType,
   blockTypeName,
-  getBlockNode,
   isAttributeNode,
   isClassLevelObject,
   isClassNode,
@@ -71,53 +69,32 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
       // For each `CompoundSelector` in this rule, configure the `Block` object
       // depending on the BlockType.
       while (currentCompoundSel) {
+        
         let isKey = (keySel === currentCompoundSel);
-        let obj = getBlockNode(currentCompoundSel);
-        if (obj) {
-          switch (obj.blockType) {
+        let blockClass: BlockClass | undefined = undefined;
+        let foundStyles: Style[] = [];
 
-            // If type `block`, track all property concerns on the block object
-            // itself, excluding any inheritance properties. Make sure to
-            // process any inheritance properties present in this ruleset.
-            case BlockType.root:
-              if (!isKey) { break; }
-              styleRuleTuples.add([block.rootClass, rule]);
-              break;
-
-            // If a local attribute selector, ensure the attribute is registered with
-            // the parent block and track add all property concerns from this
-            // ruleset. If a foreign attribute, do nothing (validation happened earlier).
-            case BlockType.attribute:
-              if (obj.blockName) { break; }
-              let attr = block.rootClass.ensureAttributeValue(toAttrToken(obj.node));
-              if (!isKey) { break; }
-              styleRuleTuples.add([attr, rule]);
-              break;
-
-            // If a class selector, ensure this class is registered with the
-            // parent block and track all property concerns from this ruleset.
-            case BlockType.class:
-              let blockClass = block.ensureClass(obj.node.value);
-              if (!isKey) { break; }
-              styleRuleTuples.add([blockClass, rule]);
-              break;
-
-            // If a classAttribute selector, ensure the class is registered with
-            // the parent block, and the attribute is registered with this class.
-            // Track all property concerns from this ruleset.
-            case BlockType.classAttribute:
-              let classNode = obj.node.prev();
-              let classObj = block.ensureClass(classNode.value!);
-              let classAttr = classObj.ensureAttributeValue(toAttrToken(obj.node));
-              if (!isKey) { break; }
-              styleRuleTuples.add([classAttr, rule]);
-              break;
-            default:
-              assertNever(obj);
+        for (let node of currentCompoundSel.nodes) {
+          if (isRootNode(node)){
+            blockClass = block.rootClass;
           }
-        }
+          else if (isClassNode(node)){
+            blockClass = block.ensureClass(node.value);
+          }
+          else if (isAttributeNode(node)){
+            // The fact that a base class exists for all state selectors is validated elsewhere
+            foundStyles.push(blockClass!.ensureAttributeValue(toAttrToken(node)));
+          }
 
-        // Move on to the next compound selector.
+        }
+          // If we haven't found any terminating states, we're targeting the discovered Block class.
+          if (blockClass && !foundStyles.length) { foundStyles.push(blockClass); }
+
+          // If this is the key selector, save this ruleset on the created style.
+          if (isKey) {
+            foundStyles.map(s => styleRuleTuples.add([s, rule]));
+          }
+
         currentCompoundSel = currentCompoundSel.next && currentCompoundSel.next.selector;
       }
     });
@@ -325,14 +302,14 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
           );
         }
         if (!found) {
-          found = { node: n, blockType: BlockType.attribute };
-        } else if (found.blockType === BlockType.class) {
-          found = { node: n, blockType: BlockType.classAttribute };
-        } else if (found.blockType === BlockType.root) {
           throw new errors.InvalidBlockSyntax(
-            `It's redundant to specify a state with an explicit .root: ${rule.selector}`,
-            loc(file, rule, found.node),
+            `States without an explicit :scope or class selector are not yet supported: ${rule.selector}`,
+            loc(file, rule, n),
           );
+        } else if (found.blockType === BlockType.class || found.blockType === BlockType.classAttribute) {
+          found = { node: n, blockType: BlockType.classAttribute };
+        } else if (found.blockType === BlockType.root || found.blockType === BlockType.attribute) {
+          found = { node: n, blockType: BlockType.attribute };
         }
       }
 
