@@ -1,0 +1,3 @@
+{
+  "extends": "@css-blocks/code-style/configs/tslint.cli.json"
+}

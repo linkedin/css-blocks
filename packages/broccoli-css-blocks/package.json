@@ -1,0 +1,46 @@
+{
+  "name": "@css-blocks/broccoli",
+  "version": "0.0.1",
+  "description": "CSS Blocks Broccoli Addon",
+  "main": "dist/src/index.js",
+  "author": "Adam Miller <ammiller@linkedin.com>",
+  "license": "MIT",
+  "keywords": ["css-blocks", "css blocks", "broccoli-plugin"],
+  "scripts": {
+    "test": "mocha --opts test/mocha.opts dist/test",
+    "compile": "rm -rf dist && tsc -p tsconfig.json",
+    "pretest": "yarn run compile",
+    "posttest": "yarn run lint",
+    "prepublish": "yarn run compile && yarn run lintall",
+    "lint": "tslint -t msbuild --project . -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
+    "coverage":
+      "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap":
+      "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "typedoc --out ./docs .",
+    "watch": "watch 'yarn run test' src test types-local --wait=1"
+  },
+  "devDependencies": {
+    "@css-blocks/code-style": "^0.17.0",
+    "@css-blocks/glimmer-templates": "^0.17.0"
+  },
+  "dependencies": {
+    "@glimmer/compiler": "^0.33.0",
+    "@glimmer/syntax": "^0.33.0",
+    "@types/recursive-readdir": "^2.2.0",
+    "broccoli-funnel": "^2.0.1",
+    "broccoli-merge-trees": "^3.0.0",
+    "broccoli-plugin": "^1.3.0",
+    "broccoli-test-helper": "^1.2.0",
+    "colors": "^1.2.1",
+    "css-blocks": "^0.17.0",
+    "debug": "^3.1.0",
+    "fs-extra": "^5.0.0",
+    "opticss": "file:../../../opticss/packages/opticss",
+    "postcss": "^6.0.21",
+    "recursive-readdir": "^2.2.2",
+    "walk-sync": "^0.3.2"
+  }
+}
