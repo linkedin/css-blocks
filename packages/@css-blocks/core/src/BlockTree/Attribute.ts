@@ -139,7 +139,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
    * @returns The Attribute's attribute selector.
    */
   asSource(value?: string): string {
-    return (this.blockClass.isRoot ? "" : this.blockClass.asSource()) + this.unqualifiedSource(value);
+    return this.blockClass.asSource() + this.unqualifiedSource(value);
   }
 
   /**

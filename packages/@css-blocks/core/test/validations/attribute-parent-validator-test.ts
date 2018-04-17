@@ -33,11 +33,11 @@ export class TemplateAnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      [state|test] { color: red; }
+      :scope[state|test] { color: red; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state "[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
+      'Cannot use state ":scope[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });

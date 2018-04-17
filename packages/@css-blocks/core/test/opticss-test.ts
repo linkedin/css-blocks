@@ -58,7 +58,7 @@ export class TemplateAnalysisTests {
     let filename = "blocks/foo.block.css";
     let css = clean`
       :scope { color: blue; font-size: 20px; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; color: red; }
     `;

@@ -26,7 +26,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     imports.registerSource(
       filename,
       `:scope { color: purple; }
-       [state|large] { font-size: 20px; }
+       :scope[state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
     );
@@ -53,7 +53,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     imports.registerSource(
       "foo/bar/a-block.block.css",
       `:scope { color: purple; }
-       [state|large] { font-size: 20px; }
+       :scope[state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
     );
@@ -90,7 +90,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     imports.registerSource(
       "foo/bar/a-block.block.css",
       `:scope { color: purple; }
-       [state|large] { font-size: 20px; }
+       :scope[state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
     );

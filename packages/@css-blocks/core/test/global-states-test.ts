@@ -14,7 +14,7 @@ export class BlockInheritance extends BEMProcessor {
     imports.registerSource(
       "app.block.css",
       `@block-global [state|is-loading];
-       [state|is-loading] .profile {
+       :scope[state|is-loading] .profile {
          pointer-events: none;
        }`,
     );
@@ -37,7 +37,7 @@ export class BlockInheritance extends BEMProcessor {
     let { imports, config } = setupImporting();
     imports.registerSource(
       "app.block.css",
-      `[state|is-loading] .profile {
+      `:scope[state|is-loading] .profile {
          pointer-events: none;
        }`,
     );
@@ -50,7 +50,7 @@ export class BlockInheritance extends BEMProcessor {
 
     return assertError(
       cssBlocks.InvalidBlockSyntax,
-      "[state|is-loading] is not global: app[state|is-loading] .b (widget.block.css:2:24)",
+      "Can use global state[state|is-loading] is not global: app[state|is-loading] .b (widget.block.css:2:24)",
       this.process(filename, inputCSS, config));
   }
 }

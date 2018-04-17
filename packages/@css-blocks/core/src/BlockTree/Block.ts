@@ -1,4 +1,4 @@
-import { MultiMap, ObjectDictionary, assertNever } from "@opticss/util";
+import { MultiMap, ObjectDictionary } from "@opticss/util";
 import { whatever } from "@opticss/util";
 import {
   CompoundSelector,
@@ -8,12 +8,7 @@ import {
   postcssSelectorParser as selectorParser,
 } from "opticss";
 
-import {
-  BlockType,
-  NodeAndType,
-  isAttributeNode,
-  isClassNode,
-} from "../BlockParser";
+import { isAttributeNode, isClassNode } from "../BlockParser";
 import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { ResolvedConfiguration } from "../configuration";
@@ -279,34 +274,8 @@ export class Block
     return map;
   }
 
-  /**
-   * Fetch a the cached `Style` from `Block` given `NodeAndType`.
-   * @param obj The `NodeAndType` object to use for `Style` lookup.
-   */
-  nodeAndTypeToStyle(obj: NodeAndType): Styles | null {
-    switch (obj.blockType) {
-      case BlockType.root:
-        return this.rootClass;
-      case BlockType.attribute:
-        return this.rootClass.getAttributeValue(toAttrToken(obj.node));
-      case BlockType.class:
-        return this.getClass(obj.node.value);
-      case BlockType.classAttribute:
-        let classNode = obj.node.prev();
-        let classObj = this.getClass(classNode.value!);
-        if (classObj) {
-          return classObj.getAttributeValue(toAttrToken(obj.node));
-        }
-        return null;
-      default:
-        return assertNever(obj);
-    }
-  }
-
   nodeAsStyle(node: selectorParser.Node): [Styles, number] | null {
-    if (isRootNode(node)) {
-      return [this.rootClass, 0];
-    } else if (selectorParser.isTag(node)) {
+    if (selectorParser.isTag(node)) {
       let otherBlock = this.getReferencedBlock(node.value);
       if (otherBlock) {
         let next = node.next();
@@ -341,11 +310,9 @@ export class Block
       } else {
         return null;
       }
-    } else if (selectorParser.isClassName(node)) {
+    } else if (selectorParser.isClassName(node) || isRootNode(node)) {
       let klass = this.getClass(node.value);
-      if (klass === null) {
-        return null;
-      }
+      if (klass === null) { return null; }
       let next = node.next();
       if (next && isAttributeNode(next)) {
         let attr = klass.getAttributeValue(toAttrToken(next));

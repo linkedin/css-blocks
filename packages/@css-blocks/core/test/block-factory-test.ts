@@ -26,7 +26,7 @@ export class BlockFactoryTests extends BEMProcessor {
     imports.registerSource(
       baseFilename,
       `:scope { color: purple; }
-       [state|large] { font-size: 20px; }
+       :scope[state|large] { font-size: 20px; }
        .foo   { float: left;   }
        .foo[state|small] { font-size: 5px; }`,
     );

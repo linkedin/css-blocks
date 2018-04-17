@@ -113,9 +113,9 @@ export class BlockInheritance extends BEMProcessor {
        .main    { grid-area: main;    font-size: 16px;         }
        .nav     { grid-area: nav;     border: 1px solid black; }
        .sidebar { grid-area: sidebar; background-color: #ccc;  }
-       [state|big] .main { font-size: 30px; }
-       [state|big] > .main { font-size: 40px; }
-       [state|big] > .main + .main { font-size: 20px; }`,
+       :scope[state|big] .main { font-size: 30px; }
+       :scope[state|big] > .main { font-size: 40px; }
+       :scope[state|big] > .main + .main { font-size: 20px; }`,
     );
 
     let filename = "conflicts.css";
@@ -143,12 +143,12 @@ export class BlockInheritance extends BEMProcessor {
     imports.registerSource(
       "target.css",
       `.main    { color: blue; }
-       [state|hidden] .main { color: transparent; }`,
+       :scope[state|hidden] .main { color: transparent; }`,
     );
 
     let filename = "conflicts.css";
     let inputCSS = `@block-reference target from "./target.css";
-                    [state|happy] .article {
+                    :scope[state|happy] .article {
                       color: green;
                       color: resolve("target.main");
                     }`;
@@ -171,12 +171,12 @@ export class BlockInheritance extends BEMProcessor {
     imports.registerSource(
       "target.css",
       `.main    { color: blue; }
-       [state|hidden] > .main { color: transparent; }`,
+       :scope[state|hidden] > .main { color: transparent; }`,
     );
 
     let filename = "conflicts.css";
     let inputCSS = `@block-reference target from "./target.css";
-                    [state|happy] .article {
+                    :scope[state|happy] .article {
                       color: green;
                       color: resolve("target.main");
                     }`;
@@ -198,12 +198,12 @@ export class BlockInheritance extends BEMProcessor {
     imports.registerSource(
       "target.css",
       `.main    { color: blue; }
-       [state|hidden] > .main { color: transparent; }`,
+       :scope[state|hidden] > .main { color: transparent; }`,
     );
 
     let filename = "conflicts.css";
     let inputCSS = `@block-reference target from "./target.css";
-                    [state|happy] > .article {
+                    :scope[state|happy] > .article {
                       color: green;
                       color: resolve("target.main");
                     }`;
@@ -231,9 +231,9 @@ export class BlockInheritance extends BEMProcessor {
        .main    { grid-area: main;    font-size: 16px;         }
        .nav     { grid-area: nav;     border: 1px solid black; }
        .sidebar { grid-area: sidebar; background-color: #ccc;  }
-       [state|big] .main { font-size: 30px; }
-       [state|big] > .main { font-size: 40px; }
-       [state|big] > .main + .main { font-size: 20px; }`,
+       :scope[state|big] .main { font-size: 30px; }
+       :scope[state|big] > .main { font-size: 40px; }
+       :scope[state|big] > .main + .main { font-size: 20px; }`,
     );
 
     let filename = "conflicts.css";
@@ -298,9 +298,9 @@ export class BlockInheritance extends BEMProcessor {
     imports.registerSource(
       "other.css",
       `.foo { font-size: 10px; }
-       [state|dark] .foo { color: black; }
+       :scope[state|dark] .foo { color: black; }
        .bar { font-size: 99px; }
-       [state|dark] .bar { color: dark-gray; }`,
+       :scope[state|dark] .bar { color: dark-gray; }`,
     );
 
     let filename = "conflicts.css";
@@ -436,7 +436,7 @@ export class BlockInheritance extends BEMProcessor {
     let { imports, config } = setupImporting();
     imports.registerSource(
       "other.css",
-      `[state|foo] { width: 100%; }`,
+      `:scope[state|foo] { width: 100%; }`,
     );
 
     let filename = "conflicts.css";
@@ -533,16 +533,16 @@ export class BlockInheritance extends BEMProcessor {
       "target.css",
       `.adjacent + .adjacent { border: 1px; }
        .sibling ~ .sibling   { color: blue; }
-       [state|ancestor] .descendant { float: left; }
-       [state|parent] > .child { position: relative; }`,
+       :scope[state|ancestor] .descendant { float: left; }
+       :scope[state|parent] > .child { position: relative; }`,
     );
 
     let filename = "conflicts.css";
     let inputCSS = `@block-reference target from "./target.css";
                     .adjacent + .adjacent { color: green; color: resolve("target.sibling"); }
                     .sibling ~ .sibling   { border: 2px; border: resolve("target.adjacent"); }
-                    [state|ancestor] .descendant { position: absolute; position: resolve("target.child"); }
-                    [state|parent] > .child { float: right; float: resolve("target.descendant"); }`;
+                    :scope[state|ancestor] .descendant { position: absolute; position: resolve("target.child"); }
+                    :scope[state|parent] > .child { float: right; float: resolve("target.descendant"); }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("target.css");
@@ -581,7 +581,7 @@ export class BlockInheritance extends BEMProcessor {
 
     let filename = "conflicts.css";
     let inputCSS = `@block-reference target from "./target.css";
-                    [state|happy] > .article {
+                    :scope[state|happy] > .article {
                       color: green;
                       color: resolve("target.main");
                     }`;
@@ -599,11 +599,11 @@ export class BlockInheritance extends BEMProcessor {
 
   @test "resolving to your own block is illegal"() {
     let filename = "conflicts.css";
-    let inputCSS = `[state|happy] > .article {
+    let inputCSS = `:scope[state|happy] > .article {
                       color: green;
                       color: resolve(".bio");
                     }
-                    [state|sad] > .bio {
+                    :scope[state|sad] > .bio {
                       color: blue;
                     }`;
 

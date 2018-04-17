@@ -1,9 +1,9 @@
 import { assertNever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector, parseSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
-import { getBlockNode } from "../BlockParser";
+import { isRootNode, isClassNode, isAttributeNode, toAttrToken } from "../BlockParser";
 import { RESOLVE_RE } from "../BlockSyntax";
-import { Block, Style } from "../BlockTree";
+import { Block, BlockClass, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";
 import { QueryKeySelector } from "../query";
@@ -88,11 +88,22 @@ export class ConflictResolver {
         let parsedSelectors = block.getParsedSelectors(rule);
         parsedSelectors.forEach((sel) => {
           let key = sel.key;
+          let obj: Style | null = null;
+          let container: BlockClass | null;
 
           // Fetch the associated `Style`. If does not exist (ex: malformed selector), skip.
-          let blockNode = getBlockNode(key);
-          if (!blockNode) { return; }
-          let obj: Style | null = block.nodeAndTypeToStyle(blockNode);
+          for (let node of key.nodes) {
+            if (isRootNode(node)) {
+              container = obj = block.rootClass;
+            }
+            if (isClassNode(node)) {
+              container = obj = block.getClass(node.value);
+            }
+            else if (isAttributeNode(node)) {
+              obj = container!.getAttributeValue(toAttrToken(node));
+            }
+          }
+
           if (!obj) { return; }
 
           // Fetch the set of Style conflicts. If the Style has already

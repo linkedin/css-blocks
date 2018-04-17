@@ -34,7 +34,7 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
@@ -62,7 +62,7 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }

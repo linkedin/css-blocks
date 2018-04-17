@@ -36,7 +36,7 @@ export class AnalysisTests {
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
@@ -68,7 +68,7 @@ export class AnalysisTests {
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
@@ -102,7 +102,7 @@ export class AnalysisTests {
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
@@ -143,7 +143,7 @@ export class AnalysisTests {
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
@@ -196,7 +196,7 @@ export class AnalysisTests {
       @block-reference a from "a.css";
 
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
@@ -239,8 +239,8 @@ export class AnalysisTests {
     let { config } = setupImporting();
 
     let css = `
-      [state|color]   { color: red; }
-      [state|bgcolor] { color: red; }
+      :scope[state|color]   { color: red; }
+      :scope[state|bgcolor] { color: red; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
@@ -254,7 +254,7 @@ export class AnalysisTests {
         let expectedResult: SerializedAnalysis<TemplateType> = {
           blocks: {"": "blocks/foo.block.css"},
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-          stylesFound: [":scope", "[state|bgcolor]", "[state|color]"],
+          stylesFound: [":scope", ":scope[state|bgcolor]", ":scope[state|color]"],
           elements: {
             a: {
               sourceLocation: { start: { filename: "templates/my-template.hbs", line: 10, column: 32 } },
@@ -278,10 +278,10 @@ export class AnalysisTests {
     let { config } = setupImporting();
 
     let css = `
-      [state|color=red]    { color: red; }
-      [state|color=blue]   { color: blue; }
-      [state|bgcolor=red]  { color: red; }
-      [state|bgcolor=blue] { color: blue; }
+      :scope[state|color=red]    { color: red; }
+      :scope[state|color=blue]   { color: blue; }
+      :scope[state|bgcolor=red]  { color: red; }
+      :scope[state|bgcolor=blue] { color: blue; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
@@ -297,10 +297,10 @@ export class AnalysisTests {
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [
             ":scope",
-            "[state|bgcolor=blue]",
-            "[state|bgcolor=red]",
-            "[state|color=blue]",
-            "[state|color=red]",
+            ":scope[state|bgcolor=blue]",
+            ":scope[state|bgcolor=red]",
+            ":scope[state|color=blue]",
+            ":scope[state|color=red]",
           ],
           elements: {
             "a": {
@@ -349,7 +349,7 @@ export class AnalysisTests {
       @block-reference a from "a.css";
 
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
@@ -404,7 +404,7 @@ export class AnalysisTests {
       @block-reference a from "a.css";
 
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
       .fdsa { font-size: resolve('a.foo[state|bar]'); font-size: 22px; }
     `;
@@ -454,8 +454,8 @@ export class AnalysisTests {
       @block-reference a from "a.css";
 
       :scope { color: blue; }
-      [state|foo=red] { color: red; }
-      [state|foo=purple] { color: purple; }
+      :scope[state|foo=red] { color: red; }
+      :scope[state|foo=purple] { color: purple; }
       .asdf { font-size: 20px; }
       .fdsa { font-size: 22px; }
     `;
@@ -469,7 +469,7 @@ export class AnalysisTests {
       let expectedResult: SerializedAnalysis<TemplateType> = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [":scope", "[state|foo=purple]", "[state|foo=red]"],
+        stylesFound: [":scope", ":scope[state|foo=purple]", ":scope[state|foo=red]"],
         elements: {
           a: {
             staticStyles: [ 0 ],
@@ -500,7 +500,7 @@ export class AnalysisTests {
       @block-reference a from "a.css";
 
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
       .fdsa { font-size: 22px; font-size: resolve('a.foo[state|bar]'); }
     `;
@@ -567,7 +567,7 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
@@ -594,7 +594,7 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
@@ -637,7 +637,7 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
@@ -665,7 +665,7 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      [state|foo] { color: red; }
+      :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
@@ -737,11 +737,11 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      [state|test] { color: red; }
+      :scope[state|test] { color: red; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state "[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
+      'Cannot use state ":scope[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 32 });
@@ -864,7 +864,7 @@ export class AnalysisTests {
     let source = `
       :scope {}
       .myclass {}
-      [state|a-state] {}
+      :scope[state|a-state] {}
       .myclass[state|a-sub-state] {}
     `;
     let processPromise = postcss().process(source, {from: "test.css"});

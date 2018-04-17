@@ -109,9 +109,8 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    */
   public getAttributeValue(token: AttrToken | string): AttrValue | null {
     token = ensureToken(token);
-    let value = token.value || ATTR_PRESENT;
     let attr = this.getAttribute(token);
-    return attr ? attr.getValue(value) || null : null;
+    return attr ? attr.getValue(token.value) || null : null;
   }
 
   /**
@@ -136,8 +135,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    */
   public ensureAttributeValue(token: AttrToken | string): AttrValue {
     token = ensureToken(token);
-    let value = token.value || ATTR_PRESENT;
-    return this.ensureAttribute(token).ensureValue(value);
+    return this.ensureAttribute(token).ensureValue(token.value);
   }
 
   /**
