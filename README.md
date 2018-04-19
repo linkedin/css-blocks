@@ -493,7 +493,7 @@ Which Block should win in this situation? Right now, the compiler has no idea. T
 ## Block Resolutions
 The special `resolve()` function provides explicit resolution guidance for properties that are in conflict across two or more Block files. They look like any other property declaration:
 
-```
+```css
 selector {
   property-name: resolve("<block-path>");
 }
@@ -508,7 +508,7 @@ Override resolutions tell css-blocks that when these two styles  are used togeth
 
 Here, we tell css-blocks to use the `color` value from `my-class` instead of `other.selector` when both styles are applied to the same element:
 
-```
+```css
 .my-class {
   color: resolve("other.selector");
 	color: red;
@@ -520,7 +520,7 @@ Yield resolutions tell css-blocks that when these two styles  are used together,
 
 Here, we tell css-blocks to use the `color` value from `other.selector` instead of `my-selector` when both styles are applied to the same element:
 
-```
+```css
 .my-class {
 	color: red;
   color: resolve("other.selector");
@@ -570,7 +570,7 @@ Here we have told css-blocks that when our component's `.button` class is used w
 
 If we were to switch around the order a bit so our `background-color` resolution comes *after* our component's declaration, it means that when these two classes are used together, hoverable's `.button` class will win, but only for that property. This is why you will never have to fight the cascade or use `!important` ever again!
 
-```
+```css
 /* stylesheet.css */
 /* ... */
 
@@ -598,7 +598,7 @@ It is important to note that **Pseudo-Elements** do not inherit any resolutions 
 
 So, for the following two Blocks where `my-class-1[state|enabled]` and `my-class-2` are used on the same element, one of the Blocks will need to resolve the conflicting `border-width` property:
 
-```
+```css
 /* other */
 
 .my-class-1[state|enabled]::before { 
@@ -606,7 +606,7 @@ So, for the following two Blocks where `my-class-1[state|enabled]` and `my-class
 }
 ```
 
-```
+```css
 /* main.css */
 
 @block-reference other from "./other.css";
