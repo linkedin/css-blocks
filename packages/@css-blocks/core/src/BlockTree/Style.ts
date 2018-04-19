@@ -45,9 +45,10 @@ export abstract class Style<
 
   /**
    * Return the source selector this `Style` was read from.
+   * @param scope  Optional scope to resolve this name relative to. If `true`, return the Block name instead of `:scope`. If a Block object, return with the local name instead of `:scope`.
    * @returns The source selector.
    */
-  public abstract asSource(): string;
+  public abstract asSource(scope?: Root | boolean): string;
 
   /**
    * Return an attribute for analysis using the authored source syntax.

@@ -175,7 +175,7 @@ We can easily conceptualize the `RewriteMapping` data for each element in develo
 ```javascript
 // For Element 1:
 //   - `.class-0` is always applied
-//   - `:scope[state|active]` is *only* applied when `isActive` is true
+//   - `.class-0[state|active]` is *only* applied when `isActive` is true
 const el1Classes = [
   "block__class-0",  
   isActive && "block__class-0--active"

@@ -161,7 +161,7 @@ export class Test {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
-        assert.equal(err.message, '[css-blocks] MalformedBlockPath: No state :scope[state|awesome=wat] found on block "bar".\n  Did you mean: :scope[state|awesome]? (7:9)');
+        assert.equal(err.message, '[css-blocks] MalformedBlockPath: State ":scope[state|awesome]" has no value "wat" on Block "bar".\n  Did you mean: :scope[state|awesome]? (7:9)');
       });
   }
 

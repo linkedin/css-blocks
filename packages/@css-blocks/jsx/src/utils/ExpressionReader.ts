@@ -210,7 +210,7 @@ export class ExpressionReader {
     } else if (this.stateValue) {
       let state = stateGroup.resolveValue(this.stateValue);
       if (!state) {
-        let message = `No state ${stateGroup.asSource(this.stateValue)} found on block "${this.block}".`;
+        let message = `State "${stateGroup.asSource()}" has no value "${this.stateValue}" on Block "${this.block}".`;
         let valueNames = [...stateGroup.valuesMap().values()].map(s => s.asSource());
         if (valueNames.length === 1) {
           message += `\n  Did you mean: ${valueNames[0]}?`;
