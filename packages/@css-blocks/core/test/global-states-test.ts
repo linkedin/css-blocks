@@ -33,7 +33,7 @@ export class BlockInheritance extends BEMProcessor {
       );
     });
   }
-  @test "Global state usage must be specify a global state if present"() {
+  @test "Global state usage must specify a global state, not just a block name."() {
     let { imports, config } = setupImporting();
     imports.registerSource(
       "app.block.css",

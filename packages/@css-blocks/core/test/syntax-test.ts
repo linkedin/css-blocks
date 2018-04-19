@@ -424,7 +424,7 @@ export class StraightJacket extends BEMProcessor {
                     [state|foo] { display: block; }`;
     return assertError(
       cssBlocks.InvalidBlockSyntax,
-      "States without an explicit :scope or class selector are not yet supported: [state|foo]" +
+      "States without an explicit :scope or class selector are not supported: [state|foo]" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }

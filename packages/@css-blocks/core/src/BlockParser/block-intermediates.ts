@@ -1,5 +1,5 @@
-import { assertNever, firstOfType, whatever } from "@opticss/util";
-import { CompoundSelector, postcssSelectorParser as selectorParser } from "opticss";
+import { assertNever, whatever } from "@opticss/util";
+import { postcssSelectorParser as selectorParser } from "opticss";
 
 import { ATTR_PRESENT, AttrToken, ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
 
@@ -11,20 +11,41 @@ export enum BlockType {
   classAttribute,
 }
 
-export type NodeAndType = {
-  blockType: BlockType.attribute | BlockType.classAttribute;
+export type RootAttributeNode = {
+  blockName?: string;
+  blockType: BlockType.attribute;
   node: selectorParser.Attribute;
-} | {
-  blockType: BlockType.root | BlockType.class;
-  node: selectorParser.ClassName | selectorParser.Pseudo;
-} | {
+};
+
+export type ClassAttributeNode = {
+  blockName?: string;
+  blockType: BlockType.classAttribute;
+  node: selectorParser.Attribute;
+};
+
+export type AttributeNode = RootAttributeNode | ClassAttributeNode;
+
+export type RootClassNode = {
+  blockName?: string;
+  blockType: BlockType.root;
+  node: selectorParser.Pseudo;
+};
+
+export type BlockClassNode = {
+  blockName?: string;
+  blockType: BlockType.class;
+  node: selectorParser.ClassName;
+};
+
+export type ClassNode = RootClassNode | BlockClassNode;
+
+export type BlockNode = {
+  blockName?: string;
   blockType: BlockType.block;
   node: selectorParser.Tag;
 };
 
-export type BlockNodeAndType = NodeAndType & {
-  blockName?: string;
-};
+export type NodeAndType = AttributeNode | ClassNode | BlockNode;
 
 /** Extract an Attribute's value from a `selectorParser` attribute selector */
 function attrValue(attr: selectorParser.Attribute): string {
@@ -76,7 +97,7 @@ export function isExternalBlock(object: NodeAndType): boolean {
  * on the root element.
  * @param object The NodeAndType's descriptor object.
  */
-export function isRootLevelObject(object: NodeAndType): boolean {
+export function isRootLevelObject(object: NodeAndType): object is RootAttributeNode | RootClassNode {
   return object.blockType === BlockType.root || object.blockType === BlockType.attribute;
 }
 
@@ -85,7 +106,7 @@ export function isRootLevelObject(object: NodeAndType): boolean {
  * on an element contained by the root, not the root itself.
  * @param object The CompoundSelector's descriptor object.
  */
-export function isClassLevelObject(object: NodeAndType): boolean {
+export function isClassLevelObject(object: NodeAndType): object is ClassAttributeNode | BlockClassNode {
   return object.blockType === BlockType.class || object.blockType === BlockType.classAttribute;
 }
 
@@ -105,49 +126,4 @@ export const isClassNode = selectorParser.isClassName;
  */
 export function isAttributeNode(node: selectorParser.Node): node is selectorParser.Attribute {
   return selectorParser.isAttribute(node) && node.namespace === STATE_NAMESPACE;
-}
-
-/**
- * Similar to assertBlockObject except it doesn't check for well-formedness
- * and doesn't ensure that you get a block object when not a legal selector.
- * @param sel The `CompoundSelector` to search.
- * @return Returns the block's name, type and node.
- */
-export function getBlockNode(sel: CompoundSelector): BlockNodeAndType | null {
-  let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
-  let r = firstOfType(sel.nodes, isRootNode);
-  if (r) {
-    return {
-      blockName: blockName && blockName.value,
-      blockType: BlockType.root,
-      node: r,
-    };
-  }
-  let s = firstOfType(sel.nodes, isAttributeNode);
-  if (s) {
-    let prev = s.prev();
-    if (prev && isClassNode(prev)) {
-      return {
-        blockName: blockName && blockName.value,
-        blockType: BlockType.classAttribute,
-        node: s,
-      };
-    } else {
-      return {
-        blockName: blockName && blockName.value,
-        blockType: BlockType.attribute,
-        node: s,
-      };
-    }
-  }
-  let c = firstOfType(sel.nodes, isClassNode);
-  if (c) {
-    return {
-      blockName: blockName && blockName.value,
-      blockType: BlockType.class,
-      node: c,
-    };
-  } else {
-    return null;
-  }
 }

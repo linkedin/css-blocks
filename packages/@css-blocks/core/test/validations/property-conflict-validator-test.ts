@@ -66,9 +66,9 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-a:scope (blocks/foo.block.css:3:37)
-            block-b:scope (blocks/b.block.css:1:31)
-            block-b:scope (blocks/b.block.css:1:43)`,
+            block-a (blocks/foo.block.css:3:37)
+            block-b (blocks/b.block.css:1:31)
+            block-b (blocks/b.block.css:1:43)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ":scope", "b").end();
@@ -117,10 +117,10 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-a:scope (blocks/foo.block.css:3:37)
-            block-a:scope (blocks/foo.block.css:3:50)
-            block-b:scope (blocks/b.block.css:1:31)
-            block-b:scope (blocks/b.block.css:1:43)`,
+            block-a (blocks/foo.block.css:3:37)
+            block-a (blocks/foo.block.css:3:50)
+            block-b (blocks/b.block.css:1:31)
+            block-b (blocks/b.block.css:1:43)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ":scope", "b").end();
@@ -202,12 +202,12 @@ export class TemplateAnalysisTests {
       `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
   color:
-    block-a:scope (blocks/foo.block.css:3:37)
-    block-b:scope (blocks/b.block.css:1:31)
+    block-a (blocks/foo.block.css:3:37)
+    block-b (blocks/b.block.css:1:31)
 
   background-color:
-    block-a:scope (blocks/foo.block.css:3:49)
-    block-b:scope (blocks/b.block.css:1:44)`,
+    block-a (blocks/foo.block.css:3:49)
+    block-b (blocks/b.block.css:1:44)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ":scope", "b").end();
@@ -327,11 +327,11 @@ export class TemplateAnalysisTests {
 
           color:
             block-a.foo (blocks/foo.block.css:4:15)
-            block-b:scope (blocks/b.block.css:1:31)
+            block-b (blocks/b.block.css:1:31)
 
           background-color:
             block-a.foo (blocks/foo.block.css:4:27)
-            block-b:scope (blocks/b.block.css:1:44)`,
+            block-b (blocks/b.block.css:1:44)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ".foo", "b").end();
@@ -420,11 +420,11 @@ export class TemplateAnalysisTests {
 
           color:
             block-a.foo (blocks/foo.block.css:4:15)
-            block-b:scope (blocks/b.block.css:1:31)
+            block-b (blocks/b.block.css:1:31)
 
           background-color:
             block-a.foo (blocks/foo.block.css:4:27)
-            block-b:scope (blocks/b.block.css:1:44)`,
+            block-b (blocks/b.block.css:1:44)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block).addDynamic([".foo"]).addDynamic(["b"]).end();
@@ -480,11 +480,11 @@ export class TemplateAnalysisTests {
 
           color:
             block-a.foo (blocks/foo.block.css:4:15)
-            block-b:scope (blocks/b.block.css:1:31)
+            block-b (blocks/b.block.css:1:31)
 
           background-color:
             block-a.foo (blocks/foo.block.css:4:27)
-            block-b:scope (blocks/b.block.css:1:44)`,
+            block-b (blocks/b.block.css:1:44)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block).addDynamic([".foo", "b"]).end();
@@ -561,12 +561,12 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-b:scope (blocks/b.block.css:1:31)
-            block-a:scope[state|foo] (blocks/foo.block.css:4:27)
+            block-b (blocks/b.block.css:1:31)
+            block-a[state|foo] (blocks/foo.block.css:4:27)
 
           background-color:
-            block-b:scope (blocks/b.block.css:1:44)
-            block-a:scope[state|foo] (blocks/foo.block.css:4:39)`,
+            block-b (blocks/b.block.css:1:44)
+            block-a[state|foo] (blocks/foo.block.css:4:39)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ":scope", "b").addDynamic("[state|foo]").end();
@@ -678,12 +678,12 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-a:scope[state|foo] (blocks/foo.block.css:4:27)
-            block-b:scope[state|bar] (blocks/b.block.css:3:27)
+            block-a[state|foo] (blocks/foo.block.css:4:27)
+            block-b[state|bar] (blocks/b.block.css:3:27)
 
           background-color:
-            block-a:scope[state|foo] (blocks/foo.block.css:4:39)
-            block-b:scope[state|bar] (blocks/b.block.css:3:40)`,
+            block-a[state|foo] (blocks/foo.block.css:4:39)
+            block-b[state|bar] (blocks/b.block.css:3:40)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ":scope", "b").addDynamic("[state|foo]").addDynamic("b:scope[state|bar]").end();
@@ -741,12 +741,12 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-b:scope (blocks/b.block.css:2:37)
-            block-a:scope[state|foo=one] (blocks/foo.block.css:4:31)
+            block-b (blocks/b.block.css:2:37)
+            block-a[state|foo=one] (blocks/foo.block.css:4:31)
 
           background-color:
-            block-b:scope (blocks/b.block.css:2:50)
-            block-a:scope[state|foo=one] (blocks/foo.block.css:4:43)`,
+            block-b (blocks/b.block.css:2:50)
+            block-a[state|foo=one] (blocks/foo.block.css:4:43)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").end();
@@ -802,16 +802,16 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-b:scope (blocks/b.block.css:2:37)
-            block-a:scope[state|foo=one] (blocks/foo.block.css:4:31)
-            block-b:scope[state|bar=one] (blocks/b.block.css:3:31)
-            block-b:scope[state|bar=two] (blocks/b.block.css:4:31)
+            block-b (blocks/b.block.css:2:37)
+            block-a[state|foo=one] (blocks/foo.block.css:4:31)
+            block-b[state|bar=one] (blocks/b.block.css:3:31)
+            block-b[state|bar=two] (blocks/b.block.css:4:31)
 
           background-color:
-            block-b:scope (blocks/b.block.css:2:50)
-            block-a:scope[state|foo=one] (blocks/foo.block.css:4:46)
-            block-b:scope[state|bar=one] (blocks/b.block.css:3:43)
-            block-b:scope[state|bar=two] (blocks/b.block.css:4:46)`,
+            block-b (blocks/b.block.css:2:50)
+            block-a[state|foo=one] (blocks/foo.block.css:4:46)
+            block-b[state|bar=one] (blocks/b.block.css:3:43)
+            block-b[state|bar=two] (blocks/b.block.css:4:46)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").addStateGroup("b", "[state|bar]").end();
@@ -847,12 +847,12 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-b:scope (blocks/b.block.css:1:31)
+            block-b (blocks/b.block.css:1:31)
             block-c.bar (blocks/c.block.css:3:14)
             block-a.foo (blocks/foo.block.css:5:15)
 
           background-color:
-            block-b:scope (blocks/b.block.css:1:44)
+            block-b (blocks/b.block.css:1:44)
             block-a.foo (blocks/foo.block.css:5:27)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {

@@ -154,9 +154,22 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
 
   /**
    * Export as original class name.
+   * @param scope  Optional scope to resolve this name relative to. If `true`, return the Block name instead of `:scope`. If a Block object, return with the local name instead of `:scope`.
    * @returns String representing original class.
    */
-  public asSource(): string { return this.isRoot ? ROOT_CLASS : `.${this.name}`; }
+  public asSource(scope?: Block | boolean): string {
+    let blockName = this.block.name;
+
+    if (scope instanceof Block) {
+      blockName = scope.getReferencedBlockLocalName(this.block) || blockName;
+    }
+
+    if (scope && scope !== this.block) {
+      return this.isRoot ? blockName : `${blockName}.${this.name}`;
+    }
+
+    return this.isRoot ? ROOT_CLASS : `.${this.name}`;
+  }
 
   /**
    * Emit analysis attributes for the class value this

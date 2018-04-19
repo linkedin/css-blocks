@@ -122,24 +122,14 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   }
 
   /**
-   * @returns The bare Attribute selector with no qualifying `BlockClass` name.
-   */
-  unqualifiedSource(value?: string): string {
-    let namespace = this.token.namespace ? `${this.token.namespace}|` : "";
-    value = (value && value !== ATTR_PRESENT) ? `=${value}` : "";
-    return `[${namespace}${this.token.name}${value}]`;
-  }
-
-  /**
    * Retrieve this Attribute's selector as it appears in the Block source code.
    *
-   * @param value If provided, it is used as the Attribute's value whether or not
-   *   it is allowed by the known AttrValues (this is useful for constructing
-   *   error messages).
+   * @param scope  Optional scope to resolve this name relative to. If `true`, return the Block name instead of `:scope`. If a Block object, return with the local name instead of `:scope`.
    * @returns The Attribute's attribute selector.
    */
-  asSource(value?: string): string {
-    return this.blockClass.asSource() + this.unqualifiedSource(value);
+  asSource(scope?: Block | boolean): string {
+    let namespace = this.token.namespace ? `${this.token.namespace}|` : "";
+    return this.blockClass.asSource(scope) + `[${namespace}${this.token.name}]`;
   }
 
   /**

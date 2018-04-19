@@ -4,7 +4,6 @@ import { Block, BlockClass, Style } from "../../BlockTree";
 import * as errors from "../../errors";
 import { selectorSourceLocation as loc, sourceLocation } from "../../SourceLocation";
 import {
-  BlockNodeAndType,
   BlockType,
   NodeAndType,
   blockTypeName,
@@ -238,7 +237,7 @@ function assertValidSelector(block: Block, rule: postcss.Rule, selector: ParsedS
  * @param rule The full `postcss.Rule` for nice error reporting.
  * @return Returns the block's name, type and node.
  */
-function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Rule, file: string): BlockNodeAndType {
+function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Rule, file: string): NodeAndType {
 
   // If selecting a block or tag, check that the referenced block has been imported.
   // Otherwise, referencing a tag name is not allowed in blocks, throw an error.
@@ -325,7 +324,7 @@ function assertBlockObject(block: Block, sel: CompoundSelector, rule: postcss.Ru
         }
         if (!found) {
           throw new errors.InvalidBlockSyntax(
-            `States without an explicit :scope or class selector are not yet supported: ${rule.selector}`,
+            `States without an explicit :scope or class selector are not supported: ${rule.selector}`,
             loc(file, rule, n),
           );
         } else if (found.blockType === BlockType.class || found.blockType === BlockType.classAttribute) {
