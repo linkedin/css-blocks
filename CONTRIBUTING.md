@@ -71,6 +71,6 @@ Tips for Getting Your Pull Request Accepted
    a pull request. Large features which have never been discussed are
    unlikely to be accepted. **You have been warned.**
 
-disclosure_guidelines: https://www.linkedin.com/help/linkedin/answer/62924
-pubkey: https://gist.github.com/chriseppstein/3f45d3a8e6fb42f24cb7b3f77f21381e
-disclosure_email: mailto:security@linkedin.com?subject=Vulnerability%20in%20Github%20LinkedIn/css-blocks%20-%20%3Csummary%3E
+[disclosure_guidelines]: https://www.linkedin.com/help/linkedin/answer/62924
+[pubkey]: https://gist.github.com/chriseppstein/3f45d3a8e6fb42f24cb7b3f77f21381e
+[disclosure_email]: mailto:security@linkedin.com?subject=Vulnerability%20in%20Github%20LinkedIn/css-blocks%20-%20%3Csummary%3E
