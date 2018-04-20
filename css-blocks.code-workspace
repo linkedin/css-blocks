@@ -24,6 +24,9 @@
 		{
 			"path": ".",
 			"name": "Workspace Root"
+		},
+		{
+			"path": "packages/@css-blocks/website"
 		}
 	],
 	"settings": {

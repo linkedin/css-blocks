@@ -62,9 +62,10 @@ class Home extends Component {
         <div className={styles.main}>
           <section className={grid.container}>
 
-            <h1 className={font.xlarge}>Blazing fast CSS for your design systems and app components</h1>
-            <p>Inspired by <a href="https://github.com/css-modules/css-modules" className={font.fancyLink} target="_blank">CSS Modules</a>,
-              <a href="http://getbem.com/" className={font.fancyLink} target="_blank">BEM</a> and <a href="https://acss.io/" className={font.fancyLink} target="_blank">Atomic CSS</a>,
+            <h1 className={font.xlarge}>Blazing fast CSS for your <br />design systems and app components</h1>
+            <p>Inspired by&nbsp;
+              <a href="https://github.com/css-modules/css-modules" className={font.fancyLink} target="_blank">CSS Modules</a>,&nbsp;
+              <a href="http://getbem.com/" className={font.fancyLink} target="_blank">BEM</a> and <a href="https://acss.io/" className={font.fancyLink} target="_blank">Atomic CSS</a>,&nbsp;
               CSS Blocks is the next evolution of best practices
             </p>
 
