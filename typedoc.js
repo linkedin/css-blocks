@@ -7,9 +7,9 @@ module.exports = {
     "./packages/@css-blocks/runtime/src",
     "./packages/@css-blocks/webpack/src"
   ],
-  "out": "docs",
+  "out": "packages/@css-blocks/website/public/docs",
   "mode": "modules",
-  "theme": "default",
+  "theme": "packages/@css-blocks/website/docs-theme",
   "name": "@css-blocks",
   "external-modulemap": ".*packages\/(@css-blocks\/[^\/]+)\/.*"
 }

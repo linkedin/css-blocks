@@ -1,0 +1,76 @@
+:scope  {
+  background-color: transparent;
+  border: 0;
+  padding: 1.2rem 2.4rem;
+  color: white;
+  font-weight: bold;
+  font-size: 1.6rem;
+  border-radius: 2.4rem;
+  white-space: nowrap;
+  height: 4.8rem;
+  line-height: 2.4rem;
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin-right: 18px;
+  text-decoration: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+:scope:before {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 400%;
+  background: rgba(0,0,0,.15);
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%) rotate(45deg);
+  transition: width .28s, color .28s;
+  z-index: -1;
+  mix-blend-mode: darken;
+}
+:scope:hover::before {
+  width: 100%;
+}
+:scope:active::before {
+  background: rgba(0,0,0,.25);
+}
+
+:scope:after {
+  content: "";
+  position: absolute;
+  top: -5%;
+  left: -5%;
+  width: 110%;
+  height: 110%;
+  background: var(--pink);
+  z-index: -2;
+}
+
+:scope[state|color="purple"]::after {
+  background: var(--purple);
+}
+
+:scope[state|color="purple"]::before {
+  background: rgba(255,255,255,.15);
+  mix-blend-mode: lighten;
+}
+
+:scope[state|color="purple"]:active::before {
+  background: rgba(255,255,255,.25);
+}
+
+@media (max-width: 520px) {
+  :scope {
+    display: block;
+    width: 100%;
+    max-width: auto;
+    text-align: center;
+  }
+  :scope::before {
+    height: 100vw;
+  }
+}

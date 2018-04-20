@@ -26,7 +26,7 @@
     "chai": "^3.5.0",
     "husky": "^0.14.3",
     "istanbul": "^0.4.5",
-    "lerna": "^2.5.1",
+    "lerna": "^3.0.0-beta.1",
     "loader-utils": "^1.1.0",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
@@ -43,10 +43,11 @@
     "tslint": "^5.9.1",
     "typedoc": "^0.11.0",
     "typescript": "^2.8.1",
-    "typedoc-plugin-external-module-map": "amiller-gh/typedoc-plugin-external-module-map#prebuilt",
+    "typedoc-plugin-monorepo": "^0.1.0",
     "watch": "^1.0.2"
   },
   "workspaces": [
     "packages/@css-blocks/*"
-  ]
+  ],
+  "name": "css-blocks"
 }

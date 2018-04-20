@@ -1,4 +1,6 @@
 {
+  "include": [ "packages/**/*" ],
+  "exclude": [ "node_modules" ],
   "compilerOptions": {
     // Compilation Configuration
     "target": "es2015",
@@ -10,6 +12,7 @@
     // Environment Configuration
     "experimentalDecorators": true,
     "moduleResolution": "node",
+    "skipLibCheck": true,
 
     // Enhance Strictness
     "noImplicitAny": true,
@@ -30,6 +33,7 @@
     "newLine": "LF",
     "traceResolution": false,
     "module": "commonjs",
+    "jsx": "preserve",
 
     "baseUrl": ".",
     "paths": {

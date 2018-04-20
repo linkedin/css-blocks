@@ -1,7 +1,7 @@
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
-    "jsx": "Preserve",
+    "jsx": "preserve",
     "jsxFactory": "h",
 
     // output options

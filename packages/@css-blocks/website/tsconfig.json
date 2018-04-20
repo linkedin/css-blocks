@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "outDir": "./build/ts-out",
+        "baseUrl": "src",
+        "sourceMap": true,
+        "noImplicitAny": true,
+        "module": "es6",
+        "moduleResolution": "Node",
+        "target": "es2017",
+        "jsx": "preserve",
+        "jsxFactory": "React.createElement",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "allowJs": true,
+        "noUnusedLocals": true,
+        "allowSyntheticDefaultImports": true
+    },
+    "include": [
+        "local-types/*.d.ts",
+        "./src/**/*"
+    ],
+    "exclude": [ "node_modules" ]
+}

@@ -1,0 +1,76 @@
+
+:scope {
+  position: absolute;
+}
+:scope::before {
+  content: attr(data-label);
+  position: absolute;
+  border-radius: 50%;
+  display: block;
+  padding: 3px;
+  background-color: var(--pink);
+  color: white;
+  width: 18px;
+  height: 18px;
+  z-index: 1;
+  line-height: 18px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  left: 0;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 2px 3px rgba(0,0,0,.2);
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  transition: background-color .28s;
+}
+
+:scope:hover::before, :scope:focus::before {
+  background-color: var(--purple);
+}
+
+:scope::after {
+  content: attr(data-value);
+  position: absolute;
+  border-radius: 2px;
+  display: block;
+  padding: 3px;
+  left: 28px;
+  background-color: rgba(0,0,0,.85);
+  color: white;
+  width: auto;
+  z-index: 1;
+  padding: 0 12px;
+  font-size: 1.4rem;
+  line-height: 24px;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 2px 3px rgba(0,0,0,.2);
+  transform: translate(-12px, -50%);
+  transition: opacity .28s, visibility .28s;
+  transition-delay: visibility .28s;
+  visibility: hidden;
+  opacity: 0;
+}
+
+:scope:hover::after, :scope:focus::after {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity .28s, visibility .28s;
+  transition-delay: visibility 0s;
+}
+
+
+@media (max-width: 520px) {
+  :scope::after {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 42px;
+    font-size: 1.6rem;
+    padding: 8px;
+    box-sizing: border-box;
+    white-space: normal;
+    transform: none;
+  }
+}
+

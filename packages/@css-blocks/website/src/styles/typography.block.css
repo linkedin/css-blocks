@@ -1,0 +1,53 @@
+.sans {
+  font-family: "Lato", sans-serif;
+}
+
+.serif {
+  font-family: "Enriqueta", sans-serif;
+}
+
+.bold {
+  font-weight: 800;
+}
+
+.italic {
+  font-style: italic;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.xsmall {
+  font-size: 1.0rem;
+}
+
+.small {
+  font-size: 1.2rem;
+}
+
+.medium {
+  font-size: 1.8rem;
+}
+
+.large {
+  font-size: 2.4rem;
+}
+
+.xlarge {
+  font-size: 3.8rem;
+  font-weight: bold;
+}
+
+.fancyLink {
+  color: currentColor;
+  font-weight: 800;
+  text-decoration: none;
+  transition: box-shadow .28s, color .28s;
+  box-shadow: 0 1px 0 0 white, inset 0 0 0 0 white;
+}
+
+.fancyLink:hover, .fancyLink:focus {
+  box-shadow: 0 2px 0 0 white, inset 0 -28px 0 0 white;
+  color: var(--pink);
+}

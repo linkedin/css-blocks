@@ -1,3 +1,8 @@
+/**
+ * @module @css-blocks/core
+ *
+ * This comment will be used to document the "thing2" module.
+ */
 export * from "./BlockTree";
 export * from "./errors";
 export * from "./SourceLocation";

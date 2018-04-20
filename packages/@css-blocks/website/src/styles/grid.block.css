@@ -1,0 +1,10 @@
+
+.container {
+  max-width: 1280px;
+  display: flex;
+  margin: auto;
+  padding: 0 18px;
+  text-align: center;
+  flex-flow: column;
+  align-items: center;
+}

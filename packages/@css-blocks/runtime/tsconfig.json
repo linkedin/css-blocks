@@ -13,6 +13,7 @@
     // Environment Configuration
     "experimentalDecorators": false,
     "moduleResolution": "node",
+    "skipLibCheck": true,
 
     // Enhance Strictness
     "noImplicitAny": true,

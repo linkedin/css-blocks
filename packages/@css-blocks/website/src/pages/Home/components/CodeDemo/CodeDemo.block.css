@@ -1,0 +1,30 @@
+:scope {
+  width: 100%;
+  justify-content: space-between;
+  display: flex;
+  margin-bottom: 24px;
+  position: relative;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+      -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+}
+
+.editor {
+  width: calc(50% - 8px);
+  box-sizing: border-box;
+  position: relative;
+}
+
+
+@media (max-width: 520px) {
+  :scope {
+    flex-flow: column;
+  }
+  .editor {
+    width: 100%;
+  }
+}
+

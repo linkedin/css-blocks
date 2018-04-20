@@ -77,10 +77,10 @@ CSS Blocks is under active development and there are a number of features that h
 | **Selectors** ||
 | ✅ | `:scope` | Scope selector for component root. |
 | ✅ | `.class` | Class selectors for component sub-elements. |
-| ✅ | `.class[state\|name]` | State that is applied to scope and class selectors on state existence. |
-| ✅ | `.class[state\|name="value"]` | Mutually exclusive sub-states for scope and class selectors to be applied when a sub-state value matches. |
-| ❌ | `[state\|name=value]` | Bare state (not associated with an Originating Element) and optional substate selectors for targeting all elements in the Block that possess the state an/or sub-state. |
-| 🖌 | `.class[state\|name default]` | Default state value to be applied when there is no other match. |
+| ✅ | <code>.class[state&#124;name]</code> | State that is applied to scope and class selectors on state existence. |
+| ✅ | <code>.class[state&#124;name="value"]</code> | Mutually exclusive sub-states for scope and class selectors to be applied when a sub-state value matches. |
+| ❌ | <code>[state&#124;name=value]</code> | Bare state (not associated with an Originating Element) and optional substate selectors for targeting all elements in the Block that possess the state an/or sub-state. |
+| 🖌 | <code>.class[state&#124;name default]</code> | Default state value to be applied when there is no other match. |
 | **At Rules** ||
 | ✅ | `@block-reference local-name from "./file/path.css"` | Reference another Block using a local name. |
 | ✅ | `@block-debug block-name to channel` | Debug call that will print a block interface to a "channel": `comment`, `stderr`, or `stdout`. |
@@ -402,11 +402,11 @@ All the following syntaxes are legal to select any given stylable on a reference
 |Stylable|Syntax|
 |:--|:--|
 |Scope|`block`|
-|Scope State|`block[state\|name]`|
-|Scope Sub-State|`block[state\|name=value]`|
+|Scope State|<code>block[state&#124;name]</code>|
+|Scope Sub-State|<code>block[state&#124;name=value]</code>|
 |Class|`block.class`|
-|Scope State|`block.class[state\|name]`|
-|Scope Sub-State|`block.class[state\|name=value]`|
+|Scope State|<code>block.class[state&#124;name]</code>|
+|Scope Sub-State|<code>block.class[state&#124;name=value]</code>|
 
 > 🔮 **Future Feature: Block Path Wildcards**
 > 
@@ -425,7 +425,7 @@ For Glimmer, using multiple blocks in a single template will look something like
   transition: box-shadow .28s;
 }
 :scope:hover {
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2)
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2)
 }
 .button { 
   background-color: rgba(255, 255, 255, .5);
@@ -511,7 +511,7 @@ Here, we tell css-blocks to use the `color` value from `my-class` instead of `ot
 ```css
 .my-class {
   color: resolve("other.selector");
-	color: red;
+  color: red;
 }
 ```
 
@@ -522,7 +522,7 @@ Here, we tell css-blocks to use the `color` value from `other.selector` instead 
 
 ```css
 .my-class {
-	color: red;
+  color: red;
   color: resolve("other.selector");
 }
 ```
@@ -533,8 +533,8 @@ Here, we tell css-blocks to use the `color` value from `other.selector` instead 
 
 ```css
 .my-class {
-	color: red;
-	background: blue;
+  color: red;
+  background: blue;
 
 	/* Yields all conflicts to `other.selector` */
   all: resolve("other.selector");
@@ -664,6 +664,6 @@ app[state|is-saving] .signout {
 
 /* Animate the logo when app is loading data */
 app[state|is-loading] .logo {
-	animation-name: bounce;
+  animation-name: bounce;
 }
 ```

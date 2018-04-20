@@ -1,0 +1,23 @@
+
+:scope {
+
+}
+
+.nav {
+  background-color: #222;
+  height: 45px;
+  color: white;
+  display: none;
+}
+
+.navList {
+  margin: 0;
+}
+
+.title {
+  font-size: 1.5em;
+}
+
+.intro {
+  font-size: large;
+}

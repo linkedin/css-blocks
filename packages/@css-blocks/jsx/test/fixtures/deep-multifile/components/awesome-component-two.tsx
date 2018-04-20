@@ -2,6 +2,10 @@
 import { h } from 'preact';
 import baz from '../blocks/baz.block.css';
 
-export default function render(){
-  return (<div class={baz.pretty}></div>);
+export interface Props {
+  children?: JSX.Element | JSX.Element[]
+}
+
+export default function render(props: Props){
+  return (<div class={baz.pretty}>{props.children}</div>);
 }

@@ -1,8 +1,7 @@
 {
   "version": "0.17.0",
-  "lerna": "2.5.1",
   "packages": [
-    "packages/*"
+    "packages/@css-blocks/*"
   ],
   "npmClient": "yarn",
   "useWorkspaces": true
