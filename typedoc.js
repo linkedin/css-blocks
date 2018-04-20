@@ -9,7 +9,7 @@ module.exports = {
   ],
   "out": "packages/@css-blocks/website/public/docs",
   "mode": "modules",
-  "theme": "packages/@css-blocks/website/docs-theme",
+  "theme": "packages/@css-blocks/website/typedoc-theme",
   "name": "@css-blocks",
   "external-modulemap": ".*packages\/(@css-blocks\/[^\/]+)\/.*"
 }
