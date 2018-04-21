@@ -458,7 +458,7 @@ For Glimmer, using multiple blocks in a single template will look something like
 ```hbs
 {{!-- :scope selector from `stylesheet.css` is automagically applied to the template's wrapper element. Thanks Glimmer! --}}
 <section>
-	<form class="form other">
+  <form class="form other">
     <button class="button other.button">Click Me!</button>
   </form>
 </section>
@@ -536,7 +536,7 @@ Here, we tell css-blocks to use the `color` value from `other.selector` instead 
   color: red;
   background: blue;
 
-	/* Yields all conflicts to `other.selector` */
+  /* Yields all conflicts to `other.selector` */
   all: resolve("other.selector");
 }
 ```
