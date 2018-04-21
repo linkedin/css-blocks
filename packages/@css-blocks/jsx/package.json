@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-blocks/css-blocks.git"
+    "url": "git+https://github.com/linkedin/css-blocks.git"
   },
   "keywords": [
     "jsx",
@@ -33,12 +33,12 @@
   "author": "Adam Miller <ammiller@linkedin.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/css-blocks/css-blocks/issues"
+    "url": "https://github.com/linkedin/css-blocks/issues"
   },
   "engines": {
     "node": ">=8"
   },
-  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/jsx#readme",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/jsx#readme",
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0",
     "@css-blocks/runtime": "^0.17.0",

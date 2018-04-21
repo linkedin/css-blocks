@@ -98,7 +98,7 @@ export abstract class Style<
 
   /**
    * Returns the styles that are implied by this style.
-   * TODO: Placeholder for when we implement class composition. (https://github.com/css-blocks/css-blocks/issues/72)
+   * TODO: Placeholder for when we implement class composition. (https://github.com/linkedin/css-blocks/issues/72)
    *
    * @returns The Style objects, or undefined if no styles are implied.
    */

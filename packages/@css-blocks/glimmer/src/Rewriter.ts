@@ -68,7 +68,7 @@ export class GlimmerRewriter implements ASTPlugin {
     // TODO: We use this to re-analyze elements in the rewriter.
     //       We've already done this work and should be able to
     //       re-use the data! Unfortunately, there are problems...
-    //       See: https://github.com/css-blocks/css-blocks/issues/84
+    //       See: https://github.com/linkedin/css-blocks/issues/84
     let element = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
     this.debug(element.forOptimizer(this.cssBlocksOpts)[0].toString());
     let rewrite = this.styleMapping.simpleRewriteMapping(element);

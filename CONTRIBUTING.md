@@ -19,7 +19,7 @@ $ npm install -g lerna yarn
 Check out the code:
 
 ```
-$ git clone https://github.com/css-blocks/css-blocks.git
+$ git clone https://github.com/linkedin/css-blocks.git
 ```
 
 Go into the css-blocks directory and run some commands:

@@ -25,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-blocks/css-blocks.git"
+    "url": "git+https://github.com/linkedin/css-blocks.git"
   },
   "keywords": [
     "glimmer",
@@ -42,12 +42,12 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/css-blocks/css-blocks/issues"
+    "url": "https://github.com/linkedin/css-blocks/issues"
   },
   "engines": {
     "node": ">=8"
   },
-  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/@css-blocks/glimmer#readme",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/@css-blocks/glimmer#readme",
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0"
   },

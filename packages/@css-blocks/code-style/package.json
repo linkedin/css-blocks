@@ -20,13 +20,13 @@
     "lintall": "tslint -t msbuild -p . -c tslint.release.json"
   },
   "bugs": {
-    "url": "https://github.com/css-blocks/css-blocks/issues"
+    "url": "https://github.com/linkedin/css-blocks/issues"
   },
   "repository": {
-    "url": "https://github.com/css-blocks/css-blocks.git",
+    "url": "https://github.com/linkedin/css-blocks.git",
     "type": "git"
   },
-  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/code-style",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/code-style",
   "dependencies": {
     "@opticss/code-style": "file:../../../../opticss/packages/code-style"
   },

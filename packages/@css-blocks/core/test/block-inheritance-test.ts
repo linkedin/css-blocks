@@ -145,7 +145,7 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   // TODO: With the addition of the conflict validator, this use case now outputs duplicate resolve statement.
-  // This bug will be resolved when https://github.com/css-blocks/css-blocks/issues/64 lands.
+  // This bug will be resolved when https://github.com/linkedin/css-blocks/issues/64 lands.
   @test @skip "multiple selectors in ruleset for object get resolved"() {
     let { imports, config } = setupImporting();
     imports.registerSource(

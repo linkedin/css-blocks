@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-blocks/css-blocks.git"
+    "url": "git+https://github.com/linkedin/css-blocks.git"
   },
   "keywords": [
     "@css-blocks/core"
@@ -30,9 +30,9 @@
   "author": "Chris Eppstein <chris@eppsteins.net>",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/css-blocks/css-blocks/issues"
+    "url": "https://github.com/linkedin/css-blocks/issues"
   },
-  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/runtime/#readme",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/runtime/#readme",
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0"
   }

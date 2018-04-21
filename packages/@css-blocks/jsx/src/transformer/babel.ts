@@ -90,7 +90,7 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
           // TODO: We use this to re-analyze elements in the rewriter.
           //       We've already done this work and should be able to
           //       re-use the data! Unfortunately, there are problems...
-          //       See: https://github.com/css-blocks/css-blocks/issues/84
+          //       See: https://github.com/linkedin/css-blocks/issues/84
           this.elementAnalyzer = new JSXElementAnalyzer(this.analysis, true);
         }
       },
