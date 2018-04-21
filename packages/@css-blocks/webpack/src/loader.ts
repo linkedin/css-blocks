@@ -45,6 +45,11 @@ export function CSSBlocksWebpackAdapter(this: LoaderContext, source: any, map: a
     options = loaderUtils.getOptions(this) || {};
   }
 
+  if (!options.rewriter) {
+    callback(new Error("No rewriter"));
+    return;
+  }
+
   let rewriter = options.rewriter || {};
   rewriter.blocks = rewriter.blocks || {};
 
@@ -64,6 +69,7 @@ export function CSSBlocksWebpackAdapter(this: LoaderContext, source: any, map: a
     .then((mappings: (StyleMapping<TmpType> | void)[]) => {
       debug(`Completed ${metaMappingPromises.length} block compilations!`);
       mappings.forEach((mapping: StyleMapping<TmpType> | void) => {
+        debug(`StyleMapping has ${ mapping && mapping.blocks.size || 0} blocks`);
         if (!mapping) { return; }
         // When an css or analysis error happens the mapping seems to be undefined and generates a confusing error.
         let styleMapping: StyleMapping<TmpType> | undefined = mapping && mapping.analyses && mapping.analyses.find(a => a.template.identifier === path) && mapping;

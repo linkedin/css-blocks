@@ -70,7 +70,7 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
 
     return {
       pre(file: BabelFile) {
-        debug(`Encountered file for rewrite: ${this.filename}`);
+        debug(`Encountered file for rewrite: ${file}`);
         this.dynamicStylesFound = false;
         this.importsToRemove = new Array<NodePath<ImportDeclaration>>();
         this.statementsToRemove = new Array<NodePath<Statement>>();
@@ -119,6 +119,7 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
         ImportDeclaration(nodePath: NodePath<ImportDeclaration>) {
           // We always remove block imports even if we're aborting the processing -- they can only cause problems.
           if (isBlockFilename(nodePath.node.source.value)) {
+            debug(`will remove import import of ${nodePath.node.source.value}`);
             this.importsToRemove.push(nodePath);
           }
         },

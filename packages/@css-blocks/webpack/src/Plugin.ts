@@ -166,11 +166,13 @@ export class CssBlocksPlugin
       .catch((error: Error) => {
         this.trace(`notifying of compilation failure`);
         compilation.errors.push(error);
-        this.notifyComplete({
-          error,
-          compilation,
-          assetPath: this.outputCssFile,
-        },                  cb);
+        this.notifyComplete(
+          {
+            error,
+            compilation,
+            assetPath: this.outputCssFile,
+          },
+          cb);
         this.trace(`notified of compilation failure`);
       });
 
@@ -262,7 +264,9 @@ export class CssBlocksPlugin
       optimizer.addAnalysis(a.forOptimizer(options));
     }
     this.trace(`compiled ${numBlocks} blocks.`);
+    this.debug("optimization starting.");
     return optimizer.optimize(cssOutputName).then(optimizationResult => {
+      this.debug("optimization complete.");
       return {
         optimizationResult,
         blocks,
