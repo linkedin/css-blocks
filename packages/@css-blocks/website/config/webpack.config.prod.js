@@ -21,11 +21,11 @@ const jsxCompilationOptions = {
     mergeDeclarations: true,
     removeUnusedStyles: true,
     conflictResolution: true,
-    enabled: false,
+    enabled: true,
   },
   aliases: {}
 };
-const CssBlockRewriter = new CssBlocks.Rewriter();
+const CssBlockRewriter = new CssBlocks.Rewriter(jsxCompilationOptions);
 const CssBlockAnalyzer = new CssBlocks.Analyzer(paths.appIndexJs, jsxCompilationOptions);
 
 // Webpack uses `publicPath` to determine where the app is being served from.
@@ -232,7 +232,7 @@ module.exports = {
                   plugins: [
                     require("@css-blocks/jsx/dist/src/transformer/babel").makePlugin({ rewriter: CssBlockRewriter }),
                   ],
-                  cacheDirectory: true,
+                  cacheDirectory: false,
                   compact: true,
                   parserOpts: {
                     plugins: [ "jsx" ]
@@ -285,7 +285,7 @@ module.exports = {
     new CssBlocksPlugin({
       analyzer: CssBlockAnalyzer,
       outputCssFile: "css-blocks.css",
-      name: "preact",
+      name: "css-blocks",
       compilationOptions: jsxCompilationOptions.compilationOptions,
       optimization: jsxCompilationOptions.optimization
     }),
