@@ -101,8 +101,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     this.transport.css = optimized.output;
 
     // Write our compiled CSS to the output tree.
-    // QUESTION: GUH! TOM! THIS DOESN'T APPEAR IN THE OUTPUT TREE!
-    await fs.outputFile(
+    await fs.writeFile(
       path.join(this.outputPath, this.output),
       optimized.output.content.toString(),
     );
