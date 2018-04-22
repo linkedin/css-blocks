@@ -40,7 +40,7 @@ app's production stylesheets after compression will amaze you.
 
 Gone are the days where you spend several minutes debugging your app only to discover a subtle typo that caused a selector to not match – CSS Blocks will give you a build error and suggest possible fixes. With IDE integration, projects using CSS Blocks will be able to quickly navigate to selector definitions that match your current template element and find which template elements match your current selector, autocomplete class names. With CSS Blocks new resolution system, cascade conflicts will be caught for you before you even know they exist and you will never have to fight a specificity war ever again.
 
-![CSS Blocks Example](/css-blocks-example.png)
+![CSS Blocks Example](https://user-images.githubusercontent.com/7856443/39090683-78ca1966-459a-11e8-8128-f50a9b2a1810.jpg)
 
 > CSS Blocks is inspired by [CSS Modules](https://github.com/css-modules/css-modules), [BEM](http://getbem.com/) and [Atomic CSS](https://acss.io/)
 > 
