@@ -1,8 +1,8 @@
 import { MultiMap } from "@opticss/util";
+import * as cssPropertyParser from "css-property-parser";
 
 import { SELF_SELECTOR } from "../BlockSyntax";
 import { Style } from "../BlockTree";
-import { longhandsFor, shorthandsFor } from "../shortHandProps";
 
 export type Conflict = [string, string];
 
@@ -26,21 +26,23 @@ export class Conflicts<T> {
  */
 function detectPropertyConflicts(props1: Set<string>, props2: Set<string>): Set<Conflict> {
   let conflicts = new Set<[string, string]>();
-  props1.forEach((prop) => {
-    if (props2.has(prop)) {
-      conflicts.add([prop, prop]);
+  for (let prop of props1) {
+    let shortHands = cssPropertyParser.getShorthandsForProperty(prop);
+    for (let shortHand of shortHands) { // this always includes, at least, the property itself.
+      if (props2.has(prop)) {
+        conflicts.add([prop, shortHand]);
+      }
     }
-    shorthandsFor(prop).forEach((shorthandProp) => {
-      if (props2.has(shorthandProp)) {
-        conflicts.add([prop, shorthandProp]);
+    if (cssPropertyParser.isShorthandProperty(prop)) {
+      let longHands = cssPropertyParser.getShorthandComputedProperties(prop, true);
+      for (let longHand of longHands) {
+        if (longHand === prop) continue; // the prop was already checked in the first loop.
+        if (props2.has(longHand)) {
+          conflicts.add([prop, longHand]);
+        }
       }
-    });
-    longhandsFor(prop).forEach((longhandProp) => {
-      if (props2.has(longhandProp)) {
-        conflicts.add([prop, longhandProp]);
-      }
-    });
-  });
+    }
+  }
   return conflicts;
 }
 
