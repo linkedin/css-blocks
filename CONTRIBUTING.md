@@ -13,7 +13,7 @@ Getting Started
 Install required global dependencies:
 
 ```
-$ npm install -g lerna yarn
+$ npm install -g lerna@^3.0.0-beta.17 yarn
 ```
 
 Check out the code:
