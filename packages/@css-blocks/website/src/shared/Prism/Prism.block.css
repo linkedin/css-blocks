@@ -1,5 +1,12 @@
-:scope {
+  :scope {
   width: 100%;
   box-sizing: border-box;
   border-radius: 3px;
+  min-height: 712px; /* Magic number */
+}
+
+@media (max-width: 520px) {
+  :scope {
+    min-height: 0px;
+  }
 }

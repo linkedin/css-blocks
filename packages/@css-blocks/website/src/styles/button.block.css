@@ -13,7 +13,7 @@
   z-index: 0;
   overflow: hidden;
   box-sizing: border-box;
-  margin-right: 18px;
+  margin: 0 18px 16px 0;
   text-decoration: none;
   display: inline-block;
   vertical-align: middle;
