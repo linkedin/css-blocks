@@ -38,7 +38,11 @@ module.exports = {
   included(app) {
 
     this._super.included.apply(this, arguments);
+
     let options = app.options["css-blocks"] || {};
+    let parserOpts = options.parserOpts || {};
+    let analysisOpts = options.analysisOpts || {};
+    let optimizerOpts = options.optimization || {};
 
     // Ember-cli is *mostly* used with Glimmer. However, it can technically be
     // configured to use other template types. Here we default to the Glimmer
@@ -46,7 +50,7 @@ module.exports = {
     // user-supplied analyzer.
     let analyzer = options.getAnalyzer ?
       options.getAnalyzer(app) :
-      new GlimmerAnalyzer(new Project(app.project.root, MODULE_CONFIG));
+      new GlimmerAnalyzer(new Project(app.project.root, MODULE_CONFIG), parserOpts, analysisOpts);
 
     // TODO: Better options validation.
     if (typeof options.entry !== "string") {
@@ -66,7 +70,8 @@ module.exports = {
       entry: [options.entry],
       output: options.output,
       analyzer,
-      transport: this.transport // I hate shared memory...
+      transport: this.transport, // I hate shared memory...
+      optimization: optimizerOpts,
     });
 
     // Remove all source css-blocks stylesheets

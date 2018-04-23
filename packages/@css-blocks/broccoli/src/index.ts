@@ -3,7 +3,7 @@ import * as path from "path";
 
 import { Analyzer, BlockCompiler, StyleMapping } from "@css-blocks/core";
 import { TemplateTypes } from "@opticss/template-api";
-import { Optimizer } from "opticss";
+import { OptiCSSOptions, Optimizer } from "opticss";
 import * as postcss from "postcss";
 import * as readdir from "recursive-readdir";
 
@@ -14,6 +14,7 @@ export interface BroccoliOptions {
   output: string;
   analyzer: Analyzer<keyof TemplateTypes>;
   transport: {[key: string]: object};
+  optimization?: Partial<OptiCSSOptions>;
 }
 
 class BroccoliCSSBlocks extends BroccoliPlugin {
@@ -22,7 +23,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
   private entry: string[];
   private output: string;
   private transport: { [key: string]: object };
-  private optimizationOptions: object = {};
+  private optimizationOptions: Partial<OptiCSSOptions>;
 
   // tslint:disable-next-line:prefer-whatever-to-any
   constructor(inputNode: any, options: BroccoliOptions) {
@@ -32,6 +33,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     this.output = options.output;
     this.analyzer = options.analyzer;
     this.transport = options.transport;
+    this.optimizationOptions = options.optimization || {};
 
     if (!this.output) {
       throw new Error("CSS Blocks Broccoli Plugin requires an output file name.");
