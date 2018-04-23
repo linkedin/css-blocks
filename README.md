@@ -296,10 +296,10 @@ Adding a `@block-reference` is as simple as this:
 
 With the above code, `block-2` now has a local reference `other-block` which points to `block-1`. We can now freely use the `other-block` identifier inside of `block-2` when we want to reference reference `block-1`. This comes in handy! Especially with features like:
 
-# Object Oriented CSS
+# Object Oriented Features of Blocks
 
 ## Block Implementation
-A Block's public interface is defined by the states and classes it styles. A Block may declare that it implements one or more other referenced Blocks' interfaces, and the compiler will ensure that all the states and classes it defines are also in the implementing Block! In this way, the compiler can guarantee it is safe to use different Blocks to style the same markup in a component.
+A Block's public interface is defined by the states and classes it styles. A block may declare that it implements one or more other referenced blocks' interfaces, and the compiler will ensure that all the states and classes it defines are also in the implementing block. In this way, the compiler can guarantee it is safe to use different blocks to style the same markup in a component.
 
 You do this via the special `implements` property in a Block's `:scope` selector:
 
@@ -344,7 +344,8 @@ For the build to pass, we need to implement the *full public interface* of `bloc
 .my-class[state|my-state] { /* ... */ }
 ```
 
-## Block Extension
+### Block Inheritance
+
 A Block may also choose to extend another referenced Block. This exposes all declared styles from the extended Block on the extending Block. 
 
 Those inherited styles may then be used in a template by accessing them on the extending block, and can even be augmented by re-declaring the styles in the extending block!
@@ -360,20 +361,59 @@ Lets say we have a component called `<basic-form>`. Basic forms have an input el
   color: white;
   background-color: green;
 }
-.input { /* ... */ }
+.button[state|disabled] {
+  color: #333;
+  background-color: lightgray;
+}
+.input { font-weight: bold }
 ```
 
-But! As product managers are want to do, we're suddenly asked to create a new kind of form called `<error-form>`. Error forms look and function exactly the same as success forms, except the button is red. We *could* re-implement the entire stylesheet to create `<error-form>`, but that would be a such a waste of all the hard work we already put in to `<basic-form>`! 
+But, as the project evolves we realize we need a new form for submitting information for a dangerous action, we're asked to create a new kind of form called `<danger-form>`. Danger forms look and function exactly the same as a basic form, except the button and labels are red. We *could* re-implement the entire stylesheet to create `<danger-form>`, but that would be a such a waste of all the hard work we already put in to `<basic-form>`! 
 
-Instead, we can simply extend the `<basic-form>` Block, and only apply the small style changes we need to make our PMs happy:
+Instead, we can simply extend the `<basic-form>` Block, and only apply the small style changes we need:
 
 ```css
-/* error-form.block.css */
+/* danger-form.block.css */
 @block-reference basic-form from "./basic-form.block.css";
 
 :scope  { extends: basic-form; }
-.button { background-color: red; }
+.button { background-color: darkred; }
+.label  { color: darkred; }
 ```
+
+During rewrite, references to an inherited style will translate into the class(es) for the
+directly referenced style as well as all the classes that it inherits from so developers do
+not need to bring the complexity of the inheritance relationship into their templates.
+For example, a reference to `danger-form.button` would result in adding both `.basic-form__button`,
+as well as `.danger-form__button` to the element's list of classes.
+
+When the blocks are compiled, property overrides are detected and automatically resolved.
+The selectors generated serve two purposes:
+
+1. Concatenation order independence - Once compiled, a CSS block file can be
+   concatenated in any order with other compiled block output.
+2. Optimization hints - Normally, if there are selectors with the same
+   specificity that set same property to different values on the same element,
+   the optimizer would take care not to merge those declarations such that it
+   might cause a cascade resolution change. But the selectors in the output from
+   CSS Blocks allows OptiCSS to merge declarations more aggressively, because it
+   can prove that it knows the value of those selectors when combined.
+
+```css
+.basic-form__button { font-size: 1.4rem; color: white; background-color: green; }
+.basic-form__button--disabled { color: #333; background-color: lightgray; }
+.basic-form__input { font-weight: bold; }
+.danger-form__button { background-color: darkred; }
+.basic-form__button.danger-form__button { background-color: darkred; }
+.danger-form__button--disabled { background-color: #957d7d; }
+.basic-form__button.danger-form__button--disabled { background-color: #957d7d; }
+.basic-form__button--disabled.danger-form__button--disabled { background-color: #957d7d; }
+.danger-form__label { color: darkred; }
+```
+
+While this output is highly repetitive and may seem excessive, it's exactly the kind of repetition
+that OptiCSS is designed to search for and remove. From an authoring experience and in production,
+it's a laser-focused override with no performance impact.
 
 > 💡 **Feature Note: Extends Property**
 > 
@@ -383,9 +423,10 @@ An extending block is able to re-define any property on any style it inherits fr
 
 > 🔮 **Future Feature: Extension Constraints**
 > 
-> Sometimes, properties inside of a component are **so** important, that authors may want to constrain the values that extenders and implementors are able to set. In the near future, css-blocks will enable this use case through the custom `constrain()` and `range()` CSS functions. You can come help out over on Github to make this happen faster!
+> Sometimes, properties inside of a component are **so** important, that authors may want to constrain the values that extenders and implementors are able to set. In the near future, css-blocks will enable this use case through the custom `constrain()` and `range()` CSS functions and possibly through other ideas like [custom constraints and conflicts](https://github.com/linkedin/css-blocks/issues/51). You can come help out over on Github to make this happen faster!
 
 # Style Composition
+
 ## Block Paths
 As your Blocks begin interacting with each other in increasingly complex ways, you will find yourself needing to reference specific classes or states on another Block, as you'll see later in this document. You do this using a small query syntax called a [Block Path](./packages/css-blocks/src/BlockSyntax/BlockPath.ts).
 
