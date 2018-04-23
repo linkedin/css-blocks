@@ -2,7 +2,7 @@
 
 // TODO: Write README
 
-NOTE: To run locally, this module currently requires the latest version of `css-blocks/css-blocks` and `epicmiller/babylon` checked out locally, built, and `npm link`ed with this project.
+NOTE: To run locally, this module currently requires the latest version of `linkedin/css-blocks` and `epicmiller/babylon` checked out locally, built, and `npm link`ed with this project.
 
 ## API Straw Man
 
