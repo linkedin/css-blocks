@@ -145,16 +145,17 @@ pre.line-numbers {
 }
 
 pre.line-numbers > code {
-  position: relative;
-    white-space: inherit;
+  position: static;
+  white-space: inherit;
 }
 
 .line-numbers .line-numbers-rows {
   position: absolute;
   pointer-events: none;
-  top: 0;
+  top: 8px;
+  bottom: 8px;
   font-size: 100%;
-  left: -3.8rem;
+  left: 8px;
   width: 3rem; /* works for line-numbers below 1000 lines */
   letter-spacing: -1px;
   border-right: 1px solid #999;

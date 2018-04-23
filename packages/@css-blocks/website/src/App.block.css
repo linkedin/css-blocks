@@ -1,7 +1,4 @@
-
-:scope {
-
-}
+:scope {}
 
 .nav {
   background-color: #222;
@@ -20,4 +17,28 @@
 
 .intro {
   font-size: large;
+}
+
+.footer {
+  background-color: var(--pink);
+  font-size: 1.8rem;
+  color: white;
+  text-align: center;
+  padding: 1.6rem;
+}
+
+.footerLogo {
+  height: 2.4rem;
+  vertical-align: baseline;
+  margin: 0 0 -4px 3px;
+}
+
+.footerLink {
+  color: white;
+  text-decoration: none;
+}
+
+.footerLink:hover, .footerLink:focus {
+  border-bottom: 1px solid white;
+  padding-bottom: 3px;
 }

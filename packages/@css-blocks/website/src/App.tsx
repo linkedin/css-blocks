@@ -5,6 +5,7 @@ import Home from "./pages/Home/index";
 import Demo from "./pages/Demo";
 
 import styles from "./App.block.css";
+import linkedinLogo from "./images/linkedin-logo.svg";
 
 class App extends Component {
   render() {
@@ -21,6 +22,12 @@ class App extends Component {
             <Route exact path="/" component={Home} />
             <Route path="/demo" component={Demo} />
           </main>
+          <footer className={styles.footer}>
+            <a href="https://engineering.linkedin.com/open-source" className={styles.footerLink} target="_blank">
+              {"Made with ♥ by "}
+              <img src={linkedinLogo} className={styles.footerLogo}/>
+            </a>
+          </footer>
         </div>
       </BrowserRouter>
     );

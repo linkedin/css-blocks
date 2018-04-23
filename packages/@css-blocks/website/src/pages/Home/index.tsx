@@ -45,7 +45,7 @@ class Home extends Component {
             <li>✨ Object Oriented Inheritance</li>
           </ul>
 
-          <div>
+          <div className={styles.buttonContainer}>
             <a
               href="https://github.com/linkedin/css-blocks#%EF%B8%8F-supported-integrations"
               target="_blank"

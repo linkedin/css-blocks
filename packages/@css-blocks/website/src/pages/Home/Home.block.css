@@ -120,11 +120,10 @@
   position: relative;
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
-    -khtml-user-select: none; /* Konqueror HTML */
-      -moz-user-select: none; /* Firefox */
-      -ms-user-select: none; /* Internet Explorer/Edge */
-          user-select: none; /* Non-prefixed version, currently
-                                supported by Chrome and Opera */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
 }
 
 .features {
@@ -140,16 +139,27 @@
   margin-bottom: 42px;
 }
 
-@media (max-width: 1280px) and (min-width: 421px) {
+@media (max-width: 1280px) and (min-width: 521px) {
   .logo {
     margin-top: 24px;
   }
 }
+
+@media (max-width: 760px) {
+  .features {
+    grid-template-columns: 100%;
+    padding: 0;
+  }
+}
+
 @media (max-width: 520px) {
   .logo {
-    margin-top: 48px;
+    margin: 0;
   }
   .header {
-    padding-bottom: 82px;
+    padding-bottom: 32px;
+  }
+  .buttonContainer {
+    width: 100%;
   }
 }
