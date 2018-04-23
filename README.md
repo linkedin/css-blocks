@@ -1,4 +1,3 @@
-
 <p align="center">
   <img alt="CSS Blocks" width="480px" src="http://css-blocks.com/images/wordmark.svg" />
 </p>
@@ -13,6 +12,37 @@ CSS Blocks is an ergonomic, component-oriented CSS authoring system that compile
 By combining an opinionated authoring system, build-time analysis and rewriting of templates, and a new type of CSS optimizer, css-blocks breathes new power and ease of use into the technologies and best practices that stylesheet developers already know and love.
 
 > Interested in contributing? Head over to [CONTRIBUTING.md](./CONTRIBUTING.md)!
+
+<details>
+  <summary>Table of Contents</summary>
+
+<!-- toc -->
+
+- [Why CSS Blocks?](#why-css-blocks)
+  * [The ⚡️ of Static Analysis](#the-%E2%9A%A1%EF%B8%8F-of-static-analysis)
+- [⚙️ Supported Integrations](#%E2%9A%99%EF%B8%8F-supported-integrations)
+- [🎁 API Features](#%F0%9F%8E%81-api-features)
+- [🎨 What is a Block?](#%F0%9F%8E%A8-what-is-a-block)
+  * [The Scope Selector](#the-scope-selector)
+  * [Class Selectors](#class-selectors)
+  * [State Selectors](#state-selectors)
+  * [Sub-State Selectors](#sub-state-selectors)
+  * [Its Just CSS!™️ (mostly)](#its-just-css%E2%84%A2%EF%B8%8F-mostly)
+  * [Blocks in Your Templates](#blocks-in-your-templates)
+- [🏗 Block Composition](#%F0%9F%8F%97-block-composition)
+  * [Block References](#block-references)
+- [Object Oriented Features of Blocks](#object-oriented-features-of-blocks)
+  * [Block Implementation](#block-implementation)
+- [Style Composition](#style-composition)
+  * [Block Paths](#block-paths)
+  * [Composition in Templates](#composition-in-templates)
+  * [Block Resolutions](#block-resolutions)
+  * [External Selectors](#external-selectors)
+  * [Global States](#global-states)
+
+<!-- tocstop -->
+
+</details>
 
 # Why CSS Blocks?
 With css-blocks added to your project, you receive:

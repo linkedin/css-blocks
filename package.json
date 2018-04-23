@@ -3,7 +3,8 @@
   "scripts": {
     "commitmsg": "commitlint --edit $GIT_PARAMS",
     "ci": "lerna run test",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "toc": "markdown-toc -i --maxdepth 2 README.md"
   },
   "devDependencies": {
     "@commitlint/cli": "^6.1.0",
@@ -28,6 +29,7 @@
     "istanbul": "^0.4.5",
     "lerna": "^3.0.0-beta.1",
     "loader-utils": "^1.1.0",
+    "markdown-toc": "^1.2.0",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
     "mock-fs": "^4.3.0",
@@ -42,8 +44,8 @@
     "ts-node": "^3.0.4",
     "tslint": "^5.9.1",
     "typedoc": "^0.11.0",
-    "typescript": "^2.8.1",
     "typedoc-plugin-monorepo": "^0.1.0",
+    "typescript": "^2.8.1",
     "watch": "^1.0.2"
   },
   "workspaces": [
