@@ -35,7 +35,7 @@ Most stylesheet architectures have to walk a fine line between performance and
 maintainability. Tilt too far in either direction and either your users or the developers
 will end up paying the cost. With CSS Blocks, you can focus on making sure your
 stylesheets are easy to maintain as your application changes, and with the new
-CSS optimizer, [OptiCSS](https://github.com/css-blocks/opticss), the small size of your
+CSS optimizer, [OptiCSS](https://github.com/linkedin/opticss), the small size of your
 app's production stylesheets after compression will amaze you.
 
 Gone are the days where you spend several minutes debugging your app only to discover a subtle typo that caused a selector to not match – CSS Blocks will give you a build error and suggest possible fixes. With IDE integration, projects using CSS Blocks will be able to quickly navigate to selector definitions that match your current template element and find which template elements match your current selector, autocomplete class names. With CSS Blocks new resolution system, cascade conflicts will be caught for you before you even know they exist and you will never have to fight a specificity war ever again.

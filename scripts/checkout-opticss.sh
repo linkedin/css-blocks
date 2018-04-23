@@ -15,7 +15,7 @@ then
   git pull
   lerna bootstrap --registry=https://registry.npmjs.org/
 else
-  git clone -b $BRANCH --depth 1 git@github.com:css-blocks/opticss.git $OPTICSS_DIR
+  git clone -b $BRANCH --depth 1 git@github.com:linkedin/opticss.git $OPTICSS_DIR
   cd $OPTICSS_DIR
   lerna bootstrap --ci --registry=https://registry.npmjs.org/
 fi

@@ -291,7 +291,7 @@ Provides the build system integration for [Ember CLI][EMBER_CLI_WEBSITE].
 [PROJECT_HOME]: .
 [CORE]: ./packages/css-blocks
 [RUNTIME]: ./packages/runtime
-[OPTICSS]: https://github.com/css-blocks/opticss
+[OPTICSS]: https://github.com/linkedin/opticss
 [WEBPACK]: ./packages/webpack-plugin
 [BROCCOLI]: ./packages/broccoli-css-blocks
 [EMBER_CLI]: ./packages/ember-cli-css-blocks
