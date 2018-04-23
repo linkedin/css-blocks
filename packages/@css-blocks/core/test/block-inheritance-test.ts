@@ -1,3 +1,4 @@
+import { clean } from "@opticss/util";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
@@ -89,6 +90,62 @@ export class BlockInheritance extends BEMProcessor {
         ".sub { width: 80%; }\n" +
         ".base.sub { width: 80%; }\n",
       );
+    });
+  }
+
+  @test "README inheritance example"() {
+    let { imports, config } = setupImporting();
+    imports.registerSource(
+      "basic-form.block.css",
+      clean`
+        .button {
+          font-size: 1.4rem;
+          color: white;
+          background-color: green;
+        }
+        .button[state|disabled] {
+          color: #333;
+          background-color: lightgray;
+        }
+        .input { font-weight: bold }
+      `,
+    );
+
+    let filename = "danger-form.block.css";
+    let inputCSS = clean`
+      @block-reference basic-form from "./basic-form.block.css";
+
+      :scope  { extends: basic-form; }
+      .button { background-color: darkred; }
+      .button[state|disabled] {
+        background-color: #957D7D;
+      }
+      .label  { color: darkred; }
+    `;
+    return this.process("basic-form.block.css", imports.sources["basic-form.block.css"].contents, config).then((result) => {
+      assert.deepEqual(
+        result.css.toString().trim(),
+        clean`
+          .basic-form__button { font-size: 1.4rem; color: white; background-color: green; }
+          .basic-form__button--disabled { color: #333; background-color: lightgray; }
+          .basic-form__input { font-weight: bold; }
+        `,
+      );
+    }).then(() => {
+      return this.process(filename, inputCSS, config).then((result) => {
+        imports.assertImported("basic-form.block.css");
+        assert.deepEqual(
+          result.css.toString().trim(),
+          clean`
+            .danger-form__button { background-color: darkred; }
+            .basic-form__button.danger-form__button { background-color: darkred; }
+            .danger-form__button--disabled { background-color: #957d7d; }
+            .basic-form__button.danger-form__button--disabled { background-color: #957d7d; }
+            .basic-form__button--disabled.danger-form__button--disabled { background-color: #957d7d; }
+            .danger-form__label { color: darkred; }
+          `,
+        );
+      });
     });
   }
 
