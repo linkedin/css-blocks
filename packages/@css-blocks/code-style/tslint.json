@@ -1,3 +1,3 @@
 {
-  "extends": "./configs/tslint.json"
+  "extends": "./configs/tslint-interactive.json"
 }
