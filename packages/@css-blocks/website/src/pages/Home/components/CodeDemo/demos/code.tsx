@@ -42,10 +42,11 @@ const data: Data = {
     { label: "4", value: "Blocks may contain other classes to be applied to sub-elements", y: 50.7, x: 12.7 },
     { label: "5", value: "Classes may also have states and substates", y: 65.4, x: 25.2 }
   ],
+
   jsxExample: `
     import React from 'react';
     import objstr from 'obj-str';
-    import styles from 'button.block.css';
+    import styles from 'button.css';
 
     export default function Button({size, inverse, icon, children}){
 
@@ -65,13 +66,13 @@ const data: Data = {
     }`,
 
     jsxTooltips: [
-      { label: "1", value: "Import your styles directly into your component", y: 6.7, x: 38.4 },
+      { label: "1", value: "Import your styles directly into your component", y: 6.7, x: 33.4 },
       { label: "2", value: "Use your imported block, classes and states just like any other class", y: 15, x: 26.6 },
       { label: "3", value: "Apply block classes to sub elements", y: 34.5, x: 33.2 }
     ],
 
     glimmerExample: `
-    <button class="root" state:inverse={{inverse}} state:size={{size}}>
+    <button state:inverse={{inverse}} state:size={{size}}>
       {{#if icon}}
         <span class="icon">
           {{icon}}
@@ -79,7 +80,13 @@ const data: Data = {
       {{/if}}
       {{yield}}
     </button>
-    `
+    `,
+
+    glimmerTooltips: [
+      { label: "1", value: "Your `:scope` selector is automatically applied to the root template element", y: -0.3, x: 6.0 },
+      { label: "2", value: "Use your classes and states just regular html", y: 5.0, x: 28 },
+      { label: "3", value: "Apply block classes to sub elements", y: 9.2, x: 20.8 }
+    ],
 }
 
 export default data;

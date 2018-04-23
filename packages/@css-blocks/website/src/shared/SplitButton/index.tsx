@@ -3,16 +3,16 @@ import objstr from 'obj-str';
 
 import styles from './SplitButton.block.css';
 
-interface Button {
+export interface Button {
   title: string;
   callback: () => {}
 }
 
-interface Props {
+export interface Props {
   data: Button[];
 }
 
-interface State {
+export interface State {
   active: number;
 }
 
@@ -30,7 +30,7 @@ class SplitButton extends Component<Props, State> {
   render() {
 
     let buttons: JSX.Element[] = []
-    this.props.data.forEach((el, idx) => {
+    this.props.data.forEach((el: Button, idx: number) => {
 
       let style = objstr({
         [styles.button]: true,
@@ -39,7 +39,7 @@ class SplitButton extends Component<Props, State> {
 
       buttons.push(
         <button
-          key={idx}
+          key={String(idx)}
           className={style}
           onClick={this.select.bind(this, idx, el.callback)}
         >{el.title}</button>

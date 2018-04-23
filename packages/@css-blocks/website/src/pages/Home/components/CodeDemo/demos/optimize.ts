@@ -41,9 +41,6 @@ const data: Data = {
     { label: "2", value: "Any shared properties are pulled out into atomic classes", y: 23.4, x: 6 },
     { label: "3", value: "All un-used classes are removed completly!", y: 65.4, x: 8.2 }
   ],
-  jsxTooltips: [
-    { label: "1", value: "Your templates are rewritten to use the optimized styles", y: 7.6, x: 6 }
-  ],
 
   jsxExample: `
     import React from 'react';
@@ -67,6 +64,10 @@ const data: Data = {
 
     }`,
 
+    jsxTooltips: [
+      { label: "1", value: "Your templates are rewritten to use the optimized styles", y: 7.6, x: 6 }
+    ],
+
     glimmerExample: `
       <button class={{🦄🦄🦄
         'a b'
@@ -80,7 +81,11 @@ const data: Data = {
         {{/if}}
         {{yield}}
       </button>
-      `
+      `,
+
+    glimmerTooltips: [
+      { label: "1", value: "Your templates are rewritten to use the optimized styles and template logic", y: 6.6, x: 4.8 }
+    ],
 };
 
 export default data;

@@ -4,27 +4,65 @@
   display: flex;
   margin-bottom: 1.6rem;
   position: relative;
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Safari */
-    -khtml-user-select: none; /* Konqueror HTML */
-      -moz-user-select: none; /* Firefox */
-      -ms-user-select: none; /* Internet Explorer/Edge */
-          user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently supported by Chrome and Opera */
 }
 
 .editor {
   width: calc(50% - 8px);
   box-sizing: border-box;
   position: relative;
+  margin-top: 24px;
 }
 
+.editorTitle {
+  width: 100%;
+  text-align: center;
+  padding: 4px 16px;
+  position: absolute;
+  box-sizing: border-box;
+  top: -24px;
+  left: 0;
+  border-radius: 3px 3px 0 0;
+  line-height: 24px;
+  font-size: 1.4rem;
+  background-color: #f5f2f0;
+  color: var(--purple);
+}
+
+.editorSelect {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url(data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxMjkgMTI5IiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCAxMjkgMTI5IiB3aWR0aD0iMTZweCIgaGVpZ2h0PSIxNnB4Ij4KICA8Zz4KICAgIDxwYXRoIGQ9Im0xMjEuMywzNC42Yy0xLjYtMS42LTQuMi0xLjYtNS44LDBsLTUxLDUxLjEtNTEuMS01MS4xYy0xLjYtMS42LTQuMi0xLjYtNS44LDAtMS42LDEuNi0xLjYsNC4yIDAsNS44bDUzLjksNTMuOWMwLjgsMC44IDEuOCwxLjIgMi45LDEuMiAxLDAgMi4xLTAuNCAyLjktMS4ybDUzLjktNTMuOWMxLjctMS42IDEuNy00LjIgMC4xLTUuOHoiIGZpbGw9IiMwMDAwMDAiLz4KICA8L2c+Cjwvc3ZnPgo=);
+  background-repeat: no-repeat;
+  background-size: 14px;
+  background-position: calc(100% - 10px) 6px;
+  border: 1px solid var(--purple);
+  border-radius: 2px;
+  color: var(--purple);
+  line-height: 18px;
+  text-align: center;
+  padding: 3px 28px 3px 16px;
+  font-weight: 800;
+  font-size: 1.4rem;
+}
 
 @media (max-width: 520px) {
-  :scope {
+   :scope {
     flex-flow: column;
   }
   .editor {
     width: 100%;
   }
 }
-

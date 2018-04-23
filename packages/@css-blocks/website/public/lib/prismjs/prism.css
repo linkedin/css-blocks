@@ -158,7 +158,7 @@ pre.line-numbers > code {
   left: 8px;
   width: 3rem; /* works for line-numbers below 1000 lines */
   letter-spacing: -1px;
-  border-right: 1px solid #999;
+  /* border-right: 1px solid #999; */
 
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -190,6 +190,7 @@ pre.code-toolbar > .toolbar {
   right: .2rem;
   transition: opacity 0.3s ease-in-out;
   opacity: 0;
+  display: none;
 }
 
 pre.code-toolbar:hover > .toolbar {

@@ -41,11 +41,6 @@ const data: Data = {
     { label: '1', value: "Your states and classes are rewritten to BEM style selectors", x: 21.6, y: 27.6 }
   ],
 
-  jsxTooltips: [
-    { label: '1', value: "The block import is removed. We don't deliver a runtime!", y: 7.6, x: 6 },
-    { label: '2', value: "All styles are replaced inline with the static compiled class", y: 17.1, x: 6.2 }
-  ],
-
   jsxExample: `
     import React from 'react';
     import objstr from 'obj-str';
@@ -68,6 +63,11 @@ const data: Data = {
 
     }`,
 
+    jsxTooltips: [
+      { label: '1', value: "The block import is removed. Blocks don't deliver their own runtime!", y: 7.6, x: 6 },
+      { label: '2', value: "All styles are replaced inline with the static compiled class", y: 17.1, x: 6.2 }
+    ],
+
     glimmerExample: `
       <button class={{🦄🦄🦄
         'button'
@@ -81,7 +81,12 @@ const data: Data = {
         {{/if}}
         {{yield}}
       </button>
-      `
+      `,
+
+    glimmerTooltips: [
+      { label: '1', value: "Our real runtime is tiny and not very human readable, but is guaranteed to maintain your app logic", y: 6.6, x: 4.8 },
+      { label: '2', value: "All styles are replaced inline with the static compiled class", y: 17.1, x: 6.2 }
+    ],
 };
 
 export default data;

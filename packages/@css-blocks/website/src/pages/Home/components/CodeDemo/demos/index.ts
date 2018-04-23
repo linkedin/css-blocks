@@ -14,7 +14,8 @@ export interface Data {
   jsxExample: string;
   cssTooltips: Tooltip[];
   jsxTooltips: Tooltip[];
-  glimmerExample?: string;
+  glimmerExample: string;
+  glimmerTooltips: Tooltip[];
 }
 
 export interface Demos {
@@ -24,7 +25,7 @@ export interface Demos {
 }
 export type Sections = keyof Demos;
 
-let data: Demos = {
+let data: {[key: string]: Data} = {
   code,
   compile,
   optimize
