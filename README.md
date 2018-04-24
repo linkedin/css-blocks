@@ -321,7 +321,7 @@ Adding a `@block-reference` is as simple as this:
 
 > 🔮 **Future Feature: Node Modules Block Resolution **
 >
-> Whether you're integrating with a 3rd party library, or pulling in dependencies internal to your company, at some point you'll want to integrate with styles delivered via NPM! The resolution logic for `@block-reference`s to `node_modules` hasn't yet been implemented yet, but you can track progress (or even help out!) [over on Github]().
+> Whether you're integrating with a 3rd party library, or pulling in dependencies internal to your company, at some point you'll want to integrate with styles delivered via NPM! The resolution logic for `@block-reference`s to `node_modules` hasn't yet been implemented yet, but you can track progress (or even help out!) [over on Github](https://github.com/linkedin/css-blocks/issues/112).
 
 With the above code, `block-2` now has a local reference `other-block` which points to `block-1`. We can now freely use the `other-block` identifier inside of `block-2` when we want to reference reference `block-1`. This comes in handy! Especially with features like:
 
@@ -696,7 +696,7 @@ on an external selector are not detected or resolved. As a result, it is allowed
 Warning: If external selectors and CSS block objects both target the same HTML element in their key selectors you will get unpredictable results. It's best to avoid this.
 
 ```css
-@external h2 .some-rando-class;
+@external h2.some-rando-class;
 
 .foo h2.some-rando-class {
   font-size: 32px !important;
