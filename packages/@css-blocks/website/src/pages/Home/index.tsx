@@ -41,7 +41,7 @@ class Home extends Component {
             <li>🔥 Blazing Fast Stylesheets</li>
             <li>🚀 Project-Wide Optimization</li>
             <li>🚨 Build Time CSS Errors</li>
-            <li>🧟‍♂️ Dead Code Elimination</li>
+            <li>🧟 Dead Code Elimination</li>
             <li>✨ Object Oriented Inheritance</li>
           </ul>
 
