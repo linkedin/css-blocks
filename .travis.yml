@@ -1,13 +1,18 @@
 if: tag IS blank
 git:
   depth: 1
-sudo: false
+sudo: required
 language: node_js
+
 node_js:
   - "8"
   - "9"
+
 env:
   - CXX=g++-4.8
+
+addons:
+    chrome: stable
 
 before_install:
   - npm install -g lerna@3.0.0-beta.0 yarn
