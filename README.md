@@ -82,19 +82,19 @@ CSS Blocks requires deep integration with your build system and templating langu
 
 CSS Blocks is available for use in the following templating languages:
 
- - [JSX / React][JSX]
- - [Glimmer][GLIMMER]
- - [Ember][EMBER]
+ - [JSX / React](JSX)
+ - [Glimmer](GLIMMER)
+ - [Ember](EMBER)
 
 And has integrations with the following build systems:
 
- - [Webpack][WEBPACK]
- - [Broccoli][BROCCOLI]
- - [Ember-CLI][EMBER_CLI] (Glimmer Only)
+ - [Webpack](WEBPACK)
+ - [Broccoli](BROCCOLI)
+ - [Ember-CLI](EMBER_CLI) (Glimmer Only)
 
 > Don't see your preferred platform yet? 
 >
-> Learn how to make your own Template Integration or Build System Integration and contribute it back! See existing integrations for details.
+> Learn how to make your own [Template Integration]() or [Build System Integration]() and contribute it back!
 
 # 🎁 API Features
 
@@ -291,7 +291,7 @@ However, whatever the implementation is, it will feel as though you're interfaci
 
 There are only two (2) common-sense rules to follow when using Block styles in your template:
 
- 1. You **may not** use a Block class outside of the of it's `:scope`'s subtree.
+ 1. You **may not** use a Block class outside of it's `:scope`'s subtree.
  2. Two classes *from the same Block* **may not** be applied to the same HTML element.
 
 # 🏗 Block Composition
