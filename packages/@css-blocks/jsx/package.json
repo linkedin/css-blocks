@@ -53,9 +53,9 @@
     "@css-blocks/runtime": "^0.18.0"
   },
   "dependencies": {
-    "@opticss/template-api": "0.3.0-rc.1",
-    "opticss": "0.3.0-rc.1",
-    "@opticss/util": "0.3.0-rc.1",
+    "@opticss/template-api": "^0.3.0",
+    "opticss": "^0.3.0",
+    "@opticss/util": "^0.3.0",
     "babel-traverse": "^6.24.1",
     "babel-types": "^6.24.1",
     "babylon": "^6.17.4",

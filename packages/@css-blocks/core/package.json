@@ -44,10 +44,10 @@
     "@css-blocks/code-style": "^0.17.0"
   },
   "dependencies": {
-    "@opticss/element-analysis": "0.3.0-rc.1",
-    "opticss": "0.3.0-rc.1",
-    "@opticss/template-api": "0.3.0-rc.1",
-    "@opticss/util": "0.3.0-rc.1",
+    "@opticss/element-analysis": "^0.3.0",
+    "opticss": "^0.3.0",
+    "@opticss/template-api": "^0.3.0",
+    "@opticss/util": "^0.3.0",
     "@types/async": "^2.0.40",
     "@types/debug": "0.0.29",
     "async": "^2.5.0",

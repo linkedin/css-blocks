@@ -35,7 +35,7 @@
     "@css-blocks/core": "^0.17.0",
     "@glimmer/compiler": "^0.33.0",
     "@glimmer/syntax": "^0.33.0",
-    "@opticss/template-api": "0.3.0-rc.1",
+    "@opticss/template-api": "^0.3.0",
     "@types/recursive-readdir": "^2.2.0",
     "broccoli-funnel": "^2.0.1",
     "broccoli-merge-trees": "^3.0.0",
@@ -44,7 +44,7 @@
     "colors": "^1.2.1",
     "debug": "^3.1.0",
     "fs-extra": "^5.0.0",
-    "opticss": "0.3.0-rc.1",
+    "opticss": "^0.3.0",
     "postcss": "^6.0.21",
     "recursive-readdir": "^2.2.2",
     "walk-sync": "^0.3.2"

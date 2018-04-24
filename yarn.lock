@@ -931,28 +931,28 @@
     call-me-maybe "^1.0.1"
     glob-to-regexp "^0.3.0"
 
-"@opticss/code-style@0.3.0-rc.1":
-  version "0.3.0-rc.1"
-  resolved "https://registry.npmjs.org/@opticss/code-style/-/code-style-0.3.0-rc.1.tgz#4b445f5f1f03b4e400595cd254aeddf484272476"
+"@opticss/code-style@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/@opticss/code-style/-/code-style-0.3.0.tgz#68ee06d91d6f83ca7a21c1b5eac526d25529345e"
 
-"@opticss/element-analysis@0.3.0-rc.1":
-  version "0.3.0-rc.1"
-  resolved "https://registry.npmjs.org/@opticss/element-analysis/-/element-analysis-0.3.0-rc.1.tgz#83a98c97cc1ee997d6f0cd2c8a352c7cd8ad6852"
+"@opticss/element-analysis@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/@opticss/element-analysis/-/element-analysis-0.3.0.tgz#1a6406c644c4b034a0ad74964c0f1e70523dbce5"
   dependencies:
-    "@opticss/util" "0.3.0-rc.1"
+    "@opticss/util" "^0.3.0"
 
-"@opticss/template-api@0.3.0-rc.1":
-  version "0.3.0-rc.1"
-  resolved "https://registry.npmjs.org/@opticss/template-api/-/template-api-0.3.0-rc.1.tgz#c67ac15853d8b02c24b420b7e6d52f2b9bd7f767"
+"@opticss/template-api@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/@opticss/template-api/-/template-api-0.3.0.tgz#e95f57b3da427f2d241d3ef781d7713df53bb731"
   dependencies:
-    "@opticss/element-analysis" "0.3.0-rc.1"
-    "@opticss/util" "0.3.0-rc.1"
+    "@opticss/element-analysis" "^0.3.0"
+    "@opticss/util" "^0.3.0"
     postcss "^6.0.21"
     typescript-collections "^1.2.5"
 
-"@opticss/util@0.3.0-rc.1":
-  version "0.3.0-rc.1"
-  resolved "https://registry.npmjs.org/@opticss/util/-/util-0.3.0-rc.1.tgz#de763418cabe620c00fbc712bb92d3b3ccb851d4"
+"@opticss/util@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/@opticss/util/-/util-0.3.0.tgz#5f07028be01de8798feff842587ca98acb2251a2"
   dependencies:
     typescript-collections "^1.2.5"
 
@@ -8903,13 +8903,13 @@ opn@^5.1.0:
   dependencies:
     is-wsl "^1.1.0"
 
-opticss@0.3.0-rc.1:
-  version "0.3.0-rc.1"
-  resolved "https://registry.npmjs.org/opticss/-/opticss-0.3.0-rc.1.tgz#2f5fdc63c5441f468f54fb6e053d40eb93defa49"
+opticss@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/opticss/-/opticss-0.3.0.tgz#cf68c5bc9b9591ae7d5f159415550bd924c346b6"
   dependencies:
-    "@opticss/element-analysis" "0.3.0-rc.1"
-    "@opticss/template-api" "0.3.0-rc.1"
-    "@opticss/util" "0.3.0-rc.1"
+    "@opticss/element-analysis" "^0.3.0"
+    "@opticss/template-api" "^0.3.0"
+    "@opticss/util" "^0.3.0"
     "@types/debug" "0.0.29"
     concat-with-sourcemaps "^1.0.4"
     css-property-parser "^1.0.5"

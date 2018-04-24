@@ -31,7 +31,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@opticss/code-style": "0.3.0-rc.1"
+    "@opticss/code-style": "^0.3.0"
   },
   "engines": {
     "node": ">=8"
