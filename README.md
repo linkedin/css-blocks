@@ -84,7 +84,6 @@ CSS Blocks is available for use in the following templating languages:
 
  - [JSX / React][JSX]
  - [Glimmer][GLIMMER]
- - [Ember][EMBER]
 
 And has integrations with the following build systems:
 
