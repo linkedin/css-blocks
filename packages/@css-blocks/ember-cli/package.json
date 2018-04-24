@@ -9,6 +9,9 @@
   "scripts": {
     "test": "echo 'No tests for @css-blocks/ember-cli'"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@css-blocks/broccoli": "^0.17.0",
     "@css-blocks/glimmer": "^0.17.0",

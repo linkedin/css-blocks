@@ -30,6 +30,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/playground"
+		},
+		{
+			"path": "packages/@css-blocks/ember-cli"
 		}
 	],
 	"settings": {
