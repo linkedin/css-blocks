@@ -88,6 +88,7 @@ let analyzer = new Analyzer("unique-name", options);
 ```
 
 Possible options are:
+
 | Option | Default | Description |
 |:--|:--|:--|
 | **baseDir** | `process.cwd()` | The root directory from which all sources are relative. |
