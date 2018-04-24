@@ -57,9 +57,9 @@
     "webpack-merge": "^4.1.0"
   },
   "dependencies": {
-    "@opticss/element-analysis": "file:../../../../opticss/packages/@opticss/element-analysis",
-    "opticss": "file:../../../../opticss/packages/opticss",
-    "@opticss/template-api": "file:../../../../opticss/packages/@opticss/template-api",
+    "@opticss/element-analysis": "0.3.0-rc.0",
+    "opticss": "0.3.0-rc.0",
+    "@opticss/template-api": "0.3.0-rc.0",
     "async": "^2.4.1",
     "convert-source-map": "^1.5.0",
     "@css-blocks/core": "^0.17.0",
