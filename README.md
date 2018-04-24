@@ -82,15 +82,15 @@ CSS Blocks requires deep integration with your build system and templating langu
 
 CSS Blocks is available for use in the following templating languages:
 
- - [Ember]()
- - [JSX / React]()
- - [Glimmer]()
+ - [JSX / React](JSX)
+ - [Glimmer](GLIMMER)
+ - [Ember](EMBER)
 
 And has integrations with the following build systems:
 
- - [Ember-CLI]()
- - [Webpack]()
- - [Broccoli]()
+ - [Ember-CLI](EMBER_CLI)
+ - [Webpack](WEBPACK)
+ - [Broccoli](BROCCOLI)
 
 > Don't see your preferred platform yet? 
 >
@@ -738,3 +738,13 @@ app[state|is-loading] .logo {
   animation-name: bounce;
 }
 ```
+
+[CORE]: ./packages/@css-blocks/css-blocks
+[RUNTIME]: ./packages/@css-blocks/runtime
+[JSX]: ./packages/@css-blocks/jsx
+[GLIMMER]: ./packages/@css-blocks/glimmer
+[EMBER_CLI]: ./packages/@css-blocks/ember-cli
+[WEBPACK]: ./packages/@css-blocks/webpack
+[BROCCOLI]: ./packages/@css-blocks/broccoli
+[WEBSITE]: ./packages/@css-blocks/website
+[PLAYGROUND]: ./packages/@css-blocks/playground
