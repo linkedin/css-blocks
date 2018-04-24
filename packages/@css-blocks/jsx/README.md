@@ -42,7 +42,7 @@ import styles from "my-block.css";
 
 // References the sub-state `.myClass[state|classState="bar"]` from the imported block.
 let tmp = "bar"
-<div className={styles.myClass.classState(bar)} />;
+<div className={styles.myClass.classState(tmp)} />;
 
 ```
 
