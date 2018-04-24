@@ -87,10 +87,7 @@ Tips for Getting Your Pull Request Accepted
 [pubkey]: https://gist.github.com/chriseppstein/3f45d3a8e6fb42f24cb7b3f77f21381e
 [disclosure_email]: mailto:security@linkedin.com?subject=Vulnerability%20in%20Github%20LinkedIn/css-blocks%20-%20%3Csummary%3E
 [WEBSITE]: ./packages/@css-blocks/website
-<<<<<<< HEAD
 [PLAYGROUND]: ./packages/@css-blocks/playground
-=======
->>>>>>> docs: Instructions on how to see current integrations.
 [JSX]: ./packages/@css-blocks/jsx
 [GLIMMER]: ./packages/@css-blocks/glimmer
 [EMBER_CLI]: ./packages/@css-blocks/ember-cli
