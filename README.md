@@ -19,15 +19,15 @@ By combining an opinionated authoring system, build-time analysis and rewriting 
 <!-- toc -->
 
 - [Why CSS Blocks?](#why-css-blocks)
-  * [The ⚡️ of Static Analysis](#the--of-static-analysis)
-- [⚙️ Supported Integrations](#-supported-integrations)
+  * [The ⚡️ of Static Analysis](#the-️-of-static-analysis)
+- [⚙️ Supported Integrations](#️-supported-integrations)
 - [🎁 API Features](#-api-features)
 - [🎨 What is a Block?](#-what-is-a-block)
   * [The Scope Selector](#the-scope-selector)
   * [Class Selectors](#class-selectors)
   * [State Selectors](#state-selectors)
   * [Sub-State Selectors](#sub-state-selectors)
-  * [Its Just CSS!™️ (mostly)](#its-just-css-mostly)
+  * [Its Just CSS!™️ (mostly)](#its-just-css️-mostly)
   * [Blocks in Your Templates](#blocks-in-your-templates)
 - [🏗 Block Composition](#-block-composition)
   * [Block References](#block-references)
