@@ -1,5 +1,5 @@
 {
-  "name": "glimmer-test",
+  "name": "@css-blocks/playground",
   "version": "0.0.0",
   "description": "A brand new Glimmer app.",
   "directories": {
@@ -14,7 +14,7 @@
   "devDependencies": {
     "@css-blocks/ember-cli": "^0.17.0",
     "@glimmer/application": "^0.9.1",
-    "@glimmer/application-pipeline": "^0.11.0",
+    "@glimmer/application-pipeline": "^0.11.1",
     "@glimmer/blueprint": "~0.9.1",
     "@glimmer/component": "^0.9.1",
     "@glimmer/inline-precompile": "^1.0.0",

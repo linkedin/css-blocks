@@ -6,10 +6,13 @@
     "ember-addon"
   ],
   "license": "BSD-2-Clause",
+  "scripts": {
+    "test": "echo 'No tests for @css-blocks/ember-cli'"
+  },
   "dependencies": {
     "@css-blocks/broccoli": "^0.17.0",
     "@css-blocks/glimmer": "^0.17.0",
-    "@glimmer/application-pipeline": "^0.11.0",
+    "@glimmer/application-pipeline": "^0.11.1",
     "broccoli-funnel": "^2.0.1"
   }
 }

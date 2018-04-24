@@ -8,6 +8,6 @@ module('Component: GlimmerTest', function(hooks) {
 
   test('it renders', async function(assert) {
     await this.render(hbs`<GlimmerTest />`);
-    assert.equal(this.containerElement.textContent, 'CSS Blocks Playground\n');
+    assert.equal(this.containerElement.textContent, 'Future Site of the CSS Blocks Playground\n');
   });
 });
