@@ -93,7 +93,7 @@ And has integrations with the following build systems:
 
 > Don't see your preferred platform yet? 
 >
-> Learn how to make your own Template Integration or Build System Integration and contribute it back! See existing integrations for details.
+> Learn how to make your own [Template Integration](./ARCHITECTURE.md#template-integrations) or [Build System Integration](./ARCHITECTURE.md#build-system-integrations) and contribute it back!
 
 # 🎁 API Features
 
@@ -290,7 +290,7 @@ However, whatever the implementation is, it will feel as though you're interfaci
 
 There are only two (2) common-sense rules to follow when using Block styles in your template:
 
- 1. You **may not** use a Block class outside of the of it's `:scope`'s subtree.
+ 1. You **may not** use a Block class outside of it's `:scope`'s subtree.
  2. Two classes *from the same Block* **may not** be applied to the same HTML element.
 
 # 🏗 Block Composition
