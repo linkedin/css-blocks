@@ -8,6 +8,7 @@ const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeM
 const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const getClientEnvironment = require('./env');
+const cssAssets = require('./css');
 const paths = require('./paths');
 
 const jsxCompilationOptions = {
@@ -263,11 +264,13 @@ module.exports = {
 
     new CssBlocksPlugin({
       analyzer: CssBlockAnalyzer,
-      outputCssFile: "css-blocks.css",
-      name: "preact",
+      outputCssFile: "blocks.css",
+      name: "css-blocks",
       compilationOptions: jsxCompilationOptions.compilationOptions,
       optimization: jsxCompilationOptions.optimization
     }),
+
+    cssAssets({minify: false, inlineSourceMaps: true}),
 
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:

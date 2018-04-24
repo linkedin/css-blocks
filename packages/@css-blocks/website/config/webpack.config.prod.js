@@ -10,6 +10,7 @@ const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
+const cssAssets = require('./css');
 
 const CssBlocks = require("@css-blocks/jsx");
 const CssBlocksPlugin = require("@css-blocks/webpack").CssBlocksPlugin;
@@ -284,11 +285,13 @@ module.exports = {
 
     new CssBlocksPlugin({
       analyzer: CssBlockAnalyzer,
-      outputCssFile: "css-blocks.css",
+      outputCssFile: "blocks.css",
       name: "css-blocks",
       compilationOptions: jsxCompilationOptions.compilationOptions,
       optimization: jsxCompilationOptions.optimization
     }),
+
+    cssAssets({minify: true, inlineSourceMaps: false}),
 
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
@@ -340,9 +343,9 @@ module.exports = {
     //   sourceMap: shouldUseSourceMap,
     // }),
     // Note: this won't work without ExtractTextPlugin.extract(..) in `loaders`.
-    new ExtractTextPlugin({
-      filename: cssFilename,
-    }),
+    // new ExtractTextPlugin({
+    //   filename: cssFilename,
+    // }),
     // Generate a manifest file which contains a mapping of all asset filenames
     // to their corresponding output file so that tools can pick it up without
     // having to parse `index.html`.
