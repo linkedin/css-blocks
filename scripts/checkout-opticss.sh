@@ -5,6 +5,10 @@ if [[ -z "$OPTICSS_DIR" ]];
 then
   OPTICSS_DIR=build/opticss
 fi
+RELEASE="$(node -e "const j = require('./scripts/config.json'); process.stdout.write(j.opticss.release);")";
+if [ "$RELEASE" == "latest" ]; then
+  exit 0;
+fi
 BRANCH="$(node -e "const j = require('./scripts/config.json'); process.stdout.write(j.opticss.branch);")";
 mkdir -p $(dirname $OPTICSS_DIR)
 if [ -d $OPTICSS_DIR ]
