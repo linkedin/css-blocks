@@ -50,7 +50,7 @@ describe("Broccoli Plugin Test", function () {
 
       let compiler = new BroccoliCSSBlocks(input.path(), {
         entry: [entryComponentName],
-        output: "src/ui/styles/css-blocks.css",
+        output: "css-blocks.css",
         transport,
         analyzer,
       });
@@ -63,8 +63,7 @@ describe("Broccoli Plugin Test", function () {
       assert.ok(transport["blocks"], "Blocks property is populated in Transport Object");
       assert.ok(transport["analyzer"], "Analyzer property is populated in Transport Object");
       assert.ok(transport["css"], "CSS property is populated in Transport Object");
-
-      assert.ok(files["src"]!["ui"]["styles"]["css-blocks.css"], "CSS File generated");
+      assert.ok(files["css-blocks.css"], "CSS File generated");
     });
   });
 });

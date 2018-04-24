@@ -137,7 +137,7 @@
     debug "^3.1.0"
     walk-sync "^0.3.2"
 
-"@glimmer/application-pipeline@^0.11.0":
+"@glimmer/application-pipeline@^0.11.1":
   version "0.11.1"
   resolved "https://registry.npmjs.org/@glimmer/application-pipeline/-/application-pipeline-0.11.1.tgz#90d83ace1319ee6bd6153f884ad6e3dcc19343af"
   dependencies:

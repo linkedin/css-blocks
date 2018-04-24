@@ -1,3 +1,24 @@
-h1 {
-  color: #444;
+:root {
+  --pink: #ed2651;
+  --purple: #2e184a;
+  --off-white: #f0eff3;
+  --gray: #85818c;
+}
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: "Lato", sans-serif;
+  font-size: 10px;
+}
+p {
+  
+  font-size: 1.8rem;
+  line-height: 2.8rem;
+  margin: 0 0 1.4rem 0;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Enriqueta", sans-serif;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin: 0 0 1.2rem 0;
 }
