@@ -1,5 +1,5 @@
 {
-  "version": "0.17.0",
+  "version": "0.18.0",
   "name": "@css-blocks/ember-cli",
   "main": "index.js",
   "keywords": [
@@ -13,8 +13,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@css-blocks/broccoli": "^0.17.0",
-    "@css-blocks/glimmer": "^0.17.0",
+    "@css-blocks/broccoli": "^0.18.0",
+    "@css-blocks/glimmer": "^0.18.0",
     "@glimmer/application-pipeline": "^0.11.1",
     "broccoli-funnel": "^2.0.1"
   }
