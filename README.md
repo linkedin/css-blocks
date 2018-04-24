@@ -82,19 +82,19 @@ CSS Blocks requires deep integration with your build system and templating langu
 
 CSS Blocks is available for use in the following templating languages:
 
- - [JSX / React](JSX)
- - [Glimmer](GLIMMER)
- - [Ember](EMBER)
+ - [JSX / React][JSX]
+ - [Glimmer][GLIMMER]
+ - [Ember][EMBER]
 
 And has integrations with the following build systems:
 
- - [Webpack](WEBPACK)
- - [Broccoli](BROCCOLI)
- - [Ember-CLI](EMBER_CLI) (Glimmer Only)
+ - [Webpack][WEBPACK]
+ - [Broccoli][BROCCOLI]
+ - [Ember-CLI][EMBER_CLI] (Glimmer Only)
 
 > Don't see your preferred platform yet? 
 >
-> Learn how to make your own [Template Integration]() or [Build System Integration]() and contribute it back!
+> Learn how to make your own Template Integration or Build System Integration and contribute it back! See existing integrations for details.
 
 # 🎁 API Features
 
