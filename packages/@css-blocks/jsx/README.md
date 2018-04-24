@@ -1,184 +1,110 @@
-# CSS Blocks JSX Analyzer
+# CSS Blocks JSX Analyzer / Rewriter
 
-// TODO: Write README
+CSS Blocks' JSX integrations is inspired by CSS Modules to provide an API that is in-line with the expectations of the React and JSX communities.
 
-NOTE: To run locally, this module currently requires the latest version of `linkedin/css-blocks` and `epicmiller/babylon` checked out locally, built, and `npm link`ed with this project.
+## Syntax
 
-## API Straw Man
+Blocks may be imported to any JSX file like any other asset.
 
-### Version 3
-```css
-{! bar.block.css }
+```jsx
+import styles from "my-block.css";
+```
 
-{! .bar }
-:scope {
-  display: none;
-  background-color: red;
-}
+### Scopes, Classes, and States
+Block files have a single default export that is the Block itself. Classes are exposed as properties on this object, and states are exposed as methods. The default import itself represents the `:scope` selector and may be applied like any other class.
 
-{! .bar--open }
-[state|open] {
-  display: block;
-}
+```jsx
+import styles from "my-block.css";
 
-{! .bar__pretty }
-.pretty {
-  border: 1px solid red;
-}
+// References the `:scope` selector.
+<div className={styles} />;
 
-{! .bar__pretty.bar__pretty--color-pink }
-.pretty[state|color=pink] {
-  background-color: pink;
-}
+// References the class `.myClass` from the imported block.
+<div className={styles.myClass} />;
 
-{! .bar__pretty.bar__pretty--color-blue }
-.pretty[state|color=blue] {
-  background-color: blue;
-}
+// References the state `.myClass[state|rootState]` from the imported block.
+<div className={styles.rootState()} />;
+
+// References the state `.myClass[state|classState]` from the imported block.
+<div className={styles.myClass.classState()} />;
 
 ```
 
-```javascript
+### Sub-States
+To reference sub-states on a state, pass the sub-state value as the first (and only) argument. If a variable is seen to be passed to a state, the rewriter will add an import for the CSS Blocks runtime and be sure to preserve all possible runtime behaviors.
 
-import bar from "bar.block.css";
 
-function render() {
+```jsx
+import styles from "my-block.css";
 
-  let style = objstr({
-    [bar]: expr,
-    'my-active-class': state.isActive
-  });
+// References the sub-state `.myClass[state|rootState="foo"]` from the imported block.
+<div className={styles.rootState("foo")} />;
 
-  return (
-    <div class={style} bar:open={state.open}>
-      <div class={bar.pretty} bar.pretty:color={state.color}></div>
-    </div>
-  );
-}
-
-```
-Transforms to:
-
-```javascript
-
-function render() {
-
-  let s1 = state.open;
-  let c1 = objstr({
-    'my-active-class': state.isActive,
-    [objstr({
-      'bar': true,
-      'bar--open': state.open,
-    })]: expr
-  });
-  let o1 = {
-    bar: {
-      open: true
-    }
-  };
-
-  let s2 = state.color;
-  let c2 = objstr({
-    [objstr({
-      'bar__pretty': true,
-      'bar__pretty--color-blue': s2 === 'blue',
-      'bar__pretty--color-pink': s2 === 'pink'
-    })]: true
-  });
-  let o2 = {
-    bar: {
-      pretty: {
-        color: s2
-      }
-    }
-  };
-
-  return (
-    <div class={c1} block={o1}>
-      <div class={c2} block={o2}></div>
-    </div>
-  );
-}
+// References the sub-state `.myClass[state|classState="bar"]` from the imported block.
+let tmp = "bar"
+<div className={styles.myClass.classState(bar)} />;
 
 ```
 
-### Version 2
+### Composition
 
-```javascript
-import * as style from 'css-blocks-api';
-import grid, {
-  states as gridStates,
-  classes as gridClasses
-} from 'styles/grid.block.css';
-import * as nav from 'ui/navigation/navigation.block.css';
+Multiple blocks may be imported into a single JSX file and be applied to a single element. To combine styles, use the [`obj-str`](https://www.npmjs.com/package/obj-str) package. Logic passed to obj-str is preserved in the rewrite.
 
-// ...
+```jsx
+import objstr from "obj-str";
+import styles from "my-block.css";
+import typography from "typography.css";
 
-const activeTabClass = objstr({
-  [nav]: true,
-  [gridClasses.foo]: true,
-  [gridClasses.bar]: true,
-  [gridStates.color.blue]: this.color === 'blue',
-  [gridStates.color.red]: this.color === 'red',
-
-  nav: {
-    'navigation-item': true,
-    'state:active': true,
-    'state:mode': style.select({
-      open: isOpen(),
-      minimized: isMinimized(),
-      closed: true,
-    }),
-  },
+// Apply `my-block:scope` and `typography.small`
+let styleOne = objstr({
+  [styles]: true,
+  [typography.small]: true
 });
+<div className={styleOne} />;
 
-return (
-  <nav class="nav:scope">
-    <a href="/feed" class="nav.logo">
-      <icons.Logo />
-    </a>
-    <ul role="navigation" class="nav.list">
-      <li class="nav.list-item">
-        <a href="/feed" class={activeTabClass}>
-          <icons.Feed style={navIcon} />
-          <span>Home</span>
-        </a>
-      </li>
-      <li class="nav.list-item">
-        <BuddyLink to="/mynetwork/" class={style("nav.navigation-item")}>
-          <icons.MyNetwork style="navIcon" />
-          <span>My Network</span>
-        </BuddyLink>
-      </li>
-  </nav>
-);
-
-// ...
-
-```
-
-### Version 1
-
-```javascript
-import * as style from 'css-blocks-api';
-import grid 'styles/grid.block.css';
-import nav from 'ui/navigation/navigation.block.css';
-
-// ...
-
-const style = objstr({
-  'nav.my-class': true,
-  'state:nav.my-class.a-state': true,
-  'grid.span-6': true
+// Apply `my-block:scope` and `my-blocks[state|enabled]`
+let styleOne = objstr({
+  [styles]: true,
+  [styles.enabled()]: isEnabled
 });
-
-return (
-  <nav class="nav:scope">
-    <div class={style}></div>
-    <div class="grid.span-6 state:nav.some-state"></div>
-  </nav>
-);
-
-// ...
+<div className={styleOne} />;
 
 ```
+
+### Restrictions
+
+  1. Block references may not be used outside of the `className` property (or `class` for Preact), or an `obj-str` call.
+  2. If a dynamic value is passed to a state "method", then we can not determine through static analysis which sub-states are used by the program, so all possible sub-states will be included in the final CSS output. When possible, pass state "methods" a string literal.
+
+## Integration
+
+### Analyzer
+
+The JSX Analyzer extends the main CSS Blocks core Analyzer. Its constructor accepts a unique name, to help with debugging, and an options hash:
+
+```js
+import { Analyzer } from "@css-blocks/jsx";
+let analyzer = new Analyzer("unique-name", options);
+```
+
+Possible options are:
+| Option | Default | Description |
+|:--|:--|:--|
+| **baseDir** | `process.cwd()` | The root directory from which all sources are relative. |
+| **parserOptions** | [Defaults](https://github.com/linkedin/css-blocks/blob/b5ad979/packages/@css-blocks/jsx/src/options.ts#L7) | Options for the Babel parser used to generate the JSX AST. |
+| **aliases** | `{}` | Resolution aliases used for Block files. If no file is found at the exact path specified, the Block importer will attempt to resolve using these path aliases. |
+| **compilationOptions** | {} | Provide custom compilation options to [@css-blocks/core](../core#options). |
+
+The Analyzer may be passed to a build integration. For JSX, this will typically be [Webpack](../webpack);
+
+### Rewriter
+
+The JSX Rewriter is a Babel plugin that rewrites all JSX files that consume CSS Blocks according to data collected by the Analyzer. This Babel plugin will be passed directly to Babel through its `plugins` option, and will typically look something like this.
+
+```js
+plugins: [
+  require("@css-blocks/jsx/dist/src/transformer/babel").makePlugin({ rewriter }),
+],
+```
+
+The `makePlugin` method creates a new instance of the babel plugin with the shared-memory object `rewriter` in scope. The build integration will have some method of populating this `rewriter` shared-memory object with Analyzer data. Please refer to your selected build integration for details.
