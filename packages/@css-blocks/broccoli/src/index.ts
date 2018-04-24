@@ -57,6 +57,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
           path.join(this.outputPath, file),
         );
       } catch (e) {
+        // tslint:disable-next-line:no-console
         console.log("Error linking", path.join(this.inputPaths[0], file), "to output directory.");
       }
     }
