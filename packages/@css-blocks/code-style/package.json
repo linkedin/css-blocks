@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/code-style",
   "dependencies": {
-    "@opticss/code-style": "file:../../../../opticss/packages/code-style"
+    "@opticss/code-style": "file:../../../../opticss/packages/@opticss/code-style"
   },
   "engines": {
     "node": ">=8"

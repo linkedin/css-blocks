@@ -41,10 +41,10 @@
     "@css-blocks/code-style": "^0.17.0"
   },
   "dependencies": {
-    "@opticss/element-analysis": "file:../../../../opticss/packages/element-analysis",
+    "@opticss/element-analysis": "file:../../../../opticss/packages/@opticss/element-analysis",
     "opticss": "file:../../../../opticss/packages/opticss",
-    "@opticss/template-api": "file:../../../../opticss/packages/template-api",
-    "@opticss/util": "file:../../../../opticss/packages/util",
+    "@opticss/template-api": "file:../../../../opticss/packages/@opticss/template-api",
+    "@opticss/util": "file:../../../../opticss/packages/@opticss/util",
     "@types/async": "^2.0.40",
     "@types/debug": "0.0.29",
     "async": "^2.5.0",

@@ -50,9 +50,9 @@
     "@css-blocks/runtime": "^0.17.0"
   },
   "dependencies": {
-    "@opticss/template-api": "file:../../../../opticss/packages/template-api",
+    "@opticss/template-api": "file:../../../../opticss/packages/@opticss/template-api",
     "opticss": "file:../../../../opticss/packages/opticss",
-    "@opticss/util": "file:../../../../opticss/packages/util",
+    "@opticss/util": "file:../../../../opticss/packages/@opticss/util",
     "babel-traverse": "^6.24.1",
     "babel-types": "^6.24.1",
     "babylon": "^6.17.4",

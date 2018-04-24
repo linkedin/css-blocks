@@ -931,24 +931,24 @@
     call-me-maybe "^1.0.1"
     glob-to-regexp "^0.3.0"
 
-"@opticss/code-style@file:../opticss/packages/code-style":
+"@opticss/code-style@file:../opticss/packages/@opticss/code-style":
   version "0.2.0"
 
-"@opticss/element-analysis@file:../opticss/packages/element-analysis":
+"@opticss/element-analysis@file:../opticss/packages/@opticss/element-analysis":
   version "0.2.0"
   dependencies:
-    "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
+    "@opticss/util" "file:../../../Library/Caches/Yarn/v1/npm-@opticss/util"
 
-"@opticss/template-api@file:../opticss/packages/template-api":
+"@opticss/template-api@file:../opticss/packages/@opticss/template-api":
   version "0.2.0"
   dependencies:
-    "@opticss/element-analysis" "file:../../Library/Caches/Yarn/v1/npm-@opticss/element-analysis"
-    "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
+    "@opticss/element-analysis" "file:../../../Library/Caches/Yarn/v1/npm-@opticss/element-analysis"
+    "@opticss/util" "file:../../../Library/Caches/Yarn/v1/npm-@opticss/util"
     postcss "^6.0.21"
     typescript-collections "^1.2.5"
 
-"@opticss/util@file:../opticss/packages/util":
-  version "0.1.1"
+"@opticss/util@file:../opticss/packages/@opticss/util":
+  version "0.2.0"
   dependencies:
     typescript-collections "^1.2.5"
 
@@ -4027,8 +4027,8 @@ cssom@0.3.x, "cssom@>= 0.3.2 < 0.4.0":
     cssom "0.3.x"
 
 csstype@^2.2.0:
-  version "2.3.0"
-  resolved "https://registry.npmjs.org/csstype/-/csstype-2.3.0.tgz#062e141c78345cf814da0e0b716ad777931b08af"
+  version "2.3.1"
+  resolved "https://registry.npmjs.org/csstype/-/csstype-2.3.1.tgz#3ee8e0110cb414e636c9c53c5e61d3118ccdec87"
 
 currently-unhandled@^0.4.1:
   version "0.4.1"
@@ -8902,16 +8902,16 @@ opn@^5.1.0:
 "opticss@file:../opticss/packages/opticss":
   version "0.2.0"
   dependencies:
-    "@opticss/element-analysis" "file:../../Library/Caches/Yarn/v1/element-analysis"
-    "@opticss/template-api" "file:../../Library/Caches/Yarn/v1/template-api"
-    "@opticss/util" "file:../../Library/Caches/Yarn/v1/util"
+    "@opticss/element-analysis" "file:../../../Library/Caches/Yarn/v1/@opticss/element-analysis"
+    "@opticss/template-api" "file:../../../Library/Caches/Yarn/v1/@opticss/template-api"
+    "@opticss/util" "file:../../../Library/Caches/Yarn/v1/@opticss/util"
     "@types/debug" "0.0.29"
     concat-with-sourcemaps "^1.0.4"
     css-property-parser "^1.0.5"
     debug "^2.6.8"
     object.values "^1.0.4"
     postcss "^6.0.21"
-    postcss-selector-parser "^4.0.0-rc.1"
+    postcss-selector-parser "^4.0.0"
     source-map "^0.6.1"
     specificity "^0.3.2"
     typescript-collections "^1.2.5"
@@ -9515,9 +9515,9 @@ postcss-selector-parser@^2.0.0, postcss-selector-parser@^2.2.2:
     indexes-of "^1.0.1"
     uniq "^1.0.1"
 
-postcss-selector-parser@^4.0.0-rc.1:
-  version "4.0.0-rc.1"
-  resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-4.0.0-rc.1.tgz#e32edb8a8f3ca8300cb20b9207b15ef41b760f88"
+postcss-selector-parser@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-4.0.0.tgz#50c6570f40579036d8e63f23e6c0626fe5743527"
   dependencies:
     cssesc "^1.0.1"
     indexes-of "^1.0.1"
