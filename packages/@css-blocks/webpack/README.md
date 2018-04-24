@@ -1,6 +1,6 @@
 # Webpack Plugin for CSS Blocks
 
-The `@css-blocks/webpack` package delivers all the pieces necessary to integrate CSS Blocks into any `Webpack@3.0.0` build. (Webpack 4.0 support is forthcoming).
+The `@css-blocks/webpack` package delivers all the pieces necessary to integrate CSS Blocks into any Webpack 3.0 build. (Webpack 4.0 support is forthcoming).
 
 ## Getting Started
 
