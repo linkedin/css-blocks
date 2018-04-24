@@ -14,7 +14,6 @@
     "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "docs": "typedoc --out ./docs .",
     "watch": "watch 'yarn run test' './src' './test' --wait=3"
   },
   "repository": {

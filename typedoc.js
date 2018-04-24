@@ -7,9 +7,10 @@ module.exports = {
     "./packages/@css-blocks/runtime/src",
     "./packages/@css-blocks/webpack/src"
   ],
-  "out": "packages/@css-blocks/website/public/docs",
+  "out": "packages/@css-blocks/website/public/api",
   "mode": "modules",
   "theme": "packages/@css-blocks/website/typedoc-theme",
   "name": "@css-blocks",
-  "external-modulemap": ".*packages\/(@css-blocks\/[^\/]+)\/.*"
+  "external-modulemap": ".*packages\/(@css-blocks\/[^\/]+)\/.*",
+  "readme": "./README.md"
 }

@@ -52,7 +52,7 @@ class Home extends Component {
               className={button}
             >Get Started</a>
             <a
-              href="/docs"
+              href="/api"
               target="_blank"
               className={objstr({ [button]: true, [button.color("purple")]: true})}
             >API Documentation</a>
