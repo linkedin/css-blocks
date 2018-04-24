@@ -53,7 +53,7 @@ With css-blocks added to your project, you receive:
  - 🔥 Blazing Fast Stylesheets
  - 🚀 Project-Wide Optimization
  - 🚨 Build Time CSS Errors
- - 🧟‍♂️ Dead Code Elimination
+ - 🧟 Dead Code Elimination
  - ✨ Object Oriented Inheritance
 
 But, most importantly, CSS Blocks is **⚡️Statically Analyzable**.
