@@ -11,7 +11,7 @@ CSS Blocks is an ergonomic, component-oriented CSS authoring system that compile
 
 By combining an opinionated authoring system, build-time analysis and rewriting of templates, and a new type of CSS optimizer, css-blocks breathes new power and ease of use into the technologies and best practices that stylesheet developers already know and love.
 
-> Interested in contributing? Head over to [CONTRIBUTING.md](./CONTRIBUTING.md)!
+> Interested in contributing, or just seeing CSS Blocks in action? Head over to [CONTRIBUTING.md](./CONTRIBUTING.md) to learn how to spin up the project!
 
 <details>
   <summary>Table of Contents</summary>
@@ -88,9 +88,9 @@ CSS Blocks is available for use in the following templating languages:
 
 And has integrations with the following build systems:
 
- - [Ember-CLI](EMBER_CLI)
  - [Webpack](WEBPACK)
  - [Broccoli](BROCCOLI)
+ - [Ember-CLI](EMBER_CLI) (Glimmer Only)
 
 > Don't see your preferred platform yet? 
 >
