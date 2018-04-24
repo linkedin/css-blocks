@@ -24,6 +24,9 @@
     "docs": "typedoc --out ./docs .",
     "watch": "watch 'yarn run test' src test types-local --wait=1"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0",
     "@css-blocks/glimmer": "^0.17.0"

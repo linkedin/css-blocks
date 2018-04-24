@@ -27,6 +27,9 @@
     "type": "git"
   },
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/code-style",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@opticss/code-style": "0.3.0-rc.1"
   },

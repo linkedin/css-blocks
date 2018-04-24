@@ -33,6 +33,9 @@
     "url": "https://github.com/linkedin/css-blocks/issues"
   },
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/runtime/#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0"
   }

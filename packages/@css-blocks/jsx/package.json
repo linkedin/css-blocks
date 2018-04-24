@@ -39,6 +39,9 @@
     "node": ">=8"
   },
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/jsx#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0",
     "@css-blocks/runtime": "^0.17.0",
@@ -47,7 +50,7 @@
     "preact": "^8.2.1"
   },
   "peerDependencies": {
-    "@css-blocks/runtime": "^0.17.0"
+    "@css-blocks/runtime": "^0.18.0"
   },
   "dependencies": {
     "@opticss/template-api": "0.3.0-rc.1",

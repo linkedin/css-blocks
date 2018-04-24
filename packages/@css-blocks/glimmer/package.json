@@ -48,6 +48,9 @@
     "node": ">=8"
   },
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/@css-blocks/glimmer#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@css-blocks/code-style": "^0.17.0"
   },

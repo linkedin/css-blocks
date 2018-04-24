@@ -39,6 +39,9 @@
     "node": ">=8"
   },
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/@css-blocks/webpack#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@css-blocks/core": "^0.17.0",
     "@css-blocks/code-style": "^0.17.0",
