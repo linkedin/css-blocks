@@ -43,7 +43,15 @@ function getLernaPackageDirs(monoRepoDir) {
 }
 
 function getPackageJson(packageDir) {
-  return require(path.join(packageDir, "package.json"));
+  try {
+    return require(path.join(packageDir, "package.json"));
+  } catch (e) {
+    if (/Cannot find module/.test(e.message)) {
+      return;
+    } else {
+      throw e;
+    }
+  }
 }
 
 const CSS_BLOCKS_DIR = path.resolve(__dirname, "..");
@@ -66,6 +74,7 @@ function analyzeMonorepoDependencies(dirs) {
   let depToPackages = {};
   for (let dir of dirs) {
     let pkg = getPackageJson(dir);
+    if (!pkg) continue;
     dirToJSON[dir] = pkg;
     recordDependencies(pkg.dependencies, dir, depToPackages);
     recordDependencies(pkg.devDependencies, dir, depToPackages);
@@ -80,6 +89,7 @@ function analyzeMonorepoDependencies(dirs) {
 function symlink(dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
   for (let dir of dependencyPackageDirs) {
     let pkg = getPackageJson(dir);
+    if (!pkg) continue;
     let name = pkg.name;
 
     try {
@@ -122,21 +132,25 @@ function setDependencyToVersion(name, version, pkg) {
 function updatePackageJsons(protocol, dependencyPackageDirs, dependentPackageDirs, depToPackages, dirToJSON) {
   for (let depDir of dependencyPackageDirs) {
     let pkg = getPackageJson(depDir);
+    if (!pkg) continue;
     let name = pkg.name;
     let version = pkg.version;
     let depDirs = depToPackages[name];
     if (depDirs) {
       for (let dir of depDirs) {
+        let depPkg = dirToJSON[dir];
+        if (!depPkg) continue;
         if (protocol === "file" || protocol == "link") {
-          setDependencyToFile(protocol, name, path.relative(dir, depDir), dirToJSON[dir])
+          setDependencyToFile(protocol, name, path.relative(dir, depDir), depPkg)
         } else if (protocol === "version") {
-          setDependencyToVersion(name, version, dirToJSON[dir])
+          setDependencyToVersion(name, version, depPkg)
         }
       }
     }
   }
   for (let dir of dependentPackageDirs) {
     let pkg = dirToJSON[dir];
+    if (!pkg) continue;
     let updated = JSON.stringify(pkg, null, 2);
     fs.writeFileSync(path.join(dir,"package.json"), updated);
   }

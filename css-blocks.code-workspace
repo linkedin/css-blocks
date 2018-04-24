@@ -27,6 +27,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/website"
+		},
+		{
+			"path": "packages/@css-blocks/playground"
 		}
 	],
 	"settings": {
