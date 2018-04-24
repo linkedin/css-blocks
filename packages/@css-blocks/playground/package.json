@@ -1,7 +1,7 @@
 {
   "name": "@css-blocks/playground",
   "version": "0.0.0",
-  "description": "A brand new Glimmer app.",
+  "description": "The CSS Blocks in-browser playground.",
   "directories": {
     "doc": "doc",
     "test": "tests"
