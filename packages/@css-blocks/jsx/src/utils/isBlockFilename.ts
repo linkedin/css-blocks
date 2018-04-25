@@ -1,5 +1,4 @@
-import * as minimatch from "minimatch";
-const BLOCK_PATTERN = new minimatch.Minimatch("*.block.*", { matchBase: true });
+import * as path from "path";
 export function isBlockFilename(filename: string): boolean {
-    return BLOCK_PATTERN.match(filename);
+    return path.parse(filename).ext === ".css";
 }

@@ -1070,10 +1070,6 @@
   version "3.0.3"
   resolved "https://registry.npmjs.org/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
 
-"@types/minimatch@^2.0.29":
-  version "2.0.29"
-  resolved "https://registry.npmjs.org/@types/minimatch/-/minimatch-2.0.29.tgz#5002e14f75e2d71e564281df0431c8c1b4a2a36a"
-
 "@types/mocha@^2.2.41":
   version "2.2.48"
   resolved "https://registry.npmjs.org/@types/mocha/-/mocha-2.2.48.tgz#3523b126a0b049482e1c3c11877460f76622ffab"

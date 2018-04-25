@@ -12,9 +12,9 @@ export class Test {
     mock.restore();
   }
 
-  @test "Is able to parse typescript"() {
+  @test "Is able to parse vanilla without a `jsx` extension."() {
     mock({
-      "bar.block.css": `
+      "bar.css": `
         :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -24,7 +24,37 @@ export class Test {
     });
 
     return parse(`
-      import bar from 'bar.block.css';
+      import bar from 'bar.css';
+      import objstr from 'obj-str';
+
+      let style = objstr({
+        [bar.pretty]: true,
+        [bar.pretty.color("yellow")]: true
+      });
+
+      <div class={style}></div>;`,
+                 "test-file.js",
+                 { types: "none" },
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
+      let analysis = result.analyses[0];
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
+    });
+  }
+
+  @test "Is able to parse typescript"() {
+    mock({
+      "bar.css": `
+        :scope { color: blue; }
+        .pretty { color: red; }
+        .pretty[state|color=yellow] {
+          color: yellow;
+        }
+      `,
+    });
+
+    return parse(`
+      import bar from 'bar.css';
       import objstr from 'obj-str';
 
       function fooGood<T extends { x: number }>(obj: T): T {
@@ -54,7 +84,7 @@ export class Test {
 
   @test "Is able to parse flow"() {
     mock({
-      "bar.block.css": `
+      "bar.css": `
         :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -64,7 +94,7 @@ export class Test {
     });
 
     return parse(`
-      import bar from 'bar.block.css';
+      import bar from 'bar.css';
       import objstr from 'obj-str';
 
       let color: string = "yellow";
