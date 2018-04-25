@@ -4,17 +4,17 @@ CSS Blocks' JSX integrations is inspired by CSS Modules to provide an API that i
 
 ## Syntax
 
-Blocks may be imported to any JSX file like any other asset.
+Blocks may be imported to any JSX file like any other asset. CSS Block files *must* end with the extension `{block-name}.block.css`.
 
 ```jsx
-import styles from "my-block.css";
+import styles from "my-block.block.css";
 ```
 
 ### Scopes, Classes, and States
 Block files have a single default export that is the Block itself. Classes are exposed as properties on this object, and states are exposed as methods. The default import itself represents the `:scope` selector and may be applied like any other class.
 
 ```jsx
-import styles from "my-block.css";
+import styles from "my-block.block.css";
 
 // References the `:scope` selector.
 <div className={styles} />;
@@ -35,7 +35,7 @@ To reference sub-states on a state, pass the sub-state value as the first (and o
 
 
 ```jsx
-import styles from "my-block.css";
+import styles from "my-block.block.css";
 
 // References the sub-state `.myClass[state|rootState="foo"]` from the imported block.
 <div className={styles.rootState("foo")} />;
@@ -52,8 +52,8 @@ Multiple blocks may be imported into a single JSX file and be applied to a singl
 
 ```jsx
 import objstr from "obj-str";
-import styles from "my-block.css";
-import typography from "typography.css";
+import styles from "my-block.block.css";
+import typography from "typography.block.css";
 
 // Apply `my-block:scope` and `typography.small`
 let styleOne = objstr({

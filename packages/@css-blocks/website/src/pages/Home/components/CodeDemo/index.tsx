@@ -31,7 +31,7 @@ class CodeDemo extends Component<Props, State> {
       <div className={styles}>
         <div className={styles.editor}>
           <h3 className={editorTitle}>
-            {this.state.syntax === "jsx" ? "button.css" : "stylesheet.css"}
+            {this.state.syntax === "jsx" ? "button.block.css" : "stylesheet.css"}
           </h3>
           {demos[page].cssTooltips.map((d) => { return <Tooltip {...d} />; } )}
           <Prism language="css">{demos[page].cssExample}</Prism>
