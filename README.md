@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="CSS Blocks" width="480px" src="http://css-blocks.com/images/wordmark.svg" />
+  <img alt="CSS Blocks" width="480px" src="http://css-blocks.com/static/media/wordmark-animated.012177e4.svg" />
 </p>
 <h2 align="center">Blazing fast CSS for your Design Systems and App Components </h2>
 
