@@ -5,24 +5,33 @@ import * as webpack from "webpack";
 
 import { LoaderOptions } from "../../src/LoaderOptions";
 import { WebpackAny } from "../../src/Plugin";
-import { config as basicConfig } from "../configs/basicConfig";
+import { EntryTypes, config as basicConfig } from "../configs/basicConfig";
 
 import { BLOCK_FIXTURES_DIRECTORY, DIST_DIRECTORY } from "./testPaths";
 const CR = /\r/g;
 
 // This test harness was adapted from the sass-loader test suite.
 
-export function execTest(testId: string, options?: LoaderOptions) {
-    const entryPath = path.join(BLOCK_FIXTURES_DIRECTORY, testId + ".block.css");
-    return runWebpackAsPromise(basicConfig(entryPath, options))
-        .then(() => {
-            const actualCss = readBundle("bundle.block.css.js");
-            const expectedCss = readCss(testId);
+export function execTest(testId: string, options?: LoaderOptions, entryFormat: "string" | "object" | "array" = "string") {
+    const entryPath: string = path.join(BLOCK_FIXTURES_DIRECTORY, testId + ".block.css");
+    let entry: EntryTypes = entryPath;
 
-            // writing the actual css to output-dir for better debugging
-            // fs.writeFileSync(path.join(__dirname, "output", `${ testId }.${ ext }.css`), actualCss, "utf8");
-            assert.deepEqual(actualCss, expectedCss);
-        });
+    if (entryFormat === "array") {
+        entry = [entryPath];
+    }
+    else if (entryFormat === "object") {
+        entry = { main: entryPath };
+    }
+
+    return runWebpackAsPromise(basicConfig(entry, options))
+    .then(() => {
+        const actualCss = readBundle("bundle.block.css.js");
+        const expectedCss = readCss(testId);
+
+        // writing the actual css to output-dir for better debugging
+        // fs.writeFileSync(path.join(__dirname, "output", `${ testId }.${ ext }.css`), actualCss, "utf8");
+        assert.deepEqual(actualCss, expectedCss);
+    });
 }
 
 export function readCss(id: string): string {

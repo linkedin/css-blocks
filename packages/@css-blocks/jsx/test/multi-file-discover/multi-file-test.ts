@@ -30,7 +30,7 @@ export class Test {
 
   @test "finds dependents of dependents"() {
     let base = path.resolve(__dirname, "../../../test/fixtures/deep-multifile");
-    return parseFile("index.tsx", { baseDir: base }).then((analyzer: Analyzer) => {
+    return parseFile("index.tsx", { baseDir: base, types: "typescript" }).then((analyzer: Analyzer) => {
       assert.equal(analyzer.analysisCount(), 3);
       assert.equal(analyzer.blockPromises.size, 3);
       assert.equal(analyzer.styleCount(), 4);

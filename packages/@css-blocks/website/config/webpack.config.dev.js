@@ -13,6 +13,8 @@ const paths = require('./paths');
 
 const jsxCompilationOptions = {
   compilationOptions: {},
+  types: "typescript",
+  aliases: {},
   optimization: {
     rewriteIdents: true,
     mergeDeclarations: true,
@@ -20,7 +22,6 @@ const jsxCompilationOptions = {
     conflictResolution: true,
     enabled: false,
   },
-  aliases: {}
 };
 
 const CssBlocks = require("@css-blocks/jsx");
@@ -100,7 +101,7 @@ module.exports = {
     // for React Native Web.
     extensions: ['.web.js', '.mjs', '.js', '.json', '.web.jsx', '.jsx', '.ts', '.tsx'],
     alias: {
-      
+
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
       'react-native': 'react-native-web',
@@ -126,16 +127,14 @@ module.exports = {
       {
         test: /\.(js|jsx|mjs)$/,
         enforce: 'pre',
-        use: [
-          {
-            options: {
-              formatter: eslintFormatter,
-              eslintPath: require.resolve('eslint'),
-              
-            },
-            loader: require.resolve('eslint-loader'),
+        use: [{
+          options: {
+            formatter: eslintFormatter,
+            eslintPath: require.resolve('eslint'),
+
           },
-        ],
+          loader: require.resolve('eslint-loader'),
+        }, ],
         include: paths.appSrc,
       },
       {
@@ -214,7 +213,13 @@ module.exports = {
                   cacheDirectory: true,
                   compact: true,
                   parserOpts: {
-                    plugins: [ "jsx" ]
+                    plugins: [
+                      "jsx",
+                      "doExpressions",
+                      "objectRestSpread",
+                      "decorators",
+                      "classProperties",
+                    ]
                   }
                 }
               },
@@ -233,8 +238,6 @@ module.exports = {
                   rewriter: CssBlockRewriter
                 }
               },
-
-
             ]
           },
 
@@ -270,7 +273,7 @@ module.exports = {
       optimization: jsxCompilationOptions.optimization
     }),
 
-    cssAssets({minify: false, inlineSourceMaps: true}),
+    cssAssets({ minify: false, inlineSourceMaps: true }),
 
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:

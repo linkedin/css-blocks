@@ -1,5 +1,5 @@
 import { TemplateTypes } from "@opticss/template-api";
-import { ObjectDictionary } from "@opticss/util";
+import { ObjectDictionary, objectValues } from "@opticss/util";
 import * as debugGenerator from "debug";
 import { postcss } from "opticss";
 import * as path from "path";
@@ -64,6 +64,8 @@ export interface BlockCompilationComplete {
 
 type Assets = ObjectDictionary<Source>;
 
+type EntryTypes = string | string[] | ObjectDictionary<string>;
+
 interface CompilationResult {
   optimizationResult: OptimizationResult;
   blocks: Set<Block>;
@@ -100,8 +102,21 @@ export class CssBlocksPlugin
     this.trace(`starting analysis.`);
     this.analyzer.reset();
 
-    // Try to run our analysis.
-    let entries = compilation.options.entry as string[];
+    // Fetch our app's entry points.
+    let webpackEntry = compilation.options.entry as EntryTypes;
+    let entries: string[] = [];
+
+    // Zomg webpack, so many config format options.
+    if (typeof webpackEntry === "string") {
+      entries = [ webpackEntry ];
+    }
+    else if (Array.isArray(webpackEntry)) {
+      entries = webpackEntry;
+    }
+    else if (typeof webpackEntry === "object") {
+      entries = objectValues(webpackEntry);
+    }
+
     let pending: PendingResult = this.analyzer.analyze(...entries)
       // If analysis fails, drain our BlockFactory, add error to compilation error list and propagate.
       .catch((err: Error) => {

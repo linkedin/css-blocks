@@ -79,7 +79,7 @@ export class Test {
       return transform(code, meta.getAnalysis(0)).then(res => {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
-          <div class="a"></div>;
+          <div className="a"></div>;
           `));
       });
     });
@@ -117,7 +117,7 @@ export class Test {
           import c$$ from '@css-blocks/runtime';
           import objstr from 'obj-str';
           let isDynamic = true;
-          <div class={c$$("a", [1, 1, 2, isDynamic, 1, 0, 'b', 0])}></div>;`,
+          <div className={c$$("a", [1, 1, 2, isDynamic, 1, 0, 'b', 0])}></div>;`,
         ));
         assert.deepEqual(c$$("a", [1, 1, 2, true, 1, 0, "b", 0]), "a b");
       });
@@ -153,7 +153,7 @@ export class Test {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
-          <div class="a b"></div>;`),
+          <div className="a b"></div>;`),
         );
       });
     });
@@ -188,7 +188,7 @@ export class Test {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
-          <div class="a b"></div>;`));
+          <div className="a b"></div>;`));
       });
 
     });
@@ -220,8 +220,8 @@ export class Test {
         [bar.pretty.color(dynamic)]: leSigh
       });
 
-      <div class={bar}>
-      <div class={style}></div></div>;
+      <div className={bar}>
+      <div className={style}></div></div>;
     `;
 
     return parse(code, "test.tsx").then((analysis: Analyzer) => {
@@ -234,8 +234,8 @@ export class Test {
           let dynamic = 'yellow';
           let leSigh = true;
 
-          <div class="a">
-          <div class={c$$("b",[1,2,4,2,1,leSigh&&dynamic,"yellow",1,1,"green",1,0,"d",0,"c",1])}></div></div>;`),
+          <div className="a">
+          <div className={c$$("b",[1,2,4,2,1,leSigh&&dynamic,"yellow",1,1,"green",1,0,"d",0,"c",1])}></div></div>;`),
         );
         let leSigh = true;
         let dynamic = "green";
@@ -269,7 +269,7 @@ export class Test {
         [bar.pretty.color(dynamic)]: true
       });
 
-      <div class={bar}><div class={style}></div></div>;
+      <div className={bar}><div class={style}></div></div>;
     `;
 
     return parse(code, "test.tsx").then((analysis: Analyzer) => {
@@ -279,9 +279,9 @@ export class Test {
         import objstr from "obj-str";
         let dynamic = "yellow";
         let leSigh = true;
-        <div class="b">
+        <div className="b">
           <div
-            class={c$$([ 3, 2, 0, leSigh, 1, 0, 0, 1, 1, 0, 1, 1, 5, 1, 0, 1,
+            className={c$$([ 3, 2, 0, leSigh, 1, 0, 0, 1, 1, 0, 1, 1, 5, 1, 0, 1,
               0, dynamic, "yellow", 1, 2, "c", -2, 2, 0, 1, "d", 2
             ])}
           />
@@ -338,8 +338,8 @@ export class Test {
         function conditional() {
           return true;
         }
-        <div class="a">
-          <div class={c$$("b", [1,2,4,2,1,conditional() && \`\${dynamic}Color\`,
+        <div className="a">
+          <div className={c$$("b", [1,2,4,2,1,conditional() && \`\${dynamic}Color\`,
                                 "yellowColor",1,1,"greenColor",1,0,"d",0,"c",1])} />
         </div>;`),
         );
@@ -376,8 +376,8 @@ export class Test {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
-          <div class="a"></div>;
-          <div class="b"></div>;
+          <div className="a"></div>;
+          <div className="b"></div>;
         `));
       });
     });
@@ -451,7 +451,7 @@ export class Test {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
-          <div class="foo a"></div>;
+          <div className="foo a"></div>;
         `));
       });
     });

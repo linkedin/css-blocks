@@ -52,6 +52,7 @@ export interface CssBlocksVisitor {
 }
 
 const CAN_PARSE_EXTENSIONS = {
+  ".js": true,
   ".tsx": true,
   ".jsx": true,
 };
@@ -166,7 +167,7 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
               attributeValue = stringLiteral(classMapping.staticClasses.join(" "));
             }
             if (attributeValue) {
-              newClassAttr = jSXAttribute(jSXIdentifier("class"), attributeValue);
+              newClassAttr = jSXAttribute(jSXIdentifier("className"), attributeValue);
             }
 
             let classAttrs = this.elementAnalyzer.classAttributePaths(path);

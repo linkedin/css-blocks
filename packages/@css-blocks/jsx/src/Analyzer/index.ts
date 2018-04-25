@@ -10,7 +10,6 @@ import * as babylon from "babylon";
 import * as debugGenerator from "debug";
 import * as fs from "fs";
 import * as path from "path";
-import * as typescript from "typescript";
 
 import { CssBlocksJSXOptions } from "../options";
 import { JSXParseError } from "../utils/Errors";
@@ -86,21 +85,6 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
 
     // Parse the file into an AST.
     try {
-
-      // Babylon currently has...abysmal support for typescript. We need to transpile
-      // it with the standard typescript library first.
-      // TODO: When Typescript support lands in Babylon, remove this: https://github.com/babel/babylon/issues/320
-      if (path.parse(template.identifier).ext === ".tsx") {
-        let wat = typescript.transpileModule(template.data, {
-          compilerOptions: {
-            module: typescript.ModuleKind.ES2015,
-            jsx: typescript.JsxEmit.Preserve,
-            target: typescript.ScriptTarget.Latest,
-          },
-        });
-        template.data = wat.outputText;
-      }
-
       analysis.template.ast = some(babylon.parse(template.data, this.options.parserOptions));
     } catch (e) {
       process.chdir(oldDir);
