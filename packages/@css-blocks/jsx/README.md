@@ -91,7 +91,7 @@ Possible options are:
 | Option | Default | Description |
 |:--|:--|:--|
 | **baseDir** | `process.cwd()` | The root directory from which all sources are relative. |
-| **parserOptions** | [Defaults](https://github.com/linkedin/css-blocks/blob/b5ad979/packages/@css-blocks/jsx/src/options.ts#L7) | Options for the Babel parser used to generate the JSX AST. |
+| **types** | "none" | Which JavaScript typing language to enable. Options are: "typescript", "flow" or "none" |
 | **aliases** | `{}` | Resolution aliases used for Block files. If no file is found at the exact path specified, the Block importer will attempt to resolve using these path aliases. |
 | **compilationOptions** | {} | Provide custom compilation options to [@css-blocks/core](../core#options). |
 
