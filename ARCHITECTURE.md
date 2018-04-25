@@ -44,7 +44,7 @@ To pull off all the features promised by css-blocks, we need to do a *lot* of wo
 ## Block Parsing
 Lets start at the very beginning – a very good place to start! In css-blocks, we start with your templates – unexpected for a CSS framework, I know! 
 
-CSS Blocks starts at the entry point template(s) passed to it by your build, and crawls the template dependency trees. Every time we encounter a referenced Block file in a template (remember: the syntax for this changes depending on the templating language), we pass it off to the [BlockFactory](./packages/css-blocks/src/BlockParser/BlockFactory.ts) for parsing. 
+CSS Blocks starts at the entry point template(s) passed to it by your build, and crawls the template dependency trees. Every time we encounter a referenced Block file in a template (remember: the syntax for this changes depending on the templating language), we pass it off to the [BlockFactory](./packages/@css-blocks/core/src/BlockParser/BlockFactory.ts) for parsing. 
 
 The `BlockFactory` parses every Block file discovered into an internally used, intermediate data model that is well indexed, easily searchable, and manages all the complexity of Block composition, inheritance and implementation. This data model is affectionately called a [BlockTree](./packages/css-blocks/src/Block/index.ts). 
 
@@ -60,7 +60,7 @@ In this phase we validate Block syntax and will stop the build with a helpful er
 
 At the end of a successful __Block Parsing Phase__, we are left with a collection of `Block` objects that my be used to query any and all relevant information about a Block file. Any valid `Block` may contain one to many `Style` objects that represent individual `BlockClass`es, or `AttrValue`s accessible on the `Block`. These in turn map directly back to one or more declared rulesets in the source Block file. 
 
-You can read more about `Block` objects and their associated APIs in the [CSS Blocks Core README](./packages/css-blocks/README.md).
+You can read more about `Block` objects and their associated APIs in the [CSS Blocks Core README](./packages/%40css-blocks/core).
 
 ## Template Analysis
 Once we're finished constructing our `Block` objects, these data are passed off to a template `Analyzer` for the __Template Analysis Phase__. It is the job of the analyzer to inspect every element, in every template of the application, and report back information, like:
@@ -89,18 +89,18 @@ In this phase we validate style composition and will stop the build with a helpf
  - Un-resolved property conflicts on correlated `Style`s from different Blocks;
  - Duplicate application of exclusive `AttrValue`s.
 
-You can read more about `Analyzer`s and their associated APIs in the [Analyzer README](./packages/css-blocks/src/TemplateAnalysis/README.md).
+You can read more about `Analyzer`s and their associated APIs in the [Analyzer README](./packages/%40css-blocks/core/src/Analyzer).
 
 ## Block Compilation
 Now that we have our parsed `Block` objects, and the fully populated `Analysis` data, we can emit a compiled CSS file for each `Block`.
 
-The [`BlockCompiler`](./packages/css-blocks/src/BlockCompiler) is responsible for taking in a `Block` object, and emitting a transformed PostCSS root node with the rewritten classes.
+The [`BlockCompiler`](./packages/%40css-blocks/core/src/BlockCompiler) is responsible for taking in a `Block` object, and emitting a transformed PostCSS root node with the rewritten classes.
 
 At this phase, your Block files are rewritten to use globally unique class names, and all extension and conflict resolution selectors are emitted.
 
 As described in the [CSS Blocks README][CORE], `Style` objects (`BlockClasses` and `AttrValues`) conveniently map directly to BEM classes. By default, you will see BEM classes emitted in this phase.
 
-> Note: BEM is the default output mode for css-blocks – and currently the only output mode – but [other output modes](./packages/css-blocks/src/configuration/OutputMode.ts) for css-blocks may be added in the future.
+> Note: BEM is the default output mode for css-blocks – and currently the only output mode – but [other output modes](./packages/%40css-blocks/core/src/configuration/OutputMode.ts) for css-blocks may be added in the future.
 
 ## Optimization (Optional)
 Once we have all of our style data parsed from the __Block Parsing Phase__, and all of our usage data from the __Template Analysis Phase__, *and* the compiled Block CSS files, all this information is passed off to [Opticss][OPTICSS], our standalone CSS stylesheet optimizer, for style optimization!
@@ -113,12 +113,12 @@ I encourage you to read up about Opticss and its internals [over in its reposito
 
 > Note: In a non-optimized build, this step is essentially a pass through. The Optimizer will return un-transformed CSS and `StyleMapping` data that is the same as the input data.
 
-The [`StyleMapping`](./packages/css-blocks/src/TemplateRewriter/StyleMapping.ts) object returned by css-blocks after an Opticss run contains APIs that allow you to query a `RewriteMapping` for any Element analyzed during the __Analysis Phase__. This `RewriteMapping` contains all the information required to rewrite that Element from the old, pre-optimized classes, to the new, fully-optimized classes, as we will see in the __Rewrite Phase__.
+The [`StyleMapping`](./packages/%40css-blocks/core/src/TemplateRewriter/StyleMapping.ts) object returned by css-blocks after an Opticss run contains APIs that allow you to query a `RewriteMapping` for any Element analyzed during the __Analysis Phase__. This `RewriteMapping` contains all the information required to rewrite that Element from the old, pre-optimized classes, to the new, fully-optimized classes, as we will see in the __Rewrite Phase__.
 
 ## Rewrite Phase
 Phew! Last step. Now that we have our final CSS stylesheet and it's corresponding `StyleMapping`, we can re-visit every Element we encountered during our __Analysis Phase__ and make sure it uses the correct classes at the right times. 
 
-As mentioned above, every Element has a corresponding [`RewriteMapping`](./packages/css-blocks/src/TemplateRewriter/RewriteMapping.ts) returned from Opticss. Any given Class, ID or Attribute associated with an element will map back to one (or many) optimized class names that should **only** be applied if a certain set of conditions are met. 
+As mentioned above, every Element has a corresponding [`RewriteMapping`](./packages/%40css-blocks/core/src/TemplateRewriter/RewriteMapping.ts) returned from Opticss. Any given Class, ID or Attribute associated with an element will map back to one (or many) optimized class names that should **only** be applied if a certain set of conditions are met. 
 
 Some classes are static – they are always present on the element. Other classes are dynamic, and should only be applied if the application is in a specific state.
 
