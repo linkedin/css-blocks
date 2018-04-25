@@ -3,6 +3,19 @@
   "packages": [
     "packages/@css-blocks/*"
   ],
+  "command": {
+    "publish": {
+      "allowBranch": "master",
+      "conventionalCommits": true,
+      "message": "chore(release): Publish %s"
+    }
+  },
+  "ignoreChanges": {
+    "**/test/**",
+    "**/*.md",
+    "**/ts*.json",
+    "**/*config*.json",
+  }
   "npmClient": "yarn",
   "useWorkspaces": true
 }
