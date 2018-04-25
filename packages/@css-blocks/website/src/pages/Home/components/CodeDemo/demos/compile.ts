@@ -46,7 +46,7 @@ const data: Data = {
     import objstr from 'obj-str';
 
 
-    export default function Button({size, color, icon, children}){
+    export default function Button({size, inverse, icon, children}){
 
       const style = objstr({
         ['button']: true,
