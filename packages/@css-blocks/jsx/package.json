@@ -62,6 +62,7 @@
     "debug": "^2.6.8",
     "minimatch": "^3.0.4",
     "object.values": "^1.0.4",
-    "opticss": "^0.3.0"
+    "opticss": "^0.3.0",
+    "typescript": "^2.8.1"
   }
 }
