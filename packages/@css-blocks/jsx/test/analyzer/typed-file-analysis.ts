@@ -14,7 +14,7 @@ export class Test {
 
   @test "Is able to parse vanilla without a `jsx` extension."() {
     mock({
-      "bar.css": `
+      "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -24,7 +24,7 @@ export class Test {
     });
 
     return parse(`
-      import bar from 'bar.css';
+      import bar from 'bar.block.css';
       import objstr from 'obj-str';
 
       let style = objstr({
@@ -44,7 +44,7 @@ export class Test {
 
   @test "Is able to parse typescript"() {
     mock({
-      "bar.css": `
+      "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -54,7 +54,7 @@ export class Test {
     });
 
     return parse(`
-      import bar from 'bar.css';
+      import bar from 'bar.block.css';
       import objstr from 'obj-str';
 
       function fooGood<T extends { x: number }>(obj: T): T {
@@ -84,7 +84,7 @@ export class Test {
 
   @test "Is able to parse flow"() {
     mock({
-      "bar.css": `
+      "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
         .pretty[state|color=yellow] {
@@ -94,7 +94,7 @@ export class Test {
     });
 
     return parse(`
-      import bar from 'bar.css';
+      import bar from 'bar.block.css';
       import objstr from 'obj-str';
 
       let color: string = "yellow";
