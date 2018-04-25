@@ -171,7 +171,7 @@ Mutually Exclusive styles are guaranteed to never be used on the element at the 
 <div class="{{style-if value 'my-class' 'other-class'}}" state:color={{color}}></div>
 ```
 
-Every Template Integration's syntax for consuming Blocks will differ slightly. It is the responsibility of the integration to implement template parsing and Block object discovery to feed in to the `ElementAnalysis` APIs. You can read more about these style tracking methods on the [`ElementAnalysis` API documentation][TODO].
+Every Template Integration's syntax for consuming Blocks will differ slightly. It is the responsibility of the integration to implement template parsing and Block object discovery to feed in to the `ElementAnalysis` APIs. You can read more about these style tracking methods on the [`ElementAnalysis` API documentation][https://css-blocks.com/api/classes/_css_blocks_core.elementanalysis.html].
 
 Once an `ElementAnalysis` is sealed, a number of automatic validations run on it to ensure no template rules have been violated. These template validators are defined as independent plugins and may be enabled or disabled individually. By default, they are all enabled. These validations live under `/src/Analyzer/validations` and include:
 
