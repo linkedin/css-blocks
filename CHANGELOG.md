@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.19.0"></a>
+# [0.19.0](https://github.com/linkedin/css-blocks/compare/v0.18.0...v0.19.0) (2018-04-25)
+
+
+### Bug Fixes
+
+* Fix problems with JSX and Webpack integrations. ([fa2a536](https://github.com/linkedin/css-blocks/commit/fa2a536))
+* Keep the filename convention of using *.block.css. ([ac1cf16](https://github.com/linkedin/css-blocks/commit/ac1cf16))
+* Remove accidentally committed merge conflict in CONTRIBUTING.md. ([9099678](https://github.com/linkedin/css-blocks/commit/9099678))
+
+
+### Features
+
+* Support plain string and object syntax for webpack entries. ([9c28ac0](https://github.com/linkedin/css-blocks/commit/9c28ac0))
+* Use Babel 7 for JSX parsing to better enable tyed languages. ([97cd2e4](https://github.com/linkedin/css-blocks/commit/97cd2e4))
+
+
+
+
+
 <a name="0.18.0"></a>
 # [0.18.0](https://github.com/linkedin/css-blocks/compare/0.15.1...0.18.0) (2018-04-24)
 
