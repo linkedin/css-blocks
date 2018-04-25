@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { skip, suite, test } from "mocha-typescript";
 
 import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
 import { testParse as parse } from "../util";
@@ -70,6 +70,48 @@ export class Test {
       let style = objstr({
         [bar.pretty]: isPretty,
         [bar.pretty.color(color)]: true
+      });
+
+      <div class={style}></div>;`,
+                 "test-file.tsx",
+                 { types: "typescript" },
+    ).then((analyzer: Analyzer) => {
+      let result = analyzer.serialize();
+      let analysis = result.analyses[0];
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
+    });
+  }
+
+  @skip
+  @test "Do something with typescript with type annotations - error or pass?"() {
+    mock({
+      "bar.block.css": `
+        :scope { color: blue; }
+        .pretty { color: red; }
+        .pretty[state|color=yellow] {
+          color: yellow;
+        }
+      `,
+    });
+
+    return parse(`
+      import BarCSS from 'bar-css';
+      import bar from 'bar.block.css';
+      import objstr from 'obj-str';
+
+      function fooGood<T extends { x: number }>(obj: T): T {
+        console.log(Math.abs(obj.x));
+        return obj;
+      }
+
+      let color: string = "yellow";
+      let isPretty: boolean = true;
+
+      let num = (1 + 1) as number;
+
+      let style = objstr({
+        [bar.pretty as string]: isPretty,
+        [(bar as BarCSS).pretty.color(color)]: true
       });
 
       <div class={style}></div>;`,
