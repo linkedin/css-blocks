@@ -15,7 +15,7 @@
     "**/*.md",
     "**/ts*.json",
     "**/*config*.json"
-  }
+  },
   "npmClient": "yarn",
   "useWorkspaces": true
 }
