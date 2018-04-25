@@ -57,8 +57,8 @@ const data: Data = {
       });
 
       return (
-        <button class={style}>
-          {icon && <span class={styles.icon}>{icon}</span>}
+        <button className={style}>
+          {icon && <span className={styles.icon}>{icon}</span>}
           {children}
         </button>
       );
