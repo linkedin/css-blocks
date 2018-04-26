@@ -1,7 +1,7 @@
 # CSS Blocks Architecture
 Welcome to css-blocks' architecture document! Here you will learn all about the css-blocks framework design, internals, and related build tooling.
 
-I heavily recommend you review the [CSS Blocks Project README][PROJECT_HOME] for a full overview of the css-blocks project and its public APIs! This document expects you have a good handle on Block syntax and Block composition concepts.
+I heavily recommend you review the [CSS Blocks Project README][README] for a full overview of the css-blocks project and its public APIs! This document expects you have a good handle on Block syntax and Block composition concepts.
 
 I'll give you a chance to review...
 
@@ -46,7 +46,7 @@ Lets start at the very beginning – a very good place to start! In css-blocks, 
 
 CSS Blocks starts at the entry point template(s) passed to it by your build, and crawls the template dependency trees. Every time we encounter a referenced Block file in a template (remember: the syntax for this changes depending on the templating language), we pass it off to the [BlockFactory](./packages/@css-blocks/core/src/BlockParser/BlockFactory.ts) for parsing. 
 
-The `BlockFactory` parses every Block file discovered into an internally used, intermediate data model that is well indexed, easily searchable, and manages all the complexity of Block composition, inheritance and implementation. This data model is affectionately called a [BlockTree](./packages/css-blocks/src/Block/index.ts). 
+The `BlockFactory` parses every Block file discovered into an internally used, intermediate data model that is well indexed, easily searchable, and manages all the complexity of Block composition, inheritance and implementation. This data model is affectionately called a [BlockTree](./packages/@css-blocks/core/src/BlockTree/index.ts). 
 
 The `BlockFactory` also ensures we only ever have a single instance of each unique Block file's data model at any time, and encapsulates all the logic around Block reference resolution, CSS parsing and preprocessor integration.
 
@@ -296,7 +296,7 @@ The public-facing website and hosted Typedoc API documentation hosted at [www.cs
 ### [@css-blocks/playground][PLAYGROUND]
 The demo application that allows users to play with CSS Blocks syntax and OptiCSS in-browser. Built as a Glimmer application and dog-foods our Glimmer, Ember CLI and Broccoli integrations.
 
-[PROJECT_HOME]: .
+[README]: ./README.md
 [CORE]: ./packages/@css-blocks/css-blocks
 [RUNTIME]: ./packages/@css-blocks/runtime
 [JSX]: ./packages/@css-blocks/jsx
