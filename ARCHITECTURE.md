@@ -271,7 +271,7 @@ Specific instructions for a given template integration can be found in their res
 ### [@css-blocks/glimmer][GLIMMER][https://glimmerjs.com/]
 Provides the template integration for [Glimmer Templates][GLIMMER_WEBSITE].
 
-### [@css-blocks/jsx][JSX]phttps://facebook.github.io/jsx/]
+### [@css-blocks/jsx][JSX][https://facebook.github.io/jsx/]
 Provides the template integration for [JSX Templates][JSX_WEBSITE].
 
 ## Build System Integrations
