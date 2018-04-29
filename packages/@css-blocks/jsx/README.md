@@ -22,7 +22,7 @@ import styles from "my-block.block.css";
 // References the class `.myClass` from the imported block.
 <div className={styles.myClass} />;
 
-// References the state `.myClass[state|rootState]` from the imported block.
+// References the state `:scope[state|rootState]` from the imported block.
 <div className={styles.rootState()} />;
 
 // References the state `.myClass[state|classState]` from the imported block.
@@ -37,7 +37,7 @@ To reference sub-states on a state, pass the sub-state value as the first (and o
 ```jsx
 import styles from "my-block.block.css";
 
-// References the sub-state `.myClass[state|rootState="foo"]` from the imported block.
+// References the sub-state `:scope[state|rootState="foo"]` from the imported block.
 <div className={styles.rootState("foo")} />;
 
 // References the sub-state `.myClass[state|classState="bar"]` from the imported block.
