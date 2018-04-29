@@ -9,7 +9,6 @@ import traverse from "babel-traverse";
 import * as babylon from "babylon";
 import * as debugGenerator from "debug";
 import * as fs from "fs";
-import * as path from "path";
 
 import { CssBlocksJSXOptions } from "../options";
 import { JSXParseError } from "../utils/Errors";
@@ -143,7 +142,7 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
    * @param opts Optional analytics parser options.
    */
   public parseFile(file: string): Promise<JSXAnalysis> {
-    file = path.resolve(this.options.baseDir, file);
+    file = require.resolve(file);
     return new Promise((resolve, reject) => {
       fs.readFile(file, "utf8", (err, data) => {
         if (err) {
