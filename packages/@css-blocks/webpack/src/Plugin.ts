@@ -114,9 +114,6 @@ export class CssBlocksPlugin
       entries = webpackEntry;
     }
     else if (typeof webpackEntry === "object") {
-      function flatten(arr: whatever[]): whatever[] {
-        return arr.reduce((acc, val) => (acc as whatever[]).concat(Array.isArray(val) ? flatten(val) : val), []) as whatever[];
-      }
       entries = flatten(objectValues(webpackEntry)) as string[];
     }
 
@@ -324,4 +321,8 @@ export class CssBlocksPlugin
   private notifyComplete(result: BlockCompilationComplete | BlockCompilationError, cb: (err: Error) => void): void {
     this.applyPluginsAsync("block-compilation-complete", result, cb);
   }
+}
+
+function flatten(arr: whatever[]): whatever[] {
+  return arr.reduce((acc, val) => (acc as whatever[]).concat(Array.isArray(val) ? flatten(val) : val), []) as whatever[];
 }
