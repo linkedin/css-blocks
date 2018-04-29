@@ -22,7 +22,7 @@ import styles from "my-block.block.css";
 // References the class `.myClass` from the imported block.
 <div className={styles.myClass} />;
 
-// References the state `.myClass[state|rootState]` from the imported block.
+// References the state `:scope[state|rootState]` from the imported block.
 <div className={styles.rootState()} />;
 
 // References the state `.myClass[state|classState]` from the imported block.
