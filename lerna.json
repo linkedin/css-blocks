@@ -4,11 +4,11 @@
     "packages/@css-blocks/*"
   ],
   "command": {
-    "publish": {
+    "publish": [
       "allowBranch": "master",
       "conventionalCommits": true,
       "message": "chore(release): Publish %s"
-    }
+    ]
   },
   "ignoreChanges": [
     "**/test/**",
