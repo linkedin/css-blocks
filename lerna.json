@@ -7,7 +7,7 @@
     "publish": {
       "allowBranch": "master",
       "conventionalCommits": true,
-      "message": "chore(release): Publish %s"
+      "message": "chore(release): Publish %s",
       "conventionalCommits": false,
       "message": "error"
     }
