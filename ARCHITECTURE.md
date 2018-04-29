@@ -268,10 +268,10 @@ A core requirement of css-blocks is the ability to analyze and rewrite your appl
 
 Specific instructions for a given template integration can be found in their respective packages:
 
-### [@css-blocks/glimmer][GLIMMER]
+### [@css-blocks/glimmer][GLIMMER][https://glimmerjs.com/]
 Provides the template integration for [Glimmer Templates][GLIMMER_WEBSITE].
 
-### [@css-blocks/jsx][JSX]
+### [@css-blocks/jsx][JSX]phttps://facebook.github.io/jsx/]
 Provides the template integration for [JSX Templates][JSX_WEBSITE].
 
 ## Build System Integrations
@@ -280,17 +280,17 @@ Provides the template integration for [JSX Templates][JSX_WEBSITE].
 These build system integrations are responsible for understanding the file system abstraction provided by the build system, handing off templates to the **Analyzer** for analysis, and shuttling `StyleAnalays` data between the **Analyzer** and **Rewriter**.
 
 ### [@css-blocks/broccoli][BROCCOLI]
-Provides the build system integration for [Broccoli][BROCCOLI_WEBSITE].
+Provides the build system integration for [Broccoli][http://broccolijs.com/].
 
 ### [@css-blocks/webpack][WEBPACK]
-Provides the build system integration for [Webpack][WEBPACK_WEBSITE].
+Provides the build system integration for [Webpack][https://webpack.js.org/].
 
 ### [@css-blocks/ember-cli][EMBER_CLI]
-Provides the build system integration for [Ember CLI][EMBER_CLI_WEBSITE].
+Provides the build system integration for [Ember CLI][https://ember-cli.com/].
 
 ## Public Websites
 
-### [@css-blocks/website][WEBSITE]
+### [@css-blocks/website][http://css-blocks.com]
 The public-facing website and hosted Typedoc API documentation hosted at [www.css-blocks.com][CSS_BLOCKS_WEBSITE]. Built as a React app and dog-foods our JSX/Webpack integrations.
 
 ### [@css-blocks/playground][PLAYGROUND]
