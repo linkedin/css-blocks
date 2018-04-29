@@ -1,5 +1,5 @@
 import { TemplateTypes } from "@opticss/template-api";
-import { ObjectDictionary, objectValues } from "@opticss/util";
+import { ObjectDictionary, flatten, objectValues } from "@opticss/util";
 import * as debugGenerator from "debug";
 import { postcss } from "opticss";
 import * as path from "path";
@@ -114,7 +114,7 @@ export class CssBlocksPlugin
       entries = webpackEntry;
     }
     else if (typeof webpackEntry === "object") {
-      entries = objectValues(webpackEntry);
+      entries = flatten(objectValues(webpackEntry));
     }
 
     let pending: PendingResult = this.analyzer.analyze(...entries)
@@ -322,3 +322,4 @@ export class CssBlocksPlugin
     this.applyPluginsAsync("block-compilation-complete", result, cb);
   }
 }
+
