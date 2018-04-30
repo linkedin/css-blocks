@@ -297,7 +297,7 @@ The public-facing website and hosted Typedoc API documentation hosted at [www.cs
 The demo application that allows users to play with CSS Blocks syntax and OptiCSS in-browser. Built as a Glimmer application and dog-foods our Glimmer, Ember CLI and Broccoli integrations.
 
 [README]: ./README.md
-[CORE]: ./packages/@css-blocks/css-blocks
+[CORE]: ./packages/@css-blocks/core
 [RUNTIME]: ./packages/@css-blocks/runtime
 [JSX]: ./packages/@css-blocks/jsx
 [GLIMMER]: ./packages/@css-blocks/glimmer
