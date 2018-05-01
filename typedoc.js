@@ -12,5 +12,6 @@ module.exports = {
   "theme": "packages/@css-blocks/website/typedoc-theme",
   "name": "@css-blocks",
   "external-modulemap": ".*packages\/(@css-blocks\/[^\/]+)\/.*",
-  "readme": "./README.md"
+  "readme": "./README.md",
+  "gaID": "UA-118435129-1"
 }

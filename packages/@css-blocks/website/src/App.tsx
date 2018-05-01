@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import GoogleAnalytics from 'react-ga';
 import { BrowserRouter, Link, Route } from 'react-router-dom'
 
 import Home from "./pages/Home/index";
@@ -6,6 +7,9 @@ import Demo from "./pages/Demo";
 
 import styles from "./App.block.css";
 import linkedinLogo from "./images/linkedin-logo.svg";
+
+GoogleAnalytics.initialize('UA-118435129-1');
+GoogleAnalytics.pageview(window.location.pathname + window.location.search);
 
 class App extends Component {
   render() {
