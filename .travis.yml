@@ -7,6 +7,7 @@ language: node_js
 node_js:
   - "8"
   - "9"
+  - "10"
 
 env:
   - CXX=g++-4.8
@@ -17,7 +18,7 @@ addons:
 before_install:
   - npm install -g lerna@next yarn
   - ./scripts/checkout-opticss.sh ../opticss
-  - ./scripts/link-to-opticss.sh --link ../opticss
+  - ./scripts/link-to-opticss.js --link ../opticss
 
 install:
   - lerna bootstrap --registry=https://registry.npmjs.org/
