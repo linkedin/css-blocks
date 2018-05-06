@@ -15,10 +15,16 @@ addons:
     chrome: stable
 
 before_install:
-  - npm install -g lerna@3.0.0-beta.0 yarn
+  - npm install -g lerna@next yarn
   - ./scripts/checkout-opticss.sh ../opticss
+  - ./scripts/link-to-opticss.sh --link ../opticss
 
 install:
   - lerna bootstrap --registry=https://registry.npmjs.org/
 
 script: lerna run test
+
+cache:
+  yarn: true
+  directories:
+    - ~/.npm
