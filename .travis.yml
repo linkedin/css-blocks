@@ -18,7 +18,7 @@ addons:
 before_install:
   - npm install -g lerna@next yarn
   - ./scripts/checkout-opticss.sh ../opticss
-  - ./scripts/link-to-opticss.js --link ../opticss
+  - ./scripts/link-to-opticss.js --file ../opticss
 
 install:
   - lerna bootstrap --registry=https://registry.npmjs.org/
