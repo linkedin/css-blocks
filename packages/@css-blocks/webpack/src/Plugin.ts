@@ -322,4 +322,3 @@ export class CssBlocksPlugin
     this.applyPluginsAsync("block-compilation-complete", result, cb);
   }
 }
-
