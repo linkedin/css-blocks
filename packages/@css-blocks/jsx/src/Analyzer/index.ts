@@ -67,6 +67,7 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
       promises.push(this.parseFile(entryPoint));
     }
     await Promise.all(promises);
+    debug(`Found ${this.analysisPromises.size} analysis promises`);
     return this;
   }
 

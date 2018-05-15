@@ -457,7 +457,7 @@ export class Test {
     });
   }
 
-  @test "Left over references to the block are an error"() {
+  @test "Left over references to the block are a warning"() {
     mock({
       "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
       "foo.block.css": ":scope { font-family: sans-serif; } .big { font-size: 28px; }",
@@ -482,8 +482,41 @@ export class Test {
       return transform(code, analysis.getAnalysis(0)).then(_res => {
         let result = stderr.output;
         stderr.restore();
-        assert.deepEqual(result.length, 1);
+        assert.deepEqual(result.length, 2);
         assert.deepEqual(result[0].trim(), "WARNING: Stray reference to block import (foo). Imports are removed during rewrite so this will probably be a runtime error. (test.tsx:10:11)");
+        assert.deepEqual(result[1].trim(), "WARNING: This usually happens when a style reference is incorrectly used outside a jsx expression. But sometimes when an application is improperly configured. Be sure that only files ending in jsx or tsx are involved in the importing of components using css blocks.");
+      });
+    });
+  }
+  @test "Left over references in a js file to the block are a warning"() {
+    mock({
+      "bar.block.css": ":scope { color: red; } .foo { color: blue; }",
+      "foo.block.css": ":scope { font-family: sans-serif; } .big { font-size: 28px; }",
+    });
+
+    let code = `
+      import foo from 'foo.block.css'
+      import objstr from 'obj-str';
+
+      function render(){
+        let style = objstr({
+          [foo]: true,
+        });
+        let unusedStyle = objstr({
+          [foo.big]: true,
+        });
+        return ( <div class={style}></div> );
+      }`;
+
+    return parse(code, "test.js").then((analysis: Analyzer) => {
+      let stderr = testConsole.stderr.inspect();
+      return transform(code, analysis.getAnalysis(0)).then(_res => {
+        let result = stderr.output;
+        stderr.restore();
+        assert.deepEqual(result.length, 3);
+        assert.deepEqual(result[0].trim(), "WARNING: For performance reasons, only jsx and tsx files are properly analyzed for block dependencies and rewritten. Consider renaming test.js to test.jsx as well as any leading to importing it from the entry point.");
+        assert.deepEqual(result[1].trim(), "WARNING: Stray reference to block import (foo). Imports are removed during rewrite so this will probably be a runtime error. (test.js:10:11)");
+        assert.deepEqual(result[2].trim(), "WARNING: This usually happens when a style reference is incorrectly used outside a jsx expression. But sometimes when an application is improperly configured. Be sure that only files ending in jsx or tsx are involved in the importing of components using css blocks.");
       });
     });
   }
