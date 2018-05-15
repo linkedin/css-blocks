@@ -38,7 +38,7 @@ const data: Data = {
 
   cssTooltips: [
     { label: '1', value: "Every stylesheet is assigned a unique namespace", x: 14.2, y: 2.5 },
-    { label: '1', value: "Your states and classes are rewritten to BEM style selectors", x: 21.6, y: 27.6 }
+    { label: '2', value: "Your states and classes are rewritten to BEM style selectors", x: 21.6, y: 27.6 }
   ],
 
   jsxExample: `
