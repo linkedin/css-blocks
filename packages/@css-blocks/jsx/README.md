@@ -83,8 +83,9 @@ let styleOne = objstr({
 The JSX Analyzer extends the main CSS Blocks core Analyzer. Its constructor accepts a unique name, to help with debugging, and an options hash:
 
 ```js
-import { Analyzer } from "@css-blocks/jsx";
-let analyzer = new Analyzer("unique-name", options);
+
+const CssBlocks = require("@css-blocks/jsx");
+const CssBlockAnalyzer = new CssBlocks.Analyzer(paths.appIndexJs, jsxCompilationOptions);
 ```
 
 Possible options are:
