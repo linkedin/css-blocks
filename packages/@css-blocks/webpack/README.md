@@ -25,9 +25,9 @@ module.exports =  {
     new CssBlocksPlugin({
       name: "css-blocks",
       outputCssFile: "my-output-file.css",
-      analyzer: analyzerInstance,
-      compilationOptions: cssBlocksCompilationOptions,
-      optimization: opticssOptimizationOptions
+      analyzer: CssBlockAnalyzer,
+      compilationOptions: {},
+      optimization: {}
     }),
     /* ... */
   ],
@@ -62,8 +62,8 @@ module.exports =  {
           {
             loader: require.resolve("@css-blocks/webpack/dist/src/loader"),
             options: {
-              analyzer: analyzerInstance,
-              rewriter: sharedDataObject
+              analyzer: CssBlockAnalyzer,
+              rewriter: CssBlockRewriter
             }
           },
         ]
@@ -81,6 +81,19 @@ Each template integration's rewriter is slightly different and must be integrate
 However, Webpack will typically be used with CSS Blocks' JSX integration. The typical JSX end-to-end integration with webpack looks like this:
 
 ```js
+
+const jsxCompilationOptions = {
+  compilationOptions: {},
+  types: "none",
+  aliases: {},
+  optimization: {
+    rewriteIdents: true,
+    mergeDeclarations: true,
+    removeUnusedStyles: true,
+    conflictResolution: true,
+    enabled: false,
+  },
+};
 
 const CssBlocks = require("@css-blocks/jsx");
 const CssBlocksPlugin = require("@css-blocks/webpack").CssBlocksPlugin;
@@ -122,8 +135,8 @@ module.exports =  {
           {
             loader: require.resolve("@css-blocks/webpack/dist/src/loader"),
             options: {
-              analyzer: analyzerInstance,
-              rewriter: sharedRewriterData
+              analyzer: CssBlockAnalyzer,
+              rewriter: CssBlockRewriter
             }
           },
         ]
