@@ -3,11 +3,14 @@ import * as path from "path";
 
 import { Analyzer, BlockCompiler, StyleMapping } from "@css-blocks/core";
 import { TemplateTypes } from "@opticss/template-api";
+import * as debugGenerator from "debug";
 import { OptiCSSOptions, Optimizer } from "opticss";
 import * as postcss from "postcss";
 import * as readdir from "recursive-readdir";
 
 import { BroccoliPlugin } from "./utils";
+
+const debug = debugGenerator("css-blocks:broccoli");
 
 export interface BroccoliOptions {
   entry: string[];
@@ -78,7 +81,8 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
         // If this Block has a representation on disk, remove it from our output tree.
         // TODO: This isn't working right now because `importer.filesystemPath` doesn't return the expected path...
         if (filesystemPath) {
-          await fs.remove(path.join(this.outputPath, path.relative(options.rootDir, filesystemPath)));
+          debug(`Removing block file ${path.relative(options.rootDir, filesystemPath)} from output.`);
+          await fs.unlink(path.join(this.outputPath, path.relative(options.rootDir, filesystemPath)));
         }
 
         // Add the compiled Block file to the optimizer.

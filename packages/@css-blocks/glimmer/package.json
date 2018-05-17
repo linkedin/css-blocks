@@ -20,7 +20,7 @@
     "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "watch": "watch 'yarn run test' src test types-local --wait=1"
+    "watch": "watch 'yarn run test' src test --wait=1"
   },
   "repository": {
     "type": "git",
@@ -51,7 +51,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@css-blocks/code-style": "^0.18.0"
+    "@css-blocks/code-style": "^0.18.0",
+    "watch": "^1.0.2"
   },
   "dependencies": {
     "@css-blocks/core": "^0.19.0",
@@ -64,7 +65,7 @@
     "@opticss/util": "^0.3.0",
     "@types/glob": "^5.0.30",
     "debug": "^2.6.8",
-    "glimmer-analyzer": "^0.2.0",
+    "glimmer-analyzer": "amiller-gh/glimmer-analyzer",
     "glob": "^7.1.2",
     "object.values": "^1.0.4"
   }
