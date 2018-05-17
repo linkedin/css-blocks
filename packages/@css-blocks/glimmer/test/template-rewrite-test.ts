@@ -5,9 +5,9 @@ import fs = require("fs");
 import { Optimizer } from "opticss";
 import { postcss } from "opticss";
 
-import { GlimmerAnalyzer, GlimmerRewriter, Project } from "../src";
+import { GlimmerAnalyzer, GlimmerRewriter } from "../src";
 
-import { fixture } from "./fixtures";
+import { fixture, moduleConfig } from "./fixtures";
 
 // Reduce whitespace.
 function minify(s: string) {
@@ -20,7 +20,7 @@ interface CSSAndMapping {
 }
 
 async function optimize(analyzer: GlimmerAnalyzer): Promise<CSSAndMapping> {
-  let blockOpts = analyzer.project.cssBlocksOpts;
+  let blockOpts = analyzer.cssBlocksOptions;
   let blocks = analyzer.transitiveBlockDependencies();
   let optimizerAnalysis = analyzer.getAnalysis(0).forOptimizer(blockOpts);
   let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
@@ -61,8 +61,7 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles from dynamic attributes", async function() {
     let projectDir = fixture("styled-app");
-    let project = new Project(projectDir);
-    let analyzer = new GlimmerAnalyzer(project);
+    let analyzer = new GlimmerAnalyzer(projectDir, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-states/template.hbs");
     let result = await pipeline(analyzer, "with-dynamic-states", templatePath);
 
@@ -85,8 +84,7 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles from dynamic classes", async function() {
     let projectDir = fixture("styled-app");
-    let project = new Project(projectDir);
-    let analyzer = new GlimmerAnalyzer(project);
+    let analyzer = new GlimmerAnalyzer(projectDir, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-classes/template.hbs");
     let result = await pipeline(analyzer, "with-dynamic-classes", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
@@ -101,8 +99,7 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles from dynamic attributes from readme", async function() {
     let projectDir = fixture("readme-app");
-    let project = new Project(projectDir);
-    let analyzer = new GlimmerAnalyzer(project);
+    let analyzer = new GlimmerAnalyzer(projectDir, moduleConfig);
     let templatePath = fixture("readme-app/src/ui/components/page-layout/template.hbs");
     let result = await pipeline(analyzer, "page-layout", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`

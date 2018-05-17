@@ -1,21 +1,61 @@
 {
-  "version": "0.18.0",
   "name": "@css-blocks/ember-cli",
-  "main": "index.js",
+  "version": "0.18.0",
+  "description": "Use CSS Blocks with your Ember and Glimmer projects.",
   "keywords": [
     "ember-addon"
   ],
-  "license": "BSD-2-Clause",
-  "scripts": {
-    "test": "echo 'No tests for @css-blocks/ember-cli'"
+  "license": "MIT",
+  "author": "Adam Miller <ammiller@linkedin.com>",
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
   },
-  "publishConfig": {
-    "access": "public"
+  "repository": "",
+  "scripts": {
+    "build": "ember build",
+    "lint:js": "eslint ./*.js addon addon-test-support app blueprints config lib server test-support tests",
+    "start": "ember serve",
+    "test": "ember test",
+    "test:all": "ember try:each"
   },
   "dependencies": {
-    "@css-blocks/broccoli": "^0.18.0",
-    "@css-blocks/glimmer": "^0.18.0",
+    "@css-blocks/broccoli": "^0.19.0",
+    "@css-blocks/glimmer": "^0.19.0",
     "@glimmer/application-pipeline": "^0.11.1",
-    "broccoli-funnel": "^2.0.1"
+    "broccoli-funnel": "^2.0.1",
+    "broccoli-merge-trees": "^3.0.0",
+    "debug": "^3.1.0",
+    "ember-cli-babel": "^6.6.0",
+    "ember-cli-htmlbars": "^2.0.1"
+  },
+  "devDependencies": {
+    "broccoli-asset-rev": "^2.7.0",
+    "ember-ajax": "^3.0.0",
+    "ember-cli": "github:ember-cli/ember-cli",
+    "ember-cli-dependency-checker": "^2.0.0",
+    "ember-cli-eslint": "^4.2.1",
+    "ember-cli-htmlbars-inline-precompile": "^1.0.0",
+    "ember-cli-inject-live-reload": "^1.4.1",
+    "ember-cli-qunit": "^4.1.1",
+    "ember-cli-sri": "^2.1.0",
+    "ember-cli-uglify": "^2.0.0",
+    "ember-disable-prototype-extensions": "^1.1.2",
+    "ember-export-application-global": "^2.0.0",
+    "ember-load-initializers": "^1.1.0",
+    "ember-maybe-import-regenerator": "^0.1.6",
+    "ember-resolver": "^4.0.0",
+    "ember-source": "https://s3.amazonaws.com/builds.emberjs.com/canary/shas/5431f71df060e7b5c82c05c300f40e9151d135e8.tgz",
+    "ember-source-channel-url": "^1.0.1",
+    "ember-try": "^0.2.23",
+    "eslint-plugin-ember": "^5.0.0",
+    "eslint-plugin-node": "^6.0.1",
+    "loader.js": "^4.2.3"
+  },
+  "engines": {
+    "node": "6.* || >= 8.*"
+  },
+  "ember-addon": {
+    "configPath": "tests/dummy/config"
   }
 }

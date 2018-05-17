@@ -1,0 +1,9 @@
+:scope {
+  color: red;
+}
+
+.foobar {
+  font-weight: bold;
+  font-style: italic;
+  color: green;
+}

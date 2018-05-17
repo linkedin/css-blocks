@@ -55,8 +55,10 @@ export class GlimmerRewriter implements ASTPlugin {
     DEBUG(`${this.template.fullPath}: ${message}`, ...args);
   }
 
-  get name(): string { return "CSSBlocksGlimmerRewriter"; }
-  get visitor(): NodeVisitor {
+  get name(): string { return this.block ? "CSSBlocksGlimmerRewriter" : "css-blocks-noop"; }
+  get visitor(): NodeVisitor { return this.visitors; }
+  get visitors(): NodeVisitor {
+    if (!this.block) { return {}; }
     return {
       ElementNode: this.ElementNode.bind(this),
     };
