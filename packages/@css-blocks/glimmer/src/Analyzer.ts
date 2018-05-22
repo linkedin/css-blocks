@@ -96,21 +96,22 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   }
 
   private async resolveBlock(componentName: string, depAnalyzer: DependencyAnalyzer): Promise<Block | undefined> {
+    let blockPath;
     try {
       let identifier = depAnalyzer.project.resolver.identify(`stylesheet:${componentName}`);
-      let blockPath = depAnalyzer.project.resolver.resolve(identifier);
+      blockPath = depAnalyzer.project.resolver.resolve(identifier);
       if (!blockPath) {
         this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
         return undefined;
       }
       // TODO: We need to automatically discover the file ending here – its not guaranteed to be a css file.
       blockPath = path.join(this.projectDir, blockPath) + ".css";
-      return await this.blockFactory.getBlockFromPath(blockPath);
     } catch (e) {
       console.error(e);
       this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
       return undefined;
     }
+    return await this.blockFactory.getBlockFromPath(blockPath);
   }
 
   protected async analyzeTemplate(componentName: string, depAnalyzer: DependencyAnalyzer): Promise<GlimmerAnalysis> {
