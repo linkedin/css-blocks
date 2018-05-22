@@ -12,7 +12,7 @@ module.exports = function(defaults) {
         mergeDeclarations: true,
         removeUnusedStyles: true,
         conflictResolution: true,
-        enabled: true //process.env.EMBER_ENV !== 'development',
+        enabled: false //process.env.EMBER_ENV !== 'development',
       },
     }
   });

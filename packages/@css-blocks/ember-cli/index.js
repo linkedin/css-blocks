@@ -134,7 +134,7 @@ module.exports = {
     // resolvable by `glimmer-analyzer` during the build...
     let moduleConfig = this.isEmber ? EMBER_MODULE_CONFIG : GLIMMER_MODULE_CONFIG;
 
-    // The root of our app (aka: the directory that contains "src") relative to our project root.
+    // The absolute path to the root of our app (aka: the directory that contains "src").
     // Needed because app root !== project root in addons – its located at `tests/dummy`.
     // TODO: Is there a better way to get this for Ember?
     let rootDir = this.isEmber
@@ -177,7 +177,7 @@ module.exports = {
       output: options.output,
       analyzer,
       transport: this.transport, // I hate shared memory...
-      optimization: options.optimizerOpts,
+      optimization: options.optimization,
     });
 
     // Place our generated CSS files into Glimmer's styles tree.

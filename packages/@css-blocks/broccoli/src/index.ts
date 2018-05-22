@@ -66,6 +66,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     }
 
     // Oh hey look, we're analyzing.
+    this.analyzer.reset();
     await this.analyzer.analyze(...this.entry);
 
     // Compile all Blocks and add them as sources to the Optimizer.
