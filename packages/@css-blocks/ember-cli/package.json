@@ -44,6 +44,7 @@
     "ember-export-application-global": "^2.0.0",
     "ember-load-initializers": "^1.1.0",
     "ember-maybe-import-regenerator": "^0.1.6",
+    "ember-native-dom-helpers": "^0.6.2",
     "ember-resolver": "^4.0.0",
     "ember-source": "https://s3.amazonaws.com/builds.emberjs.com/canary/shas/5431f71df060e7b5c82c05c300f40e9151d135e8.tgz",
     "ember-source-channel-url": "^1.0.1",
