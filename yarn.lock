@@ -5160,6 +5160,13 @@ ember-maybe-import-regenerator@^0.1.6:
     ember-cli-babel "^6.0.0-beta.4"
     regenerator-runtime "^0.9.5"
 
+ember-native-dom-helpers@^0.6.2:
+  version "0.6.2"
+  resolved "https://registry.npmjs.org/ember-native-dom-helpers/-/ember-native-dom-helpers-0.6.2.tgz#ad1f82d64ac9abdd612022f4f390bdb6653b3d39"
+  dependencies:
+    broccoli-funnel "^1.1.0"
+    ember-cli-babel "^6.6.0"
+
 ember-qunit@^3.3.2:
   version "3.4.0"
   resolved "https://registry.npmjs.org/ember-qunit/-/ember-qunit-3.4.0.tgz#47a60c2b889cd4b4a46380bf9da2b10115c0eae7"
