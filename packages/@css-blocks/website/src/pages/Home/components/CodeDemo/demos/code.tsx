@@ -84,7 +84,7 @@ const data: Data = {
 
     glimmerTooltips: [
       { label: "1", value: "Your `:scope` selector is automatically applied to the root template element", y: -0.3, x: 6.0 },
-      { label: "2", value: "Use your classes and states just regular html", y: 5.0, x: 28 },
+      { label: "2", value: "Use your classes and states just like regular html", y: 5.0, x: 28 },
       { label: "3", value: "Apply block classes to sub elements", y: 9.2, x: 20.8 }
     ],
 }
