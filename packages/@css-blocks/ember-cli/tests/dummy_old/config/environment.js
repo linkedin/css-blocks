@@ -1,7 +1,14 @@
 'use strict';
 
 module.exports = function(environment) {
+  process.env.EMBER_CLI_MODULE_UNIFICATION = true;
   let ENV = {
+    // EMBER_CLI_MODULE_UNIFICATION: true,
+    'ember-resolver': {
+      features: {
+        EMBER_RESOLVER_MODULE_UNIFICATION: true
+      }
+    },
     modulePrefix: 'dummy',
     environment,
     rootURL: '/',
@@ -10,6 +17,7 @@ module.exports = function(environment) {
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
         // e.g. 'with-controller': true
+        'ember-module-unification': true
       },
       EXTEND_PROTOTYPES: {
         // Prevent Ember Data from overriding Date.parse.
@@ -40,11 +48,10 @@ module.exports = function(environment) {
     ENV.APP.LOG_VIEW_LOOKUPS = false;
 
     ENV.APP.rootElement = '#ember-testing';
-    ENV.APP.autoboot = false;
   }
 
   if (environment === 'production') {
-    // here you can enable a production-specific feature
+
   }
 
   return ENV;

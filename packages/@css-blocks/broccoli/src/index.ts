@@ -5,7 +5,7 @@ import { Analyzer, BlockCompiler, StyleMapping } from "@css-blocks/core";
 import { TemplateTypes } from "@opticss/template-api";
 import * as debugGenerator from "debug";
 import { OptiCSSOptions, Optimizer } from "opticss";
-import * as postcss from "postcss";
+import { postcss } from "opticss";
 import * as readdir from "recursive-readdir";
 
 import { BroccoliPlugin } from "./utils";
@@ -48,11 +48,18 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     let blockCompiler = new BlockCompiler(postcss, options);
     let optimizer = new Optimizer(this.optimizationOptions, this.analyzer.optimizationOptions);
 
+    // When no entry points are passed, we treat *every* template as an entry point.
+    let discover = !this.entry.length;
+
     // This build step is *mostly* just a pass-through of all files!
     // QUESTION: Tom, is there a better way to do this in Broccoli?
     let files = await readdir(this.inputPaths[0]);
     for (let file of files) {
       file = path.relative(this.inputPaths[0], file);
+      console.log(file);
+      // If we're in Classic or Pods mode, every hbs file is an entry point.
+      if (discover && path.extname(file) === ".hbs") { this.entry.push(file); }
+
       await fs.ensureDir(path.join(this.outputPath, path.dirname(file)));
       try {
         await fs.symlink(

@@ -63,9 +63,11 @@
     "@opticss/element-analysis": "^0.3.0",
     "@opticss/template-api": "^0.3.0",
     "@opticss/util": "^0.3.0",
+    "@types/fs-extra": "^5.0.3",
     "@types/glob": "^5.0.30",
     "debug": "^2.6.8",
-    "glimmer-analyzer": "amiller-gh/glimmer-analyzer",
+    "fs-extra": "^6.0.1",
+    "glimmer-analyzer": "^0.3.3",
     "glob": "^7.1.2",
     "object.values": "^1.0.4"
   }

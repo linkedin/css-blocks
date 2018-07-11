@@ -51,7 +51,7 @@ describe("Broccoli Plugin Test", function () {
       });
 
       let transport = {};
-      let analyzer = new GlimmerAnalyzer(input.path(), {
+      let analyzer = new GlimmerAnalyzer(input.path(), ".", {
         app: { name: "test" },
         types: {
           stylesheet: { definitiveCollection: "components" },

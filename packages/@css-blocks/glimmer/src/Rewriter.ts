@@ -14,10 +14,10 @@ import {
 import { whatever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
-import { GlimmerAnalysis, TEMPLATE_TYPE } from "./Analyzer";
+import { GlimmerAnalysis } from "./Analyzer";
 import { classnamesHelper } from "./ClassnamesHelperGenerator";
 import { ElementAnalyzer } from "./ElementAnalyzer";
-import { ResolvedFile } from "./GlimmerProject";
+import { ResolvedFile, TEMPLATE_TYPE } from "./Template";
 const DEBUG = debugGenerator("css-blocks:glimmer");
 
 // TODO: The state namespace should come from a config option.
@@ -52,7 +52,7 @@ export class GlimmerRewriter implements ASTPlugin {
   }
 
   debug(message: string, ...args: whatever[]): void {
-    DEBUG(`${this.template.fullPath}: ${message}`, ...args);
+    DEBUG(`${this.template.path}: ${message}`, ...args);
   }
 
   get name(): string { return this.block ? "CSSBlocksGlimmerRewriter" : "css-blocks-noop"; }
