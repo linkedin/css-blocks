@@ -4,6 +4,5 @@ export {
   AttributeContainer,
 } from "./Analyzer";
 export { GlimmerRewriter, GlimmerStyleMapping } from "./Rewriter";
-export { ResolvedFile } from "./GlimmerProject";
-export { GlimmerImporter } from "./GlimmerImporter";
+export { ResolvedFile, TEMPLATE_TYPE } from "./Template";
 export { cssBlocksHelpers } from "./helpers";
