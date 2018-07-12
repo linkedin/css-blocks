@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { Analyzer, BlockCompiler, StyleMapping } from "@css-blocks/core";
+import { Analyzer, Block, BlockCompiler, StyleMapping } from "@css-blocks/core";
 import { TemplateTypes } from "@opticss/template-api";
 import * as debugGenerator from "debug";
 import { OptiCSSOptions, Optimizer } from "opticss";
@@ -12,11 +12,19 @@ import { BroccoliPlugin } from "./utils";
 
 const debug = debugGenerator("css-blocks:broccoli");
 
+export interface Transport {
+  id: string;
+  mapping: StyleMapping<keyof TemplateTypes>;
+  blocks: Set<Block>;
+  analyzer: Analyzer<keyof TemplateTypes>;
+  css: string;
+}
+
 export interface BroccoliOptions {
   entry: string[];
   output: string;
   analyzer: Analyzer<keyof TemplateTypes>;
-  transport: {[key: string]: object};
+  transport: Transport;
   optimization?: Partial<OptiCSSOptions>;
 }
 
@@ -25,18 +33,20 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
   private analyzer: Analyzer<keyof TemplateTypes>;
   private entry: string[];
   private output: string;
-  private transport: { [key: string]: object };
+  private transport: Transport;
   private optimizationOptions: Partial<OptiCSSOptions>;
 
   // tslint:disable-next-line:prefer-whatever-to-any
   constructor(inputNode: any, options: BroccoliOptions) {
     super([inputNode], { name: "broccoli-css-blocks" });
 
-    this.entry = options.entry;
+    this.entry = options.entry.slice(0);
     this.output = options.output;
     this.analyzer = options.analyzer;
     this.transport = options.transport;
     this.optimizationOptions = options.optimization || {};
+
+    this.transport.css = this.transport.css ? this.transport.css : "";
 
     if (!this.output) {
       throw new Error("CSS Blocks Broccoli Plugin requires an output file name.");
@@ -56,7 +66,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     let files = await readdir(this.inputPaths[0]);
     for (let file of files) {
       file = path.relative(this.inputPaths[0], file);
-      console.log(file);
+
       // If we're in Classic or Pods mode, every hbs file is an entry point.
       if (discover && path.extname(file) === ".hbs") { this.entry.push(file); }
 
@@ -113,13 +123,10 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     this.transport.mapping = styleMapping;
     this.transport.blocks = blocks;
     this.transport.analyzer = this.analyzer;
-    this.transport.css = optimized.output;
+    this.transport.css += optimized.output.content.toString();
 
-    // Write our compiled CSS to the output tree.
-    await fs.writeFile(
-      path.join(this.outputPath, this.output),
-      optimized.output.content.toString(),
-    );
+    debug(`Compilation Finished: ${this.transport.id}`);
+    debug(this.transport.css);
 
   }
 

@@ -1,21 +1,35 @@
 'use strict';
+const fs = require("fs-extra");
 
 const { BroccoliCSSBlocks } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
 const debugGenerator = require("debug");
 const path = require("path");
-const Funnel = require("broccoli-funnel");
-const Merge = require("broccoli-merge-trees");
+const Plugin = require("broccoli-plugin")
 
 const debug = debugGenerator("css-blocks:ember-cli");
 
+const OUTPUT_NAME = "css-blocks.css";
 const EMBER_MODULE_CONFIG = undefined;
-const EMBER_OUTPUT = "styles/css-blocks.css";
-
 const GLIMMER_MODULE_CONFIG = require("@glimmer/application-pipeline/dist/lib/broccoli/default-module-configuration.js").default;
 GLIMMER_MODULE_CONFIG.types.stylesheet = { definitiveCollection: "components" };
 GLIMMER_MODULE_CONFIG.collections.components.types.push("stylesheet");
-const GLIMMER_OUTPUT = "src/ui/styles/css-blocks.css";
+
+class CSSOutput extends Plugin {
+  constructor(inputNodes, transport){
+    super(inputNodes, { name: "broccoli-css-blocks" });
+    this.transport = transport;
+  }
+  async build(){
+    let prev = path.join(this.inputPaths[0], "css-blocks.css");
+    let out = path.join(this.outputPath, "css-blocks.css");
+    let old = await fs.exists(prev) ? await fs.readFile(prev) : "";
+    console.log(out, "new:", this.transport.css, "old:", old.toString());
+    await fs.ensureFile(out);
+    await fs.appendFile(out, old);
+    await fs.appendFile(out, this.transport.css);
+  }
+}
 
 module.exports = {
   name: 'css-blocks',
@@ -35,7 +49,7 @@ module.exports = {
     // TODO: The differences in what Ember and Glimmer provide in env.meta should be resolved.
     let analysis;
     if (this.isEmber) {
-      analysis = analyzer.analyses().find(a => !!~env.meta.moduleName.indexOf(a.template.path));
+      analysis = analyzer.analyses().find(a => env.meta.moduleName && !!~env.meta.moduleName.indexOf(a.template.path));
     } else {
       analysis = analyzer.analyses().find(a => a.template.identifier === env.meta.specifier);
     }
@@ -74,36 +88,35 @@ module.exports = {
     }
   },
 
-  treeForAddonTemplates() {
-    console.log(this.isAddon, arguments);
-  },
-
-  included(app) {
+  included(parent) {
     this._super.included.apply(this, arguments);
 
+    const app = parent.app ? parent.app : parent;
+    const options = app.options["css-blocks"] || {
+      parserOpts: {},
+      analysisOpts: {},
+      optimization: {},
+    };
+
+    // The absolute path to the root of our app (aka: the directory that contains "src").
+    // Needed because app root !== project root in addons – its located at `tests/dummy`.
+    // TODO: Is there a better way to get this for Ember?
+    const rootDir = parent.root || parent.project.root;
+
     // Because we have slightly different logic depending on the app type.
-    // TODO: Is there a better way to get env type?
-    this.isAddon = !!app.app;
-    console.log(this.isAddon);
-    console.log(app.trees);
-    console.log('=============');
-    app = app.app ? app.app : app;
+    // TODO: Is there a better way to get this env info?
     this.isEmber = !!~app.constructor.name.indexOf("Ember");
+    this.isAddon = this.isEmber && !~parent.constructor.name.indexOf("Ember");
     this.isGlimmer = !this.isEmber;
 
     // TODO: This transport object need to be defined by CSS Blocks Core.
     //       We use the same construct in both Broccoli and Webpack and
     //       the data model for each should be standardized to Analyzers
     //       and Rewriters consistently know how to communicate.
-    this.transport = {};
+    this.transport = { id: rootDir };
 
     // TODO: Better options validation.
-    let options = app.options["css-blocks"] || {
-      parserOpts: {},
-      analysisOpts: {},
-      optimization: {},
-    };
-    if (options.output && ((this.isEmber && options.output !== EMBER_OUTPUT) || (this.isGlimmer && options.output !== GLIMMER_OUTPUT))) {
+    if (options.output && options.output !== OUTPUT_NAME) {
       throw new Error(`CSS Blocks output file names are auto-generated in ${this.isEmber ? "Ember": "glimmer"} apps. Do not pass an "output" option in your CSS Blocks config.`);
     }
     if (!this.isEmber && typeof options.entry !== "string" && !Array.isArray(options.entry)) {
@@ -114,23 +127,15 @@ module.exports = {
     }
 
     // TODO: Module configs are different depending on Glimmer vs Ember.
-    // Ideally fetching the module config is baked into ember-cli and we can
-    // simply augment a copy of it for our analysis phase since we don't actually
-    // deliver any resolvable files, but we need to have our `stylesheet.css`s be
-    // resolvable by `glimmer-analyzer` during the build...
+    //       Ideally fetching the module config is baked into ember-cli and we can
+    //       simply augment a copy of it for our analysis phase since we don't actually
+    //       deliver any resolvable files, but we need to have our `stylesheet.css`s be
+    //       resolvable by `glimmer-analyzer` during the build...
     let moduleConfig = this.isGlimmer ? GLIMMER_MODULE_CONFIG : EMBER_MODULE_CONFIG;
 
-    // The absolute path to the root of our app (aka: the directory that contains "src").
-    // Needed because app root !== project root in addons – its located at `tests/dummy`.
-    // TODO: Is there a better way to get this for Ember?
-    let rootDir = this.isEmber
-      ? path.join(app.project.root, path.relative(app.project.root, app.project.configPath()), "../..")
-      : app.project.root;
-
-    let treeName = this.isEmber ? "app" : "src";
+    let srcDir = this.isEmber ? (this.isAddon ? "addon" : "app") : "src";
 
     // Path to the `src` directory, relative to project root.
-    let srcDir = path.join(path.relative(app.project.root, rootDir), treeName);
     if (moduleConfig) {
       moduleConfig.app || (moduleConfig.app = {});
       moduleConfig.app.mainPath = srcDir;
@@ -138,46 +143,50 @@ module.exports = {
 
     // Update parserOpts to include the absolute path to our `src` directory.
     // Glimmer's trees include the `src` directory, so don't include that.
-    options.parserOpts.rootDir = path.join(app.project.root, this.isEmber ? srcDir : path.relative(app.project.root, rootDir));
+    options.parserOpts.rootDir = path.join(rootDir, srcDir);
+    options.output = OUTPUT_NAME;
 
     // Ember-cli is *mostly* used with Glimmer. However, it can technically be
     // configured to use other template types. Here we default to the Glimmer
     // analyzer, but if a `getAnalyzer` function is provided we defer to the
     // user-supplied analyzer.
     let analyzer = options.getAnalyzer ?
-      options.getAnalyzer(app) :
-      new GlimmerAnalyzer(rootDir, treeName, moduleConfig, options.parserOpts, options.analysisOpts);
-
-    // Glimmer has opinions yo, no need to specify an output – we got ya.
-    options.output = this.isEmber ? EMBER_OUTPUT : GLIMMER_OUTPUT;
+      options.getAnalyzer(parent) :
+      new GlimmerAnalyzer(rootDir, srcDir, moduleConfig, options.parserOpts, options.analysisOpts);
 
     // In Ember, we treat every template as an entry point. `BroccoliCSSBlocks` will
-    // automatically discover all template files if an empty entry points array is
-    // passed.
+    // automatically discover all template files if an empty entry array is passed.
     const entries = this.isEmber ? [] : (Array.isArray(options.entry) ? options.entry : [options.entry]);
-    if (this.isAddon) { return; }
-    // Run our analysis on all entry points.
-    app.trees[treeName] = new BroccoliCSSBlocks(app.trees[treeName], {
+
+    const broccoliOptions = {
       entry: entries,
       output: options.output,
       analyzer,
       transport: this.transport, // I hate shared memory...
       optimization: options.optimization,
-    });
+    };
 
-    // Place our generated CSS files into Glimmer's styles tree.
-    // Glimmer splits out its `styles` tree before we get our hands
-    // on the project, we need to re-insert all the project-wide
-    // work we did in the `src` tree here once we're done for it
-    // to be reflected in the final output.
-    // TODO: There is probably a cleaner way to do this.
-    app.trees.styles = new Merge([app.trees.styles, new Funnel(app.trees[treeName], {
-      files: [options.output],
-      getDestinationPath: (relPath) => {
-        // There is a tree structure difference between Ember and Glimmer...
-        return this.isGlimmer ? relPath : "css-blocks.css";
-      }
-    })], { overwrite: true });
+    // Analyze all templates and block files from `/app` in addons.
+    const oldTreeForApp = parent.treeForApp && parent.treeForApp.bind(parent);
+    parent.treeForApp = (tree) => {
+      tree = new BroccoliCSSBlocks(tree, broccoliOptions);
+      app.trees.styles = new CSSOutput([app.trees.styles, tree], this.transport);
+      return oldTreeForApp ? oldTreeForApp(tree) : tree;
+    };
 
+    // Analyze all templates and block files from `/addon` in addons.
+    const oldTreeForAddon = parent.treeForAddon && parent.treeForAddon.bind(parent);
+    parent.treeForAddon = (tree) => {
+      tree = new BroccoliCSSBlocks(tree, broccoliOptions);
+      app.trees.styles = new CSSOutput([app.trees.styles, tree], this.transport);
+      return oldTreeForAddon ? oldTreeForAddon(tree) : tree;
+    };
+
+    // Analyze all templates and block files from `/app` || `/src` in Ember/Glimmer applications.
+    if (parent.trees) {
+      let treeName = this.isEmber ? "app" : "src";
+      parent.trees[treeName] = new BroccoliCSSBlocks(parent.trees[treeName], broccoliOptions);
+      app.trees.styles = new CSSOutput([app.trees.styles, parent.trees[treeName]], this.transport);
+    }
   }
 };
