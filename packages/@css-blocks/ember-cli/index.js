@@ -9,30 +9,28 @@ const Plugin = require("broccoli-plugin")
 
 const debug = debugGenerator("css-blocks:ember-cli");
 
-const OUTPUT_NAME = "css-blocks.css";
+
+const OUTPUT_NAME = "assets/css-blocks.css";
 const EMBER_MODULE_CONFIG = undefined;
 const GLIMMER_MODULE_CONFIG = require("@glimmer/application-pipeline/dist/lib/broccoli/default-module-configuration.js").default;
 GLIMMER_MODULE_CONFIG.types.stylesheet = { definitiveCollection: "components" };
 GLIMMER_MODULE_CONFIG.collections.components.types.push("stylesheet");
 
+// Process-global dumping zone for CSS output as it comes through the pipeline 🤮
+// This should all go away once we have a functional language server.
+let TRANSPORT = "";
 class CSSOutput extends Plugin {
   constructor(inputNodes, transport){
     super(inputNodes, { name: "broccoli-css-blocks" });
     this.transport = transport;
   }
   async build(){
-    let prev = path.join(this.inputPaths[0], "css-blocks.css");
-    let out = path.join(this.outputPath, "css-blocks.css");
-    let old = await fs.exists(prev) ? await fs.readFile(prev) : "";
-    console.log(out, "new:", this.transport.css, "old:", old.toString());
-    await fs.ensureFile(out);
-    await fs.appendFile(out, old);
-    await fs.appendFile(out, this.transport.css);
+    TRANSPORT += this.transport.css;
   }
 }
 
 module.exports = {
-  name: 'css-blocks',
+  name: '@css-blocks/ember-cli',
   isDevelopingAddon() { return true; },
 
   // Shared AST plugin implementation for Glimmer and Ember.
@@ -84,8 +82,29 @@ module.exports = {
   // Inject out built CSS Blocks stylesheet into the head.
   contentFor(type, config) {
     if (type === "head-footer") {
-      return `<link rel="stylesheet" href="${config.rootURL || '/'}assets/css-blocks.css">`;
+      return `<link rel="stylesheet" href="${config.rootURL || '/'}${OUTPUT_NAME}">`;
     }
+  },
+
+  // TODO: This transport object need to be defined by CSS Blocks Core.
+  //       We use the same construct in both Broccoli and Webpack and
+  //       the data model for each should be standardized to Analyzers
+  //       and Rewriters consistently know how to communicate.
+  reset() {
+    debug(`Resetting transport object for: ${this.rootDir}`);
+    this.transport = this.transport || { id: this.rootDir };
+    delete this.transport.css;
+    delete this.transport.mapping;
+    delete this.transport.blocks;
+    delete this.transport.analyzer;
+    TRANSPORT = "";
+  },
+
+  async postBuild(result){
+    let out = path.join(result.directory, OUTPUT_NAME);
+    await fs.ensureFile(out);
+    await fs.writeFile(out, TRANSPORT);
+    this.reset();
   },
 
   included(parent) {
@@ -98,10 +117,13 @@ module.exports = {
       optimization: {},
     };
 
+    // Optimization is allways disabled for now, until we get project-wide analysis working.
+    options.optimization.enabled = false;
+
     // The absolute path to the root of our app (aka: the directory that contains "src").
     // Needed because app root !== project root in addons – its located at `tests/dummy`.
     // TODO: Is there a better way to get this for Ember?
-    const rootDir = parent.root || parent.project.root;
+    const rootDir = this.rootDir = parent.root || parent.project.root;
 
     // Because we have slightly different logic depending on the app type.
     // TODO: Is there a better way to get this env info?
@@ -109,11 +131,7 @@ module.exports = {
     this.isAddon = this.isEmber && !~parent.constructor.name.indexOf("Ember");
     this.isGlimmer = !this.isEmber;
 
-    // TODO: This transport object need to be defined by CSS Blocks Core.
-    //       We use the same construct in both Broccoli and Webpack and
-    //       the data model for each should be standardized to Analyzers
-    //       and Rewriters consistently know how to communicate.
-    this.transport = { id: rootDir };
+    this.reset();
 
     // TODO: Better options validation.
     if (options.output && options.output !== OUTPUT_NAME) {
@@ -133,7 +151,16 @@ module.exports = {
     //       resolvable by `glimmer-analyzer` during the build...
     let moduleConfig = this.isGlimmer ? GLIMMER_MODULE_CONFIG : EMBER_MODULE_CONFIG;
 
-    let srcDir = this.isEmber ? (this.isAddon ? "addon" : "app") : "src";
+    // Depending on the type of the target, there are different source directory roots.
+    //  - For Glimmer apps, use `src`.
+    //  - For Addons, use `addon`.
+    //  - For Ember dummy apps, use `tests/dummy/app`.
+    //  - For Ember apps, use `app`.
+    let srcDir = "src";
+    if (this.isAddon) { srcDir = "addon"; }
+    // @spenner, is there a better way to get this path?
+    else if (this.isEmber && app.name === "dummy") { srcDir = "tests/dummy/app"; }
+    else if (this.isEmber) { srcDir = "app"; }
 
     // Path to the `src` directory, relative to project root.
     if (moduleConfig) {
@@ -141,8 +168,7 @@ module.exports = {
       moduleConfig.app.mainPath = srcDir;
     }
 
-    // Update parserOpts to include the absolute path to our `src` directory.
-    // Glimmer's trees include the `src` directory, so don't include that.
+    // Update parserOpts to include the absolute path to our application code directory.
     options.parserOpts.rootDir = path.join(rootDir, srcDir);
     options.output = OUTPUT_NAME;
 

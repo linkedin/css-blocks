@@ -66,9 +66,12 @@ export type Builders = typeof builders;
 
 const debug = debugGenerator("css-blocks:glimmer");
 
+const CLASS_NAME_HELPER = "classnames";
+const CONCAT_HELPER = "concat";
+
 export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: TemplateElement): AST.MustacheStatement {
   return builders.mustache(
-    builders.path("/css-blocks/components/classnames"),
+    builders.path(CLASS_NAME_HELPER),
     constructArgs(rewrite, element),
   );
 }
@@ -249,7 +252,7 @@ function moustacheToExpression(expr: AST.MustacheStatement): AST.Expression {
 function moustacheToStringExpression(stringExpression: StringAST): AST.Expression {
   if (stringExpression.type === "ConcatStatement") {
     return builders.sexpr(
-      builders.path("/css-blocks/components/concat"),
+      builders.path(CONCAT_HELPER),
       stringExpression.parts.reduce(
         (arr, val) => {
           if (val.type === "TextNode") {
