@@ -107,6 +107,7 @@ type SetSource = (n: number) => void;
 type Abort = () => false;
 
 export function classnames(stack: whatever[]): string {
+  stack = stack.slice(0);
   let sources: boolean[] = [];
   let classes: string[] = [];
   let nSources = num(stack);
