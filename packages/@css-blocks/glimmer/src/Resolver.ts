@@ -9,7 +9,7 @@ import DependencyAnalyzer from "glimmer-analyzer";
 import { ResolvedFile } from "./Template";
 
 
-const debug = debugGenerator("css-blocks:glimmer");
+const DEBUG = debugGenerator("css-blocks:glimmer:resolver");
 
 /**
  * The Glimmer CSS Blocks Resolver deals in three
@@ -46,21 +46,21 @@ export class Resolver {
     let classic = template.replace('templates/', 'styles/').replace('.hbs', '.block.css');
     classic = path.join(this.projectDir, this.srcDir, classic);
     if (await fs.pathExists(classic)) {
-      debug(`Discovered classic Block for template ${template}:`);
-      debug(`  - ${classic}`);
+      DEBUG(`Discovered classic Block for template ${template}:`);
+      DEBUG(`  - ${classic}`);
       return classic;
     }
     let pods = path.parse(template);
     pods.base = "stylesheet.block.css";
     let podsPath =  path.join(this.projectDir, this.srcDir, path.format(pods));
     if (await fs.pathExists(podsPath)) {
-      debug(`Discovered pods Block for template ${template}:`);
-      debug(`  - ${podsPath}`);
+      DEBUG(`Discovered pods Block for template ${template}:`);
+      DEBUG(`  - ${podsPath}`);
       return podsPath;
     }
-    debug(`No Block discovered for template ${template}. Attempted at:`);
-    debug(`  - ${classic}`);
-    debug(`  - ${podsPath}`);
+    DEBUG(`No Block discovered for template ${template}. Attempted at:`);
+    DEBUG(`  - ${classic}`);
+    DEBUG(`  - ${podsPath}`);
     return undefined;
   }
 
@@ -90,11 +90,11 @@ export class Resolver {
         stylesheet
       );
     }
-    identifier = this.depAnalyzer.project.resolver.identify(`stylesheet:${identifier}`);
 
     // TODO: We need to automatically discover the file ending here – its not guaranteed to be a css file.
+    identifier = this.depAnalyzer.project.resolver.identify(`stylesheet:${identifier}`);
     let file: string = this.depAnalyzer.project.resolver.resolve(identifier);
-    file = path.join(this.projectDir, file, ".css");
+    file = path.join(this.projectDir, this.srcDir, file);
 
     let content = (await fs.readFile(file)).toString();
     return new ResolvedFile(content, identifier, file);

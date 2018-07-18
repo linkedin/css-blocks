@@ -97,7 +97,6 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
         let filename = filesystemPath || options.importer.debugIdentifier(block.identifier, options);
 
         // If this Block has a representation on disk, remove it from our output tree.
-        // TODO: This isn't working right now because `importer.filesystemPath` doesn't return the expected path...
         if (filesystemPath) {
           debug(`Removing block file ${path.relative(options.rootDir, filesystemPath)} from output.`);
           await fs.unlink(path.join(this.outputPath, path.relative(options.rootDir, filesystemPath)));
