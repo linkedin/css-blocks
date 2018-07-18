@@ -40,7 +40,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     this.srcDir = srcDir;
     this.blockFactory = new BlockFactory(this.cssBlocksOptions, postcss);
     this.resolver = new Resolver(projectDir, srcDir, moduleConfig);
-    this.debug = debugGenerator("css-blocks:glimmer");
+    this.debug = debugGenerator("css-blocks:glimmer:analyzer");
   }
 
   reset() {

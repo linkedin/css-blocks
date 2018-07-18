@@ -27,7 +27,9 @@
     "broccoli-merge-trees": "^3.0.0",
     "debug": "^3.1.0",
     "ember-cli-babel": "^6.6.0",
-    "ember-cli-htmlbars": "^2.0.1"
+    "ember-cli-htmlbars": "^2.0.1",
+    "fs-extra": "^7.0.0",
+    "symlink-or-copy": "^1.2.0"
   },
   "devDependencies": {
     "broccoli-asset-rev": "^2.7.0",
@@ -55,7 +57,13 @@
   },
   "ember-addon": {
     "configPath": "tests/dummy/config",
-    "before": [ "ember-cli-babel", "ember-cli-htmlbars" ],
-    "after": ["test-addon"]
+    "before": [
+      "ember-cli-babel",
+      "ember-cli-htmlbars"
+    ],
+    "after": [
+      "test-addon",
+      "ember-cli-eyeglass"
+    ]
   }
 }

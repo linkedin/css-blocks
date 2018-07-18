@@ -1,14 +1,15 @@
 'use strict';
-const fs = require("fs-extra");
 
 const { BroccoliCSSBlocks } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
-const debugGenerator = require("debug");
-const path = require("path");
+
 const Plugin = require("broccoli-plugin")
+const debugGenerator = require("debug");
+const fs = require("fs-extra");
+const path = require("path");
+const symlinkOrCopy = require('symlink-or-copy');
 
-const debug = debugGenerator("css-blocks:ember-cli");
-
+const DEBUG = debugGenerator("css-blocks:ember-cli");
 
 const OUTPUT_NAME = "assets/css-blocks.css";
 const EMBER_MODULE_CONFIG = undefined;
@@ -21,11 +22,15 @@ GLIMMER_MODULE_CONFIG.collections.components.types.push("stylesheet");
 let TRANSPORT = "";
 class CSSOutput extends Plugin {
   constructor(inputNodes, transport){
-    super(inputNodes, { name: "broccoli-css-blocks" });
+    super(inputNodes, { name: "broccoli-css-blocks-output" });
     this.transport = transport;
   }
-  async build(){
+  async build() {
     TRANSPORT += this.transport.css;
+    if (this._linked) { return } // Will this break Windows?
+    await fs.rmdir(output);
+    symlinkOrCopy.sync(this.inputPaths[0], this.outputPath);
+    this._linked = true;
   }
 }
 
@@ -54,12 +59,12 @@ module.exports = {
 
     // If there is no analysis for this template, don't do anything.
     if (!analysis) {
-      debug(`No analysis found for template "${env.meta.moduleName || env.meta.specifier}". Skipping rewrite.`);
+      DEBUG(`No analysis found for template "${env.meta.moduleName || env.meta.specifier}". Skipping rewrite.`);
       return { name: 'css-blocks-noop', visitors: {} };
     }
 
     // Otherwise, run the rewriter transforms!
-    debug(`Generating AST rewriter for "${analysis.template.identifier}"`);
+    DEBUG(`Generating AST rewriter for "${analysis.template.identifier}"`);
     return new GlimmerRewriter(env.syntax, mapping, analysis);
   },
 
@@ -67,7 +72,7 @@ module.exports = {
 
     if (type !== 'parent') { return; }
 
-    debug(`Registering handlebars AST plugin generators."`);
+    DEBUG(`Registering handlebars AST plugin generators."`);
 
     // For Ember
     registry.add("htmlbars-ast-plugin", {
@@ -91,7 +96,7 @@ module.exports = {
   //       the data model for each should be standardized to Analyzers
   //       and Rewriters consistently know how to communicate.
   reset() {
-    debug(`Resetting transport object for: ${this.rootDir}`);
+    DEBUG(`Resetting transport object for: ${this.rootDir}`);
     this.transport = this.transport || { id: this.rootDir };
     delete this.transport.css;
     delete this.transport.mapping;
@@ -101,6 +106,7 @@ module.exports = {
   },
 
   async postBuild(result){
+    DEBUG(`Build finished – writing css-blocks.css to output."`);
     let out = path.join(result.directory, OUTPUT_NAME);
     await fs.ensureFile(out);
     await fs.writeFile(out, TRANSPORT);
@@ -158,7 +164,7 @@ module.exports = {
     //  - For Ember apps, use `app`.
     let srcDir = "src";
     if (this.isAddon) { srcDir = "addon"; }
-    // @spenner, is there a better way to get this path?
+    // TODO: @spenner, is there a better way to get this path?
     else if (this.isEmber && app.name === "dummy") { srcDir = "tests/dummy/app"; }
     else if (this.isEmber) { srcDir = "app"; }
 
@@ -169,7 +175,10 @@ module.exports = {
     }
 
     // Update parserOpts to include the absolute path to our application code directory.
-    options.parserOpts.rootDir = path.join(rootDir, srcDir);
+    // TODO: Glimmer includes the `src` directory in working trees, while Ember treats
+    //       the working tree as the `app` root. This discrepancy is annoying and should
+    //       reconciled.
+    options.parserOpts.rootDir = path.join(rootDir, this.isEmber ? srcDir : "");
     options.output = OUTPUT_NAME;
 
     // Ember-cli is *mostly* used with Glimmer. However, it can technically be

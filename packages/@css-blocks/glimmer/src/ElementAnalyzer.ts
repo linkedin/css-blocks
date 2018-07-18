@@ -27,7 +27,7 @@ const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
 const STYLE_IF = "style-if";
 const STYLE_UNLESS = "style-unless";
 
-const debug = debugGenerator("css-blocks:glimmer:analyzer");
+const debug = debugGenerator("css-blocks:glimmer:element-analyzer");
 
 export class ElementAnalyzer {
   analysis: GlimmerAnalysis;

@@ -18,10 +18,11 @@ import { GlimmerAnalysis } from "./Analyzer";
 import { classnamesHelper } from "./ClassnamesHelperGenerator";
 import { ElementAnalyzer } from "./ElementAnalyzer";
 import { ResolvedFile, TEMPLATE_TYPE } from "./Template";
-const DEBUG = debugGenerator("css-blocks:glimmer");
 
 // TODO: The state namespace should come from a config option.
 const STYLE_ATTR = /^(class$|state:)/;
+const DEBUG = debugGenerator("css-blocks:glimmer:rewriter");
+
 export type GlimmerStyleMapping = StyleMapping<TEMPLATE_TYPE>;
 
 export class GlimmerRewriter implements ASTPlugin {
@@ -55,7 +56,7 @@ export class GlimmerRewriter implements ASTPlugin {
     DEBUG(`${this.template.path}: ${message}`, ...args);
   }
 
-  get name(): string { return this.block ? "CSSBlocksGlimmerRewriter" : "css-blocks-noop"; }
+  get name(): string { return this.block ? "css-blocks-glimmer-rewriter" : "css-blocks-noop"; }
   get visitor(): NodeVisitor { return this.visitors; }
   get visitors(): NodeVisitor {
     if (!this.block) { return {}; }
