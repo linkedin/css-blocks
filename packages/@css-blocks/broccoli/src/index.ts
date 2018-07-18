@@ -125,7 +125,6 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     this.transport.css += optimized.output.content.toString();
 
     debug(`Compilation Finished: ${this.transport.id}`);
-    debug(this.transport.css);
 
   }
 
