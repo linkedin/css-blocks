@@ -1,3 +1,3 @@
-export { CSSBlocksJSXAnalyzer as Analyzer } from "./Analyzer";
+export { CSSBlocksJSXAnalyzer as Analyzer, AnalyzerOptions } from "./Analyzer";
 export { CSSBlocksJSXTransformer as Rewriter } from "./transformer";
-export { CssBlocksJSXOptions as Options } from "./options";
+export { JSXOptions as Options, JSXOptionsReader as OptionReader } from "./options";

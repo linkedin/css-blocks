@@ -26,6 +26,7 @@ import {
 } from "babel-types";
 // import { TemplateAnalysisError } from '../utils/Errors';
 import * as debugGenerator from "debug";
+import { deprecate } from "util";
 
 import { TEMPLATE_TYPE } from "../Analyzer/Template";
 import { JSXElementAnalyzer } from "../Analyzer/visitors/element";
@@ -62,8 +63,7 @@ interface BabelFile {
     filename: string;
   };
 }
-
-export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginObj<CssBlocksVisitor> {
+export function babelPlugin(transformOpts: { rewriter: Rewriter }): () => PluginObj<CssBlocksVisitor> {
   const rewriter = transformOpts.rewriter;
   debug(`Made Rewriter`);
 
@@ -198,6 +198,11 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
     };
   };
 }
+
+/**
+ * @deprecated call babelPlugin instead.
+ */
+export const makePlugin = deprecate(babelPlugin, "makePlugin has been renamed babelPlugin");
 
 function detectStrayReferenceToImport(
   importDeclPath: NodePath<ImportDeclaration>,

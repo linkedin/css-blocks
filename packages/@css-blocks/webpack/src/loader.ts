@@ -93,6 +93,8 @@ export function CSSBlocksWebpackAdapter(this: LoaderContext, source: any, map: a
 
 }
 
+export const LOADER = __filename;
+
 // Webpack expects the default export of loaders to be the loader itself.
 // tslint:disable-next-line:no-default-export
 export default CSSBlocksWebpackAdapter;

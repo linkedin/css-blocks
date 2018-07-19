@@ -1,8 +1,4 @@
-import {
-  Analysis,
-  Analyzer,
-  Block,
-} from "@css-blocks/core";
+import { Analysis, Analyzer, Block } from "@css-blocks/core";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import { some, unwrap } from "@opticss/util";
 import traverse from "babel-traverse";
@@ -10,31 +6,59 @@ import * as babylon from "babylon";
 import * as debugGenerator from "debug";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { deprecate } from "util";
 
-import { CssBlocksJSXOptions } from "../options";
+import { JSXOptions, JSXOptionsReader } from "../options";
 import { JSXParseError } from "../utils/Errors";
 
 import { JSXTemplate, TEMPLATE_TYPE } from "./Template";
 import { elementVisitor, importVisitor } from "./visitors";
 
-const debug = debugGenerator("css-blocks:jsx:Analyzer");
-
 export type JSXAnalysis = Analysis<TEMPLATE_TYPE>;
 
-export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
-  private options: CssBlocksJSXOptions;
+export interface AnalyzerOptions {
+  /** A name that is used (if provided) in logging to distinguish output of different analyzers in a build. */
+  analyzerName?: string;
+}
 
-  public name: string;
+const deprecatedName = deprecate(
+  (name: string, options: JSXOptions & AnalyzerOptions) => {
+    options.analyzerName = name;
+  },
+  "The name parameter of the JSX Analyzer is deprecated and usually unnecessary.\n" +
+  "Pass only options and set the analyzerName option there if you really need it (you really don't).",
+);
+
+export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
+  private options: JSXOptionsReader;
+
+  public name?: string;
   public analysisPromises: Map<string, Promise<JSXAnalysis>>;
   public blockPromises: Map<string, Promise<Block>>;
+  private debug: debugGenerator.IDebugger;
 
-  constructor(name: string, options: Partial<CssBlocksJSXOptions> = {}) {
-    let opts = new CssBlocksJSXOptions(options);
-    super(opts.compilationOptions);
-    this.name = name;
-    this.options = opts;
+  constructor(options: JSXOptions & AnalyzerOptions);
+  /**
+   * @deprecated Use the single argument constructor.
+   * @param name Deprecated. Pass the analyzerName option instead;
+   */
+  constructor(name: string | JSXOptions & AnalyzerOptions, options: JSXOptions & AnalyzerOptions = {}) {
+    // ewww need to get rid of this deprecation soon.
+    super(options && options.compilationOptions || (name && typeof name !== "string" && name.compilationOptions) || {});
+    if (typeof name === "string") {
+      deprecatedName(name, options);
+    } else {
+      options = name;
+    }
+    this.name = options.analyzerName;
+    this.options = new JSXOptionsReader(options);
     this.analysisPromises = new Map();
     this.blockPromises = new Map();
+    let debugIdent = "css-blocks:jsx:Analyzer";
+    if (this.name) {
+      debugIdent += `:${this.name}`;
+    }
+    this.debug = debugGenerator(debugIdent);
   }
 
   public reset() {
@@ -67,7 +91,7 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
       promises.push(this.parseFile(path.join(dir, entryPoint)));
     }
     await Promise.all(promises);
-    debug(`Found ${this.analysisPromises.size} analysis promises`);
+    this.debug(`Found ${this.analysisPromises.size} analysis promises`);
     return this;
   }
 
@@ -105,11 +129,11 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     process.chdir(oldDir);
 
     // Wait for all block promises to resolve then resolve with the finished analysis.
-    debug(`Waiting for ${blockPromises.length} Block imported by "${template.identifier}" to finish compilation.`);
+    this.debug(`Waiting for ${blockPromises.length} Block imported by "${template.identifier}" to finish compilation.`);
     await Promise.all(blockPromises);
-    debug(`Waiting for ${childTemplatePromises.length} child templates to finish analysis before analysis of ${template.identifier}.`);
+    this.debug(`Waiting for ${childTemplatePromises.length} child templates to finish analysis before analysis of ${template.identifier}.`);
     await Promise.all(childTemplatePromises);
-    debug(`All child compilations finished for "${template.identifier}".`);
+    this.debug(`All child compilations finished for "${template.identifier}".`);
     return analysis;
 
   }
@@ -123,11 +147,11 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
 
     let template: JSXTemplate = new JSXTemplate(filename, data);
 
-    debug(`Beginning imports crawl of ${filename}.`);
+    this.debug(`Beginning imports crawl of ${filename}.`);
     let analysisPromise = this.crawl(template);
     this.analysisPromises.set(template.identifier, analysisPromise);
     let analysis = await analysisPromise;
-    debug(`Finished imports crawl of ${filename}.`);
+    this.debug(`Finished imports crawl of ${filename}.`);
 
     traverse(unwrap(analysis.template.ast), elementVisitor(analysis));
       // No need to keep detailed template data anymore!

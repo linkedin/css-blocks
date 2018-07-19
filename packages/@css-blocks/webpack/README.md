@@ -81,6 +81,11 @@ Each template integration's rewriter is slightly different and must be integrate
 However, Webpack will typically be used with CSS Blocks' JSX integration. The typical JSX end-to-end integration with webpack looks like this:
 
 ```js
+const path = require("path");
+const appDirectory = fs.realpathSync(process.cwd());
+const paths = {
+  appIndexJs: path.resolve(appDirectory, "src/index.tsx"),
+};
 
 const jsxCompilationOptions = {
   compilationOptions: {},

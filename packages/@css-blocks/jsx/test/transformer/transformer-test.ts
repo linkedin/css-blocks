@@ -14,7 +14,7 @@ import * as testConsole from "test-console";
 
 import { Rewriter } from "../../src";
 import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
-import { makePlugin } from "../../src/transformer/babel";
+import { babelPlugin } from "../../src/transformer/babel";
 import { testParse as parse } from "../util";
 
 const mock = require("mock-fs");
@@ -43,7 +43,7 @@ function transform(code: string, analysis: Analysis<"Opticss.JSXTemplate">, cssB
     let babelResult = babel.transform(code, {
       filename: filename,
       plugins: [
-        makePlugin({rewriter}),
+        babelPlugin({rewriter}),
       ],
       parserOpts: { plugins: [ "jsx" ] },
     });

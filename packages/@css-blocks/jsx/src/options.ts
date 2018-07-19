@@ -1,6 +1,5 @@
-import { ResolvedConfiguration, resolveConfiguration } from "@css-blocks/core";
+import { Configuration as CSSBlocksConfiguration, ResolvedConfiguration, resolveConfiguration } from "@css-blocks/core";
 import { ObjectDictionary } from "@opticss/util";
-
 import { BabylonOptions, PluginName } from "babylon";
 
 // We are only using the output Babylon AST to collect analysis data here,
@@ -32,14 +31,22 @@ const BABEL_PLUGINS: any = [
   "nullishCoalescingOperator",
 ];
 
-export class CssBlocksJSXOptions {
+export interface JSXOptions {
+  baseDir?: string;
+  types?: "typescript" | "flow" | "none";
+  aliases?: ObjectDictionary<string>;
+  compilationOptions?: CSSBlocksConfiguration;
+  // resolver?: (importPath: string, fromFile?: string) => string;
+}
+
+export class JSXOptionsReader {
   public baseDir: string;
-  public types: "typescript" | "flow" | "none";
+  public types: JSXOptions["types"];
   public aliases: ObjectDictionary<string>;
   public compilationOptions: ResolvedConfiguration;
   public parserOptions: BabylonOptions;
 
-  constructor(opts: Partial<CssBlocksJSXOptions>) {
+  constructor(opts: JSXOptions = {}) {
     this.baseDir = opts.baseDir || ".";
     this.types = opts.types || "none";
     this.aliases = opts.aliases || {};

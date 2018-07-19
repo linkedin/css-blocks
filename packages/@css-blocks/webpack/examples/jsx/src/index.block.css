@@ -1,0 +1,11 @@
+:scope {
+  color: green;
+}
+
+.unusedStyle {
+  background-color: papayawhip;
+}
+
+:scope[state|test] {
+  color: blue;
+}

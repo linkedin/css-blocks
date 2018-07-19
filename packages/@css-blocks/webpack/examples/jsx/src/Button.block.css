@@ -1,0 +1,8 @@
+:scope {
+  color: white;
+  background-color: gray;
+}
+
+:scope[state|active] {
+  background-color: red;
+}

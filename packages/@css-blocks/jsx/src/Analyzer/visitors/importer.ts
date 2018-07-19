@@ -18,7 +18,7 @@ import {
 import * as debugGenerator from "debug";
 
 import { JSXTemplate, TEMPLATE_TYPE } from "../../Analyzer/Template";
-import { CssBlocksJSXOptions } from "../../options";
+import { JSXOptionsReader } from "../../options";
 import { ErrorLocation, TemplateImportError } from "../../utils/Errors";
 import { isBlockFilename } from "../../utils/isBlockFilename";
 import { CSSBlocksJSXAnalyzer } from "../index";
@@ -58,7 +58,7 @@ export function importVisitor(
   analysis: Analysis<TEMPLATE_TYPE>,
   blockPromises: Promise<Block>[],
   childTemplatePromises: Promise<Analysis<TEMPLATE_TYPE>>[],
-  options: CssBlocksJSXOptions,
+  options: JSXOptionsReader,
 ) {
 
   // Keep a running record of local block names while traversing so we can check
