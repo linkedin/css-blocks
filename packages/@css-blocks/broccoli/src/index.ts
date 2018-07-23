@@ -25,6 +25,7 @@ export type AnalyzerConstructor = { new (...args: any[]): Analyzer<keyof Templat
 export interface BroccoliOptions {
   entry: string[];
   output: string;
+  root: string;
   analyzer: Analyzer<keyof TemplateTypes>;
   transport: Transport;
   optimization?: Partial<OptiCSSOptions>;
@@ -35,9 +36,9 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
   private analyzer: Analyzer<keyof TemplateTypes>;
   private entry: string[];
   private output: string;
+  private root: string;
   private transport: Transport;
   private optimizationOptions: Partial<OptiCSSOptions>;
-
   // tslint:disable-next-line:prefer-whatever-to-any
   constructor(inputNode: any, options: BroccoliOptions) {
     super([inputNode], { name: "broccoli-css-blocks" });
@@ -47,6 +48,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     this.transport = options.transport;
     this.optimizationOptions = options.optimization || {};
     this.analyzer = options.analyzer;
+    this.root = options.root || process.cwd();
 
     this.transport.css = this.transport.css ? this.transport.css : "";
 
@@ -79,7 +81,19 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
         // tslint:disable-next-line:no-console
         console.log("Error linking", path.join(this.inputPaths[0], file), "to output directory.");
       }
+
     }
+
+    // The glimmer-analyzer package tries to require() package.json
+    // in the root of the directory it is passed. We pass it our broccoli
+    // tree, so it needs to contain package.json too.
+    // TODO: Ideally this is configurable in glimmer-analyzer. We can
+    //       contribute that option back to the project. However,
+    //       other template integrations may want this available too...
+    fs.writeFileSync(
+      path.join(this.outputPath, "package.json"),
+      fs.readFileSync(path.join(this.root, "package.json")),
+    );
 
     // Oh hey look, we're analyzing.
     this.analyzer.reset();

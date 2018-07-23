@@ -24,7 +24,9 @@ export class Resolver {
   private moduleConfig?: ResolverConfiguration;
 
   constructor(moduleConfig?: ResolverConfiguration) {
-    this.moduleConfig = moduleConfig;
+    if (moduleConfig) {
+      this.moduleConfig = moduleConfig;
+    }
   }
 
   private dependencyAnalyzerFor(dir: string): DependencyAnalyzer | undefined {
@@ -32,10 +34,11 @@ export class Resolver {
     if (this.depAnalyzers.has(dir)) {
       return this.depAnalyzers.get(dir)!;
     }
+    let src = this.moduleConfig.app && this.moduleConfig.app.mainPath || "src";
     let depAnalyzer = new DependencyAnalyzer(dir, {
       config: { moduleConfiguration: this.moduleConfig },
       paths: {
-        src: this.moduleConfig.app && this.moduleConfig.app.mainPath || "src",
+        src,
       },
     });
     this.depAnalyzers.set(dir, depAnalyzer);
@@ -99,7 +102,7 @@ export class Resolver {
     // TODO: We need to automatically discover the file ending here – its not guaranteed to be a css file.
     identifier = depAnalyzer.project.resolver.identify(`stylesheet:${identifier}`);
     let file: string = depAnalyzer.project.resolver.resolve(identifier);
-    file = path.join(dir, file);
+    file = path.join(dir, depAnalyzer.project.paths.src, file);
 
     let content = (fs.readFileSync(file)).toString();
     return new ResolvedFile(content, identifier, file);
@@ -113,7 +116,6 @@ export class Resolver {
     let depAnalyzer = this.dependencyAnalyzerFor(dir);
 
     if (!depAnalyzer) {
-      // FIX: Do this in the broccoli tree.
       let template = path.join(dir, identifier);
       return new ResolvedFile(
         (fs.readFileSync(template)).toString(),
