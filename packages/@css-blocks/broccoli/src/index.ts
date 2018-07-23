@@ -3,9 +3,9 @@ import * as path from "path";
 
 import { Analyzer, Block, BlockCompiler, StyleMapping } from "@css-blocks/core";
 import { TemplateTypes } from "@opticss/template-api";
+
 import * as debugGenerator from "debug";
-import { OptiCSSOptions, Optimizer } from "opticss";
-import { postcss } from "opticss";
+import { OptiCSSOptions, Optimizer, postcss } from "opticss";
 import * as readdir from "recursive-readdir";
 
 import { BroccoliPlugin } from "./utils";
@@ -14,11 +14,13 @@ const debug = debugGenerator("css-blocks:broccoli");
 
 export interface Transport {
   id: string;
-  mapping: StyleMapping<keyof TemplateTypes>;
-  blocks: Set<Block>;
-  analyzer: Analyzer<keyof TemplateTypes>;
-  css: string;
+  mapping?: StyleMapping<keyof TemplateTypes>;
+  blocks?: Set<Block>;
+  analyzer?: Analyzer<keyof TemplateTypes>;
+  css?: string;
 }
+
+export type AnalyzerConstructor = { new (...args: any[]): Analyzer<keyof TemplateTypes> };
 
 export interface BroccoliOptions {
   entry: string[];
@@ -41,16 +43,13 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     super([inputNode], { name: "broccoli-css-blocks" });
 
     this.entry = options.entry.slice(0);
-    this.output = options.output;
-    this.analyzer = options.analyzer;
+    this.output = options.output || "css-blocks.css";
     this.transport = options.transport;
     this.optimizationOptions = options.optimization || {};
+    this.analyzer = options.analyzer;
 
     this.transport.css = this.transport.css ? this.transport.css : "";
 
-    if (!this.output) {
-      throw new Error("CSS Blocks Broccoli Plugin requires an output file name.");
-    }
   }
 
   async build() {
@@ -84,7 +83,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
 
     // Oh hey look, we're analyzing.
     this.analyzer.reset();
-    await this.analyzer.analyze(...this.entry);
+    await this.analyzer.analyze(this.outputPath, ...this.entry);
 
     // Compile all Blocks and add them as sources to the Optimizer.
     // TODO: handle a sourcemap from compiling the block file via a preprocessor.
@@ -99,7 +98,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
         // If this Block has a representation on disk, remove it from our output tree.
         if (filesystemPath) {
           debug(`Removing block file ${path.relative(options.rootDir, filesystemPath)} from output.`);
-          await fs.unlink(path.join(this.outputPath, path.relative(options.rootDir, filesystemPath)));
+          await fs.unlink(filesystemPath);
         }
 
         // Add the compiled Block file to the optimizer.

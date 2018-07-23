@@ -21,25 +21,19 @@ export type AttributeContainer = Block | BlockClass;
 export type GlimmerAnalysis = Analysis<TEMPLATE_TYPE>;
 
 export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
-  projectDir: string;
-  srcDir: string;
   blockFactory: BlockFactory;
   resolver: Resolver;
   debug: debugGenerator.IDebugger;
 
   constructor(
-    projectDir: string,
-    srcDir: string,
-    moduleConfig?: ResolverConfiguration,
-    cssBlocksOpts?: Options,
-    analysisOpts?: AnalysisOptions,
+    cssBlocksOpts: Options,
+    analysisOpts: AnalysisOptions,
+    moduleConfig: ResolverConfiguration,
   ) {
     super(cssBlocksOpts, analysisOpts);
 
-    this.projectDir = projectDir;
-    this.srcDir = srcDir;
     this.blockFactory = new BlockFactory(this.cssBlocksOptions, postcss);
-    this.resolver = new Resolver(projectDir, srcDir, moduleConfig);
+    this.resolver = new Resolver(moduleConfig);
     this.debug = debugGenerator("css-blocks:glimmer:analyzer");
   }
 
@@ -63,7 +57,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     };
   }
 
-  async analyze(...componentNames: string[]): Promise<GlimmerAnalyzer> {
+  async analyze(dir: string, ...componentNames: string[]): Promise<GlimmerAnalyzer> {
 
     let components = new Set<string>();
     let analysisPromises: Promise<GlimmerAnalysis>[] = [];
@@ -71,27 +65,23 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
 
     componentNames.forEach(componentName => {
       components.add(componentName);
-      try {
-        let componentDeps = this.resolver.recursiveDependenciesForTemplate(componentName);
-        componentDeps.forEach(c => components.add(c));
-      } catch(e){
-        this.debug(`Warning: Could not discover recursive dependencies for component ${componentName}`);
-      }
+      let componentDeps = this.resolver.recursiveDependenciesForTemplate(dir, componentName);
+      componentDeps.forEach(c => components.add(c));
     });
 
     this.debug(`Analyzing all components: ${[...components].join(", ")}`);
 
-    components.forEach(dep => {
-      analysisPromises.push(this.analyzeTemplate(dep));
-    });
+    for (let component of components) {
+      analysisPromises.push(this.analyzeTemplate(dir, component));
+    }
 
     await Promise.all(analysisPromises);
     return this;
   }
 
-  private async resolveBlock(componentName: string): Promise<Block | undefined> {
+  private async resolveBlock(dir: string, componentName: string): Promise<Block | undefined> {
     try {
-      let blockFile = await this.resolver.stylesheetFor(componentName);
+      let blockFile = await this.resolver.stylesheetFor(dir, componentName);
       if (!blockFile) {
         this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
         return undefined;
@@ -104,9 +94,9 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     }
   }
 
-  protected async analyzeTemplate(componentName: string): Promise<GlimmerAnalysis> {
+  protected async analyzeTemplate(dir: string, componentName: string): Promise<GlimmerAnalysis> {
     this.debug("Analyzing template: ", componentName);
-    let template = await this.resolver.templateFor(componentName);
+    let template = await this.resolver.templateFor(dir, componentName);
     if (!template) {
       throw new Error(`Unable to resolve template for component ${componentName}`);
     }
@@ -117,7 +107,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
 
     // Fetch the block associated with this template. If no block file for this
     // component exists, does not exist, stop.
-    let block: Block | undefined = await this.resolveBlock(componentName);
+    let block: Block | undefined = await this.resolveBlock(dir, componentName);
     if (!block) { return analysis; }
 
     analysis.addBlock("", block);

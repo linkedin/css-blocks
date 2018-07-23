@@ -220,6 +220,7 @@ export class ElementAnalyzer {
         namespace: "state",
         name: stateName,
       });
+      console.log(stateName, container.attributes(), container, stateGroup);
       let state: AttrValue | null | undefined = undefined;
       if (stateGroup && staticSubStateName) {
         state = stateGroup.resolveValue(staticSubStateName);
