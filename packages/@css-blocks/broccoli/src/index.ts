@@ -69,9 +69,9 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
       // If we're in Classic or Pods mode, every hbs file is an entry point.
       if (discover && path.extname(file) === ".hbs") { this.entry.push(file); }
 
-      await fs.ensureDir(path.join(this.outputPath, path.dirname(file)));
+      fs.ensureDirSync(path.join(this.outputPath, path.dirname(file)));
       try {
-        await fs.symlink(
+        fs.symlinkSync(
           path.join(this.inputPaths[0], file),
           path.join(this.outputPath, file),
         );
@@ -98,7 +98,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
         // If this Block has a representation on disk, remove it from our output tree.
         if (filesystemPath) {
           debug(`Removing block file ${path.relative(options.rootDir, filesystemPath)} from output.`);
-          await fs.unlink(filesystemPath);
+          fs.unlinkSync(filesystemPath);
         }
 
         // Add the compiled Block file to the optimizer.
