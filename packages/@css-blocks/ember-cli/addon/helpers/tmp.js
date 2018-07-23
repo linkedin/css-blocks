@@ -1,3 +1,7 @@
+// TODO: For some reason Ember doesn't include the helper runtime from `@css-blocks/glimmer`
+// in the build (required in addon/helpers/classnames.js) and throws a "missing module"
+// error at runtime. The contents have been temporarily copied to `./tmp` as a workaround
+// instead... this will block release.
 
 const e = (m) => { throw new Error(m); };
 const toStr = (s) => typeof s === "symbol" ? s.toString() : "" + s;
