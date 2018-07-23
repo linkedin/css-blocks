@@ -50,8 +50,8 @@ function rewrite(result: CSSAndMapping, analyzer: GlimmerAnalyzer, templatePath:
   return preprocess(fs.readFileSync(templatePath).toString(), options);
 }
 
-async function pipeline(analyzer: GlimmerAnalyzer, entry: string, templatePath: string) {
-  await analyzer.analyze(entry);
+async function pipeline(projectDir: string, analyzer: GlimmerAnalyzer, entry: string, templatePath: string) {
+  await analyzer.analyze(projectDir, entry);
   let result = await optimize(analyzer);
   let ast = rewrite(result, analyzer, templatePath);
   return { css: result.css, ast, styleMapping: result.styleMapping };
@@ -61,9 +61,9 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles from dynamic attributes", async function() {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer(projectDir, "src", moduleConfig);
+    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-states/template.hbs");
-    let result = await pipeline(analyzer, "with-dynamic-states", templatePath);
+    let result = await pipeline(projectDir, analyzer, "with-dynamic-states", templatePath);
 
     // TODO why is `f` class both static and dynamic?
     assert.deepEqual(minify(print(result.ast)), minify(`
@@ -84,9 +84,9 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles from dynamic classes", async function() {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer(projectDir, "src", moduleConfig);
+    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-classes/template.hbs");
-    let result = await pipeline(analyzer, "with-dynamic-classes", templatePath);
+    let result = await pipeline(projectDir, analyzer, "with-dynamic-classes", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
       <div class="a">
         <h1 class="d">Hello, <span class="e h {{/css-blocks/components/classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "f" 0 "g" 1 "b" 2 "c" 3}}">World</span>!</h1>
@@ -99,9 +99,9 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles from dynamic attributes from readme", async function() {
     let projectDir = fixture("readme-app");
-    let analyzer = new GlimmerAnalyzer(projectDir, "src", moduleConfig);
+    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
     let templatePath = fixture("readme-app/src/ui/components/page-layout/template.hbs");
-    let result = await pipeline(analyzer, "page-layout", templatePath);
+    let result = await pipeline(projectDir, analyzer, "page-layout", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
       <div class="a {{/css-blocks/components/classnames 1 1 2 isLoading 1 0 "b" 0}}">
         <aside class="g h c d"> </aside>

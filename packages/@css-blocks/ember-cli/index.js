@@ -11,7 +11,6 @@ const symlinkOrCopy = require('symlink-or-copy');
 
 const DEBUG = debugGenerator("css-blocks:ember-cli");
 
-const OUTPUT_NAME = "assets/css-blocks.css";
 const EMBER_MODULE_CONFIG = undefined;
 const GLIMMER_MODULE_CONFIG = require("@glimmer/application-pipeline/dist/lib/broccoli/default-module-configuration.js").default;
 GLIMMER_MODULE_CONFIG.types.stylesheet = { definitiveCollection: "components" };
@@ -45,7 +44,7 @@ class CSSOutput extends Plugin {
   async build() {
     PROCESS_OUTPUT += this.transport.css;
     if (this._linked) { return } // Will this break Windows?
-    await fs.rmdir(this.outputPath);
+    fs.rmdirSync(this.outputPath);
     symlinkOrCopy.sync(this.inputPaths[0], this.outputPath);
     this._linked = true;
   }
@@ -105,17 +104,6 @@ module.exports = {
     registry.add("glimmer-ast-plugin", this.astPlugin.bind(this));
   },
 
-  // Inject out built CSS Blocks stylesheet into the head.
-  // TODO: I have a hunch there is:
-  //       1) a better way to do this, and;
-  //       2) a nicer way to output css-blocks styles so we don't load
-  //          an extra stylesheet.
-  contentFor(type, config) {
-    if (type === "head-footer") {
-      return `<link rel="stylesheet" href="${config.rootURL || '/'}${OUTPUT_NAME}">`;
-    }
-  },
-
   included(parent) {
     this._super.included.apply(this, arguments);
 
@@ -147,14 +135,14 @@ module.exports = {
   // disk and clean up the pipes a little bit.
   async postBuild(result){
     DEBUG(`Build finished – writing css-blocks.css to output."`);
-    let out = path.join(result.directory, OUTPUT_NAME);
-    await fs.ensureFile(out);
-    await fs.writeFile(out, PROCESS_OUTPUT);
+    let out = path.join(result.directory, "assets/vendor.css");
+    fs.ensureFileSync(out);
+    fs.appendFileSync(out, PROCESS_OUTPUT);
 
     // Reset all magical shared memory objects between rebuilds 🤮
     // This will disappear once we have a functional language server.
     // TODO: Not be great for caching, will have to rework this later.
-    DEBUG(`Resetting transport object for: ${this.rootDir}`);
+    DEBUG(`Resetting all CSS caches.`);
     PROCESS_OUTPUT = "";
     for (let transport of this.transports) transport.reset();
   },
@@ -175,18 +163,6 @@ module.exports = {
     let isAddon = isEmber && !~parent.constructor.name.indexOf("Ember");
     let isGlimmer = !isEmber;
 
-    // Path to the `src` directory, relative to project root.
-    // Depending on the type of the target, there are different source directory roots.
-    //  - For Glimmer apps, use `src`.
-    //  - For Addons, use `addon`.
-    //  - For Ember dummy apps, use `tests/dummy/app`.
-    //  - For Ember apps, use `app`.
-    // TODO: @spenner, is there a better way to get these paths?
-    let srcDir = "src";
-    if (isAddon) { srcDir = "addon"; }
-    else if (isEmber && app.name === "dummy") { srcDir = "tests/dummy/app"; }
-    else if (isEmber) { srcDir = "app"; }
-
     // TODO: Module configs are different depending on Glimmer vs Ember.
     //       Ideally fetching the module config is baked into ember-cli and we can
     //       simply augment a copy of it for our analysis phase since we don't actually
@@ -195,42 +171,41 @@ module.exports = {
     let moduleConfig = isGlimmer ? GLIMMER_MODULE_CONFIG : EMBER_MODULE_CONFIG;
     if (moduleConfig) {
       moduleConfig.app || (moduleConfig.app = {});
-      moduleConfig.app.mainPath = srcDir;
+      moduleConfig.app.mainPath = "src";
     }
 
     return {
       parent,  app,
       rootDir, isEmber,
       isAddon, isGlimmer,
-      srcDir,  moduleConfig,
+      moduleConfig,
     };
   },
 
   getOptions(env) {
 
-    let { isEmber, app, rootDir, srcDir } = env;
+    let { isEmber, app, rootDir } = env;
 
     // Get CSS Blocks options provided by the application, if present.
-    const options = app.options["css-blocks"] || {
-      parserOpts: {},
-      analysisOpts: {},
-      optimization: {},
-    };
+    const options = app.options["css-blocks"]
+      ? JSON.parse(JSON.stringify(app.options["css-blocks"]))
+      : {
+        parserOpts: {},
+        analysisOpts: {},
+        optimization: {},
+      };
 
     // Optimization is always disabled for now, until we get project-wide analysis working.
     options.optimization.enabled = false;
-
-    // Glimmer/Ember has opinions yo, we decide where your output goes!
-    options.output = OUTPUT_NAME;
 
     // Update parserOpts to include the absolute path to our application code directory.
     // TODO: Glimmer includes the `src` directory in working trees, while Ember treats
     //       the working tree as the `app` root. This discrepancy is annoying and should
     //       reconciled.
-    options.parserOpts.rootDir = path.join(rootDir, isEmber ? srcDir : "");
+    options.parserOpts.rootDir = rootDir;
 
     // TODO: Better options validation, this is quick and dirty.
-    if (options.output && options.output !== OUTPUT_NAME) {
+    if (options.output) {
       throw new Error(`CSS Blocks output file names are auto-generated in ${isEmber ? "Ember": "glimmer"} apps. Do not pass an "output" option in your CSS Blocks config.`);
     }
     if (!isEmber && typeof options.entry !== "string" && !Array.isArray(options.entry)) {
@@ -243,24 +218,18 @@ module.exports = {
     return options;
   },
 
-  genTreeWrapper(env, options, prev = NOOP){
-    const { isEmber, app, parent, rootDir, srcDir, moduleConfig } = env;
+  genTreeWrapper(env, options, prev = NOOP) {
+    const { isEmber, app, parent, rootDir, moduleConfig } = env;
 
     // In Ember, we treat every template as an entry point. `BroccoliCSSBlocks` will
     // automatically discover all template files if an empty entry array is passed.
     const entry = isEmber ? [] : (Array.isArray(options.entry) ? options.entry : [options.entry]);
 
-    let analyzer = new GlimmerAnalyzer(
-      rootDir,
-      srcDir,
-      moduleConfig,
-      options.parserOpts,
-      options.analysisOpts
-    );
-
     // I hate shared memory...
     let transport = new Transport(rootDir);
     this.transports.push(transport);
+
+    let analyzer = new GlimmerAnalyzer(options.parserOpts, options.analysisOpts, moduleConfig);
 
     const broccoliOptions = {
       entry,
