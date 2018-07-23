@@ -135,9 +135,13 @@ module.exports = {
   // disk and clean up the pipes a little bit.
   async postBuild(result){
     DEBUG(`Build finished – writing css-blocks.css to output."`);
-    let out = path.join(result.directory, "assets/vendor.css");
+    let filename = this.isEmber ? "assets/vendor.css" : "app.css";
+    let out = path.join(result.directory, filename);
     fs.ensureFileSync(out);
-    fs.appendFileSync(out, PROCESS_OUTPUT);
+    let prev = fs.readFileSync(out);
+    fs.unlinkSync(out);
+    fs.ensureFileSync(out);
+    fs.appendFileSync(out, `${prev}\n\n/* CSS Blocks Start */\n\n${PROCESS_OUTPUT}\n/* CSS Blocks End */\n`);
 
     // Reset all magical shared memory objects between rebuilds 🤮
     // This will disappear once we have a functional language server.
@@ -235,6 +239,7 @@ module.exports = {
       entry,
       analyzer,
       transport,
+      root: rootDir,
       output: options.output,
       optimization: options.optimization,
     };
