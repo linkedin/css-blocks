@@ -11,7 +11,7 @@ type ElementsAnalysis = ObjectDictionary<SerializedElementAnalysis>;
 describe("Stylesheet analysis", function() {
   it("analyzes styles from the implicit block", function() {
     let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
-    return analyzer.analyze(fixture("styled-app"), "my-app").then((analyzer: GlimmerAnalyzer) => {
+    return analyzer.analyze(fixture("styled-app"), ["my-app"]).then((analyzer: GlimmerAnalyzer) => {
       let analysis = analyzer.getAnalysis(0);
       let serializedAnalysis = analysis.serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/my-app");
@@ -41,7 +41,7 @@ describe("Stylesheet analysis", function() {
   it("analyzes styles from a referenced block", function() {
     let projectDir = fixture("styled-app");
     let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
-    return analyzer.analyze(projectDir, "with-multiple-blocks").then((analyzer: GlimmerAnalyzer) => {
+    return analyzer.analyze(projectDir, ["with-multiple-blocks"]).then((analyzer: GlimmerAnalyzer) => {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-multiple-blocks");
       assert.deepEqual(analysis.blocks, {
@@ -63,7 +63,7 @@ describe("Stylesheet analysis", function() {
   it("analyzes styles from a referenced block with dynamic state", function() {
     let projectDir = fixture("styled-app");
     let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
-    return analyzer.analyze(projectDir, "with-dynamic-states").then((analyzer: GlimmerAnalyzer) => {
+    return analyzer.analyze(projectDir, ["with-dynamic-states"]).then((analyzer: GlimmerAnalyzer) => {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-states");
       assert.deepEqual(analysis.blocks, {
@@ -115,7 +115,7 @@ describe("Stylesheet analysis", function() {
   it("analyzes styles from a referenced block with dynamic classes", function() {
     let projectDir = fixture("styled-app");
     let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
-    return analyzer.analyze(projectDir, "with-dynamic-classes").then((analyzer) => {
+    return analyzer.analyze(projectDir, ["with-dynamic-classes"]).then((analyzer) => {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-classes");
       assert.deepEqual(analysis.blocks, {

@@ -58,13 +58,13 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     };
   }
 
-  async analyze(...entryPoints: string[]): Promise<CSSBlocksJSXAnalyzer> {
+  async analyze(dir: string, entryPoints: string[]): Promise<CSSBlocksJSXAnalyzer> {
     if (!entryPoints.length) {
       throw new JSXParseError("CSS Blocks JSX Analyzer must be passed at least one entry point.");
     }
     let promises: Promise<JSXAnalysis>[] = [];
     for (let entryPoint of entryPoints) {
-      promises.push(this.parseFile(entryPoint));
+      promises.push(this.parseFile(path.join(dir, entryPoint)));
     }
     await Promise.all(promises);
     return this;

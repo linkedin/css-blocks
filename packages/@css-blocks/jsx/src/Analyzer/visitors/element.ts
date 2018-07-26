@@ -85,7 +85,7 @@ export class JSXElementAnalyzer {
       let property = lVal.property;
       if (!lVal.computed && isIdentifier(property) && property.name === "className") {
         element = this.startElement(this.location(path));
-        this.analyzeClassExpression(path.get("right") as NodePath<Expression>, element);
+        this.analyzeClassExpression(path.get("right"), element);
         this.endElement(element);
       }
     }
@@ -134,7 +134,7 @@ export class JSXElementAnalyzer {
 
   styleVariableBinding(path: NodePath<JSXAttribute>): Binding | undefined {
     let valuePath = path.get("value");
-    if (!isJSXExpressionContainer(valuePath.node)) return; // should this be an error?
+    if (!valuePath.node || !isJSXExpressionContainer(valuePath.node)) return; // should this be an error?
     if (isIdentifier(valuePath.node.expression)) {
       let identPath = valuePath.get("expression") as NodePath<Identifier>;
       let identBinding = path.scope.getBinding(identPath.node.name);
@@ -246,7 +246,7 @@ export class JSXElementAnalyzer {
     if (!value.isJSXExpressionContainer()) return; // should this be an error?
     // If this attribute's value is an expression, evaluate it for block references.
     // Discover block root identifiers.
-    let expressionPath = value.get("expression") as NodePath<Expression>;
+    let expressionPath = value.get("expression");
     this.analyzeClassExpression(expressionPath, element);
   }
 

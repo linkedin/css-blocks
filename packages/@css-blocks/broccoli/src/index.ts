@@ -34,7 +34,7 @@ export interface BroccoliOptions {
 class BroccoliCSSBlocks extends BroccoliPlugin {
 
   private analyzer: Analyzer<keyof TemplateTypes>;
-  private entry: string[];
+  private entries: string[];
   private output: string;
   private root: string;
   private transport: Transport;
@@ -43,7 +43,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
   constructor(inputNode: any, options: BroccoliOptions) {
     super([inputNode], { name: "broccoli-css-blocks" });
 
-    this.entry = options.entry.slice(0);
+    this.entries = options.entry.slice(0);
     this.output = options.output || "css-blocks.css";
     this.transport = options.transport;
     this.optimizationOptions = options.optimization || {};
@@ -60,7 +60,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     let optimizer = new Optimizer(this.optimizationOptions, this.analyzer.optimizationOptions);
 
     // When no entry points are passed, we treat *every* template as an entry point.
-    let discover = !this.entry.length;
+    let discover = !this.entries.length;
 
     // This build step is *mostly* just a pass-through of all files!
     // QUESTION: Tom, is there a better way to do this in Broccoli?
@@ -69,7 +69,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
       file = path.relative(this.inputPaths[0], file);
 
       // If we're in Classic or Pods mode, every hbs file is an entry point.
-      if (discover && path.extname(file) === ".hbs") { this.entry.push(file); }
+      if (discover && path.extname(file) === ".hbs") { this.entries.push(file); }
 
       fs.ensureDirSync(path.join(this.outputPath, path.dirname(file)));
       try {
@@ -97,7 +97,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
 
     // Oh hey look, we're analyzing.
     this.analyzer.reset();
-    await this.analyzer.analyze(this.outputPath, ...this.entry);
+    await this.analyzer.analyze(this.outputPath, this.entries);
 
     // Compile all Blocks and add them as sources to the Optimizer.
     // TODO: handle a sourcemap from compiling the block file via a preprocessor.

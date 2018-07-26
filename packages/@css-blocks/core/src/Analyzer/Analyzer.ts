@@ -50,7 +50,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     this.dynamicStyles = new MultiMap();
   }
 
-  abstract analyze(...entryPoints: string[]): Promise<Analyzer<K>>;
+  abstract analyze(dir: string, entryPoints: string[]): Promise<Analyzer<K>>;
   abstract get optimizationOptions(): TemplateIntegrationOptions;
 
   // TODO: We don't really want to burn the world here.

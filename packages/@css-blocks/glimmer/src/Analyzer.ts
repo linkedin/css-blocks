@@ -57,17 +57,16 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     };
   }
 
-  async analyze(dir: string, ...componentNames: string[]): Promise<GlimmerAnalyzer> {
-
-    let components = new Set<string>();
+  async analyze(dir: string, componentNames: string[]): Promise<GlimmerAnalyzer> {
+    let components = new Set<string>(componentNames);
     let analysisPromises: Promise<GlimmerAnalysis>[] = [];
     this.debug(`Analyzing all templates starting with: ${componentNames}`);
 
-    componentNames.forEach(componentName => {
-      components.add(componentName);
-      let componentDeps = this.resolver.recursiveDependenciesForTemplate(dir, componentName);
-      componentDeps.forEach(c => components.add(c));
-    });
+    for (let component of components) {
+      components.add(component);
+      let deps = this.resolver.recursiveDependenciesForTemplate(dir, component);
+      deps.forEach(c => components.add(c));
+    }
 
     this.debug(`Analyzing all components: ${[...components].join(", ")}`);
 
