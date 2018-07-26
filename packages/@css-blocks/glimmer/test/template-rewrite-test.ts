@@ -51,7 +51,7 @@ function rewrite(result: CSSAndMapping, analyzer: GlimmerAnalyzer, templatePath:
 }
 
 async function pipeline(projectDir: string, analyzer: GlimmerAnalyzer, entry: string, templatePath: string) {
-  await analyzer.analyze(projectDir, entry);
+  await analyzer.analyze(projectDir, [entry]);
   let result = await optimize(analyzer);
   let ast = rewrite(result, analyzer, templatePath);
   return { css: result.css, ast, styleMapping: result.styleMapping };

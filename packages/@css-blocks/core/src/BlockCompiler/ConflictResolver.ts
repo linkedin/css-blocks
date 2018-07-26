@@ -422,7 +422,7 @@ export class ConflictResolver {
     }
 
     // Wrap our list of CompoundSelectors in ParsedSelector containers and return.
-    return mergedSelectors.map(sel => new ParsedSelector(sel));
+    return mergedSelectors.map(sel => new ParsedSelector(sel, sel.toString()));
   }
   sourceLocation(block: Block, node: postcss.Node): SourceLocation | undefined {
     let blockPath = this.config.importer.debugIdentifier(block.identifier, this.config);

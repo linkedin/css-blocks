@@ -117,7 +117,7 @@ export class CssBlocksPlugin
       entries = flatten(objectValues(webpackEntry));
     }
 
-    let pending: PendingResult = this.analyzer.analyze(...entries)
+    let pending: PendingResult = this.analyzer.analyze("", entries)
       // If analysis fails, drain our BlockFactory, add error to compilation error list and propagate.
       .catch((err: Error) => {
         this.trace(`Error during analysis. Draining queue.`);
