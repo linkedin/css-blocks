@@ -1,7 +1,7 @@
 import {
   SerializedTemplateInfo,
   TemplateInfo,
-  TemplateInfoFactory
+  TemplateInfoFactory,
 } from "@opticss/template-api";
 import { whatever } from "@opticss/util";
 

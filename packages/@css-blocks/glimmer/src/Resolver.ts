@@ -8,7 +8,6 @@ import DependencyAnalyzer from "glimmer-analyzer";
 
 import { ResolvedFile } from "./Template";
 
-
 const DEBUG = debugGenerator("css-blocks:glimmer:resolver");
 
 /**
@@ -48,7 +47,8 @@ export class Resolver {
   // TODO: We need to automatically discover the file ending here – its not guaranteed to be a css file.
   private async tmplPathToStylesheetPath(dir: string, template: string): Promise<string | undefined> {
     // First try Classic Ember structure.
-    let classic = template.replace('templates/', 'styles/').replace('.hbs', '.block.css');
+    // TODO: There is a more robust way to do this path munging!
+    let classic = template.replace("templates/", "styles/").replace(".hbs", ".block.css");
     classic = path.join(dir, classic);
     if (fs.pathExistsSync(classic)) {
       DEBUG(`Discovered classic Block for template ${template}:`);
@@ -91,17 +91,18 @@ export class Resolver {
 
     if (!depAnalyzer) {
       let stylesheet = await this.tmplPathToStylesheetPath(dir, identifier);
-      if (!stylesheet ) { return undefined; }
+      if (!stylesheet) { return undefined; }
       return new ResolvedFile(
         (fs.readFileSync(stylesheet)).toString(),
         stylesheet,
-        stylesheet
+        stylesheet,
       );
     }
 
     // TODO: We need to automatically discover the file ending here – its not guaranteed to be a css file.
     identifier = depAnalyzer.project.resolver.identify(`stylesheet:${identifier}`);
     let file: string = depAnalyzer.project.resolver.resolve(identifier);
+    if (!file) { return undefined; }
     file = path.join(dir, depAnalyzer.project.paths.src, file);
 
     let content = (fs.readFileSync(file)).toString();
@@ -120,7 +121,7 @@ export class Resolver {
       return new ResolvedFile(
         (fs.readFileSync(template)).toString(),
         identifier,
-        identifier
+        identifier,
       );
     }
 

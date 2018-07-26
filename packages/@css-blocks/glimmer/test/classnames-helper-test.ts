@@ -70,7 +70,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
-      "{{/css-blocks/components/classnames 1 0 0 true 2 0 2 1 1}}",
+      "{{classnames 1 0 0 true 2 0 2 1 1}}",
     );
   });
   it("generates an ast fragment for a dependent style expression", () => {
@@ -91,7 +91,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
-      "{{/css-blocks/components/classnames 2 0 0 true 1 0 0 1 1 0 1 3}}",
+      "{{classnames 2 0 0 true 1 0 0 1 1 0 1 3}}",
     );
   });
   it("generates an ast fragment for a dependent style expression", () => {
@@ -112,7 +112,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
-      "{{/css-blocks/components/classnames 2 0 0 true 1 0 0 3 1 0 false 1 3}}",
+      "{{classnames 2 0 0 true 1 0 0 3 1 0 false 1 3}}",
     );
   });
 
@@ -130,7 +130,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
-      '{{/css-blocks/components/classnames 1 0 4 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3}}',
+      '{{classnames 1 0 4 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3}}',
     );
   });
 
@@ -152,7 +152,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
-      '{{/css-blocks/components/classnames 2 0 0 true 1 0 0 5 1 0 3 1 (/app/foo/helperz "blue") "red" 1 1 "orange" 1 2 "blue" 1 3}}',
+      '{{classnames 2 0 0 true 1 0 0 5 1 0 3 1 (/app/foo/helperz "blue") "red" 1 1 "orange" 1 2 "blue" 1 3}}',
     );
   });
   it("generates an ast fragment for optimized classes", () => {
@@ -175,7 +175,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
-      '{{/css-blocks/components/classnames 1 1 0 true 2 0 2 1 1 "a" -3 2 0 2}}',
+      '{{classnames 1 1 0 true 2 0 2 1 1 "a" -3 2 0 2}}',
     );
   });
   it('omits the boolean expression for single "and" and "or" values', () => {
@@ -198,7 +198,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
-      '{{/css-blocks/components/classnames 1 1 0 true 2 0 2 1 1 "a" -3 2 0 2}}',
+      '{{classnames 1 1 0 true 2 0 2 1 1 "a" -3 2 0 2}}',
     );
   });
   it("can negate boolean expressions", () => {
@@ -221,7 +221,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
-      '{{/css-blocks/components/classnames 1 1 0 true 2 0 2 1 1 "a" -3 2 0 -1 2}}',
+      '{{classnames 1 1 0 true 2 0 2 1 1 "a" -3 2 0 -1 2}}',
     );
   });
   it('can "or" boolean expressions', () => {
@@ -244,7 +244,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let result = print(helperGenerator(rewrite, element));
     expect(result).deep.equals(
-      '{{/css-blocks/components/classnames 1 1 0 true 2 0 2 1 1 "a" -2 2 0 -1 2}}',
+      '{{classnames 1 1 0 true 2 0 2 1 1 "a" -2 2 0 -1 2}}',
     );
   });
   it("can run the generated helper expression", () => {
@@ -270,7 +270,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
-      '{{/css-blocks/components/classnames 1 4 0 true 2 0 2 1 1 "a" 0 "b" 1 "c" 2 "d" 3}}');
+      '{{classnames 1 4 0 true 2 0 2 1 1 "a" 0 "b" 1 "c" 2 "d" 3}}');
     expect(run(ast)).deep.equals("a c");
   });
   it("false ternary picks the other branch", () => {
@@ -296,7 +296,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
-      '{{/css-blocks/components/classnames 1 4 0 false 2 0 2 1 1 "a" 0 "b" 1 "c" 2 "d" 3}}');
+      '{{classnames 1 4 0 false 2 0 2 1 1 "a" 0 "b" 1 "c" 2 "d" 3}}');
     expect(run(ast)).deep.equals("b");
   });
   it("dependent state group is allowed when class is set", () => {
@@ -322,7 +322,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
-      '{{/css-blocks/components/classnames 2 4 0 true 1 0 0 5 1 0 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3}}',
+      '{{classnames 2 4 0 true 1 0 0 5 1 0 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3}}',
     );
     expect(run(ast)).deep.equals("a d");
   });
@@ -349,7 +349,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
-      '{{/css-blocks/components/classnames 2 4 0 false 1 0 0 5 1 0 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3}}',
+      '{{classnames 2 4 0 false 1 0 0 5 1 0 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3}}',
     );
     expect(run(ast)).deep.equals("");
   });
@@ -376,7 +376,7 @@ describe("Classnames Helper", () => {
     element.seal();
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
-      '{{/css-blocks/components/classnames 2 4 0 true 1 0 0 5 1 0 3 1 undefined "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3}}',
+      '{{classnames 2 4 0 true 1 0 0 5 1 0 3 1 undefined "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3}}',
     );
     expect(run(ast)).deep.equals("a");
   });
@@ -446,7 +446,7 @@ describe("Classnames Helper", () => {
     });
     let ast = helperGenerator(rewrite, element);
     expect(print(ast)).deep.equals(
-      '{{/css-blocks/components/classnames 5 6 0 true 1 0 0 0 false 1 4 0 0 true 1 5 0 0 false 1 6 0 5 1 0 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3 "e" -2 2 2 5 "f" -2 2 2 -1 -1 -3 2 0 5}}',
+      '{{classnames 5 6 0 true 1 0 0 0 false 1 4 0 0 true 1 5 0 0 false 1 6 0 5 1 0 3 1 "blue" "red" 1 1 "orange" 1 2 "blue" 1 3 "a" 0 "b" 1 "c" 2 "d" 3 "e" -2 2 2 5 "f" -2 2 2 -1 -1 -3 2 0 5}}',
     );
     expect(run(ast)).deep.equals("a d e f");
   });
