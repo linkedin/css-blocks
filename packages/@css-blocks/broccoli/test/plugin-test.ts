@@ -1,6 +1,5 @@
 import * as assert from "assert";
-import * as fs from "fs-extra";
-// import * as path from "path";
+import * as path from "path";
 
 import { GlimmerAnalyzer } from "@css-blocks/glimmer";
 import { TempDir, buildOutput, createTempDir } from "broccoli-test-helper";
@@ -64,18 +63,18 @@ describe("Broccoli Plugin Test", function () {
 
       let compiler = new BroccoliCSSBlocks(input.path(), {
         entry: [entryComponentName],
+        root: path.join(__dirname, "../.."),
         output: "css-blocks.css",
         transport,
         analyzer,
       });
-      let output = await buildOutput(compiler);
+      await buildOutput(compiler);
 
       assert.ok(Object.keys(transport).length, "Transport Object populated");
       assert.ok(transport["mapping"], "Mapping property is populated in Transport Object");
       assert.ok(transport["blocks"], "Blocks property is populated in Transport Object");
       assert.ok(transport["analyzer"], "Analyzer property is populated in Transport Object");
       assert.ok(transport["css"], "CSS property is populated in Transport Object");
-      assert.equal(await fs.readFile(output.path("css-blocks.css"), "utf8"), transport["css"].content, "CSS File generated");
     });
   });
 });

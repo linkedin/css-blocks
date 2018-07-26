@@ -7,7 +7,7 @@ export { default as concat } from "./concat";
   for it when the helper is used. For instance:
 
   ```hbs
-    <div class="{{/css-blocks/components/concat thing "-foo" }}">...</div>
+    <div class="{{concat thing "-foo" }}">...</div>
   ```
 
   Will generate an import like:
@@ -22,13 +22,13 @@ export { default as concat } from "./concat";
   are directly produce Glimmer references from @glimmer/references.
 */
 export const cssBlocksHelpers = {
-  "/css-blocks/components/concat": {
+  "concat": {
     kind: "helper",
     module: "@css-blocks/glimmer/dist/src/helpers",
     name: "concat",
     meta: { factory: false },
   },
-  "/css-blocks/components/classnames": {
+  "classnames": {
     kind: "helper",
     module: "@css-blocks/glimmer/dist/src/helpers",
     name: "classnames",
