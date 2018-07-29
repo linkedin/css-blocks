@@ -113,6 +113,22 @@ module.exports = {
     // Fetch and validate user-provided options.
     let options = this.getOptions(env);
 
+    // In Ember, we need to inject the CSS Blocks runtime helpers.
+    // `app.import` is not a thing in Glimmer.
+    if (env.isEmber) {
+      env.app.import('node_modules/@css-blocks/glimmer/dist/src/helpers/classnames.js', {
+        using: [
+          { transformation: 'cjs', as: '@css-blocks/helpers/classnames' }
+        ]
+      });
+
+      env.app.import('node_modules/@css-blocks/glimmer/dist/src/helpers/concat.js', {
+        using: [
+          { transformation: 'cjs', as: '@css-blocks/helpers/concat' }
+        ]
+      });
+    }
+
     // TODO: Would like to get rid of this, is now only used in `this.astPlugin`.
     this.isEmber = env.isEmber;
 
@@ -203,9 +219,6 @@ module.exports = {
     options.optimization.enabled = false;
 
     // Update parserOpts to include the absolute path to our application code directory.
-    // TODO: Glimmer includes the `src` directory in working trees, while Ember treats
-    //       the working tree as the `app` root. This discrepancy is annoying and should
-    //       reconciled.
     options.parserOpts.rootDir = rootDir;
 
     // TODO: Better options validation, this is quick and dirty.

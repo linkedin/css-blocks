@@ -1,5 +1,0 @@
-@block-reference typography from "../../../styles/blocks/typography.css";
-
-:scope {
-  color: green;
-}

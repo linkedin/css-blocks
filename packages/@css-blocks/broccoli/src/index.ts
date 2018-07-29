@@ -20,8 +20,6 @@ export interface Transport {
   css?: string;
 }
 
-export type AnalyzerConstructor = { new (...args: any[]): Analyzer<keyof TemplateTypes> };
-
 export interface BroccoliOptions {
   entry: string[];
   output: string;
