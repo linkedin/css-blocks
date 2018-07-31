@@ -1,14 +1,17 @@
 :scope {
   --nav-width: 256px;
   background: #f3f6f8;
-  width: 100%;
+  width: calc(100% - var(--nav-width));
   min-height: 100vh;
   margin: 0 0 0 var(--nav-width);
 }
 
 .title {
-  margin: 0 0 12px 0;
-  color: red;
+  text-align: center;
+  margin: 24px 0 0 0;
+  display: inline-block;
+  width: 100%;
+  color: rgba(0, 0, 0, .85);
 }
 
 .test-container {
