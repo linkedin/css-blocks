@@ -7,7 +7,6 @@ const Plugin = require("broccoli-plugin")
 const debugGenerator = require("debug");
 const fs = require("fs-extra");
 const path = require("path");
-const symlinkOrCopy = require('symlink-or-copy');
 
 const DEBUG = debugGenerator("css-blocks:ember-cli");
 
@@ -35,18 +34,20 @@ class Transport {
 
 // Process-global dumping zone for CSS output as it comes through the pipeline 🤮
 // This will disappear once we have a functional language server.
-let PROCESS_OUTPUT = "";
 class CSSOutput extends Plugin {
   constructor(inputNodes, transport){
-    super(inputNodes, { name: "broccoli-css-blocks-output" });
+    super(inputNodes, { name: "broccoli-css-blocks-aggregator" });
     this.transport = transport;
   }
-  async build() {
-    PROCESS_OUTPUT += this.transport.css;
-    if (this._linked) { return } // Will this break Windows?
-    fs.rmdirSync(this.outputPath);
-    symlinkOrCopy.sync(this.inputPaths[0], this.outputPath);
-    this._linked = true;
+  build() {
+    console.log(this.inputPaths[0]);
+    let prev = path.join(this.inputPaths[0], "app.css");
+    let out = path.join(this.outputPath, "app.css");
+    fs.ensureFileSync(out);
+    fs.unlinkSync(out);
+    fs.ensureFileSync(out);
+    fs.appendFileSync(out, `${fs.readFileSync(prev)}\n\n/* CSS Blocks Start */\n\n${this.transport.css}\n/* CSS Blocks End */\n`);
+    this.transport.reset();
   }
 }
 
@@ -104,6 +105,18 @@ module.exports = {
     registry.add("glimmer-ast-plugin", this.astPlugin.bind(this));
   },
 
+  // TODO: This seems broken in Ember-CLI and should be fixed there.
+  // In-repo addons of dummy apps that must depend on the addon that
+  // contain it result in an infinite constructor loop. In order to
+  // test in-app addon integration in this addon, we must explicitly
+  // remote our dependency on the in-repo dummy addon. Not sure why
+  // Ember-cli adds the in-repo dummy addon as a child of the main
+  // addon...
+  discoverAddons(){
+    this._super.discoverAddons.apply(this, arguments);
+    delete this.addonPackages["in-repo-addon"];
+  },
+
   included(parent) {
     this._super.included.apply(this, arguments);
 
@@ -117,15 +130,11 @@ module.exports = {
     // `app.import` is not a thing in Glimmer.
     if (env.isEmber) {
       env.app.import('node_modules/@css-blocks/glimmer/dist/src/helpers/classnames.js', {
-        using: [
-          { transformation: 'cjs', as: '@css-blocks/helpers/classnames' }
-        ]
+        using: [{ transformation: 'cjs', as: '@css-blocks/helpers/classnames' }]
       });
 
       env.app.import('node_modules/@css-blocks/glimmer/dist/src/helpers/concat.js', {
-        using: [
-          { transformation: 'cjs', as: '@css-blocks/helpers/concat' }
-        ]
+        using: [{ transformation: 'cjs', as: '@css-blocks/helpers/concat' }]
       });
     }
 
@@ -147,30 +156,12 @@ module.exports = {
 
   },
 
-  // Once the build is finished, we can safely write our final CSS to
-  // disk and clean up the pipes a little bit.
-  async postBuild(result){
-    DEBUG(`Build finished – writing css-blocks.css to output."`);
-    let filename = this.isEmber ? "assets/vendor.css" : "app.css";
-    let out = path.join(result.directory, filename);
-    fs.ensureFileSync(out);
-    let prev = fs.readFileSync(out);
-    fs.unlinkSync(out);
-    fs.ensureFileSync(out);
-    fs.appendFileSync(out, `${prev}\n\n/* CSS Blocks Start */\n\n${PROCESS_OUTPUT}\n/* CSS Blocks End */\n`);
-
-    // Reset all magical shared memory objects between rebuilds 🤮
-    // This will disappear once we have a functional language server.
-    // TODO: Not be great for caching, will have to rework this later.
-    DEBUG(`Resetting all CSS caches.`);
-    PROCESS_OUTPUT = "";
-    for (let transport of this.transports) transport.reset();
-  },
-
   getEnv(parent){
 
     // Fetch a reference to the parent app
-    let app = parent.app ? parent.app : parent;
+    let current = this, app;
+    do { app = current.app || app; }
+    while (current.parent.parent && (current = current.parent));
 
     // The absolute path to the root of our app (aka: the directory that contains "src").
     // Needed because app root !== project root in addons – its located at `tests/dummy`.
@@ -220,6 +211,7 @@ module.exports = {
 
     // Update parserOpts to include the absolute path to our application code directory.
     options.parserOpts.rootDir = rootDir;
+    options.parserOpts.outputMode = "BEM_UNIQUE";
 
     // TODO: Better options validation, this is quick and dirty.
     if (options.output) {

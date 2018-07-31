@@ -7,6 +7,11 @@ const Router = EmberRouter.extend({
 });
 
 Router.map(function() {
+  this.route('global-styles');
+  this.route('route-block');
+  this.route('app-component');
+  this.route('ember-builtins');
+  this.route('addon-component');
 });
 
 export default Router;

@@ -1,3 +1,5 @@
+import * as crypto from "crypto";
+
 import { MultiMap, ObjectDictionary } from "@opticss/util";
 import { whatever } from "@opticss/util";
 import {
@@ -20,6 +22,24 @@ import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";
 import { Styles } from "./Styles";
 
+// Random seed for `get_guid`. Consistent for life of process.
+const RAND_SEED = Math.floor(Math.random() * 1000);
+
+/**
+ * Generates a 5 digit, process-wide globally unique
+ * identifier from a given input identifier. This
+ * generated identifier hash will remain consistent
+ * for the life of the process that spawned it.
+ * @prop  identifier  string  Input Block identifier.
+ * @returns This Block's guid hash.
+ */
+function gen_guid(identifier: string): string {
+  return crypto.createHash("md5")
+    .update(identifier + RAND_SEED)
+    .digest("hex")
+    .slice(0, 5);
+}
+
 export class Block
   extends Inheritable<Block, Block, never, BlockClass> {
 
@@ -28,6 +48,8 @@ export class Block
   private _identifier: FileIdentifier;
   private _implements: Block[] = [];
   private hasHadNameReset = false;
+
+  public readonly guid: string;
 
   /**
    * array of paths that this block depends on and, if changed, would
@@ -45,6 +67,7 @@ export class Block
     this._dependencies = new Set<string>();
     this.rootClass = new BlockClass(ROOT_CLASS, this);
     this.stylesheet = stylesheet;
+    this.guid = gen_guid(identifier);
     this.addClass(this.rootClass);
   }
 

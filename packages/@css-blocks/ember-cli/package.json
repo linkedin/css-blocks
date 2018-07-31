@@ -62,9 +62,8 @@
       "ember-cli-babel",
       "ember-cli-htmlbars"
     ],
-    "after": [
-      "test-addon",
-      "ember-cli-eyeglass"
+    "paths": [
+      "tests/dummy/lib/in-repo-addon"
     ]
   }
 }
