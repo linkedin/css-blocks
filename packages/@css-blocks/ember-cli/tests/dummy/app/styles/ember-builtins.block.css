@@ -9,6 +9,15 @@
 .input-helper {
   --input-helper: applied;
 }
+
 .textarea-helper {
   --textarea-helper: applied;
+}
+
+.select-helper {
+  --select-helper: applied;
+}
+
+.button-helper {
+  --button-helper: applied;
 }
