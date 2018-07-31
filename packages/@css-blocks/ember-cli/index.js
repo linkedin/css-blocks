@@ -40,7 +40,6 @@ class CSSOutput extends Plugin {
     this.transport = transport;
   }
   build() {
-    console.log(this.inputPaths[0]);
     let prev = path.join(this.inputPaths[0], "app.css");
     let out = path.join(this.outputPath, "app.css");
     fs.ensureFileSync(out);
@@ -146,6 +145,13 @@ module.exports = {
 
     // Analyze all templates and block files from `/addon` in addons.
     parent.treeForAddon = this.genTreeWrapper(env, options, parent.treeForAddon);
+
+    // Addons sacrifice the ability to deliver styles in any other way when they
+    // opt-in to CSS Blocks. This is in part because of a bug(?) in Ember CLI
+    // where the Styles tree is automagically included in vendor.css, without
+    // respecting CSS files pruned out during the `treeForAddon` hook.
+    // TODO: Fix that. https://github.com/ember-cli/ember-cli/blob/18af95f93f224961ee4f4a35af461683059b194f/lib/models/addon.js#L856
+    parent.treeForAddonStyles = () => undefined;
 
     // Analyze all templates and block files from `/app` in Ember apps.
     // Analyze all templates and block files from `/src` in Glimmer apps.
