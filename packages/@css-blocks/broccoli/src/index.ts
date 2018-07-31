@@ -47,9 +47,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     this.optimizationOptions = options.optimization || {};
     this.analyzer = options.analyzer;
     this.root = options.root || process.cwd();
-
     this.transport.css = this.transport.css ? this.transport.css : "";
-
   }
 
   async build() {
@@ -109,7 +107,7 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
 
         // If this Block has a representation on disk, remove it from our output tree.
         if (filesystemPath) {
-          debug(`Removing block file ${path.relative(options.rootDir, filesystemPath)} from output.`);
+          debug(`Removing block file ${filesystemPath} from output.`);
           fs.unlinkSync(filesystemPath);
         }
 

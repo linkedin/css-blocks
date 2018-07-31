@@ -1,7 +1,7 @@
 import { moduleForComponent, test } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
 
-moduleForComponent('-css-blocks-classnames', 'helper:-css-block-classnames', {
+moduleForComponent('-css-blocks-classnames', 'Helper | -css-block-classnames', {
   integration: true
 });
 

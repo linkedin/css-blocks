@@ -198,11 +198,9 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
   public cssClass(config: ResolvedConfiguration): string {
     switch (config.outputMode) {
       case OutputMode.BEM:
-        if (this.isRoot) {
-          return `${this.block.name}`;
-        } else {
-          return `${this.block.name}__${this.name}`;
-        }
+        return this.isRoot ? `${this.block.name}` : `${this.block.name}__${this.name}`;
+      case OutputMode.BEM_UNIQUE:
+        return this.isRoot ? `${this.block.name}_${this.block.guid}` : `${this.block.name}_${this.block.guid}__${this.name}`;
       default:
         return assertNever(config.outputMode);
     }

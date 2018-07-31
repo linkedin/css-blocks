@@ -1,7 +1,7 @@
 import { moduleForComponent, test } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
 
-moduleForComponent('-css-blocks-concat', 'helper:-css-blocks-concat', {
+moduleForComponent('-css-blocks-concat', 'Helper | -css-blocks-concat', {
   integration: true
 });
 

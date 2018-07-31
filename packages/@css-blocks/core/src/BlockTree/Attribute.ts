@@ -169,8 +169,9 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   cssClass(config: ResolvedConfiguration) {
     switch (config.outputMode) {
       case OutputMode.BEM:
-        let cssClassName = this.blockClass.cssClass(config);
-        return `${cssClassName}--${this.token.name}`;
+        return `${this.blockClass.cssClass(config)}--${this.token.name}`;
+      case OutputMode.BEM_UNIQUE:
+        return `${this.blockClass.cssClass(config)}--${this.token.name}`;
       default:
         return assertNever(config.outputMode);
     }
