@@ -2,16 +2,16 @@
   "name": "@css-blocks/glimmer",
   "version": "0.19.0",
   "description": "Statically analyze & rewrite the css-block styles in Handlebars templates.",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/cjs/src/index.js",
+  "types": "dist/cjs/src/index.d.ts",
   "files": [
     "dist",
     "README.md",
     "types-local"
   ],
   "scripts": {
-    "test": "mocha --opts test/mocha.opts dist/test",
-    "compile": "rm -rf dist && tsc -p tsconfig.json",
+    "test": "mocha --opts test/mocha.opts dist/cjs/test",
+    "compile": "rm -rf dist && tsc --version && tsc -p tsconfig.json && tsc -p tsconfig.amd.json -m AMD",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
     "prepublish": "yarn run compile && yarn run lintall",
@@ -55,7 +55,12 @@
     "watch": "^1.0.2"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@css-blocks/core": "^0.19.0",
+=======
+    "@amiller-gh/glimmer-analyzer": "^0.4.0",
+    "@css-blocks/core": "^0.18.0",
+>>>>>>> fix: Build @css-blocks/glimmer to AMD so Ember can import the runtime.
     "@glimmer/compiler": "^0.33.0",
     "@glimmer/resolution-map-builder": "0.5.1",
     "@glimmer/resolver": "^0.4.3",
@@ -67,8 +72,8 @@
     "@types/glob": "^5.0.30",
     "debug": "^2.6.8",
     "fs-extra": "^6.0.1",
-    "@amiller-gh/glimmer-analyzer": "^0.4.0",
     "glob": "^7.1.2",
+    "global": "^4.3.2",
     "object.values": "^1.0.4"
   }
 }

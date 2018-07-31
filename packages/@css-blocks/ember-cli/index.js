@@ -3,7 +3,7 @@
 const { BroccoliCSSBlocks } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
 
-const Plugin = require("broccoli-plugin")
+const Plugin = require("broccoli-plugin");
 const debugGenerator = require("debug");
 const fs = require("fs-extra");
 const path = require("path");
@@ -23,6 +23,7 @@ const NOOP = (tree) => tree;
 class Transport {
   constructor(id) {
     this.id = id;
+    this.reset();
   }
   reset() {
     this.css = "";
@@ -35,17 +36,17 @@ class Transport {
 // Process-global dumping zone for CSS output as it comes through the pipeline 🤮
 // This will disappear once we have a functional language server.
 class CSSOutput extends Plugin {
-  constructor(inputNodes, transport){
+  constructor(inputNodes, transport, out) {
     super(inputNodes, { name: "broccoli-css-blocks-aggregator" });
     this.transport = transport;
+    this.out = out;
   }
+
   build() {
-    let prev = path.join(this.inputPaths[0], "app.css");
-    let out = path.join(this.outputPath, "app.css");
-    fs.ensureFileSync(out);
-    fs.unlinkSync(out);
-    fs.ensureFileSync(out);
-    fs.appendFileSync(out, `${fs.readFileSync(prev)}\n\n/* CSS Blocks Start */\n\n${this.transport.css}\n/* CSS Blocks End */\n`);
+    let prev = path.join(this.inputPaths[0], this.out);
+    let out = path.join(this.outputPath, this.out);
+    let old = fs.existsSync(prev) ? fs.readFileSync(prev) : "";
+    fs.writeFileSync(out, `${old}\n\n/* CSS Blocks Start */\n\n${this.transport.css}\n/* CSS Blocks End */\n`);
     this.transport.reset();
   }
 }
@@ -125,26 +126,24 @@ module.exports = {
     // Fetch and validate user-provided options.
     let options = this.getOptions(env);
 
-    // In Ember, we need to inject the CSS Blocks runtime helpers.
-    // `app.import` is not a thing in Glimmer.
-    if (env.isEmber) {
-      env.app.import('node_modules/@css-blocks/glimmer/dist/src/helpers/classnames.js', {
-        using: [{ transformation: 'cjs', as: '@css-blocks/helpers/classnames' }]
+    // In Ember, we need to inject the CSS Blocks runtime helpers. Only do this in
+    // the top level addon. `app.import` is not a thing in Glimmer.
+    // TODO: Pull in as CJS so we don't need to build @css-blocks/glimmer to CJS *and* AMD.
+    //       Blocked by: https://github.com/rwjblue/ember-cli-cjs-transform/issues/72
+    if (env.isEmber && env.app === parent) {
+      env.app.import('node_modules/@css-blocks/glimmer/dist/amd/src/helpers/classnames.js', {
+        using: [{ transformation: 'amd', as: '@css-blocks/helpers/classnames' }],
+        resolveFrom: __dirname,
       });
 
-      env.app.import('node_modules/@css-blocks/glimmer/dist/src/helpers/concat.js', {
-        using: [{ transformation: 'cjs', as: '@css-blocks/helpers/concat' }]
+      env.app.import('node_modules/@css-blocks/glimmer/dist/amd/src/helpers/concat.js', {
+        using: [{ transformation: 'amd', as: '@css-blocks/helpers/concat' }],
+        resolveFrom: __dirname,
       });
     }
 
     // TODO: Would like to get rid of this, is now only used in `this.astPlugin`.
     this.isEmber = env.isEmber;
-
-    // Analyze all templates and block files from `/app` in addons.
-    parent.treeForApp = this.genTreeWrapper(env, options, parent.treeForApp);
-
-    // Analyze all templates and block files from `/addon` in addons.
-    parent.treeForAddon = this.genTreeWrapper(env, options, parent.treeForAddon);
 
     // Addons sacrifice the ability to deliver styles in any other way when they
     // opt-in to CSS Blocks. This is in part because of a bug(?) in Ember CLI
@@ -152,6 +151,12 @@ module.exports = {
     // respecting CSS files pruned out during the `treeForAddon` hook.
     // TODO: Fix that. https://github.com/ember-cli/ember-cli/blob/18af95f93f224961ee4f4a35af461683059b194f/lib/models/addon.js#L856
     parent.treeForAddonStyles = () => undefined;
+
+    // Analyze all templates and block files from `/app` in addons.
+    parent.treeForApp = this.genTreeWrapper(env, options, parent.treeForApp);
+
+    // Analyze all templates and block files from `/addon` in addons.
+    parent.treeForAddon = this.genTreeWrapper(env, options, parent.treeForAddon);
 
     // Analyze all templates and block files from `/app` in Ember apps.
     // Analyze all templates and block files from `/src` in Glimmer apps.
@@ -235,6 +240,7 @@ module.exports = {
 
   genTreeWrapper(env, options, prev = NOOP) {
     const { isEmber, app, parent, rootDir, moduleConfig } = env;
+    const outputPath = isEmber ? "app.css" : "src/ui/styles/app.css";
 
     // In Ember, we treat every template as an entry point. `BroccoliCSSBlocks` will
     // automatically discover all template files if an empty entry array is passed.
@@ -257,7 +263,7 @@ module.exports = {
 
     return (tree) => {
       tree = new BroccoliCSSBlocks(tree, broccoliOptions);
-      app.trees.styles = new CSSOutput([app.trees.styles, tree], transport);
+      app.trees.styles = new CSSOutput([app.trees.styles, tree], transport, outputPath);
       return prev.call(parent, tree);
     };
   }
