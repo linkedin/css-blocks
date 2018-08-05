@@ -52,12 +52,32 @@ module("Acceptance | Template Discovery", function(hooks) {
   test("Addon Component Block Integration", async function(assert) {
     await visit("/addon-component");
     assert.equal(currentURL(), "/addon-component", "Navigated to test case");
-    assert.ok(varIsPresent("#scope", "addon-component-block-scope"), "Scope style applied to root element");
-    assert.ok(varIsPresent("#sub-class", "addon-component-block-class"), "Sub-classes applied to children");
-    assert.ok(varIsNotPresent("#scope", "addon-component-block-scope-state"), "Scope state not applied when disabled");
-    assert.ok(varIsNotPresent("#sub-class", "addon-component-block-class-state"), "Sub-class state not applied when disabled");
+    assert.ok(varIsPresent("#addon-component-scope", "addon-component-block-scope"), "Scope style applied to root element");
+    assert.ok(varIsPresent("#addon-component-sub-class", "addon-component-block-class"), "Sub-classes applied to children");
+    assert.ok(varIsNotPresent("#addon-component-scope", "addon-component-block-scope-state"), "Scope state not applied when disabled");
+    assert.ok(varIsNotPresent("#addon-component-sub-class", "addon-component-block-class-state"), "Sub-class state not applied when disabled");
     await click("#toggle-enabled");
-    assert.ok(varIsPresent("#scope", "addon-component-block-scope-state"), "Scope state applied when enabled");
-    assert.ok(varIsPresent("#sub-class", "addon-component-block-class-state"), "Sub-class state applied when enabled");
+    assert.ok(varIsPresent("#addon-component-scope", "addon-component-block-scope-state"), "Scope state applied when enabled");
+    assert.ok(varIsPresent("#addon-component-sub-class", "addon-component-block-class-state"), "Sub-class state applied when enabled");
+  });
+
+  test("Eager Engine Block Integration", async function(assert) {
+    await visit("/in-repo-engine");
+    assert.equal(currentURL(), "/in-repo-engine", "Navigated to test case");
+    assert.ok(varIsPresent("#eager-engine-scope", "in-repo-eager-engine-scope"), "Scope style applied to root element");
+
+    assert.ok(varIsPresent("#addon-component-scope", "addon-component-block-scope"), "Scope style applied to root element");
+    assert.ok(varIsPresent("#addon-component-sub-class", "addon-component-block-class"), "Sub-classes applied to children");
+    assert.ok(varIsNotPresent("#addon-component-scope", "addon-component-block-scope-state"), "Scope state not applied when disabled");
+    assert.ok(varIsNotPresent("#addon-component-sub-class", "addon-component-block-class-state"), "Sub-class state not applied when disabled");
+    await click("#toggle-enabled");
+    assert.ok(varIsPresent("#addon-component-scope", "addon-component-block-scope-state"), "Scope state applied when enabled");
+    assert.ok(varIsPresent("#addon-component-sub-class", "addon-component-block-class-state"), "Sub-class state applied when enabled");
+  });
+
+  skip("Lazy Engine Block Integration", async function(assert) {
+    await visit("/in-repo-lazy-engine");
+    assert.equal(currentURL(), "/in-repo-lazy-engine", "Navigated to test case");
+    assert.ok(varIsPresent("#scope", "in-repo-lazy-engine-scope"), "Scope style applied to root element");
   });
 });

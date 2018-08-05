@@ -12,6 +12,8 @@ Router.map(function() {
   this.route('app-component');
   this.route('ember-builtins');
   this.route('addon-component');
+  this.mount('in-repo-engine');
+  this.mount('in-repo-lazy-engine');
 });
 
 export default Router;

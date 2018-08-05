@@ -51,41 +51,59 @@ class CSSOutput extends Plugin {
   }
 }
 
+
 module.exports = {
   name: '@css-blocks/ember-cli',
   isDevelopingAddon() { return true; },
-  transports: [],
+  transports: new Map(),
+  _owners: new Set(),
+
+  _modulePrefix() {
+    let parent = this.parent;
+    let config = typeof parent.config === "function" ? parent.config() || {} : {};
+    let name = typeof parent.name === "function" ? parent.name() : parent.name;
+    return parent.modulePrefix || config.modulePrefix || name || "";
+  },
 
   // Shared AST plugin implementation for Glimmer and Ember.
   astPlugin(env) {
 
-    for (let transport of this.transports) {
+    let modulePrefix = this._modulePrefix();
+    let transport = this.transports.get(this.parent);
 
-      // Woo, shared memory wormhole!...
-      let { analyzer, mapping } = transport;
+    // If there is no analyzer or mapping for this template in the transport, don't do anything.
+    if (!transport) {
+      DEBUG(`No transport object found found for "${modulePrefix}". Skipping rewrite.`);
+      return { name: 'css-blocks-noop', visitors: {} };
+    }
 
-      if (!analyzer || !mapping) { continue; }
+    // Woo, shared memory wormhole!...
+    let { analyzer, mapping } = transport;
 
-      // TODO: Write a better `getAnalysis` method on `Analyzer`
-      // TODO: The differences in what Ember and Glimmer provide in env.meta should be resolved.
-      let analysis;
-      if (this.isEmber) {
-        analysis = analyzer.analyses().find(a => env.meta.moduleName && !!~env.meta.moduleName.indexOf(a.template.path));
-      } else {
-        analysis = analyzer.analyses().find(a => a.template.identifier === env.meta.specifier);
-      }
+    // If there is no analyzer or mapping for this template in the transport, don't do anything.
+    if (!analyzer || !mapping) {
+      DEBUG(`No mapping object found found for template "${env.meta.moduleName || env.meta.specifier}". Skipping rewrite.`);
+      return { name: 'css-blocks-noop', visitors: {} };
+    }
 
-      // If no analysis found for this template, keep looking.
-      if (!analysis) { continue; }
-
-      // If we do have a matching analysis, run the rewriter transforms!
-      DEBUG(`Generating AST rewriter for "${analysis.template.identifier}"`);
-      return new GlimmerRewriter(env.syntax, mapping, analysis);
+    // TODO: Write a better `getAnalysis` method on `Analyzer`
+    // TODO: The differences in what Ember and Glimmer provide in env.meta should be resolved.
+    let analysis;
+    if (this.isEmber) {
+      analysis = analyzer.analyses().find(a => env.meta.moduleName === path.join(modulePrefix, a.template.identifier));
+    } else {
+      analysis = analyzer.analyses().find(a => env.meta.specifier === a.template.identifier);
     }
 
     // If there is no analysis for this template in any of the transports, don't do anything.
-    DEBUG(`No analysis found for template "${env.meta.moduleName || env.meta.specifier}". Skipping rewrite.`);
-    return { name: 'css-blocks-noop', visitors: {} };
+    if (!analysis) {
+      DEBUG(`No analysis found for template "${env.meta.moduleName || env.meta.specifier}". Skipping rewrite.`);
+      return { name: 'css-blocks-noop', visitors: {} };
+    }
+
+    // If we do have a matching analysis, run the rewriter transforms!
+    DEBUG(`Generating AST rewriter for "${analysis.template.identifier}"`);
+    return new GlimmerRewriter(env.syntax, mapping, analysis, this.options.parserOpts);
 
   },
 
@@ -115,16 +133,25 @@ module.exports = {
   discoverAddons(){
     this._super.discoverAddons.apply(this, arguments);
     delete this.addonPackages["in-repo-addon"];
+    delete this.addonPackages["in-repo-engine"];
+    delete this.addonPackages["in-repo-lazy-engine"];
   },
 
   included(parent) {
     this._super.included.apply(this, arguments);
 
+    // Engines' children are initialized twice, once by
+    // `ember-engines/lib/engine-addon.js`, and once by
+    // `ember-cli/lib/models/addon.js`. This feels like
+    // a bug in Ember CLI.
+    if (this._owners.has(parent)) { return; }
+    this._owners.add(parent);
+
     // Fetch information about the environment we're running in.
     let env = this.getEnv(parent);
 
     // Fetch and validate user-provided options.
-    let options = this.getOptions(env);
+    let options = this.options = this.getOptions(env);
 
     // In Ember, we need to inject the CSS Blocks runtime helpers. Only do this in
     // the top level addon. `app.import` is not a thing in Glimmer.
@@ -196,11 +223,13 @@ module.exports = {
       moduleConfig.app.mainPath = "src";
     }
 
+    let modulePrefix = this._modulePrefix();
+
     return {
       parent,  app,
       rootDir, isEmber,
       isAddon, isGlimmer,
-      moduleConfig,
+      moduleConfig, modulePrefix,
     };
   },
 
@@ -239,7 +268,7 @@ module.exports = {
   },
 
   genTreeWrapper(env, options, prev = NOOP) {
-    const { isEmber, app, parent, rootDir, moduleConfig } = env;
+    const { isEmber, app, parent, rootDir, moduleConfig, modulePrefix } = env;
     const outputPath = isEmber ? "app.css" : "src/ui/styles/app.css";
 
     // In Ember, we treat every template as an entry point. `BroccoliCSSBlocks` will
@@ -247,10 +276,12 @@ module.exports = {
     const entry = isEmber ? [] : (Array.isArray(options.entry) ? options.entry : [options.entry]);
 
     // I hate shared memory...
-    let transport = new Transport(rootDir);
-    this.transports.push(transport);
+    let transport = new Transport(modulePrefix);
+    this.transports.set(this.parent, transport);
+    DEBUG(`Created transport object for ${modulePrefix}`);
 
     let analyzer = new GlimmerAnalyzer(options.parserOpts, options.analysisOpts, moduleConfig);
+    analyzer.transport = transport;
 
     const broccoliOptions = {
       entry,
@@ -262,8 +293,18 @@ module.exports = {
     };
 
     return (tree) => {
+      if (!tree) { return prev.call(parent, tree); }
       tree = new BroccoliCSSBlocks(tree, broccoliOptions);
       app.trees.styles = new CSSOutput([app.trees.styles, tree], transport, outputPath);
+
+      // Mad hax for Engines support 💩 Right now, engines will throw away the tree passed
+      // to `treeForAddon` and re-generate it. In order for template rewriting to happen
+      // *after* analysis, we need to overwrite the addon tree on the Engine and clear
+      // the template files cache. This cache is seeded during parent app's initialization
+      // of the engine in `this.jshintAddonTree()`.
+      parent.options && parent.options.trees && (parent.options.trees.addon = tree);
+      parent._cachedAddonTemplateFiles = undefined;
+
       return prev.call(parent, tree);
     };
   }
