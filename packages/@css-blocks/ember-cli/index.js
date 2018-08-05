@@ -46,11 +46,11 @@ class CSSOutput extends Plugin {
     let prev = path.join(this.inputPaths[0], this.out);
     let out = path.join(this.outputPath, this.out);
     let old = fs.existsSync(prev) ? fs.readFileSync(prev) : "";
+    fs.ensureFileSync(out);
     fs.writeFileSync(out, `${old}\n\n/* CSS Blocks Start */\n\n${this.transport.css}\n/* CSS Blocks End */\n`);
     this.transport.reset();
   }
 }
-
 
 module.exports = {
   name: '@css-blocks/ember-cli',
