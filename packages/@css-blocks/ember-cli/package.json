@@ -26,32 +26,35 @@
     "broccoli-funnel": "^2.0.1",
     "broccoli-merge-trees": "^3.0.0",
     "debug": "^3.1.0",
-    "ember-cli-babel": "^6.6.0",
-    "ember-cli-htmlbars": "^2.0.1",
+    "ember-cli-babel": "^6.16.0",
+    "ember-cli-htmlbars": "^3.0.0",
     "fs-extra": "^7.0.0",
     "symlink-or-copy": "^1.2.0"
   },
   "devDependencies": {
     "broccoli-asset-rev": "^2.7.0",
     "ember-ajax": "^3.0.0",
-    "ember-cli": "~2.18.2",
+    "ember-cli": "~3.3.0",
     "ember-cli-eslint": "^4.2.1",
     "ember-cli-htmlbars-inline-precompile": "^1.0.0",
-    "ember-cli-inject-live-reload": "^1.4.1",
-    "ember-cli-qunit": "^4.1.1",
-    "ember-cli-sri": "^2.1.0",
+    "ember-cli-inject-live-reload": "^1.8.1",
+    "ember-cli-qunit": "^4.3.2",
+    "ember-cli-sri": "^2.1.1",
     "ember-cli-uglify": "^2.1.0",
     "ember-disable-prototype-extensions": "^1.1.2",
-    "ember-engines": "^0.5.20",
+    "ember-engines": "0.5.20",
     "ember-export-application-global": "^2.0.0",
     "ember-load-initializers": "^1.1.0",
     "ember-maybe-import-regenerator": "^0.1.6",
-    "ember-resolver": "^4.0.0",
-    "ember-source": "~2.18.0",
+    "ember-resolver": "^5.0.0",
+    "ember-source": "~3.3.0",
     "ember-try": "^0.2.23",
-    "eslint-plugin-ember": "^5.0.0",
-    "eslint-plugin-node": "^6.0.1",
-    "loader.js": "^4.2.3"
+    "eslint-plugin-ember": "^5.2.0",
+    "eslint-plugin-node": "^7.0.1",
+    "in-repo-addon": "link:./tests/dummy/lib/in-repo-addon",
+    "in-repo-engine": "link:./tests/dummy/lib/in-repo-engine",
+    "in-repo-lazy-engine": "link:./tests/dummy/lib/in-repo-lazy-engine",
+    "loader.js": "^4.7.0"
   },
   "engines": {
     "node": "6.* || >= 8.*"
@@ -63,7 +66,9 @@
       "ember-cli-htmlbars"
     ],
     "paths": [
-      "tests/dummy/lib/in-repo-addon"
+      "tests/dummy/lib/in-repo-addon",
+      "tests/dummy/lib/in-repo-engine",
+      "tests/dummy/lib/in-repo-lazy-engine"
     ]
   }
 }

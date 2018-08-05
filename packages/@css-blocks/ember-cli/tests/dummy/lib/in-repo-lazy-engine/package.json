@@ -1,8 +1,9 @@
 {
   "version": "0.0.0",
-  "name": "in-repo-addon",
+  "name": "in-repo-lazy-engine",
   "keywords": [
-    "ember-addon"
+    "ember-addon",
+    "ember-engine"
   ],
   "dependencies": {
     "@css-blocks/ember-cli": "*",
