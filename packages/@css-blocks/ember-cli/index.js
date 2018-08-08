@@ -7,6 +7,7 @@ const Plugin = require("broccoli-plugin");
 const debugGenerator = require("debug");
 const fs = require("fs-extra");
 const path = require("path");
+const symlinkOrCopy = require('symlink-or-copy');
 
 const DEBUG = debugGenerator("css-blocks:ember-cli");
 
@@ -17,6 +18,9 @@ GLIMMER_MODULE_CONFIG.collections.components.types.push("stylesheet");
 
 // Default tree hook no-op function.
 const NOOP = (tree) => tree;
+
+// Common CSS preprocessor file endings to auto-discover
+const COMMON_FILE_ENDINGS = [".scss", ".sass", ".less", ".stylus"];
 
 // Magic shared memory transport object 🤮
 // This will disappear once we have a functional language server.
@@ -43,8 +47,36 @@ class CSSOutput extends Plugin {
   }
 
   build() {
-    let prev = path.join(this.inputPaths[0], this.out);
-    let out = path.join(this.outputPath, this.out);
+    let output = this.outputPath;
+    let input = this.inputPaths[0];
+
+    // Copy everything over to the new folder.
+    let contents = fs.readdirSync(input);
+    for (let name of contents) {
+      let outFile = path.join(output, name);
+      if (!fs.existsSync(outFile)) {
+        symlinkOrCopy.sync(path.join(input, name), outFile);
+      }
+    }
+
+    // Auto-discover common preprocessor extensions.
+    if (!this._out) {
+      let prev = path.parse(path.join(input, this.out));
+      let origExt = prev.ext;
+      prev.base = undefined; // Needed for path.format to register ext change
+      for (let ending of COMMON_FILE_ENDINGS) {
+        prev.ext = ending;
+        if (fs.existsSync(path.format(prev))) { break; }
+        prev.ext = origExt;
+      }
+      let out = path.parse(this.out);
+      out.base = undefined;
+      out.ext = prev.ext;
+      this._out = path.format(out);
+    }
+
+    let prev = path.join(input, this._out);
+    let out = path.join(output, this._out);
     let old = fs.existsSync(prev) ? fs.readFileSync(prev) : "";
     fs.ensureFileSync(out);
     fs.writeFileSync(out, `${old}\n\n/* CSS Blocks Start */\n\n${this.transport.css}\n/* CSS Blocks End */\n`);
@@ -153,6 +185,9 @@ module.exports = {
     // Fetch and validate user-provided options.
     let options = this.options = this.getOptions(env);
 
+    // If the consuming app has explicitly disabled CSS Blocks, exit.
+    if (options.disabled) { return; }
+
     // In Ember, we need to inject the CSS Blocks runtime helpers. Only do this in
     // the top level addon. `app.import` is not a thing in Glimmer.
     // TODO: Pull in as CJS so we don't need to build @css-blocks/glimmer to CJS *and* AMD.
@@ -245,6 +280,9 @@ module.exports = {
         analysisOpts: {},
         optimization: {},
       };
+    options.parserOpts || (options.parserOpts = {});
+    options.analysisOpts || (options.analysisOpts = {});
+    options.optimization || (options.optimization = {});
 
     // Optimization is always disabled for now, until we get project-wide analysis working.
     options.optimization.enabled = false;
@@ -253,12 +291,12 @@ module.exports = {
     options.parserOpts.rootDir = rootDir;
     options.parserOpts.outputMode = "BEM_UNIQUE";
 
-    // TODO: Better options validation, this is quick and dirty.
-    if (options.output) {
-      throw new Error(`CSS Blocks output file names are auto-generated in ${isEmber ? "Ember": "glimmer"} apps. Do not pass an "output" option in your CSS Blocks config.`);
+
+    if (options.output !== undefined && typeof options.output !== "string") {
+      throw new Error("Invalid css-block options in `ember-cli-build.js`: Output must be a string or array.");
     }
     if (!isEmber && typeof options.entry !== "string" && !Array.isArray(options.entry)) {
-      throw new Error("Invalid css-block options in `ember-cli-build.js`: Entry option must be a string or array.");
+      throw new Error("Invalid css-block options in `ember-cli-build.js`: Entry must be a string or array.");
     }
     if (isEmber && options.entry) {
       throw new Error(`CSS Blocks entry points are auto-discovered in Ember apps. Do not pass an "entry" option in your CSS Blocks config.`);
@@ -269,7 +307,8 @@ module.exports = {
 
   genTreeWrapper(env, options, prev = NOOP) {
     const { isEmber, app, parent, rootDir, moduleConfig, modulePrefix } = env;
-    const outputPath = isEmber ? "app.css" : "src/ui/styles/app.css";
+
+    const outputPath = options.output || (isEmber ? `app.css` : "src/ui/styles/app.css");
 
     // In Ember, we treat every template as an entry point. `BroccoliCSSBlocks` will
     // automatically discover all template files if an empty entry array is passed.
