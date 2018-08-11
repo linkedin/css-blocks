@@ -177,7 +177,7 @@ export function makePlugin(transformOpts: { rewriter: Rewriter }): () => PluginO
                 this.statementsToRemove.push(binding.path as NodePath<Statement>);
                 for (let ref of binding.referencePaths) {
                   if (!isJSXExpressionContainer(ref.parentPath.node) && !isConsoleLogStatement(ref.node)) {
-                    this.statementsToRemove.push(ref.getStatementParent() as NodePath<Statement>);
+                    this.statementsToRemove.push(ref.getStatementParent());
                   }
                 }
               }
@@ -234,7 +234,8 @@ function isRemoved(path: NodePath<Node>): boolean {
       if (!element) return true;
       if (element.node !== p.node) return true;
     } else {
-      if (p.parentPath.get(p.parentKey).node !== p.node) {
+      let parent = p.parentPath.get(p.parentKey);
+      if (Array.isArray(parent) || parent.node !== p.node) {
         return true;
       }
     }

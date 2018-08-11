@@ -89,6 +89,8 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
     switch (config.outputMode) {
       case OutputMode.BEM:
         return `${this.parent.cssClass(config)}${ this.isPresenceRule ? "" : `-${this.value}`}`;
+      case OutputMode.BEM_UNIQUE:
+        return `${this.parent.cssClass(config)}${ this.isPresenceRule ? "" : `-${this.value}`}`;
       default:
         return assertNever(config.outputMode);
     }

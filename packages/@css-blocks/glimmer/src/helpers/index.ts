@@ -1,13 +1,16 @@
 export { default as classnames } from "./classnames";
 export { default as concat } from "./concat";
 
+export const CONCAT_HELPER_NAME = "-css-blocks-concat";
+export const CLASSNAMES_HELPER_NAME = "-css-blocks-classnames";
+
 /*
   This metadata tells Glimmer's Bundle Compiler where
   the helpers are located so it can codegen an ES6 import
   for it when the helper is used. For instance:
 
   ```hbs
-    <div class="{{/css-blocks/components/concat thing "-foo" }}">...</div>
+    <div class="{{-css-blocks-concat thing "-foo" }}">...</div>
   ```
 
   Will generate an import like:
@@ -22,16 +25,16 @@ export { default as concat } from "./concat";
   are directly produce Glimmer references from @glimmer/references.
 */
 export const cssBlocksHelpers = {
-  "/css-blocks/components/concat": {
+  "concat": {
     kind: "helper",
     module: "@css-blocks/glimmer/dist/src/helpers",
-    name: "concat",
+    name: CONCAT_HELPER_NAME,
     meta: { factory: false },
   },
-  "/css-blocks/components/classnames": {
+  "classnames": {
     kind: "helper",
     module: "@css-blocks/glimmer/dist/src/helpers",
-    name: "classnames",
+    name: CLASSNAMES_HELPER_NAME,
     meta: { factory: false },
   },
 };

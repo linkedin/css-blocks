@@ -1,0 +1,45 @@
+:scope {
+  --nav-width: 256px;
+  background: #f3f6f8;
+  width: calc(100% - var(--nav-width));
+  min-height: 100vh;
+  margin: 0 0 0 var(--nav-width);
+}
+
+.title {
+  text-align: center;
+  margin: 24px 0 0 0;
+  display: inline-block;
+  width: 100%;
+  color: rgba(0, 0, 0, .85);
+}
+
+.test-container {
+  margin: auto;
+  width: 70%;
+  position: absolute;
+  left: calc(50% + calc(var(--nav-width) / 2));
+  top: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 2px 3px rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  padding: 12px;
+  min-height: 70vh;
+  background: white;
+}
+
+.test-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: var(--nav-width);
+  padding: 32px;
+  background: #e1e9ee;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.test-nav-item {
+  color: green;
+}

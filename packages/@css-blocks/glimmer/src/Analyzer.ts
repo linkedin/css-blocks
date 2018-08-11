@@ -1,48 +1,45 @@
-import {
-  Analysis,
+
+import {  Analysis,
   AnalysisOptions,
   Analyzer,
   Block,
   BlockClass,
+  BlockFactory,
   Options,
-  ResolvedConfiguration,
 } from "@css-blocks/core";
+import { ResolverConfiguration } from "@glimmer/resolver";
 import { preprocess, traverse } from "@glimmer/syntax";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as debugGenerator from "debug";
-import DependencyAnalyzer from "glimmer-analyzer";
+import { postcss } from "opticss";
 
 import { ElementAnalyzer } from "./ElementAnalyzer";
-import { ResolvedFile } from "./GlimmerProject";
-import { Project } from "./project";
+import { Resolver } from "./Resolver";
+import { TEMPLATE_TYPE } from "./Template";
 
 export type AttributeContainer = Block | BlockClass;
-export type TEMPLATE_TYPE = "GlimmerTemplates.ResolvedFile";
 export type GlimmerAnalysis = Analysis<TEMPLATE_TYPE>;
 
 export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
-  project: Project;
+  blockFactory: BlockFactory;
+  resolver: Resolver;
   debug: debugGenerator.IDebugger;
-  options: ResolvedConfiguration;
 
   constructor(
-    project: Project | string,
-    options?: Options,
-    analysisOpts?: AnalysisOptions,
+    cssBlocksOpts: Options,
+    analysisOpts: AnalysisOptions,
+    moduleConfig: ResolverConfiguration,
   ) {
-    super(options, analysisOpts);
-    if (typeof project === "string") {
-      this.project = new Project(project);
-    } else {
-      this.project = project;
-    }
-    this.debug = debugGenerator("css-blocks:glimmer");
-    this.options = this.project.cssBlocksOpts;
+    super(cssBlocksOpts, analysisOpts);
+
+    this.blockFactory = new BlockFactory(this.cssBlocksOptions, postcss);
+    this.resolver = new Resolver(moduleConfig);
+    this.debug = debugGenerator("css-blocks:glimmer:analyzer");
   }
 
   reset() {
     super.reset();
-    this.project.reset();
+    this.blockFactory.reset();
   }
 
   get optimizationOptions(): TemplateIntegrationOptions {
@@ -60,44 +57,48 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     };
   }
 
-  async analyze(...templateNames: string[]): Promise<GlimmerAnalyzer> {
-
-    // TODO pass module config https://github.com/tomdale/glimmer-analyzer/pull/1
-    let depAnalyzer = new DependencyAnalyzer(this.project.projectDir);
-
-    let components = new Set<string>();
+  async analyze(dir: string, componentNames: string[]): Promise<GlimmerAnalyzer> {
+    let components = new Set<string>(componentNames);
     let analysisPromises: Promise<GlimmerAnalysis>[] = [];
-    this.debug(`Analyzing all templates starting with: ${templateNames}`);
+    this.debug(`Analyzing all templates starting with: ${componentNames}`);
 
-    templateNames.forEach(templateName => {
-      components.add(templateName);
-      let componentDeps = depAnalyzer.recursiveDependenciesForTemplate(templateName);
-      componentDeps.components.forEach(c => components.add(c));
-    });
+    for (let component of components) {
+      components.add(component);
+      let deps = this.resolver.recursiveDependenciesForTemplate(dir, component);
+      deps.forEach(c => components.add(c));
+    }
 
     this.debug(`Analyzing all components: ${[...components].join(", ")}`);
 
-    components.forEach(dep => {
-      analysisPromises.push(this.analyzeTemplate(dep));
-    });
+    for (let component of components) {
+      analysisPromises.push(this.analyzeTemplate(dir, component));
+    }
 
     await Promise.all(analysisPromises);
     return this;
   }
 
-  private async resolveBlock(template: ResolvedFile): Promise<Block | undefined> {
+  private async resolveBlock(dir: string, componentName: string): Promise<Block | undefined> {
     try {
-      let blockIdentifier = this.project.blockImporter.identifier(template.identifier, "stylesheet:", this.options);
-      return await this.project.blockFactory.getBlock(blockIdentifier);
+      let blockFile = await this.resolver.stylesheetFor(dir, componentName);
+      if (!blockFile) {
+        this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
+        return undefined;
+      }
+      return await this.blockFactory.getBlockFromPath(blockFile.path);
     } catch (e) {
-      this.debug(`Analyzing ${template.identifier}. No block for component. Returning empty analysis.`);
+      console.error(e);
+      this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
       return undefined;
     }
   }
 
-  protected async analyzeTemplate(componentName: string): Promise<GlimmerAnalysis> {
+  protected async analyzeTemplate(dir: string, componentName: string): Promise<GlimmerAnalysis> {
     this.debug("Analyzing template: ", componentName);
-    let template: ResolvedFile = this.project.templateFor(componentName);
+    let template = await this.resolver.templateFor(dir, componentName);
+    if (!template) {
+      throw new Error(`Unable to resolve template for component ${componentName}`);
+    }
     let analysis = this.newAnalysis(template);
     let ast = preprocess(template.string);
     let elementCount = 0;
@@ -105,7 +106,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
 
     // Fetch the block associated with this template. If no block file for this
     // component exists, does not exist, stop.
-    let block: Block | undefined = await this.resolveBlock(template);
+    let block: Block | undefined = await this.resolveBlock(dir, componentName);
     if (!block) { return analysis; }
 
     analysis.addBlock("", block);
@@ -121,13 +122,13 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     });
     self.debug(`Analyzing ${componentName}. ${localBlockNames.length} blocks in scope: ${localBlockNames.join(", ")}.`);
 
-    let elementAnalyzer = new ElementAnalyzer(analysis, this.options);
+    let elementAnalyzer = new ElementAnalyzer(analysis, this.cssBlocksOptions);
     traverse(ast, {
       ElementNode(node) {
         elementCount++;
         let atRootElement = (elementCount === 1);
         let element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug("Element analyzed:", element.forOptimizer(self.options).toString());
+        if (self.debug.enabled) self.debug("Element analyzed:", element.forOptimizer(self.cssBlocksOptions).toString());
       },
     });
     return analysis;

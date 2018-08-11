@@ -1,43 +1,53 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { Analyzer, BlockCompiler, StyleMapping } from "@css-blocks/core";
+import { Analyzer, Block, BlockCompiler, StyleMapping } from "@css-blocks/core";
 import { TemplateTypes } from "@opticss/template-api";
-import { OptiCSSOptions, Optimizer } from "opticss";
-import * as postcss from "postcss";
+
+import * as debugGenerator from "debug";
+import { OptiCSSOptions, Optimizer, postcss } from "opticss";
 import * as readdir from "recursive-readdir";
 
 import { BroccoliPlugin } from "./utils";
 
+const debug = debugGenerator("css-blocks:broccoli");
+
+export interface Transport {
+  id: string;
+  mapping?: StyleMapping<keyof TemplateTypes>;
+  blocks?: Set<Block>;
+  analyzer?: Analyzer<keyof TemplateTypes>;
+  css?: string;
+}
+
 export interface BroccoliOptions {
   entry: string[];
   output: string;
+  root: string;
   analyzer: Analyzer<keyof TemplateTypes>;
-  transport: {[key: string]: object};
+  transport: Transport;
   optimization?: Partial<OptiCSSOptions>;
 }
 
 class BroccoliCSSBlocks extends BroccoliPlugin {
 
   private analyzer: Analyzer<keyof TemplateTypes>;
-  private entry: string[];
+  private entries: string[];
   private output: string;
-  private transport: { [key: string]: object };
+  private root: string;
+  private transport: Transport;
   private optimizationOptions: Partial<OptiCSSOptions>;
-
   // tslint:disable-next-line:prefer-whatever-to-any
   constructor(inputNode: any, options: BroccoliOptions) {
     super([inputNode], { name: "broccoli-css-blocks" });
 
-    this.entry = options.entry;
-    this.output = options.output;
-    this.analyzer = options.analyzer;
+    this.entries = options.entry.slice(0);
+    this.output = options.output || "css-blocks.css";
     this.transport = options.transport;
     this.optimizationOptions = options.optimization || {};
-
-    if (!this.output) {
-      throw new Error("CSS Blocks Broccoli Plugin requires an output file name.");
-    }
+    this.analyzer = options.analyzer;
+    this.root = options.root || process.cwd();
+    this.transport.css = this.transport.css ? this.transport.css : "";
   }
 
   async build() {
@@ -45,14 +55,21 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     let blockCompiler = new BlockCompiler(postcss, options);
     let optimizer = new Optimizer(this.optimizationOptions, this.analyzer.optimizationOptions);
 
+    // When no entry points are passed, we treat *every* template as an entry point.
+    let discover = !this.entries.length;
+
     // This build step is *mostly* just a pass-through of all files!
     // QUESTION: Tom, is there a better way to do this in Broccoli?
     let files = await readdir(this.inputPaths[0]);
     for (let file of files) {
       file = path.relative(this.inputPaths[0], file);
-      await fs.ensureDir(path.join(this.outputPath, path.dirname(file)));
+
+      // If we're in Classic or Pods mode, every hbs file is an entry point.
+      if (discover && path.extname(file) === ".hbs") { this.entries.push(file); }
+
+      fs.ensureDirSync(path.join(this.outputPath, path.dirname(file)));
       try {
-        await fs.symlink(
+        fs.symlinkSync(
           path.join(this.inputPaths[0], file),
           path.join(this.outputPath, file),
         );
@@ -60,10 +77,23 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
         // tslint:disable-next-line:no-console
         console.log("Error linking", path.join(this.inputPaths[0], file), "to output directory.");
       }
+
     }
 
+    // The glimmer-analyzer package tries to require() package.json
+    // in the root of the directory it is passed. We pass it our broccoli
+    // tree, so it needs to contain package.json too.
+    // TODO: Ideally this is configurable in glimmer-analyzer. We can
+    //       contribute that option back to the project. However,
+    //       other template integrations may want this available too...
+    fs.writeFileSync(
+      path.join(this.outputPath, "package.json"),
+      fs.readFileSync(path.join(this.root, "package.json")),
+    );
+
     // Oh hey look, we're analyzing.
-    await this.analyzer.analyze(...this.entry);
+    this.analyzer.reset();
+    await this.analyzer.analyze(this.outputPath, this.entries);
 
     // Compile all Blocks and add them as sources to the Optimizer.
     // TODO: handle a sourcemap from compiling the block file via a preprocessor.
@@ -76,9 +106,9 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
         let filename = filesystemPath || options.importer.debugIdentifier(block.identifier, options);
 
         // If this Block has a representation on disk, remove it from our output tree.
-        // TODO: This isn't working right now because `importer.filesystemPath` doesn't return the expected path...
         if (filesystemPath) {
-          await fs.remove(path.join(this.outputPath, path.relative(options.rootDir, filesystemPath)));
+          debug(`Removing block file ${filesystemPath} from output.`);
+          fs.unlinkSync(filesystemPath);
         }
 
         // Add the compiled Block file to the optimizer.
@@ -101,13 +131,9 @@ class BroccoliCSSBlocks extends BroccoliPlugin {
     this.transport.mapping = styleMapping;
     this.transport.blocks = blocks;
     this.transport.analyzer = this.analyzer;
-    this.transport.css = optimized.output;
+    this.transport.css += optimized.output.content.toString();
 
-    // Write our compiled CSS to the output tree.
-    await fs.writeFile(
-      path.join(this.outputPath, this.output),
-      optimized.output.content.toString(),
-    );
+    debug(`Compilation Finished: ${this.transport.id}`);
 
   }
 

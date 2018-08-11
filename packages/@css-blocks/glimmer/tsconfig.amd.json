@@ -1,0 +1,17 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/amd",
+    "baseUrl": "dist/amd"
+  },
+  "module": "AMD",
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "sanity",
+    "dist",
+    "node_modules"
+  ]
+}

@@ -27,7 +27,7 @@
     "chai": "^3.5.0",
     "husky": "^0.14.3",
     "istanbul": "^0.4.5",
-    "lerna": "^3.0.0-beta.1",
+    "lerna": "^2.11.0",
     "loader-utils": "^1.1.0",
     "markdown-toc": "^1.2.0",
     "mocha": "^3.4.2",
@@ -36,7 +36,6 @@
     "mock-require": "^2.0.2",
     "outdent": "^0.4.1",
     "perfectionist": "^2.4.0",
-    "postcss": "^6.0.21",
     "prettier": "^1.8.2",
     "remap-istanbul": "^0.9.5",
     "source-map-support": "^0.4.15",
@@ -45,7 +44,7 @@
     "tslint": "^5.9.1",
     "typedoc": "^0.11.0",
     "typedoc-plugin-monorepo": "^0.1.0",
-    "typescript": "^2.8.1",
+    "typescript": "~2.8.0",
     "watch": "^1.0.2"
   },
   "workspaces": [

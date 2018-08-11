@@ -1,0 +1,36 @@
+<main>
+  <h2 class="title">CSS Blocks + Ember Integration Tests</h2>
+
+  <nav class="test-nav">
+    <ul>
+      <li>
+        {{#link-to "global-styles" class="test-nav-item"}}Global Styles{{/link-to}}
+      </li>
+      <li>
+        {{#link-to "ember-builtins" class="test-nav-item"}}Ember Builtins{{/link-to}}
+      </li>
+      <li>
+        {{#link-to "route-block" class="test-nav-item"}}Route Block{{/link-to}}
+      </li>
+      <li>
+        {{#link-to "app-component" class="test-nav-item"}}App Component Block{{/link-to}}
+      </li>
+      <li>
+        {{#link-to "addon-component" class="test-nav-item"}}Addon Component Block{{/link-to}}
+      </li>
+      <li>
+        {{#link-to "in-repo-engine" class="test-nav-item"}}In Repo Engine{{/link-to}}
+      </li>
+      <li>
+        {{#link-to "in-repo-lazy-engine" class="test-nav-item"}}In Repo Lazy Engine{{/link-to}}
+      </li>
+      <li>
+        {{#link-to "node-modules-resolution" class="test-nav-item"}}Node Module Resolution{{/link-to}}
+      </li>
+    </ul>
+  </nav>
+
+  <div id="test-container" class="test-container">
+    {{outlet}}
+  </div>
+</main>

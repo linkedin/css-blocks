@@ -14,14 +14,15 @@ import {
 import { whatever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
-import { GlimmerAnalysis, TEMPLATE_TYPE } from "./Analyzer";
+import { GlimmerAnalysis } from "./Analyzer";
 import { classnamesHelper } from "./ClassnamesHelperGenerator";
 import { ElementAnalyzer } from "./ElementAnalyzer";
-import { ResolvedFile } from "./GlimmerProject";
-const DEBUG = debugGenerator("css-blocks:glimmer");
+import { ResolvedFile, TEMPLATE_TYPE } from "./Template";
 
 // TODO: The state namespace should come from a config option.
 const STYLE_ATTR = /^(class$|state:)/;
+const DEBUG = debugGenerator("css-blocks:glimmer:rewriter");
+
 export type GlimmerStyleMapping = StyleMapping<TEMPLATE_TYPE>;
 
 export class GlimmerRewriter implements ASTPlugin {
@@ -52,11 +53,13 @@ export class GlimmerRewriter implements ASTPlugin {
   }
 
   debug(message: string, ...args: whatever[]): void {
-    DEBUG(`${this.template.fullPath}: ${message}`, ...args);
+    DEBUG(`${this.template.path}: ${message}`, ...args);
   }
 
-  get name(): string { return "CSSBlocksGlimmerRewriter"; }
-  get visitor(): NodeVisitor {
+  get name(): string { return this.block ? "css-blocks-glimmer-rewriter" : "css-blocks-noop"; }
+  get visitor(): NodeVisitor { return this.visitors; }
+  get visitors(): NodeVisitor {
+    if (!this.block) { return {}; }
     return {
       ElementNode: this.ElementNode.bind(this),
     };

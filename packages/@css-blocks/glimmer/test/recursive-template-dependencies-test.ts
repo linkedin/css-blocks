@@ -26,14 +26,14 @@ describe("Recursive template dependency analysis", function() {
     let map = analyzer.resolutionMapForEntryPoint("my-app");
 
     expect(map).to.deep.equal({
-      "component:/basic-app/components/my-app": "ui/components/my-app/component.ts",
-      "template:/basic-app/components/my-app": "ui/components/my-app/template.hbs",
-      "component:/basic-app/components/my-app/page-banner": "ui/components/my-app/page-banner/component.ts",
-      "template:/basic-app/components/my-app/page-banner": "ui/components/my-app/page-banner/template.hbs",
-      "template:/basic-app/components/ferret-launcher": "ui/components/ferret-launcher/template.hbs",
-      "template:/basic-app/components/my-app/page-banner/user-avatar": "ui/components/my-app/page-banner/user-avatar/template.hbs",
-      "template:/basic-app/components/text-editor": "ui/components/text-editor.hbs",
-      "component:/basic-app/components/text-editor": "ui/components/text-editor.ts",
+      "component:/basic-app/components/my-app": "src/ui/components/my-app/component.ts",
+      "template:/basic-app/components/my-app": "src/ui/components/my-app/template.hbs",
+      "component:/basic-app/components/my-app/page-banner": "src/ui/components/my-app/page-banner/component.ts",
+      "template:/basic-app/components/my-app/page-banner": "src/ui/components/my-app/page-banner/template.hbs",
+      "template:/basic-app/components/ferret-launcher": "src/ui/components/ferret-launcher/template.hbs",
+      "template:/basic-app/components/my-app/page-banner/user-avatar": "src/ui/components/my-app/page-banner/user-avatar/template.hbs",
+      "template:/basic-app/components/text-editor": "src/ui/components/text-editor/template.hbs",
+      "component:/basic-app/components/text-editor": "src/ui/components/text-editor/component.ts",
     });
   });
 });

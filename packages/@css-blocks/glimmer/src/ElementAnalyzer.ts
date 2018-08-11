@@ -5,7 +5,7 @@ import { assertNever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 import { GlimmerAnalysis } from "./Analyzer";
-import { ResolvedFile } from "./GlimmerProject";
+import { ResolvedFile } from "./Template";
 import { cssBlockError } from "./utils";
 
 export type TernaryExpression = AST.Expression;
@@ -24,10 +24,10 @@ type RewriteAnalysis = {
 
 // TODO: The state namespace should come from a config option.
 const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
-const STYLE_IF: "style-if" = "style-if";
-const STYLE_UNLESS: "style-unless" = "style-unless";
+const STYLE_IF = "style-if";
+const STYLE_UNLESS = "style-unless";
 
-const debug = debugGenerator("css-blocks:glimmer:analyzer");
+const debug = debugGenerator("css-blocks:glimmer:element-analyzer");
 
 export class ElementAnalyzer {
   analysis: GlimmerAnalysis;
@@ -220,6 +220,7 @@ export class ElementAnalyzer {
         namespace: "state",
         name: stateName,
       });
+
       let state: AttrValue | null | undefined = undefined;
       if (stateGroup && staticSubStateName) {
         state = stateGroup.resolveValue(staticSubStateName);

@@ -22,7 +22,7 @@ const mock = require("mock-fs");
 // Reduce whitespace.
 function minify(s: string) {
   mock.restore();
-  return prettier.format(s).replace(/\n\n/mg, "\n");
+  return prettier.format(s, { parser: "babylon" }).replace(/\n\n/mg, "\n");
 }
 
 function transform(code: string, analysis: Analysis<"Opticss.JSXTemplate">, cssBlocksOptions: CSSBlocksOptions = {}, optimizationOpts: Partial<OptiCSSOptions> = {}, templateOpts: Partial<TemplateIntegrationOptions> = {}): Promise<{jsx: babel.BabelFileResult; css: OptimizationResult}> {

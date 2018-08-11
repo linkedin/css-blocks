@@ -41,6 +41,8 @@ import {
   TernaryExpression as TernaryAST,
 } from "./ElementAnalyzer";
 
+import { CLASSNAMES_HELPER_NAME, CONCAT_HELPER_NAME } from "./helpers";
+
 const enum SourceExpression {
   ternary,
   dependency,
@@ -68,7 +70,7 @@ const debug = debugGenerator("css-blocks:glimmer");
 
 export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: TemplateElement): AST.MustacheStatement {
   return builders.mustache(
-    builders.path("/css-blocks/components/classnames"),
+    builders.path(CLASSNAMES_HELPER_NAME),
     constructArgs(rewrite, element),
   );
 }
@@ -249,7 +251,7 @@ function moustacheToExpression(expr: AST.MustacheStatement): AST.Expression {
 function moustacheToStringExpression(stringExpression: StringAST): AST.Expression {
   if (stringExpression.type === "ConcatStatement") {
     return builders.sexpr(
-      builders.path("/css-blocks/components/concat"),
+      builders.path(CONCAT_HELPER_NAME),
       stringExpression.parts.reduce(
         (arr, val) => {
           if (val.type === "TextNode") {

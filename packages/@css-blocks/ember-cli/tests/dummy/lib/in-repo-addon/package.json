@@ -1,0 +1,13 @@
+{
+  "version": "0.0.0",
+  "name": "in-repo-addon",
+  "keywords": [
+    "ember-addon"
+  ],
+  "dependencies": {
+    "@css-blocks/ember-cli": "*",
+    "ember-cli": "*",
+    "ember-cli-htmlbars": "*",
+    "ember-cli-babel": "*"
+  }
+}
