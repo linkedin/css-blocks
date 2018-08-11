@@ -78,7 +78,7 @@ class CSSOutput extends Plugin {
     let prev = path.join(input, this._out);
     let out = path.join(output, this._out);
     let old = fs.existsSync(prev) ? fs.readFileSync(prev) : "";
-    fs.ensureFileSync(out);
+    fs.unlinkSync(out);
     fs.writeFileSync(out, `${old}\n\n/* CSS Blocks Start */\n\n${this.transport.css}\n/* CSS Blocks End */\n`);
     this.transport.reset();
   }
@@ -336,13 +336,15 @@ module.exports = {
       tree = new BroccoliCSSBlocks(tree, broccoliOptions);
       app.trees.styles = new CSSOutput([app.trees.styles, tree], transport, outputPath);
 
-      // Mad hax for Engines support 💩 Right now, engines will throw away the tree passed
-      // to `treeForAddon` and re-generate it. In order for template rewriting to happen
-      // *after* analysis, we need to overwrite the addon tree on the Engine and clear
-      // the template files cache. This cache is seeded during parent app's initialization
-      // of the engine in `this.jshintAddonTree()`.
-      parent.options && parent.options.trees && (parent.options.trees.addon = tree);
-      parent._cachedAddonTemplateFiles = undefined;
+      // Mad hax for Engines <=0.5.20  support 💩 Right now, engines will throw away the
+      // tree passed to `treeForAddon` and re-generate it. In order for template rewriting
+      // to happen *after* analysis, we need to overwrite the addon tree on the Engine and
+      // clear the template files cache. This cache is seeded during parent app's
+      // initialization of the engine in `this.jshintAddonTree()`.
+      if (prev.length < 1) {
+        parent.options && parent.options.trees && (parent.options.trees.addon = tree);
+        parent._cachedAddonTemplateFiles = undefined;
+      }
 
       return prev.call(parent, tree);
     };
