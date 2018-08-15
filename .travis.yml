@@ -6,10 +6,7 @@ language: node_js
 
 node_js:
   - "8"
-<<<<<<< HEAD
   - "9"
-=======
->>>>>>> test: Have Travis use node versions 8 and 10.
   - "10"
 
 env:
