@@ -259,7 +259,6 @@ module.exports = {
     const broccoliOptions = {
       entry,
       analyzer,
-      transport,
       root: rootDir,
       output: options.output,
       optimization: options.optimization,
@@ -267,7 +266,7 @@ module.exports = {
 
     return (tree) => {
       if (!tree) { return prev.call(parent, tree); }
-      tree = new CSSBlocksAnalyze(tree, broccoliOptions);
+      tree = new CSSBlocksAnalyze(tree, transport, broccoliOptions);
       app.trees.styles = new CSSBlocksAggregate([app.trees.styles, tree], transport, outputPath);
 
       // Mad hax for Engines <=0.5.20  support 💩 Right now, engines will throw away the

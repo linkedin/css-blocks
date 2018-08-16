@@ -45,13 +45,16 @@ describe("Broccoli Analyze Plugin Test", function () {
           components: { group: "ui", types: [ "template", "stylesheet" ] },
         },
       });
-      let output = createBuilder(new CSSBlocksAnalyze(input.path(), {
-        entry: [entryComponentName],
-        root: input.path(),
-        output: "css-blocks.css",
+      let output = createBuilder(new CSSBlocksAnalyze(
+        input.path(),
         transport,
-        analyzer,
-      }));
+        {
+          entry: [entryComponentName],
+          root: input.path(),
+          output: "css-blocks.css",
+          analyzer,
+        },
+      ));
 
       // First pass does full compile and copies all files except block files to output.
       await output.build();

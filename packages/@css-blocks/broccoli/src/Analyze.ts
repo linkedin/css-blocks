@@ -20,10 +20,15 @@ export interface BroccoliOptions {
   output: string;
   root: string;
   analyzer: Analyzer<keyof TemplateTypes>;
-  transport: Transport;
   optimization?: Partial<OptiCSSOptions>;
 }
 
+/**
+ * Runs analysis on an `inputNode` that represents the entire
+ * application. `options.transport` will be populated with
+ * analysis results. Output is the same application tree
+ * with all Block files removed.
+ */
 export class CSSBlocksAnalyze extends BroccoliPlugin {
 
   private analyzer: Analyzer<keyof TemplateTypes>;
@@ -34,21 +39,30 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
   private optimizationOptions: Partial<OptiCSSOptions>;
   private previous: FSTree = new FSTree();
 
+  /**
+   * Initialize this new instance with the app tree, transport, and analysis options.
+   * @param inputNode Single Broccoli tree node containing *entire* app.
+   * @param transport Magical shared-memory Transport object shared with the aggregator and Template transformer.
+   * @param options Analysis options.
+   */
   // tslint:disable-next-line:prefer-whatever-to-any
-  constructor(inputNode: any, options: BroccoliOptions) {
+  constructor(inputNode: any, transport: Transport, options: BroccoliOptions) {
     super([inputNode], {
       name: "broccoli-css-blocks-analyze",
       persistentOutput: true,
     });
+    this.transport = transport;
     this.entries = options.entry.slice(0);
     this.output = options.output || "css-blocks.css";
-    this.transport = options.transport;
     this.optimizationOptions = options.optimization || {};
     this.analyzer = options.analyzer;
     this.root = options.root || process.cwd();
     this.transport.css = this.transport.css ? this.transport.css : "";
   }
 
+  /**
+   * Re-run the broccoli build over supplied inputs.
+   */
   async build() {
     let input = this.inputPaths[0];
     let output = this.outputPath;
@@ -57,7 +71,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     let optimizer = new Optimizer(this.optimizationOptions, this.analyzer.optimizationOptions);
 
     // Test if anything has changed since last time. If not, skip all analysis work.
-    let newFsTree = new FSTree({ entries: walkSync.entries(input) });
+    let newFsTree = FSTree.fromEntries(walkSync.entries(input));
     let diff = this.previous.calculatePatch(newFsTree);
     if (!diff.length) { return; }
     this.previous = newFsTree;

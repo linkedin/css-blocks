@@ -11,8 +11,11 @@ import { BroccoliPlugin } from "./utils";
 // Common CSS preprocessor file endings to auto-discover
 const COMMON_FILE_ENDINGS = [".scss", ".sass", ".less", ".stylus"];
 
-// Process-global dumping zone for CSS output as it comes through the pipeline 🤮
-// This will disappear once we have a functional language server.
+/**
+ * Process-global dumping zone for CSS output as it comes through the pipeline 🤮
+ * This will disappear once we have a functional language server and replaced
+ * with a post-build step.
+ */
 export class CSSBlocksAggregate extends BroccoliPlugin {
 
   private transport: Transport;
@@ -21,8 +24,14 @@ export class CSSBlocksAggregate extends BroccoliPlugin {
   private previousCSS = "";
   private previous = new FSTree();
 
+  /**
+   * Initialize this new instance with the app tree, transport, and analysis options.
+   * @param inputNodes Broccoli trees who's output we depend on. First node must be the tree where stylesheets are placed.
+   * @param transport Magical shared-memory Transport object shared with the aggregator and Template transformer.
+   * @param out Output file name.
+   */
   // tslint:disable-next-line:prefer-whatever-to-any
-  constructor(inputNodes: any, transport: Transport, out: string) {
+  constructor(inputNodes: any[], transport: Transport, out: string) {
     super(inputNodes, {
       name: "broccoli-css-blocks-aggregate",
       persistentOutput: true,
@@ -31,13 +40,16 @@ export class CSSBlocksAggregate extends BroccoliPlugin {
     this.out = out;
   }
 
+  /**
+   * Re-run the broccoli build over supplied inputs.
+   */
   build() {
     let output = this.outputPath;
     let input = this.inputPaths[0];
     let { id, css } = this.transport;
 
     // Test if anything has changed since last time. If not, skip trying to update tree.
-    let newFsTree = new FSTree({ entries: walkSync.entries(input) });
+    let newFsTree = FSTree.fromEntries(walkSync.entries(input));
     let diff = this.previous.calculatePatch(newFsTree);
     if (diff.length) {
       this.previous = newFsTree;
