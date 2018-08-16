@@ -5,11 +5,13 @@ import { TemplateTypes } from "@opticss/template-api";
 
 import * as debugGenerator from "debug";
 import * as fs from "fs-extra";
+import * as FSTree from "fs-tree-diff";
 import * as glob from "glob";
 import { OptiCSSOptions, Optimizer, postcss } from "opticss";
+import * as walkSync from "walk-sync";
 
 import { Transport } from "./Transport";
-import { BroccoliPlugin, FSTree, symlinkOrCopy, walkSync } from "./utils";
+import { BroccoliPlugin, symlinkOrCopy } from "./utils";
 
 const debug = debugGenerator("css-blocks:broccoli");
 
@@ -30,7 +32,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
   private root: string;
   private transport: Transport;
   private optimizationOptions: Partial<OptiCSSOptions>;
-  private previous: FSTree.FSTree = new FSTree();
+  private previous: FSTree = new FSTree();
 
   // tslint:disable-next-line:prefer-whatever-to-any
   constructor(inputNode: any, options: BroccoliOptions) {

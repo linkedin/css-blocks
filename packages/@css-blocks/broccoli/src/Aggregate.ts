@@ -2,9 +2,11 @@
 import * as path from "path";
 
 import * as fs from "fs-extra";
+import * as FSTree from "fs-tree-diff";
+import * as walkSync from "walk-sync";
 
 import { Transport } from "./Transport";
-import { BroccoliPlugin, FSTree, walkSync } from "./utils";
+import { BroccoliPlugin } from "./utils";
 
 // Common CSS preprocessor file endings to auto-discover
 const COMMON_FILE_ENDINGS = [".scss", ".sass", ".less", ".stylus"];
@@ -17,7 +19,7 @@ export class CSSBlocksAggregate extends BroccoliPlugin {
   private out: string;
   private _out = "";
   private previousCSS = "";
-  private previous: FSTree.FSTree = new FSTree();
+  private previous = new FSTree();
 
   // tslint:disable-next-line:prefer-whatever-to-any
   constructor(inputNodes: any, transport: Transport, out: string) {
