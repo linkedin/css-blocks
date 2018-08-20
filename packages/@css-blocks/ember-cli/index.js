@@ -1,13 +1,9 @@
 'use strict';
 
-const { BroccoliCSSBlocks } = require("@css-blocks/broccoli");
+const { CSSBlocksAggregate, CSSBlocksAnalyze, Transport } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
-
-const Plugin = require("broccoli-plugin");
 const debugGenerator = require("debug");
-const fs = require("fs-extra");
 const path = require("path");
-const symlinkOrCopy = require('symlink-or-copy');
 
 const DEBUG = debugGenerator("css-blocks:ember-cli");
 
@@ -18,71 +14,6 @@ GLIMMER_MODULE_CONFIG.collections.components.types.push("stylesheet");
 
 // Default tree hook no-op function.
 const NOOP = (tree) => tree;
-
-// Common CSS preprocessor file endings to auto-discover
-const COMMON_FILE_ENDINGS = [".scss", ".sass", ".less", ".stylus"];
-
-// Magic shared memory transport object 🤮
-// This will disappear once we have a functional language server.
-class Transport {
-  constructor(id) {
-    this.id = id;
-    this.reset();
-  }
-  reset() {
-    this.css = "";
-    this.mapping = undefined;
-    this.blocks = undefined;
-    this.analyzer = undefined;
-  }
-}
-
-// Process-global dumping zone for CSS output as it comes through the pipeline 🤮
-// This will disappear once we have a functional language server.
-class CSSOutput extends Plugin {
-  constructor(inputNodes, transport, out) {
-    super(inputNodes, { name: "broccoli-css-blocks-aggregator" });
-    this.transport = transport;
-    this.out = out;
-  }
-
-  build() {
-    let output = this.outputPath;
-    let input = this.inputPaths[0];
-
-    // Copy everything over to the new folder.
-    let contents = fs.readdirSync(input);
-    for (let name of contents) {
-      let outFile = path.join(output, name);
-      if (!fs.existsSync(outFile)) {
-        symlinkOrCopy.sync(path.join(input, name), outFile);
-      }
-    }
-
-    // Auto-discover common preprocessor extensions.
-    if (!this._out) {
-      let prev = path.parse(path.join(input, this.out));
-      let origExt = prev.ext;
-      prev.base = undefined; // Needed for path.format to register ext change
-      for (let ending of COMMON_FILE_ENDINGS) {
-        prev.ext = ending;
-        if (fs.existsSync(path.format(prev))) { break; }
-        prev.ext = origExt;
-      }
-      let out = path.parse(this.out);
-      out.base = undefined;
-      out.ext = prev.ext;
-      this._out = path.format(out);
-    }
-
-    let prev = path.join(input, this._out);
-    let out = path.join(output, this._out);
-    let old = fs.existsSync(prev) ? fs.readFileSync(prev) : "";
-    fs.unlinkSync(out);
-    fs.writeFileSync(out, `${old}\n\n/* CSS Blocks Start */\n\n${this.transport.css}\n/* CSS Blocks End */\n`);
-    this.transport.reset();
-  }
-}
 
 module.exports = {
   name: '@css-blocks/ember-cli',
@@ -135,7 +66,7 @@ module.exports = {
 
     // If we do have a matching analysis, run the rewriter transforms!
     DEBUG(`Generating AST rewriter for "${analysis.template.identifier}"`);
-    return new GlimmerRewriter(env.syntax, mapping, analysis, this.options.parserOpts);
+    return new GlimmerRewriter(env.syntax, mapping, analysis, this._options.parserOpts);
 
   },
 
@@ -148,7 +79,10 @@ module.exports = {
     // For Ember
     registry.add("htmlbars-ast-plugin", {
       name: "css-blocks-htmlbars",
-      plugin: this.astPlugin.bind(this)
+      plugin: this.astPlugin.bind(this),
+      // cacheKey: () => {
+      //   return this.transports.get(this.parent).mapping;
+      // }
     });
 
     // For Glimmer
@@ -183,7 +117,7 @@ module.exports = {
     let env = this.getEnv(parent);
 
     // Fetch and validate user-provided options.
-    let options = this.options = this.getOptions(env);
+    let options = this._options = this.getOptions(env);
 
     // If the consuming app has explicitly disabled CSS Blocks, exit.
     if (options.disabled) { return; }
@@ -325,7 +259,6 @@ module.exports = {
     const broccoliOptions = {
       entry,
       analyzer,
-      transport,
       root: rootDir,
       output: options.output,
       optimization: options.optimization,
@@ -333,8 +266,8 @@ module.exports = {
 
     return (tree) => {
       if (!tree) { return prev.call(parent, tree); }
-      tree = new BroccoliCSSBlocks(tree, broccoliOptions);
-      app.trees.styles = new CSSOutput([app.trees.styles, tree], transport, outputPath);
+      tree = new CSSBlocksAnalyze(tree, transport, broccoliOptions);
+      app.trees.styles = new CSSBlocksAggregate([app.trees.styles, tree], transport, outputPath);
 
       // Mad hax for Engines <=0.5.20  support 💩 Right now, engines will throw away the
       // tree passed to `treeForAddon` and re-generate it. In order for template rewriting

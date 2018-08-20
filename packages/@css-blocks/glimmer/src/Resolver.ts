@@ -104,7 +104,7 @@ export class Resolver {
     let file: string = depAnalyzer.project.resolver.resolve(identifier);
     if (!file) { return undefined; }
     file = path.join(dir, depAnalyzer.project.paths.src, file);
-
+    if (!fs.existsSync(file)) { return undefined; }
     let content = (fs.readFileSync(file)).toString();
     return new ResolvedFile(content, identifier, file);
   }
