@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.0"></a>
+# [0.20.0-beta.0](https://github.com/linkedin/css-blocks/compare/v0.19.0...v0.20.0-beta.0) (2018-08-20)
+
+
+### Bug Fixes
+
+* Allow all types for children to fix tslint error. ([0dbd375](https://github.com/linkedin/css-blocks/commit/0dbd375))
+* **jsx:** Better error messages for stray references. ([0d9286a](https://github.com/linkedin/css-blocks/commit/0d9286a)), closes [#170](https://github.com/linkedin/css-blocks/issues/170)
+* Fix grammar mistake in website docs. ([#181](https://github.com/linkedin/css-blocks/issues/181)) ([ed4988c](https://github.com/linkedin/css-blocks/commit/ed4988c))
+* Flatten entry array because it can be nested. ([4f287e9](https://github.com/linkedin/css-blocks/commit/4f287e9)), closes [#157](https://github.com/linkedin/css-blocks/issues/157) [#153](https://github.com/linkedin/css-blocks/issues/153)
+* Remove git conflict markers from .travis.yaml. ([3179998](https://github.com/linkedin/css-blocks/commit/3179998))
+
+
+### Features
+
+* **broccoli:** Add naive caching strategy for Broccoli. ([#190](https://github.com/linkedin/css-blocks/issues/190)) ([d63626f](https://github.com/linkedin/css-blocks/commit/d63626f))
+* **ember-cli:** Ember cli classic ([#185](https://github.com/linkedin/css-blocks/issues/185)). ([865267c](https://github.com/linkedin/css-blocks/commit/865267c))
+
+
+
+
+
 <a name="0.19.0"></a>
 # [0.19.0](https://github.com/linkedin/css-blocks/compare/v0.18.0...v0.19.0) (2018-04-25)
 
