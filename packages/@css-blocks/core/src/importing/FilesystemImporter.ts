@@ -1,5 +1,4 @@
-import { whatever } from "@opticss/util";
-import { existsSync, readFile } from "fs";
+import { existsSync, readFile } from "fs-extra";
 import * as path from "path";
 
 import { ResolvedConfiguration } from "../configuration";
@@ -15,21 +14,14 @@ export class FilesystemImporter extends PathBasedImporter {
       return null;
     }
   }
-  import(identifier: FileIdentifier, configuration: ResolvedConfiguration): Promise<ImportedFile> {
-    return new Promise((resolve, reject) => {
-      readFile(identifier, "utf-8", (err: whatever, contents: string) => {
-        if (err) {
-          reject(err);
-        }
-        else {
-          resolve({
-            syntax: this.syntax(identifier, configuration),
-            identifier,
-            defaultName: this.defaultName(identifier, configuration),
-            contents,
-          });
-        }
-      });
+  async import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile> {
+    return await readFile(identifier, "utf-8").then((contents: string) => {
+      return {
+        syntax: this.syntax(identifier, config),
+        identifier,
+        defaultName: this.defaultName(identifier, config),
+        contents,
+      };
     });
   }
 }

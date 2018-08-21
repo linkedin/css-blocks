@@ -32,22 +32,19 @@ export class MockImporter extends PathBasedImporter {
       return importPath;
     }
   }
-  import(resolvedPath: string, configuration: ResolvedConfiguration): Promise<ImportedFile> {
-    return new Promise<ImportedFile>((resolve, reject) => {
-      let source = this.registry.sources[resolvedPath];
-      if (source) {
-        this.registry.imported[resolvedPath] = true;
-        resolve({
-          syntax: source.syntax,
-          identifier: resolvedPath,
-          defaultName: this.defaultName(resolvedPath, configuration),
-          contents: source.contents,
-        });
-      } else {
-        let importedFiles = Object.keys(this.registry.sources).join(", ");
-        reject(new Error(`Mock file ${resolvedPath} not found. Available: ${importedFiles}`));
-      }
-    });
+  async import(resolvedPath: string, configuration: ResolvedConfiguration): Promise<ImportedFile> {
+    let source = this.registry.sources[resolvedPath];
+    if (!source) {
+      let importedFiles = Object.keys(this.registry.sources).join(", ");
+      throw new Error(`Mock file ${resolvedPath} not found. Available: ${importedFiles}`);
+    }
+    this.registry.imported[resolvedPath] = true;
+    return {
+      syntax: source.syntax,
+      identifier: resolvedPath,
+      defaultName: this.defaultName(resolvedPath, configuration),
+      contents: source.contents,
+    };
   }
 }
 

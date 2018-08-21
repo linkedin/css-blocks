@@ -6,22 +6,22 @@ import { ResolvedConfiguration } from "../configuration";
 import { FileIdentifier, ImportedFile, Importer } from "./types";
 
 export abstract class PathBasedImporter implements Importer {
-  identifier(fromFile: string | null, importPath: string, configuration: ResolvedConfiguration): string {
-    let fromDir = fromFile ? path.dirname(fromFile) : configuration.rootDir;
+  identifier(fromFile: string | null, importPath: string, config: ResolvedConfiguration): string {
+    let fromDir = fromFile ? path.dirname(fromFile) : config.rootDir;
     return path.resolve(fromDir, importPath);
   }
-  defaultName(identifier: string, _options: ResolvedConfiguration): string {
+  defaultName(identifier: string, _config: ResolvedConfiguration): string {
     let name = path.parse(identifier).name;
     if (name.endsWith(".block")) {
       name = name.substr(0, name.length - 6);
     }
     return name;
   }
-  filesystemPath(identifier: FileIdentifier, _options: ResolvedConfiguration): string | null {
+  filesystemPath(identifier: FileIdentifier, _config: ResolvedConfiguration): string | null {
     return identifier;
   }
-  syntax(identifier: FileIdentifier, configuration: ResolvedConfiguration): Syntax {
-    let filename = this.filesystemPath(identifier, configuration);
+  syntax(identifier: FileIdentifier, config: ResolvedConfiguration): Syntax {
+    let filename = this.filesystemPath(identifier, config);
     if (filename) {
       let ext = path.extname(filename).substring(1);
       switch (ext) {
@@ -42,8 +42,8 @@ export abstract class PathBasedImporter implements Importer {
       return Syntax.other;
     }
   }
-  debugIdentifier(identifier: FileIdentifier, configuration: ResolvedConfiguration): string {
-    return path.relative(configuration.rootDir, identifier);
+  debugIdentifier(identifier: FileIdentifier, config: ResolvedConfiguration): string {
+    return path.relative(config.rootDir, identifier);
   }
-  abstract import(identifier: FileIdentifier, configuration: ResolvedConfiguration): Promise<ImportedFile>;
+  abstract import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile>;
 }

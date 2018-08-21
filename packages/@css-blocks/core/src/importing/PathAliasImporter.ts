@@ -53,12 +53,12 @@ export class PathAliasImporter extends FilesystemImporter {
       return b.path.length - a.path.length;
     });
   }
-  identifier(from: FileIdentifier | null, importPath: string, configuration: ResolvedConfiguration) {
+  identifier(from: FileIdentifier | null, importPath: string, config: ResolvedConfiguration): string {
     if (path.isAbsolute(importPath)) {
       return importPath;
     }
     if (from) {
-      let fromPath = this.filesystemPath(from, configuration);
+      let fromPath = this.filesystemPath(from, config);
       if (fromPath) {
         let resolvedPath = path.resolve(path.dirname(fromPath), importPath);
         if (existsSync(resolvedPath)) {
@@ -70,14 +70,14 @@ export class PathAliasImporter extends FilesystemImporter {
     if (alias) {
       return path.resolve(alias.path, importPath.substring(alias.alias.length + 1));
     } else {
-      return path.resolve(configuration.rootDir, importPath);
+      return path.resolve(config.rootDir, importPath);
     }
   }
-  debugIdentifier(identifier: FileIdentifier, configuration: ResolvedConfiguration): string {
+  debugIdentifier(identifier: FileIdentifier, config: ResolvedConfiguration): string {
     let alias = this.aliases.find(a => identifier.startsWith(a.path));
     if (alias) {
       return path.join(alias.alias, path.relative(alias.path, identifier));
     }
-    return path.relative(configuration.rootDir, identifier);
+    return path.relative(config.rootDir, identifier);
   }
 }
