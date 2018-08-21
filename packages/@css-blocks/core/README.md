@@ -12,7 +12,7 @@
 | **rootDir** | `process.cwd()` | The root directory from which all sources are relative. |
 | **outputMode** | `"BEM"` | Block file output mode. One of [OutputMode][OUTPUT_MODE] |
 | **preprocessors** | `{}` | A preprocessor function can be declared by [Syntax][SYNTAX]. |
-| **importer** | [`FilesystemImporter`](./src/importing/FilesystemImporter.ts) | A custom importer to resolve identifiers passed to `@block`. |
+| **importer** | [`NodeJsImporter`](./src/importing/NodeJsImporter.ts) | A custom importer to resolve identifiers passed to `@block`. |
 | **importerData** | `{}` | Additional data to make available to the importer. |
 | **maxConcurrentCompiles** | `4` | Limits block parsing and compilation to this number of threads at any one time. |
 | **disablePreprocessChaining** | `false` | If a preprocessor function is declared for `css`, all blocks will be ran through it, even those that were pre-processed for another syntax. This can be disabled by setting `disablePreprocessChaining` to true. |
@@ -214,7 +214,11 @@ For any custom importers that require extra data to be passed by the end-user, t
 
 CSS Blocks ships with two (2) pre-defined importers.
 
+<<<<<<< HEAD
  1. `FilesystemImporter`: This is the default importer used by CSS Blocks if no other is provided. It enables `@block`s to resolve relative and absolute file references
+=======
+ 1. `NodeJsImporter`: This is the default importer used by CSS Blocks if no other is provided. It enables `@block-reference`s to resolve relative and absolute file references
+>>>>>>> chore(core): Consolidate pathbased and filesystem importers.
  2. `PathAliasImporter`: The PathAliasImporter is a replacement for the fileystem importer. Relative import paths are first checked to see if they match an existing file relative to the from identifier (when provided). Then if the relative import path has a first segment that is any of the aliases provided the path will be made absolute using that alias's path location. Finally any relative path is resolved against the `rootDir` specified in the CSS Block configuration options.
 
 ## /src/util

@@ -4,7 +4,7 @@ import * as path from "path";
 
 import { ResolvedConfiguration } from "../configuration";
 
-import { FilesystemImporter } from "./FilesystemImporter";
+import { NodeJsImporter } from "./NodeJsImporter";
 import { FileIdentifier } from "./types";
 
 export interface Alias {
@@ -32,7 +32,7 @@ export type PathAliases = Alias[] | ObjectDictionary<string>;
  * within an aliased directory. If several such aliased paths exist, the most specific alias will be used.
  */
 
-export class PathAliasImporter extends FilesystemImporter {
+export class PathAliasImporter extends NodeJsImporter {
   aliases: Alias[];
   constructor(aliases: PathAliases) {
     super();

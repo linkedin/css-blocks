@@ -1,11 +1,10 @@
-import { FilesystemImporter } from "./FilesystemImporter";
+import { NodeJsImporter } from "./NodeJsImporter";
 
 export * from "./types";
-export * from "./PathBasedImporter";
-export * from "./FilesystemImporter";
+export * from "./NodeJsImporter";
 export * from "./PathAliasImporter";
 
 /**
  * Default importer. Returns `ImportedFile` from disk
  */
-export const filesystemImporter = new FilesystemImporter();
+export const defaultImporter = new NodeJsImporter();

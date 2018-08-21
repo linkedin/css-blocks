@@ -12,7 +12,7 @@ import {
 import {
   Importer,
   PathAliasImporter,
-  filesystemImporter,
+  defaultImporter,
 } from "../src/importing";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
@@ -90,7 +90,7 @@ function testFSImporter(name: string, importer: Importer) {
   });
 }
 
-testFSImporter("FilesystemImporter", filesystemImporter);
+testFSImporter("FilesystemImporter", defaultImporter);
 testFSImporter("Default PathAliasImporter", new PathAliasImporter({}));
 testFSImporter("Configured PathAliasImporter", new PathAliasImporter({alias: ALIAS_FIXTURES}));
 

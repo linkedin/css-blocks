@@ -5,7 +5,7 @@ import * as path from "path";
 import {
   ImportedFile,
   Importer,
-  PathBasedImporter,
+  NodeJsImporter,
   ResolvedConfiguration,
   Syntax,
 } from "../../src";
@@ -18,7 +18,7 @@ export interface SourceWithSyntax {
 export type SourceRegistry = ObjectDictionary<SourceWithSyntax>;
 export type ImportedFiles = ObjectDictionary<boolean>;
 
-export class MockImporter extends PathBasedImporter {
+export class MockImporter extends NodeJsImporter {
   registry: MockImportRegistry;
   constructor(registry: MockImportRegistry) {
     super();

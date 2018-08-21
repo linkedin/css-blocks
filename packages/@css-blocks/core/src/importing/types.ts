@@ -54,8 +54,7 @@ export interface ImportedFile {
  * to determine in which syntax the file is written.
  *
  * Importing does not have to ever talk to the filesystem, but importers that
- * do, will probably want to inherit from either PathBasedImporter or
- * FilesystemImporter.
+ * do, will probably want to inherit from NodeJsImporter.
  */
 export interface Importer {
   /**
