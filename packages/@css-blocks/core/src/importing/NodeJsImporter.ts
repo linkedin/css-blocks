@@ -18,8 +18,8 @@ export interface Alias {
 }
 
 export class NodeJsImporter implements Importer {
-  aliases: Alias[] = [];
-  constructor(aliases: Alias[] | ObjectDictionary<string> = {}) {
+  aliases: Alias[];
+  constructor(aliases: Alias[] | ObjectDictionary<string> = []) {
     // Normalize aliases input.
     this.aliases = Array.isArray(aliases)
       ? aliases.slice()
@@ -40,7 +40,8 @@ export class NodeJsImporter implements Importer {
     // If absolute, this is the identifier.
     if (path.isAbsolute(importPath)) { return importPath; }
 
-    // Attempt to resolve to absolute path relative to `from` or `rootDir`. If it exists, return.
+    // Attempt to resolve to absolute path relative to `from` or `rootDir`.
+    // If it exists, return.
     from = from ? this.filesystemPath(from, config) : from;
     let fromDir = from ? path.dirname(from) : config.rootDir;
     let resolvedPath = path.resolve(fromDir, importPath);
@@ -52,7 +53,13 @@ export class NodeJsImporter implements Importer {
       return path.resolve(alias.path, importPath.substring(alias.alias.length + 1));
     }
 
-    // If no backup alias, return the previously calculated absolute path where it should be.
+    // If no alias found, test for a node_module resolution.
+    try {
+      return require.resolve(importPath, { paths: [config.rootDir] });
+    } catch (err) {}
+
+    // If no backup alias or node_module fount, return the previously calculated
+    // absolute path where we expect it should be.
     return resolvedPath;
   }
 

@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import * as path from "path";
 
-import { ImportedFile, Importer, PathBasedImporter, ResolvedConfiguration as CSSBlocksConfiguration, Syntax } from "@css-blocks/core";
+import { ImportedFile, Importer, NodeJsImporter, ResolvedConfiguration as CSSBlocksConfiguration, Syntax } from "@css-blocks/core";
 import { ObjectDictionary } from "@opticss/util";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
@@ -9,7 +9,7 @@ const PROJECT_DIR = path.resolve(__dirname, "../../..");
 export type SourceRegistry = ObjectDictionary<string>;
 export type ImportedFiles = ObjectDictionary<boolean>;
 
-export class MockImporter extends PathBasedImporter {
+export class MockImporter extends NodeJsImporter {
   registry: MockImportRegistry;
   constructor(registry: MockImportRegistry) {
     super();
