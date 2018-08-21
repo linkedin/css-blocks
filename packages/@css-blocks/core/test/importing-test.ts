@@ -11,7 +11,7 @@ import {
 } from "../src/configuration";
 import {
   Importer,
-  PathAliasImporter,
+  NodeJsImporter,
   defaultImporter,
 } from "../src/importing";
 
@@ -91,8 +91,8 @@ function testFSImporter(name: string, importer: Importer) {
 }
 
 testFSImporter("FilesystemImporter", defaultImporter);
-testFSImporter("Default PathAliasImporter", new PathAliasImporter({}));
-testFSImporter("Configured PathAliasImporter", new PathAliasImporter({alias: ALIAS_FIXTURES}));
+testFSImporter("Default PathAliasImporter", new NodeJsImporter({}));
+testFSImporter("Configured PathAliasImporter", new NodeJsImporter({alias: ALIAS_FIXTURES}));
 
 describe("PathAliasImporter", () => {
   before(function(this: IHookCallbackContext) {
@@ -100,7 +100,7 @@ describe("PathAliasImporter", () => {
       "pai": ALIAS_FIXTURES,
       "sub": path.resolve(ALIAS_FIXTURES, "alias_subdirectory"),
     };
-    this.importer = new PathAliasImporter(aliases);
+    this.importer = new NodeJsImporter(aliases);
   });
   it("identifies relative to an alias", function() {
       let options = getConfiguration();

@@ -1,8 +1,12 @@
 import { NodeJsImporter } from "./NodeJsImporter";
 
-export * from "./types";
-export * from "./NodeJsImporter";
-export * from "./PathAliasImporter";
+export {
+  ImporterData,
+  FileIdentifier,
+  ImportedFile,
+  Importer,
+} from "./Importer";
+export { NodeJsImporter } from "./NodeJsImporter";
 
 /**
  * Default importer. Returns `ImportedFile` from disk
