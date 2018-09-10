@@ -37,7 +37,8 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
   private root: string;
   private transport: Transport;
   private optimizationOptions: Partial<OptiCSSOptions>;
-  private previous: FSTree = new FSTree();
+  private previousInput: FSTree = new FSTree();
+  private previousOutput: FSTree = new FSTree();
 
   /**
    * Initialize this new instance with the app tree, transport, and analysis options.
@@ -72,13 +73,13 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
 
     // Test if anything has changed since last time. If not, skip all analysis work.
     let newFsTree = FSTree.fromEntries(walkSync.entries(input));
-    let diff = this.previous.calculatePatch(newFsTree);
+    let diff = this.previousInput.calculatePatch(newFsTree);
     if (!diff.length) { return; }
-    this.previous = newFsTree;
-    FSTree.applyPatch(input, output, diff);
+    FSTree.applyPatch(input, output, this.previousOutput.calculatePatch(newFsTree));
+    this.previousInput = newFsTree;
 
     // When no entry points are passed, we treat *every* template as an entry point.
-    this.entries = this.entries.length ? this.entries : glob.sync("**/*.hbs", { cwd: input });
+    this.entries = this.entries.length ? this.entries : glob.sync("**/*.hbs", { cwd: output });
 
     // The glimmer-analyzer package tries to require() package.json
     // in the root of the directory it is passed. We pass it our broccoli
@@ -86,7 +87,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     // TODO: Ideally this is configurable in glimmer-analyzer. We can
     //       contribute that option back to the project. However,
     //       other template integrations may want this available too...
-    let pjsonLink = path.join(input, "package.json");
+    let pjsonLink = path.join(output, "package.json");
     if (!fs.existsSync(pjsonLink)) {
       symlinkOrCopy(path.join(this.root, "package.json"), pjsonLink);
     }
@@ -94,7 +95,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     // Oh hey look, we're analyzing.
     this.analyzer.reset();
     this.transport.reset();
-    await this.analyzer.analyze(input, this.entries);
+    await this.analyzer.analyze(output, this.entries);
 
     // Compile all Blocks and add them as sources to the Optimizer.
     // TODO: handle a sourcemap from compiling the block file via a preprocessor.
@@ -108,9 +109,8 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
 
         // If this Block has a representation on disk, remove it from our output tree.
         if (filesystemPath) {
-          let outputStylesheet = path.join(output, path.relative(input, filesystemPath));
-          debug(`Removing block file ${outputStylesheet} from output.`);
-          if (fs.existsSync(outputStylesheet)) { fs.removeSync(outputStylesheet); }
+          debug(`Removing block file ${filesystemPath} from output.`);
+          if (fs.existsSync(filesystemPath)) { fs.removeSync(filesystemPath); }
         }
 
         // Add the compiled Block file to the optimizer.
@@ -121,6 +121,9 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
         });
       }
     }
+
+    // Save the current state of our output dir for future diffs.
+    this.previousOutput = FSTree.fromEntries(walkSync.entries(output));
 
     // Add each Analysis to the Optimizer.
     this.analyzer.eachAnalysis((a) => optimizer.addAnalysis(a.forOptimizer(options)));
@@ -134,9 +137,6 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     this.transport.blocks = blocks;
     this.transport.analyzer = this.analyzer;
     this.transport.css += optimized.output.content.toString();
-
     debug(`Compilation Finished: ${this.transport.id}`);
-
   }
-
 }
