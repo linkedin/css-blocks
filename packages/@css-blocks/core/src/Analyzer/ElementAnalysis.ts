@@ -59,7 +59,7 @@ export interface Conditional<BooleanExpression> {
   condition: BooleanExpression;
 }
 
-export function isConditional(o: object): o is Conditional<whatever> {
+export function isConditional<BooleanExpression>(o: object): o is Conditional<BooleanExpression> {
   return o.hasOwnProperty("condition");
 }
 
@@ -724,10 +724,10 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
 }
 
-function dynamicClassAndDependentAttrs(
+function dynamicClassAndDependentAttrs<BooleanExpression, StringExpression>(
   classes: Array<BlockClass>,
-  depAttrsMap: MultiMap<BlockClass, DynamicAttrs<whatever, whatever>>,
-  dynAttrsHandled: Set<DynamicAttrs<whatever, whatever>>,
+  depAttrsMap: MultiMap<BlockClass, DynamicAttrs<BooleanExpression, StringExpression>>,
+  dynAttrsHandled: Set<DynamicAttrs<BooleanExpression, StringExpression>>,
   mapper: ClassMapper,
   choices: ChoiceMapper,
 ): AttributeValueSet | ValueConstant {
@@ -793,7 +793,7 @@ function mapChoiceClasses(
   configuration: ResolvedConfiguration,
   map: Map<string, Style>,
   includeAbsent: boolean,
-  ...styles: Style[],
+  ...styles: Style[]
 ): AttributeValueChoice {
   let choices = new Array<AttributeValueChoiceOption>();
   if (includeAbsent) {
@@ -805,7 +805,7 @@ function mapChoiceClasses(
   return attrValues.oneOf(choices);
 }
 
-function serializeDynamicContainer(c: DynamicClasses<whatever>, styleIndexes: Map<Style, number>): SerializedDynamicContainer {
+function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Style, number>): SerializedDynamicContainer {
   let classes: SerializedDynamicContainer = {
     condition: true,
     whenFalse: [],
@@ -824,7 +824,7 @@ function serializeDynamicContainer(c: DynamicClasses<whatever>, styleIndexes: Ma
   return classes;
 }
 
-function serializeDynamicAttrs(c: DynamicAttrs<whatever, whatever>, styleIndexes: Map<Style, number>): SerializedDynamicAttrs {
+function serializeDynamicAttrs(c: DynamicAttrs<any, any>, styleIndexes: Map<Style, number>): SerializedDynamicAttrs {
   let dynAttr = {
     stringExpression: true,
     condition: true,

@@ -44,7 +44,7 @@
     "tslint": "^5.9.1",
     "typedoc": "^0.11.0",
     "typedoc-plugin-monorepo": "^0.1.0",
-    "typescript": "2.8",
+    "typescript": "~3.0.3",
     "watch": "^1.0.2"
   },
   "workspaces": [

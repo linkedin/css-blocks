@@ -12900,9 +12900,13 @@ typescript@2.7.2:
   version "2.7.2"
   resolved "https://registry.npmjs.org/typescript/-/typescript-2.7.2.tgz#2d615a1ef4aee4f574425cdff7026edf81919836"
 
-typescript@2.8, typescript@~2.8.0, typescript@~2.8.3:
+typescript@~2.8.3:
   version "2.8.4"
   resolved "https://registry.npmjs.org/typescript/-/typescript-2.8.4.tgz#0b1db68e6bdfb0b767fa2ab642136a35b059b199"
+
+typescript@~3.0.3:
+  version "3.0.3"
+  resolved "https://registry.npmjs.org/typescript/-/typescript-3.0.3.tgz#4853b3e275ecdaa27f78fda46dc273a7eb7fc1c8"
 
 ua-parser-js@^0.7.18:
   version "0.7.18"
