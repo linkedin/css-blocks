@@ -8,7 +8,7 @@ import { some, unwrap } from "@opticss/util";
 import traverse from "babel-traverse";
 import * as babylon from "babylon";
 import * as debugGenerator from "debug";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import * as path from "path";
 
 import { CssBlocksJSXOptions } from "../options";
@@ -143,15 +143,14 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
    * @param file The file path to read in and parse.
    * @param opts Optional analytics parser options.
    */
-  public parseFile(file: string): Promise<JSXAnalysis> {
+  public async parseFile(file: string): Promise<JSXAnalysis> {
+    let data;
     file = path.resolve(this.options.baseDir, file);
-    return new Promise((resolve, reject) => {
-      fs.readFile(file, "utf8", (err, data) => {
-        if (err) {
-          reject(new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file }));
-        }
-        resolve(this.parse(file, data));
-      });
-    });
+    try {
+      data = await fs.readFile(file, "utf8");
+    } catch (err) {
+      throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
+    }
+    return this.parse(file, data);
   }
 }

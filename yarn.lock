@@ -9372,7 +9372,7 @@ mocha@^3.4.2:
     mkdirp "0.5.1"
     supports-color "3.1.2"
 
-mock-fs@^4.3.0:
+mock-fs@4.6.0:
   version "4.6.0"
   resolved "https://registry.npmjs.org/mock-fs/-/mock-fs-4.6.0.tgz#d944ef4c3e03ceb4e8332b4b31b8ac254051c8ae"
 
