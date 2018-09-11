@@ -13,7 +13,7 @@ Getting Started
 Install required global dependencies:
 
 ```
-$ npm install -g lerna@next yarn
+$ npm install -g lerna yarn
 ```
 
 Check out the code:

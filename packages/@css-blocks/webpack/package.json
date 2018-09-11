@@ -43,7 +43,6 @@
   },
   "devDependencies": {
     "@css-blocks/code-style": "^0.18.0",
-    "@css-blocks/core": "^0.17.0",
     "@types/convert-source-map": "^1.3.33",
     "@types/extract-text-webpack-plugin": "^2.1.0",
     "@types/glob": "^5.0.30",
