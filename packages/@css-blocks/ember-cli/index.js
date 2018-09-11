@@ -227,10 +227,10 @@ module.exports = {
 
 
     if (options.output !== undefined && typeof options.output !== "string") {
-      throw new Error(`Invalid css-block options in 'ember-cli-build.js': Output must be a string or array. Instead received ${options.output}.`);
+      throw new Error(`Invalid css-blocks options in 'ember-cli-build.js': Output must be a string or array. Instead received ${options.output}.`);
     }
     if (!isEmber && typeof options.entry !== "string" && !Array.isArray(options.entry)) {
-      throw new Error(`Invalid css-block options in 'ember-cli-build.js': Entry must be a string or array. Instead received ${options.entry}.`);
+      throw new Error(`Invalid css-blocks options in 'ember-cli-build.js': Entry must be a string or array. Instead received ${options.entry}.`);
     }
     if (isEmber && options.entry) {
       throw new Error(`CSS Blocks entry points are auto-discovered in Ember apps. Do not pass an "entry" option in your CSS Blocks config.`);
