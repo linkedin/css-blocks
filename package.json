@@ -32,7 +32,7 @@
     "markdown-toc": "^1.2.0",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
-    "mock-fs": "^4.3.0",
+    "mock-fs": "4.6.0",
     "mock-require": "^2.0.2",
     "outdent": "^0.4.1",
     "perfectionist": "^2.4.0",
