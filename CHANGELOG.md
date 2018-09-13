@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.1"></a>
+# [0.20.0-beta.1](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.0...v0.20.0-beta.1) (2018-09-13)
+
+
+### Bug Fixes
+
+* **broccoli:** Rebuild diffs input changes and output patch seperatly. ([2bb5a2c](https://github.com/linkedin/css-blocks/commit/2bb5a2c))
+* Comment out failing node_modules test case breaking build in CI. ([09f1a17](https://github.com/linkedin/css-blocks/commit/09f1a17))
+* Peg Travis' Node.js 10 version to 10.4.1 for mock-fs support. ([fbb941c](https://github.com/linkedin/css-blocks/commit/fbb941c))
+* Use lerna@3.3.0 on Travis to fix early CI build termination. ([7f32d72](https://github.com/linkedin/css-blocks/commit/7f32d72))
+* Use local versions of packages in ember-cli. ([4c75501](https://github.com/linkedin/css-blocks/commit/4c75501))
+
+
+
+
+
 <a name="0.20.0-beta.0"></a>
 # [0.20.0-beta.0](https://github.com/linkedin/css-blocks/compare/v0.19.0...v0.20.0-beta.0) (2018-08-20)
 

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.1"></a>
+# [0.20.0-beta.1](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.0...v0.20.0-beta.1) (2018-09-13)
+
+
+### Bug Fixes
+
+* Peg Travis' Node.js 10 version to 10.4.1 for mock-fs support. ([fbb941c](https://github.com/linkedin/css-blocks/commit/fbb941c))
+
+
+
+
+
 <a name="0.20.0-beta.0"></a>
 # [0.20.0-beta.0](https://github.com/linkedin/css-blocks/compare/v0.19.0...v0.20.0-beta.0) (2018-08-20)
 
