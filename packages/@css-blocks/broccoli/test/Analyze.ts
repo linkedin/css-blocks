@@ -1,4 +1,5 @@
 import * as assert from "assert";
+import * as fs from "fs";
 
 import { GlimmerAnalyzer } from "@css-blocks/glimmer";
 
@@ -80,6 +81,8 @@ describe("Broccoli Analyze Plugin Test", function () {
       });
 
       // Modifications to block files trigger build but result in no output tree changes.
+      // Accidental modification of output directory does not make the plugin explode.
+      fs.unlinkSync(output.path("src/ui/components/Chrisrng/template.hbs"));
       input.write({
         src: { ui: { components: { [entryComponentName]: {
           "stylesheet.css": `:scope { color: blue; } .foo { color: yellow; }`,
