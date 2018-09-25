@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.2"></a>
+# [0.20.0-beta.2](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.1...v0.20.0-beta.2) (2018-09-25)
+
+
+### Bug Fixes
+
+* **broccoli:** Modification of the output does not throw on rebuild. ([57b8137](https://github.com/linkedin/css-blocks/commit/57b8137))
+
+
+
+
+
 <a name="0.20.0-beta.1"></a>
 # [0.20.0-beta.1](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.0...v0.20.0-beta.1) (2018-09-13)
 
