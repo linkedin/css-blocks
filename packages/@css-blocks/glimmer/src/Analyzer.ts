@@ -31,9 +31,8 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     moduleConfig: ResolverConfiguration,
   ) {
     super(cssBlocksOpts, analysisOpts);
-
     this.blockFactory = new BlockFactory(this.cssBlocksOptions, postcss);
-    this.resolver = new Resolver(moduleConfig);
+    this.resolver = new Resolver(this.cssBlocksOptions, moduleConfig);
     this.debug = debugGenerator("css-blocks:glimmer:analyzer");
   }
 

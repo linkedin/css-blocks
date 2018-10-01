@@ -2,6 +2,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 
 import DependencyAnalyzer from "@amiller-gh/glimmer-analyzer";
+import { ResolvedConfiguration } from "@css-blocks/core";
 import { ResolverConfiguration } from "@glimmer/resolver";
 
 import * as debugGenerator from "debug";
@@ -9,6 +10,22 @@ import * as debugGenerator from "debug";
 import { ResolvedFile } from "./Template";
 
 const DEBUG = debugGenerator("css-blocks:glimmer:resolver");
+
+function toClassicPath(base: string, templatePath: string, ext: string): string {
+  // TODO: There is a more robust way to do all this path munging!
+  let classic = path.parse(templatePath.replace("templates/", "styles/"));
+  delete classic.base; // Required for path.format to pick up new extension.
+  classic.ext = `.block.${ext}`;
+  return path.join(base, path.format(classic));
+}
+
+function toPodsPath(base: string, templatePath: string, ext: string): string {
+  let pods = path.parse(templatePath);
+  delete pods.base; // Required for path.format to pick up new extension.
+  pods.name = "stylesheet";
+  pods.ext = `.block.${ext}`;
+  return path.join(base, path.format(pods));
+}
 
 /**
  * The Glimmer CSS Blocks Resolver deals in three
@@ -21,11 +38,14 @@ export class Resolver {
 
   private depAnalyzers: Map<string, DependencyAnalyzer> = new Map();
   private moduleConfig?: ResolverConfiguration;
+  private fileEndings: Set<string>;
 
-  constructor(moduleConfig?: ResolverConfiguration) {
+  constructor(cssBlocksConfig: ResolvedConfiguration, moduleConfig?: ResolverConfiguration) {
     if (moduleConfig) {
       this.moduleConfig = moduleConfig;
     }
+    this.fileEndings = new Set(["css", ...Object.keys(cssBlocksConfig.preprocessors)]);
+    DEBUG(`Discovering all Block files that end with ("${[...this.fileEndings].join(`|`)}")`);
   }
 
   private dependencyAnalyzerFor(dir: string): DependencyAnalyzer | undefined {
@@ -45,27 +65,24 @@ export class Resolver {
   }
 
   // TODO: We need to automatically discover the file ending here – its not guaranteed to be a css file.
-  private async tmplPathToStylesheetPath(dir: string, template: string): Promise<string | undefined> {
-    // First try Classic Ember structure.
-    // TODO: There is a more robust way to do this path munging!
-    let classic = template.replace("templates/", "styles/").replace(".hbs", ".block.css");
-    classic = path.join(dir, classic);
-    if (fs.pathExistsSync(classic)) {
-      DEBUG(`Discovered classic Block for template ${template}:`);
-      DEBUG(`  - ${classic}`);
-      return classic;
+  private async tmplPathToStylesheetPath(base: string, template: string): Promise<string | undefined> {
+    let triedPaths = [];
+    // For every supported block extension:
+    for (let ext of this.fileEndings) {
+      // First try Classic Ember structure.
+      let classic = toClassicPath(base, template, ext);
+      if (fs.pathExistsSync(classic)) {
+        DEBUG(`Discovered classic Block for template ${template}: ${classic}`);
+        return classic;
+      }
+      let podsPath = toPodsPath(base, template, ext);
+      if (fs.pathExistsSync(podsPath)) {
+        DEBUG(`Discovered pods Block for template ${template}: ${podsPath}`);
+        return podsPath;
+      }
+      triedPaths.push(path.relative(base, classic), path.relative(base, podsPath));
     }
-    let pods = path.parse(template);
-    pods.base = "stylesheet.block.css";
-    let podsPath =  path.join(dir, path.format(pods));
-    if (fs.pathExistsSync(podsPath)) {
-      DEBUG(`Discovered pods Block for template ${template}:`);
-      DEBUG(`  - ${podsPath}`);
-      return podsPath;
-    }
-    DEBUG(`No Block discovered for template ${template}. Attempted at:`);
-    DEBUG(`  - ${classic}`);
-    DEBUG(`  - ${podsPath}`);
+    DEBUG(`No Block discovered for template ${template}. Attempted at:${triedPaths.join(`\n  - `)}`);
     return undefined;
   }
 
