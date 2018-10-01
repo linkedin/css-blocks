@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/webpack",
-  "version": "0.20.0-beta.1",
+  "version": "0.20.0-beta.3",
   "description": "Webpack plugin for css-blocks.",
   "main": "dist/src/index.js",
   "scripts": {
@@ -58,7 +58,7 @@
     "webpack-merge": "^4.1.0"
   },
   "dependencies": {
-    "@css-blocks/core": "^0.20.0-beta.0",
+    "@css-blocks/core": "^0.20.0-beta.3",
     "@opticss/element-analysis": "^0.3.0",
     "@opticss/template-api": "^0.3.0",
     "async": "^2.4.1",
