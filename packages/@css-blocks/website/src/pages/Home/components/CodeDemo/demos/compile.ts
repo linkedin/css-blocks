@@ -16,7 +16,7 @@ const data: Data = {
 
     .button--inverse {
       background-color: white;
-      color: #2e184a;
+      color: #ed2651;
     }
 
     .button--size-small {
