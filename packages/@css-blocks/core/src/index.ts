@@ -1,7 +1,7 @@
 /**
  * @module @css-blocks/core
  *
- * This comment will be used to document the "thing2" module.
+ * Core data models for CSS Blocks.
  */
 export * from "./BlockTree";
 export * from "./errors";

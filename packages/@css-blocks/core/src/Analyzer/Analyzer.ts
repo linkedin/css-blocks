@@ -42,6 +42,12 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     options?: Options,
     analysisOpts?: AnalysisOptions,
   ) {
+
+    // TODO: Remove April 2019 when Node.js 6 is EOL'd
+    if (parseInt(process.versions.node) <= 6) {
+      throw new Error("CSS Blocks does not support Node.js <= 6");
+    }
+
     this.cssBlocksOptions = resolveConfiguration(options);
     this.validatorOptions = analysisOpts && analysisOpts.validations || {};
     this.blockFactory = new BlockFactory(this.cssBlocksOptions);
