@@ -36,7 +36,7 @@
     "url": "https://github.com/linkedin/css-blocks/issues"
   },
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/jsx#readme",
   "publishConfig": {

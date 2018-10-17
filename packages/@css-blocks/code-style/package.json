@@ -34,7 +34,7 @@
     "@opticss/code-style": "^0.3.0"
   },
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "files": [
     "configs",
