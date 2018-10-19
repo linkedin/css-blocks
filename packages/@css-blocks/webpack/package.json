@@ -59,14 +59,14 @@
   },
   "dependencies": {
     "@css-blocks/core": "^0.20.0-beta.3",
-    "@opticss/element-analysis": "^0.3.0",
-    "@opticss/template-api": "^0.3.0",
+    "@opticss/element-analysis": "^0.4.0",
+    "@opticss/template-api": "^0.4.0",
     "async": "^2.4.1",
     "convert-source-map": "^1.5.0",
     "debug": "^2.6.8",
     "install": "^0.10.1",
     "loader-utils": "^1.0.1",
-    "opticss": "^0.3.0",
+    "opticss": "^0.4.0",
     "source-map": "^0.6.1",
     "tapable": "^0.2.5",
     "webpack-sources": "^1.0.1"
