@@ -18,7 +18,7 @@ npm install --save-dev @css-blocks/glimmer
 
 This integration for css-blocks with Glimmer creates a convention where every component
 has an associated css-block. The classes and states of that block are exposed by default
-to the template. Other blocks are exposed to the template using the `@block-reference`
+to the template. Other blocks are exposed to the template using the `@block`
 at-rule from within the stylesheet.
 
 ## Template Syntax
@@ -26,7 +26,7 @@ at-rule from within the stylesheet.
 Given the following CSS Block definition:
 
 ```css
-@block-reference grid from "./grid.block.css";
+@block grid from "./grid.block.css";
 :scope {
   block-name: my-component;
   /* ... */

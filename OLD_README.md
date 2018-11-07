@@ -373,7 +373,7 @@ Root specific declarations:
   the file's path is not a legal CSS identifier. Note: the way a path becomes
   a name is configurable on a per-application or framework integration basis.
 * `implements`: a space separated list of block names that have already been
-  declared with `@block-reference` (See below).
+  declared with `@block` (See below).
 * `extends`: the value is name of a single block from which to inherit the
   styles and public interface. Note that this does not change the output of
   the block but instead it affects the classes that are used in the templates
@@ -425,16 +425,16 @@ E.g. `.button[state|size=large], .button[state|size=small]`.
 
 ### Block References
 
-You can declare a dependency on another block with the `@block-reference`
+You can declare a dependency on another block with the `@block`
 @-rule. Block references don't cause any styles to be included. Instead,
 they are like an ES6 `import` statement -- they make it possible to refer to
 the public interface of another block from within the current block and to
 resolve any namespace collisions with locally preferred identifiers.
 
-A `@block-reference` creates a locally scoped alias for the styles in the referenced block:
+A `@block` creates a locally scoped alias for the styles in the referenced block:
 
 ```css
-@block-reference icons from "../../shared/styles/icons/dark.block.css";
+@block icons from "../../shared/styles/icons/dark.block.css";
 ```
 
 ### Conflicting Block Names
@@ -457,7 +457,7 @@ automatically generate a unique name for BEM output mode.
 `my-component/styles.block.css`
 
 ```css
-@block-reference shared from "../shared.block.css";
+@block shared from "../shared.block.css";
 
 :scope {
   block-name: my-block;
@@ -510,7 +510,7 @@ elements.
 
 `navigation.block.css`
 ```css
-@block-reference app from "application.block.css";
+@block app from "application.block.css";
 
 app[state|is-saving] .signout,
 .signout[state|disabled] {
@@ -530,7 +530,7 @@ block object.
 
   - `:scope` represents the block root for the current block.
   - `a-block-reference.root` represents the block root for the
-    block that has a `@block-reference` as `a-block-reference` from the current
+    block that has a `@block` as `a-block-reference` from the current
     block. In many cases, the `:scope` can be safely omitted.
   - `[state|foo]` or `[state|foo=bar]` represent the
     root state named `foo` or the state named `foo` with the substate of `bar`.
@@ -617,7 +617,7 @@ Rather than having to specify the block root, a block class can declare itself t
 ```
 
 // tabs.block.css
-@block-reference tab from "tab.block.css";
+@block tab from "tab.block.css";
 :scope {
   display: flex;
 }
@@ -674,7 +674,7 @@ To inherit from another block you must first define a reference to the
 other block:
 
 ```css
-@block-reference another from "./another-block.block.css";
+@block another from "./another-block.block.css";
 ```
 
 And now that block can be referenced within this file by the name
@@ -712,8 +712,8 @@ implementation of that interface. To accomplish this, you can declare
 a block `implements` one or more blocks.
 
 ```css
-@block-reference base from "./base.block.css";
-@block-reference other from "./other.block.css";
+@block base from "./base.block.css";
+@block other from "./other.block.css";
 :scope { implements: base, other; color: red; }
 ```
 
@@ -768,7 +768,7 @@ that conflict in another block object's selectors.
 
 ```css
 /* header.block.css */
-@block-reference other from "./other.css";
+@block other from "./other.css";
 .header {
   border: none;
   border: resolve("other.nav");
@@ -822,7 +822,7 @@ local values to take precedence.
 
 ```css
 /* header.block.css */
-@block-reference other from "./other.css";
+@block other from "./other.css";
 .header {
   border: resolve("other.nav");
   border: none;
@@ -854,7 +854,7 @@ selectors of that same pseudo-element are resolved.
 
 ```css
 /* lists.block.css */
-@block-reference links from "./links.block.css";
+@block links from "./links.block.css";
 .list-item::before {
   content: "*";
   content: resolve("links.external");
@@ -893,7 +893,7 @@ Example:
 
 ```css
 /* lists.block.css */
-@block-reference links from "./links.block.css";
+@block links from "./links.block.css";
 .list-item {
   color: purple;
   color: resolve("links.external");
@@ -967,8 +967,8 @@ same local identifier for the block with the global state. Example:
 
 ```css
 /* icons.block.css */
-@block-reference article from "./article.block.css";
-@block-reference app from "./app.block.css";
+@block article from "./article.block.css";
+@block app from "./app.block.css";
 .icon {
   color: white;
   color: resolve("app[state|is-loading] article.link");
@@ -1026,7 +1026,7 @@ Example:
 
 ```css
 /* icons.block.css */
-@block-reference article from "./article.block.css";
+@block article from "./article.block.css";
 .icon {
   color: white;
   color: resolve-all("article.link");
@@ -1119,7 +1119,7 @@ local values to take precedence.
 
 ```css
 /* header.block.css */
-@block-reference other from "./other.css";
+@block other from "./other.css";
 .header {
   font-size: 16px;
   font-size: 1rem;
@@ -1173,7 +1173,7 @@ Consider the following conflicts when `target.main` and `conflicts.article` are 
 
 ```css
 /* conflicts.block.css */
-@block-reference target from "./target.css";
+@block target from "./target.css";
 [state|happy] .article {
   color: green;
   color: resolve("target.main");
@@ -1217,7 +1217,7 @@ Specifically for any property that has a conflict with the super block element
 of the same value in the key selector the following resolution is created:
 
 ```css
-@block-reference base from "./base.block.css";
+@block base from "./base.block.css";
 :scope { extends: base; }
 .foo {
   color: resolve("base.foo");
@@ -1235,8 +1235,8 @@ composition of the necessary styles as it's own class.
 File: `navigation.block.scss`
 
 ```scss
-@block-reference super-grid-system from "super-grid-system.block.css";
-@block-reference drop-down from "drop-down.block.css";
+@block super-grid-system from "super-grid-system.block.css";
+@block drop-down from "drop-down.block.css";
 
 .profile {
   float: --unset;
@@ -1269,7 +1269,7 @@ You must also tell the debug statement where to output the information.
 Example:
 
 ```css
-@block-reference icons from "../../shared/styles/icons/dark.block.css";
+@block icons from "../../shared/styles/icons/dark.block.css";
 @block-debug icons to comment;
 ```
 
@@ -1423,7 +1423,7 @@ the current component's styles:
 `my-component/styles.block.css`
 
 ```css
-@block-reference icons from "../../shared/styles/icons/dark.block.css";
+@block icons from "../../shared/styles/icons/dark.block.css";
 
 :scope {
   border: 1px solid black;

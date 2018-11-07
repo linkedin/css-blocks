@@ -2,7 +2,7 @@ import { assertNever } from "@opticss/util";
 import { CompoundSelector, ParsedSelector, parseSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
 import { isAttributeNode, isClassNode, isRootNode, toAttrToken } from "../BlockParser";
-import { RESOLVE_RE } from "../BlockSyntax";
+import { getResolution, isResolution } from "../BlockSyntax";
 import { Block, BlockClass, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";
@@ -150,11 +150,8 @@ export class ConflictResolver {
     root.walkDecls((decl) => {
 
       // If value is not `resolve()` or `resolve-inherited()` call, continue.
-      let resolveDeclarationMatch = decl.value.match(RESOLVE_RE);
-      if (resolveDeclarationMatch === null) { return; }
-
-      let resolveInherited = !!resolveDeclarationMatch[1];
-      let referenceStr = resolveDeclarationMatch[3];
+      if (!isResolution(decl.value)) { return; }
+      let resolution = getResolution(decl.value);
       let otherDecls: postcss.Declaration[] = [];
       let isOverride = false;
       let foundOtherValue: number | null = null;
@@ -164,7 +161,7 @@ export class ConflictResolver {
       decl.parent.walkDecls(decl.prop, (otherDecl, idx) => {
 
         // If you encounter the resolve, capture the index and determine if it is a value override.
-        if (otherDecl.value.match(RESOLVE_RE)) {
+        if (isResolution(otherDecl.value)) {
           if (otherDecl.value !== decl.value) { return; }
           foundResolve = idx;
           isOverride = (foundOtherValue !== null);
@@ -187,8 +184,8 @@ export class ConflictResolver {
       }
 
       // Look up the block that contains the asked resolution.
-      let other: Style | undefined = block.lookup(referenceStr);
-      assertStyle(other, referenceStr, decl.source && decl.source.start);
+      let other: Style | undefined = block.lookup(resolution.path);
+      assertStyle(other, resolution.path, decl.source && decl.source.start);
 
       // If trying to resolve rule from the same block, throw.
       if (block.equal(other && other.block)) {
@@ -197,7 +194,7 @@ export class ConflictResolver {
 
       // If trying to explicitly resolve (aka: not injected inheritance) from an
       // ancestor block, throw.
-      else if (!resolveInherited && other && other.block.isAncestorOf(block)) {
+      else if (!resolution.isInherited && other && other.block.isAncestorOf(block)) {
         throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with ancestors of your own block.`, this.sourceLocation(block, decl));
       }
 
@@ -205,7 +202,7 @@ export class ConflictResolver {
       // conflict at each level.
       let foundConflict = ConflictType.noConflict;
       while (other && foundConflict === ConflictType.noConflict) {
-        foundConflict = this.resolveConflictWith(referenceStr, other, decl, otherDecls, isOverride);
+        foundConflict = this.resolveConflictWith(resolution.path, other, decl, otherDecls, isOverride);
         if (foundConflict === ConflictType.noConflict) {
           other = other.base;
         }
@@ -213,8 +210,8 @@ export class ConflictResolver {
 
       // If no conflicting Declarations were found (aka: calling for a resolution
       // with nothing to resolve), throw error.
-      if (!resolveInherited && foundConflict === ConflictType.noConflict) {
-        throw new errors.InvalidBlockSyntax(`There are no conflicting values for ${decl.prop} found in any selectors targeting ${referenceStr}.`, this.sourceLocation(block, decl));
+      if (!resolution.isInherited && foundConflict === ConflictType.noConflict) {
+        throw new errors.InvalidBlockSyntax(`There are no conflicting values for ${decl.prop} found in any selectors targeting ${resolution.path}.`, this.sourceLocation(block, decl));
       }
 
       // Remove resolution Declaration
@@ -262,7 +259,7 @@ export class ConflictResolver {
         let d = 0;
         let sameValues = true;
         s.rule.walkDecls(decl.prop, (overrideDecl) => {
-          if (!overrideDecl.value.match(RESOLVE_RE)) {
+          if (!isResolution(overrideDecl.value)) {
             if (otherDecls.length === d || overrideDecl.value !== otherDecls[d++].value) {
               sameValues = false;
               return false;
@@ -277,7 +274,7 @@ export class ConflictResolver {
         // If it's an override we copy the declaration values from the target into the selector
         if (isOverride) {
           s.rule.walkDecls(decl.prop, (overrideDecl) => {
-            if (!overrideDecl.value.match(RESOLVE_RE)) {
+            if (!isResolution(overrideDecl.value)) {
               foundConflict = updateConflict(foundConflict, ConflictType.conflict);
               newRule.append(postcss.decl({ prop: prop, value: overrideDecl.value }));
             }
@@ -287,7 +284,7 @@ export class ConflictResolver {
           // TODO combine this iteration with the same value check above.
           let foundSelConflict = false;
           s.rule.walkDecls(decl.prop, (overrideDecl) => {
-            if (!overrideDecl.value.match(RESOLVE_RE)) {
+            if (!isResolution(overrideDecl.value)) {
               foundConflict = updateConflict(foundConflict, ConflictType.conflict);
               foundSelConflict = true;
             }

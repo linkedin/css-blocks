@@ -193,7 +193,7 @@ export class AnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
 
       :scope { color: blue; }
       :scope[state|foo] { color: red; }
@@ -346,7 +346,7 @@ export class AnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
 
       :scope { color: blue; }
       :scope[state|foo] { color: red; }
@@ -401,7 +401,7 @@ export class AnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
 
       :scope { color: blue; }
       :scope[state|foo] { color: red; }
@@ -451,7 +451,7 @@ export class AnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
 
       :scope { color: blue; }
       :scope[state|foo=red] { color: red; }
@@ -497,7 +497,7 @@ export class AnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
 
       :scope { color: blue; }
       :scope[state|foo] { color: red; }
@@ -693,7 +693,7 @@ export class AnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
       :scope { color: blue; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
@@ -795,7 +795,7 @@ export class AnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
       :scope { extends: a; }
       .pretty[state|color=black] {
         color: black;
@@ -837,7 +837,7 @@ export class AnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
       :scope { extends: a; }
       .pretty[state|color=black] {
         color: black;

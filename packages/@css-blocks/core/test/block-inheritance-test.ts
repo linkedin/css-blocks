@@ -18,7 +18,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "foo/bar/inherits.css";
-    let inputCSS = `@block-reference base from "./base.css";
+    let inputCSS = `@block base from "./base.css";
                     :scope { extends: base; color: red; }
                     .foo { clear: both; }
                     .b[state|small] {color: blue;}
@@ -55,7 +55,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "foo/bar/inherits.css";
-    let inputCSS = `@block-reference base from "./base.css";
+    let inputCSS = `@block base from "./base.css";
                     :scope { extends: base; color: red; }
                     .foo { clear: both; width: unset(); }`;
 
@@ -77,7 +77,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference base from "./base.css";
+    let inputCSS = `@block base from "./base.css";
                     :scope {
                       extends: base;
                       width: 80%;
@@ -113,7 +113,7 @@ export class BlockInheritance extends BEMProcessor {
 
     let filename = "danger-form.block.css";
     let inputCSS = clean`
-      @block-reference basic-form from "./basic-form.block.css";
+      @block basic-form from "./basic-form.block.css";
 
       :scope  { extends: basic-form; }
       .button { background-color: darkred; }
@@ -157,7 +157,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference base from "./base.css";
+    let inputCSS = `@block base from "./base.css";
                     :scope {
                       extends: base;
                     }
@@ -184,7 +184,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference base from "./base.css";
+    let inputCSS = `@block base from "./base.css";
                     :scope { extends: base; }
                     .nav { margin: 15px; }
                     .nav + .nav { margin-bottom: 5px; }`;
@@ -211,7 +211,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference base from "./base.css";
+    let inputCSS = `@block base from "./base.css";
                     :scope { extends: base; }
                     .nav:active, .nav:hover { color: blue; }`;
 
@@ -236,7 +236,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "sub.css";
-    let inputCSS = `@block-reference base from "./base.css";
+    let inputCSS = `@block base from "./base.css";
                     :scope {
                       extends: base;
                       border-color: green;

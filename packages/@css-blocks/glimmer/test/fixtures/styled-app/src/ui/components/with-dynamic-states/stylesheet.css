@@ -1,4 +1,4 @@
-@block-reference h from "./header.css";
+@block h from "./header.css";
 
 :scope {
     color: red;

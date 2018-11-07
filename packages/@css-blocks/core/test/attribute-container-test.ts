@@ -92,7 +92,7 @@ export class AttributeContainerTest extends BEMProcessor {
     );
     imports.registerSource(
       filename,
-      `@block-reference base-block from "base-block.block.css";
+      `@block base-block from "base-block.block.css";
        :scope { extends: base-block; }
        :scope[state|size=tiny] { font-size: 6px; }
        .foo[state|mode=minimized] { display: block; max-height: 200px; }`,
