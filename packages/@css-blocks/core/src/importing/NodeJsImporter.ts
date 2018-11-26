@@ -1,5 +1,6 @@
 import { ObjectDictionary } from "@opticss/util";
 
+import * as debugGenerator from "debug";
 import { existsSync, readFile, readFileSync } from "fs-extra";
 import * as path from "path";
 
@@ -7,6 +8,8 @@ import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 
 import { FileIdentifier, ImportedFile, Importer } from "./Importer";
+
+const debug = debugGenerator("css-blocks:importer");
 
 const DEFAULT_MAIN = "blocks/index.block.css";
 
@@ -48,27 +51,33 @@ export class NodeJsImporter implements Importer {
     let fromDir = from ? path.dirname(from) : config.rootDir;
     let resolvedPath = path.resolve(fromDir, importPath);
     if (existsSync(resolvedPath)) { return resolvedPath; }
+    debug(`No relative or absolute Block file discovered for ${importPath}.`);
 
     // If not a real file, attempt to resolve to an aliased path instead.
     let alias = this.aliases.find(a => importPath.startsWith(a.alias + path.sep));
     if (alias) {
       return path.resolve(alias.path, importPath.substring(alias.alias.length + 1));
     }
+    debug(`No file path alias discovered for ${importPath}.`);
 
     // If no alias found, test for a node_module resolution as a file path.
     try {
       return require.resolve(importPath, { paths: [config.rootDir] });
-    } catch (err) {}
+    } catch (err) {
+      debug(`Could not resolve ${importPath} as a file. Resolution failed with ${err.message}.`);
+    }
 
-    // If no alias found, test for a node_module resolution as a package name.
+    // If no file found, test for a node_module resolution as a package name.
     try {
       const pjsonPath = require.resolve(path.join(importPath, "package.json"), { paths: [config.rootDir] });
       const pjson = JSON.parse(readFileSync(pjsonPath, "utf-8"));
       const main: string | undefined = pjson["css-blocks"] && pjson["css-blocks"].main;
       return path.resolve(pjsonPath, "..", main || DEFAULT_MAIN);
-    } catch (err) { console.log(err); }
+    } catch (err) {
+      debug(`Could not resolve ${importPath} as a module. Resolution failed with ${err.message}.`);
+    }
 
-    // If no backup alias or node_module fount, return the previously calculated
+    // If no backup alias or node_module found, return the previously calculated
     // absolute path where we expect it should be.
     return resolvedPath;
   }
