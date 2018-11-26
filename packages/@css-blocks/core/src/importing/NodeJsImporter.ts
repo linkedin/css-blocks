@@ -1,12 +1,14 @@
 import { ObjectDictionary } from "@opticss/util";
 
-import { existsSync, readFile } from "fs-extra";
+import { existsSync, readFile, readFileSync } from "fs-extra";
 import * as path from "path";
 
 import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 
 import { FileIdentifier, ImportedFile, Importer } from "./Importer";
+
+const DEFAULT_MAIN = "blocks/index.block.css";
 
 /**
  * An Alias maps the starting segment of a relative import path to a
@@ -53,10 +55,18 @@ export class NodeJsImporter implements Importer {
       return path.resolve(alias.path, importPath.substring(alias.alias.length + 1));
     }
 
-    // If no alias found, test for a node_module resolution.
+    // If no alias found, test for a node_module resolution as a file path.
     try {
       return require.resolve(importPath, { paths: [config.rootDir] });
     } catch (err) {}
+
+    // If no alias found, test for a node_module resolution as a package name.
+    try {
+      const pjsonPath = require.resolve(path.join(importPath, "package.json"), { paths: [config.rootDir] });
+      const pjson = JSON.parse(readFileSync(pjsonPath, "utf-8"));
+      const main: string | undefined = pjson["css-blocks"] && pjson["css-blocks"].main;
+      return path.resolve(pjsonPath, "..", main || DEFAULT_MAIN);
+    } catch (err) { console.log(err); }
 
     // If no backup alias or node_module fount, return the previously calculated
     // absolute path where we expect it should be.

@@ -95,7 +95,7 @@ testFSImporter("FilesystemImporter", defaultImporter);
 testFSImporter("Default PathAliasImporter", new NodeJsImporter({}));
 testFSImporter("Configured PathAliasImporter", new NodeJsImporter({alias: ALIAS_FIXTURES}));
 
-describe("Node Module Importer", () => {
+describe("Node Module Importer – Fully Qualified Paths", () => {
   before(function(this: IHookCallbackContext) {
     this.importer = new NodeJsImporter();
     this.config = getConfiguration(NODE_MODULE_FIXTURES);
@@ -119,6 +119,41 @@ describe("Node Module Importer", () => {
     let ident = this.importer.identifier(null, filename, this.config);
     let resolvedFilename = this.importer.filesystemPath(ident, this.config);
     assert.equal(ident, path.join(NODE_MODULE_FIXTURES, filename));
+    assert.equal(resolvedFilename, null);
+  });
+});
+
+describe("Node Module Importer – Package Names", () => {
+  before(function(this: IHookCallbackContext) {
+    this.importer = new NodeJsImporter();
+    this.config = getConfiguration(NODE_MODULE_FIXTURES);
+  });
+  it("handles un-scoped packages default package export", function() {
+    let packageName = "package";
+    let ident = this.importer.identifier(null, packageName, this.config);
+    let resolvedFilename = this.importer.filesystemPath(ident, this.config);
+    assert.equal(ident, path.join(NODE_MODULE_FIXTURES, "node_modules", packageName, "blocks", "index.block.css"));
+    assert.equal(resolvedFilename, path.join(NODE_MODULE_FIXTURES, "node_modules", packageName, "blocks", "index.block.css"));
+  });
+  it("handles scoped packages default package export", function() {
+    let packageName = "@scoped/package";
+    let ident = this.importer.identifier(null, packageName, this.config);
+    let resolvedFilename = this.importer.filesystemPath(ident, this.config);
+    assert.equal(ident, path.join(NODE_MODULE_FIXTURES, "node_modules", packageName, "blocks", "index.block.css"));
+    assert.equal(resolvedFilename, path.join(NODE_MODULE_FIXTURES, "node_modules", packageName, "blocks", "index.block.css"));
+  });
+  it("handles packages with a custom main block export", function() {
+    let packageName = "@scoped/custom-main";
+    let ident = this.importer.identifier(null, packageName, this.config);
+    let resolvedFilename = this.importer.filesystemPath(ident, this.config);
+    assert.equal(ident, path.join(NODE_MODULE_FIXTURES, "node_modules", packageName, "blocks", "custom.block.css"));
+    assert.equal(resolvedFilename, path.join(NODE_MODULE_FIXTURES, "node_modules", packageName, "blocks", "custom.block.css"));
+  });
+  it("gracefully degrades back to relative lookup for undiscoverable modules. Is never found without extension.", function() {
+    let packageName = "@scoped/non-existent";
+    let ident = this.importer.identifier(null, packageName, this.config);
+    let resolvedFilename = this.importer.filesystemPath(ident, this.config);
+    assert.equal(ident, path.join(NODE_MODULE_FIXTURES, packageName));
     assert.equal(resolvedFilename, null);
   });
 });
