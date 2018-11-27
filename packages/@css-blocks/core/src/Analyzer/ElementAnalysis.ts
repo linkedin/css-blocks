@@ -793,7 +793,7 @@ function mapChoiceClasses(
   configuration: ResolvedConfiguration,
   map: Map<string, Style>,
   includeAbsent: boolean,
-  ...styles: Style[],
+  ...styles: Style[]
 ): AttributeValueChoice {
   let choices = new Array<AttributeValueChoiceOption>();
   if (includeAbsent) {
