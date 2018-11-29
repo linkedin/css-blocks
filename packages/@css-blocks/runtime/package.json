@@ -17,10 +17,6 @@
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",
     "lintfix": "tslint -t msbuild -c tslint.cli.json --project . --fix"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/linkedin/css-blocks.git"
-  },
   "keywords": [
     "@css-blocks/core"
   ],
@@ -32,7 +28,8 @@
   "bugs": {
     "url": "https://github.com/linkedin/css-blocks/issues"
   },
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/runtime/#readme",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/runtime",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/runtime#readme",
   "publishConfig": {
     "access": "public"
   },

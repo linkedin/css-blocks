@@ -22,10 +22,6 @@
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "watch": "watch 'yarn run test' src test --wait=1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/linkedin/css-blocks.git"
-  },
   "keywords": [
     "glimmer",
     "static",
@@ -46,6 +42,7 @@
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
   },
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer",
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/@css-blocks/glimmer#readme",
   "publishConfig": {
     "access": "public"
