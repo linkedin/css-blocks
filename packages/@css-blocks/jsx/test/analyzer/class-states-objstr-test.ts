@@ -82,7 +82,7 @@ export class Test {
   @test "Handles inherited states"() {
     mock({
       "bar.block.css": `
-        @block-reference foo from "./foo.block.css";
+        @block foo from "./foo.block.css";
         :scope { extends: foo; }
         .pretty[state|color=black] {
           color: black;
@@ -121,7 +121,7 @@ export class Test {
   @test "Throws if multiple states from same group are applied"() {
     mock({
       "bar.block.css": `
-        @block-reference foo from "./foo.block.css";
+        @block foo from "./foo.block.css";
         :scope { extends: foo; }
         .pretty[state|color=black] {
           color: black;
@@ -157,7 +157,7 @@ export class Test {
   @test "Handles dynamic states"() {
     mock({
       "bar.block.css": `
-        @block-reference foo from "./foo.block.css";
+        @block foo from "./foo.block.css";
         :scope { extends: foo; }
         .pretty[state|color=black] {
           color: black;
@@ -203,7 +203,7 @@ export class Test {
   @test "Throws error when no sub-state passed"() {
     mock({
       "bar.block.css": `
-        @block-reference foo from "./foo.block.css";
+        @block foo from "./foo.block.css";
         :scope { extends: foo; }
         .pretty[state|color=black] {
           color: black;

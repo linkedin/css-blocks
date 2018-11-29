@@ -19,26 +19,33 @@ export const BLOCK_PROP_NAMES_RE = /^(extends|implements|block-name)$/;
 // At Rules
 export const BLOCK_DEBUG = "block-debug";
 export const BLOCK_GLOBAL = "block-global";
-export const BLOCK_REFERENCE = "block-reference";
-export const BLOCK_AT_RULES = new Set([BLOCK_DEBUG, BLOCK_GLOBAL, BLOCK_REFERENCE]);
+export const BLOCK_IMPORT = "block";
+export const BLOCK_EXPORT = "export";
+export const BLOCK_AT_RULES = new Set([BLOCK_DEBUG, BLOCK_GLOBAL, BLOCK_IMPORT, BLOCK_EXPORT]);
 
 // Prop Values
-// TODO: Make regexps private and consume below APIs instead.
-export const RESOLVE_RE = /resolve(-inherited)?\(("|')([^\2]*)\2\)/;
-export const CONSTRAIN_RE = /constrain\(("|')([^\2]*)\2\)/;
-
 // TODO: Flesh out prop value parser APIs and actually use them.
 // TODO: These need to better handle complex values in their passed to them.
 
+export interface Resolution {
+  isInherited: boolean;
+  path: string;
+}
+
+const RESOLVE_RE = /resolve(-inherited)?\(("|')([^\2]*)\2\)/;
+const CONSTRAIN_RE = /constrain\(("|')([^\1]*)\1\)/;
 export function isResolution(value: string): boolean {
   return RESOLVE_RE.test(value);
 }
 export function isConstraint(value: string): boolean {
   return CONSTRAIN_RE.test(value);
 }
-export function getResolutions(value: string): string[] {
-  let res = (value.match(RESOLVE_RE) || [])[3] || "";
-  return res.split(/\s*,\s*/);
+export function getResolution(value: string): Resolution {
+  let res = value.match(RESOLVE_RE) || [];
+  return {
+    isInherited: !!res[1],
+    path: (res[3] || ""),
+  };
 }
 export function getConstraints(value: string): string[] {
   let res = (value.match(CONSTRAIN_RE) || [])[3] || "";
@@ -58,3 +65,6 @@ export const ATTR_PRESENT = "::attr-present";
 // Internally use the invented `root` class represents the root element styling for a block. By interpreting the
 // root selector as just another class we no longer have to store styling information it on the `Block` object..
 export const ROOT_CLASS = ":scope";
+
+// The string `default` is used throughout the system to represent the default export of a block file.
+export const DEFAULT_EXPORT = "default";

@@ -10,7 +10,7 @@ import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import { ParsedSelector, postcss } from "opticss";
 
-import { BLOCK_PROP_NAMES, RESOLVE_RE, SELF_SELECTOR } from "../BlockSyntax";
+import { BLOCK_PROP_NAMES, SELF_SELECTOR, getResolution } from "../BlockSyntax";
 import { InvalidBlockSyntax } from "../errors";
 import { sourceLocation } from "../SourceLocation";
 
@@ -129,13 +129,13 @@ export class RulesetContainer<S extends Styles> {
         if (BLOCK_PROP_NAMES.has(decl.prop)) { return; }
 
         // Check if this is a resolve statement.
-        let referenceStr = (decl.value.match(RESOLVE_RE) || [])[3];
+        let resolution = getResolution(decl.value);
 
         // If this is a resolution, track that this property has been resolved
         // Resolution paths are always relative to the root node.
-        if (referenceStr) {
+        if (resolution.path) {
           let errLoc = sourceLocation(file, decl);
-          let other = style.block.lookup(referenceStr, errLoc);
+          let other = style.block.lookup(resolution.path, errLoc);
 
           if (other && other.block === style.block) {
             throw new InvalidBlockSyntax(`Cannot resolve conflicts with your own block.`, errLoc);

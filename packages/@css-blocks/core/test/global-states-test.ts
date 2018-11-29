@@ -20,7 +20,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "widget.block.css";
-    let inputCSS = `@block-reference app from "./app.block.css";
+    let inputCSS = `@block app from "./app.block.css";
                     app[state|is-loading] .b {
                       border: none;
                     }`;
@@ -44,7 +44,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "widget.block.css";
-    let inputCSS = `@block-reference app from "./app.block.css";
+    let inputCSS = `@block app from "./app.block.css";
                     app .b {
                       border: none;
                     }`;
@@ -64,7 +64,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "widget.block.css";
-    let inputCSS = `@block-reference app from "./app.block.css";
+    let inputCSS = `@block app from "./app.block.css";
                     app .b {
                       border: none;
                     }`;
@@ -84,7 +84,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "widget.block.css";
-    let inputCSS = `@block-reference app from "./app.block.css";
+    let inputCSS = `@block app from "./app.block.css";
                     app[state|is-loading] .b {
                       border: none;
                     }`;

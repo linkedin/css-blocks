@@ -91,7 +91,7 @@ export class AnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
       :scope { color: blue; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {

@@ -1,5 +1,5 @@
-@block-reference h from "./header.css";
-@block-reference t from "./typography.css";
+@block h from "./header.css";
+@block t from "./typography.css";
 
 :scope {
     color: red;

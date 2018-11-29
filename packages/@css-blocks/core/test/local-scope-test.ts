@@ -60,7 +60,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     let filename = "foo/bar/hasref.block.css";
     imports.registerSource(
       filename,
-      `@block-reference a-block from "a-block.block.css";`,
+      `@block a-block from "a-block.block.css";`,
     );
 
     return factory.getBlock(importer.identifier(null, filename, config)).then(refblock => {
@@ -97,7 +97,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
     let filename = "foo/bar/hasref.block.css";
     imports.registerSource(
       filename,
-      `@block-reference my-block from "a-block.block.css";`,
+      `@block my-block from "a-block.block.css";`,
     );
 
     return factory.getBlock(importer.identifier(null, filename, config)).then(refblock => {

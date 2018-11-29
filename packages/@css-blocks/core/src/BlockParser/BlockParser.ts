@@ -9,11 +9,12 @@ import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-a
 import { constructBlock } from "./features/construct-block";
 import { disallowImportant } from "./features/disallow-important";
 import { discoverName } from "./features/discover-name";
+import { exportBlocks } from "./features/export-blocks";
 import { extendBlock } from "./features/extend-block";
 import { globalAttributes } from "./features/global-attributes";
 import { implementBlock } from "./features/implement-block";
+import { importBlocks } from "./features/import-blocks";
 import { processDebugStatements } from "./features/process-debug-statements";
-import { resolveReferences } from "./features/resolve-references";
 import { BlockFactory } from "./index";
 import { Syntax } from "./preprocessing";
 
@@ -72,7 +73,9 @@ export class BlockParser {
     // Throw if we encounter any `!important` decls.
     await disallowImportant(root, sourceFile);
     // Discover and parse all block references included by this block.
-    await resolveReferences(block, this.factory, sourceFile);
+    await importBlocks(block, this.factory, sourceFile);
+    // Export all exported block references from this block.
+    await exportBlocks(block, sourceFile);
     // Handle any global attributes defined by this block.
     await globalAttributes(root, block, sourceFile);
     // Parse all block styles and build block tree.

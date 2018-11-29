@@ -50,7 +50,7 @@ export interface ImportedFile {
 
 /**
  * Importer provides an API that enables css-blocks to resolve a
- * @block-reference directive into a string that is a css-block stylesheet and
+ * @block directive into a string that is a css-block stylesheet and
  * to determine in which syntax the file is written.
  *
  * Importing does not have to ever talk to the filesystem, but importers that

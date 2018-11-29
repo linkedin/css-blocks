@@ -4,8 +4,8 @@ import { postcss } from "opticss";
 import { Analyzer } from "../Analyzer";
 import {
   BLOCK_DEBUG,
+  BLOCK_IMPORT,
   BLOCK_PROP_NAMES_RE,
-  BLOCK_REFERENCE,
   ROOT_CLASS,
   parseBlockDebug,
 } from "../BlockSyntax";
@@ -41,7 +41,7 @@ export class BlockCompiler {
     this.processDebugStatements(filename, root, block);
 
     // Clean up CSS Block specific properties.
-    root.walkAtRules(BLOCK_REFERENCE, (atRule) => {
+    root.walkAtRules(BLOCK_IMPORT, (atRule) => {
       atRule.remove();
     });
     root.walkRules(ROOT_CLASS, (rule) => {
