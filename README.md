@@ -319,7 +319,7 @@ Adding a `@block` is as simple as this:
 :scope { block-name: block-2; }
 ```
 
-> 🔮 **Future Feature: Node Modules Block Resolution **
+> 🔮 **Future Feature: Node Modules Block Resolution**
 >
 > Whether you're integrating with a 3rd party library, or pulling in dependencies internal to your company, at some point you'll want to integrate with styles delivered via NPM! The resolution logic for `@block`s to `node_modules` hasn't yet been implemented yet, but you can track progress (or even help out!) [over on Github](https://github.com/linkedin/css-blocks/issues/112).
 
@@ -597,7 +597,7 @@ Here, we tell css-blocks to use the `color` value from `other.selector` instead 
 }
 ```
 
-> 🔮 **Future Feature: Resolve All Shorthand **
+> 🔮 **Future Feature: Resolve All Shorthand**
 >
 > For straightforward resolutions where you just want to yield or assume full control of styling against another block, feel free to use the CSS `all` property to quickly override or yield to all property conflict with another block. The downside of doing this is that as new properties are added to another element, you don't get a chance to review them and decide:
 
