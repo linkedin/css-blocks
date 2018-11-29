@@ -280,6 +280,36 @@ export class BlockImportExport extends BEMProcessor {
       `/* Source: b.css\n   :scope => .block-b */\n`,
     );
   }
+  @test async "able to export without parens"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource(
+      "a.css",
+      `:scope { block-name: block-a; }`,
+    );
+    imports.registerSource(
+      "b.css",
+      `:scope { block-name: block-b; }`,
+    );
+    imports.registerSource(
+      "imported.css",
+      `
+        @block a from "./a.css";
+        @block b from "./b.css";
+        :scope { block-name: imported-block; }
+        @export a as foo, b as bar;
+      `,
+    );
+
+    let inputCSS = `@block ( foo, bar ) from "./imported.css";
+                    @block-debug foo to comment;
+                    @block-debug bar to comment;`;
+    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    return assert.equal(
+      result.css,
+      `/* Source: a.css\n   :scope => .block-a */\n` +
+      `/* Source: b.css\n   :scope => .block-b */\n`,
+    );
+  }
 
   @test async "able to export multiple blocks using mixed methods"() {
     let imports = new MockImportRegistry();
