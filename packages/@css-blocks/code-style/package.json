@@ -22,11 +22,8 @@
   "bugs": {
     "url": "https://github.com/linkedin/css-blocks/issues"
   },
-  "repository": {
-    "url": "https://github.com/linkedin/css-blocks.git",
-    "type": "git"
-  },
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/code-style",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/code-style",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/code-style#readme",
   "publishConfig": {
     "access": "public"
   },

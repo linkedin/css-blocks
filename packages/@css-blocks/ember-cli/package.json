@@ -11,7 +11,8 @@
     "doc": "doc",
     "test": "tests"
   },
-  "repository": "",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli#readme",
   "scripts": {
     "build": "ember build",
     "lint:js": "eslint ./*.js addon addon-test-support app blueprints config lib server test-support tests",

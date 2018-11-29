@@ -16,10 +16,6 @@
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "watch": "watch 'yarn run test' './src' './test' --wait=3"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/linkedin/css-blocks.git"
-  },
   "keywords": [
     "css"
   ],
@@ -37,7 +33,8 @@
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
   },
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/@css-blocks/webpack#readme",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack#readme",
   "publishConfig": {
     "access": "public"
   },

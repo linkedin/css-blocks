@@ -5,6 +5,8 @@
   "main": "dist/src/index.js",
   "author": "Adam Miller <ammiller@linkedin.com>",
   "license": "MIT",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli#readme",
   "keywords": [
     "@css-blocks/core",
     "css blocks",
