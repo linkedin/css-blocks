@@ -37,21 +37,19 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
   // For each `@block` expression, read in the block file, parse and
   // push to block references Promise array.
   root.walkAtRules(BLOCK_IMPORT, (atRule: postcss.AtRule) => {
-    // <blocks-list> from <block-path>
+    // imports: `<blocks-list> from <block-path>`
+    // blockList: `<default-block> | <named-blocks> | <default-block> " , " <named-blocks> | <named-blocks> " , " <default-block>`
+    // blockPath: `' " ' <any-value> ' " ' | " ' " <any-value> " ' "`
     let imports = atRule.params;
-
-    // <default-block> | <named-blocks> | <default-block> " , " <named-blocks> | <named-blocks> " , " <default-block>
-    let blockList = imports.split(FROM_EXPR)[0];
-
-    // ' " ' <any-value> ' " ' | " ' " <any-value> " ' ", then strip quotes.
-    let blockPath = stripQuotes(imports.split(FROM_EXPR)[1] || "");
+    let [blockList = "", blockPath = ""] = imports.split(FROM_EXPR);
+    blockPath = stripQuotes(blockPath);
 
     if (!blockList || !blockPath) {
       throw new errors.InvalidBlockSyntax(
         `Malformed block reference: \`@block ${atRule.params}\``,
         sourceLocation(file, atRule),
-      );
-    }
+        );
+      }
 
     // Import file, then parse file, then save block reference.
     let blockPromise: Promise<Block> = factory.getBlockRelative(block.identifier, blockPath);

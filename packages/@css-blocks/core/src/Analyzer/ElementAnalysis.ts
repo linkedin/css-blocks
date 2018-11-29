@@ -793,7 +793,8 @@ function mapChoiceClasses(
   configuration: ResolvedConfiguration,
   map: Map<string, Style>,
   includeAbsent: boolean,
-  ...styles: Style[],
+  // tslint:disable-next-line:multiline-parameters trailing-comma // ignored due to bug in lint rule
+  ...styles: Style[]
 ): AttributeValueChoice {
   let choices = new Array<AttributeValueChoiceOption>();
   if (includeAbsent) {
