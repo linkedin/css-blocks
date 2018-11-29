@@ -16,10 +16,6 @@
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "watch": "watch 'yarn run test' './src' './test' --wait=3"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/linkedin/css-blocks.git"
-  },
   "keywords": [
     "css"
   ],
@@ -35,7 +31,8 @@
     "*.md",
     "test/mocha.opts"
   ],
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/css-blocks#readme",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core#readme",
   "publishConfig": {
     "access": "public"
   },
