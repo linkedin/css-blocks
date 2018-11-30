@@ -134,74 +134,6 @@
   dependencies:
     find-up "^2.1.0"
 
-"@css-blocks/broccoli@^0.19.0":
-  version "0.19.0"
-  resolved "https://registry.npmjs.org/@css-blocks/broccoli/-/broccoli-0.19.0.tgz#4c36cd54542078fe523f106c6a510d21f7caf61c"
-  dependencies:
-    "@css-blocks/core" "^0.19.0"
-    "@glimmer/compiler" "^0.33.0"
-    "@glimmer/syntax" "^0.33.0"
-    "@opticss/template-api" "^0.3.0"
-    "@types/recursive-readdir" "^2.2.0"
-    broccoli-funnel "^2.0.1"
-    broccoli-merge-trees "^3.0.0"
-    broccoli-plugin "^1.3.0"
-    broccoli-test-helper "^1.2.0"
-    colors "^1.2.1"
-    debug "^3.1.0"
-    fs-extra "^5.0.0"
-    opticss "^0.3.0"
-    postcss "^6.0.21"
-    recursive-readdir "^2.2.2"
-    walk-sync "^0.3.2"
-
-"@css-blocks/core@^0.19.0":
-  version "0.19.0"
-  resolved "https://registry.npmjs.org/@css-blocks/core/-/core-0.19.0.tgz#89cb5584b09ffb2dbbb597570ccc7a6e32eb4839"
-  dependencies:
-    "@opticss/element-analysis" "^0.3.0"
-    "@opticss/template-api" "^0.3.0"
-    "@opticss/util" "^0.3.0"
-    "@types/async" "^2.0.40"
-    "@types/debug" "0.0.29"
-    async "^2.5.0"
-    css-property-parser "^1.0.6"
-    debug "^2.6.8"
-    inline-source-map-comment "^1.0.5"
-    json-parse-better-errors "^1.0.1"
-    object.values "^1.0.4"
-    opticss "^0.3.0"
-    regexpu-core "^4.0.11"
-    source-map "^0.6.1"
-    watch "^1.0.2"
-
-"@css-blocks/ember-cli@*":
-  version "0.19.0"
-  resolved "https://registry.npmjs.org/@css-blocks/ember-cli/-/ember-cli-0.19.0.tgz#86e9798277c65bbb95d725d4e55a99eee038edfd"
-  dependencies:
-    "@css-blocks/broccoli" "^0.19.0"
-    "@css-blocks/glimmer" "^0.19.0"
-    "@glimmer/application-pipeline" "^0.11.1"
-    broccoli-funnel "^2.0.1"
-
-"@css-blocks/glimmer@^0.19.0":
-  version "0.19.0"
-  resolved "https://registry.npmjs.org/@css-blocks/glimmer/-/glimmer-0.19.0.tgz#bb076d7de613a44114f9dbf8f4f75285a1d64217"
-  dependencies:
-    "@css-blocks/core" "^0.19.0"
-    "@glimmer/compiler" "^0.33.0"
-    "@glimmer/resolution-map-builder" "0.5.1"
-    "@glimmer/resolver" "^0.4.3"
-    "@glimmer/syntax" "^0.33.0"
-    "@opticss/element-analysis" "^0.3.0"
-    "@opticss/template-api" "^0.3.0"
-    "@opticss/util" "^0.3.0"
-    "@types/glob" "^5.0.30"
-    debug "^2.6.8"
-    glimmer-analyzer "^0.2.0"
-    glob "^7.1.2"
-    object.values "^1.0.4"
-
 "@ember/test-helpers@^0.7.18":
   version "0.7.25"
   resolved "https://registry.npmjs.org/@ember/test-helpers/-/test-helpers-0.7.25.tgz#b4014c108b40ffaf74f3c4d5918800917541541d"
@@ -365,12 +297,6 @@
   dependencies:
     babel-plugin-glimmer-inline-precompile "^1.2.0"
 
-"@glimmer/interfaces@^0.29.10":
-  version "0.29.10"
-  resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.29.10.tgz#7744451ca329a42c62b08fa460808bccbddeb2ab"
-  dependencies:
-    "@glimmer/wire-format" "^0.29.10"
-
 "@glimmer/interfaces@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.31.0.tgz#642764765b266d5cf921f64354e06a3112551081"
@@ -472,15 +398,6 @@
     "@glimmer/vm" "^0.31.0"
     "@glimmer/wire-format" "^0.31.0"
 
-"@glimmer/syntax@^0.29.1":
-  version "0.29.10"
-  resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.29.10.tgz#2a074223fc3b42d49c8b9345684a80b5133dc030"
-  dependencies:
-    "@glimmer/interfaces" "^0.29.10"
-    "@glimmer/util" "^0.29.10"
-    handlebars "^4.0.6"
-    simple-html-tokenizer "^0.4.1"
-
 "@glimmer/syntax@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.31.0.tgz#5e4f2732c39b07060a716a95e55e7a67c7d1a213"
@@ -512,10 +429,6 @@
   version "0.30.3"
   resolved "https://registry.npmjs.org/@glimmer/test-helpers/-/test-helpers-0.30.3.tgz#57bd84fba9aa498de025f8d0b4c3f0ab2e9afa97"
 
-"@glimmer/util@^0.29.10":
-  version "0.29.10"
-  resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.29.10.tgz#8662daf273ffef9254b8d943d39aa396ed7225a5"
-
 "@glimmer/util@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.31.0.tgz#45e353a7dcaffe6df00cc3d729153ae6121cf0e4"
@@ -535,12 +448,6 @@
     "@glimmer/interfaces" "^0.31.0"
     "@glimmer/program" "^0.31.0"
     "@glimmer/util" "^0.31.0"
-
-"@glimmer/wire-format@^0.29.10":
-  version "0.29.10"
-  resolved "https://registry.npmjs.org/@glimmer/wire-format/-/wire-format-0.29.10.tgz#90e82f67a6325468d6fee4f8dd7affc1070a9557"
-  dependencies:
-    "@glimmer/util" "^0.29.10"
 
 "@glimmer/wire-format@^0.31.0":
   version "0.31.0"
@@ -1305,12 +1212,6 @@
   dependencies:
     "@types/prop-types" "*"
     csstype "^2.2.0"
-
-"@types/recursive-readdir@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.npmjs.org/@types/recursive-readdir/-/recursive-readdir-2.2.0.tgz#b39cd5474fd58ea727fe434d5c68b7a20ba9121c"
-  dependencies:
-    "@types/node" "*"
 
 "@types/shelljs@0.7.8":
   version "0.7.8"
@@ -4986,7 +4887,7 @@ ember-build-utilities@^0.4.0:
     rimraf "^2.6.1"
     semver "^5.3.0"
 
-ember-cli-babel@*, ember-cli-babel@^6.0.0-beta.4, ember-cli-babel@^6.0.0-beta.7, ember-cli-babel@^6.11.0, ember-cli-babel@^6.12.0, ember-cli-babel@^6.16.0, ember-cli-babel@^6.6.0, ember-cli-babel@^6.7.2, ember-cli-babel@^6.8.1, ember-cli-babel@^6.8.2:
+ember-cli-babel@^6.0.0-beta.4, ember-cli-babel@^6.0.0-beta.7, ember-cli-babel@^6.11.0, ember-cli-babel@^6.12.0, ember-cli-babel@^6.16.0, ember-cli-babel@^6.6.0, ember-cli-babel@^6.7.2, ember-cli-babel@^6.8.1, ember-cli-babel@^6.8.2:
   version "6.16.0"
   resolved "https://registry.npmjs.org/ember-cli-babel/-/ember-cli-babel-6.16.0.tgz#623b4a2764ece72b65f1572fc8aeb5714a450228"
   dependencies:
@@ -6662,15 +6563,6 @@ gitconfiglocal@^1.0.0:
   resolved "https://registry.npmjs.org/gitconfiglocal/-/gitconfiglocal-1.0.0.tgz#41d045f3851a5ea88f03f24ca1c6178114464b9b"
   dependencies:
     ini "^1.3.2"
-
-glimmer-analyzer@^0.2.0:
-  version "0.2.3"
-  resolved "https://registry.npmjs.org/glimmer-analyzer/-/glimmer-analyzer-0.2.3.tgz#29746c3027bd342c9930d020e4e8f5902f01fc62"
-  dependencies:
-    "@glimmer/resolution-map-builder" "^0.4.0"
-    "@glimmer/resolver" "^0.3.0"
-    "@glimmer/syntax" "^0.29.1"
-    simple-html-tokenizer "^0.4.1"
 
 glimmer-analyzer@^0.3.2:
   version "0.3.3"
@@ -9266,7 +9158,7 @@ minimalistic-crypto-utils@^1.0.0, minimalistic-crypto-utils@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/minimalistic-crypto-utils/-/minimalistic-crypto-utils-1.0.1.tgz#f6c00c1c0b082246e5c4d99dfb8c7c083b2b582a"
 
-"minimatch@2 || 3", minimatch@3.0.4, minimatch@^3.0.0, minimatch@^3.0.2, minimatch@^3.0.3, minimatch@^3.0.4:
+"minimatch@2 || 3", minimatch@^3.0.0, minimatch@^3.0.2, minimatch@^3.0.3, minimatch@^3.0.4:
   version "3.0.4"
   resolved "https://registry.npmjs.org/minimatch/-/minimatch-3.0.4.tgz#5166e286457f03306064be5497e8dbb0c3d32083"
   dependencies:
@@ -11165,12 +11057,6 @@ recursive-readdir@2.2.1:
   dependencies:
     minimatch "3.0.3"
 
-recursive-readdir@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.npmjs.org/recursive-readdir/-/recursive-readdir-2.2.2.tgz#9946fb3274e1628de6e36b2f6714953b4845094f"
-  dependencies:
-    minimatch "3.0.4"
-
 redent@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/redent/-/redent-1.0.0.tgz#cf916ab1fd5f1f16dfb20822dd6ec7f730c2afde"
@@ -12912,9 +12798,10 @@ typescript@~2.8.3:
   version "2.8.4"
   resolved "https://registry.npmjs.org/typescript/-/typescript-2.8.4.tgz#0b1db68e6bdfb0b767fa2ab642136a35b059b199"
 
-typescript@~3.0.3:
-  version "3.0.3"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-3.0.3.tgz#4853b3e275ecdaa27f78fda46dc273a7eb7fc1c8"
+typescript@~3.1.6:
+  version "3.1.6"
+  resolved "https://registry.npmjs.org/typescript/-/typescript-3.1.6.tgz#b6543a83cfc8c2befb3f4c8fba6896f5b0c9be68"
+  integrity sha512-tDMYfVtvpb96msS1lDX9MEdHrW4yOuZ4Kdc4Him9oU796XldPYF/t2+uKoX0BBa0hXXwDlqYQbXY5Rzjzc5hBA==
 
 ua-parser-js@^0.7.18:
   version "0.7.18"
