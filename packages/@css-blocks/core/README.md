@@ -12,7 +12,7 @@
 | **rootDir** | `process.cwd()` | The root directory from which all sources are relative. |
 | **outputMode** | `"BEM"` | Block file output mode. One of [OutputMode][OUTPUT_MODE] |
 | **preprocessors** | `{}` | A preprocessor function can be declared by [Syntax][SYNTAX]. |
-| **importer** | [`FilesystemImporter`](./src/importing/FilesystemImporter.ts) | A custom importer to resolve identifiers passed to `@block-reference`. |
+| **importer** | [`NodeJsImporter`](./src/importing/NodeJsImporter.ts) | A custom importer to resolve identifiers passed to `@block`. |
 | **importerData** | `{}` | Additional data to make available to the importer. |
 | **maxConcurrentCompiles** | `4` | Limits block parsing and compilation to this number of threads at any one time. |
 | **disablePreprocessChaining** | `false` | If a preprocessor function is declared for `css`, all blocks will be ran through it, even those that were pre-processed for another syntax. This can be disabled by setting `disablePreprocessChaining` to true. |
@@ -39,7 +39,7 @@ Container Nodes...contain other nodes ;) These nodes contain logical groupings o
 #### Block
 A `Block` node is always the root of any `BlockTree`. A `Block` may be parent to any number of `BlockClass`es. The `:scope` selector is considered a special kind of `BlockClass` selector and is also stored as a child of `Block`.
 
-`Block` nodes also store all data related to any `@block-reference`s, the `block-name`, implemented `Blocks`, the inherited `Block`, and any other metadata stored in the Block file. `Block`s also have a special `rootClass` property that points directly to the child `BlockClass` that represents the parsed `:scope` selector .
+`Block` nodes also store all data related to any `@block`s, the `block-name`, implemented `Blocks`, the inherited `Block`, and any other metadata stored in the Block file. `Block`s also have a special `rootClass` property that points directly to the child `BlockClass` that represents the parsed `:scope` selector .
 
 #### Attribute
 An `Attribute` node represents a single unique attribute `namespace|name` pair and is a parent to any number of `AttrValue` nodes, which represent all the possible attribute values for this `Attribute` discovered in the Block file. An `Attribute` node's parent is always a `BlockClass`. Attribute selectors where no value is specified are considered a special kind of `AttrValue` and is also stored as a child of `Attribute`.
@@ -80,7 +80,7 @@ Block compilation becomes a little more complicated once we begin emitting confl
 :scope[state|active] .bar { color: blue; }
 
 /* main.css */
-@block-reference other from "./other.css";
+@block other from "./other.css";
 :scope { block-name: "main"; }
 :scope:hover .foo { color: red; color: resolve("other.bar"); }
 ```
@@ -196,9 +196,9 @@ The **configuration** package contains the CSS Blocks build configuration utilit
 See the options table at the top of this file for configuration object details.
 
 ## /src/importing
-CSS Blocks needs to know where to get a Block file's contents when provided a file `FileIdentifier` from an `@block-reference`. Most of the time, this file path will be a file on disk, in which case the default importer delivered with CSS Blocks will work out of the box. However, in cases where custom resolution of `@block-reference`s are required, consumers are able to provide their own implementation of the CSS Blocks `Importer` interface to deliver this custom behavior.
+CSS Blocks needs to know where to get a Block file's contents when provided a file `FileIdentifier` from an `@block`. Most of the time, this file path will be a file on disk, in which case the default importer delivered with CSS Blocks will work out of the box. However, in cases where custom resolution of `@block`s are required, consumers are able to provide their own implementation of the CSS Blocks `Importer` interface to deliver this custom behavior.
 
-A custom importer may be passed to CSS Blocks via the `importer` options of the configuration object. Custom importers will understand how to resolve information about the `FileIdentifier` passed to `@block-reference` and are used to abstract application or platform specific path resolution logic.
+A custom importer may be passed to CSS Blocks via the `importer` options of the configuration object. Custom importers will understand how to resolve information about the `FileIdentifier` passed to `@block` and are used to abstract application or platform specific path resolution logic.
 
 Any CSS Blocks `Importer` **must** implement the interface defined for a CSS Blocks `Importer` in [`/src/importing/types.ts`](./src/importing/types.ts). Every importer is required to have a number of introspection methods that return standard metadata for a given `FileIdentifier`:
 
@@ -210,12 +210,15 @@ Any CSS Blocks `Importer` **must** implement the interface defined for a CSS Blo
 
 However, the primary method for any importer is its `import()` method. `import()` returns a promise that resolves with a metadata object which not only contains all the information outlined above, but also the stringified contents of the file. It is these contents that the `BlockFactory` will use to create a `BlockTree`.
 
-For any custom importers that require extra data to be passed by the end-user, the `importerData` CSS BLocks config option has been specially reserved as a namespaced location for extra importer data to be passed. All importer methods are passsed the full CSS Blocks config object as their last argument.
+For any custom importers that require extra data to be passed by the end-user, the `importerData` CSS BLocks config option has been specially reserved as a namespaced location for extra importer data to be passed. All importer methods are passed the full CSS Blocks config object as their last argument.
 
-CSS Blocks ships with two (2) pre-defined importers.
+CSS Blocks ships with one (1) pre-defined importers.
 
- 1. `FilesystemImporter`: This is the default importer used by CSS Blocks if no other is provided. It enables `@block-reference`s to resolve relative and absolute file references
- 2. `PathAliasImporter`: The PathAliasImporter is a replacement for the fileystem importer. Relative import paths are first checked to see if they match an existing file relative to the from identifier (when provided). Then if the relative import path has a first segment that is any of the aliases provided the path will be made absolute using that alias's path location. Finally any relative path is resolved against the `rootDir` specified in the CSS Block configuration options.
+ 1. `NodeJsImporter`: This is the default importer used by CSS Blocks if no other is provided. It enables `@block`s to resolve relative and absolute file references. Paths are resolved using the following algorithm:
+  - If an absolute path, resolve to the specified location.
+  - If a relative path, attempt to resolve relative to the containing file.
+  - If relative paths do not match a file on disk, test if the relative import path has a first segment that matches any of the aliases provided. The path will be made absolute using that alias's path location.
+  - Finally, any relative path is resolved against the `rootDir` specified in the CSS Block configuration options.
 
 ## /src/util
 Utilities used inside the CSS Blocks repo. These are:

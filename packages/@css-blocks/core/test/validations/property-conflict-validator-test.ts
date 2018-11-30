@@ -36,7 +36,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; color: blue; background-color: yellow; }
     `;
 
@@ -56,7 +56,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; color: blue; background-color: yellow; }
     `;
 
@@ -87,7 +87,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; color: blue; color: yellow; }
     `;
 
@@ -107,7 +107,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; color: blue; color: yellow; }
     `;
 
@@ -140,7 +140,7 @@ export class TemplateAnalysisTests {
     `);
 
     let css = `
-    @block-reference b from "./b.block.css";
+    @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .klass { color: blue; background-color: yellow; }
     `;
@@ -171,7 +171,7 @@ export class TemplateAnalysisTests {
     `);
 
     let css = `
-    @block-reference b from "./b.block.css";
+    @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .klass { color: resolve('b.klass'); color: blue; background-color: yellow; }
     `;
@@ -192,7 +192,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; color: red; background-color: red; }
     `;
 
@@ -225,7 +225,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope {
         block-name: block-a;
         color: resolve('b');
@@ -253,7 +253,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .bar  { color: red; background-color: red; }
     `;
@@ -289,7 +289,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .bar  {
         color: resolve('b.foo');
@@ -315,7 +315,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .foo  { color: red; background-color: red; }
     `;
@@ -349,7 +349,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .foo  {
         color: resolve('b');
@@ -408,7 +408,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .foo  { color: red; background-color: red; }
     `;
@@ -442,7 +442,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .foo  {
         color: resolve('b');
@@ -468,7 +468,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .foo  { color: red; background-color: red; }
     `;
@@ -502,7 +502,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .foo  {
         color: resolve('b');
@@ -528,7 +528,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .foo  { color: red; background: red; }
     `;
@@ -550,7 +550,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       :scope[state|foo] { color: red; background-color: red; }
     `;
@@ -585,7 +585,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       :scope[state|foo] {
         color: resolve('b');
@@ -612,7 +612,7 @@ export class TemplateAnalysisTests {
     `);
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .klass {}
       .klass[state|foo] { color: red; }
@@ -644,7 +644,7 @@ export class TemplateAnalysisTests {
     `);
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       .klass {}
       .klass[state|foo] { color: resolve('b.klass[state|foo]'); color: red; }
     `;
@@ -667,7 +667,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       :scope[state|foo] { color: red; background-color: red; }
     `;
@@ -703,7 +703,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       :scope[state|foo] {
         color: resolve('b:scope[state|bar]');
@@ -729,7 +729,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       :scope[state|foo=one] { color: red; background-color: red; }
       :scope[state|foo=two] { text-decoration: underline; }
@@ -765,7 +765,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       :scope[state|foo=one] { color: resolve('b'); color: red; background-color: red; background-color: resolve('b');  }
       :scope[state|foo=two] { text-decoration: underline; }
@@ -790,7 +790,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       :scope[state|foo=one] { color: orange; background-color: green; }
       :scope[state|foo=two] { text-decoration: underline; }
@@ -835,8 +835,8 @@ export class TemplateAnalysisTests {
     `);
 
     let css = `
-      @block-reference b from "./b.block.css";
-      @block-reference c from "./c.block.css";
+      @block b from "./b.block.css";
+      @block c from "./c.block.css";
       :scope { block-name: block-a; }
       .foo  { color: red; background-color: red; }
     `;
@@ -871,7 +871,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; color: resolve('b'); color: red; }
     `;
 
@@ -895,7 +895,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .klass-2[state|one][state|two] { color: red; color: }
     `;
@@ -915,7 +915,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       .klass { color: resolve('b.klass'); color: red; }
     `;
 
@@ -955,7 +955,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from './b.block.css';
+      @block b from './b.block.css';
       :scope { block-name: block-a; }
       .klass:before { color: resolve('b.klass'); color: red; }
       .klass { color: red; }
@@ -982,7 +982,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .klass:before { color: resolve('b.klass'); color: green; }
       .klass { color: red; }
@@ -1015,7 +1015,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       .klass { background: red; border-color: yellow; }
     `;
 
@@ -1050,7 +1050,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       .klass { border-color: green; border-left-color: yellow }
     `;
 
@@ -1081,7 +1081,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       .klass { background: red; border-left-color: yellow }
     `;
 
@@ -1116,7 +1116,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       .klass { border-right-color: green; border-left-color: yellow }
     `;
 
@@ -1151,7 +1151,7 @@ export class TemplateAnalysisTests {
     `);
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: a; }
       .klass { background-color: red; background: resolve('b.klass'); }
     `;
@@ -1173,7 +1173,7 @@ export class TemplateAnalysisTests {
     `);
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: a-block; }
       .klass { border-color: red; border-left-color: resolve('b.klass'); }
     `;
@@ -1205,7 +1205,7 @@ export class TemplateAnalysisTests {
     `);
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .klass { custom-prop: red; }
     `;
@@ -1238,7 +1238,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference b from "./b.block.css";
+      @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .klass { custom-prop: red; custom-prop: resolve('b.klass'); }
     `;

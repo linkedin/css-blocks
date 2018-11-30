@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.4"></a>
+# [0.20.0-beta.4](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.3...v0.20.0-beta.4) (2018-10-19)
+
+
+### Features
+
+* Manually throw error for Node 6 in Analyzer. ([5788fcc](https://github.com/linkedin/css-blocks/commit/5788fcc))
+
+
+
+
+
+<a name="0.20.0-beta.3"></a>
+# [0.20.0-beta.3](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.2...v0.20.0-beta.3) (2018-10-01)
+
+
+### Features
+
+* Ember CLI addon Preprocessor support. ([574483d](https://github.com/linkedin/css-blocks/commit/574483d))
+
+
+
+
+
+<a name="0.20.0-beta.2"></a>
+# [0.20.0-beta.2](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.1...v0.20.0-beta.2) (2018-09-25)
+
+**Note:** Version bump only for package @css-blocks/ember-cli
+
+
+
+
+
+<a name="0.20.0-beta.1"></a>
+# [0.20.0-beta.1](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.0...v0.20.0-beta.1) (2018-09-13)
+
+
+### Bug Fixes
+
+* Comment out failing node_modules test case breaking build in CI. ([09f1a17](https://github.com/linkedin/css-blocks/commit/09f1a17))
+* Use local versions of packages in ember-cli. ([4c75501](https://github.com/linkedin/css-blocks/commit/4c75501))
+
+
+
+
+
 <a name="0.20.0-beta.0"></a>
 # [0.20.0-beta.0](https://github.com/linkedin/css-blocks/compare/v0.19.0...v0.20.0-beta.0) (2018-08-20)
 

@@ -1,0 +1,6 @@
+@block-reference unscoped from "package";
+@block-reference scoped from "@scoped/package";
+
+:scope {
+  color: yellow;
+}

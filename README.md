@@ -111,7 +111,7 @@ CSS Blocks is under active development and there are a number of features that h
 | ❌ | <code>[state&#124;name=value]</code> | Bare state (not associated with an Originating Element) and optional substate selectors for targeting all elements in the Block that possess the state an/or sub-state. |
 | 🖌 | <code>.class[state&#124;name default]</code> | Default state value to be applied when there is no other match. |
 | **At Rules** ||
-| ✅ | `@block-reference local-name from "./file/path.css"` | Reference another Block using a local name. |
+| ✅ | `@block local-name from "./file/path.css"` | Reference another Block using a local name. |
 | ✅ | `@block-debug block-name to channel` | Debug call that will print a block interface to a "channel": `comment`, `stderr`, or `stdout`. |
 | ✅ | `@block-global block.path` | Declare a Block class or state as public. It may be used as a context selector in other Blocks. |
 | 🖌 | `@is-block block-name` | Block class can declare itself to be the root of another block in a specific state or set of states.  |
@@ -296,14 +296,14 @@ There are only two (2) common-sense rules to follow when using Block styles in y
 # 🏗 Block Composition
 Blocks styles are, by design, scoped to the file they are written in, but we all know that in a real app your styles can't live in a vacuum! 
 
-As you'll see below, there are many methods to compose blocks together in your application. However, most of these methods will begin with the humble `@block-reference`.
+As you'll see below, there are many methods to compose blocks together in your application. However, most of these methods will begin with the humble `@block`.
 
 ## Block References
-A Block may declare a dependency on another Block by using a `@block-reference` at the top of your file. A `@block-reference` creates a locally scoped alias where you can access the public API (declared classes and states) of the referenced block.
+A Block may declare a dependency on another Block by using a `@block` at the top of your file. A `@block` creates a locally scoped alias where you can access the public API (declared classes and states) of the referenced block.
 
 Block references don't cause any styles to be included. Instead, they are like an ES6 `import` statement -- they make it possible to refer to the public interface of another Block from within the current Block. 
 
-Adding a `@block-reference` is as simple as this:
+Adding a `@block` is as simple as this:
 
 ```css
 /* block-1.block.css */
@@ -314,14 +314,14 @@ Adding a `@block-reference` is as simple as this:
 
 ```css
 /* block-2.block.css */
-@block-reference other-block from "./block-1.block.css";
+@block other-block from "./block-1.block.css";
 
 :scope { block-name: block-2; }
 ```
 
-> 🔮 **Future Feature: Node Modules Block Resolution **
+> 🔮 **Future Feature: Node Modules Block Resolution**
 >
-> Whether you're integrating with a 3rd party library, or pulling in dependencies internal to your company, at some point you'll want to integrate with styles delivered via NPM! The resolution logic for `@block-reference`s to `node_modules` hasn't yet been implemented yet, but you can track progress (or even help out!) [over on Github](https://github.com/linkedin/css-blocks/issues/112).
+> Whether you're integrating with a 3rd party library, or pulling in dependencies internal to your company, at some point you'll want to integrate with styles delivered via NPM! The resolution logic for `@block`s to `node_modules` hasn't yet been implemented yet, but you can track progress (or even help out!) [over on Github](https://github.com/linkedin/css-blocks/issues/112).
 
 With the above code, `block-2` now has a local reference `other-block` which points to `block-1`. We can now freely use the `other-block` identifier inside of `block-2` when we want to reference reference `block-1`. This comes in handy! Especially with features like:
 
@@ -341,7 +341,7 @@ You do this via the special `implements` property in a Block's `:scope` selector
 
 ```css
 /* block-2.block.css */
-@block-reference other-block from "./block-1.block.css";
+@block other-block from "./block-1.block.css";
 
 :scope { 
   block-name: block-2; 
@@ -363,7 +363,7 @@ For the build to pass, we need to implement the *full public interface* of `bloc
 
 ```css
 /* block-2.block.css */
-@block-reference other-block from "./block-1.block.css";
+@block other-block from "./block-1.block.css";
 
 :scope { 
   block-name: block-2; 
@@ -403,7 +403,7 @@ Instead, we can simply extend the `<basic-form>` Block, and only apply the small
 
 ```css
 /* danger-form.block.css */
-@block-reference basic-form from "./basic-form.block.css";
+@block basic-form from "./basic-form.block.css";
 
 :scope  { extends: basic-form; }
 .button { background-color: darkred; }
@@ -465,7 +465,7 @@ Block Paths take the form:
 block.class[state|name='value']
 ```
 
-All sections of this selector – except the leading Block name – are optional. The leading Block name *must* refer to an imported `@block-reference` at the top of the file. If css-blocks is unable to resolve a Block Path at build time, you will get a friendly error message in your console!
+All sections of this selector – except the leading Block name – are optional. The leading Block name *must* refer to an imported `@block` at the top of the file. If css-blocks is unable to resolve a Block Path at build time, you will get a friendly error message in your console!
 
 All the following syntaxes are legal to select any given stylable on a referenced Block:
 
@@ -509,7 +509,7 @@ For Glimmer, using multiple blocks in a single template will look something like
 
 ```css
 /* stylesheet.css */
-@block-reference other from "./hoverable.css";
+@block other from "./hoverable.css";
 
 :scope { block-name: main; }
 .form {
@@ -597,7 +597,7 @@ Here, we tell css-blocks to use the `color` value from `other.selector` instead 
 }
 ```
 
-> 🔮 **Future Feature: Resolve All Shorthand **
+> 🔮 **Future Feature: Resolve All Shorthand**
 >
 > For straightforward resolutions where you just want to yield or assume full control of styling against another block, feel free to use the CSS `all` property to quickly override or yield to all property conflict with another block. The downside of doing this is that as new properties are added to another element, you don't get a chance to review them and decide:
 
@@ -679,7 +679,7 @@ So, for the following two Blocks where `my-class-1[state|enabled]` and `my-class
 ```css
 /* main.css */
 
-@block-reference other from "./other.css";
+@block other from "./other.css";
 
 .my-class-2::before { 
   border-width: 2px;
@@ -724,7 +724,7 @@ This is most useful for global application states – like during initial applic
 ```css
 /* navigation.block.css */
 
-@block-reference app from "application.block.css";
+@block app from "application.block.css";
 
 /* Gray out signout button when app is saving */
 app[state|is-saving] .signout {

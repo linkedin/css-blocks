@@ -1,6 +1,8 @@
 import * as assert from "assert";
 
 import { TempDir, createBuilder, createTempDir } from "broccoli-test-helper";
+import * as FSTree from "fs-tree-diff";
+import * as walkSync from "walk-sync";
 
 import { CSSBlocksAggregate, Transport } from "../src/index";
 
@@ -41,8 +43,11 @@ describe("Broccoli Aggregate Plugin Test", function () {
       let output = createBuilder(pluginC);
 
       // First pass does full compile and copies all files except block files to output.
+      let preDiff = FSTree.fromEntries(walkSync.entries(input.path()));
       await output.build();
+      let postDiff = FSTree.fromEntries(walkSync.entries(input.path()));
 
+      assert.equal(preDiff.calculatePatch(postDiff).length, 0, "Input directory unchanged after build.");
       assert.deepEqual(output.changes(), {
         "test.css": "create",
         "app.css": "create",

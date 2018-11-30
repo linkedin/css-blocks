@@ -34,7 +34,7 @@ export class BlockFactoryTests extends BEMProcessor {
     let extendsFilename = "foo/bar/extends.css";
     imports.registerSource(
       extendsFilename,
-      `@block-reference base from "./base.css";
+      `@block base from "./base.css";
        :scope { extends: base; color: red; }`,
     );
     let extendsBlockPromise = factory.getBlock(importer.identifier(null, extendsFilename, config));
@@ -59,7 +59,7 @@ export class BlockFactoryTests extends BEMProcessor {
     let blockFilename2 = "foo/bar/block_2.css";
     imports.registerSource(
     blockFilename2,
-    ` @block-reference external from "./block_1.css";
+    ` @block external from "./block_1.css";
       :scope {
         block-name: block;
         color: red;

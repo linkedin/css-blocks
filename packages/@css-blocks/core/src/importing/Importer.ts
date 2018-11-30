@@ -50,23 +50,22 @@ export interface ImportedFile {
 
 /**
  * Importer provides an API that enables css-blocks to resolve a
- * @block-reference directive into a string that is a css-block stylesheet and
+ * @block directive into a string that is a css-block stylesheet and
  * to determine in which syntax the file is written.
  *
  * Importing does not have to ever talk to the filesystem, but importers that
- * do, will probably want to inherit from either PathBasedImporter or
- * FilesystemImporter.
+ * do, will probably want to inherit from NodeJsImporter.
  */
 export interface Importer {
   /**
    * compute a unique identifier for a given import path. If `fromIdentifier` is provided,
    * the importPath can be relative to the file that is identified by it.
    */
-  identifier(fromIdentifier: FileIdentifier | null, importPath: string, configuration: ResolvedConfiguration): FileIdentifier;
+  identifier(fromIdentifier: FileIdentifier | null, importPath: string, config: ResolvedConfiguration): FileIdentifier;
   /**
    * import the file with the given metadata and return a string and meta data for it.
    */
-  import(identifier: FileIdentifier, configuration: ResolvedConfiguration): Promise<ImportedFile>;
+  import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile>;
   /**
    * the default name of the block used unless the block specifies one itself.
    */
@@ -74,15 +73,15 @@ export interface Importer {
   /**
    * If a file identifier has an on-disk representation, return an absolute path to it.
    */
-  filesystemPath(identifier: FileIdentifier, configuration: ResolvedConfiguration): string | null;
+  filesystemPath(identifier: FileIdentifier, config: ResolvedConfiguration): string | null;
   /**
    * Returns a string meant for human consumption that identifies the file.
    * As is used in debug statements and error reporting. Unlike filesystemPath,
    * this needn't resolve to an actual file or be an absolute path.
    */
-  debugIdentifier(identifier: FileIdentifier, configuration: ResolvedConfiguration): string;
+  debugIdentifier(identifier: FileIdentifier, config: ResolvedConfiguration): string;
   /**
    * returns the syntax the contents are written in.
    */
-  syntax(identifier: FileIdentifier, configuration: ResolvedConfiguration): Syntax;
+  syntax(identifier: FileIdentifier, config: ResolvedConfiguration): Syntax;
 }

@@ -1,4 +1,5 @@
 node_modules/
+!packages/@css-blocks/core/test/fixtures/nodeModuleImporter/node_modules
 dist/
 docs/
 coverage/
@@ -8,4 +9,3 @@ lerna-debug.log
 yarn-error.log
 package-lock.json
 .vscode
-

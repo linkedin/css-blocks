@@ -3,7 +3,7 @@
   "author": "Chris Eppstein",
   "description": "Configuration and tools to manage the code style of css-blocks.",
   "license": "BSD-2-Clause",
-  "version": "0.18.0",
+  "version": "0.20.0-beta.4",
   "main": "configs/tslint.interactive.json",
   "readme": "README.md",
   "keywords": [
@@ -22,19 +22,16 @@
   "bugs": {
     "url": "https://github.com/linkedin/css-blocks/issues"
   },
-  "repository": {
-    "url": "https://github.com/linkedin/css-blocks.git",
-    "type": "git"
-  },
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/code-style",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/code-style",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/code-style#readme",
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@opticss/code-style": "^0.3.0"
+    "@opticss/code-style": "^0.4.0"
   },
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "files": [
     "configs",

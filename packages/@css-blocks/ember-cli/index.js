@@ -49,6 +49,11 @@ module.exports = {
       return { name: 'css-blocks-noop', visitors: {} };
     }
 
+    // If no specifier data for this template, pass through silently.
+    if (!env.meta.moduleName && !env.meta.specifier) {
+      return { name: 'css-blocks-noop', visitors: {} };
+    }
+
     // TODO: Write a better `getAnalysis` method on `Analyzer`
     // TODO: The differences in what Ember and Glimmer provide in env.meta should be resolved.
     let analysis;
@@ -208,7 +213,7 @@ module.exports = {
 
     // Get CSS Blocks options provided by the application, if present.
     const options = app.options["css-blocks"]
-      ? JSON.parse(JSON.stringify(app.options["css-blocks"]))
+      ? app.options["css-blocks"] // Do not clone! Contains non-json-safe data.
       : {
         parserOpts: {},
         analysisOpts: {},

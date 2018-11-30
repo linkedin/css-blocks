@@ -168,13 +168,12 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
    * @param opts Optional analytics parser options.
    */
   public async parseFile(file: string): Promise<JSXAnalysis> {
-    let data;
     file = path.resolve(this.options.baseDir, file);
     try {
-      data = await fs.readFile(file, "utf8");
+      let data = await fs.readFile(file, "utf8");
+      return this.parse(file, data);
     } catch (err) {
       throw new JSXParseError(`Cannot read JSX entry point file ${file}: ${err.message}`, { filename: file });
     }
-    return this.parse(file, data);
   }
 }

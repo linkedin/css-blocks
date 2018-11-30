@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import * as path from "path";
 
-import { ImportedFile, Importer, PathBasedImporter, ResolvedConfiguration as CSSBlocksConfiguration, Syntax } from "@css-blocks/core";
+import { ImportedFile, Importer, NodeJsImporter, ResolvedConfiguration as CSSBlocksConfiguration, Syntax } from "@css-blocks/core";
 import { ObjectDictionary } from "@opticss/util";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
@@ -9,7 +9,7 @@ const PROJECT_DIR = path.resolve(__dirname, "../../..");
 export type SourceRegistry = ObjectDictionary<string>;
 export type ImportedFiles = ObjectDictionary<boolean>;
 
-export class MockImporter extends PathBasedImporter {
+export class MockImporter extends NodeJsImporter {
   registry: MockImportRegistry;
   constructor(registry: MockImportRegistry) {
     super();
@@ -23,22 +23,19 @@ export class MockImporter extends PathBasedImporter {
       return importPath;
     }
   }
-  import(resolvedPath: string, options: CSSBlocksConfiguration): Promise<ImportedFile> {
-    return new Promise<ImportedFile>((resolve, reject) => {
-      let contents = this.registry.sources[resolvedPath];
-      if (contents) {
-        this.registry.imported[resolvedPath] = true;
-        resolve({
-          syntax: Syntax.css,
-          identifier: resolvedPath,
-          defaultName: this.defaultName(resolvedPath, options),
-          contents: contents,
-        });
-      } else {
-        let importedFiles = Object.keys(this.registry.sources).join(", ");
-        reject(new Error(`Mock file ${resolvedPath} not found. Available: ${importedFiles}`));
-      }
-    });
+  async import(resolvedPath: string, options: CSSBlocksConfiguration): Promise<ImportedFile> {
+    let contents = this.registry.sources[resolvedPath];
+    if (!contents) {
+      let importedFiles = Object.keys(this.registry.sources).join(", ");
+      throw new Error(`Mock file ${resolvedPath} not found. Available: ${importedFiles}`);
+    }
+    this.registry.imported[resolvedPath] = true;
+    return {
+      syntax: Syntax.css,
+      identifier: resolvedPath,
+      defaultName: this.defaultName(resolvedPath, options),
+      contents: contents,
+    };
   }
 }
 

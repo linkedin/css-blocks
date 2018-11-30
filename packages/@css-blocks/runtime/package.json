@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/runtime",
-  "version": "0.18.0",
+  "version": "0.20.0-beta.4",
   "description": "Browser runtime for computing dynamic classnames with css-blocks.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,26 +17,23 @@
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",
     "lintfix": "tslint -t msbuild -c tslint.cli.json --project . --fix"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/linkedin/css-blocks.git"
-  },
   "keywords": [
     "@css-blocks/core"
   ],
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "author": "Chris Eppstein <chris@eppsteins.net>",
   "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/linkedin/css-blocks/issues"
   },
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/runtime/#readme",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/runtime",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/runtime#readme",
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@css-blocks/code-style": "^0.18.0"
+    "@css-blocks/code-style": "^0.20.0-beta.4"
   }
 }

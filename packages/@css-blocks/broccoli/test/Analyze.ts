@@ -1,7 +1,11 @@
 import * as assert from "assert";
+import * as fs from "fs";
 
 import { GlimmerAnalyzer } from "@css-blocks/glimmer";
+
 import { TempDir, createBuilder, createTempDir } from "broccoli-test-helper";
+import * as FSTree from "fs-tree-diff";
+import * as walkSync from "walk-sync";
 
 import { CSSBlocksAnalyze, Transport } from "../src/index";
 
@@ -57,7 +61,11 @@ describe("Broccoli Analyze Plugin Test", function () {
       ));
 
       // First pass does full compile and copies all files except block files to output.
+      let preDiff = FSTree.fromEntries(walkSync.entries(input.path()));
       await output.build();
+      let postDiff = FSTree.fromEntries(walkSync.entries(input.path()));
+
+      assert.equal(preDiff.calculatePatch(postDiff).length, 0, "Input directory unchanged after build.");
       assert.ok(Object.keys(transport).length, "Transport Object populated");
       assert.ok(transport["mapping"], "Mapping property is populated in Transport Object");
       assert.ok(transport["blocks"], "Blocks property is populated in Transport Object");
@@ -73,12 +81,15 @@ describe("Broccoli Analyze Plugin Test", function () {
       });
 
       // Modifications to block files trigger build but result in no output tree changes.
+      // Accidental modification of output directory does not make the plugin explode.
+      fs.unlinkSync(output.path("src/ui/components/Chrisrng/template.hbs"));
       input.write({
         src: { ui: { components: { [entryComponentName]: {
           "stylesheet.css": `:scope { color: blue; } .foo { color: yellow; }`,
         }}}},
       });
       await output.build();
+      assert.equal(preDiff.calculatePatch(postDiff).length, 0, "Input directory unchanged after rebuild.");
       assert.equal(transport["css"], ".a { color: blue; } .b { color: yellow; }", "Modifications to block files trigger build but result in no output tree changes.");
       assert.deepEqual(output.changes(), {}, "Modifications to block files trigger build but result in no output tree changes.");
 

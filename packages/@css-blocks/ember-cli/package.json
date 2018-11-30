@@ -1,5 +1,5 @@
 {
-  "version": "0.20.0-beta.0",
+  "version": "0.20.0-beta.4",
   "name": "@css-blocks/ember-cli",
   "description": "Use CSS Blocks with your Ember and Glimmer projects.",
   "keywords": [
@@ -11,7 +11,8 @@
     "doc": "doc",
     "test": "tests"
   },
-  "repository": "",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli#readme",
   "scripts": {
     "build": "ember build",
     "lint:js": "eslint ./*.js addon addon-test-support app blueprints config lib server test-support tests",
@@ -20,8 +21,8 @@
     "test:all": "ember try:each"
   },
   "dependencies": {
-    "@css-blocks/broccoli": "^0.20.0-beta.0",
-    "@css-blocks/glimmer": "^0.20.0-beta.0",
+    "@css-blocks/broccoli": "^0.20.0-beta.4",
+    "@css-blocks/glimmer": "^0.20.0-beta.4",
     "@glimmer/application-pipeline": "^0.11.1",
     "broccoli-funnel": "^2.0.1",
     "broccoli-merge-trees": "^3.0.0",
@@ -57,7 +58,7 @@
     "loader.js": "^4.7.0"
   },
   "engines": {
-    "node": "6.* || >= 8.*"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "ember-addon": {
     "configPath": "tests/dummy/config",

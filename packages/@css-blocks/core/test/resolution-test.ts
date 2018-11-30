@@ -17,7 +17,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference a from "./a.css";
+    let inputCSS = `@block a from "./a.css";
                     .b {
                       border: 1px solid red;
                       border: resolve("a.foo");
@@ -40,7 +40,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference a from "./a.css";
+    let inputCSS = `@block a from "./a.css";
                     .b {
                       border: resolve("a.foo");
                     }`;
@@ -61,7 +61,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .header {
                       border: none;
                       border: resolve("other.nav");
@@ -85,7 +85,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .header {
                       width: 100%;
                       border: resolve("other.nav");
@@ -119,7 +119,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference grid from "./grid.css";
+    let inputCSS = `@block grid from "./grid.css";
                     .article {
                       font-size: 18px;
                       font-size: resolve("grid.main");
@@ -147,7 +147,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference target from "./target.css";
+    let inputCSS = `@block target from "./target.css";
                     :scope[state|happy] .article {
                       color: green;
                       color: resolve("target.main");
@@ -175,7 +175,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference target from "./target.css";
+    let inputCSS = `@block target from "./target.css";
                     :scope[state|happy] .article {
                       color: green;
                       color: resolve("target.main");
@@ -202,7 +202,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference target from "./target.css";
+    let inputCSS = `@block target from "./target.css";
                     :scope[state|happy] > .article {
                       color: green;
                       color: resolve("target.main");
@@ -237,7 +237,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference grid from "./grid.css";
+    let inputCSS = `@block grid from "./grid.css";
                     .header {
                       border-bottom: 2px;
                       border-bottom: resolve("grid.nav");
@@ -274,7 +274,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .article {
                       font-size: resolve("other.foo");
                       font-size: 18px;
@@ -304,7 +304,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .article {
                       font-size: resolve("other.foo");
                       font-size: 18px;
@@ -330,7 +330,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .article {
                       border: resolve("other.foo");
                       border: 1px solid green;
@@ -352,7 +352,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .header {
                       border: 1px solid black;
                       border: resolve("other.nav");
@@ -376,13 +376,13 @@ export class BlockInheritance extends BEMProcessor {
     );
     imports.registerSource(
       "other.css",
-      `@block-reference base from "base.css";
+      `@block base from "base.css";
        :scope { extends: base; }
        .nav { border: 1px solid black; color: red; }`,
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .header {
                       width: 80%;
                       width: resolve("other.nav");
@@ -413,7 +413,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .header {
                       border: none;
                       border: resolve("other");
@@ -440,7 +440,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .header {
                       width: 100px;
                       width: resolve("other[state|foo]");
@@ -464,7 +464,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .header {
                       width: 100px;
                       width: resolve("other.asdf[state|foo]");
@@ -488,7 +488,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .header::before {
                       width: 100px;
                       width: resolve("other.asdf");
@@ -511,7 +511,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference other from "./other.css";
+    let inputCSS = `@block other from "./other.css";
                     .header::before {
                       width: resolve("other.asdf");
                       width: 100px;
@@ -538,7 +538,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference target from "./target.css";
+    let inputCSS = `@block target from "./target.css";
                     .adjacent + .adjacent { color: green; color: resolve("target.sibling"); }
                     .sibling ~ .sibling   { border: 2px; border: resolve("target.adjacent"); }
                     :scope[state|ancestor] .descendant { position: absolute; position: resolve("target.child"); }
@@ -580,7 +580,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference target from "./target.css";
+    let inputCSS = `@block target from "./target.css";
                     :scope[state|happy] > .article {
                       color: green;
                       color: resolve("target.main");
@@ -622,7 +622,7 @@ export class BlockInheritance extends BEMProcessor {
     );
 
     let filename = "conflicts.css";
-    let inputCSS = `@block-reference super from "super.css";
+    let inputCSS = `@block super from "super.css";
                     :scope { extends: super; }
                     .article {
                       color: green;

@@ -91,7 +91,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
       :scope { extends: a; }
       .pretty[state|color=black] {
         color: black;
@@ -134,7 +134,7 @@ export class TemplateAnalysisTests {
     );
 
     let css = `
-      @block-reference a from "a.css";
+      @block a from "a.css";
       :scope { extends: a; }
       .pretty[state|color=black] {
         color: black;

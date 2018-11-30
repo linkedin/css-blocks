@@ -1,4 +1,4 @@
-@block-reference grid from "./grid.css";
+@block grid from "./grid.css";
 :scope { color: red; width: 100vw; }
 :scope[state|loading] { color: blue }
 .sidebar { float: left; }

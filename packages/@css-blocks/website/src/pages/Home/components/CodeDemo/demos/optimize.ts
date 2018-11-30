@@ -17,7 +17,7 @@ const data: Data = {
 
     .c {
       background-color: white;
-      color: #2e184a;
+      color: #ed2651;
     }
 
     .d {

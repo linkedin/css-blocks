@@ -1,4 +1,4 @@
-import { ObjectDictionary } from "@opticss/util";
+import { ObjectDictionary, isString } from "@opticss/util";
 import * as debugGenerator from "debug";
 import { postcss } from "opticss";
 import * as path from "path";
@@ -254,8 +254,8 @@ export class BlockFactory {
 
 function sourceMapFromProcessedFile(result: ProcessedFile): RawSourceMap | string | undefined {
   let sourceMap: RawSourceMap | string | undefined = result.sourceMap;
-  if (!sourceMap && (<postcss.Result>result.content).map) {
-    sourceMap = (<postcss.Result>result.content).map.toJSON();
+  if (!sourceMap && !isString(result.content) && result.content.map) {
+    sourceMap = result.content.map.toJSON();
   }
   return sourceMap;
 }

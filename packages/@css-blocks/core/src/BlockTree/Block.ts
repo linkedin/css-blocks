@@ -45,6 +45,8 @@ export class Block
 
   private _blockReferences: ObjectDictionary<Block> = {};
   private _blockReferencesReverseLookup: Map<Block, string> = new Map();
+  private _blockExports: ObjectDictionary<Block> = {};
+  private _blockExportReverseLookup: Map<Block, string> = new Map();
   private _identifier: FileIdentifier;
   private _implements: Block[] = [];
   private hasHadNameReset = false;
@@ -231,18 +233,61 @@ export class Block
     }
   }
 
-  addBlockReference(localName: string, other: Block) {
-    this._blockReferences[localName] = other;
-    this._blockReferencesReverseLookup.set(other, localName);
+  /**
+   * Add a Block reference accessible internally to the block as `localName`.
+   * @param localName  The name to expose this block internally as.
+   * @param block  The block to expose internally.
+   */
+  addBlockReference(localName: string, block: Block) {
+    this._blockReferences[localName] = block;
+    this._blockReferencesReverseLookup.set(block, localName);
   }
 
+  /**
+   * Get an imported Block at name `localName`.
+   * @param localName  The local name name of the requested imported block.
+   * @returns Block | null.
+   */
   getReferencedBlock(localName: string): Block | null {
     if (localName === "") { return this; }
     return this._blockReferences[localName] || null;
   }
 
+  /**
+   * Reverse imported Block lookup. Given a Block, return its private local alias.
+   * @param block  The requested Block to lookup.
+   * @returns string | null.
+   */
   getReferencedBlockLocalName(block: Block | undefined): string | null {
     return block && this._blockReferencesReverseLookup.get(block) || null;
+  }
+
+  /**
+   * Add a Block export to be exposed to importers at name `remoteName`.
+   * @param remoteName  The name to expose this block publicly as.
+   * @param block  The block to expose publicly.
+   */
+  addBlockExport(remoteName: string, block: Block) {
+    this._blockExports[remoteName] = block;
+    this._blockExportReverseLookup.set(block, remoteName);
+  }
+
+  /**
+   * Get an exported Block at name `remoteName`.
+   * @param remoteName  The public name of the requested exported block.
+   * @returns Block | null.
+   */
+  getExportedBlock(remoteName: string): Block | null {
+    return this._blockExports[remoteName] || null;
+  }
+
+  /**
+   * Reverse exported Block lookup. Given a Block, return its publicly exported name.
+   * @param block  The requested Block to lookup.
+   * @returns string | null.
+   */
+  getExportedBlockRemoteName(block: Block | undefined): string | null {
+    return block && this._blockExportReverseLookup.get(block) || null;
   }
 
   transitiveBlockDependencies(): Set<Block> {

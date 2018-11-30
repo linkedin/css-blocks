@@ -2,7 +2,7 @@ import { Preprocessors } from "../BlockParser";
 import {
   Importer,
   ImporterData,
-  filesystemImporter,
+  defaultImporter,
 } from "../importing";
 
 import { OutputMode } from "./OutputMode";
@@ -27,7 +27,7 @@ const SIMPLE_KEYS: Array<ConfigurationSimpleKeys> = [
 ];
 const DEFAULTS: ResolvedConfiguration = {
   outputMode: OutputMode.BEM,
-  importer: filesystemImporter,
+  importer: defaultImporter,
   rootDir: process.cwd(),
   importerData: {},
   preprocessors: {},

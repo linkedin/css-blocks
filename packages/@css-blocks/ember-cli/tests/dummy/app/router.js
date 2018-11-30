@@ -14,7 +14,6 @@ Router.map(function() {
   this.route('addon-component');
   this.mount('in-repo-engine');
   this.mount('in-repo-lazy-engine');
-  this.route('node-modules-resolution');
 });
 
 export default Router;

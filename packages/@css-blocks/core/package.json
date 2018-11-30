@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/core",
-  "version": "0.20.0-beta.0",
+  "version": "0.20.0-beta.4",
   "description": "Fast, maintainable, optimal, component-oriented CSS.",
   "main": "dist/src/index.js",
   "scripts": {
@@ -15,10 +15,6 @@
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "watch": "watch 'yarn run test' './src' './test' --wait=3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/linkedin/css-blocks.git"
   },
   "keywords": [
     "css"
@@ -35,17 +31,18 @@
     "*.md",
     "test/mocha.opts"
   ],
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/css-blocks#readme",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core#readme",
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@css-blocks/code-style": "^0.18.0"
+    "@css-blocks/code-style": "^0.20.0-beta.4"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.3.0",
-    "@opticss/template-api": "^0.3.0",
-    "@opticss/util": "^0.3.0",
+    "@opticss/element-analysis": "^0.4.0",
+    "@opticss/template-api": "^0.4.0",
+    "@opticss/util": "^0.4.0",
     "@types/async": "^2.0.40",
     "@types/debug": "0.0.29",
     "async": "^2.5.0",
@@ -54,13 +51,13 @@
     "inline-source-map-comment": "^1.0.5",
     "json-parse-better-errors": "^1.0.1",
     "object.values": "^1.0.4",
-    "opticss": "^0.3.0",
+    "opticss": "^0.4.0",
     "regexpu-core": "^4.0.11",
     "source-map": "^0.6.1",
     "watch": "^1.0.2"
   },
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "engineStrict": true
 }

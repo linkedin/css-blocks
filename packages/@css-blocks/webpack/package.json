@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/webpack",
-  "version": "0.20.0-beta.0",
+  "version": "0.20.0-beta.4",
   "description": "Webpack plugin for css-blocks.",
   "main": "dist/src/index.js",
   "scripts": {
@@ -15,10 +15,6 @@
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "watch": "watch 'yarn run test' './src' './test' --wait=3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/linkedin/css-blocks.git"
   },
   "keywords": [
     "css"
@@ -35,14 +31,15 @@
     "test/mocha.opts"
   ],
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/@css-blocks/webpack#readme",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack#readme",
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@css-blocks/code-style": "^0.18.0",
+    "@css-blocks/code-style": "^0.20.0-beta.4",
     "@types/convert-source-map": "^1.3.33",
     "@types/extract-text-webpack-plugin": "^2.1.0",
     "@types/glob": "^5.0.30",
@@ -58,15 +55,15 @@
     "webpack-merge": "^4.1.0"
   },
   "dependencies": {
-    "@css-blocks/core": "^0.20.0-beta.0",
-    "@opticss/element-analysis": "^0.3.0",
-    "@opticss/template-api": "^0.3.0",
+    "@css-blocks/core": "^0.20.0-beta.4",
+    "@opticss/element-analysis": "^0.4.0",
+    "@opticss/template-api": "^0.4.0",
     "async": "^2.4.1",
     "convert-source-map": "^1.5.0",
     "debug": "^2.6.8",
     "install": "^0.10.1",
     "loader-utils": "^1.0.1",
-    "opticss": "^0.3.0",
+    "opticss": "^0.4.0",
     "source-map": "^0.6.1",
     "tapable": "^0.2.5",
     "webpack-sources": "^1.0.1"

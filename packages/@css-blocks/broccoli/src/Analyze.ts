@@ -75,6 +75,9 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     let newFsTree = FSTree.fromEntries(walkSync.entries(input));
     let diff = this.previousInput.calculatePatch(newFsTree);
     if (!diff.length) { return; }
+
+    // Save the current state of our output dir for future diffs.
+    this.previousOutput = FSTree.fromEntries(walkSync.entries(output));
     FSTree.applyPatch(input, output, this.previousOutput.calculatePatch(newFsTree));
     this.previousInput = newFsTree;
 
