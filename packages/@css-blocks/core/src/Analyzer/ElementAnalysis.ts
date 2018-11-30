@@ -563,8 +563,8 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       staticStyles.push(styleIndexes.get(style)!);
     }
     staticStyles.sort();
-    let dynamicClasses = this.dynamicClasses.map(c => serializeDynamicContainer(c, styleIndexes));
-    let dynamicAttributes = this.dynamicAttributes.map(s => serializeDynamicAttrs(s, styleIndexes));
+    let dynamicClasses = this.dynamicClasses.map(c => this.serializeDynamicContainer(c, styleIndexes));
+    let dynamicAttributes = this.dynamicAttributes.map(s => this.serializeDynamicAttrs(s, styleIndexes));
     let serialization: SerializedElementAnalysis = {
       staticStyles,
       dynamicClasses,
@@ -596,6 +596,64 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       }
     }
     return serialization;
+  }
+
+  private serializeDynamicContainer(c: DynamicClasses<TernaryExpression>, styleIndexes: Map<Style, number>): SerializedDynamicContainer {
+    let classes: SerializedDynamicContainer = {
+      condition: true,
+      whenFalse: [],
+      whenTrue: [],
+    };
+    if (isTrueCondition(c)) {
+      classes.whenTrue = c.whenTrue.map(s => styleIndexes.get(s)!).sort();
+    } else {
+      delete classes.whenTrue;
+    }
+    if (isFalseCondition(c)) {
+      classes.whenFalse = c.whenFalse.map(s => styleIndexes.get(s)!).sort();
+    } else {
+      delete classes.whenFalse;
+    }
+    return classes;
+  }
+
+  private serializeDynamicAttrs(c: DynamicAttrs<BooleanExpression, StringExpression>, styleIndexes: Map<Style, number>): SerializedDynamicAttrs {
+    let dynAttr = {
+      stringExpression: true,
+      condition: true,
+      value: 0,
+      group: {} as ObjectDictionary<number>,
+      container: 0,
+      disallowFalsy: false,
+    };
+    if (!isConditional(c)) {
+      delete dynAttr.condition;
+    }
+    if (!isSwitch(c)) {
+      delete dynAttr.stringExpression;
+      delete dynAttr.disallowFalsy;
+    } else {
+      if (c.disallowFalsy) {
+        dynAttr.disallowFalsy = true;
+      } else {
+        delete dynAttr.disallowFalsy;
+      }
+    }
+    if (hasDependency(c)) {
+      dynAttr.container = styleIndexes.get(c.container)!;
+    } else {
+      delete dynAttr.container;
+    }
+    if (isAttrGroup(c)) {
+      delete dynAttr.value;
+      for (let k of Object.keys(c.group)) {
+        dynAttr.group[k] = styleIndexes.get(c.group[k])!;
+      }
+    } else {
+      delete dynAttr.group;
+      dynAttr.value = styleIndexes.get(c.value)!;
+    }
+    return dynAttr;
   }
 
   /**
@@ -803,64 +861,6 @@ function mapChoiceClasses(
     choices.push(mapClasses(configuration, map, style));
   }
   return attrValues.oneOf(choices);
-}
-
-function serializeDynamicContainer(c: DynamicClasses<any>, styleIndexes: Map<Style, number>): SerializedDynamicContainer {
-  let classes: SerializedDynamicContainer = {
-    condition: true,
-    whenFalse: [],
-    whenTrue: [],
-  };
-  if (isTrueCondition(c)) {
-    classes.whenTrue = c.whenTrue.map(s => styleIndexes.get(s)!).sort();
-  } else {
-    delete classes.whenTrue;
-  }
-  if (isFalseCondition(c)) {
-    classes.whenFalse = c.whenFalse.map(s => styleIndexes.get(s)!).sort();
-  } else {
-    delete classes.whenFalse;
-  }
-  return classes;
-}
-
-function serializeDynamicAttrs(c: DynamicAttrs<any, any>, styleIndexes: Map<Style, number>): SerializedDynamicAttrs {
-  let dynAttr = {
-    stringExpression: true,
-    condition: true,
-    value: 0,
-    group: {} as ObjectDictionary<number>,
-    container: 0,
-    disallowFalsy: false,
-  };
-  if (!isConditional(c)) {
-    delete dynAttr.condition;
-  }
-  if (!isSwitch(c)) {
-    delete dynAttr.stringExpression;
-    delete dynAttr.disallowFalsy;
-  } else {
-    if (c.disallowFalsy) {
-      dynAttr.disallowFalsy = true;
-    } else {
-      delete dynAttr.disallowFalsy;
-    }
-  }
-  if (hasDependency(c)) {
-    dynAttr.container = styleIndexes.get(c.container)!;
-  } else {
-    delete dynAttr.container;
-  }
-  if (isAttrGroup(c)) {
-    delete dynAttr.value;
-    for (let k of Object.keys(c.group)) {
-      dynAttr.group[k] = styleIndexes.get(c.group[k])!;
-    }
-  } else {
-    delete dynAttr.group;
-    dynAttr.value = styleIndexes.get(c.value)!;
-  }
-  return dynAttr;
 }
 
 function returnStatic(dynamic: boolean | undefined) {
