@@ -13,6 +13,12 @@ const debug = debugGenerator("css-blocks:importer");
 
 const DEFAULT_MAIN = "blocks/index.block.css";
 
+export interface CSSBlocksPackageMetadata {
+  "css-blocks"?: {
+    main?: string;
+  };
+}
+
 /**
  * An Alias maps the starting segment of a relative import path to a
  * corresponding absolute path to attempt to resolve against.
@@ -64,17 +70,21 @@ export class NodeJsImporter implements Importer {
     try {
       return require.resolve(importPath, { paths: [config.rootDir] });
     } catch (err) {
-      debug(`Could not resolve ${importPath} as a file. Resolution failed with ${err.message}.`);
+      debug(`Could not resolve ${importPath} as a local file. Resolution failed with ${err.message}.`);
     }
 
     // If no file found, test for a node_module resolution as a package name.
     try {
-      const pjsonPath = require.resolve(path.join(importPath, "package.json"), { paths: [config.rootDir] });
-      const pjson = JSON.parse(readFileSync(pjsonPath, "utf-8"));
-      const main: string | undefined = pjson["css-blocks"] && pjson["css-blocks"].main;
-      return path.resolve(pjsonPath, "..", main || DEFAULT_MAIN);
+      // require doesn't take filesystem paths; it expects a unix-like path.
+      // https://github.com/nodejs/node/issues/6049#issuecomment-205778576
+      const modulePath = path.sep === "/" ? importPath : importPath.split(path.sep).join("/");
+      const packageJSONPath = require.resolve(`${modulePath}/package.json`, { paths: [config.rootDir] });
+      const packageJSON: CSSBlocksPackageMetadata = JSON.parse(readFileSync(packageJSONPath, "utf-8"));
+      const blockMetadata = packageJSON["css-blocks"];
+      const main = blockMetadata && blockMetadata.main || DEFAULT_MAIN;
+      return path.resolve(packageJSONPath, "..", main);
     } catch (err) {
-      debug(`Could not resolve ${importPath} as a module. Resolution failed with ${err.message}.`);
+      debug(`Could not resolve ${importPath} from a node module. Resolution failed with ${err.message}.`);
     }
 
     // If no backup alias or node_module found, return the previously calculated
