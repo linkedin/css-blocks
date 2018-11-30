@@ -71,7 +71,8 @@ export class TemplateValidator {
   constructor(options?: Partial<TemplateValidatorOptions>) {
 
     // Merge our default settings with user provided options.
-    let opts = this.opts = Object.assign({}, DEFAULT_VALIDATORS, options || {});
+    this.opts = Object.assign({}, DEFAULT_VALIDATORS, options || {});
+    let opts = this.opts;
 
     // For each item in options, push all built-in and user-provided validators
     // to our validators list to await template processing.
