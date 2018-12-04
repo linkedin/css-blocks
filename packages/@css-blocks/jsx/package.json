@@ -50,6 +50,7 @@
     "@css-blocks/runtime": "^0.18.0"
   },
   "dependencies": {
+    "@css-blocks/build": "^0.20.0-beta.4",
     "@css-blocks/core": "^0.20.0-beta.4",
     "@opticss/template-api": "^0.4.0",
     "@opticss/util": "^0.4.0",

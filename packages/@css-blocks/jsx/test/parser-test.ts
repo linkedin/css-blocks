@@ -1,9 +1,8 @@
+import mock from "@css-blocks/build/dist/src/testing/transient-fs";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
 import { testParse as parse, testParseFile as parseFile } from "./util";
-
-const mock = require("mock-fs");
 
 @suite("Parser Test")
 export class Test {
@@ -38,13 +37,15 @@ export class Test {
 
   @test "parser takes an optional options hash with baseDir"() {
     mock({
-      "/foo/baz/bar.js": `class Foo {
-        method(){
-          1;
-        }
-      }`,
+      "foo": {
+        "bar.js": `class Foo {
+          method(){
+            1;
+          }
+        }`,
+      },
     });
-    return parseFile("bar.js", { baseDir: "/foo/baz"}).then((analysis) => {
+    return parseFile("bar.js", { baseDir: "foo"}).then((analysis) => {
       assert.ok(analysis);
     });
   }

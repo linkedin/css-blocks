@@ -1,8 +1,7 @@
+import mock from "@css-blocks/build/dist/src/testing/transient-fs";
+import { Analysis, BlockCompiler, Options as CSSBlocksOptions, StyleMapping, resolveConfiguration as resolveBlocksConfiguration } from "@css-blocks/core";
 import c$$ from "@css-blocks/runtime";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
-
-import { Analysis } from "@css-blocks/core";
-import { BlockCompiler, Options as CSSBlocksOptions, StyleMapping, resolveConfiguration as resolveBlocksConfiguration } from "@css-blocks/core";
 
 import * as babel from "babel-core";
 import { assert } from "chai";
@@ -16,8 +15,6 @@ import { Rewriter } from "../../src";
 import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
 import { babelPlugin } from "../../src/transformer/babel";
 import { testParse as parse } from "../util";
-
-const mock = require("mock-fs");
 
 // Reduce whitespace.
 function minify(s: string) {
@@ -376,8 +373,8 @@ export class Test {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
         assert.equal(minify(res.jsx.code!), minify(`
-          <div className="a"></div>;
           <div className="b"></div>;
+          <div className="a"></div>;
         `));
       });
     });

@@ -1,3 +1,4 @@
+import mock from "@css-blocks/build/dist/src/testing/transient-fs";
 import { Block } from "@css-blocks/core";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
@@ -5,8 +6,6 @@ import { suite, test } from "mocha-typescript";
 import { CSSBlocksJSXAnalyzer as Analyzer } from "../src/Analyzer";
 
 import { testParse as parse } from "./util";
-
-const mock = require("mock-fs");
 
 @suite("Block Importer")
 export class Test {

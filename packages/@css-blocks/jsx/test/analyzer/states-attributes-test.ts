@@ -1,10 +1,9 @@
+import mock from "@css-blocks/build/dist/src/testing/transient-fs";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
 import { CSSBlocksJSXAnalyzer as Analyzer } from "../../src/Analyzer";
 import { testParse as parse } from "../util";
-
-const mock = require("mock-fs");
 
 // This suite is skipped because we don't currently support state attributes because jsx parser doesn't support it
 // and we don't want to use a fork.
