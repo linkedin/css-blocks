@@ -33,6 +33,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/ember-cli"
+		},
+		{
+			"path": "packages/@css-blocks/build"
 		}
 	],
 	"settings": {

@@ -1,0 +1,47 @@
+{
+  "name": "@css-blocks/build",
+  "private": true,
+  "version": "0.20.0-beta.4",
+  "description": "Fast, maintainable, optimal, component-oriented CSS.",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "compile": "tsc --version && rm -rf dist && tsc",
+    "pretest": "yarn run compile",
+    "test": "mocha dist/test --opts test/mocha.opts",
+    "posttest": "yarn run lint",
+    "prepublish": "yarn run compile && yarn run lintall",
+    "lint": "tslint -t msbuild --project . -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
+    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "watch": "watch 'yarn run test' './src' './test' --wait=3"
+  },
+  "keywords": [
+    "css"
+  ],
+  "author": "Chris Eppstein",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/linkedin/css-blocks/issues"
+  },
+  "types": "dist/src",
+  "files": [
+    "dist",
+    "types-local",
+    "*.md",
+    "test/mocha.opts"
+  ],
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core#readme",
+  "devDependencies": {
+    "@css-blocks/code-style": "^0.20.0-beta.4",
+    "watch": "^1.0.2"
+  },
+  "dependencies": {
+  },
+  "engines": {
+    "node": "6.* || 8.* || >= 10.*"
+  },
+  "engineStrict": true
+}
