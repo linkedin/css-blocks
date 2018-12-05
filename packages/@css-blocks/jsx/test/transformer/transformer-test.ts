@@ -2,12 +2,12 @@ import mock from "@css-blocks/build/dist/src/testing/transient-fs";
 import { Analysis, BlockCompiler, Options as CSSBlocksOptions, StyleMapping, resolveConfiguration as resolveBlocksConfiguration } from "@css-blocks/core";
 import c$$ from "@css-blocks/runtime";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
+import { flatten } from "@opticss/util";
 
 import * as babel from "babel-core";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
-import { OptiCSSOptions, OptimizationResult, Optimizer  } from "opticss";
-import { postcss } from "opticss";
+import { OptiCSSOptions, OptimizationResult, Optimizer, postcss } from "opticss";
 import * as prettier from "prettier";
 import * as testConsole from "test-console";
 
@@ -49,7 +49,23 @@ function transform(code: string, analysis: Analysis<"Opticss.JSXTemplate">, cssB
       css: result,
     };
   });
+}
 
+function extractClassNames(node: babel.types.Node): string[][] {
+  let classnames: string[][] = [];
+  babel.traverse(node, {
+    JSXAttribute: (nodePath) => {
+      if (nodePath.node.name.name.toString() === "className") {
+        let value = nodePath.node.value;
+        if (value && value.type === "StringLiteral") {
+          classnames.push(value.value.split(/\s+/));
+        } else {
+          throw new Error("unexpected attribute value node type");
+        }
+      }
+    },
+  });
+  return classnames;
 }
 
 @suite("Transformer | External Objstr Class States")
@@ -372,10 +388,9 @@ export class Test {
     return parse(code, "test.tsx").then((analysis: Analyzer) => {
 
       return transform(code, analysis.getAnalysis(0)).then(res => {
-        assert.equal(minify(res.jsx.code!), minify(`
-          <div className="b"></div>;
-          <div className="a"></div>;
-        `));
+        let classNames = flatten<string>(extractClassNames(res.jsx.ast!));
+        classNames.sort();
+        assert.deepEqual(classNames, ["a", "b"]);
       });
     });
   }
