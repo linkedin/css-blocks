@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { suite, test, only } from "mocha-typescript";
 
 import cssBlocks = require("./util/postcss-helper");
 
@@ -74,7 +74,7 @@ export class BlockInheritance extends BEMProcessor {
       "External Block 'app' has no global states. (widget.block.css:2:21)",
       this.process(filename, inputCSS, config));
   }
-  @test "Can't use non-global states"() {
+  @test @only "Can't use non-global states"() {
     let { imports, config } = setupImporting();
     imports.registerSource(
       "app.block.css",
@@ -83,7 +83,6 @@ export class BlockInheritance extends BEMProcessor {
        }`,
     );
 
-    let filename = "widget.block.css";
     let inputCSS = `@block app from "./app.block.css";
                     app[state|is-loading] .b {
                       border: none;
@@ -92,6 +91,6 @@ export class BlockInheritance extends BEMProcessor {
     return assertError(
       cssBlocks.InvalidBlockSyntax,
       "[state|is-loading] is not global: app[state|is-loading] .b (widget.block.css:2:24)",
-      this.process(filename, inputCSS, config));
+      this.process("widget.block.css", inputCSS, config));
   }
 }

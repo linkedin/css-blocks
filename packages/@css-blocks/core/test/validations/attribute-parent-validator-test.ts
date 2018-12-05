@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import { BlockFactory } from "../../src/BlockParser";
+import { BlockFactory } from "../../src/BlockFactory";
 import { Block, BlockClass } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";

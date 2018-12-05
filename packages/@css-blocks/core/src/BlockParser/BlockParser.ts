@@ -1,9 +1,10 @@
 import { postcss } from "opticss";
 
+import { BlockFactory } from "../BlockFactory";
 import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
 import * as errors from "../errors";
-import { FileIdentifier } from "../importing";
+import { FileIdentifier, Syntax } from "../Importer";
 
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { constructBlock } from "./features/construct-block";
@@ -15,11 +16,10 @@ import { globalAttributes } from "./features/global-attributes";
 import { implementBlock } from "./features/implement-block";
 import { importBlocks } from "./features/import-blocks";
 import { processDebugStatements } from "./features/process-debug-statements";
-import { BlockFactory } from "./index";
-import { Syntax } from "./preprocessing";
 
 export interface ParsedSource {
   identifier: FileIdentifier;
+  timestamp: number;
   defaultName: string;
   originalSource: string;
   originalSyntax: Syntax;
@@ -40,16 +40,16 @@ export class BlockParser {
     this.factory = factory;
   }
 
-  public parseSource(source: ParsedSource): Promise<Block> {
+  public async parseSource(source: ParsedSource): Promise<Block> {
     let root = source.parseResult.root;
 
     // This should never happen but it makes the typechecker happy.
     if (!root) { throw new errors.CssBlockError("No postcss root found."); }
 
-    return this.parse(root, source.identifier, source.defaultName).then(block => {
-      source.dependencies.forEach(block.addDependency);
-      return block;
-    });
+    let block = await this.parse(root, source.identifier, source.defaultName);
+    source.dependencies.forEach(block.addDependency);
+    block.setTimestamp(source.timestamp);
+    return block;
   }
 
   /**

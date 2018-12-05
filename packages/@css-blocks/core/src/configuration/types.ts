@@ -1,5 +1,5 @@
-import { Preprocessors } from "../BlockParser";
-import { Importer, ImporterData } from "../importing";
+import { Preprocessors } from "../BlockFactory";
+import { Importer, ImporterData } from "../Importer";
 
 import { OutputMode } from "./OutputMode";
 

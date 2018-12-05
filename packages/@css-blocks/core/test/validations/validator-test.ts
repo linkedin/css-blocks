@@ -3,7 +3,7 @@ import { Template } from "@opticss/template-api";
 import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import { BlockFactory } from "../../src/BlockParser";
+import { BlockFactory } from "../../src/BlockFactory";
 import { Block } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import { TemplateAnalysisError } from "../../src/errors";

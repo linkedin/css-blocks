@@ -1,7 +1,7 @@
 import { postcss } from "opticss";
 
 import { BlockCompiler } from "../../src/BlockCompiler";
-import { BlockFactory } from "../../src/BlockParser";
+import { BlockFactory } from "../../src/BlockFactory";
 import { Configuration, OutputMode } from "../../src/configuration";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../../src/configuration";
 import * as errors from "../../src/errors";

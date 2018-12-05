@@ -5,7 +5,7 @@ import { skip, suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
 import { ElementAnalysis, SerializedAnalysis } from "../src/Analyzer";
-import { BlockFactory } from "../src/BlockParser";
+import { BlockFactory } from "../src/BlockFactory";
 import { AttrValue, Attribute, Block, BlockClass } from "../src/BlockTree";
 import { Options, resolveConfiguration } from "../src/configuration";
 import * as cssBlocks from "../src/errors";

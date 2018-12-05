@@ -14,7 +14,7 @@ import {
 import { ObjectDictionary, objectValues } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
-import { BlockFactory } from "../BlockParser";
+import { BlockFactory } from "../BlockFactory";
 import { Block, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 

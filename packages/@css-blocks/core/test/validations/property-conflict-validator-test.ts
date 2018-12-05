@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import { BlockFactory } from "../../src/BlockParser";
+import { BlockFactory } from "../../src/BlockFactory";
 import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import { CssBlockError, TemplateAnalysisError } from "../../src/errors";

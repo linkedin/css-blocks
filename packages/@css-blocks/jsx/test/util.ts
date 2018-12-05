@@ -4,6 +4,7 @@ export async function testParse(data: string, filename = "", opts?: Options): Pr
   let analyzerOptions: Options & AnalyzerOptions = opts || {};
   analyzerOptions.analyzerName = "test-analyzer";
   let analyzer = new Analyzer(analyzerOptions);
+  analyzer.blockFactory.importer.purgeAll();
   await analyzer.parse(filename, data);
   return analyzer;
 }
@@ -12,6 +13,7 @@ export async function testParseFile(file: string, opts?: Options): Promise<Analy
   let analyzerOptions: Options & AnalyzerOptions = opts || {};
   analyzerOptions.analyzerName = "test-analyzer";
   let analyzer = new Analyzer(analyzerOptions);
+  analyzer.blockFactory.importer.purgeAll();
   await analyzer.parseFile(file);
   return analyzer;
 }

@@ -15,7 +15,7 @@ import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { ResolvedConfiguration } from "../configuration";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
-import { FileIdentifier } from "../importing";
+import { FileIdentifier } from "../Importer";
 import { SourceLocation } from "../SourceLocation";
 
 import { BlockClass } from "./BlockClass";
@@ -43,15 +43,14 @@ function gen_guid(identifier: string): string {
 export class Block
   extends Inheritable<Block, Block, never, BlockClass> {
 
-  private _blockReferences: ObjectDictionary<Block> = {};
-  private _blockReferencesReverseLookup: Map<Block, string> = new Map();
-  private _blockExports: ObjectDictionary<Block> = {};
-  private _blockExportReverseLookup: Map<Block, string> = new Map();
-  private _identifier: FileIdentifier;
-  private _implements: Block[] = [];
-  private hasHadNameReset = false;
-
-  public readonly guid: string;
+    private _blockReferences: ObjectDictionary<Block> = {};
+    private _blockReferencesReverseLookup: Map<Block, string> = new Map();
+    private _blockExports: ObjectDictionary<Block> = {};
+    private _blockExportReverseLookup: Map<Block, string> = new Map();
+    private _identifier: FileIdentifier;
+    private _implements: Block[] = [];
+    private _timestamp = NaN;
+    private _hasHadNameReset = false;
 
   /**
    * array of paths that this block depends on and, if changed, would
@@ -60,6 +59,7 @@ export class Block
    */
   private _dependencies: Set<string>;
 
+  public readonly guid: string;
   public readonly rootClass: BlockClass;
   public stylesheet: postcss.Root | undefined;
 
@@ -77,6 +77,7 @@ export class Block
 
   /** @returns This Block's self-proclaimed name. */
   public get name(): string { return this.uid; }
+  public get timestamp(): number { return this._timestamp; }
 
   /**
    * Sets `name` value of this `Block`. Block names may change depending on the
@@ -84,9 +85,20 @@ export class Block
    * @prop  name  string  The new uid for this `Block`.
    */
   public setName(name: string): void {
-    if (this.hasHadNameReset) { throw new CssBlockError("Can not set block name more than once."); }
+    if (this._hasHadNameReset) { throw new CssBlockError("Can not set Block name more than once."); }
     this._token = name;
-    this.hasHadNameReset = true;
+    this._hasHadNameReset = true;
+  }
+
+  /**
+   * Sets `timestamp` value of this `Block`. Block timestamps are set by `BlockFactory` after
+   * compilation to reflect the time at which its backing file contents have been read. Used
+   * for build invalidation.
+   * @prop  timestamp  number  The timestamp of this `Block`.
+   */
+  public setTimestamp(timestamp: number) {
+    if (!Number.isNaN(this._timestamp)) { throw new CssBlockError("Can not set Block timestamp more than once."); }
+    this._timestamp = timestamp;
   }
 
   /**

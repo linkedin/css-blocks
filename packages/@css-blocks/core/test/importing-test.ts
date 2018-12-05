@@ -3,7 +3,6 @@ import * as fs from "fs";
 import { IHookCallbackContext } from "mocha";
 import * as path from "path";
 
-import { Syntax } from "../src/BlockParser";
 import {
   Options,
   ResolvedConfiguration,
@@ -12,8 +11,9 @@ import {
 import {
   Importer,
   NodeJsImporter,
+  Syntax,
   defaultImporter,
-} from "../src/importing";
+} from "../src/Importer";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.join(FIXTURES, "filesystemImporter");

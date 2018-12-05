@@ -6,7 +6,7 @@ import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceLocation } from "../../SourceLocation";
 
-import { BlockFactory } from "../index";
+import { BlockFactory } from "../../BlockFactory";
 import { parseBlockNames } from "../utils/blockNamesParser";
 
 const FROM_EXPR = /\s+from\s+/;
@@ -52,7 +52,7 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
       }
 
     // Import file, then parse file, then save block reference.
-    let blockPromise: Promise<Block> = factory.getBlockRelative(block.identifier, blockPath);
+    let blockPromise: Promise<Block> = factory.getBlock(block.identifier, blockPath);
 
     // Validate our imported block name is a valid CSS identifier.
     let blockNames = parseBlockNames(blockList, true);

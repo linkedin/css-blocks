@@ -132,7 +132,7 @@ export function importVisitor(
       // Try to fetch an existing Block Promise. If it does not exist, parse CSS Block.
       let res: Promise<Block> = analyzer.blockPromises[blockPath];
       if (!res) {
-        res = analyzer.blockFactory.getBlockFromPath(blockPath).catch((err) => {
+        res = analyzer.blockFactory.getBlock(blockPath).catch((err) => {
           throw new TemplateImportError(`Error parsing block import "${filePath}". Failed with:\n\n"${err.message}"\n\n`, {
             filename: file.identifier,
             line: nodePath.node.loc.start.line,

@@ -4,10 +4,9 @@ import * as debugGenerator from "debug";
 import { existsSync, readFile, readFileSync } from "fs-extra";
 import * as path from "path";
 
-import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 
-import { FileIdentifier, ImportedFile, Importer } from "./Importer";
+import { FileIdentifier, ImportedFile, Importer, Syntax } from "./Importer";
 
 const debug = debugGenerator("css-blocks:importer");
 
@@ -28,9 +27,11 @@ export interface Alias {
   path: string;
 }
 
-export class NodeJsImporter implements Importer {
+export class NodeJsImporter extends Importer {
   aliases: Alias[];
   constructor(aliases: Alias[] | ObjectDictionary<string> = []) {
+    super();
+
     // Normalize aliases input.
     this.aliases = Array.isArray(aliases)
       ? aliases.slice()
@@ -47,7 +48,7 @@ export class NodeJsImporter implements Importer {
     }
   }
 
-  identifier(from: FileIdentifier | null, importPath: string, config: ResolvedConfiguration): FileIdentifier {
+  getIdentifier(from: FileIdentifier | null, importPath: string, config: ResolvedConfiguration): FileIdentifier {
     // If absolute, this is the identifier.
     if (path.isAbsolute(importPath)) { return importPath; }
 
@@ -124,13 +125,14 @@ export class NodeJsImporter implements Importer {
     return path.relative(config.rootDir, identifier);
   }
 
-  async import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile> {
+  async getImport(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile> {
     let contents = await readFile(identifier, "utf-8");
     return {
       syntax: this.syntax(identifier, config),
       identifier,
       defaultName: this.defaultName(identifier, config),
       contents,
+      timestamp: Date.now(),
     };
   }
 }

@@ -7,10 +7,7 @@ export {
   toAttrToken,
 } from "./block-intermediates";
 
-export { BlockFactory } from "./BlockFactory";
-
 export {
-  Syntax,
-  Preprocessors,
-  ProcessedFile,
-} from "./preprocessing";
+  BlockParser,
+  ParsedSource,
+} from "./BlockParser";

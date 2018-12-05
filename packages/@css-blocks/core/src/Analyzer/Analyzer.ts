@@ -6,7 +6,7 @@ import {
 import { MultiMap, whatever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
-import { BlockFactory } from "../BlockParser";
+import { BlockFactory } from "../BlockFactory";
 import { Block, Style } from "../BlockTree";
 import {
   Options,

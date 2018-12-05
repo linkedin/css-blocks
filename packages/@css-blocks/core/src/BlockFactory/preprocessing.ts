@@ -4,22 +4,8 @@ import {
   RawSourceMap,
 } from "source-map";
 
-import {
-  ResolvedConfiguration,
-} from "../configuration";
-
-export enum Syntax {
-  sass = "sass",
-  scss = "scss",
-  css = "css",
-  less = "less",
-  stylus = "styl",
-  other = "other",
-}
-
-export function syntaxName(syntax: Syntax): string {
-  return Object.keys(Syntax).find(s => Syntax[s] === syntax) || "other";
-}
+import { ResolvedConfiguration } from "../configuration";
+import { Syntax } from "../Importer";
 
 export interface ProcessedFile {
     /**

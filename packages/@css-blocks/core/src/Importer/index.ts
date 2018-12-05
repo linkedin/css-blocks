@@ -5,7 +5,10 @@ export {
   FileIdentifier,
   ImportedFile,
   Importer,
+  Syntax,
+  syntaxName,
 } from "./Importer";
+
 export { NodeJsImporter } from "./NodeJsImporter";
 
 /**

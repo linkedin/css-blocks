@@ -58,6 +58,10 @@ export class PromiseQueue<WorkItem, Result> {
     if (!this.draining) {
       this.draining = new Promise<void>((resolve, _reject) => {
         this.debug(`Starting to drain current work queue.`);
+        if (this.activeJobCount === 0) {
+          this.debug(`queue is drained`);
+          resolve();
+        }
         this.queue.drain = () => {
           this.debug(`queue is drained`);
           this.draining = undefined;

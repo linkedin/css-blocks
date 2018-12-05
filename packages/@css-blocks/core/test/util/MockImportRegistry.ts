@@ -44,6 +44,7 @@ export class MockImporter extends NodeJsImporter {
       identifier: resolvedPath,
       defaultName: this.defaultName(resolvedPath, configuration),
       contents: source.contents,
+      timestamp: Date.now(),
     };
   }
 }

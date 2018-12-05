@@ -84,7 +84,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
         return undefined;
       }
-      return await this.blockFactory.getBlockFromPath(blockFile.path);
+      return await this.blockFactory.getBlock(blockFile.path);
     } catch (e) {
       console.error(e);
       this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
