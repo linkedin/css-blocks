@@ -6,12 +6,11 @@ export interface FileContent {
   [filename: string]: string | FileContent;
 }
 
-interface Transient {
+export interface TransientFiles {
   (filesObj: FileContent): void;
   restore: () => void;
   _files: string[];
   _directories: string[];
-  readonly DIRECTORY: symbol;
 }
 
 function transientFS(filesObj: FileContent) {
@@ -39,7 +38,6 @@ function transientFS(filesObj: FileContent) {
     }
   }
 }
-const DIRECTORY = Symbol("transient directory");
 
 function restore() {
   let file, dir;
@@ -55,10 +53,9 @@ function restore() {
   }
 }
 
-const transient: Transient = Object.assign(transientFS, {
+const transient: TransientFiles = Object.assign(transientFS, {
   _files: [],
   _directories: [],
-  DIRECTORY,
   restore,
 });
 
