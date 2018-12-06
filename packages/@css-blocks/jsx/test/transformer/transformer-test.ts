@@ -1,4 +1,5 @@
-import mock from "@css-blocks/build/dist/src/testing/transient-fs";
+import { mock } from "@css-blocks/test-utils";
+
 import { Analysis, BlockCompiler, Options as CSSBlocksOptions, StyleMapping, resolveConfiguration as resolveBlocksConfiguration } from "@css-blocks/core";
 import c$$ from "@css-blocks/runtime";
 import { TemplateIntegrationOptions } from "@opticss/template-api";

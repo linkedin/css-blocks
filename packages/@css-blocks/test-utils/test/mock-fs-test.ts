@@ -3,9 +3,9 @@ import * as fs from "fs";
 import { suite, test } from "mocha-typescript";
 import * as path from "path";
 
-import mock from "../src/testing/transient-fs";
+import { mock } from "../src/mock-fs";
 
-@suite("transient-fs")
+@suite("mock-fs")
 export class TransientFsTest {
   @test "can write and clean up files"() {
     mock({
@@ -40,7 +40,7 @@ export class TransientFsTest {
     assert.isFalse(fs.existsSync("top-file.txt"));
   }
   @test "can restore no files"() {
-    assert.equal(mock._files.length, 0);
+    assert.equal(mock.fileCount(), 0);
     mock.restore();
   }
 }
