@@ -1,4 +1,5 @@
-import mock from "@css-blocks/build/dist/src/testing/transient-fs";
+import { mock } from "@css-blocks/test-utils";
+
 import { Block } from "@css-blocks/core";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";

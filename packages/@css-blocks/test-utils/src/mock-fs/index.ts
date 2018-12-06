@@ -6,14 +6,16 @@ export interface FileContent {
   [filename: string]: string | FileContent;
 }
 
-export interface TransientFiles {
+export interface FileMocker {
   (filesObj: FileContent): void;
   restore: () => void;
-  _files: string[];
-  _directories: string[];
+  fileCount: () => number;
 }
 
-function transientFS(filesObj: FileContent) {
+const FILES: string[] = [];
+const DIRS: string[] = [];
+
+export const mock = <FileMocker>function mock(filesObj: FileContent) {
   let keys = Object.keys(filesObj);
   for (let key of keys) {
     let content = filesObj[key];
@@ -23,10 +25,10 @@ function transientFS(filesObj: FileContent) {
         if (!existsSync(key)) {
           mkdirSync(key);
           let fullPath = path.resolve(key);
-          transient._directories.push(fullPath);
+          DIRS.push(fullPath);
         }
         process.chdir(key);
-        transientFS(content);
+        mock(content);
       }
       finally {
         process.chdir(dir);
@@ -34,30 +36,25 @@ function transientFS(filesObj: FileContent) {
     } else {
       let fullPath = path.resolve(key);
       writeFileSync(fullPath, content);
-      transient._files.push(fullPath);
+      FILES.push(fullPath);
     }
   }
-}
+};
 
-function restore() {
+mock.restore = function restore() {
   let file, dir;
-  while (file = transient._files.pop()) {
+  while (file = FILES.pop()) {
     if (existsSync(file)) {
       unlinkSync(file);
     }
   }
-  while (dir = transient._directories.pop()) {
+  while (dir = DIRS.pop()) {
     if (existsSync(dir)) {
       rmdirSync(dir);
     }
   }
-}
+};
 
-const transient: TransientFiles = Object.assign(transientFS, {
-  _files: [],
-  _directories: [],
-  restore,
-});
-
-// tslint:disable-next-line no-default-export
-export default transient;
+mock.fileCount = function fileCount(): number {
+  return FILES.length;
+};

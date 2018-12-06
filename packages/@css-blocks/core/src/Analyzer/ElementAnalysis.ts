@@ -851,6 +851,7 @@ function mapChoiceClasses(
   configuration: ResolvedConfiguration,
   map: Map<string, Style>,
   includeAbsent: boolean,
+  /* tslint:disable-next-line */
   ...styles: Style[]
 ): AttributeValueChoice {
   let choices = new Array<AttributeValueChoiceOption>();

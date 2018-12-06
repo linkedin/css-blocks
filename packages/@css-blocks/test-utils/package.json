@@ -1,9 +1,9 @@
 {
-  "name": "@css-blocks/build",
+  "name": "@css-blocks/test-utils",
   "private": true,
   "version": "0.20.0-beta.4",
-  "description": "Build-time support for @css-blocks/*.",
-  "main": "dist/src/index.js",
+  "description": "Shared test utilities for @css-blocks/*.",
+  "main": "dist/src",
   "scripts": {
     "compile": "tsc --version && rm -rf dist && tsc",
     "pretest": "yarn run compile",
