@@ -1,25 +1,12 @@
-import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import { postcss } from "opticss";
 
-import cssBlocks = require("./util/postcss-helper");
+import { CssBlockError } from "../src";
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
 
 @suite("Block Interfaces")
 export class BlockInterfaceTests extends BEMProcessor {
-  assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
-    return promise.then(
-      () => {
-        assert(false, `Error ${errorType.name} was not raised.`);
-      },
-      (reason) => {
-        assert(reason instanceof errorType, reason.toString());
-        assert.deepEqual(reason.message, message);
-      });
-  }
-
   @test "can detect missing surface area"() {
     let { imports, config } = setupImporting();
     imports.registerSource(
@@ -37,7 +24,7 @@ export class BlockInterfaceTests extends BEMProcessor {
                     .b[state|small] {color: blue;}`;
 
     return this.assertError(
-      cssBlocks.CssBlockError,
+      CssBlockError,
       `Missing implementations for: :scope[state|large], .foo[state|small] ` +
         `from foo/bar/base.css`,
       this.process(filename, inputCSS, config).then(() => {
@@ -72,7 +59,7 @@ export class BlockInterfaceTests extends BEMProcessor {
                     .foo[state|small] { }`;
 
     return this.assertError(
-      cssBlocks.CssBlockError,
+      CssBlockError,
       `Missing implementations for: :scope[state|medium], .foo[state|medium] ` +
         `from foo/bar/other.css`,
       this.process(filename, inputCSS, config).then(() => {

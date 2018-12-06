@@ -1,11 +1,10 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
-import { assertError } from "../util/assertError";
+import { InvalidBlockSyntax } from "../../src";
+
 import { BEMProcessor } from "../util/BEMProcessor";
 import { MockImportRegistry } from "../util/MockImportRegistry";
-
-const { InvalidBlockSyntax } = require("../util/postcss-helper");
 
 @suite("Block Names")
 export class BlockNames extends BEMProcessor {
@@ -82,7 +81,7 @@ export class BlockNames extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block block from "./imported.css";`;
 
-    return assertError(
+    return this.assertError(
       InvalidBlockSyntax,
       "Illegal block name. '123' is not a legal CSS identifier. (foo/bar/imported.css:1:10)",
       this.process(filename, inputCSS, {importer: imports.importer()}));

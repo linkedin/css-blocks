@@ -3,28 +3,14 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import { SerializedAnalysis } from "../../src/Analyzer";
-import { BlockFactory } from "../../src/BlockFactory";
-import { Block } from "../../src/BlockTree";
-import { Options, resolveConfiguration } from "../../src/configuration";
-import * as cssBlocks from "../../src/errors";
+import { Block, SerializedAnalysis, TemplateAnalysisError } from "../../src";
 
-import { assertParseError } from "../util/assertError";
+import { BEMProcessor } from "../util/BEMProcessor";
 import { MockImportRegistry } from "../util/MockImportRegistry";
 import { TestAnalyzer } from "../util/TestAnalyzer";
 
-type BlockAndRoot = [Block, postcss.Container];
-
 @suite("Root Class Validator")
-export class AnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let config = resolveConfiguration(opts);
-    let factory = new BlockFactory(config, postcss);
-    let root = postcss.parse(css, { from: filename });
-    return factory.parse(root, filename, blockName).then((block) => {
-      return <BlockAndRoot>[block, root];
-    });
-  }
+export class AnalysisTests extends BEMProcessor {
 
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
@@ -40,10 +26,10 @@ export class AnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+    return this.assertParseError(
+      TemplateAnalysisError,
       "Cannot put block classes on the block's root element (templates/my-template.hbs:10:32)",
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]): [Block, postcss.Container] => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]): [Block, postcss.Container] => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
@@ -68,7 +54,7 @@ export class AnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]): [Block, postcss.Container] => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]): [Block, postcss.Container] => {
       analysis.addBlock("", block);
       let element = analysis.startElement({ line: 10, column: 32 });
       element.addStaticClass(block.rootClass);
@@ -94,7 +80,7 @@ export class AnalysisTests {
       @block a from "a.css";
       :scope { color: blue; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
       analysis.addBlock("", block);
       analysis.addBlock("a", aBlock);

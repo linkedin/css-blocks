@@ -1,9 +1,8 @@
 import { assert } from "chai";
-import { suite, test, only } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 
-import cssBlocks = require("./util/postcss-helper");
+import { InvalidBlockSyntax } from "../src";
 
-import { assertError } from "./util/assertError";
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
 
@@ -49,8 +48,8 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                     }`;
 
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
+    return this.assertError(
+      InvalidBlockSyntax,
       "Missing global state selector on external Block 'app'. Did you mean one of: :scope[state|is-loading] (widget.block.css:2:21)",
       this.process(filename, inputCSS, config));
   }
@@ -69,12 +68,12 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                     }`;
 
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
+    return this.assertError(
+      InvalidBlockSyntax,
       "External Block 'app' has no global states. (widget.block.css:2:21)",
       this.process(filename, inputCSS, config));
   }
-  @test @only "Can't use non-global states"() {
+  @test "Can't use non-global states"() {
     let { imports, config } = setupImporting();
     imports.registerSource(
       "app.block.css",
@@ -88,8 +87,8 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                     }`;
 
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
+    return this.assertError(
+      InvalidBlockSyntax,
       "[state|is-loading] is not global: app[state|is-loading] .b (widget.block.css:2:24)",
       this.process("widget.block.css", inputCSS, config));
   }

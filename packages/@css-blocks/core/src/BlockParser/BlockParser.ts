@@ -1,3 +1,4 @@
+import * as debugGenerator from "debug";
 import { postcss } from "opticss";
 
 import { BlockFactory } from "../BlockFactory";
@@ -16,6 +17,8 @@ import { globalAttributes } from "./features/global-attributes";
 import { implementBlock } from "./features/implement-block";
 import { importBlocks } from "./features/import-blocks";
 import { processDebugStatements } from "./features/process-debug-statements";
+
+const debug = debugGenerator("css-blocks:BlockParser");
 
 export interface ParsedSource {
   identifier: FileIdentifier;
@@ -59,34 +62,35 @@ export class BlockParser {
    * @param sourceFile  Source file name
    * @param defaultName Name of block
    */
-  public async parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
+  public async parse(root: postcss.Root, identifier: string, defaultName: string): Promise<Block> {
     let importer = this.config.importer;
     let debugIdent = importer.debugIdentifier(identifier, this.config);
     let sourceFile = importer.filesystemPath(identifier, this.config) || debugIdent;
 
     // Discover the block's preferred name.
-    name = await discoverName(root, name, sourceFile);
+    debug(`Discovering Block name for ${identifier}.`);
+    let name = await discoverName(root, defaultName, sourceFile);
 
     // Create our new Block object and save reference to the raw AST.
     let block = new Block(name, identifier, root);
 
-    // Throw if we encounter any `!important` decls.
+    debug(`Ensuring no '!important' decls for ${identifier}.`);
     await disallowImportant(root, sourceFile);
-    // Discover and parse all block references included by this block.
+    debug(`Importing children for ${identifier}.`);
     await importBlocks(block, this.factory, sourceFile);
-    // Export all exported block references from this block.
+    debug(`Discovering exported refs for ${identifier}.`);
     await exportBlocks(block, sourceFile);
-    // Handle any global attributes defined by this block.
+    debug(`Marking global attributes for ${identifier}.`);
     await globalAttributes(root, block, sourceFile);
-    // Parse all block styles and build block tree.
+    debug(`Constructing Block Style tree for ${identifier}.`);
     await constructBlock(root, block, debugIdent);
-    // Verify that external blocks referenced have been imported, have defined the attribute being selected, and have marked it as a global state.
+    debug(`Asserting all external global Blocks Styles referenced exist on the foreign Block for ${identifier}.`);
     await assertForeignGlobalAttribute(root, block, debugIdent);
-    // Construct block extensions and validate.
+    debug(`Wiring Block extensions for ${identifier}.`);
     await extendBlock(root, block, debugIdent);
-    // Validate that all required Styles are implemented.
+    debug(`Validating Block implementations for ${identifier}.`);
     await implementBlock(root, block, debugIdent);
-    // Log any debug statements discovered.
+    debug(`Processing Block debug statements for ${identifier}.`);
     await processDebugStatements(root, block, debugIdent, this.config);
 
     // Return our fully constructed block.

@@ -1,34 +1,32 @@
+import * as path from "path";
+
 import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 import { SerializedTemplateAnalysis as SerializedOptimizedAnalysis, Template } from "@opticss/template-api";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import { ElementAnalysis, SerializedAnalysis } from "../src/Analyzer";
-import { BlockFactory } from "../src/BlockFactory";
-import { AttrValue, Attribute, Block, BlockClass } from "../src/BlockTree";
-import { Options, resolveConfiguration } from "../src/configuration";
-import * as cssBlocks from "../src/errors";
+import {
+  AttrValue,
+  Attribute,
+  Block,
+  BlockClass,
+  ElementAnalysis,
+  SerializedAnalysis,
+  TemplateAnalysisError,
+  resolveConfiguration,
+} from "../src";
 
-import { assertParseError } from "./util/assertError";
+import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
 import { TestAnalyzer } from "./util/TestAnalyzer";
 
 type TestElement = ElementAnalysis<null, null, null>;
 type TemplateType = "Opticss.Template";
 
-type BlockAndRoot = [Block, postcss.Container];
-
 @suite("Template Analysis")
-export class AnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let config = resolveConfiguration(opts);
-    let factory = new BlockFactory(config, postcss);
-    let root = postcss.parse(css, {from: filename});
-    return factory.parse(root, filename, blockName).then((block) => {
-      return <BlockAndRoot>[block, root];
-    });
-  }
+export class AnalysisTests extends BEMProcessor {
+
   @test "can add styles from a block"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
@@ -40,14 +38,14 @@ export class AnalysisTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       analysis.addBlock("", block);
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.rootClass);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedAnalysis<TemplateType> = {
-        blocks: {"": "blocks/foo.block.css"},
+        blocks: {"": path.join(__dirname, "../..", "blocks/foo.block.css")},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [":scope"],
         elements: {
@@ -72,14 +70,14 @@ export class AnalysisTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       analysis.addBlock("", block);
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN, "div");
       element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedAnalysis<TemplateType> = {
-        blocks: {"": "blocks/foo.block.css"},
+        blocks: {"": path.join(__dirname, "../..", "blocks/foo.block.css")},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [":scope"],
         elements: {
@@ -106,7 +104,7 @@ export class AnalysisTests {
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       analysis.addBlock("", block);
       let element = analysis.startElement(POSITION_UNKNOWN);
       let klass = block.getClass("asdf");
@@ -120,7 +118,7 @@ export class AnalysisTests {
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedAnalysis<TemplateType> = {
-        blocks: {"": "blocks/foo.block.css"},
+        blocks: {"": path.join(__dirname, "../..", "blocks/foo.block.css")},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
         stylesFound: [".asdf", ".asdf[state|larger]"],
         elements: {
@@ -148,19 +146,19 @@ export class AnalysisTests {
       .asdf[state|larger] { font-size: 26px; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block1, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block1, _]) => {
       analysis.addBlock("", block1);
       let element = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block1.rootClass);
       analysis.endElement(element);
-      return this.parseBlock(`:scope { border: 1px solid black; }`, "blocks/bar.block.css").then(([block2, _]) => {
+      return this.parseBlock("blocks/bar.block.css", `:scope { border: 1px solid black; }`).then(([block2, _]) => {
         analysis.addBlock("ref", block2);
         let element = analysis.startElement(POSITION_UNKNOWN);
         element.addStaticClass(block2.rootClass);
         analysis.endElement(element);
         let result = analysis.serialize();
         let expectedResult: SerializedAnalysis<TemplateType> = {
-          blocks: {"": "blocks/foo.block.css", "ref": "blocks/bar.block.css"},
+          blocks: {"": path.join(__dirname, "../..", "blocks/foo.block.css"), "ref": path.join(__dirname, "../..", "blocks/bar.block.css")},
           elements: {
             a: {
               staticStyles: [ 0 ],
@@ -202,7 +200,7 @@ export class AnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       analysis.addBlock("", block);
       let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
@@ -242,7 +240,7 @@ export class AnalysisTests {
       :scope[state|color]   { color: red; }
       :scope[state|bgcolor] { color: red; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
@@ -283,7 +281,7 @@ export class AnalysisTests {
       :scope[state|bgcolor=red]  { color: red; }
       :scope[state|bgcolor=blue] { color: blue; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
@@ -355,7 +353,7 @@ export class AnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       analysis.addBlock("", block);
       let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
@@ -408,7 +406,7 @@ export class AnalysisTests {
       .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
       .fdsa { font-size: resolve('a.foo[state|bar]'); font-size: 22px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       analysis.addBlock("", block);
       let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
@@ -459,7 +457,7 @@ export class AnalysisTests {
       .asdf { font-size: 20px; }
       .fdsa { font-size: 22px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       analysis.addBlock("", block);
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.rootClass);
@@ -499,12 +497,12 @@ export class AnalysisTests {
     let css = `
       @block a from "a.css";
 
-      :scope { color: blue; }
+      :scope { block-name: main; color: blue; }
       :scope[state|foo] { color: red; }
       .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
       .fdsa { font-size: 22px; font-size: resolve('a.foo[state|bar]'); }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config, "main").then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       analysis.addBlock("", block);
       let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
@@ -573,10 +571,10 @@ export class AnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+    return this.assertParseError(
+      TemplateAnalysisError,
       `Classes "fdsa" and "asdf" from the same block are not allowed on the same element at the same time. (templates/my-template.hbs:10:11)`,
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 11});
           element.addStaticClass(block.getClass("asdf")!);
@@ -600,7 +598,7 @@ export class AnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
           analysis.addBlock("", block);
           let element = analysis.startElement(POSITION_UNKNOWN);
           element.addStaticClass(block.getClass("asdf")!);
@@ -618,10 +616,10 @@ export class AnalysisTests {
     let css = `
       :scope { color: blue; }
     `;
-    return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+    return this.assertParseError(
+      TemplateAnalysisError,
       "CUSTOM ERROR (templates/my-template.hbs:1:2)",
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 1, column: 2 });
           analysis.endElement(element);
@@ -643,10 +641,10 @@ export class AnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+    return this.assertParseError(
+      TemplateAnalysisError,
       "Cannot put block classes on the block's root element (templates/my-template.hbs:10:32)",
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]): [Block, postcss.Container] => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]): [Block, postcss.Container] => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticClass(block.rootClass);
@@ -671,7 +669,7 @@ export class AnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]): [Block, postcss.Container] => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]): [Block, postcss.Container] => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticClass(block.rootClass);
@@ -696,7 +694,7 @@ export class AnalysisTests {
       @block a from "a.css";
       :scope { color: blue; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
         let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
         analysis.addBlock("", block);
         analysis.addBlock("a", aBlock);
@@ -739,10 +737,10 @@ export class AnalysisTests {
       :scope { color: blue; }
       :scope[state|test] { color: red; }
     `;
-    return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+    return this.assertParseError(
+      TemplateAnalysisError,
       'Cannot use state ":scope[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test]")!);
@@ -762,10 +760,10 @@ export class AnalysisTests {
       .foo[state|test] { color: red; }
     `;
 
-    return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+    return this.assertParseError(
+      TemplateAnalysisError,
       'Cannot use state ".foo[state|test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass("foo") as BlockClass;
@@ -802,10 +800,10 @@ export class AnalysisTests {
       }
     `;
 
-    return assertParseError(
-      cssBlocks.TemplateAnalysisError,
+    return this.assertParseError(
+      TemplateAnalysisError,
       'Cannot use state ".pretty[state|color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
           let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
           analysis.addBlock("", block);
           analysis.addBlock("a", aBlock);
@@ -844,7 +842,7 @@ export class AnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
           let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
           analysis.addBlock("", block);
           analysis.addBlock("a", aBlock);

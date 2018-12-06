@@ -40,17 +40,16 @@ function gen_guid(identifier: string): string {
     .slice(0, 5);
 }
 
-export class Block
-  extends Inheritable<Block, Block, never, BlockClass> {
+export class Block extends Inheritable<Block, Block, never, BlockClass> {
 
-    private _blockReferences: ObjectDictionary<Block> = {};
-    private _blockReferencesReverseLookup: Map<Block, string> = new Map();
-    private _blockExports: ObjectDictionary<Block> = {};
-    private _blockExportReverseLookup: Map<Block, string> = new Map();
-    private _identifier: FileIdentifier;
-    private _implements: Block[] = [];
-    private _timestamp = NaN;
-    private _hasHadNameReset = false;
+  private _blockReferences: ObjectDictionary<Block> = {};
+  private _blockReferencesReverseLookup: Map<Block, string> = new Map();
+  private _blockExports: ObjectDictionary<Block> = {};
+  private _blockExportReverseLookup: Map<Block, string> = new Map();
+  private _identifier: FileIdentifier;
+  private _implements: Block[] = [];
+  private _timestamp = NaN;
+  private _hasHadNameReset = false;
 
   /**
    * array of paths that this block depends on and, if changed, would

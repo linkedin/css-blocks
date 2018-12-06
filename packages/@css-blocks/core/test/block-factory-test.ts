@@ -1,24 +1,11 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import { postcss } from "opticss";
-
-import * as cssBlocks from "../src";
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
 
 @suite("Block Factory")
 export class BlockFactoryTests extends BEMProcessor {
-  assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
-    return promise.then(
-      () => {
-        assert(false, `Error ${errorType.name} was not raised.`);
-      },
-      (reason) => {
-        assert(reason instanceof errorType, reason.toString());
-        assert.deepEqual(reason.message, message);
-      });
-  }
 
   @test "can import a block"() {
     let { imports, importer, config, factory } = setupImporting();

@@ -48,11 +48,11 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
       throw new errors.InvalidBlockSyntax(
         `Malformed block reference: \`@block ${atRule.params}\``,
         sourceLocation(file, atRule),
-        );
-      }
+      );
+    }
 
     // Import file, then parse file, then save block reference.
-    let blockPromise: Promise<Block> = factory.getBlock(block.identifier, blockPath);
+    let blockPromise: Promise<Block> = factory.getBlock(blockPath, block.identifier);
 
     // Validate our imported block name is a valid CSS identifier.
     let blockNames = parseBlockNames(blockList, true);

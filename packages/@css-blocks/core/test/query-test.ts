@@ -1,28 +1,16 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import { postcss } from "opticss";
 
-import { BlockFactory } from "../src/BlockFactory";
-import { Block } from "../src/BlockTree";
-import { Options, resolveConfiguration } from "../src/configuration";
 import { QueryKeySelector } from "../src/query";
 
-type BlockAndRoot = [Block, postcss.Container];
+import { BEMProcessor } from "./util/BEMProcessor";
 
 @suite("Querying")
-export class KeyQueryTests {
-  private parseBlock(css: string, filename: string, opts?: Options): Promise<BlockAndRoot> {
-    let config = resolveConfiguration(opts);
-    let factory = new BlockFactory(config, postcss);
-    let root = postcss.parse(css, {from: filename});
-    return factory.parse(root, filename, "query-test").then((block) => {
-      return <BlockAndRoot>[block, root];
-    });
-  }
+export class KeyQueryTests extends BEMProcessor{
   @test "the block as a key selector"() {
     let css = `:scope { color: red; }`;
     let filename = "query-test.css";
-    return this.parseBlock(css, filename).then(([block, root]) => {
+    return this.parseBlock(filename, css).then(([block, root]) => {
         let q = new QueryKeySelector(block.rootClass);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
@@ -32,7 +20,7 @@ export class KeyQueryTests {
     let css = `:scope { color: red; }
                :scope::before { content: 'b'; }`;
     let filename = "query-test.css";
-    return this.parseBlock(css, filename).then(([block, root]) => {
+    return this.parseBlock(filename, css).then(([block, root]) => {
         let q = new QueryKeySelector(block.rootClass);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
@@ -43,7 +31,7 @@ export class KeyQueryTests {
     let css = `:scope[state|foo] { color: red; }
                :scope[state|foo] .a { width: 100%; }`;
     let filename = "query-test.css";
-    return this.parseBlock(css, filename).then(([block, root]) => {
+    return this.parseBlock(filename, css).then(([block, root]) => {
         let state = block.rootClass.allAttributeValues()[0];
         assert.equal(state.asSource(), ":scope[state|foo]");
         let q = new QueryKeySelector(state);
@@ -55,7 +43,7 @@ export class KeyQueryTests {
     let css = `:scope[state|foo] { color: red; }
                :scope[state|foo] .a { width: 100%; }`;
     let filename = "query-test.css";
-    return this.parseBlock(css, filename).then(([block, root]) => {
+    return this.parseBlock(filename, css).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[1]);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
@@ -65,7 +53,7 @@ export class KeyQueryTests {
     let css = `.a { color: red; }
                .a[state|foo] { width: 100%; }`;
     let filename = "query-test.css";
-    return this.parseBlock(css, filename).then(([block, root]) => {
+    return this.parseBlock(filename, css).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[1]);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
@@ -76,7 +64,7 @@ export class KeyQueryTests {
     let css = `.b[state|foo] { color: red; }
                .a[state|foo] { width: 100%; }`;
     let filename = "query-test.css";
-    return this.parseBlock(css, filename).then(([block, root]) => {
+    return this.parseBlock(filename, css).then(([block, root]) => {
         let state = block.classes[1].getAttributeValue("[state|foo]")!;
         assert.equal(state.asSource(), ".b[state|foo]");
         let q = new QueryKeySelector(state);

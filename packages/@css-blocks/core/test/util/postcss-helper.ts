@@ -2,9 +2,9 @@ import { postcss } from "opticss";
 
 import { BlockCompiler } from "../../src/BlockCompiler";
 import { BlockFactory } from "../../src/BlockFactory";
-import { Configuration, OutputMode } from "../../src/configuration";
+import { Configuration } from "../../src/configuration";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../../src/configuration";
-import * as errors from "../../src/errors";
+import { MissingSourcePath } from "../../src/errors";
 
 /**
  * CSS Blocks PostCSS plugin.
@@ -34,7 +34,7 @@ class Plugin {
     if (result && result.opts && result.opts.from) {
       sourceFile = result.opts.from;
     } else {
-      throw new errors.MissingSourcePath();
+      throw new MissingSourcePath();
     }
 
     // Fetch block name from importer
@@ -42,7 +42,7 @@ class Plugin {
     let defaultName: string = this.config.importer.defaultName(identifier, this.config);
     let factory = new BlockFactory(this.config, this.postcss);
 
-    return factory.parse(root, sourceFile, defaultName).then((block) => {
+    return factory.parse(sourceFile, root, defaultName).then((block) => {
       let compiler = new BlockCompiler(postcss, this.config);
       compiler.compile(block, root);
     });
@@ -50,30 +50,9 @@ class Plugin {
 
 }
 
-// This is ugly but it's the only thing I have been able to make work.
-// I welcome a patch that cleans this up.
-
-type temp = {
-  (postcssImpl: typeof postcss): (config?: Partial<Readonly<Configuration>>) => postcss.Plugin<Partial<Readonly<Configuration>>>;
-  OutputMode: typeof OutputMode;
-  CssBlockError: typeof errors.CssBlockError;
-  InvalidBlockSyntax: typeof errors.InvalidBlockSyntax;
-  MissingSourcePath: typeof errors.MissingSourcePath;
-};
-
-function makeApi(): temp {
-  let cssBlocks: temp;
-  cssBlocks = <temp>function(postcssImpl: typeof postcss) {
-    return (config?: Partial<Readonly<Configuration>>) => {
-      let plugin = new Plugin(postcssImpl, config);
-      return plugin.process.bind(plugin);
-    };
+export = function cssBlocks(postcssImpl: typeof postcss) {
+  return (config?: Partial<Readonly<Configuration>>) => {
+    let plugin = new Plugin(postcssImpl, config);
+    return plugin.process.bind(plugin);
   };
-  cssBlocks.OutputMode = OutputMode;
-  cssBlocks.CssBlockError = errors.CssBlockError;
-  cssBlocks.InvalidBlockSyntax = errors.InvalidBlockSyntax;
-  cssBlocks.MissingSourcePath = errors.MissingSourcePath;
-  return cssBlocks;
-}
-
-export = makeApi();
+};

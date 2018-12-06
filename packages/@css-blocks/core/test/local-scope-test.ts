@@ -1,24 +1,11 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import { postcss } from "opticss";
-
-import cssBlocks = require("./util/postcss-helper");
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
 
 @suite("Local Scope lookup")
 export class LocalScopeLookupTest extends BEMProcessor {
-  assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
-    return promise.then(
-      () => {
-        assert(false, `Error ${errorType.name} was not raised.`);
-      },
-      (reason) => {
-        assert(reason instanceof errorType, reason.toString());
-        assert.deepEqual(reason.message, message);
-      });
-  }
 
   @test "can look up a local object"() {
     let { imports, importer, config, factory } = setupImporting();

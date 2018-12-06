@@ -11,8 +11,7 @@ import {
 } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import { Optimizer } from "opticss";
-import { postcss } from "opticss";
+import { Optimizer, postcss } from "opticss";
 
 import { Analysis, Analyzer } from "../src/Analyzer";
 import { ElementAnalysis } from "../src/Analyzer";
@@ -57,27 +56,24 @@ export class TemplateAnalysisTests {
     let self = this;
     let filename = "blocks/foo.block.css";
     let css = clean`
-      :scope { color: blue; font-size: 20px; }
+      :scope { block-name: optimized; color: blue; font-size: 20px; }
       :scope[state|foo] { color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; color: red; }
     `;
     class TestAnalyzer extends Analyzer<"Opticss.Template"> {
-      analyze(): Promise<TestAnalyzer> {
+      async analyze(): Promise<TestAnalyzer> {
         let analysis = this.newAnalysis(info);
         let root = postcss.parse(css, { from: filename });
-
-        return this.blockFactory.parse(root, filename, "optimized").then((block: Block) => {
-          self.useBlockStyles(analysis, block, "", (container, el) => {
-            if (container.asSource() === ".asdf") {
-              el.addDynamicAttr(container, block.find(".asdf[state|larger]") as AttrValue, true);
-            } else {
-              self.useAttrs(el, container);
-            }
-          });
-        }).then(() => {
-          return this;
+        let block = await this.blockFactory.parse(filename, root, "optimized");
+        self.useBlockStyles(analysis, block, "", (container, el) => {
+          if (container.asSource() === ".asdf") {
+            el.addDynamicAttr(container, block.find(".asdf[state|larger]") as AttrValue, true);
+          } else {
+            self.useAttrs(el, container);
+          }
         });
+        return this;
       }
       get optimizationOptions() {
         return {

@@ -69,8 +69,15 @@ export class BlockFactory {
    * @param name Default name for the block.
    * @returns The Block object promise.
    */
-  parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    return this.parser.parse(root, identifier, name);
+  parse(filename: string, root: postcss.Root, defaultName: string): Promise<Block> {
+    const identifier = this.importer.identifier(null, filename, this.configuration);
+    debug(`Parsing Block ${identifier}`);
+
+    // If we've already started work on this Block, return the same promise.
+    if (this.promises[identifier]) { return this.promises[identifier]; }
+
+    // Otherwise, kick off a new Block parse.
+    return this.promises[identifier] = this.parser.parse(root, identifier, defaultName);
   }
 
   /**
@@ -88,13 +95,16 @@ export class BlockFactory {
     }
   }
 
-  getBlock(identifier: FileIdentifier, relativePath: string | null = null): Promise<Block> {
+  getBlock(importPath: FileIdentifier, relativePath: string | null = null): Promise<Block> {
 
-    // If we're already working on this Block, return the same promise.
+    const identifier = this.importer.identifier(relativePath, importPath, this.configuration);
+    debug(`Getting Block ${identifier} for ${importPath}${relativePath ? ` (relative to ${relativePath})` : ""}.`);
+
+    // If we've already started work on this Block, return the same promise.
     if (this.promises[identifier]) { return this.promises[identifier]; }
 
     // Otherwise, kick off a new Block build.
-    return this.promises[identifier] = this._getBlock(identifier, relativePath)
+    return this.promises[identifier] = this._getBlock(identifier)
 
     // If it failed, drain the work queue and re-throw.
     .catch(async (err) => {
@@ -109,13 +119,12 @@ export class BlockFactory {
     });
   }
 
-  private async _getBlock(importPath: FileIdentifier, relativePath: string | null): Promise<Block> {
+  private async _getBlock(identifier: string): Promise<Block> {
 
     // Fetch the Block identifier and metadata from this `importPath`.
-    debug(`Fetching Block Metadata for ${importPath} relative to ${relativePath}`);
-    const config     = this.configuration;
-    const identifier = this.importer.identifier(relativePath, importPath, config);
-    const file       = await this.importer.import(identifier, config);
+    debug(`Fetching Block Metadata for ${identifier}`);
+    const config = this.configuration;
+    const file   = await this.importer.import(identifier, config);
 
     // If the file identifier maps back to a real filename, ensure it is actually unique.
     let realFilename = this.importer.filesystemPath(file.identifier, config);
@@ -126,8 +135,7 @@ export class BlockFactory {
         this.paths[realFilename] = file.identifier;
       }
     }
-
-    debug(`Discovered ${importPath} at identifier ${identifier} and real path ${realFilename}.`);
+    debug(`Discovered Block file contents for ${identifier}.`);
 
     // Skip all this madness if we can.
     if (this.blocks[file.identifier]) { return this.blocks[file.identifier]; }
@@ -165,6 +173,7 @@ export class BlockFactory {
     block.setName(this.getUniqueBlockName(block.name));
 
     // We're done!
+    debug(`Finished parsing Block for ${identifier} .`);
     return this.blocks[block.identifier] = block;
   }
 
@@ -182,37 +191,30 @@ export class BlockFactory {
   }
 
   preprocessor(file: ImportedFile): Preprocessor {
-    let syntax = file.syntax;
-    let firstPreprocessor: Preprocessor | undefined = this.preprocessors[syntax];
-    let preprocessor: Preprocessor | null = null;
-    if (firstPreprocessor) {
-      if (syntax !== Syntax.css && this.preprocessors.css && !this.configuration.disablePreprocessChaining) {
-        let cssProcessor = this.preprocessors.css;
-        preprocessor = (fullPath: string, content: string, configuration: ResolvedConfiguration): Promise<ProcessedFile> => {
-          return firstPreprocessor!(fullPath, content, configuration).then(result => {
-            let content = result.content.toString();
-            return cssProcessor(fullPath, content, configuration, sourceMapFromProcessedFile(result)).then(result2 => {
-              return {
-                content: result2.content,
-                sourceMap: sourceMapFromProcessedFile(result2),
-                dependencies: (result.dependencies || []).concat(result2.dependencies || []),
-              };
-            });
-          });
-        };
-      } else {
-        preprocessor = firstPreprocessor;
-      }
-    } else if (syntax !== Syntax.css) {
-      throw new Error(`No preprocessor provided for ${syntaxName(syntax)}.`);
-    } else {
-      preprocessor = (_fullPath: string, content: string, _options: ResolvedConfiguration): Promise<ProcessedFile> => {
-        return Promise.resolve({
-          content: content,
-        });
-      };
+    const noop: Preprocessor = (_fullPath: string, content: string, _options: ResolvedConfiguration): Promise<ProcessedFile> => Promise.resolve({ content });
+    const syntax = file.syntax;
+    const preprocessor: Preprocessor | undefined = this.preprocessors[syntax];
 
+    // If syntax is CSS, return the CSS preprocessor, or a no-op.
+    if (syntax === Syntax.css) { return this.preprocessors.css || noop; }
+
+    // If syntax is not CSS, and we haven't discovered a preprocessor, we don't know how to handle this file!
+    if (!preprocessor) { throw new Error(`No preprocessor provided for ${syntaxName(syntax)}.`); }
+
+    // Unless disabled, chain the discovered preprocessor with the CSS preprocessor.
+    if (this.preprocessors.css && !this.configuration.disablePreprocessChaining) {
+      return async (fullPath: string, content: string, configuration: ResolvedConfiguration): Promise<ProcessedFile> => {
+        let res1 = await preprocessor(fullPath, content, configuration);
+        let res2 = await this.preprocessors.css!(fullPath, res1.content.toString(), configuration, sourceMapFromProcessedFile(res1));
+        return {
+          content: res2.content,
+          sourceMap: sourceMapFromProcessedFile(res2),
+          dependencies: (res1.dependencies || []).concat(res2.dependencies || []),
+        };
+      };
     }
+
+    // Otherwise, return the discovered preprocessor, or a no-op.
     return preprocessor;
   }
 }

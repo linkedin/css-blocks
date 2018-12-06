@@ -1,30 +1,17 @@
 import { Template } from "@opticss/template-api";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
-import { postcss } from "opticss";
 
-import { BlockFactory } from "../../src/BlockFactory";
+import { CssBlockError, Options, TemplateAnalysisError } from "../../src";
 import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/BlockTree";
-import { Options, resolveConfiguration } from "../../src/configuration";
-import { CssBlockError, TemplateAnalysisError } from "../../src/errors";
 
-import { assertParseError } from "../util/assertError";
+import { BEMProcessor } from "../util/BEMProcessor";
 import { indented } from "../util/indented";
 import { MockImportRegistry } from "../util/MockImportRegistry";
 import { TestAnalyzer } from "../util/TestAnalyzer";
 
-type BlockAndRoot = [Block, postcss.Container];
-
 @suite("Property Conflict Validator")
-export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let config = resolveConfiguration(opts);
-    let factory = new BlockFactory(config, postcss);
-    let root = postcss.parse(css, { from: filename });
-    return factory.parse(root, filename, blockName).then((block) => {
-      return <BlockAndRoot>[block, root];
-    });
-  }
+export class TemplateAnalysisTests extends BEMProcessor {
 
   @test "properties of the same value, defined in the same order, do not throw an error"() {
     let imports = new MockImportRegistry();
@@ -40,7 +27,7 @@ export class TemplateAnalysisTests {
       :scope { block-name: block-a; color: blue; background-color: yellow; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block, ":scope", "b").end();
       assert.deepEqual(1, 1);
     });
@@ -60,7 +47,7 @@ export class TemplateAnalysisTests {
       :scope { block-name: block-a; color: blue; background-color: yellow; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -70,7 +57,7 @@ export class TemplateAnalysisTests {
             block-b (blocks/b.block.css:1:31)
             block-b (blocks/b.block.css:1:43)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b").end();
         assert.deepEqual(1, 1);
       }),
@@ -91,7 +78,7 @@ export class TemplateAnalysisTests {
       :scope { block-name: block-a; color: blue; color: yellow; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block, ":scope", "b").end();
       assert.deepEqual(1, 1);
     });
@@ -111,7 +98,7 @@ export class TemplateAnalysisTests {
       :scope { block-name: block-a; color: blue; color: yellow; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -122,7 +109,7 @@ export class TemplateAnalysisTests {
             block-b (blocks/b.block.css:1:31)
             block-b (blocks/b.block.css:1:43)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b").end();
         assert.deepEqual(1, 1);
       }),
@@ -145,7 +132,7 @@ export class TemplateAnalysisTests {
       .klass { color: blue; background-color: yellow; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -154,7 +141,7 @@ export class TemplateAnalysisTests {
             block-a.klass (blocks/foo.block.css:4:16)
             block-b.klass (blocks/b.block.css:4:39)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ".klass", "b.klass").end();
       }),
     );
@@ -176,7 +163,7 @@ export class TemplateAnalysisTests {
       .klass { color: resolve('b.klass'); color: blue; background-color: yellow; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block, ".klass", "b.klass").end();
       assert.deepEqual(1, 1);
     });
@@ -196,7 +183,7 @@ export class TemplateAnalysisTests {
       :scope { block-name: block-a; color: red; background-color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
 
       `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -209,7 +196,7 @@ export class TemplateAnalysisTests {
     block-a (blocks/foo.block.css:3:49)
     block-b (blocks/b.block.css:1:44)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b").end();
       }),
     );
@@ -235,7 +222,7 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b").end();
         assert.equal(1, 1);
       });
@@ -258,7 +245,7 @@ export class TemplateAnalysisTests {
       .bar  { color: red; background-color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -271,7 +258,7 @@ export class TemplateAnalysisTests {
             block-a.bar (blocks/foo.block.css:4:27)
             block-b.foo (blocks/b.block.css:2:29)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ".bar", "b.foo").end();
       }),
     );
@@ -299,7 +286,7 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block, ".bar", "b.foo").end();
       assert.equal(1, 1);
     });
@@ -320,7 +307,7 @@ export class TemplateAnalysisTests {
       .foo  { color: red; background-color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -333,7 +320,7 @@ export class TemplateAnalysisTests {
             block-a.foo (blocks/foo.block.css:4:27)
             block-b (blocks/b.block.css:1:44)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ".foo", "b").end();
       }),
     );
@@ -359,7 +346,7 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block, ".foo", "b").end();
       assert.equal(1, 1);
     });
@@ -374,7 +361,7 @@ export class TemplateAnalysisTests {
       .foo[state|bar]  { color: blue;}
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block, ".foo", ".foo[state|bar]").end();
       assert.deepEqual(1, 1);
     }).then(() => {
@@ -391,7 +378,7 @@ export class TemplateAnalysisTests {
       .foo[state|bar]  { color: blue;}
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block).addDynamic([".foo"]).addDynamic(".foo[state|bar]").end();
     }).then(() => {
       assert.ok(1, "no error thrown");
@@ -413,7 +400,7 @@ export class TemplateAnalysisTests {
       .foo  { color: red; background-color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -426,7 +413,7 @@ export class TemplateAnalysisTests {
             block-a.foo (blocks/foo.block.css:4:27)
             block-b (blocks/b.block.css:1:44)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block).addDynamic([".foo"]).addDynamic(["b"]).end();
       }),
     );
@@ -452,7 +439,7 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block).addDynamic([".foo"]).addDynamic(["b"]).end();
         assert.equal(1, 1);
       });
@@ -473,7 +460,7 @@ export class TemplateAnalysisTests {
       .foo  { color: red; background-color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -486,7 +473,7 @@ export class TemplateAnalysisTests {
             block-a.foo (blocks/foo.block.css:4:27)
             block-b (blocks/b.block.css:1:44)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block).addDynamic([".foo", "b"]).end();
       }),
     );
@@ -512,7 +499,7 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block).addDynamic([".foo", "b"]).end();
       assert.equal(1, 1);
     });
@@ -533,7 +520,7 @@ export class TemplateAnalysisTests {
       .foo  { color: red; background: red; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block).addDynamic([".foo"], ["b"]).end();
       }).then(() => {
         assert.ok(1, "does not throw");
@@ -555,7 +542,7 @@ export class TemplateAnalysisTests {
       :scope[state|foo] { color: red; background-color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -568,7 +555,7 @@ export class TemplateAnalysisTests {
             block-b (blocks/b.block.css:1:44)
             block-a[state|foo] (blocks/foo.block.css:4:39)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b").addDynamic("[state|foo]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
@@ -595,7 +582,7 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block, ":scope", "b").addDynamic("[state|foo]").end();
       assert.equal(1, 1);
     });
@@ -618,7 +605,7 @@ export class TemplateAnalysisTests {
       .klass[state|foo] { color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
 
       indented`
@@ -628,7 +615,7 @@ export class TemplateAnalysisTests {
             block-a.klass[state|foo] (blocks/foo.block.css:5:27)
             block-b.klass[state|foo] (blocks/b.block.css:4:27)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass", ".klass[state|foo]", "b.klass[state|foo]").end();
       }),
     );
@@ -649,7 +636,7 @@ export class TemplateAnalysisTests {
       .klass[state|foo] { color: resolve('b.klass[state|foo]'); color: red; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       return constructElement(block, ".klass", "b.klass", ".klass[state|foo]", "b.klass[state|foo]").end();
     }).then(() => {
       assert.deepEqual(1, 1);
@@ -672,7 +659,7 @@ export class TemplateAnalysisTests {
       :scope[state|foo] { color: red; background-color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -685,7 +672,7 @@ export class TemplateAnalysisTests {
             block-a[state|foo] (blocks/foo.block.css:4:39)
             block-b[state|bar] (blocks/b.block.css:3:40)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b").addDynamic("[state|foo]").addDynamic("b:scope[state|bar]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
@@ -712,7 +699,7 @@ export class TemplateAnalysisTests {
         background-color: resolve('b:scope[state|bar]'); }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b:scope").addDynamic(":scope[state|foo]").addDynamic("b:scope[state|bar]").end();
       }).then(() => {
         assert.equal(1, 1);
@@ -735,7 +722,7 @@ export class TemplateAnalysisTests {
       :scope[state|foo=two] { text-decoration: underline; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -748,7 +735,7 @@ export class TemplateAnalysisTests {
             block-b (blocks/b.block.css:2:50)
             block-a[state|foo=one] (blocks/foo.block.css:4:43)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
@@ -771,7 +758,7 @@ export class TemplateAnalysisTests {
       :scope[state|foo=two] { text-decoration: underline; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").end();
       }).then(() => {
         assert.equal(1, 1);
@@ -796,7 +783,7 @@ export class TemplateAnalysisTests {
       :scope[state|foo=two] { text-decoration: underline; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -813,7 +800,7 @@ export class TemplateAnalysisTests {
             block-b[state|bar=one] (blocks/b.block.css:3:43)
             block-b[state|bar=two] (blocks/b.block.css:4:46)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").addStateGroup("b", "[state|bar]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
@@ -841,7 +828,7 @@ export class TemplateAnalysisTests {
       .foo  { color: red; background-color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -855,7 +842,7 @@ export class TemplateAnalysisTests {
             block-b (blocks/b.block.css:1:44)
             block-a.foo (blocks/foo.block.css:5:27)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         constructElement(block, "b", "c.bar").addDynamic([".foo"]).end();
       }),
     );
@@ -875,7 +862,7 @@ export class TemplateAnalysisTests {
       :scope { block-name: block-a; color: resolve('b'); color: red; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block, ":scope", "b").end();
     }).then(() => {
       assert.deepEqual(1, 1);
@@ -900,7 +887,7 @@ export class TemplateAnalysisTests {
       .klass-2[state|one][state|two] { color: red; color: }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       constructElement(block, ".klass-2", "b.klass-1").addStateGroup(".klass-2", "[state|one]").end();
     });
   }
@@ -919,7 +906,7 @@ export class TemplateAnalysisTests {
       .klass { color: resolve('b.klass'); color: red; }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       return constructElement(block, ".klass", "b.klass").end();
     }).then(() => {
       assert.deepEqual(1, 1);
@@ -936,10 +923,10 @@ export class TemplateAnalysisTests {
       .klass { color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       CssBlockError,
       `No Block named "b" found in scope. (blocks/foo.block.css:3:23)`,
-      this.parseBlock(css, "blocks/foo.block.css", options).then(() => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(() => {
         assert.deepEqual(1, 1);
       }),
     );
@@ -961,10 +948,10 @@ export class TemplateAnalysisTests {
       .klass { color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       CssBlockError,
       `No Style ".klass" found on Block "block-b". (blocks/foo.block.css:4:23)`,
-      this.parseBlock(css, "blocks/foo.block.css", options).then(() => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(() => {
         assert.deepEqual(1, 1);
       }),
     );
@@ -988,7 +975,7 @@ export class TemplateAnalysisTests {
       .klass { color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -997,7 +984,7 @@ export class TemplateAnalysisTests {
             block-a.klass (blocks/foo.block.css:5:16)
             block-b.klass (blocks/b.block.css:3:17)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
       }).then(() => {
         assert.deepEqual(1, 1);
@@ -1019,7 +1006,7 @@ export class TemplateAnalysisTests {
       .klass { background: red; border-color: yellow; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -1032,7 +1019,7 @@ export class TemplateAnalysisTests {
             analysis.klass (blocks/foo.block.css:3:33)
             b.klass (blocks/b.block.css:1:34)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
       }).then(() => {
         assert.deepEqual(1, 1);
@@ -1054,7 +1041,7 @@ export class TemplateAnalysisTests {
       .klass { border-color: green; border-left-color: yellow }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
 
       `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -1063,7 +1050,7 @@ export class TemplateAnalysisTests {
     analysis.klass (blocks/foo.block.css:3:16)
     b.klass (blocks/b.block.css:1:10)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
       }).then(() => {
         assert.deepEqual(1, 1);
@@ -1085,7 +1072,7 @@ export class TemplateAnalysisTests {
       .klass { background: red; border-left-color: yellow }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -1098,7 +1085,7 @@ export class TemplateAnalysisTests {
             analysis.klass (blocks/foo.block.css:3:33)
             b.klass (blocks/b.block.css:1:34)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
       }).then(() => {
         assert.deepEqual(1, 1);
@@ -1120,7 +1107,7 @@ export class TemplateAnalysisTests {
       .klass { border-right-color: green; border-left-color: yellow }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -1133,7 +1120,7 @@ export class TemplateAnalysisTests {
             analysis.klass (blocks/foo.block.css:3:16)
             b.klass (blocks/b.block.css:1:10)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
       }).then(() => {
         assert.deepEqual(1, 1);
@@ -1156,7 +1143,7 @@ export class TemplateAnalysisTests {
       .klass { background-color: red; background: resolve('b.klass'); }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       return constructElement(block, ".klass", "b.klass").end();
     }).then(() => {
       assert.deepEqual(1, 1);
@@ -1178,7 +1165,7 @@ export class TemplateAnalysisTests {
       .klass { border-color: red; border-left-color: resolve('b.klass'); }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -1187,7 +1174,7 @@ export class TemplateAnalysisTests {
             a-block.klass (blocks/foo.block.css:4:16)
             b-block.klass (blocks/b.block.css:3:16)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
       }).then(() => {
         assert.deepEqual(1, 1);
@@ -1210,7 +1197,7 @@ export class TemplateAnalysisTests {
       .klass { custom-prop: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       indented`
         The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
@@ -1219,7 +1206,7 @@ export class TemplateAnalysisTests {
             block-a.klass (blocks/foo.block.css:4:16)
             block-b.klass (blocks/b.block.css:3:16)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
       }).then(() => {
         assert.deepEqual(1, 1);
@@ -1243,7 +1230,7 @@ export class TemplateAnalysisTests {
       .klass { custom-prop: red; custom-prop: resolve('b.klass'); }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
         return constructElement(block, ".klass", "b.klass").end();
       }).then(() => {
         assert.deepEqual(1, 1);

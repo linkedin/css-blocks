@@ -1,9 +1,8 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
-import cssBlocks = require("./util/postcss-helper");
+import { InvalidBlockSyntax } from "../src";
 
-import { assertError } from "./util/assertError";
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
 
@@ -24,8 +23,8 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                     }`;
 
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
+    return this.assertError(
+      InvalidBlockSyntax,
       "Resolving border must happen either before or after all other values for border." +
         " (conflicts.css:4:23)",
       this.process(filename, inputCSS, config),
@@ -45,8 +44,8 @@ export class BlockInheritance extends BEMProcessor {
                       border: resolve("a.foo");
                     }`;
 
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
+    return this.assertError(
+      InvalidBlockSyntax,
       "Cannot resolve border without a concrete value." +
         " (conflicts.css:3:23)",
       this.process(filename, inputCSS, config),
@@ -336,8 +335,8 @@ export class BlockInheritance extends BEMProcessor {
                       border: 1px solid green;
                     }`;
 
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
+    return this.assertError(
+      InvalidBlockSyntax,
       "There are no conflicting values for border found in any selectors targeting other.foo." +
         " (conflicts.css:3:23)",
       this.process(filename, inputCSS, config),
@@ -607,8 +606,8 @@ export class BlockInheritance extends BEMProcessor {
                       color: blue;
                     }`;
 
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
+    return this.assertError(
+      InvalidBlockSyntax,
       "Cannot resolve conflicts with your own block." +
         " (conflicts.css:3:23)",
       this.process(filename, inputCSS),
@@ -629,8 +628,8 @@ export class BlockInheritance extends BEMProcessor {
                       color: resolve("super.main");
                     }`;
 
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
+    return this.assertError(
+      InvalidBlockSyntax,
       "Cannot resolve conflicts with ancestors of your own block." +
         " (conflicts.css:5:23)",
       this.process(filename, inputCSS, config),

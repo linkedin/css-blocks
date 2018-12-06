@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import { resolveConfiguration } from "../src/configuration";
+import { CssBlockError, MissingSourcePath, OutputMode, resolveConfiguration } from "../src";
 
 import cssBlocks = require("./util/postcss-helper");
 
@@ -15,7 +15,7 @@ export class SetupTests {
   }
   @test "default options"() {
     const config = resolveConfiguration({});
-    assert.equal(config.outputMode, cssBlocks.OutputMode.BEM);
+    assert.equal(config.outputMode, OutputMode.BEM);
   }
   @test "a filename is required"() {
     let cssBlocksPlugin = cssBlocks(postcss);
@@ -26,8 +26,8 @@ export class SetupTests {
     ]).process(inputCSS, {}).then(() => {
       assert(false, "Error was not raised.");
     }).catch((reason: Error) => {
-      assert(reason instanceof cssBlocks.CssBlockError);
-      assert(reason instanceof cssBlocks.MissingSourcePath);
+      assert(reason instanceof CssBlockError);
+      assert(reason instanceof MissingSourcePath);
       assert.equal(reason.message, "PostCSS `from` option is missing. The source filename is required for CSS Blocks to work correctly.");
     });
   }

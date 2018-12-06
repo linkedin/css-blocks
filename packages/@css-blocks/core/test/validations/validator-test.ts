@@ -1,28 +1,14 @@
 import { POSITION_UNKNOWN } from "@opticss/element-analysis";
 import { Template } from "@opticss/template-api";
 import { suite, test } from "mocha-typescript";
-import { postcss } from "opticss";
 
-import { BlockFactory } from "../../src/BlockFactory";
-import { Block } from "../../src/BlockTree";
-import { Options, resolveConfiguration } from "../../src/configuration";
-import { TemplateAnalysisError } from "../../src/errors";
+import { TemplateAnalysisError, resolveConfiguration } from "../../src";
 
-import { assertParseError } from "../util/assertError";
+import { BEMProcessor } from "../util/BEMProcessor";
 import { TestAnalyzer } from "../util/TestAnalyzer";
 
-type BlockAndRoot = [Block, postcss.Container];
-
 @suite("Validators")
-export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let config = resolveConfiguration(opts);
-    let factory = new BlockFactory(config, postcss);
-    let root = postcss.parse(css, { from: filename });
-    return factory.parse(root, filename, blockName).then((block) => {
-      return <BlockAndRoot>[block, root];
-    });
-  }
+export class TemplateAnalysisTests extends BEMProcessor {
 
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
@@ -38,7 +24,7 @@ export class TemplateAnalysisTests {
       .fdsa { font-size: 20px; }
       .fdsa[state|larger] { font-size: 26px; }
     `;
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       analysis.addBlock("", block);
       let element = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.getClass("asdf")!);
@@ -56,10 +42,10 @@ export class TemplateAnalysisTests {
     let css = `
       :scope { color: blue; }
     `;
-    return assertParseError(
+    return this.assertParseError(
       TemplateAnalysisError,
       "CUSTOM ERROR (templates/my-template.hbs:1:2)",
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 1, column: 2 });
         analysis.endElement(element);

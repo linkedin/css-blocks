@@ -1,26 +1,15 @@
 import { assert as typedAssert } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import { postcss } from "opticss";
 
-import { AttrValue } from "../src/index";
+import { AttrValue } from "../src";
 
 import { BEMProcessor } from "./util/BEMProcessor";
-import cssBlocks = require("./util/postcss-helper");
+
 import { setupImporting } from "./util/setupImporting";
 
 @suite("Attribute container")
 export class AttributeContainerTest extends BEMProcessor {
-  assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
-    return promise.then(
-      () => {
-        assert(false, `Error ${errorType.name} was not raised.`);
-      },
-      (reason) => {
-        assert(reason instanceof errorType, reason.toString());
-        assert.deepEqual(reason.message, message);
-      });
-  }
 
   @test "finds boolean attributes"() {
     let { imports, importer, config, factory } = setupImporting();

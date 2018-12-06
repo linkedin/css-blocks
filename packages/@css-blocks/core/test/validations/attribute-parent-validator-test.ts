@@ -1,29 +1,16 @@
 import { Template } from "@opticss/template-api";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import { postcss } from "opticss";
 
-import { BlockFactory } from "../../src/BlockFactory";
 import { Block, BlockClass } from "../../src/BlockTree";
-import { Options, resolveConfiguration } from "../../src/configuration";
 import * as cssBlocks from "../../src/errors";
 
-import { assertParseError } from "../util/assertError";
+import { BEMProcessor } from "../util/BEMProcessor";
 import { setupImporting } from "../util/setupImporting";
 import { TestAnalyzer } from "../util/TestAnalyzer";
 
-type BlockAndRoot = [Block, postcss.Container];
-
 @suite("State Parent Validator")
-export class TemplateAnalysisTests {
-  private parseBlock(css: string, filename: string, opts?: Options, blockName = "analysis"): Promise<BlockAndRoot> {
-    let config = resolveConfiguration(opts);
-    let factory = new BlockFactory(config, postcss);
-    let root = postcss.parse(css, { from: filename });
-    return factory.parse(root, filename, blockName).then((block) => {
-      return <BlockAndRoot>[block, root];
-    });
-  }
+export class TemplateAnalysisTests extends BEMProcessor {
 
   @test "throws when states are applied without their parent root"() {
     let info = new Template("templates/my-template.hbs");
@@ -35,10 +22,10 @@ export class TemplateAnalysisTests {
       :scope { color: blue; }
       :scope[state|test] { color: red; }
     `;
-    return assertParseError(
+    return this.assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Cannot use state ":scope[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test]")!);
@@ -58,10 +45,10 @@ export class TemplateAnalysisTests {
       .foo[state|test] { color: red; }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Cannot use state ".foo[state|test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         let klass = block.getClass("foo") as BlockClass;
@@ -98,10 +85,10 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return assertParseError(
+    return this.assertParseError(
       cssBlocks.TemplateAnalysisError,
       'Cannot use state ".pretty[state|color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
-      this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+      this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
         let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
         analysis.addBlock("", block);
         analysis.addBlock("a", aBlock);
@@ -141,7 +128,7 @@ export class TemplateAnalysisTests {
       }
     `;
 
-    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+    return this.parseBlock("blocks/foo.block.css", css, config).then(([block, _]) => {
       let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
       analysis.addBlock("", block);
       analysis.addBlock("a", aBlock);
