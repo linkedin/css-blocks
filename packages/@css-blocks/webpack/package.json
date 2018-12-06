@@ -4,14 +4,15 @@
   "description": "Webpack plugin for css-blocks.",
   "main": "dist/src/index.js",
   "scripts": {
-    "prepublish": "yarn run compile && yarn run lintall",
-    "compile": "rm -rf dist && tsc -p tsconfig.json",
+    "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
+    "compile": "tsc --build",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
     "lint": "tslint -t msbuild -c tslint.cli.json --project .",
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",
     "lintfix": "tslint -t msbuild -c tslint.cli.json --project . --fix",
-    "test": "mocha dist/test --opts test/mocha.opts",
+    "test": "yarn run test:runner",
+    "test:runner": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "watch": "watch 'yarn run test' './src' './test' --wait=3"

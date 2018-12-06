@@ -2,6 +2,7 @@
 // Runtime output is very different.
 {
   "compilerOptions": {
+    "composite": true,
     // Compilation Configuration
     "target": "es5",
     "inlineSources": false,

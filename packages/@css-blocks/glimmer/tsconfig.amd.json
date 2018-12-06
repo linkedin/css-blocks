@@ -3,9 +3,9 @@
   "compilerOptions": {
     "outDir": "dist/amd/src/helpers",
     "baseUrl": "dist/amd/src/helpers",
-    "target": "es5"
+    "target": "es5",
+    "module": "amd"
   },
-  "module": "AMD",
   "include": [
     "src/helpers"
   ],

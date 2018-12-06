@@ -30,6 +30,7 @@
 
     // output options
     "preserveConstEnums": false,
+    "declarationMap": true,
     "newLine": "LF",
     "traceResolution": false,
     "module": "commonjs",

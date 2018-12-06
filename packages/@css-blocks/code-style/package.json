@@ -15,6 +15,7 @@
     "pretest": "yarn run compile",
     "prepublish": "yarn run compile",
     "test": "echo 'nothing to test'",
+    "test:runner": "echo 'nothing to test'",
     "lint": "tslint -t msbuild -p . -c tslint.cli.json",
     "lintfix": "tslint -t msbuild -p . --fix -c tslint.cli.json",
     "lintall": "tslint -t msbuild -p . -c tslint.release.json"

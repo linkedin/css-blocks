@@ -1,6 +1,7 @@
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
     "jsx": "preserve",
     "jsxFactory": "h",
 
@@ -21,5 +22,10 @@
     "dist",
     "test/fixtures",
     "node_modules"
+  ],
+  "references": [
+    {"path": "../test-utils"},
+    {"path": "../core"},
+    {"path": "../runtime"},
   ]
 }

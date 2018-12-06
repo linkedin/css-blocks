@@ -10,9 +10,10 @@
   "scripts": {
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
-    "test": "mocha dist/test --recursive --opts test/mocha.opts && yarn run lint",
-    "compile": "rm -rf dist && tsc --jsx preserve -p tsconfig.json",
-    "prepublish": "yarn run compile && yarn run lintall",
+    "test": "yarn run test:runner",
+    "test:runner": "mocha dist/test --recursive --opts test/mocha.opts && yarn run lint",
+    "compile": "tsc --build",
+    "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
     "watch": "watch 'yarn run test' './src' './test' --wait=3",
     "lint": "tslint -t msbuild -c tslint.cli.json --project .",
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",

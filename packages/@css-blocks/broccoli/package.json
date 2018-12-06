@@ -13,11 +13,12 @@
     "broccoli-plugin"
   ],
   "scripts": {
-    "test": "mocha --opts test/mocha.opts dist/test",
-    "compile": "rm -rf dist && tsc -p tsconfig.json",
+    "test": "yarn run test:runner",
+    "test:runner": "mocha --opts test/mocha.opts dist/test",
+    "compile": "tsc --build",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
-    "prepublish": "yarn run compile && yarn run lintall",
+    "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
     "lint": "tslint -t msbuild --project . -c tslint.cli.json",
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",
     "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",

@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    {"path": "@css-blocks/broccoli"},
+    {"path": "@css-blocks/core"},
+    {"path": "@css-blocks/glimmer"},
+    {"path": "@css-blocks/glimmer/tsconfig.amd.json"},
+    {"path": "@css-blocks/jsx"},
+    {"path": "@css-blocks/runtime"},
+    {"path": "@css-blocks/test-utils"},
+    {"path": "@css-blocks/webpack"},
+  ]
+}

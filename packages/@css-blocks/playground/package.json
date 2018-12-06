@@ -9,7 +9,8 @@
   "scripts": {
     "build": "ember build -prod",
     "start": "ember server",
-    "test": "ember test"
+    "test": "ember test",
+    "test:runner": "ember test"
   },
   "devDependencies": {
     "@css-blocks/ember-cli": "^0.21.0",

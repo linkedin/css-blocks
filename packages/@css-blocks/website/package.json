@@ -57,9 +57,10 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "compile": "yarn run build",
-    "test": "echo 'nothing to test'",
+    "test": "yarn run test:runner",
     "serve": "node server.js",
     "snyk-protect": "snyk protect",
+    "test:runner": "echo 'nothing to test'",
     "prepublish": "npm run snyk-protect"
   },
   "jest": {

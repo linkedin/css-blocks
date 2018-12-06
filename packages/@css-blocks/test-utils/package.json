@@ -7,7 +7,8 @@
   "scripts": {
     "compile": "tsc --version && rm -rf dist && tsc",
     "pretest": "yarn run compile",
-    "test": "mocha dist/test --opts test/mocha.opts",
+    "test": "yarn run test:runner",
+    "test:runner": "mocha dist/test --opts test/mocha.opts",
     "posttest": "yarn run lint",
     "prepublish": "yarn run compile && yarn run lintall",
     "lint": "tslint -t msbuild --project . -c tslint.cli.json",

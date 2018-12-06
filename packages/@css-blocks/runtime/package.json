@@ -10,10 +10,11 @@
   "scripts": {
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
-    "test": "mocha dist/test --opts test/mocha.opts",
+    "test": "yarn run test:runner",
     "watch": "watch 'yarn run test' './src' './test' --wait=1",
-    "compile": "rm -rf dist && tsc",
-    "prepublish": "yarn run compile && yarn run lintall",
+    "compile": "tsc --build",
+    "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
+    "test:runner": "mocha dist/test --opts test/mocha.opts",
     "lint": "tslint -t msbuild -c tslint.cli.json --project .",
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",
     "lintfix": "tslint -t msbuild -c tslint.cli.json --project . --fix"

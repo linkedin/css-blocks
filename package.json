@@ -4,7 +4,12 @@
     "commitmsg": "commitlint --edit $GIT_PARAMS",
     "ci": "lerna run test",
     "docs": "typedoc",
-    "toc": "markdown-toc -i --maxdepth 2 README.md"
+    "toc": "markdown-toc -i --maxdepth 2 README.md",
+    "compile": "tsc -b packages",
+    "compile:watch": "tsc -b packages --watch",
+    "test:all": "lerna run test:runner",
+    "compile:clean": "rm -rf packages/@css-blocks/*/dist && yarn run compile",
+    "install:clean": "rm -rf node_modules packages/@css-blocks/*/node_modules && yarn"
   },
   "devDependencies": {
     "@commitlint/cli": "^6.1.0",
