@@ -35,5 +35,5 @@ But otherwise, this works for unlocking CSS Blocks syntax in your addons and app
 To style any component in an addon with CSS Blocks simply add a corresponding `styles/components/component-name.block.css` file. The addon will auto-discover this file and build accordingly.
 
 For Glimmer template syntax, plese see [`@css-blocks/glimmer`](../glimmer/README.md).
-For CSS Blocks syntax, plese see [the main project's readome](../../../README.md).
+For CSS Blocks syntax, plese see [the main project's readme](../../../README.md).
 
