@@ -10,6 +10,7 @@ import { QueryKeySelector } from "../query";
 import { SourceLocation, sourceLocation } from "../SourceLocation";
 
 import { Conflicts, detectConflicts } from "./conflictDetection";
+import { rewriteSelector } from "./rewriteSelector";
 
 enum ConflictType {
   conflict,
@@ -248,7 +249,7 @@ export class ConflictResolver {
       // we reverse the selectors because otherwise the insertion order causes them to be backwards from the
       // source order of the target selector
       resultSelectors.reverse().forEach((s) => {
-        let newSelectors = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.config), cs);
+        let newSelectors = this.mergeKeySelectors(rewriteSelector(other.block, s.parsedSelector, this.config), cs);
         if (newSelectors === null) return;
         let newSelStr = newSelectors.join(",\n");
         // avoid duplicate selector via permutation

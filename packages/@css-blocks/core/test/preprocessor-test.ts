@@ -14,8 +14,8 @@ import { setupImporting } from "./util/setupImporting";
 @suite("Preprocessing")
 export class PreprocessorTest {
   @test "raises an error if a file that isn't css is missing a preprocessor."() {
-    let { imports, factory } = setupImporting();
-    imports.registerSource("foo.block.styl", `my-stylus-var = 10px`, Syntax.stylus);
+    let { factory, importer } = setupImporting();
+    importer.registerSource("foo.block.styl", `my-stylus-var = 10px`, Syntax.stylus);
     return factory.getBlock("foo.block.styl").then(
       (_block) => {
         throw new Error("exception not raised!");
@@ -34,8 +34,8 @@ export class PreprocessorTest {
         return Promise.resolve(file);
       },
     };
-    let { imports, factory } = setupImporting({preprocessors});
-    imports.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
+    let { factory, importer } = setupImporting({preprocessors});
+    importer.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
       assert.equal(block.name, "lolwtf");
@@ -57,8 +57,8 @@ export class PreprocessorTest {
       },
 
     };
-    let { imports, factory } = setupImporting({preprocessors});
-    imports.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
+    let { factory, importer } = setupImporting({preprocessors});
+    importer.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
       assert.equal(block.name, "lolwtf");
@@ -83,8 +83,8 @@ export class PreprocessorTest {
 
     };
     let opts = { preprocessors, disablePreprocessChaining: true };
-    let { imports, factory } = setupImporting(opts);
-    imports.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
+    let { factory, importer } = setupImporting(opts);
+    importer.registerSource("foo.block.asdf", `lolwtf`, Syntax.other);
     return factory.getBlock("foo.block.asdf").then((block) => {
       assert.equal(block.identifier, "foo.block.asdf");
       assert.equal(block.name, "lolwtf");

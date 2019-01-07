@@ -1,3 +1,5 @@
+import * as path from "path";
+
 import { ObjectDictionary, whatever } from "@opticss/util";
 
 import { Block } from "../BlockTree";
@@ -93,11 +95,12 @@ export abstract class Importer {
    * improved performance. Importer caches may be purged using `purgeIdent()` or `purgeAll()`.
    */
   identifier(fromIdentifier: FileIdentifier | null, importPath: string, config: ResolvedConfiguration): FileIdentifier {
-    let out = this._identCache.get(importPath);
+    let key = fromIdentifier ? path.resolve(fromIdentifier, importPath) : importPath;
+    let out = this._identCache.get(key);
     if (out) { return out; }
     out = this.getIdentifier(fromIdentifier, importPath, config);
-    this._identCache.set(importPath, out);
-    this._reverseIdentCache.set(out, importPath);
+    this._identCache.set(key, out);
+    this._reverseIdentCache.set(out, key);
     return out;
   }
 

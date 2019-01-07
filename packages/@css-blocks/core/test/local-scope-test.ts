@@ -8,9 +8,9 @@ import { setupImporting } from "./util/setupImporting";
 export class LocalScopeLookupTest extends BEMProcessor {
 
   @test "can look up a local object"() {
-    let { imports, importer, config, factory } = setupImporting();
+    let { importer, config, factory } = setupImporting();
     let filename = "foo/bar/a-block.css";
-    imports.registerSource(
+    importer.registerSource(
       filename,
       `:scope { color: purple; }
        :scope[state|large] { font-size: 20px; }
@@ -36,8 +36,8 @@ export class LocalScopeLookupTest extends BEMProcessor {
   }
 
   @test "can look up a referenced object"() {
-    let { imports, importer, config, factory } = setupImporting();
-    imports.registerSource(
+    let { importer, config, factory } = setupImporting();
+    importer.registerSource(
       "foo/bar/a-block.block.css",
       `:scope { color: purple; }
        :scope[state|large] { font-size: 20px; }
@@ -45,7 +45,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
        .foo[state|small] { font-size: 5px; }`,
     );
     let filename = "foo/bar/hasref.block.css";
-    imports.registerSource(
+    importer.registerSource(
       filename,
       `@block a-block from "a-block.block.css";`,
     );
@@ -73,8 +73,8 @@ export class LocalScopeLookupTest extends BEMProcessor {
   }
 
   @test "can look up a referenced object with an aliased named"() {
-    let { imports, importer, config, factory } = setupImporting();
-    imports.registerSource(
+    let { importer, config, factory } = setupImporting();
+    importer.registerSource(
       "foo/bar/a-block.block.css",
       `:scope { color: purple; }
        :scope[state|large] { font-size: 20px; }
@@ -82,7 +82,7 @@ export class LocalScopeLookupTest extends BEMProcessor {
        .foo[state|small] { font-size: 5px; }`,
     );
     let filename = "foo/bar/hasref.block.css";
-    imports.registerSource(
+    importer.registerSource(
       filename,
       `@block my-block from "a-block.block.css";`,
     );

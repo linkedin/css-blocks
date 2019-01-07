@@ -9,8 +9,8 @@ import { setupImporting } from "./util/setupImporting";
 @suite("Resolves conflicts")
 export class BlockInheritance extends BEMProcessor {
   @test "Can use global states"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "app.block.css",
       `@block-global [state|is-loading];
        :scope[state|is-loading] .profile {
@@ -25,7 +25,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("app.block.css");
+      importer.assertImported("app.block.css");
       assert.deepEqual(
         result.css.toString(),
         ".app--is-loading .widget__b { border: none; }\n",
@@ -33,8 +33,8 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
   @test "Global state usage must specify a global state, not just a block name."() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "app.block.css",
       `@block-global [state|is-loading];
        :scope[state|is-loading] .profile {
@@ -54,8 +54,8 @@ export class BlockInheritance extends BEMProcessor {
       this.process(filename, inputCSS, config));
   }
   @test "External block error has better error if mis-used but has no global states."() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "app.block.css",
       `:scope[state|is-loading] .profile {
          pointer-events: none;
@@ -74,8 +74,8 @@ export class BlockInheritance extends BEMProcessor {
       this.process(filename, inputCSS, config));
   }
   @test "Can't use non-global states"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "app.block.css",
       `:scope[state|is-loading] .profile {
          pointer-events: none;

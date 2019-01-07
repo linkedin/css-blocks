@@ -10,6 +10,7 @@ export {
 } from "./Importer";
 
 export { NodeJsImporter } from "./NodeJsImporter";
+export { MockImporter } from "./MockImporter";
 
 /**
  * Default importer. Returns `ImportedFile` from disk

@@ -20,8 +20,10 @@ export interface Configuration {
   preprocessors: Preprocessors;
 
   /**
-   * An importer is an object that is in charge of findi
-   *
+   * An importer is an object that is in charge of finding the contents of a Block file
+   * given an import ident.
+   * TODO: This shouldn't be a Partial. Typescript doesn't like importing the same class
+   *       across package boundaries...
    */
   importer: Importer;
 

@@ -9,8 +9,8 @@ import { setupImporting } from "./util/setupImporting";
 @suite("Resolves conflicts")
 export class BlockInheritance extends BEMProcessor {
   @test "results in an error betwixt properties"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "a.css",
       `.foo { border: 3px; }`,
     );
@@ -32,8 +32,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "results in an error without concrete value"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "a.css",
       `.foo { border: 3px; }`,
     );
@@ -53,8 +53,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "with a yield"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `.nav { border: 1px solid black; }`,
     );
@@ -67,7 +67,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { border: none; }\n" +
@@ -77,8 +77,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "with an override"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `.nav { border: 1px solid black; color: red; }`,
     );
@@ -92,7 +92,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { width: 100%; border: none; }\n" +
@@ -102,8 +102,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution target"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "grid.css",
       `:scope {
          display: grid;
@@ -125,7 +125,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("grid.css");
+      importer.assertImported("grid.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__article { font-size: 18px; }\n" +
@@ -138,8 +138,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution source"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "target.css",
       `.main    { color: blue; }
        :scope[state|hidden] .main { color: transparent; }`,
@@ -153,7 +153,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("target.css");
+      importer.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts--happy .conflicts__article { color: green; }\n" +
@@ -166,8 +166,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution source involving child combinators"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "target.css",
       `.main    { color: blue; }
        :scope[state|hidden] > .main { color: transparent; }`,
@@ -181,7 +181,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("target.css");
+      importer.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts--happy .conflicts__article { color: green; }\n" +
@@ -193,8 +193,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution source both involving child combinators"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "target.css",
       `.main    { color: blue; }
        :scope[state|hidden] > .main { color: transparent; }`,
@@ -208,7 +208,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("target.css");
+      importer.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts--happy > .conflicts__article { color: green; }\n" +
@@ -220,8 +220,8 @@ export class BlockInheritance extends BEMProcessor {
 
   @skip
   @test "of short-hand properties conflicting with long-hand properties"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "grid.css",
       `:scope {
          display: grid;
@@ -251,7 +251,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("grid.css");
+      importer.assertImported("grid.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { border-bottom: 2px; }\n" +
@@ -265,8 +265,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "when the property is repeated all values are copied."() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `.foo { font-size: 10px; font-size: 0.5rem; }
        .bar { font-size: 99px; font-size: 10rem; }`,
@@ -282,7 +282,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__article { font-size: 18px; font-size: 2rem; }\n" +
@@ -293,8 +293,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "doesn't concern selectors that don't conflict."() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `.foo { font-size: 10px; }
        :scope[state|dark] .foo { color: black; }
@@ -311,7 +311,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__article { font-size: 18px; }\n" +
@@ -322,8 +322,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "errors when no selectors conflict."() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `.foo { font-size: 10px; }`,
     );
@@ -344,8 +344,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "doesn't create a resolution if the values are the same but it also doesn't error."() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `.nav { border: 1px solid black; }`,
     );
@@ -358,7 +358,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { border: 1px solid black; }\n",
@@ -367,13 +367,13 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves conflicts against a sub-block"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "base.css",
       `.nav { border: 1px solid black; width: 100%; }
        .sidebar { color: blue; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "other.css",
       `@block base from "base.css";
        :scope { extends: base; }
@@ -392,8 +392,8 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
-      imports.assertImported("base.css");
+      importer.assertImported("other.css");
+      importer.assertImported("base.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { width: 80%; border: none; color: green; }\n" +
@@ -405,8 +405,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves block roots"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `:scope { border: 1px solid black; width: 100%; }`,
     );
@@ -421,7 +421,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { border: none; width: 100px; }\n" +
@@ -432,8 +432,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves root states"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `:scope[state|foo] { width: 100%; }`,
     );
@@ -446,7 +446,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { width: 100px; }\n" +
@@ -456,8 +456,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves class states"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `.asdf[state|foo] { width: 100%; }`,
     );
@@ -470,7 +470,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { width: 100px; }\n" +
@@ -480,8 +480,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "resolves pseduoelement override"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `.asdf::before { width: 100%; }`,
     );
@@ -494,7 +494,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header::before { width: 100px; }\n" +
@@ -503,8 +503,8 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
   @test "resolves pseduoelement yield"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "other.css",
       `.asdf::before { width: 100%; }`,
     );
@@ -517,7 +517,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("other.css");
+      importer.assertImported("other.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header::before { width: 100px; }\n" +
@@ -527,8 +527,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "compatible but different combinators"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "target.css",
       `.adjacent + .adjacent { border: 1px; }
        .sibling ~ .sibling   { color: blue; }
@@ -544,7 +544,7 @@ export class BlockInheritance extends BEMProcessor {
                     :scope[state|parent] > .child { float: right; float: resolve("target.descendant"); }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("target.css");
+      importer.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__adjacent + .conflicts__adjacent { color: green; }\n" +
@@ -571,8 +571,8 @@ export class BlockInheritance extends BEMProcessor {
   }
 
   @test "for states combined with the resolution source has adjacent selectors"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "target.css",
       `.main    { color: blue; }
        .main + .main { color: transparent; }`,
@@ -586,7 +586,7 @@ export class BlockInheritance extends BEMProcessor {
                     }`;
 
     return this.process(filename, inputCSS, config).then((result) => {
-      imports.assertImported("target.css");
+      importer.assertImported("target.css");
       assert.deepEqual(
         result.css.toString(),
         ".conflicts--happy > .conflicts__article { color: green; }\n" +
@@ -614,8 +614,8 @@ export class BlockInheritance extends BEMProcessor {
     );
   }
   @test "resolving to your super block is illegal"() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "super.css",
       `.main    { color: blue; }`,
     );

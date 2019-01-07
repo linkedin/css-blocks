@@ -1,23 +1,23 @@
 import { Template } from "@opticss/template-api";
+
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
-import { CssBlockError, Options, TemplateAnalysisError } from "../../src";
+import { CssBlockError, MockImporter, Options, TemplateAnalysisError } from "../../src";
 import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/BlockTree";
 
 import { BEMProcessor } from "../util/BEMProcessor";
 import { indented } from "../util/indented";
-import { MockImportRegistry } from "../util/MockImportRegistry";
 import { TestAnalyzer } from "../util/TestAnalyzer";
 
 @suite("Property Conflict Validator")
 export class TemplateAnalysisTests extends BEMProcessor {
 
   @test "properties of the same value, defined in the same order, do not throw an error"() {
-    let imports = new MockImportRegistry();
-    let options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background: yellow; }`,
     );
@@ -34,10 +34,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "properties with mismatched count of defs throw an error"() {
-    let imports = new MockImportRegistry();
-    let options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: red; color: blue; background: yellow; }`,
     );
@@ -65,10 +65,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "all properties of the same type must match, in order, for a conflict to not be thrown"() {
-    let imports = new MockImportRegistry();
-    let options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; color: yellow; }`,
     );
@@ -85,10 +85,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "if properties of the same type do not match, in order, a conflict is thrown"() {
-    let imports = new MockImportRegistry();
-    let options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: red; color: yellow; }`,
     );
@@ -117,10 +117,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "properties that have potential conflicts in alternate rulesets throw an error"() {
-    let imports = new MockImportRegistry();
-    let options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
       .klass { color: blue; background: yellow; }
       :scope[state|colorful] .klass { color: red; }
@@ -148,10 +148,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "properties that have potential conflicts in alternate rulesets pass when resolved"() {
-    let imports = new MockImportRegistry();
-    let options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
       .klass { color: blue; background: yellow; }
       :scope[state|colorful] .klass { color: red; }
@@ -170,10 +170,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "static roots throw error when a property is unresolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -203,10 +203,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "static roots pass error when a property is explicitly resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -229,10 +229,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "static classes throw error when a property is unresolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; }
        .foo  { color: blue; background-color: yellow; }
@@ -265,10 +265,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "static classes pass when a property is explicitly resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; }
        .foo  { color: blue; background-color: yellow; }
@@ -293,10 +293,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "static root and class throw error when a property is unresolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -327,10 +327,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "static root and class pass when properties are explicitly unresolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -353,8 +353,8 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "mixed static classes and states do not throw when on the same block"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
     let css = `
       .foo { color: red; }
@@ -370,8 +370,8 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "dynamic classes do not throw when on the same block"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
     let css = `
       .foo { color: red; }
@@ -386,10 +386,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "dynamic root and class throw error when a property is unresolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -420,10 +420,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "dynamic root and class do not throw error when properties are resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -446,10 +446,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "dynamic root and class throw error when a on same side of ternary"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -480,10 +480,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "dynamic root and class do not throw error when a on same side of ternary and explicitly resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -506,10 +506,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "dynamic root and class pass when on opposite sides of ternary"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background: yellow; }`,
     );
@@ -528,10 +528,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting classes and dynamic states throw"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -563,10 +563,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting classes and dynamic states do not throw when all properties are resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
@@ -589,10 +589,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting static states throw when a property is unresolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
       .klass {}
       .klass[state|foo] { color: blue; }
@@ -622,10 +622,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting static states pass when a property is explicitly resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       .klass {}
       .klass[state|foo] { color: blue; }
     `);
@@ -644,10 +644,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting dynamic states throw"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
       :scope[state|bar] { color: blue; background-color: yellow; }
     `,
@@ -680,10 +680,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting dynamic states do not throw when all properties are resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
       :scope[state|bar] { color: blue; background-color: yellow; }
     `,
@@ -707,10 +707,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting classes and dynamic state groups throw"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; color: blue; background-color: yellow; }
     `,
     );
@@ -743,10 +743,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting classes and dynamic state groups do not throw when all properties are resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; color: blue; background-color: yellow; }
     `,
     );
@@ -766,10 +766,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting dynamic state groups throw"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; color: blue; background-color: yellow; }
       :scope[state|bar=one] { color: red; background-color: red; }
       :scope[state|bar=two] { color: yellow; background-color: purple; }
@@ -808,15 +808,15 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "multiple conflicts on same property display correct error"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; background-color: yellow; }`,
     );
 
-    imports.registerSource("blocks/c.block.css", `
+    importer.registerSource("blocks/c.block.css", `
       :scope { block-name: block-c; }
       .bar { color: green; }
     `);
@@ -849,10 +849,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting roots pass when a property is explicitly resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; color: blue; }`,
     );
@@ -870,10 +870,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test @skip "multiple states on a compound selector do not throw if only one state is used"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `
         :scope { block-name: block-a; }
@@ -893,10 +893,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicting classes pass when a property is explicitly resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `.klass { color: blue; }`,
     );
@@ -914,8 +914,8 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "Block references in resolve statements that can't be resolved throw helpful error"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
     let css = `
       :scope { block-name: block-a; }
@@ -933,10 +933,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "Style paths in resolve statements that can't be resolved throw helpful error"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; }`,
     );
@@ -958,10 +958,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "resolutions don't leak out of pseudos"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; }
        .klass:before { color: yellow; }
@@ -993,10 +993,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflict validator expands shorthands"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `.klass { background-color: blue; border: 1px solid red; }`,
     );
@@ -1028,10 +1028,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflict validator expands shorthands and manages longhand re-declarations"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `.klass { border: 1px solid red; }`,
     );
@@ -1059,10 +1059,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflict validator expands shorthands and uses lowest common property"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `.klass { background-color: blue; border: 1px solid red; }`,
     );
@@ -1094,10 +1094,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflict validator expands shorthands and manages multiple longhand conflicts"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `.klass { border: 1px solid red; }`,
     );
@@ -1129,10 +1129,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflicts may be resolved by a shorthand"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: b; }
       .klass { background-color: blue; }
     `);
@@ -1151,10 +1151,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "shorthand conflicts cannot be resolved by a longhand"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: b-block; }
       .klass { border-color: blue; }
     `);
@@ -1183,10 +1183,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "conflict validation errors are thrown on custom properties"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource("blocks/b.block.css", `
+    importer.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
       .klass { custom-prop: blue; }
     `);
@@ -1215,10 +1215,10 @@ export class TemplateAnalysisTests extends BEMProcessor {
   }
 
   @test "custom properties may be resolved"() {
-    let imports = new MockImportRegistry();
-    let options: Options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options: Options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/b.block.css",
       `:scope { block-name: block-b; }
        .klass { custom-prop: blue; }`,

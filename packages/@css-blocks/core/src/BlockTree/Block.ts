@@ -2,16 +2,8 @@ import * as crypto from "crypto";
 
 import { MultiMap, ObjectDictionary } from "@opticss/util";
 import { whatever } from "@opticss/util";
-import {
-  CompoundSelector,
-  ParsedSelector,
-  parseSelector,
-  postcss,
-  postcssSelectorParser as selectorParser,
-} from "opticss";
+import { postcss } from "opticss";
 
-import { isAttributeNode, isClassNode } from "../BlockParser";
-import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
 import { ResolvedConfiguration } from "../configuration";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
@@ -351,109 +343,6 @@ export class Block extends Inheritable<Block, Block, never, BlockClass> {
       map.set(obj.asSource(), obj);
     }
     return map;
-  }
-
-  nodeAsStyle(node: selectorParser.Node): [Styles, number] | null {
-    if (selectorParser.isTag(node)) {
-      let otherBlock = this.getReferencedBlock(node.value);
-      if (otherBlock) {
-        let next = node.next();
-        if (next && isClassNode(next)) {
-          let klass = otherBlock.getClass(next.value);
-          if (klass) {
-            let another = next.next();
-            if (another && isAttributeNode(another)) {
-              let attr = klass.getAttributeValue(toAttrToken(another));
-              if (attr) {
-                return [attr, 2];
-              } else {
-                return null; // this is invalid and should never happen.
-              }
-            } else {
-              // we don't allow scoped classes not part of a state
-              return null; // this is invalid and should never happen.
-            }
-          } else {
-            return null;
-          }
-        } else if (next && isAttributeNode(next)) {
-          let attr = otherBlock.rootClass.getAttributeValue(toAttrToken(next));
-          if (attr) {
-            return [attr, 1];
-          } else {
-            return null;
-          }
-        } else {
-          return null;
-        }
-      } else {
-        return null;
-      }
-    } else if (selectorParser.isClassName(node) || isRootNode(node)) {
-      let klass = this.getClass(node.value);
-      if (klass === null) { return null; }
-      let next = node.next();
-      if (next && isAttributeNode(next)) {
-        let attr = klass.getAttributeValue(toAttrToken(next));
-        if (attr === null) {
-          return null;
-        } else {
-          return [attr, 1];
-        }
-      } else {
-        return [klass, 0];
-      }
-    } else if (isAttributeNode(node)) {
-      let attr = this.rootClass.ensureAttributeValue(toAttrToken(node));
-      if (attr) {
-        return [attr, 0];
-      } else {
-        return null;
-      }
-    }
-    return null;
-  }
-
-  rewriteSelectorNodes(nodes: selectorParser.Node[], config: ResolvedConfiguration): selectorParser.Node[] {
-    let newNodes: selectorParser.Node[] = [];
-    for (let i = 0; i < nodes.length; i++) {
-      let node = nodes[i];
-      let result = this.nodeAsStyle(node);
-      if (result === null) {
-        newNodes.push(node);
-      } else {
-        newNodes.push(selectorParser.className({ value: result[0].cssClass(config) }));
-        i += result[1];
-      }
-    }
-    return newNodes;
-  }
-
-  rewriteSelectorToString(selector: ParsedSelector, config: ResolvedConfiguration): string {
-    let firstNewSelector = new CompoundSelector();
-    let newSelector = firstNewSelector;
-    let newCurrentSelector = newSelector;
-    let currentSelector: CompoundSelector | undefined = selector.selector;
-    do {
-      newCurrentSelector.nodes = this.rewriteSelectorNodes(currentSelector.nodes, config);
-      newCurrentSelector.pseudoelement = currentSelector.pseudoelement;
-      if (currentSelector.next !== undefined) {
-        let tempSel = newCurrentSelector;
-        newCurrentSelector = new CompoundSelector();
-        tempSel.setNext(currentSelector.next.combinator, newCurrentSelector);
-        currentSelector = currentSelector.next.selector;
-      } else {
-        currentSelector = undefined;
-      }
-    } while (currentSelector !== undefined);
-    return firstNewSelector.toString();
-  }
-
-  rewriteSelector(selector: ParsedSelector, config: ResolvedConfiguration): ParsedSelector {
-    // generating a string and re-parsing ensures the internal structure is consistent
-    // otherwise the parent/next/prev relationships will be wonky with the new nodes.
-    let s = this.rewriteSelectorToString(selector, config);
-    return parseSelector(s)[0];
   }
 
   debug(config: ResolvedConfiguration): string[] {

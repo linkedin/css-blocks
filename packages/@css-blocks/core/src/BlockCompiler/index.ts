@@ -17,6 +17,8 @@ import {
 } from "../configuration";
 
 import { ConflictResolver } from "./ConflictResolver";
+import { rewriteSelector } from "./rewriteSelector";
+
 /**
  * Compiler that, given a Block will return a transformed AST
  * interface is `BlockParser.parse`.
@@ -57,7 +59,7 @@ export class BlockCompiler {
     resolver.resolveInheritance(root, block);
     root.walkRules((rule) => {
       let parsedSelectors = block.getParsedSelectors(rule);
-      rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config)).join(",\n");
+      rule.selector = parsedSelectors.map(s => rewriteSelector(block, s, this.config).toString()).join(",\n");
     });
 
     resolver.resolve(root, block);

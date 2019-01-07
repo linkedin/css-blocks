@@ -102,6 +102,9 @@ export class CssBlocksPlugin
     this.trace(`starting analysis.`);
     this.analyzer.reset();
 
+    // TODO: Selectively purge importer cache.
+    this.analyzer.cssBlocksOptions.importer.purgeAll();
+
     // Fetch our app's entry points.
     let webpackEntry = compilation.options.entry as EntryTypes;
     let entries: string[] = [];

@@ -8,9 +8,9 @@ import { setupImporting } from "./util/setupImporting";
 export class BlockFactoryTests extends BEMProcessor {
 
   @test "can import a block"() {
-    let { imports, importer, config, factory } = setupImporting();
+    let { importer, config, factory } = setupImporting();
     let baseFilename = "foo/bar/base.css";
-    imports.registerSource(
+    importer.registerSource(
       baseFilename,
       `:scope { color: purple; }
        :scope[state|large] { font-size: 20px; }
@@ -19,7 +19,7 @@ export class BlockFactoryTests extends BEMProcessor {
     );
 
     let extendsFilename = "foo/bar/extends.css";
-    imports.registerSource(
+    importer.registerSource(
       extendsFilename,
       `@block base from "./base.css";
        :scope { extends: base; color: red; }`,
@@ -32,10 +32,10 @@ export class BlockFactoryTests extends BEMProcessor {
   }
 
   @test "handles blocks with the same name"() {
-    let { imports, importer, config, factory } = setupImporting();
+    let { importer, config, factory } = setupImporting();
 
     let blockFilename1 = "foo/bar/block_1.css";
-    imports.registerSource(
+    importer.registerSource(
       blockFilename1,
       `:scope {
          block-name: block;
@@ -44,7 +44,7 @@ export class BlockFactoryTests extends BEMProcessor {
     );
 
     let blockFilename2 = "foo/bar/block_2.css";
-    imports.registerSource(
+    importer.registerSource(
     blockFilename2,
     ` @block external from "./block_1.css";
       :scope {

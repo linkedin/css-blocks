@@ -96,6 +96,8 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     }
 
     // Oh hey look, we're analyzing.
+    // TODO: Selectively clear importer cache.
+    options.importer.purgeAll();
     this.analyzer.reset();
     this.transport.reset();
     await this.analyzer.analyze(output, this.entries);

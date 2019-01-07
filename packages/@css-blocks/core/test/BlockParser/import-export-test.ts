@@ -1,16 +1,19 @@
+import * as path from "path";
+
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { InvalidBlockSyntax } from "../../src";
+import { InvalidBlockSyntax, MockImporter } from "../../src";
 
 import { BEMProcessor } from "../util/BEMProcessor";
-import { MockImportRegistry } from "../util/MockImportRegistry";
+
+const ROOT = path.join(__dirname, "../../..");
 
 @suite("Block Import and Exports")
 export class BlockImportExport extends BEMProcessor {
   @test "can import another block"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "foo/bar/imported.css",
       `:scope { color: purple; }
        :scope[state|large] { font-size: 20px; }
@@ -26,8 +29,8 @@ export class BlockImportExport extends BEMProcessor {
                     :scope { color: red; }
                     .b[state|big] {color: blue;}`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
-      imports.assertImported("foo/bar/imported.css");
+    return this.process(filename, inputCSS, { importer }).then((result) => {
+      importer.assertImported("foo/bar/imported.css");
       assert.deepEqual(
         result.css.toString(),
         `/* Source: foo/bar/imported.css\n` +
@@ -44,8 +47,8 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test "can import another block under a local alias using as syntax"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "foo/bar/imported.css",
       `:scope { block-name: phoebe; }`,
     );
@@ -54,8 +57,8 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block (default as imported) from "./imported.css";
                     @block-debug imported to comment;`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
-      imports.assertImported("foo/bar/imported.css");
+    return this.process(filename, inputCSS, { importer }).then((result) => {
+      importer.assertImported("foo/bar/imported.css");
       assert.deepEqual(
         result.css.toString(),
         `/* Source: foo/bar/imported.css\n   :scope => .phoebe */\n`,
@@ -64,8 +67,8 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test "if blocks specify name independently of filename, imported name is still used for ref locally"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "foo/bar/imported.css",
       `:scope { block-name: snow-flake; }`,
     );
@@ -74,8 +77,8 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block foobar from "./imported.css";
                     @block-debug foobar to comment;`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
-      imports.assertImported("foo/bar/imported.css");
+    return this.process(filename, inputCSS, { importer }).then((result) => {
+      importer.assertImported("foo/bar/imported.css");
       assert.deepEqual(
         result.css.toString(),
         `/* Source: foo/bar/imported.css\n` +
@@ -85,8 +88,8 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test "local block names in double quotes in @block fail parse with helpful error"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "foo/bar/imported.css",
       `:scope { block-name: block; }`,
     );
@@ -98,13 +101,13 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Illegal block name in import. ""snow-flake"" is not a legal CSS identifier. (foo/bar/test-block.css:1:1)`,
-      this.process(filename, inputCSS, {importer: imports.importer()}),
+      this.process(filename, inputCSS, { importer }),
     );
   }
 
   @test "local block names in single quotes in @block fail parse with helpful error"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "foo/bar/imported.css",
       `:scope { block-name: block; }`,
     );
@@ -116,14 +119,14 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Illegal block name in import. "'snow-flake'" is not a legal CSS identifier. (foo/bar/test-block.css:1:1)`,
-      this.process(filename, inputCSS, {importer: imports.importer()}),
+      this.process(filename, inputCSS, { importer }),
     );
 
   }
 
   @test "doesn't allow non-css-ident names in import"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "foo/bar/imported.css",
       `:scope { block-name: block; }`,
     );
@@ -134,12 +137,12 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Illegal block name in import. "123" is not a legal CSS identifier. (foo/bar/test-block.css:1:1)`,
-      this.process(filename, inputCSS, {importer: imports.importer()}));
+      this.process(filename, inputCSS, { importer }));
   }
 
   @test "requires from statement in @block"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "foo/bar/imported.css",
       `:scope { block-name: block; }`,
     );
@@ -150,16 +153,16 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       'Malformed block reference: `@block "./imported.css"` (foo/bar/test-block.css:1:1)',
-      this.process(filename, inputCSS, {importer: imports.importer()}));
+      this.process(filename, inputCSS, { importer }));
   }
 
   @test async "able to export under same alias"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "imported.css",
       `
         @block a from "./a.css";
@@ -170,7 +173,7 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@block ( a ) from "./imported.css";
                     @block-debug a to comment;`;
-    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    let result = await this.process("test.css", inputCSS, { importer });
     return assert.equal(
       result.css,
       `/* Source: a.css\n   :scope => .block-a */\n`,
@@ -178,12 +181,12 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test async "able to export under external alias of same name"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "imported.css",
       `
         @block a from "./a.css";
@@ -194,7 +197,7 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@block ( a ) from "./imported.css";
                     @block-debug a to comment;`;
-    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    let result = await this.process("test.css", inputCSS, { importer });
     return assert.equal(
       result.css,
       `/* Source: a.css\n   :scope => .block-a */\n`,
@@ -202,12 +205,12 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test async "able to export under external alias of different name"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "imported.css",
       `
         @block a from "./a.css";
@@ -218,7 +221,7 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@block ( foo ) from "./imported.css";
                     @block-debug foo to comment;`;
-    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    let result = await this.process("test.css", inputCSS, { importer });
     return assert.equal(
       result.css,
       `/* Source: a.css\n   :scope => .block-a */\n`,
@@ -226,12 +229,12 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test async "exports rely on imported alias"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "imported.css",
       `
         @block ( default as foo ) from "./a.css";
@@ -242,7 +245,7 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@block ( bar ) from "./imported.css";
                     @block-debug bar to comment;`;
-    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    let result = await this.process("test.css", inputCSS, { importer });
     return assert.equal(
       result.css,
       `/* Source: a.css\n   :scope => .block-a */\n`,
@@ -250,16 +253,16 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test async "able to export multiple blocks under external alias of different name"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "b.css",
       `:scope { block-name: block-b; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "imported.css",
       `
         @block a from "./a.css";
@@ -272,7 +275,7 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block ( foo, bar ) from "./imported.css";
                     @block-debug foo to comment;
                     @block-debug bar to comment;`;
-    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    let result = await this.process("test.css", inputCSS, { importer });
     return assert.equal(
       result.css,
       `/* Source: a.css\n   :scope => .block-a */\n` +
@@ -280,16 +283,16 @@ export class BlockImportExport extends BEMProcessor {
     );
   }
   @test async "able to export without parens"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "b.css",
       `:scope { block-name: block-b; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "imported.css",
       `
         @block a from "./a.css";
@@ -302,7 +305,7 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block ( foo, bar ) from "./imported.css";
                     @block-debug foo to comment;
                     @block-debug bar to comment;`;
-    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    let result = await this.process("test.css", inputCSS, { importer });
     return assert.equal(
       result.css,
       `/* Source: a.css\n   :scope => .block-a */\n` +
@@ -311,16 +314,16 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test async "able to export multiple blocks using mixed methods"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "b.css",
       `:scope { block-name: block-b; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "imported.css",
       `
         @block a from "./a.css";
@@ -333,7 +336,7 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block ( a, bar ) from "./imported.css";
                     @block-debug a to comment;
                     @block-debug bar to comment;`;
-    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    let result = await this.process("test.css", inputCSS, { importer });
     return assert.equal(
       result.css,
       `/* Source: a.css\n   :scope => .block-a */\n` +
@@ -342,16 +345,16 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test async "multiple export calls work"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "b.css",
       `:scope { block-name: block-b; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "imported.css",
       `
         @block a from "./a.css";
@@ -366,7 +369,7 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block ( a, bar ) from "./imported.css";
                     @block-debug a to comment;
                     @block-debug bar to comment;`;
-    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    let result = await this.process("test.css", inputCSS, { importer });
     return assert.equal(
       result.css,
       `/* Source: a.css\n   :scope => .block-a */\n` +
@@ -375,20 +378,20 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test async "export formats may be mixed and matched"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "b.css",
       `:scope { block-name: block-b; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "c.css",
       `:scope { block-name: block-c; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       "imported.css",
       `
         @block a from "./a.css";
@@ -405,7 +408,7 @@ export class BlockImportExport extends BEMProcessor {
                     @block-debug a to comment;
                     @block-debug bar to comment;
                     @block-debug baz to comment;`;
-    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    let result = await this.process("test.css", inputCSS, { importer });
     return assert.equal(
       result.css,
       `/* Source: a.css\n   :scope => .block-a */\n` +
@@ -415,8 +418,8 @@ export class BlockImportExport extends BEMProcessor {
   }
 
   @test async "default is a reserved word – bare imports"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
@@ -426,13 +429,13 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Default Block from "./a.css" must be aliased to a unique local identifier. (test.css:1:1)`,
-      this.process("test.css", inputCSS, {importer: imports.importer()}),
+      this.process("test.css", inputCSS, { importer }),
     );
   }
 
   @test async "default is a reserved word – named imports"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
@@ -442,12 +445,12 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Can not import "a" as reserved word "default" (test.css:1:1)`,
-      this.process("test.css", inputCSS, {importer: imports.importer()}),
+      this.process("test.css", inputCSS, { importer }),
     );
   }
 
   @test async "default is a reserved word – bare exports"() {
-    let imports = new MockImportRegistry();
+    let importer = new MockImporter(ROOT);
 
     let inputCSS = `
       :scope {
@@ -459,13 +462,13 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Unnecessary re-export of default Block. (test.css:5:7)`,
-      this.process("test.css", inputCSS, {importer: imports.importer()}),
+      this.process("test.css", inputCSS, { importer }),
     );
   }
 
   @test async "default is a reserved word – named exports"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
@@ -478,13 +481,13 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Can not export "a" as reserved word "default" (test.css:3:7)`,
-      this.process("test.css", inputCSS, {importer: imports.importer()}),
+      this.process("test.css", inputCSS, { importer }),
     );
   }
 
   @test async "Block export must be an identifier"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
@@ -497,13 +500,13 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Illegal block name in import. "123" is not a legal CSS identifier. (test.css:3:7)`,
-      this.process("test.css", inputCSS, {importer: imports.importer()}),
+      this.process("test.css", inputCSS, { importer }),
     );
   }
 
   @test async "throws error for unknown Blocks – export"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
@@ -513,13 +516,13 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Can not export Block "nonexistant". No Block named "nonexistant" in "test.css". (test.css:1:1)`,
-      this.process("test.css", inputCSS, {importer: imports.importer()}),
+      this.process("test.css", inputCSS, { importer }),
     );
   }
 
   @test async "throws error for unknown Blocks – import"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
+    let importer = new MockImporter(ROOT);
+    importer.registerSource(
       "a.css",
       `:scope { block-name: block-a; }`,
     );
@@ -529,7 +532,7 @@ export class BlockImportExport extends BEMProcessor {
     return this.assertError(
       InvalidBlockSyntax,
       `Can not import Block "nonexistant". No Block named "nonexistant" exported by "./a.css". (test.css:1:1)`,
-      this.process("test.css", inputCSS, {importer: imports.importer()}),
+      this.process("test.css", inputCSS, { importer }),
     );
   }
 }

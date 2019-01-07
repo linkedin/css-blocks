@@ -63,9 +63,9 @@ export class TemplateAnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
+    let { config, importer } = setupImporting();
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/a.css",
       `:scope { color: blue; }
       .pretty { color: red; }
@@ -106,9 +106,9 @@ export class TemplateAnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
+    let { config, importer } = setupImporting();
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/a.css",
       `:scope { color: blue; }
       .pretty { color: red; }

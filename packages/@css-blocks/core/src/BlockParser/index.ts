@@ -1,4 +1,4 @@
-// These constructs are **only** used in "../Block/Block.ts"!
+// These constructs are **only** used in "../BlockCompiler"!
 // Can we make these internal to the package?
 export {
   isAttributeNode,

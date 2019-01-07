@@ -183,9 +183,9 @@ export class AnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
+    let { config, importer } = setupImporting();
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }`,
     );
@@ -336,9 +336,9 @@ export class AnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
+    let { config, importer } = setupImporting();
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }`,
     );
@@ -390,8 +390,8 @@ export class AnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }
        .foo[state|bar] { font-size: 26px; }
@@ -440,8 +440,8 @@ export class AnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }
        .foo[state|bar] { font-size: 26px; }
@@ -486,8 +486,8 @@ export class AnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
-    imports.registerSource(
+    let { config, importer } = setupImporting();
+    importer.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }
        .foo[state|bar] { font-size: 26px; }
@@ -683,9 +683,9 @@ export class AnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
+    let { config, importer } = setupImporting();
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }`,
     );
@@ -778,9 +778,9 @@ export class AnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
+    let { config, importer } = setupImporting();
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/a.css",
       `:scope { color: blue; }
       .pretty { color: red; }
@@ -820,9 +820,9 @@ export class AnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let { imports, config } = setupImporting();
+    let { config, importer } = setupImporting();
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/a.css",
       `:scope { color: blue; }
       .pretty { color: red; }

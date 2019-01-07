@@ -12,9 +12,9 @@ import { setupImporting } from "./util/setupImporting";
 export class AttributeContainerTest extends BEMProcessor {
 
   @test "finds boolean attributes"() {
-    let { imports, importer, config, factory } = setupImporting();
+    let { importer, config, factory } = setupImporting();
     let filename = "foo/bar/a-block.css";
-    imports.registerSource(
+    importer.registerSource(
       filename,
       `:scope[state|large] { font-size: 20px; }
        .foo   { float: left;   }
@@ -37,9 +37,9 @@ export class AttributeContainerTest extends BEMProcessor {
   }
 
   @test "finds attribute groups"() {
-    let { imports, importer, config, factory } = setupImporting();
+    let { importer, config, factory } = setupImporting();
     let filename = "foo/bar/a-block.css";
-    imports.registerSource(
+    importer.registerSource(
       filename,
       `:scope[state|size=large] { font-size: 20px; }
        :scope[state|size=small] { font-size: 10px; }
@@ -68,9 +68,9 @@ export class AttributeContainerTest extends BEMProcessor {
     });
   }
   @test "resolves inherited attribute groups"() {
-    let { imports, importer, config, factory } = setupImporting();
+    let { importer, config, factory } = setupImporting();
     let filename = "foo/bar/sub-block.block.css";
-    imports.registerSource(
+    importer.registerSource(
       "foo/bar/base-block.block.css",
       `:scope[state|size=large] { font-size: 20px; }
        :scope[state|size=small] { font-size: 10px; }
@@ -79,7 +79,7 @@ export class AttributeContainerTest extends BEMProcessor {
        .foo[state|mode=minimized] { display: block; max-height: 100px; }
        .foo[state|mode=expanded] { display: block; }`,
     );
-    imports.registerSource(
+    importer.registerSource(
       filename,
       `@block base-block from "base-block.block.css";
        :scope { extends: base-block; }

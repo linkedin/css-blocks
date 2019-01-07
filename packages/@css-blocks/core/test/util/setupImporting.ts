@@ -1,21 +1,21 @@
+import * as path from "path";
+
 import { postcss } from "opticss";
 
 import {
   BlockFactory,
   Configuration,
-  Importer,
+  MockImporter,
   resolveConfiguration,
 } from "../../src";
-import { MockImportRegistry } from "../util/MockImportRegistry";
-export { Importer, Configuration } from "../../src";
+
+const ROOT = path.join(__dirname, "../../..");
 
 export function setupImporting(opts?: Partial<Readonly<Configuration>>) {
-  let imports = new MockImportRegistry();
-  let importer: Importer = imports.importer();
-  let config = resolveConfiguration({importer}, opts);
+  let importer: MockImporter = new MockImporter(ROOT);
+  let config = resolveConfiguration({ importer }, opts);
   let factory = new BlockFactory(config, postcss);
   return {
-    imports,
     importer,
     config,
     factory,

@@ -1,12 +1,12 @@
 import { Template } from "@opticss/template-api";
+
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import { Block, SerializedAnalysis, TemplateAnalysisError } from "../../src";
+import { Block, MockImporter, SerializedAnalysis, TemplateAnalysisError } from "../../src";
 
 import { BEMProcessor } from "../util/BEMProcessor";
-import { MockImportRegistry } from "../util/MockImportRegistry";
 import { TestAnalyzer } from "../util/TestAnalyzer";
 
 @suite("Root Class Validator")
@@ -68,10 +68,10 @@ export class AnalysisTests extends BEMProcessor {
     let info = new Template("templates/my-template.hbs");
     let analyzer = new TestAnalyzer();
     let analysis = analyzer.newAnalysis(info);
-    let imports = new MockImportRegistry();
-    let options = { importer: imports.importer() };
+    let importer = new MockImporter();
+    let options = { importer };
 
-    imports.registerSource(
+    importer.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }`,
     );
@@ -80,6 +80,7 @@ export class AnalysisTests extends BEMProcessor {
       @block a from "a.css";
       :scope { color: blue; }
     `;
+
     return this.parseBlock("blocks/foo.block.css", css, options).then(([block, _]) => {
       let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
       analysis.addBlock("", block);
