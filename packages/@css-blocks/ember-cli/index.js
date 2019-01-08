@@ -15,6 +15,10 @@ GLIMMER_MODULE_CONFIG.collections.components.types.push("stylesheet");
 // Default tree hook no-op function.
 const NOOP = (tree) => tree;
 
+// Default no-op plugin for templates with no associated CSS Block.
+// `visitors` is used by Ember < 3.0.0. `visitor` is used by Glimmer and Ember >= 3.0.0.
+const NOOP_PLUGIN = { name: 'css-blocks-noop', visitors: {}, visitor: {} };
+
 module.exports = {
   name: '@css-blocks/ember-cli',
   isDevelopingAddon() { return true; },
@@ -37,7 +41,7 @@ module.exports = {
     // If there is no analyzer or mapping for this template in the transport, don't do anything.
     if (!transport) {
       DEBUG(`No transport object found found for "${modulePrefix}". Skipping rewrite.`);
-      return { name: 'css-blocks-noop', visitors: {} };
+      return NOOP_PLUGIN;
     }
 
     // Woo, shared memory wormhole!...
@@ -46,12 +50,12 @@ module.exports = {
     // If there is no analyzer or mapping for this template in the transport, don't do anything.
     if (!analyzer || !mapping) {
       DEBUG(`No mapping object found found for template "${env.meta.moduleName || env.meta.specifier}". Skipping rewrite.`);
-      return { name: 'css-blocks-noop', visitors: {} };
+      return NOOP_PLUGIN;
     }
 
     // If no specifier data for this template, pass through silently.
     if (!env.meta.moduleName && !env.meta.specifier) {
-      return { name: 'css-blocks-noop', visitors: {} };
+      return NOOP_PLUGIN;
     }
 
     // TODO: Write a better `getAnalysis` method on `Analyzer`
@@ -66,7 +70,7 @@ module.exports = {
     // If there is no analysis for this template in any of the transports, don't do anything.
     if (!analysis) {
       DEBUG(`No analysis found for template "${env.meta.moduleName || env.meta.specifier}". Skipping rewrite.`);
-      return { name: 'css-blocks-noop', visitors: {} };
+      return NOOP_PLUGIN;
     }
 
     // If we do have a matching analysis, run the rewriter transforms!
