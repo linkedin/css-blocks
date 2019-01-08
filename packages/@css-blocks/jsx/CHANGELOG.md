@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.5"></a>
+# [0.20.0-beta.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/jsx/compare/v0.20.0-beta.4...v0.20.0-beta.5) (2019-01-08)
+
+
+### Bug Fixes
+
+* Peg Travis' Node.js 10 version to 10.4.1 for mock-fs support. ([2586ca3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/jsx/commit/2586ca3))
+
+
+### Features
+
+* Better examples. Work-in-progress. ([b01fc3d](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/jsx/commit/b01fc3d))
+* Extended [@block](https://github.com/block) syntax. Issue [#192](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/jsx/issues/192). ([9cbb4ea](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/jsx/commit/9cbb4ea))
+
+
+
+
+
 <a name="0.20.0-beta.4"></a>
 # [0.20.0-beta.4](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.3...v0.20.0-beta.4) (2018-10-19)
 

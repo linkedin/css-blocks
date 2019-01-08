@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.5"></a>
+# [0.20.0-beta.5](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.4...v0.20.0-beta.5) (2019-01-08)
+
+
+### Bug Fixes
+
+* Comment out failing node_modules test case breaking build in CI. ([7548289](https://github.com/linkedin/css-blocks/commit/7548289))
+* **broccoli:** Rebuild diffs input changes and output patch seperatly. ([5838e53](https://github.com/linkedin/css-blocks/commit/5838e53))
+* Deliver both 'visitor' and 'visitors' for Glimmer AST Plugins. ([e7d6fad](https://github.com/linkedin/css-blocks/commit/e7d6fad))
+* **core:** Dont gitignore node_modules importer test fixtures. ([fc508eb](https://github.com/linkedin/css-blocks/commit/fc508eb))
+* **core:** Remove stray console.log. Add debug logs. ([84d5419](https://github.com/linkedin/css-blocks/commit/84d5419))
+* Fixed bold "Future Feature: ..." notes ([#201](https://github.com/linkedin/css-blocks/issues/201)). ([f1259df](https://github.com/linkedin/css-blocks/commit/f1259df))
+* Improve Block ref parser. ([90bfbff](https://github.com/linkedin/css-blocks/commit/90bfbff))
+* Peg Travis' Node.js 10 version to 10.4.1 for mock-fs support. ([2586ca3](https://github.com/linkedin/css-blocks/commit/2586ca3))
+* Remove unsupported Node.js 9.0.0 version from Travis tests. ([241ab31](https://github.com/linkedin/css-blocks/commit/241ab31))
+* Use lerna@3.3.0 on Travis to fix early CI build termination. ([16203f4](https://github.com/linkedin/css-blocks/commit/16203f4))
+* Use local versions of packages in ember-cli. ([6228eaa](https://github.com/linkedin/css-blocks/commit/6228eaa))
+
+
+### Features
+
+* Better examples. Work-in-progress. ([b01fc3d](https://github.com/linkedin/css-blocks/commit/b01fc3d))
+* Extended [@block](https://github.com/block) syntax. Issue [#192](https://github.com/linkedin/css-blocks/issues/192). ([9cbb4ea](https://github.com/linkedin/css-blocks/commit/9cbb4ea))
+* **core:** Default and custom 'main' module block resolution. ([d8585ee](https://github.com/linkedin/css-blocks/commit/d8585ee))
+* **core:** Simple fully-qualified path node_modules Block imports. ([7eb9005](https://github.com/linkedin/css-blocks/commit/7eb9005))
+
+
+
+
+
 <a name="0.20.0-beta.4"></a>
 # [0.20.0-beta.4](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.3...v0.20.0-beta.4) (2018-10-19)
 

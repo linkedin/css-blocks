@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.5"></a>
+# [0.20.0-beta.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v0.20.0-beta.4...v0.20.0-beta.5) (2019-01-08)
+
+
+### Bug Fixes
+
+* **broccoli:** Rebuild diffs input changes and output patch seperatly. ([5838e53](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/commit/5838e53))
+
+
+
+
+
 <a name="0.20.0-beta.4"></a>
 # [0.20.0-beta.4](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.3...v0.20.0-beta.4) (2018-10-19)
 
