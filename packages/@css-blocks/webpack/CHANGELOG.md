@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.5"></a>
+# [0.20.0-beta.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack/compare/v0.20.0-beta.4...v0.20.0-beta.5) (2019-01-08)
+
+
+### Features
+
+* Better examples. Work-in-progress. ([b01fc3d](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack/commit/b01fc3d))
+* Extended [@block](https://github.com/block) syntax. Issue [#192](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack/issues/192). ([9cbb4ea](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack/commit/9cbb4ea))
+* **core:** Simple fully-qualified path node_modules Block imports. ([7eb9005](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack/commit/7eb9005))
+
+
+
+
+
 <a name="0.20.0-beta.4"></a>
 # [0.20.0-beta.4](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.3...v0.20.0-beta.4) (2018-10-19)
 

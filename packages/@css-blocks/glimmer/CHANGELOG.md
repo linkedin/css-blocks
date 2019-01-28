@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.5"></a>
+# [0.20.0-beta.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v0.20.0-beta.4...v0.20.0-beta.5) (2019-01-08)
+
+
+### Bug Fixes
+
+* Deliver both 'visitor' and 'visitors' for Glimmer AST Plugins. ([e7d6fad](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/e7d6fad))
+
+
+### Features
+
+* Extended [@block](https://github.com/block) syntax. Issue [#192](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/issues/192). ([9cbb4ea](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/9cbb4ea))
+
+
+
+
+
 <a name="0.20.0-beta.4"></a>
 # [0.20.0-beta.4](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.3...v0.20.0-beta.4) (2018-10-19)
 

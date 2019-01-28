@@ -57,6 +57,8 @@ export class GlimmerRewriter implements ASTPlugin {
   }
 
   get name(): string { return this.block ? "css-blocks-glimmer-rewriter" : "css-blocks-noop"; }
+
+  // `visitors` is used by Ember < 3.0.0. `visitor` is used by Glimmer and Ember >= 3.0.0.
   get visitor(): NodeVisitor { return this.visitors; }
   get visitors(): NodeVisitor {
     if (!this.block) { return {}; }

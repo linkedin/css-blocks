@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.5"></a>
+# [0.20.0-beta.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v0.20.0-beta.4...v0.20.0-beta.5) (2019-01-08)
+
+
+### Bug Fixes
+
+* **core:** Dont gitignore node_modules importer test fixtures. ([fc508eb](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/fc508eb))
+* **core:** Remove stray console.log. Add debug logs. ([84d5419](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/84d5419))
+* Improve Block ref parser. ([90bfbff](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/90bfbff))
+
+
+### Features
+
+* Extended [@block](https://github.com/block) syntax. Issue [#192](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/issues/192). ([9cbb4ea](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/9cbb4ea))
+* **core:** Default and custom 'main' module block resolution. ([d8585ee](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/d8585ee))
+* **core:** Simple fully-qualified path node_modules Block imports. ([7eb9005](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/7eb9005))
+
+
+
+
+
 <a name="0.20.0-beta.4"></a>
 # [0.20.0-beta.4](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.3...v0.20.0-beta.4) (2018-10-19)
 
