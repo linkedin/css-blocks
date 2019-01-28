@@ -22,7 +22,7 @@ Usage
 There are a number of caveats you should know:
 
  1. Eager engines are a little hacky. We'll want to make some changes to engines proper to make their behavior more consistent with regular addons.
- 2. Lazy engines are not possible at this time and will require non-trivial work in in `ember-engines` to support. We have a failing (skipped) test for them in this addon.
+ 2. Lazy engines are not possible at this time and will require non-trivial work in `ember-engines` to support. We have a failing (skipped) test for them in this addon.
  3. The `{{link-to}}` helper (and possibly other built-in form helpers) will require some special casing in `@css-blocks/glimmer` to have a natural feeling integration for basic styling and active states. I have failing (skipped) tests in the project.
  4. `node_module` resolutions for `@block`s do not work yet.
  5. The optimizer can not be enabled at this time and is hard-coded to disabled.
