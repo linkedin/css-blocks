@@ -8,6 +8,7 @@ import { FileIdentifier } from "../importing";
 
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { constructBlock } from "./features/construct-block";
+import { composeBlock } from "./features/composes-block";
 import { disallowImportant } from "./features/disallow-important";
 import { discoverName } from "./features/discover-name";
 import { exportBlocks } from "./features/export-blocks";
@@ -98,6 +99,8 @@ export class BlockParser {
     // Validate that all required Styles are implemented.
     debug(` - Implement Block`);
     await implementBlock(root, block, debugIdent);
+    // Register all block compositions.
+    await composeBlock(root, block, debugIdent);
     // Log any debug statements discovered.
     debug(` - Process Debugs`);
     await processDebugStatements(root, block, debugIdent, this.config);

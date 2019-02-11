@@ -5,6 +5,7 @@ import { isString } from "util";
 import { ATTR_PRESENT, AttrToken, ROOT_CLASS } from "../BlockSyntax";
 import { BlockPath } from "../BlockSyntax";
 import { OutputMode, ResolvedConfiguration } from "../configuration";
+import { unionInto } from "../util/unionInto";
 
 import { Attribute } from "./Attribute";
 import { AttrValue } from "./AttrValue";
@@ -22,11 +23,19 @@ function ensureToken(input: AttrToken | string): AttrToken {
   return token;
 }
 
+export interface Composition {
+  style: Styles;
+  conditions: Styles[];
+}
+
 /**
  * Represents a Class present in the Block.
  */
 export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
   private _sourceAttribute: Attr | undefined;
+  private _composedStyles: Set<Composition> = new Set();
+  private _resolvedComposedStyles: Set<Composition> | undefined;
+
   public readonly rulesets: RulesetContainer<BlockClass>;
 
   constructor(name: string, parent: Block) {
@@ -221,6 +230,42 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
 
   getGroupsNames(): Set<string> {
     return new Set<string>([...this._children.keys()]);
+  }
+
+  /**
+   * Returns the composed styles for this Block Object, and
+   * all ancestors in its inheritance tree.
+   *
+   * @returns The set of Style objects.
+   */
+  resolveComposedStyles(): Set<Composition> {
+    if (this._resolvedComposedStyles) { return this._resolvedComposedStyles; }
+    const composedStyles: Set<Composition> = new Set();
+    const resolvedStyles = this.resolveStyles();
+    for (let style of resolvedStyles) {
+      unionInto(composedStyles, style.composedStyles());
+    }
+    return this._resolvedComposedStyles = composedStyles;
+  }
+
+  /**
+   * Returns the styles that are composed by this style.
+   *
+   * @returns The set of Style objects.
+   */
+  composedStyles(): Set<Composition> {
+    return new Set(this._composedStyles);
+  }
+
+  /**
+   * Adds a new Style for this Style to compose.
+   * TODO: Currently, conditions are grouped exclusively by the 'and' operator.
+   *       We can abstract boolean operators to keep an internal representation
+   *       of logic between css and template files and only resolve them to the
+   *       requested language interface at rewrite time.
+   */
+  addComposedStyle(style: Styles, conditions: Styles[]): void {
+    this._composedStyles.add({ style, conditions });
   }
 
   /**

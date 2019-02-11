@@ -13,8 +13,9 @@ export const STATE_NAMESPACE = "state";
 export const EXTENDS = "extends";
 export const IMPLEMENTS = "implements";
 export const BLOCK_NAME = "block-name";
-export const BLOCK_PROP_NAMES = new Set([BLOCK_NAME, EXTENDS, IMPLEMENTS]);
-export const BLOCK_PROP_NAMES_RE = /^(extends|implements|block-name)$/;
+export const COMPOSES = "composes";
+export const BLOCK_PROP_NAMES = new Set([BLOCK_NAME, EXTENDS, IMPLEMENTS, COMPOSES]);
+export const BLOCK_PROP_NAMES_RE = /^(extends|implements|block-name|composes)$/;
 
 // At Rules
 export const BLOCK_DEBUG = "block-debug";
