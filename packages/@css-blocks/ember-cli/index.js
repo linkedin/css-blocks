@@ -4,6 +4,11 @@ const path = require("path");
 
 const { CSSBlocksAggregate, CSSBlocksAnalyze, Transport } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
+
+const BroccoliStew = require("broccoli-stew");
+const BroccoliConcat = require("broccoli-concat");
+const BroccoliMerge = require("broccoli-merge-trees");
+
 const debugGenerator = require("debug");
 
 const DEBUG = debugGenerator("css-blocks:ember-cli");
@@ -126,7 +131,7 @@ module.exports = {
     this._owners.add(parent);
 
     // Fetch information about the environment we're running in.
-    let env = this.getEnv(parent);
+    let env = this.env = this.getEnv(parent);
 
     // Fetch and validate user-provided options.
     let options = this._options = this.getOptions(env);
@@ -143,7 +148,8 @@ module.exports = {
     // TODO: Pull in as CJS so we don't need to build @css-blocks/glimmer to CJS *and* AMD.
     //       Blocked by: https://github.com/rwjblue/ember-cli-cjs-transform/issues/72
     if (env.isEmber && env.app === parent) {
-      this.outputFile = env.app.options.outputPaths.app.css.app;
+      this.outputFile = env.app.options.outputPaths.app.css.app.slice(1);
+
       env.app.import('node_modules/@css-blocks/glimmer/dist/amd/src/helpers/classnames.js', {
         using: [{ transformation: 'amd', as: '@css-blocks/helpers/classnames' }],
         resolveFrom: __dirname,
@@ -183,13 +189,22 @@ module.exports = {
   // At the very end of the build, append our CSS Blocks aggregate file to
   // the main `app.css` file. Un-link the destination file first to make sure
   // we don't modify the source file if broccoli sym-linked it all the way back.
-  postBuild(result) {
-    const aggregateFile = path.join(result.directory, 'assets', this.aggregateFile);
-    const outputFile = path.join(result.directory, this.outputFile);
-    const cssBlocksContent = fs.readFileSync(aggregateFile);
-    const appStyleContent = fs.readFileSync(outputFile);
-    fs.unlinkSync(outputFile);
-    fs.writeFileSync(outputFile, `${appStyleContent}\n\n${cssBlocksContent}`);
+  postprocessTree(name, tree) {
+
+    const aggregatorTree = this.env.app.trees.cssblocks;
+
+    // If this is not the root app, or the css tree, no-op.
+    if (this.env.isAddon || name !== 'css' || !aggregatorTree) { return tree; }
+
+    DEBUG(`Writing all CSS Blocks output to "${this.outputFile}".`);
+    let merged = new BroccoliMerge([tree, aggregatorTree], { overwrite: true })
+    merged = new BroccoliConcat(merged, {
+      outputFile: this.outputFile,
+      inputFiles: [ this.outputFile, this.aggregateFile ],
+      allowNone: true,
+    });
+
+    return new BroccoliMerge([tree, merged], { overwrite: true });
   },
 
   getEnv(parent){
@@ -294,7 +309,7 @@ module.exports = {
     return (tree) => {
       if (!tree) { return prev.call(parent, tree); }
       tree = new CSSBlocksAnalyze(tree, transport, broccoliOptions);
-      app.trees.styles = new CSSBlocksAggregate([app.trees.styles, tree], transport, this.aggregateFile);
+      app.trees.cssblocks = new CSSBlocksAggregate([app.trees.cssblocks || app.trees.styles, tree], transport, this.aggregateFile);
 
       // Mad hax for Engines <=0.5.20  support 💩 Right now, engines will throw away the
       // tree passed to `treeForAddon` and re-generate it. In order for template rewriting
