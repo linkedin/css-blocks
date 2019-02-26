@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0-beta.8"></a>
+# [0.20.0-beta.8](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.7...v0.20.0-beta.8) (2019-02-26)
+
+
+### Bug Fixes
+
+* **ember-cli:** Use separate file for CSS staging, merge app.css at end. ([#230](https://github.com/linkedin/css-blocks/issues/230)) ([40a0022](https://github.com/linkedin/css-blocks/commit/40a0022))
+
+
+
+
+
 <a name="0.20.0-beta.7"></a>
 # [0.20.0-beta.7](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.5...v0.20.0-beta.7) (2019-02-01)
 
