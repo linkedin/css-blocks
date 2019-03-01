@@ -1,0 +1,16 @@
+:scope {
+  block-name: external;
+  background: #ccc;
+}
+
+.link-1 {
+  background: blue;
+}
+
+.link-3 {
+  color: pink;
+}
+
+.link-3[state|active] {
+  color: purple
+}

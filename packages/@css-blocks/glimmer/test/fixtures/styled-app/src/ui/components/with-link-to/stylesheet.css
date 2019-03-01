@@ -1,0 +1,19 @@
+@block external from "./external.css";
+@block util from "./util.css";
+
+:scope {
+  extends: external;
+  color: red;
+}
+
+.link-1 {
+  color: yellow;
+}
+
+.link-2 {
+  color: green;
+}
+
+.link-2[state|active] {
+  color: blue;
+}

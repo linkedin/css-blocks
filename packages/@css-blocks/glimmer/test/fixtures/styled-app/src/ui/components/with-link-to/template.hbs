@@ -1,0 +1,16 @@
+<div>
+  {{link-to "Inline Form" "inline-form" class="link-1"}}
+  {{#link-to "block-form" class="link-1 util.util"}}Block Form{{/link-to}}
+
+  {{link-to "Inline Form" "inline-form-active" class="link-2"}}
+  {{#link-to "block-form-active" class="link-2"}}Block Form{{/link-to}}
+
+  {{link-to "Dynamic Inline Form" "inline-form-active" class=(style-if foo "link-2") activeClass="whatever"}}
+  {{#link-to "block-form-active" class=(style-if foo "link-2")}}Dynamic Block Form{{/link-to}}
+
+  {{link-to "Inline Form, Inherited State" "inline-form-active" class="link-3" activeClass="whatever"}}
+  {{#link-to "block-form-active" class="link-3"}}Block Form, Inherited State{{/link-to}}
+
+  {{link-to "Inline Form, External State" "inline-form-active" class="external.link-3" activeClass="whatever"}}
+  {{#link-to "block-form-active" class="external.link-3"}}Block Form, External State{{/link-to}}
+</div>

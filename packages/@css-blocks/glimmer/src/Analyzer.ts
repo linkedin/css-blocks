@@ -1,5 +1,6 @@
 
-import {  Analysis,
+import {
+  Analysis,
   AnalysisOptions,
   Analyzer,
   Block,
@@ -8,7 +9,7 @@ import {  Analysis,
   Options,
 } from "@css-blocks/core";
 import { ResolverConfiguration } from "@glimmer/resolver";
-import { preprocess, traverse } from "@glimmer/syntax";
+import {  AST, preprocess, traverse } from "@glimmer/syntax";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as debugGenerator from "debug";
 import { postcss } from "opticss";
@@ -19,6 +20,10 @@ import { TEMPLATE_TYPE } from "./Template";
 
 export type AttributeContainer = Block | BlockClass;
 export type GlimmerAnalysis = Analysis<TEMPLATE_TYPE>;
+
+function isLinkTo(node: AST.MustacheStatement | AST.BlockStatement): boolean {
+  return node.path.original === "link-to";
+}
 
 export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   blockFactory: BlockFactory;
@@ -123,6 +128,22 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
 
     let elementAnalyzer = new ElementAnalyzer(analysis, this.cssBlocksOptions);
     traverse(ast, {
+      MustacheStatement(node: AST.MustacheStatement) {
+        if (!isLinkTo(node)) { return; }
+        elementCount++;
+        let atRootElement = (elementCount === 1);
+        let element = elementAnalyzer.analyze(node, atRootElement);
+        if (self.debug.enabled) self.debug("{{link-to}} analyzed:", element.forOptimizer(self.cssBlocksOptions).toString());
+      },
+
+      BlockStatement(node: AST.BlockStatement) {
+        if (!isLinkTo(node)) { return; }
+        elementCount++;
+        let atRootElement = (elementCount === 1);
+        let element = elementAnalyzer.analyze(node, atRootElement);
+        if (self.debug.enabled) self.debug("{{#link-to}} analyzed:", element.forOptimizer(self.cssBlocksOptions).toString());
+      },
+
       ElementNode(node) {
         elementCount++;
         let atRootElement = (elementCount === 1);

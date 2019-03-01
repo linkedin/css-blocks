@@ -15,8 +15,9 @@ import { whatever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 import { GlimmerAnalysis } from "./Analyzer";
-import { classnamesHelper } from "./ClassnamesHelperGenerator";
+import { classnamesHelper, classnamesSubexpr } from "./ClassnamesHelperGenerator";
 import { ElementAnalyzer } from "./ElementAnalyzer";
+import { CONCAT_HELPER_NAME } from "./helpers";
 import { ResolvedFile, TEMPLATE_TYPE } from "./Template";
 
 // TODO: The state namespace should come from a config option.
@@ -64,10 +65,74 @@ export class GlimmerRewriter implements ASTPlugin {
     if (!this.block) { return {}; }
     return {
       ElementNode: this.ElementNode.bind(this),
+      MustacheStatement: this.LinkToStatement.bind(this),
+      BlockStatement: this.LinkToStatement.bind(this),
     };
   }
 
-  ElementNode(node: AST.ElementNode) {
+  LinkToStatement(node: AST.MustacheStatement | AST.BlockStatement) {
+    if (node.path.original !== "link-to") { return; }
+    this.elementCount++;
+    let atRootElement = (this.elementCount === 1);
+    // TODO: We use this to re-analyze elements in the rewriter.
+    //       We've already done this work and should be able to
+    //       re-use the data! Unfortunately, there are problems...
+    //       See: https://github.com/linkedin/css-blocks/issues/84
+    let element = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
+    let rewrite = this.styleMapping.simpleRewriteMapping(element);
+    this.debug(element.forOptimizer(this.cssBlocksOpts)[0].toString());
+
+    // Remove all the source attributes for styles.
+    node.hash.pairs = node.hash.pairs.filter(a => !STYLE_ATTR.test(a.key)).filter(a => a.key !== "activeClass");
+
+    // It's a simple text node of static classes.
+    let staticValue: AST.Literal | null = null;
+    let dynamicValue: AST.Expression | null = null;
+
+    // Set a static class AST node if needed.
+    if (rewrite.staticClasses.length) {
+      staticValue = this.syntax.builders.string(rewrite.staticClasses.join(" "));
+    }
+
+    // Set a dynamic classes AST node if needed.
+    if (rewrite.dynamicClasses.length) {
+      dynamicValue = classnamesSubexpr(rewrite, element);
+    }
+
+    // If no classes, return.
+    if (!staticValue && !dynamicValue) { return; }
+
+    // If both static and dynamic, concat them together, otherwise use one or the other.
+    const classValue = (staticValue && dynamicValue) ? this.syntax.builders.sexpr(this.syntax.builders.path(CONCAT_HELPER_NAME), [staticValue, dynamicValue]) : (staticValue || dynamicValue);
+
+    // Add the new class attribute.
+    let hash = this.syntax.builders.pair("class", classValue!);
+    node.hash.pairs.push(hash);
+
+    // For every class on the element...
+    let strings: string[] = [];
+    for (let klass of element.classesFound()) {
+      // Check to see if it has an active class,
+      let activeClass = klass.resolveAttribute("[state|active]");
+      if (activeClass && activeClass.presenceRule) {
+        // If yes, get the re-written class name and preserve it in AST form.
+        let rewritten = this.styleMapping.optimizedMap.getRewriteOf({
+          name: "class",
+          value: activeClass.presenceRule.cssClasses(this.cssBlocksOpts).join(" "),
+        });
+        if (!rewritten) { continue; }
+        strings.push(rewritten.value);
+      }
+    }
+
+    // If there are active classes, pass them to the helper.
+    if (strings.length) {
+      let activeHash = this.syntax.builders.pair("activeClass", this.syntax.builders.string(strings.join(" ")));
+      node.hash.pairs.push(activeHash);
+    }
+  }
+
+  ElementNode(node: AST.ElementNode): void {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
     // TODO: We use this to re-analyze elements in the rewriter.
@@ -81,31 +146,23 @@ export class GlimmerRewriter implements ASTPlugin {
     // Remove all the source attributes for styles.
     node.attributes = node.attributes.filter(a => !STYLE_ATTR.test(a.name));
 
-    if (rewrite.dynamicClasses.length === 0) {
-      if (rewrite.staticClasses.length === 0) {
-        // there's no styles. we're done.
-        return;
-      }
+    // It's a simple text node of static classes.
+    let staticValue: AST.TextNode | null = null;
+    let dynamicValue: AST.MustacheStatement | null = null;
 
-      // It's a simple text node of static classes.
-      let value = this.syntax.builders.text(rewrite.staticClasses.join(" "));
-      let classAttr = this.syntax.builders.attr("class", value);
-      node.attributes.unshift(classAttr);
-      return;
+    if (rewrite.staticClasses.length) {
+      staticValue = this.syntax.builders.text(rewrite.staticClasses.join(" "));
     }
 
-    let dynamicNode = classnamesHelper(rewrite, element);
-    let classValue: AST.MustacheStatement | AST.ConcatStatement;
-    let staticNode: AST.TextNode | undefined = undefined;
-    if (rewrite.staticClasses.length > 0) {
-      staticNode = this.syntax.builders.text(rewrite.staticClasses.join(" ") + " ");
-      classValue = this.syntax.builders.concat([staticNode, dynamicNode]);
-    } else {
-      classValue = dynamicNode;
+    if (rewrite.dynamicClasses.length) {
+      dynamicValue = classnamesHelper(rewrite, element);
     }
 
-    node.attributes.unshift(this.syntax.builders.attr("class", classValue));
+    if (!staticValue && !dynamicValue) { return; }
 
-    return;
+    const classValue = (staticValue && dynamicValue) ? this.syntax.builders.concat([staticValue, dynamicValue]) : (staticValue || dynamicValue);
+
+    node.attributes.unshift(this.syntax.builders.attr("class", classValue!));
+
   }
 }
