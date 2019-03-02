@@ -133,7 +133,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         elementCount++;
         let atRootElement = (elementCount === 1);
         let element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug("{{link-to}} analyzed:", element.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug("{{link-to}} analyzed:", element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       BlockStatement(node: AST.BlockStatement) {
@@ -141,14 +141,14 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         elementCount++;
         let atRootElement = (elementCount === 1);
         let element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug("{{#link-to}} analyzed:", element.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug("{{#link-to}} analyzed:", element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       ElementNode(node) {
         elementCount++;
         let atRootElement = (elementCount === 1);
         let element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug("Element analyzed:", element.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug("Element analyzed:", element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
     });
     return analysis;

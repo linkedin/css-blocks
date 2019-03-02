@@ -13,7 +13,7 @@ export class StyleMapping<T extends keyof TemplateTypes> {
   /** The blocks that were used to create this mapping. */
   blocks: Set<Block>;
   private configuration: ResolvedConfiguration;
-  public optimizedMap: OptimizedMapping;
+  private optimizedMap: OptimizedMapping;
 
   constructor(
     optimizedMap: OptimizedMapping,

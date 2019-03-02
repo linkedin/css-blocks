@@ -17,3 +17,19 @@
 .link-2[state|active] {
   color: blue;
 }
+
+.link-4 {
+  color: gray;
+}
+
+.link-4[state|active] {
+  color: green;
+}
+
+.link-4[state|loading] {
+  color: yellow;
+}
+
+.link-4[state|disabled] {
+  color: red;
+}

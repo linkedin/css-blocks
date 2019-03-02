@@ -10,6 +10,7 @@ import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
 import * as debugGenerator from "debug";
 
 import { GlimmerAnalysis } from "./Analyzer";
+import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
 import { ResolvedFile } from "./Template";
 import { cssBlockError } from "./utils";
 
@@ -17,6 +18,7 @@ export type TernaryExpression = AST.Expression | null;
 export type StringExpression = AST.MustacheStatement | AST.ConcatStatement | null;
 export type BooleanExpression = AST.Expression | AST.MustacheStatement;
 export type TemplateElement  = ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>;
+export type AttrRewriteMap = { [key: string]: TemplateElement };
 
 // TODO: The state namespace should come from a config option.
 const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
@@ -40,19 +42,12 @@ export class ElementAnalyzer {
     this.cssBlocksOpts = cssBlocksOpts;
   }
 
-  analyze(node: AnalyzableNodes, atRootElement: boolean): TemplateElement {
-    let label = isElementNode(node) ? node.tag : node.path.original as string;
-    let element = this.analysis.startElement<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);
-    element = this._analyze(node, atRootElement, element, false);
-    this.analysis.endElement(element);
-    return element;
+  analyze(node: AnalyzableNodes, atRootElement: boolean): AttrRewriteMap {
+    return this._analyze(node, atRootElement, false);
   }
 
-  analyzeForRewrite(node: AnalyzableNodes, atRootElement: boolean): TemplateElement {
-    let label = isElementNode(node) ? node.tag : node.path.original as string;
-    let element = new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);
-    this._analyze(node, atRootElement, element, true);
-    return element;
+  analyzeForRewrite(node: AnalyzableNodes, atRootElement: boolean): AttrRewriteMap {
+    return this._analyze(node, atRootElement, true);
   }
 
   private debugAnalysis(node: AnalyzableNodes, atRootElement: boolean, element: TemplateElement) {
@@ -77,12 +72,29 @@ export class ElementAnalyzer {
     return this.cssBlocksOpts.importer.debugIdentifier(this.block.identifier, this.cssBlocksOpts);
   }
 
+  private newElement(node: AnalyzableNodes, storeConditionals: boolean): TemplateElement {
+    let label = isElementNode(node) ? node.tag : node.path.original as string;
+    if (storeConditionals) {
+      return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);
+    }
+    else {
+      return this.analysis.startElement<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);
+    }
+  }
+
+  private finishElement(element: TemplateElement, storeConditionals: boolean): void {
+    element.seal();
+    if (!storeConditionals) { this.analysis.endElement(element); }
+  }
+
   private _analyze(
     node: AnalyzableNodes,
     atRootElement: boolean,
-    element: TemplateElement,
     storeConditionals: boolean,
-  ): TemplateElement {
+  ): AttrRewriteMap {
+
+    const attrRewrites = {};
+    let element = attrRewrites["class"] = this.newElement(node, storeConditionals);
 
     // The root element gets the block"s root class automatically.
     if (atRootElement) {
@@ -108,36 +120,34 @@ export class ElementAnalyzer {
       }
     }
 
+    this.finishElement(element, storeConditionals);
+
     // Only `{{link-to}}` for now. Uses `[state|active]` if present.
     // Track potential use of the active state on a new element so
     // we can re-use existing dynamic class rewriting logic on this
     // element. The `activeClass` attribute will be automagically passed
     // to the helper by the rewriter later.
     // TODO: Suuuper messy. All of rewriting needs to be refactored from the ground up...
-    else if (node.path.original === "link-to") {
-      element.seal();
+    if (!isElementNode(node) && isEmberBuiltIn(node.path.original)) {
       this.debugAnalysis(node, atRootElement, element);
-      let klasses = element.classesFound();
-      if (!storeConditionals) {
-        this.analysis.endElement(element);
-        element = this.analysis.startElement(element.sourceLocation);
-      }
-      else {
-        element = new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node));
-      }
-      for (let style of klasses) {
-        let attrs = style.resolveAttributeValues("[state|active]");
-        if (!attrs.size) { continue; }
-        element.addStaticClass(style);
-        for (let entry of attrs) {
-          element.addStaticAttr(style, entry[1]);
+      let klasses = [...element.classesFound()];
+      const attrToState = getEmberBuiltInStates(node.path.original);
+      for (let attrName of Object.keys(attrToState)) {
+        const stateName = attrToState[attrName];
+        element = this.newElement(node, storeConditionals);
+        for (let style of klasses) {
+          let attr = style.resolveAttribute(stateName);
+          if (!attr || !attr.presenceRule) { continue; }
+          attrRewrites[attrName] = element; // Only save this element on output if a state is found.
+          if (!storeConditionals) { element.addStaticClass(style); } // In rewrite mode we only want the states.
+          element.addStaticAttr(style, attr.presenceRule);
         }
+        this.finishElement(element, storeConditionals);
       }
     }
 
-    element.seal();
     this.debugAnalysis(node, atRootElement, element);
-    return element;
+    return attrRewrites;
   }
 
   private lookupClasses(classes: string, node: AST.Node): Array<BlockClass> {
