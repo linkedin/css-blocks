@@ -72,9 +72,9 @@ export class ElementAnalyzer {
     return this.cssBlocksOpts.importer.debugIdentifier(this.block.identifier, this.cssBlocksOpts);
   }
 
-  private newElement(node: AnalyzableNodes, storeConditionals: boolean): TemplateElement {
+  private newElement(node: AnalyzableNodes, forRewrite: boolean): TemplateElement {
     let label = isElementNode(node) ? node.tag : node.path.original as string;
-    if (storeConditionals) {
+    if (forRewrite) {
       return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);
     }
     else {
@@ -82,19 +82,19 @@ export class ElementAnalyzer {
     }
   }
 
-  private finishElement(element: TemplateElement, storeConditionals: boolean): void {
+  private finishElement(element: TemplateElement, forRewrite: boolean): void {
     element.seal();
-    if (!storeConditionals) { this.analysis.endElement(element); }
+    if (!forRewrite) { this.analysis.endElement(element); }
   }
 
   private _analyze(
     node: AnalyzableNodes,
     atRootElement: boolean,
-    storeConditionals: boolean,
+    forRewrite: boolean,
   ): AttrRewriteMap {
 
     const attrRewrites = {};
-    let element = attrRewrites["class"] = this.newElement(node, storeConditionals);
+    let element = attrRewrites["class"] = this.newElement(node, forRewrite);
 
     // The root element gets the block"s root class automatically.
     if (atRootElement) {
@@ -104,45 +104,42 @@ export class ElementAnalyzer {
     // Find the class attribute and process.
     if (node.type === "ElementNode") {
       let classAttr: AST.AttrNode | undefined = node.attributes.find(n => n.name === "class");
-      if (classAttr) { this.processClass(classAttr, element, storeConditionals); }
+      if (classAttr) { this.processClass(classAttr, element, forRewrite); }
     }
 
     else {
       let classAttr: AST.HashPair | undefined = node.hash.pairs.find(n => n.key === "class");
-      if (classAttr) { this.processClass(classAttr, element, storeConditionals); }
+      if (classAttr) { this.processClass(classAttr, element, forRewrite); }
     }
 
     // Only ElementNodes may use states right now.
     if (isElementNode(node)) {
       for (let attribute of node.attributes) {
         if (!STATE.test(attribute.name)) { continue; }
-        this.processState(RegExp.$1, RegExp.$2, attribute, element, storeConditionals);
+        this.processState(RegExp.$1, RegExp.$2, attribute, element, forRewrite);
       }
     }
 
-    this.finishElement(element, storeConditionals);
+    this.finishElement(element, forRewrite);
 
-    // Only `{{link-to}}` for now. Uses `[state|active]` if present.
-    // Track potential use of the active state on a new element so
-    // we can re-use existing dynamic class rewriting logic on this
-    // element. The `activeClass` attribute will be automagically passed
-    // to the helper by the rewriter later.
-    // TODO: Suuuper messy. All of rewriting needs to be refactored from the ground up...
+    // If this is an Ember Build-In...
     if (!isElementNode(node) && isEmberBuiltIn(node.path.original)) {
       this.debugAnalysis(node, atRootElement, element);
+
+      // Discover component state style attributes we need to add to the component invocation.
       let klasses = [...element.classesFound()];
       const attrToState = getEmberBuiltInStates(node.path.original);
       for (let attrName of Object.keys(attrToState)) {
         const stateName = attrToState[attrName];
-        element = this.newElement(node, storeConditionals);
+        element = this.newElement(node, forRewrite);
         for (let style of klasses) {
           let attr = style.resolveAttribute(stateName);
           if (!attr || !attr.presenceRule) { continue; }
           attrRewrites[attrName] = element; // Only save this element on output if a state is found.
-          if (!storeConditionals) { element.addStaticClass(style); } // In rewrite mode we only want the states.
+          if (!forRewrite) { element.addStaticClass(style); } // In rewrite mode we only want the states.
           element.addStaticAttr(style, attr.presenceRule);
         }
-        this.finishElement(element, storeConditionals);
+        this.finishElement(element, forRewrite);
       }
     }
 
@@ -178,7 +175,7 @@ export class ElementAnalyzer {
   /**
    * Adds blocks and block classes to the current node from the class attribute.
    */
-  private processClass(node: AST.AttrNode | AST.HashPair, element: TemplateElement, storeConditionals: boolean): void {
+  private processClass(node: AST.AttrNode | AST.HashPair, element: TemplateElement, forRewrite: boolean): void {
     let statements: AST.Node[];
 
     let value = node.value;
@@ -232,7 +229,7 @@ export class ElementAnalyzer {
               throw cssBlockError(`{{${helperType}}} expects a string literal as its third argument.`, elseBranch, this.template);
             }
           }
-          if (storeConditionals) {
+          if (forRewrite) {
             // element.addDynamicClasses(dynamicClasses(condition, whenTrue, whenFalse));
             element.addDynamicClasses({ condition, whenTrue, whenFalse });
           } else {
@@ -256,7 +253,7 @@ export class ElementAnalyzer {
     stateName: string,
     node: AST.AttrNode,
     element: TemplateElement,
-    storeConditionals: boolean,
+    forRewrite: boolean,
   ): void {
     let stateBlock = blockName ? this.block.getReferencedBlock(blockName) : this.block;
     if (stateBlock === null) {
@@ -293,7 +290,7 @@ export class ElementAnalyzer {
       } else if (stateGroup) {
         if (stateGroup.hasResolvedValues()) {
           if (dynamicSubState) {
-            if (storeConditionals) {
+            if (forRewrite) {
               element.addDynamicGroup(container, stateGroup, dynamicSubState);
             } else {
               element.addDynamicGroup(container, stateGroup, null);

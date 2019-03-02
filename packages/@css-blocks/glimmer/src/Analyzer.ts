@@ -15,15 +15,12 @@ import * as debugGenerator from "debug";
 import { postcss } from "opticss";
 
 import { ElementAnalyzer } from "./ElementAnalyzer";
+import { isEmberBuiltIn } from "./EmberBuiltins";
 import { Resolver } from "./Resolver";
 import { TEMPLATE_TYPE } from "./Template";
 
 export type AttributeContainer = Block | BlockClass;
 export type GlimmerAnalysis = Analysis<TEMPLATE_TYPE>;
-
-function isLinkTo(node: AST.MustacheStatement | AST.BlockStatement): boolean {
-  return node.path.original === "link-to";
-}
 
 export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   blockFactory: BlockFactory;
@@ -129,19 +126,21 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     let elementAnalyzer = new ElementAnalyzer(analysis, this.cssBlocksOptions);
     traverse(ast, {
       MustacheStatement(node: AST.MustacheStatement) {
-        if (!isLinkTo(node)) { return; }
+        const name = node.path.original;
+        if (!isEmberBuiltIn(name)) { return; }
         elementCount++;
-        let atRootElement = (elementCount === 1);
-        let element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug("{{link-to}} analyzed:", element.class.forOptimizer(self.cssBlocksOptions).toString());
+        const atRootElement = (elementCount === 1);
+        const element = elementAnalyzer.analyze(node, atRootElement);
+        if (self.debug.enabled) self.debug(`{{${name}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       BlockStatement(node: AST.BlockStatement) {
-        if (!isLinkTo(node)) { return; }
+        const name = node.path.original;
+        if (!isEmberBuiltIn(name)) { return; }
         elementCount++;
-        let atRootElement = (elementCount === 1);
-        let element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug("{{#link-to}} analyzed:", element.class.forOptimizer(self.cssBlocksOptions).toString());
+        const atRootElement = (elementCount === 1);
+        const element = elementAnalyzer.analyze(node, atRootElement);
+        if (self.debug.enabled) self.debug(`{{#${name}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       ElementNode(node) {
