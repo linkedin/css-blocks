@@ -22,13 +22,11 @@ Usage
 There are a number of caveats you should know:
 
  1. Eager engines are a little hacky. We'll want to make some changes to engines proper to make their behavior more consistent with regular addons.
- 2. Lazy engines are not possible at this time and will require non-trivial work in `ember-engines` to support. We have a failing (skipped) test for them in this addon.
- 3. The `{{link-to}}` helper (and possibly other built-in form helpers) will require some special casing in `@css-blocks/glimmer` to have a natural feeling integration for basic styling and active states. I have failing (skipped) tests in the project.
- 4. `node_module` resolutions for `@block`s do not work yet.
- 5. The optimizer can not be enabled at this time and is hard-coded to disabled.
- 6. The broccoli plugins do not have any kind of caching strategy right now! That, and build impact stats / tests, are coming soon.
+ 2. Lazy engines are not supported at this time and will require non-trivial work in `ember-engines` to support. We have a failing (skipped) test for them in this addon.
+ 3. The optimizer can not be enabled at this time and is hard-coded to disabled.
+ 4. The broccoli plugins do not have any kind of caching strategy right now! That, and build impact stats / tests, are coming soon.
 
-All six of the above items will need to be finished in order to call this addon "done". We will be tracking these all in separate tickets.
+The four above items will need to be finished in order to call this addon "done". We will be tracking these all in separate tickets.
 
 But otherwise, this works for unlocking CSS Blocks syntax in your addons and apps 🎉
 
@@ -37,3 +35,19 @@ To style any component in an addon with CSS Blocks simply add a corresponding `s
 For Glimmer template syntax, plese see [`@css-blocks/glimmer`](../glimmer/README.md).
 For CSS Blocks syntax, plese see [the main project's readme](../../../README.md).
 
+## Styling `{{link-to}}`
+
+In the Ember + CSS Blocks build, the built-in `{{link-to}}` component receives special treatment. The `{{link-to}}` component manages its own internal style application for `[state|loading]`, `[state|active]` and `[state|disabled]`. To style a `{{link-to}} in these special states, simply apply a class with those special state names and Ember will apply the correct classes at runtime as required. For example:
+
+```css
+/* stylesheet.block.css */
+.link                 { color: gray; }
+.link[state|loading]  { color: yellow; }
+.link[state|active]   { color: green; }
+.link[state|disabled] { color: red; }
+```
+
+```hbs
+{{!-- template.hbs --}}
+{{link-to "route-name" class="link"}}
+```
