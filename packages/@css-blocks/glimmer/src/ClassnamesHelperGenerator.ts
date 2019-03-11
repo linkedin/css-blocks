@@ -75,6 +75,13 @@ export function classnamesHelper(rewrite: IndexedClassRewrite<Style>, element: T
   );
 }
 
+export function classnamesSubexpr(rewrite: IndexedClassRewrite<Style>, element: TemplateElement): AST.SubExpression {
+  return builders.sexpr(
+    builders.path(CLASSNAMES_HELPER_NAME),
+    constructArgs(rewrite, element),
+  );
+}
+
 // tslint:disable-next-line:prefer-whatever-to-any
 function constructArgs(rewrite: IndexedClassRewrite<any>, element: TemplateElement): AST.Expression[] {
   let expr = new Array<AST.Expression>();
@@ -134,7 +141,7 @@ function constructSourceArgs(rewrite: IndexedClassRewrite<any>, element: Templat
 function constructTernary(classes: DynamicClasses<TernaryAST>, rewrite: IndexedClassRewrite<Style>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   // The boolean expression
-  expr.push(classes.condition);
+  expr.push(classes.condition!);
   // The true styles
   if (isTrueCondition(classes)) {
     let trueClasses = resolveInheritance(classes.whenTrue, rewrite);
@@ -249,10 +256,10 @@ function moustacheToExpression(expr: AST.MustacheStatement): AST.Expression {
 }
 
 function moustacheToStringExpression(stringExpression: StringAST): AST.Expression {
-  if (stringExpression.type === "ConcatStatement") {
+  if (stringExpression!.type === "ConcatStatement") {
     return builders.sexpr(
       builders.path(CONCAT_HELPER_NAME),
-      stringExpression.parts.reduce(
+      (stringExpression as AST.ConcatStatement).parts.reduce(
         (arr, val) => {
           if (val.type === "TextNode") {
             arr.push(builders.string(val.chars));
@@ -263,7 +270,7 @@ function moustacheToStringExpression(stringExpression: StringAST): AST.Expressio
         },
         new Array<AST.Expression>()));
   } else {
-    return moustacheToExpression(stringExpression);
+    return moustacheToExpression(stringExpression as AST.MustacheStatement);
   }
 }
 

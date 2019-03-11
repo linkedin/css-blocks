@@ -95,7 +95,7 @@ describe("Template Rewriting", function() {
         <div class={{-css-blocks-classnames 1 1 0 isWorld 0 1 0 "b" 0}}>World</div>
       </div>
     `));
-});
+  });
 
   it("rewrites styles from dynamic attributes from readme", async function() {
     let projectDir = fixture("readme-app");
@@ -118,6 +118,53 @@ describe("Template Rewriting", function() {
       .g { width: 20%; }
       .h { width: calc(20% - 20px); margin-right: 20px; }
       .i { width: 80%; }
+    `),
+    );
+  });
+
+  it("rewrites link-to helpers", async function() {
+    let projectDir = fixture("styled-app");
+    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let templatePath = fixture("styled-app/src/ui/components/with-link-to/template.hbs");
+    let result = await pipeline(projectDir, analyzer, "with-link-to", templatePath);
+
+    // TODO why is `f` class both static and dynamic?
+    assert.deepEqual(minify(print(result.ast)), minify(`
+    <div class="i a">
+      {{link-to "Inline Form" "inline-form" class="j b"}}
+      {{#link-to "block-form" class="j b m"}}Block Form{{/link-to}}
+
+      {{link-to "Inline Form" "inline-form-active" class="c" activeClass="d"}}
+      {{#link-to "block-form-active" class="c" activeClass="d"}}Block Form{{/link-to}}
+
+      {{link-to "Dynamic Inline Form" "inline-form-active" class=(-css-blocks-classnames 1 1 0 foo 1 0 0 "c" 0) activeClass="d"}}
+      {{#link-to "block-form-active" class=(-css-blocks-classnames 1 1 0 foo 1 0 0 "c" 0) activeClass="d"}}Dynamic Block Form{{/link-to}}
+
+      {{link-to "Inline Form, Inherited State" "inline-form-active" class="k" activeClass="l"}}
+      {{#link-to "block-form-active" class="k" activeClass="l"}}Block Form, Inherited State{{/link-to}}
+
+      {{link-to "Inline Form, External State" "inline-form-active" class="k" activeClass="l"}}
+      {{#link-to "block-form-active" class="k" activeClass="l"}}Block Form, External State{{/link-to}}
+
+      {{link-to "Inline Form, All States" "inline-form-active" class="e" activeClass="f" loadingClass="g" disabledClass="h"}}
+      {{#link-to "block-form-active" class="e" activeClass="f" loadingClass="g" disabledClass="h"}}Block Form, All States{{/link-to}}
+    </div>
+    `));
+
+    assert.deepEqual(minify(result.css.toString()), minify(`
+      .a { color: red; }
+      .b { color: yellow; }
+      .c { color: green; }
+      .d { color: blue; }
+      .e { color: gray; }
+      .f { color: green; }
+      .g { color: yellow; }
+      .h { color: red; }
+      .i { background: #ccc; }
+      .j { background: blue; }
+      .k { color: pink; }
+      .l { color: purple }
+      .m { border: 1px solid blue; }
     `),
     );
   });

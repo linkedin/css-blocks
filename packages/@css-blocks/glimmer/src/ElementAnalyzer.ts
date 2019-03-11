@@ -1,26 +1,26 @@
-import { AttrValue, Block, BlockClass, DynamicClasses, ElementAnalysis, ResolvedConfiguration as CSSBlocksConfiguration } from "@css-blocks/core";
+import {
+  AttrValue,
+  Block,
+  BlockClass,
+  ElementAnalysis,
+  ResolvedConfiguration as CSSBlocksConfiguration,
+} from "@css-blocks/core";
 import { AST, print } from "@glimmer/syntax";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
-import { assertNever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 import { GlimmerAnalysis } from "./Analyzer";
+import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
 import { ResolvedFile } from "./Template";
 import { cssBlockError } from "./utils";
 
-export type TernaryExpression = AST.Expression;
-export type StringExpression = AST.MustacheStatement | AST.ConcatStatement;
+// Expressions may be null when ElementAnalyzer is used in the second pass analysis
+// to re-acquire analysis data for rewrites without storing AST nodes.
+export type TernaryExpression = AST.Expression | null;
+export type StringExpression = AST.MustacheStatement | AST.ConcatStatement | null;
 export type BooleanExpression = AST.Expression | AST.MustacheStatement;
 export type TemplateElement  = ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>;
-export type AnalysisElement  = ElementAnalysis<null, null, null>;
-
-type RewriteAnalysis = {
-  element: TemplateElement;
-  storeConditionals: true;
-} | {
-  element: AnalysisElement;
-  storeConditionals: false;
-};
+export type AttrRewriteMap = { [key: string]: TemplateElement };
 
 // TODO: The state namespace should come from a config option.
 const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
@@ -28,6 +28,8 @@ const STYLE_IF = "style-if";
 const STYLE_UNLESS = "style-unless";
 
 const debug = debugGenerator("css-blocks:glimmer:element-analyzer");
+
+type AnalyzableNodes = AST.ElementNode | AST.BlockStatement | AST.MustacheStatement;
 
 export class ElementAnalyzer {
   analysis: GlimmerAnalysis;
@@ -41,27 +43,30 @@ export class ElementAnalyzer {
     this.template = analysis.template;
     this.cssBlocksOpts = cssBlocksOpts;
   }
-  analyze(node: AST.ElementNode, atRootElement: boolean): AnalysisElement {
-    let element = this.analysis.startElement<null, null, null>(nodeLocation(node), node.tag);
-    this._analyze(node, atRootElement, {element, storeConditionals: false});
-    this.analysis.endElement(element);
-    return element;
-  }
-  analyzeForRewrite(node: AST.ElementNode, atRootElement: boolean): TemplateElement {
-    let element = new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), node.tag);
-    this._analyze(node, atRootElement, {element, storeConditionals: true});
-    return element;
+
+  analyze(node: AnalyzableNodes, atRootElement: boolean): AttrRewriteMap {
+    return this._analyze(node, atRootElement, false);
   }
 
-  // tslint:disable-next-line:prefer-whatever-to-any
-  private debugAnalysis(node: AST.ElementNode, atRootElement: boolean, element: ElementAnalysis<any, any, any>) {
+  analyzeForRewrite(node: AnalyzableNodes, atRootElement: boolean): AttrRewriteMap {
+    return this._analyze(node, atRootElement, true);
+  }
+
+  private debugAnalysis(node: AnalyzableNodes, atRootElement: boolean, element: TemplateElement) {
     if (!debug.enabled) return;
-    let startTag = `<${node.tag} ${node.attributes.map(a => print(a)).join(" ")}>`;
-    debug(`Element ${startTag} is ${atRootElement ? "the root " : "a sub"}element at ${this.debugTemplateLocation(node)}`);
+    let startTag = "";
+    if (isElementNode(node)) {
+      startTag = `<${node.tag} ${node.attributes.map(a => print(a)).join(" ")}>`;
+      debug(`Element ${startTag} is ${atRootElement ? "the root " : "a sub"}element at ${this.debugTemplateLocation(node)}`);
+    }
+    else {
+      startTag = `{{${node.path.original} ${node.params.map(a => print(a)).join(" ")} ${node.hash.pairs.map((h) => print(h)).join(" ")}}}`;
+      debug(`Component ${startTag} is ${atRootElement ? "the root " : "a sub"}element at ${this.debugTemplateLocation(node)}`);
+    }
     debug(`↳ Analyzed as: ${element.forOptimizer(this.cssBlocksOpts)[0].toString()}`);
   }
 
-  private debugTemplateLocation(node: AST.ElementNode) {
+  private debugTemplateLocation(node: AnalyzableNodes) {
     let templatePath = this.cssBlocksOpts.importer.debugIdentifier(this.template.identifier, this.cssBlocksOpts);
     return `${templatePath}:${node.loc.start.line}:${node.loc.start.column}`;
   }
@@ -69,31 +74,79 @@ export class ElementAnalyzer {
     return this.cssBlocksOpts.importer.debugIdentifier(this.block.identifier, this.cssBlocksOpts);
   }
 
-  private _analyze(
-    node: AST.ElementNode,
-    atRootElement: boolean,
-    analysis: RewriteAnalysis,
-  ) {
+  private newElement(node: AnalyzableNodes, forRewrite: boolean): TemplateElement {
+    let label = isElementNode(node) ? node.tag : node.path.original as string;
+    if (forRewrite) {
+      return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);
+    }
+    else {
+      return this.analysis.startElement<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);
+    }
+  }
 
-    // The root element gets the block's root class automatically.
+  private finishElement(element: TemplateElement, forRewrite: boolean): void {
+    element.seal();
+    if (!forRewrite) { this.analysis.endElement(element); }
+  }
+
+  private _analyze(
+    node: AnalyzableNodes,
+    atRootElement: boolean,
+    forRewrite: boolean,
+  ): AttrRewriteMap {
+
+    const attrRewrites = {};
+    let element = attrRewrites["class"] = this.newElement(node, forRewrite);
+
+    // The root element gets the block"s root class automatically.
     if (atRootElement) {
-      analysis.element.addStaticClass(this.block.rootClass);
+      element.addStaticClass(this.block.rootClass);
     }
 
     // Find the class attribute and process.
-    let classAttr: AST.AttrNode | undefined =
-      node.attributes.find(n => n.name === "class");
-
-    if (classAttr) this.processClass(classAttr, analysis);
-
-    for (let attribute of node.attributes) {
-      if (!STATE.test(attribute.name)) continue;
-      this.processState(RegExp.$1, RegExp.$2, attribute, analysis);
+    if (node.type === "ElementNode") {
+      let classAttr: AST.AttrNode | undefined = node.attributes.find(n => n.name === "class");
+      if (classAttr) { this.processClass(classAttr, element, forRewrite); }
     }
 
-    analysis.element.seal();
-    this.debugAnalysis(node, atRootElement, analysis.element);
-    return;
+    else {
+      let classAttr: AST.HashPair | undefined = node.hash.pairs.find(n => n.key === "class");
+      if (classAttr) { this.processClass(classAttr, element, forRewrite); }
+    }
+
+    // Only ElementNodes may use states right now.
+    if (isElementNode(node)) {
+      for (let attribute of node.attributes) {
+        if (!STATE.test(attribute.name)) { continue; }
+        this.processState(RegExp.$1, RegExp.$2, attribute, element, forRewrite);
+      }
+    }
+
+    this.finishElement(element, forRewrite);
+
+    // If this is an Ember Build-In...
+    if (!isElementNode(node) && isEmberBuiltIn(node.path.original)) {
+      this.debugAnalysis(node, atRootElement, element);
+
+      // Discover component state style attributes we need to add to the component invocation.
+      let klasses = [...element.classesFound()];
+      const attrToState = getEmberBuiltInStates(node.path.original);
+      for (let attrName of Object.keys(attrToState)) {
+        const stateName = attrToState[attrName];
+        element = this.newElement(node, forRewrite);
+        for (let style of klasses) {
+          let attr = style.resolveAttribute(stateName);
+          if (!attr || !attr.presenceRule) { continue; }
+          attrRewrites[attrName] = element; // Only save this element on output if a state is found.
+          if (!forRewrite) { element.addStaticClass(style); } // In rewrite mode we only want the states.
+          element.addStaticAttr(style, attr.presenceRule);
+        }
+        this.finishElement(element, forRewrite);
+      }
+    }
+
+    this.debugAnalysis(node, atRootElement, element);
+    return attrRewrites;
   }
 
   private lookupClasses(classes: string, node: AST.Node): Array<BlockClass> {
@@ -124,27 +177,32 @@ export class ElementAnalyzer {
   /**
    * Adds blocks and block classes to the current node from the class attribute.
    */
-  private processClass(node: AST.AttrNode, analysis: RewriteAnalysis): void {
-    let statements: Array<AST.TextNode | AST.MustacheStatement>;
+  private processClass(node: AST.AttrNode | AST.HashPair, element: TemplateElement, forRewrite: boolean): void {
+    let statements: AST.Node[];
 
-    if (isConcatStatement(node.value)) {
-      statements = node.value.parts;
+    let value = node.value;
+
+    if (isConcatStatement(value)) {
+      statements = value.parts;
     } else {
       statements = [node.value];
     }
+
     for (let statement of statements) {
-      if (isTextNode(statement)) {
-        for (let container of this.lookupClasses(statement.chars, statement)) {
-          analysis.element.addStaticClass(container);
+      if (isTextNode(statement) || isStringLiteral(statement)) {
+        let value = isTextNode(statement) ? statement.chars : statement.value;
+        for (let container of this.lookupClasses(value, statement)) {
+          element.addStaticClass(container);
         }
-      } else if (isMustacheStatement(statement)) {
+      }
+      else if (isMustacheStatement(statement) || isSubExpression(statement)) {
         let helperType = isStyleIfHelper(statement);
 
         // If this is a `{{style-if}}` or `{{style-unless}}` helper:
         if (helperType) {
           let condition = statement.params[0];
-          let whenTrue: Array<BlockClass> | undefined = undefined;
-          let whenFalse: Array<BlockClass> | undefined = undefined;
+          let whenTrue: Array<BlockClass> = [];
+          let whenFalse: Array<BlockClass> = [];
           let mainBranch = statement.params[1];
           let elseBranch = statement.params[2];
 
@@ -173,17 +231,17 @@ export class ElementAnalyzer {
               throw cssBlockError(`{{${helperType}}} expects a string literal as its third argument.`, elseBranch, this.template);
             }
           }
-          if (analysis.storeConditionals) {
-            analysis.element.addDynamicClasses(dynamicClasses(condition, whenTrue, whenFalse));
+          if (forRewrite) {
+            element.addDynamicClasses({ condition, whenTrue, whenFalse });
           } else {
-            analysis.element.addDynamicClasses(dynamicClasses(null, whenTrue, whenFalse));
+            element.addDynamicClasses({ condition: null, whenTrue, whenFalse });
           }
 
         } else {
           throw cssBlockError(`Only {{style-if}} or {{style-unless}} helpers are allowed in class attributes.`, node, this.template);
         }
       } else {
-        assertNever(statement);
+        throw cssBlockError(`Only string literals, {{style-if}} or {{style-unless}} are allowed in class attributes.`, node, this.template);
       }
     }
   }
@@ -195,13 +253,14 @@ export class ElementAnalyzer {
     blockName: string | undefined,
     stateName: string,
     node: AST.AttrNode,
-    analysis: RewriteAnalysis,
+    element: TemplateElement,
+    forRewrite: boolean,
   ): void {
     let stateBlock = blockName ? this.block.getReferencedBlock(blockName) : this.block;
     if (stateBlock === null) {
       throw cssBlockError(`No block named ${blockName} referenced from ${this.debugBlockPath()}`, node, this.template);
     }
-    let containers = analysis.element.classesForBlock(stateBlock);
+    let containers = element.classesForBlock(stateBlock);
     if (containers.length === 0) {
       throw cssBlockError(`No block or class from ${blockName || "the default block"} is assigned to the element so a state from that block cannot be used.`, node, this.template);
     }
@@ -225,17 +284,17 @@ export class ElementAnalyzer {
       if (stateGroup && staticSubStateName) {
         state = stateGroup.resolveValue(staticSubStateName);
         if (state) {
-          analysis.element.addStaticAttr(container, state);
+          element.addStaticAttr(container, state);
         } else {
           throw cssBlockError(`No sub-state found named ${staticSubStateName} in state ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
         }
       } else if (stateGroup) {
         if (stateGroup.hasResolvedValues()) {
           if (dynamicSubState) {
-            if (analysis.storeConditionals) {
-              analysis.element.addDynamicGroup(container, stateGroup, dynamicSubState);
+            if (forRewrite) {
+              element.addDynamicGroup(container, stateGroup, dynamicSubState);
             } else {
-              analysis.element.addDynamicGroup(container, stateGroup, null);
+              element.addDynamicGroup(container, stateGroup, null);
             }
           } else {
             // TODO: when we add default sub states this is where that will go.
@@ -247,13 +306,9 @@ export class ElementAnalyzer {
               throw cssBlockError(`The dynamic statement for a boolean state must be set to a mustache statement with no additional text surrounding it.`, dynamicSubState, this.template);
             }
             let state = stateGroup.presenceRule;
-            if (analysis.storeConditionals) {
-              analysis.element.addDynamicAttr(container, state!, dynamicSubState);
-            } else {
-              analysis.element.addDynamicAttr(container,  state!, null);
-            }
+            element.addDynamicAttr(container, state!, dynamicSubState);
           } else {
-            analysis.element.addStaticAttr(container, stateGroup.presenceRule!);
+            element.addStaticAttr(container, stateGroup.presenceRule!);
           }
         }
       } else {
@@ -270,17 +325,23 @@ export class ElementAnalyzer {
 function isStringLiteral(value: AST.Node | undefined): value is AST.StringLiteral {
   return value !== undefined && value.type === "StringLiteral";
 }
-function isConcatStatement(value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement): value is AST.ConcatStatement {
-  return value.type === "ConcatStatement";
+function isConcatStatement(value: AST.Node | undefined): value is AST.ConcatStatement {
+  return !!value && value.type === "ConcatStatement";
 }
-function isTextNode(value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement): value is AST.TextNode {
-  return value.type === "TextNode";
+function isTextNode(value: AST.Node | undefined): value is AST.TextNode {
+  return !!value && value.type === "TextNode";
 }
-function isMustacheStatement(value: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement): value is AST.MustacheStatement {
-  return value.type === "MustacheStatement";
+function isMustacheStatement(value: AST.Node | undefined): value is AST.MustacheStatement {
+  return !!value && value.type === "MustacheStatement";
+}
+function isSubExpression(value: AST.Node | undefined): value is AST.SubExpression {
+  return !!value && value.type === "SubExpression";
+}
+function isElementNode(value: AST.Node | undefined): value is AST.ElementNode {
+  return !!value && value.type === "ElementNode";
 }
 
-function isStyleIfHelper(node: AST.MustacheStatement): "style-if" | "style-unless" | undefined {
+function isStyleIfHelper(node: AST.MustacheStatement | AST.SubExpression): "style-if" | "style-unless" | undefined {
   if (node.path.type !== "PathExpression") { return undefined; }
   let parts: string[] = (node.path).parts;
   if (parts.length > 0) {
@@ -307,20 +368,4 @@ function nodeLocation(node: AST.Node): SourceLocation {
     column: node.loc.start.column,
   };
   return { start, end };
-}
-
-type BranchStyles = Array<BlockClass> | undefined;
-
-function dynamicClasses(condition: null, whenTrue: BranchStyles, whenFalse: BranchStyles): DynamicClasses<null>;
-function dynamicClasses(condition: AST.Expression, whenTrue: BranchStyles, whenFalse: BranchStyles): DynamicClasses<TernaryExpression>;
-function dynamicClasses(condition: AST.Expression | null, whenTrue: BranchStyles, whenFalse: BranchStyles): DynamicClasses<TernaryExpression | null> {
-  if (whenTrue && whenFalse) {
-    return { condition, whenTrue, whenFalse };
-  } else if (whenTrue) {
-    return { condition, whenTrue };
-  } else if (whenFalse) {
-    return { condition, whenFalse };
-  } else {
-    throw new Error("sometimes type checkers are dumb");
-  }
 }

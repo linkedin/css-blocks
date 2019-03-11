@@ -1,5 +1,6 @@
 
-import {  Analysis,
+import {
+  Analysis,
   AnalysisOptions,
   Analyzer,
   Block,
@@ -8,12 +9,13 @@ import {  Analysis,
   Options,
 } from "@css-blocks/core";
 import { ResolverConfiguration } from "@glimmer/resolver";
-import { preprocess, traverse } from "@glimmer/syntax";
+import {  AST, preprocess, traverse } from "@glimmer/syntax";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as debugGenerator from "debug";
 import { postcss } from "opticss";
 
 import { ElementAnalyzer } from "./ElementAnalyzer";
+import { isEmberBuiltIn } from "./EmberBuiltins";
 import { Resolver } from "./Resolver";
 import { TEMPLATE_TYPE } from "./Template";
 
@@ -123,11 +125,29 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
 
     let elementAnalyzer = new ElementAnalyzer(analysis, this.cssBlocksOptions);
     traverse(ast, {
+      MustacheStatement(node: AST.MustacheStatement) {
+        const name = node.path.original;
+        if (!isEmberBuiltIn(name)) { return; }
+        elementCount++;
+        const atRootElement = (elementCount === 1);
+        const element = elementAnalyzer.analyze(node, atRootElement);
+        if (self.debug.enabled) self.debug(`{{${name}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+      },
+
+      BlockStatement(node: AST.BlockStatement) {
+        const name = node.path.original;
+        if (!isEmberBuiltIn(name)) { return; }
+        elementCount++;
+        const atRootElement = (elementCount === 1);
+        const element = elementAnalyzer.analyze(node, atRootElement);
+        if (self.debug.enabled) self.debug(`{{#${name}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+      },
+
       ElementNode(node) {
         elementCount++;
         let atRootElement = (elementCount === 1);
         let element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug("Element analyzed:", element.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug("Element analyzed:", element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
     });
     return analysis;

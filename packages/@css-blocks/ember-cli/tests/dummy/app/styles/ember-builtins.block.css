@@ -1,9 +1,11 @@
 .link-to-helper {
   --link-to-helper: applied;
+  color: red;
 }
 
 .link-to-helper[state|active] {
   --link-to-helper-active: applied;
+  color: green;
 }
 
 .input-helper {
