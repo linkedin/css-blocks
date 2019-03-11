@@ -117,6 +117,9 @@ export class CssBlocksPlugin
       entries = flatten<string>(objectValues(webpackEntry));
     }
 
+    // Zomg webpack-dev-server, injecting fake paths into the entry points.
+    entries = entries.filter(entry => !/\/webpack-dev-server\/|^webpack\/hot\/dev-server$/.test(entry));
+
     let pending: PendingResult = this.analyzer.analyze("", entries)
       // If analysis fails, drain our BlockFactory, add error to compilation error list and propagate.
       .catch((err: Error) => {

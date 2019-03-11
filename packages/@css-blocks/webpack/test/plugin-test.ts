@@ -42,6 +42,10 @@ export class PluginTest {
     });
   }
 
+  @skip @test "works with HotModuleReplacementPlugin"() {
+    return execTest("hello", undefined, "dev-server");
+  }
+
   @skip @test "integrates with templates"() {
     return templateConfig().then(config => {
       return runWebpackAsPromise(config).then(() => {

@@ -7,12 +7,12 @@ import { LoaderOptions } from "../../src/LoaderOptions";
 import { WebpackAny } from "../../src/Plugin";
 import { EntryTypes, config as basicConfig } from "../configs/basicConfig";
 
-import { BLOCK_FIXTURES_DIRECTORY, DIST_DIRECTORY } from "./testPaths";
+import { BLOCK_FIXTURES_DIRECTORY, DIST_DIRECTORY, WEBPACK_DEV_SERVER_PATH } from "./testPaths";
 const CR = /\r/g;
 
 // This test harness was adapted from the sass-loader test suite.
 
-export function execTest(testId: string, options?: LoaderOptions, entryFormat: "string" | "object" | "array" = "string") {
+export function execTest(testId: string, options?: LoaderOptions, entryFormat: "string" | "object" | "array" | "dev-server" = "string") {
     const entryPath: string = path.join(BLOCK_FIXTURES_DIRECTORY, testId + ".block.css");
     let entry: EntryTypes = entryPath;
 
@@ -21,6 +21,9 @@ export function execTest(testId: string, options?: LoaderOptions, entryFormat: "
     }
     else if (entryFormat === "object") {
         entry = { main: entryPath };
+    }
+    else if (entryFormat === "dev-server") {
+        entry = [WEBPACK_DEV_SERVER_PATH, "webpack/hot/dev-server", entryPath];
     }
 
     return runWebpackAsPromise(basicConfig(entry, options))
