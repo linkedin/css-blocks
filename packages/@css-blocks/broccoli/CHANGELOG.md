@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0"></a>
+# [0.20.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v0.20.0-beta.8...v0.20.0) (2019-03-11)
+
+**Note:** Version bump only for package @css-blocks/broccoli
+
+
+
+
+
 <a name="0.20.0-beta.7"></a>
 # [0.20.0-beta.7](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v0.20.0-beta.5...v0.20.0-beta.7) (2019-02-01)
 

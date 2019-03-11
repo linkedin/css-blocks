@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.20.0"></a>
+# [0.20.0](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.8...v0.20.0) (2019-03-11)
+
+
+### Features
+
+* **glimmer:** {{link-to}} integration ([#233](https://github.com/linkedin/css-blocks/issues/233)). ([dc19029](https://github.com/linkedin/css-blocks/commit/dc19029))
+
+
+
+
+
 <a name="0.20.0-beta.8"></a>
 # [0.20.0-beta.8](https://github.com/linkedin/css-blocks/compare/v0.20.0-beta.7...v0.20.0-beta.8) (2019-02-26)
 
