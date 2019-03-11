@@ -21,8 +21,6 @@ module("Acceptance | Template Discovery", function(hooks) {
     assert.equal(currentURL(), "/ember-builtins");
     assert.ok(varIsPresent("#link-to-helper", "link-to-helper"), "Link-to helpers receive classes");
     assert.ok(varIsPresent("#link-to-helper-active", "link-to-helper-active"), "Link-to helpers receive active states");
-    // assert.ok(varIsPresent("#input-helper", "input-helper"), "Input helpers receive classes");
-    // assert.ok(varIsPresent("#textarea-helper", "textarea-helper"), "Textarea helpers receive classes");
   });
 
   test("App Route Block Integration", async function(assert) {

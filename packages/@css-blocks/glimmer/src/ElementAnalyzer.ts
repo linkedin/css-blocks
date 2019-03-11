@@ -14,6 +14,8 @@ import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
 import { ResolvedFile } from "./Template";
 import { cssBlockError } from "./utils";
 
+// Expressions may be null when ElementAnalyzer is used in the second pass analysis
+// to re-acquire analysis data for rewrites without storing AST nodes.
 export type TernaryExpression = AST.Expression | null;
 export type StringExpression = AST.MustacheStatement | AST.ConcatStatement | null;
 export type BooleanExpression = AST.Expression | AST.MustacheStatement;
@@ -230,7 +232,6 @@ export class ElementAnalyzer {
             }
           }
           if (forRewrite) {
-            // element.addDynamicClasses(dynamicClasses(condition, whenTrue, whenFalse));
             element.addDynamicClasses({ condition, whenTrue, whenFalse });
           } else {
             element.addDynamicClasses({ condition: null, whenTrue, whenFalse });
