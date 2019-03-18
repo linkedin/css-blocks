@@ -41,5 +41,6 @@ export async function composeBlock(root: postcss.Root, block: Block, sourceFile:
         }
       }
     }
+    decl.remove();
   });
 }

@@ -63,7 +63,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a (blocks/foo.block.css:3:37)
@@ -114,7 +114,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a (blocks/foo.block.css:3:37)
@@ -148,7 +148,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a.klass (blocks/foo.block.css:4:16)
@@ -199,7 +199,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+      `The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
   color:
     block-a (blocks/foo.block.css:3:37)
@@ -261,7 +261,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a.bar (blocks/foo.block.css:4:15)
@@ -323,7 +323,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a.foo (blocks/foo.block.css:4:15)
@@ -416,7 +416,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a.foo (blocks/foo.block.css:4:15)
@@ -476,7 +476,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a.foo (blocks/foo.block.css:4:15)
@@ -558,7 +558,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-b (blocks/b.block.css:1:31)
@@ -622,7 +622,7 @@ export class TemplateAnalysisTests {
       TemplateAnalysisError,
 
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a.klass[state|foo] (blocks/foo.block.css:5:27)
@@ -675,7 +675,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a[state|foo] (blocks/foo.block.css:4:27)
@@ -738,7 +738,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-b (blocks/b.block.css:2:37)
@@ -799,7 +799,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-b (blocks/b.block.css:2:37)
@@ -844,7 +844,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-b (blocks/b.block.css:1:31)
@@ -991,7 +991,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
             block-a.klass (blocks/foo.block.css:5:16)
@@ -1022,7 +1022,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           background-color:
             analysis.klass (blocks/foo.block.css:3:16)
@@ -1057,7 +1057,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
 
-      `The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+      `The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
   border-color:
     analysis.klass (blocks/foo.block.css:3:16)
@@ -1088,7 +1088,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           background-color:
             analysis.klass (blocks/foo.block.css:3:16)
@@ -1123,7 +1123,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           border-left-color:
             analysis.klass (blocks/foo.block.css:3:43)
@@ -1181,7 +1181,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           border-color:
             a-block.klass (blocks/foo.block.css:4:16)
@@ -1213,7 +1213,7 @@ export class TemplateAnalysisTests {
     return assertParseError(
       TemplateAnalysisError,
       indented`
-        The following property conflicts must be resolved for these co-located Styles: (templates/my-template.hbs:10:32)
+        The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           custom-prop:
             block-a.klass (blocks/foo.block.css:4:16)
@@ -1248,6 +1248,35 @@ export class TemplateAnalysisTests {
       }).then(() => {
         assert.deepEqual(1, 1);
       });
+  }
+
+  // TODO: This check should not happen during Template Validation and can be moved to
+  //       the Block Construction phase when logic is more abstracted.
+  @test "property conflicts that arise from in-stylesheet composition must be resolved"() {
+    let imports = new MockImportRegistry();
+    let options = { importer: imports.importer() };
+    imports.registerSource(
+      "blocks/biz.block.css",
+      `.baz { color: red; }`,
+    );
+
+    let css = `@block biz from "./biz.block.css";
+               .bar { composes: biz.baz; color: green; }`;
+
+    return assertParseError(
+    TemplateAnalysisError,
+    indented`
+      The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
+
+        color:
+          analysis.bar (blocks/foo.block.css:2:42)
+          biz.baz (blocks/biz.block.css:1:8)`,
+
+      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+        constructElement(block, ".bar").end();
+        assert.deepEqual(1, 1);
+      }),
+    );
   }
 
 }

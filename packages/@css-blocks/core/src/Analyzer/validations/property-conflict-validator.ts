@@ -2,7 +2,7 @@ import { MultiMap, TwoKeyMultiMap, objectValues } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import { postcss } from "opticss";
 
-import { Ruleset, Style } from "../../BlockTree";
+import { isBlockClass, Ruleset, Style } from "../../BlockTree";
 import {
   isAttrGroup,
   isBooleanAttr,
@@ -139,6 +139,15 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
   elAnalysis.static.forEach((obj) => {
     evaluate(obj, allConditions, conflicts);
     add(allConditions, obj);
+
+    // TODO: When we unify Element Analysis and Stylesheet Composition concepts, this check
+    //       can happen in another location during the BlockParse instead of Template Validation.
+    if (isBlockClass(obj)) {
+      for (let composed of obj.composedStyles()) {
+        evaluate(composed.style, allConditions, conflicts);
+        add(allConditions, composed.style);
+      }
+    }
   });
 
   // For each dynamic class, test it against the static classes,
@@ -194,7 +203,7 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
 
   // For every set of conflicting properties, throw the error.
   if (conflicts.size) {
-    let msg = "The following property conflicts must be resolved for these co-located Styles:";
+    let msg = "The following property conflicts must be resolved for these composed Styles:";
     let details = "\n";
     for (let [prop, matches] of conflicts.entries()) {
       if (!prop || !matches.length) { return; }

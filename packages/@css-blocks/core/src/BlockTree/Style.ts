@@ -91,7 +91,8 @@ export abstract class Style<
    * @returns A debug string.
    */
   asDebug(config: ResolvedConfiguration) {
-    return `${this.asSource()} => ${this.cssClasses(config).map(n => `.${n}`).join(" ")}`;
+    const classes = this.cssClasses(config).map(n => `.${n}`).join(" ");
+    return `${this.asSource()}${classes ? ` (${classes})` : ""}`;
   }
 
 }

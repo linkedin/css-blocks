@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { suite, test, only } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 
 import { assertError } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
@@ -7,10 +7,10 @@ import { MockImportRegistry } from "../util/MockImportRegistry";
 
 const { InvalidBlockSyntax } = require("../util/postcss-helper");
 
-@suite("Block Names")
+@suite("In-Stylesheet Block Composition")
 export class BlockNames extends BEMProcessor {
 
-  @test @only "composes may only be used in a rule set"() {
+  @test "composes may only be used in a rule set"() {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/biz.css",
@@ -27,7 +27,7 @@ export class BlockNames extends BEMProcessor {
       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 
-  @test @only "throws on missing block reference"() {
+  @test "throws on missing block reference"() {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/biz.css",
@@ -44,7 +44,7 @@ export class BlockNames extends BEMProcessor {
       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 
-  @test @only "throws when referencing the local block"() {
+  @test "throws when referencing the local block"() {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/biz.css",
@@ -62,7 +62,7 @@ export class BlockNames extends BEMProcessor {
       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 
-  @test @only "composition not allowed on rule sets with a scope selector"() {
+  @test "composition not allowed on rule sets with a scope selector"() {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/biz.css",
@@ -79,7 +79,7 @@ export class BlockNames extends BEMProcessor {
       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 
-  @test @only "property conflicts that arise from composition must be resolved"() {
+  @test "composes attribute is stripped in output"() {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/biz.css",
@@ -88,29 +88,36 @@ export class BlockNames extends BEMProcessor {
 
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block biz from "./biz.css";
-                    .bar { composes: biz.baz; color: green; }`;
-
-    return assertError(
-      InvalidBlockSyntax,
-      `Style composition is not allowed in rule sets with a scope selector. (foo/bar/test-block.css:2:50)`,
-      this.process(filename, inputCSS, {importer: imports.importer()}));
-  }
-
-  @only @test "block names in double quotes fail parse with helpful error"() {
-    let imports = new MockImportRegistry();
-    imports.registerSource(
-      "foo/bar/biz.css",
-      `.baz { color: red; }`,
-    );
-
-    let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block biz from "./biz.css";
-                    .bar[state|color][state|inverse] { composes: biz.baz; }`;
+                    :scope { composes: biz.baz; background: blue; }`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        `.foo__asdf { color: blue; }\n`,
+        `.test-block { background: blue; }\n`,
+      );
+    });
+  }
+
+  @test "composes attribute understands possible state combinations"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource(
+      "foo/bar/biz.css",
+      `:scope { color: green; } .baz { color: red; } .buz { color: yellow; }`,
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `@block biz from "./biz.css";
+                    :scope { composes: biz; }
+                    .bar { composes: biz.baz; }
+                    .bar[state|active] { composes: biz.buz; }
+                    .bar[state|color][state|inverse] { composes: biz.baz; background: blue; }
+                    @block-debug self to comment;
+                    `;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        `.test-block__bar--color.test-block--inverse { background: blue; }\n`,
       );
     });
   }

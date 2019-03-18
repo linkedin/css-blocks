@@ -93,7 +93,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
   });
 
   // To allow self-referential block lookup when constructing ruleset concerns,
-  // we need to run `addRuleset()` only *after* all Style have been created.
+  // we need to run `addRuleset()` only *after* all Styles have been created.
   for (let [style, rule] of styleRuleTuples) {
     style.rulesets.addRuleset(file, rule);
   }

@@ -75,14 +75,22 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   }
 
   /**
+   * Return the bare AttrValue name.
+   * @returns String representing AttrValue.
+   */
+  name(): string {
+    let namespace = this.attribute.namespace ? `${this.attribute.namespace}|` : "";
+    let value = (this.value && this.value !== ATTR_PRESENT) ? `=${this.value}` : "";
+    return `[${namespace}${this.parent.name}${value}]`;
+  }
+
+  /**
    * Export as original AttrValue name.
    * @param scope  Optional scope to resolve this name relative to. If `true`, return the Block name instead of `:scope`. If a Block object, return with the local name instead of `:scope`.
    * @returns String representing original AttrValue path.
    */
   asSource(scope?: Block | boolean): string {
-    let namespace = this.attribute.namespace ? `${this.attribute.namespace}|` : "";
-    let value = (this.value && this.value !== ATTR_PRESENT) ? `=${this.value}` : "";
-    return this.attribute.blockClass.asSource(scope) + `[${namespace}${this.parent.name}${value}]`;
+    return this.attribute.blockClass.asSource(scope) + this.name();
   }
 
   public cssClass(config: ResolvedConfiguration): string {

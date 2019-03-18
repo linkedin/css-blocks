@@ -25,7 +25,7 @@ function ensureToken(input: AttrToken | string): AttrToken {
 
 export interface Composition {
   style: Styles;
-  conditions: Styles[];
+  conditions: AttrValue[];
 }
 
 /**
@@ -264,7 +264,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    *       of logic between css and template files and only resolve them to the
    *       requested language interface at rewrite time.
    */
-  addComposedStyle(style: Styles, conditions: Styles[]): void {
+  addComposedStyle(style: Styles, conditions: AttrValue[]): void {
     this._composedStyles.add({ style, conditions });
   }
 
@@ -275,9 +275,23 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    */
   debug(config: ResolvedConfiguration): string[] {
     let result: string[] = [];
-    for (let style of this.all()) {
-      result.push(style.asDebug(config));
+    const composed = [...this._composedStyles];
+    if (composed.length) { result.push(" composes:"); }
+    for (let comp of composed) {
+      let isLast = composed.indexOf(comp) === composed.length - 1;
+      let conditional = comp.conditions.length ? ` when ${comp.conditions.map((c) => c.name()).join(" && ")}` : "";
+      result.push(` ${isLast ? "└──"  : "├──"} ${comp.style.asSource(true)}${conditional}`);
     }
+
+    const children = [...this.resolveAttributeValues().values()].map(s => s.asDebug(config));
+    children.sort();
+    if (children.length) { result.push(" states:"); }
+    for (let n of children) {
+      let o = this.getAttributeValue(n)!;
+      let isLast = children.indexOf(n) === children.length - 1;
+      result.push(` ${isLast ? "└──"  : "├──"} ${o.asDebug(config)}`);
+    }
+
     return result;
   }
 
