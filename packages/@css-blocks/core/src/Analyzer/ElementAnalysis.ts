@@ -217,6 +217,9 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   /** All the classes on this element, by block. */
   private allClasses: MultiMap<Block, BlockClass>;
 
+  /** All the AttrValues on this element. */
+  private allAttributes: Set<AttrValue>;
+
   /**
    * All the static styles including styles implied by the explicitly specified
    * styles.
@@ -240,6 +243,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     this.dynamicClassExpressions = new Map();
     this.allClasses = new MultiMap<Block, BlockClass>(false);
     this.allStaticStyles = new Set();
+    this.allAttributes = new Set();
     this.addedStyles = new Array();
     this._sealed = false;
   }
@@ -259,13 +263,23 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   }
 
   /**
-   * Checks if the given class or block is set on this element
-   * of if it is implied by one of the other styles on this element.
+   * Checks if the given class or block is set on this element,
+   * or if it is implied by one of the other styles on this element.
    *
    * This can be called before or after being sealed.
    */
   hasClass(klass: BlockClass): boolean {
     return this.allClasses.get(klass.block).indexOf(klass) >= 0;
+  }
+
+  /**
+   * Checks if the given AttrValue is possibly set on this element,
+   * or if it is implied by one of the other styles on this element.
+   *
+   * This can be called before or after being sealed.
+   */
+  hasAttribute(attr: AttrValue): boolean {
+    return this.allAttributes.has(attr);
   }
 
   /**
@@ -393,6 +407,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   addStaticAttr(container: BlockClass, value: AttrValue) {
     this.assertSealed(false);
     this.addedStyles.push({container, value});
+    this.mapForAttribute(value);
   }
   private _addStaticAttr(style: DependentAttr) {
     let {container, value} = style;
@@ -422,6 +437,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   addDynamicAttr(container: BlockClass, value: AttrValue, condition: BooleanExpression) {
     this.assertSealed(false);
     this.addedStyles.push({value, container, condition});
+    this.mapForAttribute(value);
   }
   private _addDynamicAttr(style: ConditionalDependentAttr<BooleanExpression>) {
     let {container, value, condition} = style;
@@ -452,6 +468,9 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       stringExpression,
       disallowFalsy,
     });
+    for (let attr of group.values()) {
+      this.mapForAttribute(attr);
+    }
   }
   private _addDynamicGroup(style: ConditionalDependentAttrGroup<StringExpression>) {
     let { container, group, stringExpression, disallowFalsy } = style;
@@ -475,6 +494,12 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   private _addStaticClass(style: StaticClass) {
     let {klass} = style;
     this.static.add(klass);
+  }
+
+  private mapForAttribute(attr: AttrValue) {
+    for (let obj of attr.resolveStyles()) {
+      this.allAttributes.add(obj);
+    }
   }
 
   /**

@@ -1,13 +1,14 @@
-import { MultiMap, TwoKeyMultiMap, objectValues } from "@opticss/util";
+import { MultiMap, TwoKeyMultiMap, objectValues, whatever } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import { postcss } from "opticss";
 
-import { isBlockClass, Ruleset, Style } from "../../BlockTree";
+import { isBlockClass, Ruleset, Style, BlockClass } from "../../BlockTree";
 import {
   isAttrGroup,
   isBooleanAttr,
   isFalseCondition,
   isTrueCondition,
+  ElementAnalysis,
 } from "../ElementAnalysis";
 
 import { Validator } from "./Validator";
@@ -122,6 +123,21 @@ function printRulesetConflict(prop: string, rule: Ruleset) {
   return out.join("\n");
 }
 
+function inStylesheetComposition(
+  blockClass: BlockClass,
+  analysis: ElementAnalysis<whatever, whatever, whatever>,
+  conflicts: ConflictMap,
+  allConditions: PropMap,
+){
+  composed: for (let composed of blockClass.composedStyles()) {
+    for (let condition of composed.conditions) {
+      if (!analysis.hasAttribute(condition)) { break composed; }
+    }
+    evaluate(composed.style, allConditions, conflicts);
+    add(allConditions, composed.style);
+  }
+}
+
 /**
  * Prevent conflicting styles from being applied to the same element without an explicit resolution.
  * @param correlations The correlations object for a given element.
@@ -142,12 +158,7 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
 
     // TODO: When we unify Element Analysis and Stylesheet Composition concepts, this check
     //       can happen in another location during the BlockParse instead of Template Validation.
-    if (isBlockClass(obj)) {
-      for (let composed of obj.composedStyles()) {
-        evaluate(composed.style, allConditions, conflicts);
-        add(allConditions, composed.style);
-      }
-    }
+    if (isBlockClass(obj)) { inStylesheetComposition(obj, elAnalysis, conflicts, allConditions); }
   });
 
   // For each dynamic class, test it against the static classes,
