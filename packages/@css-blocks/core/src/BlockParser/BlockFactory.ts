@@ -128,44 +128,53 @@ export class BlockFactory {
         }
 
         // Skip preprocessing if we can.
-        if (this.blocks[file.identifier]) { return this.blocks[file.identifier]; }
+        if (this.blocks[file.identifier]) {
+          debug(`Using pre-compiled Block for "${file.identifier}"`);
+          return this.blocks[file.identifier];
+        }
 
         // Preprocess the file.
         let filename: string = realFilename || this.importer.debugIdentifier(file.identifier, this.configuration);
         let preprocessor = this.preprocessor(file);
+
+        debug(`Preprocessing "${filename}"`);
         return this.preprocessQueue.enqueue({
           preprocessor,
           filename,
           contents: file.contents,
         })
 
-          // Run through PostCSS.
-          .then(async (preprocessResult): Promise<[ProcessedFile, postcss.Result]> => {
-            let sourceMap = sourceMapFromProcessedFile(preprocessResult);
-            let content = preprocessResult.content;
-            if (sourceMap) {
-              content = annotateCssContentWithSourceMap(content, sourceMap);
-            }
-            let result = await this.postcssImpl().process(content, { from: filename });
-            return [preprocessResult, result];
-          })
+        // Run through PostCSS.
+        .then(async (preprocessResult): Promise<[ProcessedFile, postcss.Result]> => {
+          debug(`Generating PostCSS AST for "${filename}"`);
+          let sourceMap = sourceMapFromProcessedFile(preprocessResult);
+          let content = preprocessResult.content;
+          if (sourceMap) {
+            content = annotateCssContentWithSourceMap(content, sourceMap);
+          }
+          let result = await this.postcssImpl().process(content, { from: filename });
+          return [preprocessResult, result];
+        })
 
-          .then(([preprocessedResult, result]) => {
-            // skip parsing if we can.
-            if (this.blocks[file.identifier]) { return this.blocks[file.identifier]; }
-            let source: ParsedSource = {
-              identifier: file.identifier,
-              defaultName: file.defaultName,
-              parseResult: result,
-              originalSource: file.contents,
-              originalSyntax: file.syntax,
-              dependencies: preprocessedResult.dependencies || [],
-            };
-            return this.parser.parseSource(source);
-          });
+        .then(([preprocessedResult, result]) => {
+          debug(`Parsing Block object for "${filename}"`);
+          // Skip parsing if we can.
+          if (this.blocks[file.identifier]) { return this.blocks[file.identifier]; }
+          let source: ParsedSource = {
+            identifier: file.identifier,
+            defaultName: file.defaultName,
+            parseResult: result,
+            originalSource: file.contents,
+            originalSyntax: file.syntax,
+            dependencies: preprocessedResult.dependencies || [],
+          };
+          return this.parser.parseSource(source);
+        });
       })
 
       .then(block => {
+
+        debug(`Finalizing Block object for "${block.identifier}"`);
 
         // last check  to make sure we don't return a new instance
         if (this.blocks[block.identifier]) { return this.blocks[block.identifier]; }

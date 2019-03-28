@@ -26,7 +26,7 @@ export function parseBlockDebug(atRule: postcss.AtRule, sourceFile: string, scop
 
   if (!block) {
     throw new errors.InvalidBlockSyntax(
-      `Invalid block debug: No block named ${localName} exists in this context.`,
+      `Invalid block debug: No Block named "${localName}" found in scope.`,
       sourceLocation(sourceFile, atRule));
   }
 

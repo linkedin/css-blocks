@@ -415,6 +415,46 @@ export class BlockImportExport extends BEMProcessor {
     );
   }
 
+  @test async "export from works as expected"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource(
+      "a.css",
+      `:scope { block-name: block-a; }`,
+    );
+    imports.registerSource(
+      "b.css",
+      `:scope { block-name: block-b; }`,
+    );
+    imports.registerSource(
+      "c.css",
+      `:scope { block-name: block-c; }`,
+    );
+    imports.registerSource(
+      "imported.css",
+      `
+        :scope { block-name: imported-block; }
+
+        @export a from "./a.css";
+        @export ( default as bar ) from "./b.css";
+        @export ( default as baz ) from "./c.css";
+      `,
+    );
+
+    let inputCSS = `@block imported, ( a, bar, baz ) from "./imported.css";
+                    @block-debug imported to comment;
+                    @block-debug a to comment;
+                    @block-debug bar to comment;
+                    @block-debug baz to comment;`;
+    let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
+    return assert.equal(
+      result.css,
+      `/* Source: imported.css\n   :scope => .imported-block */\n` +
+      `/* Source: a.css\n   :scope => .block-a */\n` +
+      `/* Source: b.css\n   :scope => .block-b */\n` +
+      `/* Source: c.css\n   :scope => .block-c */\n`,
+    );
+  }
+
   @test async "default is a reserved word – bare imports"() {
     let imports = new MockImportRegistry();
     imports.registerSource(
@@ -427,6 +467,25 @@ export class BlockImportExport extends BEMProcessor {
     return assertError(
       InvalidBlockSyntax,
       `Default Block from "./a.css" must be aliased to a unique local identifier. (test.css:1:1)`,
+      this.process("test.css", inputCSS, {importer: imports.importer()}),
+    );
+  }
+
+  @test async "immediately re-exported blocks are not available locally"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource(
+      "a.css",
+      `:scope { block-name: block-a; }`,
+    );
+
+    let inputCSS = `
+      @export a from "./a.css";
+      :scope { block-name: imported-block; extends: a; }
+    `;
+
+    return assertError(
+      InvalidBlockSyntax,
+      `No Block named "a" found in scope. (test.css:3:44)`,
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }

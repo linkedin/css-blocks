@@ -42,7 +42,7 @@ export async function assertForeignGlobalAttribute(root: postcss.Root, block: Bl
           let otherBlock = block.getReferencedBlock(blockName.value);
           if (!otherBlock) {
             throw new errors.InvalidBlockSyntax(
-              `No block named ${blockName.value} found: ${rule.selector}`,
+              `No Block named "${blockName.value}" found in scope: ${rule.selector}`,
               loc(file, rule, node));
           }
 

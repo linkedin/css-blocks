@@ -195,7 +195,9 @@ export class BlockInheritance extends BEMProcessor {
         result.css.toString(),
         ".sub__nav { margin: 15px; }\n" +
         ".base__nav.sub__nav { margin: 15px; }\n" +
+        ".base__nav + .base__nav.sub__nav { margin: 15px; }\n" +
         ".sub__nav + .sub__nav { margin-bottom: 5px; }\n" +
+        ".sub__nav + .base__nav.sub__nav { margin-bottom: 5px; }\n" +
         ".base__nav.sub__nav + .base__nav.sub__nav { margin-bottom: 5px; }\n",
       );
     });

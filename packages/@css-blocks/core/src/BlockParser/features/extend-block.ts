@@ -19,7 +19,7 @@ export async function extendBlock(rule: postcss.Root, block: Block, sourceFile: 
     }
     let baseBlock = block.getReferencedBlock(decl.value);
     if (!baseBlock) {
-      throw new errors.InvalidBlockSyntax(`No block named ${decl.value} found`, sourceLocation(sourceFile, decl));
+      throw new errors.InvalidBlockSyntax(`No Block named "${decl.value}" found in scope.`, sourceLocation(sourceFile, decl));
     }
     block.setBase(baseBlock);
   });

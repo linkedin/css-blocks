@@ -7,12 +7,12 @@
  * `::after`). Every ruleset may provide resolution guidance against another `Style` object.
  */
 import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
-import * as propParser from "css-property-parser";
 import { ParsedSelector, postcss } from "opticss";
 
 import { BLOCK_PROP_NAMES, SELF_SELECTOR, getResolution } from "../BlockSyntax";
 import { InvalidBlockSyntax } from "../errors";
 import { sourceLocation } from "../SourceLocation";
+import { expandProp } from "../util/propertyParser";
 
 import { Styles, isStyle } from "./Styles";
 export { Styles, BlockClass, AttrValue } from "./Styles";
@@ -31,25 +31,6 @@ export type Resolution<S extends Styles = Styles> = {
   property: string;
   resolution: S;
 };
-
-/**
- * Safely expand a property value pair into its constituent longhands,
- * even if it is not a valid declaration.
- * @param  property  A CSS property name.
- * @param  value  A CSS property value.
- */
-function expandProp(prop: string, value: string): propParser.Declarations {
-  let expanded: propParser.Declarations = {};
-
-  // The PropertyParser doesn't understand CSS variables.
-  // Replace them with something it understands.
-  value = value.replace(/var\([^\)]+\)/gi, "inherit");
-  if (propParser.isValidDeclaration(prop, value)) {
-    expanded = propParser.expandShorthandProperty(prop, value, true, false);
-  }
-  expanded[prop] = value;
-  return expanded;
-}
 
 /**
  * Represents an individual ruleset, its property concerns, and Style resolutions.
