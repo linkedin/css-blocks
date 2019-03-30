@@ -111,7 +111,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
         let filename = filesystemPath || options.importer.debugIdentifier(block.identifier, options);
 
         // If this Block has a representation on disk, remove it from our output tree.
-        if (filesystemPath) {
+        if (filesystemPath && !!~filesystemPath.indexOf(output)) {
           debug(`Removing block file ${filesystemPath} from output.`);
           if (fs.existsSync(filesystemPath)) { fs.removeSync(filesystemPath); }
         }

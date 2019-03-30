@@ -12,7 +12,7 @@ import {
 
 import { isAttributeNode, isClassNode } from "../BlockParser";
 import { isRootNode, toAttrToken } from "../BlockParser";
-import { BlockPath, CLASS_NAME_IDENT, ROOT_CLASS } from "../BlockSyntax";
+import { BlockPath, CLASS_NAME_IDENT, DEFAULT_EXPORT, ROOT_CLASS } from "../BlockSyntax";
 import { ResolvedConfiguration } from "../configuration";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
@@ -249,7 +249,7 @@ export class Block
    * @returns Block | null.
    */
   getReferencedBlock(localName: string): Block | null {
-    if (localName === "") { return this; }
+    if (localName === "" || localName === DEFAULT_EXPORT) { return this; }
     return this._blockReferences[localName] || null;
   }
 

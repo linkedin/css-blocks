@@ -68,7 +68,12 @@ export class NodeJsImporter implements Importer {
 
     // If no alias found, test for a node_module resolution as a file path.
     try {
-      return require.resolve(importPath, { paths: [config.rootDir] });
+      const file = require.resolve(importPath, { paths: [config.rootDir] });
+      const extname = path.extname(file).slice(1);
+      const fileExts = { css: true, ...config.preprocessors };
+      if (!fileExts[extname]) { throw Error("Invalid Block File Extension"); }
+      debug(`Discovered Node.js resolvable file: ${file}`);
+      return file;
     } catch (err) {
       debug(`Could not resolve ${importPath} as a local file. Resolution failed with ${err.message}.`);
     }

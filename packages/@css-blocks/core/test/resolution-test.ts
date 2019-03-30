@@ -219,7 +219,6 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
-  @skip
   @test "of short-hand properties conflicting with long-hand properties"() {
     let { imports, config } = setupImporting();
     imports.registerSource(
@@ -256,11 +255,11 @@ export class BlockInheritance extends BEMProcessor {
       assert.deepEqual(
         result.css.toString(),
         ".conflicts__header { border-bottom: 2px; }\n" +
-        ".conflicts__header.grid__nav { border-bottom: 1px solid black }\n" +
+        ".grid__nav.conflicts__header { border-bottom: 1px solid black; }\n" +
         ".conflicts__another-header { border-width: 3px; }\n" +
-        ".conflicts__another-header.grid__nav { border-width: 1px; }\n" +
+        ".grid__nav.conflicts__another-header { border-width: 1px; }\n" +
         ".conflicts__third-header { border-bottom-width: 3px; }\n" +
-        ".conflicts__third-header.grid__nav { border-bottom-width: 1px; }\n",
+        ".grid__nav.conflicts__third-header { border-bottom-width: 1px; }\n",
       );
     });
   }
@@ -378,7 +377,7 @@ export class BlockInheritance extends BEMProcessor {
       "other.css",
       `@block base from "base.css";
        :scope { extends: base; }
-       .nav { border: 1px solid black; color: red; }`,
+       .nav { border: 1px solid green; color: red; }`,
     );
 
     let filename = "conflicts.css";
@@ -399,7 +398,7 @@ export class BlockInheritance extends BEMProcessor {
         result.css.toString(),
         ".conflicts__header { width: 80%; border: none; color: green; }\n" +
         ".base__sidebar.conflicts__header { color: blue; }\n" +
-        ".other__nav.conflicts__header { border: 1px solid black; }\n" +
+        ".other__nav.conflicts__header { border: 1px solid green; }\n" +
         ".base__nav.conflicts__header { width: 100%; }\n",
       );
     });

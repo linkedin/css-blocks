@@ -18,7 +18,7 @@ export async function implementBlock(rule: postcss.Root, block: Block, sourceFil
     refNames.forEach((refName) => {
       let refBlock = block.getReferencedBlock(refName);
       if (!refBlock) {
-        throw new errors.InvalidBlockSyntax(`No block named ${refName} found`, sourceLocation(sourceFile, decl));
+        throw new errors.InvalidBlockSyntax(`No Block named "${refName}" found in scope.`, sourceLocation(sourceFile, decl));
       }
       block.addImplementation(refBlock);
     });
