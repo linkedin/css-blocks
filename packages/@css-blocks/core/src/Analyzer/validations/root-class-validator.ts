@@ -14,7 +14,7 @@ export const rootClassValidator: Validator = (analysis, templateAnalysis, err) =
       foundClass = foundClass || !container.isRoot;
     }
     if (foundRoot && foundClass) {
-      err(`Cannot put block classes on the block's root element`);
+      err(`Cannot put Block classes on the Block's root element.`);
     }
   }
 };

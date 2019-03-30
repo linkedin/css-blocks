@@ -83,8 +83,11 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
 
         // If this is the key selector, save this ruleset on the created style.
         if (isKey) {
-          foundStyles.blockClasses.map(s => styleRuleTuples.add([s, rule]));
-          foundStyles.blockAttrs.map(s => styleRuleTuples.add([s, rule]));
+          if (foundStyles.blockAttrs.length) {
+            foundStyles.blockAttrs.map(s => styleRuleTuples.add([s, rule]));
+          } else {
+            foundStyles.blockClasses.map(s => styleRuleTuples.add([s, rule]));
+          }
         }
 
         sel = sel.next && sel.next.selector;

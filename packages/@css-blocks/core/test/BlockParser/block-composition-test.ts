@@ -2,6 +2,7 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
 import { assertError } from "../util/assertError";
+import { indented } from "../util/indented";
 import { BEMProcessor } from "../util/BEMProcessor";
 import { MockImportRegistry } from "../util/MockImportRegistry";
 
@@ -116,8 +117,25 @@ export class BlockNames extends BEMProcessor {
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       assert.deepEqual(
-        result.css.toString(),
-        `.test-block__bar--color.test-block--inverse { background: blue; }\n`,
+        result.css.toString().trim(),
+        indented`
+          .test-block__bar { }
+          .test-block__bar--active { }
+          .test-block__bar--color.test-block--inverse { background: blue; }
+          /* Source: foo/bar/test-block.css
+           * :scope (.test-block)
+           *  composes:
+           *  └── biz
+           *  └── .bar (.test-block__bar)
+           *       composes:
+           *       ├── biz.baz
+           *       ├── biz.buz when [state|active]
+           *       └── biz.baz when [state|color] && [state|inverse]
+           *       states:
+           *       ├── .bar[state|active] (.test-block__bar--active)
+           *       ├── .bar[state|color] (.test-block__bar--color)
+           *       └── .bar[state|inverse] (.test-block__bar--inverse)
+           */`,
       );
     });
   }

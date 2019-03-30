@@ -449,13 +449,14 @@ export class Block
     let result: string[] = [`Source: ${this.identifier}`];
 
     // Log Root Class and all children first at root level.
-    result.push(ROOT_CLASS, ...this.rootClass.debug(config));
+    const classes = this.rootClass.cssClasses(config).join(".");
+    result.push(`${ROOT_CLASS} (.${classes})`, ...this.rootClass.debug(config));
 
     // Log all BlockClasses and children at second level.
     let sourceNames = new Set<string>(this.resolveChildren().map(s => s.asSource()));
     let sortedNames = [...sourceNames].sort().filter((n) => n !== ROOT_CLASS);
     for (let n of sortedNames) {
-      const isLast = n.indexOf(n) === sortedNames.length - 1;
+      const isLast = sortedNames.indexOf(n) === sortedNames.length - 1;
       let o = this.find(n) as BlockClass;
       result.push(` ${isLast ? "└──"  : "├──"} ${o.asDebug(config)}`);
       const childrenDebugs = o.debug(config).map((s) => ` ${isLast ? " " : "|"}   ${s}`);

@@ -81,7 +81,7 @@ export abstract class Style<
 
     let inheritedStyles = this.resolveInheritance();
     this._resolvedStyles = new Set(inheritedStyles);
-
+    this._resolvedStyles.add(this.asSelf());
     return new Set(this._resolvedStyles);
   }
 
@@ -91,8 +91,8 @@ export abstract class Style<
    * @returns A debug string.
    */
   asDebug(config: ResolvedConfiguration) {
-    const classes = this.cssClasses(config).map(n => `.${n}`).join(" ");
-    return `${this.asSource()}${classes ? ` (${classes})` : ""}`;
+    const classes = this.cssClasses(config).join(".");
+    return `${this.asSource()}${classes ? ` (.${classes})` : ""}`;
   }
 
 }

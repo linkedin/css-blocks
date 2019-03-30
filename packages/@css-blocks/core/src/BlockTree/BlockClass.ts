@@ -283,11 +283,12 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
       result.push(` ${isLast ? "└──"  : "├──"} ${comp.style.asSource(true)}${conditional}`);
     }
 
-    const children = [...this.resolveAttributeValues().values()].map(s => s.asDebug(config));
+    const children = [...this.resolveAttributeValues().values()].map(s => s.asSource());
     children.sort();
     if (children.length) { result.push(" states:"); }
     for (let n of children) {
-      let o = this.getAttributeValue(n)!;
+      let o = this.resolveAttributeValue(n);
+      if (!o) { continue; }
       let isLast = children.indexOf(n) === children.length - 1;
       result.push(` ${isLast ? "└──"  : "├──"} ${o.asDebug(config)}`);
     }

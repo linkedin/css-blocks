@@ -645,7 +645,7 @@ export class AnalysisTests {
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      "Cannot put block classes on the block's root element (templates/my-template.hbs:10:32)",
+      `Cannot put Block classes on the Block's root element. (templates/my-template.hbs:10:32)`,
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]): [Block, postcss.Container] => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 32 });

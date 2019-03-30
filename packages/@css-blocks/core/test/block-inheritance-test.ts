@@ -4,6 +4,7 @@ import { skip, suite, test } from "mocha-typescript";
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
+import { indented } from "./util/indented";
 
 @suite("Block Inheritance")
 export class BlockInheritance extends BEMProcessor {
@@ -27,18 +28,23 @@ export class BlockInheritance extends BEMProcessor {
     return this.process(filename, inputCSS, config).then((result) => {
       imports.assertImported("foo/bar/base.css");
       assert.deepEqual(
-        result.css.toString(),
-        ".inherits { color: red; }\n" +
-        ".base.inherits { color: red; }\n" +
-        ".inherits__foo { clear: both; }\n" +
-        ".inherits__b--small { color: blue; }\n" +
-        "/* Source: foo/bar/inherits.css\n" +
-        "   :scope => .base .inherits\n" +
-        "   .b => .inherits__b\n" +
-        "   .b[state|small] => .inherits__b--small\n" +
-        "   .foo => .base__foo .inherits__foo\n" +
-        "   .foo[state|small] => .base__foo--small\n" +
-        "   :scope[state|large] => .base--large */\n",
+        result.css.toString().trim(),
+        indented`
+          .inherits { color: red; }
+          .base.inherits { color: red; }
+          .inherits__foo { clear: both; }
+          .inherits__b--small { color: blue; }
+          /* Source: foo/bar/inherits.css
+           * :scope (.base.inherits)
+           *  states:
+           *  └── :scope[state|large] (.base--large)
+           *  ├── .b (.inherits__b)
+           *  |    states:
+           *  |    └── .b[state|small] (.inherits__b--small)
+           *  └── .foo (.base__foo.inherits__foo)
+           *       states:
+           *       └── .foo[state|small] (.base__foo--small)
+           */`,
       );
     });
   }
