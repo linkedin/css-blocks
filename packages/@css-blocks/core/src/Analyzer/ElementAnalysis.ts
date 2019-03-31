@@ -25,11 +25,11 @@ import {
   Attribute,
   Block,
   BlockClass,
+  Composition,
   Style,
   isAttrValue,
   isBlockClass,
 } from "../BlockTree";
-import { Composition } from "../BlockTree/BlockClass";
 import {
   ResolvedConfiguration,
 } from "../configuration";
@@ -37,8 +37,8 @@ import {
   unionInto,
 } from "../util/unionInto";
 
-export interface HasAttrValue<T extends (Set<Style> | number[]) = Set<Style>> {
-  value: T;
+export interface HasAttrValue<T extends Style = Style> {
+  value: Set<T>;
 }
 
 export function isBooleanAttr(o: object): o is HasAttrValue {
@@ -147,9 +147,12 @@ export type DynamicClasses<TernaryExpression> = (Conditional<TernaryExpression> 
                                                 (Conditional<TernaryExpression> & FalseCondition) |
                                                 (Conditional<TernaryExpression> & TrueCondition & FalseCondition);
 
-export type SerializedConditionalAttr = Conditional<true> & HasAttrValue<number[]>;
-export type SerializedDependentAttr = Dependency<number> & HasAttrValue<number[]>;
-export type SerializedConditionalDependentAttr = Conditional<true> & Dependency<number> & HasAttrValue<number[]>;
+export interface SerializedHasAttrValue {
+  value: number[];
+}
+export type SerializedConditionalAttr = Conditional<true> & SerializedHasAttrValue;
+export type SerializedDependentAttr = Dependency<number> & SerializedHasAttrValue;
+export type SerializedConditionalDependentAttr = Conditional<true> & Dependency<number> & SerializedHasAttrValue;
 export type SerializedDynamicAttr = SerializedConditionalAttr | SerializedDependentAttr | SerializedConditionalDependentAttr;
 export type SerializedConditionalAttrGroup = Switch<true> & HasGroup<number>;
 export type SerializedDependentAttrGroup = Dependency<number> & HasGroup<number>;
@@ -375,9 +378,23 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     }
   }
 
+  /** Holds reference to all styles applied because of in-stylesheet composition. */
   private composedStyles: Set<Style> = new Set();
+
+  /**
+   * Test if a given style is applied because of in-stylesheet composition.
+   * Used in validators to skip some of the more strict validation checks.
+   * @param style Style to test.
+   * @returns `true` or `false` depending on if the provided stye was applied because of an in-stylesheet composition.
+   */
   isFromComposition(style: Style): boolean { return this.composedStyles.has(style); }
 
+  /**
+   * Given a condition, return whether or not it should be applied and under what conditions.
+   * @param comp Composition  The Composition we're testing against this ElementAnalysis.
+   * @returns True if should always be applied, False if should never be applied,
+   *          otherwise an object detailing the application conditions.
+   */
   private fetchConditions(comp: Composition) {
     if (comp.conditions.length === 0) { return true; }
     let cond = comp.conditions[0];
@@ -411,11 +428,17 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     // element so we can exclude them from the strict compositional validators.
     for (let style of this.addedStyles) {
 
+      // if this class is applied statically,
       if (isStaticClass(style)) {
+        // Get all composed styles from the entire inheritance chain.
         for (let comp of style.klass.resolveComposedStyles()) {
+          // Determine the classes we're applying. States have their parent classes automagically applied.
           const value = new Set(isAttrValue(comp.style) ? [comp.style.blockClass, comp.style] : [comp.style]);
+          // Fetch the conditions we're applying these values under.
           const conditions = this.fetchConditions(comp);
+          // If we won't ever need to apply these values, move on.
           if (conditions === false) { continue; }
+          // If we should always apply these conditions, statically apply what makes sense for the BlockObj.
           else if (conditions === true) {
             if (isAttrValue(comp.style)) {
               this.addStaticClass(comp.style.blockClass);
@@ -425,6 +448,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
               this.addStaticClass(comp.style);
             }
           }
+          // Otherwise, these styles will be applied under these certian conditions.
           else {
             this.addedStyles.push({
               value,
@@ -433,10 +457,11 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
             });
           }
 
-          if (isAttrValue(comp.style)) { this.composedStyles.add(comp.style.blockClass); }
-          this.composedStyles.add(comp.style);
+          // Track these added styles as composed styles.
+          value.forEach((o) => this.composedStyles.add(o));
         }
       }
+      // Same as above but for truthy dynamic classes. We will never have fully static attributes in this case.
       if (isTrueCondition(style)) {
         for (let klass of style.whenTrue) {
           for (let comp of klass.resolveComposedStyles()) {
@@ -448,11 +473,12 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
               container: klass,
               ...conditions === true ? {} : conditions,
             });
-            if (isAttrValue(comp.style)) { this.composedStyles.add(comp.style.blockClass); }
-            this.composedStyles.add(comp.style);
+            value.forEach((o) => this.composedStyles.add(o));
           }
         }
       }
+
+      // Same as above but for falsy dynamic classes. We will never have fully static attributes in this case.
       if (isFalseCondition(style)) {
         for (let klass of style.whenFalse) {
           for (let comp of klass.resolveComposedStyles()) {
@@ -464,8 +490,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
               container: klass,
               ...conditions === true ? {} : conditions,
             });
-            if (isAttrValue(comp.style)) { this.composedStyles.add(comp.style.blockClass); }
-            this.composedStyles.add(comp.style);
+            value.forEach((o) => this.composedStyles.add(o));
           }
         }
       }
