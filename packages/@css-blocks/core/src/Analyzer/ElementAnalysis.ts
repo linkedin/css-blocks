@@ -29,6 +29,7 @@ import {
   isAttrValue,
   isBlockClass,
 } from "../BlockTree";
+import { Composition } from "../BlockTree/BlockClass";
 import {
   ResolvedConfiguration,
 } from "../configuration";
@@ -36,15 +37,15 @@ import {
   unionInto,
 } from "../util/unionInto";
 
-export interface HasAttrValue<AttrType extends AttrValue | number = AttrValue> {
-  value: AttrType;
+export interface HasAttrValue<T extends (Set<Style> | number[]) = Set<Style>> {
+  value: T;
 }
 
-export function isBooleanAttr(o: object): o is HasAttrValue<AttrValue | number> {
+export function isBooleanAttr(o: object): o is HasAttrValue {
   return !!(<HasAttrValue>o).value;
 }
 
-export interface HasGroup<GroupType extends AttrValue | number = AttrValue> {
+export interface HasGroup<GroupType extends BlockClass | AttrValue | number = AttrValue> {
   group: ObjectDictionary<GroupType>;
 }
 
@@ -132,9 +133,9 @@ export type ConditionalDependentAttr<BooleanExpression> = Conditional<BooleanExp
 export type DynamicAttr<BooleanExpression> = ConditionalAttr<BooleanExpression> | DependentAttr | ConditionalDependentAttr<BooleanExpression>;
 
 /** An attribute group where one is set conditionally */
-export type ConditionalAttrGroup<StringExpression> = Switch<StringExpression> & HasGroup;
+export type ConditionalAttrGroup<StringExpression> = Switch<StringExpression> & HasGroup & HasAttrValue;
 /** An attribute group that are only set when its dynamic class is set and where one (or none) is selected at runtime. */
-export type ConditionalDependentAttrGroup<StringExpression> = Switch<StringExpression> & Dependency & HasGroup;
+export type ConditionalDependentAttrGroup<StringExpression> = Switch<StringExpression> & Dependency & HasGroup & HasAttrValue;
 /** An attribute group that are dynamic for any reason */
 export type DynamicAttrGroup<StringExpression> = ConditionalAttrGroup<StringExpression> | ConditionalDependentAttrGroup<StringExpression>;
 
@@ -146,9 +147,9 @@ export type DynamicClasses<TernaryExpression> = (Conditional<TernaryExpression> 
                                                 (Conditional<TernaryExpression> & FalseCondition) |
                                                 (Conditional<TernaryExpression> & TrueCondition & FalseCondition);
 
-export type SerializedConditionalAttr = Conditional<true> & HasAttrValue<number>;
-export type SerializedDependentAttr = Dependency<number> & HasAttrValue<number>;
-export type SerializedConditionalDependentAttr = Conditional<true> & Dependency<number> & HasAttrValue<number>;
+export type SerializedConditionalAttr = Conditional<true> & HasAttrValue<number[]>;
+export type SerializedDependentAttr = Dependency<number> & HasAttrValue<number[]>;
+export type SerializedConditionalDependentAttr = Conditional<true> & Dependency<number> & HasAttrValue<number[]>;
 export type SerializedDynamicAttr = SerializedConditionalAttr | SerializedDependentAttr | SerializedConditionalDependentAttr;
 export type SerializedConditionalAttrGroup = Switch<true> & HasGroup<number>;
 export type SerializedDependentAttrGroup = Dependency<number> & HasGroup<number>;
@@ -304,15 +305,31 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     if (returnDynamic(dynamic)) {
       for (let dynAttr of this.dynamicAttributes) {
         if (isAttrGroup(dynAttr)) {
-          for (let s of objectValues(dynAttr.group)) {
-            if (found.has(s)) continue;
-            found.add(s);
-            yield s;
+          // If an attribute group contains values, they are meant to override the applied values in a truthy case.
+          if (dynAttr.value.size) {
+            for (let s of dynAttr.value) {
+              if (!isAttrValue(s)) { continue; }
+              if (found.has(s)) { continue; }
+              found.add(s);
+              yield s;
+            }
+          }
+          else {
+            for (let s of objectValues(dynAttr.group)) {
+              if (!isAttrValue(s)) { continue; }
+              if (found.has(s)) { continue; }
+              found.add(s);
+              yield s;
+            }
           }
         } else {
-          if (found.has(dynAttr.value)) continue;
-          found.add(dynAttr.value);
-          yield dynAttr.value;
+          for (let val of dynAttr.value) {
+             // Composition allow for BlockClasses to be applied in this structure. Ensure we only return attrs.
+            if (!isAttrValue(val)) { continue; }
+            if (found.has(val)) { continue; }
+            found.add(val);
+            yield val;
+          }
         }
       }
     }
@@ -357,12 +374,103 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       }
     }
   }
+
+  private composedStyles: Set<Style> = new Set();
+  isFromComposition(style: Style): boolean { return this.composedStyles.has(style); }
+
+  private fetchConditions(comp: Composition) {
+    if (comp.conditions.length === 0) { return true; }
+    let cond = comp.conditions[0];
+    for (let style of this.addedStyles) {
+      if (isAttrGroup(style) && style.group[cond.value] === cond) {
+        return {
+          group: { [cond.value]: comp.style },
+          disallowFalsy: style.disallowFalsy,
+          stringExpression: style.stringExpression,
+        };
+      }
+      else if (isBooleanAttr(style) && style.value.has(cond)) {
+        return isConditional(style) ? { condition: style.condition } : true;
+      }
+    }
+    return false;
+  }
+
   /**
    * This method indicates that all styles have been added
    * and can be analyzed and validated.
    */
   seal() {
     this.assertSealed(false);
+
+    // After template analysis is done, we need to add all composed styles.
+    // Conflict validation is done at Block construction time for these.
+    // For every added style, check if it has a composition and apply those
+    // composed class values appropriately. Because these are applied by the
+    // build, track all Styles applied through stylesheet composition for each
+    // element so we can exclude them from the strict compositional validators.
+    for (let style of this.addedStyles) {
+
+      if (isStaticClass(style)) {
+        for (let comp of style.klass.resolveComposedStyles()) {
+          const value = new Set(isAttrValue(comp.style) ? [comp.style.blockClass, comp.style] : [comp.style]);
+          const conditions = this.fetchConditions(comp);
+          if (conditions === false) { continue; }
+          else if (conditions === true) {
+            if (isAttrValue(comp.style)) {
+              this.addStaticClass(comp.style.blockClass);
+              this.addStaticAttr(comp.style.blockClass, comp.style);
+            }
+            else {
+              this.addStaticClass(comp.style);
+            }
+          }
+          else {
+            this.addedStyles.push({
+              value,
+              container: style.klass,
+              ...conditions,
+            });
+          }
+
+          if (isAttrValue(comp.style)) { this.composedStyles.add(comp.style.blockClass); }
+          this.composedStyles.add(comp.style);
+        }
+      }
+      if (isTrueCondition(style)) {
+        for (let klass of style.whenTrue) {
+          for (let comp of klass.resolveComposedStyles()) {
+            const value = new Set(isAttrValue(comp.style) ? [comp.style.blockClass, comp.style] : [comp.style]);
+            let conditions = this.fetchConditions(comp);
+            if (conditions === false) { continue; }
+            this.addedStyles.push({
+              value,
+              container: klass,
+              ...conditions === true ? {} : conditions,
+            });
+            if (isAttrValue(comp.style)) { this.composedStyles.add(comp.style.blockClass); }
+            this.composedStyles.add(comp.style);
+          }
+        }
+      }
+      if (isFalseCondition(style)) {
+        for (let klass of style.whenFalse) {
+          for (let comp of klass.resolveComposedStyles()) {
+            const value = new Set(isAttrValue(comp.style) ? [comp.style.blockClass, comp.style] : [comp.style]);
+            const conditions = this.fetchConditions(comp);
+            if (conditions === false) { continue; }
+            this.addedStyles.push({
+              value,
+              container: klass,
+              ...conditions === true ? {} : conditions,
+            });
+            if (isAttrValue(comp.style)) { this.composedStyles.add(comp.style.blockClass); }
+            this.composedStyles.add(comp.style);
+          }
+        }
+      }
+    }
+
     let styles: [
       Array<StaticClass | DynamicClasses<TernaryExpression>>,
       Array<DependentAttr | ConditionalDependentAttr<BooleanExpression> | ConditionalDependentAttrGroup<StringExpression>>
@@ -406,24 +514,17 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    */
   addStaticAttr(container: BlockClass, value: AttrValue) {
     this.assertSealed(false);
-    this.addedStyles.push({container, value});
+    this.addedStyles.push({ container, value: new Set([value]) });
     this.mapForAttribute(value);
   }
   private _addStaticAttr(style: DependentAttr) {
     let {container, value} = style;
-    this.assertValidContainer(container, value);
     if (this.dynamicClassExpressions.has(container)) {
       this.dynamicAttributes.push({value, container});
     } else {
-      this.static.add(value);
-      unionInto(this.allStaticStyles, value.resolveStyles());
-    }
-  }
-
-  private assertValidContainer(container: BlockClass, value: AttrValue | Attribute) {
-    if (container !== value.blockClass) {
-      if (!container.resolveStyles().has(value.blockClass)) {
-        throw new Error("container is not a valid container for the given state");
+      for (let o of value) {
+        this.static.add(o);
+        unionInto(this.allStaticStyles, o.resolveStyles());
       }
     }
   }
@@ -436,12 +537,11 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    */
   addDynamicAttr(container: BlockClass, value: AttrValue, condition: BooleanExpression) {
     this.assertSealed(false);
-    this.addedStyles.push({value, container, condition});
+    this.addedStyles.push({ value: new Set([value]), container, condition });
     this.mapForAttribute(value);
   }
   private _addDynamicAttr(style: ConditionalDependentAttr<BooleanExpression>) {
     let {container, value, condition} = style;
-    this.assertValidContainer(container, value);
     if (this.dynamicClassExpressions.has(container)) {
       this.dynamicAttributes.push({ value, container, condition });
     } else {
@@ -465,6 +565,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     this.addedStyles.push({
       container,
       group: group.resolveValuesHash(),
+      value: new Set(),
       stringExpression,
       disallowFalsy,
     });
@@ -473,11 +574,11 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     }
   }
   private _addDynamicGroup(style: ConditionalDependentAttrGroup<StringExpression>) {
-    let { container, group, stringExpression, disallowFalsy } = style;
+    let { container, group, stringExpression, disallowFalsy, value } = style;
     if (this.dynamicClassExpressions.has(container)) {
-      this.dynamicAttributes.push({ group, container, stringExpression, disallowFalsy });
+      this.dynamicAttributes.push({ group, container, stringExpression, disallowFalsy, value });
     } else {
-      this.dynamicAttributes.push({ group, stringExpression, disallowFalsy });
+      this.dynamicAttributes.push({ group, stringExpression, disallowFalsy, value });
     }
   }
 
@@ -646,7 +747,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     let dynAttr = {
       stringExpression: true,
       condition: true,
-      value: 0,
+      value: [0],
       group: {} as ObjectDictionary<number>,
       container: 0,
       disallowFalsy: false,
@@ -676,8 +777,8 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       }
     } else {
       delete dynAttr.group;
-      dynAttr.value = styleIndexes.get(c.value)!;
     }
+    dynAttr.value = [...c.value].map((o) => styleIndexes.get(o)!);
     return dynAttr;
   }
 
@@ -734,8 +835,12 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       }
       if (isAttrGroup(dynAttr)) {
         classes.push(choices(true, ...objectValues(dynAttr.group)));
+        classes.push(choices(true, ...dynAttr.value));
+
       } else {
-        classes.push(choices(true, dynAttr.value));
+        for (let val of dynAttr.value) {
+          classes.push(choices(true, val));
+        }
       }
     }
 
@@ -821,13 +926,17 @@ function dynamicClassAndDependentAttrs<BooleanExpression, StringExpression>(
     addToSet(classValues, mapper(klass));
     for (let dynAttr of dynAttrs) {
       if (isAttrGroup(dynAttr)) {
-        classValues.push(choices(isSwitch(dynAttr),
-                                 ...objectValues(dynAttr.group)));
+        classValues.push(choices(isSwitch(dynAttr), ...objectValues(dynAttr.group)));
+        classValues.push(choices(isSwitch(dynAttr), ...dynAttr.value));
       } else {
         if (isConditional(dynAttr)) {
-          classValues.push(choices(true, dynAttr.value));
+          for (let val of dynAttr.value) {
+            classValues.push(choices(true, val));
+          }
         } else {
-          addToSet(classValues, mapper(dynAttr.value));
+          for (let val of dynAttr.value) {
+            addToSet(classValues, mapper(val));
+          }
         }
       }
     }

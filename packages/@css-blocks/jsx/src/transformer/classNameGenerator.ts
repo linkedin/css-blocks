@@ -191,8 +191,10 @@ function constructConditional(attr: Conditional<BooleanAST> & HasAttrValue, _rew
 function constructAttrReferences(attr: HasAttrValue, rewrite: IndexedClassRewrite<Style>): Array<Expression> {
   let expr = new Array<Expression>();
   // TODO: inheritance
-  expr.push(builders.number(1));
-  expr.push(builders.number(unwrap(rewrite.indexOf(attr.value))));
+  expr.push(builders.number(attr.value.size));
+  for (let val of attr.value) {
+    expr.push(builders.number(unwrap(rewrite.indexOf(val))));
+  }
   return expr;
 }
 /*
@@ -211,7 +213,7 @@ function constructAttrReferences(attr: HasAttrValue, rewrite: IndexedClassRewrit
  *   2: number (s) of source styles set. s >= 1
  *   3..3+s-1: indexes of source styles set
  */
-function constructSwitch(attr: Switch<StringAST> & HasGroup, rewrite: IndexedClassRewrite<Style>): Array<Expression> {
+function constructSwitch(attr: Switch<StringAST> & HasGroup & HasAttrValue, rewrite: IndexedClassRewrite<Style>): Array<Expression> {
   let expr = new Array<Expression>();
   let values = Object.keys(attr.group);
   expr.push(builders.number(values.length));
@@ -224,8 +226,16 @@ function constructSwitch(attr: Switch<StringAST> & HasGroup, rewrite: IndexedCla
   for (let value of values) {
     let obj = attr.group[value];
     expr.push(builders.string(value));
-    expr.push(builders.number(1));
-    expr.push(builders.number(unwrap(rewrite.indexOf(obj))));
+    if (attr.value.size) {
+      expr.push(builders.number(attr.value.size));
+      for (let val of attr.value) {
+        expr.push(builders.number(unwrap(rewrite.indexOf(val))));
+      }
+    }
+    else {
+      expr.push(builders.number(1));
+      expr.push(builders.number(unwrap(rewrite.indexOf(obj))));
+    }
   }
   return expr;
 }

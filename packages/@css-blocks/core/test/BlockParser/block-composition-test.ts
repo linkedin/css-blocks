@@ -2,8 +2,8 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
 import { assertError } from "../util/assertError";
-import { indented } from "../util/indented";
 import { BEMProcessor } from "../util/BEMProcessor";
+import { indented } from "../util/indented";
 import { MockImportRegistry } from "../util/MockImportRegistry";
 
 const { InvalidBlockSyntax } = require("../util/postcss-helper");
@@ -99,6 +99,29 @@ export class BlockNames extends BEMProcessor {
     });
   }
 
+  @test "composes considers quotes optional"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource(
+      "foo/bar/biz.css",
+      `.biz { color: red; } .baz { color: green; } .buz { color: blue; }`,
+    );
+
+    let filename = "foo/bar/test-block.css";
+    let inputCSS = `
+      @block other from "./biz.css";
+      .biz { composes: other.biz; }
+      .baz { composes: 'other.baz'; }
+      .buz { composes: "other.buz" }
+    `;
+
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        `.test-block__biz { }\n.test-block__baz { }\n.test-block__buz { }\n`,
+      );
+    });
+  }
+
   @test "composes attribute understands possible state combinations"() {
     let imports = new MockImportRegistry();
     imports.registerSource(
@@ -132,8 +155,6 @@ export class BlockNames extends BEMProcessor {
            *       ├── biz.buz when [state|active]
            *       └── biz.baz when [state|color] && [state|inverse]
            *       states:
-           *       ├── .bar[state|active] (.test-block__bar--active)
-           *       ├── .bar[state|color] (.test-block__bar--color)
            *       └── .bar[state|inverse] (.test-block__bar--inverse)
            */`,
       );

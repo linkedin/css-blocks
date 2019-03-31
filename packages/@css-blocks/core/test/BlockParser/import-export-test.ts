@@ -3,8 +3,8 @@ import { suite, test } from "mocha-typescript";
 
 import { assertError } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
-import { MockImportRegistry } from "../util/MockImportRegistry";
 import { indented } from "../util/indented";
+import { MockImportRegistry } from "../util/MockImportRegistry";
 
 const { InvalidBlockSyntax } = require("../util/postcss-helper");
 
@@ -44,7 +44,7 @@ export class BlockImportExport extends BEMProcessor {
            *       └── .foo[state|small] (.imported__foo--small)
            */
           .test-block { color: red; }
-          .test-block__b--big { color: blue; }`
+          .test-block__b--big { color: blue; }`,
       );
     });
   }
@@ -268,7 +268,7 @@ export class BlockImportExport extends BEMProcessor {
       indented`
        /* Source: a.css
         * :scope (.block-a)
-        */`,    );
+        */`);
   }
 
   @test async "able to export multiple blocks under external alias of different name"() {

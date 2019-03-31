@@ -7,8 +7,8 @@ import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
 
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
-import { constructBlock } from "./features/construct-block";
 import { composeBlock } from "./features/composes-block";
+import { constructBlock } from "./features/construct-block";
 import { disallowImportant } from "./features/disallow-important";
 import { discoverName } from "./features/discover-name";
 import { exportBlocks } from "./features/export-blocks";

@@ -2,13 +2,13 @@ import { MultiMap, TwoKeyMultiMap, objectValues, whatever } from "@opticss/util"
 import * as propParser from "css-property-parser";
 import { postcss } from "opticss";
 
-import { isBlockClass, Ruleset, Style, BlockClass } from "../../BlockTree";
+import { AttrValue, BlockClass, Ruleset, Style, isBlockClass } from "../../BlockTree";
 import {
+  ElementAnalysis,
   isAttrGroup,
   isBooleanAttr,
   isFalseCondition,
   isTrueCondition,
-  ElementAnalysis,
 } from "../ElementAnalysis";
 
 import { Validator } from "./Validator";
@@ -128,7 +128,7 @@ function inStylesheetComposition(
   analysis: ElementAnalysis<whatever, whatever, whatever>,
   conflicts: ConflictMap,
   allConditions: PropMap,
-){
+) {
   composed: for (let composed of blockClass.composedStyles()) {
     for (let condition of composed.conditions) {
       if (!analysis.hasAttribute(condition)) { break composed; }
@@ -202,8 +202,10 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
     }
 
     else if (isBooleanAttr(condition)) {
-      evaluate(condition.value, allConditions, conflicts);
-      add(allConditions, condition.value);
+      for (let val of condition.value) {
+        evaluate(val as AttrValue, allConditions, conflicts);
+        add(allConditions, val as AttrValue);
+      }
     }
   });
 

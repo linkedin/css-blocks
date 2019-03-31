@@ -9,10 +9,10 @@ import { ErrorCallback, Validator } from "./Validator";
  */
 
 export const classPairsValidator: Validator = (analysis, _templateAnalysis, err) => {
-  // TODO: this doesn't work for dynamic classes
   let classPerBlock: Map<Block, BlockClass> = new Map();
   for (let container of analysis.classesFound(false)) {
     if (isBlockClass(container)) {
+      if (analysis.isFromComposition(container)) { continue; }
       for (let block of checkExisting(classPerBlock, classPerBlock, container, err)) {
         classPerBlock.set(block, container);
       }
@@ -22,6 +22,7 @@ export const classPairsValidator: Validator = (analysis, _templateAnalysis, err)
     let trueBlocks = new Map<Block, BlockClass>();
     if (isTrueCondition(dyn)) {
       for (let container of dyn.whenTrue) {
+        if (analysis.isFromComposition(container)) { continue; }
         if (isBlockClass(container)) {
           let blocks = checkExisting(classPerBlock, trueBlocks, container, err);
           for (let block of blocks) { trueBlocks.set(block, container); }
@@ -32,6 +33,7 @@ export const classPairsValidator: Validator = (analysis, _templateAnalysis, err)
     if (isFalseCondition(dyn)) {
       for (let container of dyn.whenFalse) {
         if (isBlockClass(container)) {
+          if (analysis.isFromComposition(container)) { continue; }
           let blocks = checkExisting(classPerBlock, falseBlocks, container, err);
           for (let block of blocks) { trueBlocks.set(block, container); }
         }

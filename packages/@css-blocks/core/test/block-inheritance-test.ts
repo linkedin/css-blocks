@@ -3,8 +3,8 @@ import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
 import { BEMProcessor } from "./util/BEMProcessor";
-import { setupImporting } from "./util/setupImporting";
 import { indented } from "./util/indented";
+import { setupImporting } from "./util/setupImporting";
 
 @suite("Block Inheritance")
 export class BlockInheritance extends BEMProcessor {
@@ -53,7 +53,7 @@ export class BlockInheritance extends BEMProcessor {
   @test "can unset an inherited property"() {
     let { imports, config } = setupImporting();
     // This is hard because the base block and the sub block have to be compiled together to make it work.
-    // or the base block would need to discover all subblocks somehow.
+    // or the base block would need to discover all sub-blocks somehow.
     imports.registerSource(
       "foo/bar/base.css",
       `:scope { color: purple; }

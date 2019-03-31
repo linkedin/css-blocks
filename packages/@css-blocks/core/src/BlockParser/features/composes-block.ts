@@ -1,11 +1,12 @@
 import { postcss } from "opticss";
+import { isRule } from "opticss/dist/src/util/cssIntrospection";
 
 import { COMPOSES } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceLocation } from "../../SourceLocation";
-import { isRule } from "opticss/dist/src/util/cssIntrospection";
 import { getStyleTargets } from "../block-intermediates";
+import { stripQuotes } from "../utils";
 
 /**
  * For each `composes` property found in the passed ruleset, track the foreign
@@ -20,7 +21,7 @@ export async function composeBlock(root: postcss.Root, block: Block, sourceFile:
     let rule = decl.parent;
 
     // TODO: Move to Block Syntax as parseBlockRefList().
-    let refNames = decl.value.split(/,\s*/);
+    let refNames = decl.value.split(/,\s*/).map(stripQuotes);
     for (let refName of refNames) {
       let refStyle = block.lookup(refName);
       if (!refStyle) {

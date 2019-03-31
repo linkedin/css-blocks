@@ -6,18 +6,9 @@ import * as errors from "../../errors";
 import { sourceLocation } from "../../SourceLocation";
 
 import { BlockFactory } from "../index";
-import { parseBlockNames } from "../utils/blockNamesParser";
+import { parseBlockNames, stripQuotes } from "../utils";
 
 const FROM_EXPR = /\s+from\s+/;
-
-/**
- * Strip matching quotes from the beginning and end of a string
- * @param str String to strip quotes from
- * @return Result
- */
-function stripQuotes(str: string): string {
-  return str.replace(/^(["'])(.+)\1$/, "$2");
-}
 
 /**
  * Resolve all block references for a given block.

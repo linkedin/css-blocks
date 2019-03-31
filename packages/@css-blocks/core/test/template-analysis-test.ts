@@ -223,7 +223,7 @@ export class AnalysisTests {
               { condition: true, whenTrue: [ 2 ]},
             ],
             dynamicAttributes: [
-              { condition: true, value: 1 },
+              { condition: true, value: [ 1 ] },
             ],
           },
         },
@@ -261,8 +261,8 @@ export class AnalysisTests {
               staticStyles: [ ],
               dynamicClasses: [ {condition: true, whenTrue: [ 0 ] } ],
               dynamicAttributes: [
-                { stringExpression: true, group: {"::attr-present": 2 }, container: 0 },
-                { condition: true, value: 1, container: 0 },
+                { stringExpression: true, group: {"::attr-present": 2 }, container: 0, value: [] },
+                { condition: true, value: [ 1 ], container: 0 },
               ],
             },
           },
@@ -316,6 +316,7 @@ export class AnalysisTests {
                     "blue": 3,
                     "red": 4,
                   },
+                  "value": [],
                 },
                 {
                   "stringExpression": true,
@@ -324,6 +325,7 @@ export class AnalysisTests {
                     "blue": 1,
                     "red": 2,
                   },
+                  "value": [],
                 },
               ],
             },
@@ -378,8 +380,8 @@ export class AnalysisTests {
             staticStyles: [ ],
             dynamicClasses: [ {condition: true, whenTrue: [ 0 ], whenFalse: [ 2, 4 ] } ],
             dynamicAttributes: [
-              { value: 1, container: 0 },
-              { value: 3, container: 2 },
+              { value: [ 1 ], container: 0 },
+              { value: [ 3 ], container: 2 },
             ],
           },
         },
@@ -476,7 +478,7 @@ export class AnalysisTests {
             dynamicClasses: [ ],
 
             dynamicAttributes: [
-              { stringExpression: true, group: {"red": 2, "purple": 1}, disallowFalsy: true },
+              { stringExpression: true, group: {"red": 2, "purple": 1}, disallowFalsy: true, value: [] },
             ],
           },
         },
@@ -856,6 +858,53 @@ export class AnalysisTests {
           element.addStaticAttr(klass, state);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
+    });
+  }
+
+  @test "composition test"() {
+    let info = new Template("templates/my-template.hbs");
+    let analyzer = new TestAnalyzer();
+    let analysis = analyzer.newAnalysis(info);
+    let { imports, config } = setupImporting();
+
+    imports.registerSource(
+      "blocks/a.css",
+      `.foo { border: 3px; } .bar { border: 4px; }`,
+    );
+
+    let css = `
+      @block a from "a.css";
+      :scope { composes: a.foo; color: blue; }
+      :scope[state|active] { composes: a.bar; color: blue; }
+    `;
+    return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
+        analysis.addBlock("", block);
+        analysis.addBlock("a", block.getReferencedBlock("a") as Block);
+        let element = analysis.startElement({ line: 10, column: 32 });
+        element.addStaticClass(block.rootClass);
+        analysis.endElement(element);
+
+        let result = analysis.serialize();
+        let expectedResult: SerializedAnalysis<TemplateType> = {
+          blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
+          template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
+          stylesFound: [":scope", "a.foo"],
+          elements: {
+            a: {
+              dynamicClasses: [],
+              dynamicAttributes: [],
+              sourceLocation: {
+                start: {
+                  column: 32,
+                  filename: "templates/my-template.hbs",
+                  line: 10,
+                },
+              },
+              staticStyles: [ 0, 1 ],
+            },
+          },
+        };
+        assert.deepEqual(result, expectedResult);
     });
   }
 

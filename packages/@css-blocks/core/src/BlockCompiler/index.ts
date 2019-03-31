@@ -75,7 +75,7 @@ export class BlockCompiler {
     root.walkAtRules(BLOCK_DEBUG, (atRule) => {
       let {block: ref, channel} = parseBlockDebug(atRule, sourceFile, block);
       if (channel === "comment") {
-        let text = `${ref.debug(this.config).join('\n * ')}\n`;
+        let text = `${ref.debug(this.config).join("\n * ")}\n`;
         atRule.replaceWith(this.postcss.comment({ text }));
       } else {
         // stderr/stdout are emitted during parse.

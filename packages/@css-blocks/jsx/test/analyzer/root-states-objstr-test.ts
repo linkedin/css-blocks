@@ -71,7 +71,7 @@ export class Test {
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: 1}]);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: [ 1 ]}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
       assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar:scope[state|color=yellow]"]);
     });
@@ -102,7 +102,7 @@ export class Test {
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar:scope[state|awesome]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, [{condition: true, whenTrue: [0]}]);
-      assert.deepEqual(elementAnalysis.dynamicAttributes, [{container: 0, value: 1}]);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, [{container: 0, value: [ 1 ]}]);
       assert.deepEqual(elementAnalysis.staticStyles, []);
     });
   }
@@ -132,7 +132,7 @@ export class Test {
       let elementAnalysis = analysis.elements.a;
       assert.deepEqual(analysis.stylesFound, ["bar:scope", "bar:scope[state|awesome]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
-      assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: 1}]);
+      assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: [ 1 ]}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
     });
   }

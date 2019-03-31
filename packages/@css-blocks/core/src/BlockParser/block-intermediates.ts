@@ -1,8 +1,8 @@
 import { assertNever, whatever } from "@opticss/util";
-import { postcssSelectorParser as selectorParser, CompoundSelector } from "opticss";
+import { CompoundSelector, postcssSelectorParser as selectorParser } from "opticss";
 
 import { ATTR_PRESENT, AttrToken, ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
-import { Block, BlockClass, AttrValue } from "../BlockTree";
+import { AttrValue, Block, BlockClass } from "../BlockTree";
 
 export enum BlockType {
   block = 1,
@@ -146,7 +146,7 @@ export interface StyleTargets {
  */
 export function getStyleTargets(block: Block, sel: CompoundSelector): StyleTargets {
   let blockAttrs: AttrValue[] = [];
-  let blockClass: BlockClass;
+  let blockClass: BlockClass | undefined = undefined;
 
   for (let node of sel.nodes) {
     if (isRootNode(node)) {
@@ -157,13 +157,15 @@ export function getStyleTargets(block: Block, sel: CompoundSelector): StyleTarge
     }
     else if (isAttributeNode(node)) {
       // The fact that a base class exists for all state selectors is
-      // validated in `assertBlockObject`.
-      blockAttrs.push(blockClass!.ensureAttributeValue(toAttrToken(node)));
+      // validated in `assertBlockObject`. BlockClass may be undefined
+      // here if parsing a global state.
+      if (!blockClass) { continue; }
+      blockAttrs.push(blockClass.ensureAttributeValue(toAttrToken(node)));
     }
   }
 
   return {
     blockAttrs,
-    blockClasses: [ blockClass ],
+    blockClasses: blockClass ? [ blockClass ] : [],
   };
 }

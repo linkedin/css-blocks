@@ -1272,7 +1272,7 @@ export class TemplateAnalysisTests {
           analysis.bar (blocks/foo.block.css:2:42)
           biz.baz (blocks/biz.block.css:1:8)`,
 
-      this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
+    this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ".bar").end();
         assert.deepEqual(1, 1);
       }),

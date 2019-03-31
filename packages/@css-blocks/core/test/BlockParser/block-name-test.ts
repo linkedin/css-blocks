@@ -3,8 +3,8 @@ import { skip, suite, test } from "mocha-typescript";
 
 import { assertError } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
-import { MockImportRegistry } from "../util/MockImportRegistry";
 import { indented } from "../util/indented";
+import { MockImportRegistry } from "../util/MockImportRegistry";
 
 const { InvalidBlockSyntax } = require("../util/postcss-helper");
 

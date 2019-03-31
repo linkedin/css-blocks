@@ -99,8 +99,8 @@ describe("Stylesheet analysis", function() {
           staticStyles: [ 0, 3 ],
           dynamicClasses: [],
           dynamicAttributes: [
-            { condition: true, value: 1 },
-            { stringExpression: true, group: { bold: 4, italic: 5 } },
+            { condition: true, value: [ 1 ] },
+            { stringExpression: true, group: { bold: 4, italic: 5 }, value: [] },
           ],
           sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" } },
         },
@@ -153,8 +153,8 @@ describe("Stylesheet analysis", function() {
           staticStyles: [ 3, 7 ],
           dynamicClasses: [ {condition: true, whenTrue: [ 0 ]} ],
           dynamicAttributes: [
-            { condition: true, value: 1, container: 0 },
-            { stringExpression: true, group: { bold: 4, italic: 5 } },
+            { condition: true, value: [ 1 ], container: 0 },
+            { stringExpression: true, group: { bold: 4, italic: 5 }, value: [] },
           ],
           sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },

@@ -7,13 +7,13 @@ import {
   BlockType,
   NodeAndType,
   blockTypeName,
+  getStyleTargets,
   isAttributeNode,
   isClassLevelObject,
   isClassNode,
   isExternalBlock,
   isRootLevelObject,
   isRootNode,
-  getStyleTargets,
 } from "../block-intermediates";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
