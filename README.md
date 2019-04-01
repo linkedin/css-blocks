@@ -119,7 +119,7 @@ CSS Blocks is under active development and there are a number of features that h
 | ✅ | `block-name: "custom-name";` | Provide custom Block names in `:scope` for a nicer debugging experience. |
 | ✅ | `implements: block-name;` | A Block can declare that it implements one or more other Block's interfaces in its `:scope` selector and the compiler will ensure that all of those states and classes are styled locally. |
 | ✅ | `extends: block-name;` | A Block may specify it extends another Block in its `:scope` selector to inherit and extend all the class and state implementations therein. |
-| 🖌 | `apply: "block.path";` | Mixin-Style class and state composition. Apply other Blocks' Styles to one of yours.  |
+| ✅ | `composes: "block.path";` | Mixin-Style class and state composition. Apply other Blocks' Styles to one of yours.  |
 | **Functions** ||
 | ✅ | `resolve("block.path");` | Provide an explicit resolution for a given property against another Block. |
 | ❌ | `constrain(val1, val2 ... valN);` | Constrain this property to a list of specific values that may be set when this Block is extended. |
