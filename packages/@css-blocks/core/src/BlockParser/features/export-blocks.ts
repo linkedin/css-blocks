@@ -60,7 +60,6 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
           );
         }
         let localName = blockNames[remoteName];
-        console.log(remoteName, localName, block.identifier);
         if (!CLASS_NAME_IDENT.test(localName)) {
           throw new errors.InvalidBlockSyntax(
             `Illegal block name in export. "${localName}" is not a legal CSS identifier.`,

@@ -253,7 +253,7 @@ export class BlockPath {
         // If the end of an attribute, set the attribute token we've been working on and finish.
         case char === ATTR_END:
           if (!isAttribute(token)) { return this.throw(ERRORS.illegalCharNotInAttribute(char)); }
-          if ((!hasName(token) || !isQuoted(token)) && !isIdent(working)) {
+          if (hasName(token) && !isQuoted(token) && !isIdent(working)) {
             return this.throw(ERRORS.invalidIdent(working), working.length);
           }
           (hasName(token)) ? (token.value = working) : (token.name = working);

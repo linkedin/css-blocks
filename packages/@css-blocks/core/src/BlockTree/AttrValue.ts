@@ -6,7 +6,7 @@ import {
 } from "@opticss/element-analysis";
 import { assertNever, assertNeverCalled } from "@opticss/util";
 
-import { ATTR_PRESENT } from "../BlockSyntax";
+import { ATTR_PRESENT, CLASS_NAME_IDENT } from "../BlockSyntax";
 import { OutputMode,
  ResolvedConfiguration } from "../configuration";
 
@@ -15,6 +15,8 @@ import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
 import { RulesetContainer } from "./RulesetContainer";
 import { Style } from "./Style";
+
+const isIdent = (ident?: string): boolean => !ident || CLASS_NAME_IDENT.test(ident);
 
 /**
  * AttrValue represents the value of an Attribute in a particular Block.
@@ -80,7 +82,7 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
    */
   name(): string {
     let namespace = this.attribute.namespace ? `${this.attribute.namespace}|` : "";
-    let value = (this.value && this.value !== ATTR_PRESENT) ? `=${this.value}` : "";
+    let value = (this.value && this.value !== ATTR_PRESENT) ? isIdent(this.value) ? `=${this.value}` : `="${this.value}"` : "";
     return `[${namespace}${this.parent.name}${value}]`;
   }
 

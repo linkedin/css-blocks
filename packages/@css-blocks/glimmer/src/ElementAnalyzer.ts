@@ -274,14 +274,16 @@ export class ElementAnalyzer {
     } else {
       dynamicSubState = node.value;
     }
+    let found = false;
+    const errors: [string, AST.AttrNode, ResolvedFile][] = [];
     for (let container of containers) {
       let stateGroup = container.resolveAttribute({
         namespace: "state",
         name: stateName,
       });
-
       let state: AttrValue | null | undefined = undefined;
       if (stateGroup && staticSubStateName) {
+        found = true;
         state = stateGroup.resolveValue(staticSubStateName);
         if (state) {
           element.addStaticAttr(container, state);
@@ -290,6 +292,7 @@ export class ElementAnalyzer {
         }
       } else if (stateGroup) {
         if (stateGroup.hasResolvedValues()) {
+          found = true;
           if (dynamicSubState) {
             if (forRewrite) {
               element.addDynamicGroup(container, stateGroup, dynamicSubState);
@@ -301,6 +304,7 @@ export class ElementAnalyzer {
             throw cssBlockError(`No sub-state specified for ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
           }
         } else {
+          found = true;
           if (dynamicSubState) {
             if (dynamicSubState.type === "ConcatStatement") {
               throw cssBlockError(`The dynamic statement for a boolean state must be set to a mustache statement with no additional text surrounding it.`, dynamicSubState, this.template);
@@ -311,13 +315,17 @@ export class ElementAnalyzer {
             element.addStaticAttr(container, stateGroup.presenceRule!);
           }
         }
-      } else {
+      }
+      else {
         if (staticSubStateName) {
-          throw cssBlockError(`No state found named ${stateName} with a sub-state of ${staticSubStateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
+          errors.push([`No state found named ${stateName} with a sub-state of ${staticSubStateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template]);
         } else {
-          throw cssBlockError(`No state(s) found named ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
+          errors.push([`No state(s) found named ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template]);
         }
       }
+    }
+    if (!found) {
+      throw cssBlockError(...errors[0]);
     }
   }
 }

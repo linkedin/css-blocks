@@ -441,14 +441,14 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
           // If we should always apply these conditions, statically apply what makes sense for the BlockObj.
           else if (conditions === true) {
             if (isAttrValue(comp.style)) {
-              this.addStaticClass(comp.style.blockClass);
-              this.addStaticAttr(comp.style.blockClass, comp.style);
+              this.addedStyles.push({ klass: comp.style.blockClass });
+              this.addedStyles.push({ container: comp.style.blockClass, value: new Set([comp.style]) });
             }
             else {
-              this.addStaticClass(comp.style);
+              this.addedStyles.push({ klass: comp.style });
             }
           }
-          // Otherwise, these styles will be applied under these certian conditions.
+          // Otherwise, these styles will be applied under these certain conditions.
           else {
             this.addedStyles.push({
               value,
@@ -629,30 +629,16 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   }
 
   /**
-   * this maps the class and all the classes that the explicit class implies
+   * Map the class and all the classes that the explicit class implies
    * to all the blocks those classes belong to via inheritance.
    *
    * These classes become valid containers for AttrValues even if they are not
    * explicitly set on the element.
    */
   private mapBlocksForClass(klass: BlockClass) {
-    let explicitBlock = klass.block;
-    let blockHierarchy = new Set(explicitBlock.getAncestors());
-    blockHierarchy.add(explicitBlock);
-    let resolvedStyles = klass.resolveStyles();
-    for (let style of resolvedStyles) {
-      if (!isBlockClass(style)) continue;
-      let implicitBlock = style.block;
-      let hierarchy: Set<Block>;
-      if (blockHierarchy.has(implicitBlock)) {
-        hierarchy = blockHierarchy;
-      } else {
-        hierarchy = new Set(implicitBlock.getAncestors());
-        hierarchy.add(implicitBlock);
-      }
-      for (let block of hierarchy) {
-        this.allClasses.set(block, style);
-      }
+    this.allClasses.set(klass.block, klass);
+    for (let otherClass of klass.resolveInheritance()) {
+      this.allClasses.set(otherClass.block, otherClass);
     }
   }
 
