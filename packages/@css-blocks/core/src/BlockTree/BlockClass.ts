@@ -5,6 +5,7 @@ import { isString } from "util";
 import { ATTR_PRESENT, AttrToken, ROOT_CLASS } from "../BlockSyntax";
 import { BlockPath } from "../BlockSyntax";
 import { OutputMode, ResolvedConfiguration } from "../configuration";
+import { unionInto } from "../util/unionInto";
 
 import { Attribute } from "./Attribute";
 import { AttrValue } from "./AttrValue";
@@ -22,11 +23,19 @@ function ensureToken(input: AttrToken | string): AttrToken {
   return token;
 }
 
+export interface Composition {
+  style: Styles;
+  conditions: AttrValue[];
+}
+
 /**
  * Represents a Class present in the Block.
  */
 export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
   private _sourceAttribute: Attr | undefined;
+  private _composedStyles: Set<Composition> = new Set();
+  private _resolvedComposedStyles: Set<Composition> | undefined;
+
   public readonly rulesets: RulesetContainer<BlockClass>;
 
   constructor(name: string, parent: Block) {
@@ -224,15 +233,66 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
   }
 
   /**
+   * Returns the composed styles for this Block Object, and
+   * all ancestors in its inheritance tree.
+   *
+   * @returns The set of Style objects.
+   */
+  resolveComposedStyles(): Set<Composition> {
+    if (this._resolvedComposedStyles) { return this._resolvedComposedStyles; }
+    const composedStyles: Set<Composition> = new Set();
+    const resolvedStyles = this.resolveStyles();
+    for (let style of resolvedStyles) {
+      unionInto(composedStyles, style.composedStyles());
+    }
+    return this._resolvedComposedStyles = composedStyles;
+  }
+
+  /**
+   * Returns the styles that are composed by this style.
+   *
+   * @returns The set of Style objects.
+   */
+  composedStyles(): Set<Composition> {
+    return new Set(this._composedStyles);
+  }
+
+  /**
+   * Adds a new Style for this Style to compose.
+   * TODO: Currently, conditions are grouped exclusively by the 'and' operator.
+   *       We can abstract boolean operators to keep an internal representation
+   *       of logic between css and template files and only resolve them to the
+   *       requested language interface at rewrite time.
+   */
+  addComposedStyle(style: Styles, conditions: AttrValue[]): void {
+    this._composedStyles.add({ style, conditions });
+  }
+
+  /**
    * Debug utility to help test BlockClasses.
    * @param options  Options to pass to BlockClass' asDebug method.
    * @return Array of debug strings for this BlockClass
    */
   debug(config: ResolvedConfiguration): string[] {
     let result: string[] = [];
-    for (let style of this.all()) {
-      result.push(style.asDebug(config));
+    const composed = [...this._composedStyles];
+    if (composed.length) { result.push(" composes:"); }
+    for (let comp of composed) {
+      let isLast = composed.indexOf(comp) === composed.length - 1;
+      let conditional = comp.conditions.length ? ` when ${comp.conditions.map((c) => c.name()).join(" && ")}` : "";
+      result.push(` ${isLast ? "└──"  : "├──"} ${comp.style.asSource(true)}${conditional}`);
     }
+
+    const children = [...this.resolveAttributeValues().values()].map(s => s.asSource());
+    children.sort();
+    if (children.length) { result.push(" states:"); }
+    for (let n of children) {
+      let o = this.resolveAttributeValue(n);
+      if (!o) { continue; }
+      let isLast = children.indexOf(n) === children.length - 1;
+      result.push(` ${isLast ? "└──"  : "├──"} ${o.asDebug(config)}`);
+    }
+
     return result;
   }
 

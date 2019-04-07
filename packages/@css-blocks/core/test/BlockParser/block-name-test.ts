@@ -3,6 +3,7 @@ import { skip, suite, test } from "mocha-typescript";
 
 import { assertError } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
+import { indented } from "../util/indented";
 import { MockImportRegistry } from "../util/MockImportRegistry";
 
 const { InvalidBlockSyntax } = require("../util/postcss-helper");
@@ -56,10 +57,12 @@ export class BlockNames extends BEMProcessor {
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/imported.css");
       assert.deepEqual(
-        result.css.toString(),
-        `/* Source: foo/bar/imported.css\n` +
-        "   :scope => .imported\n" +
-        "   .not-root => .imported__not-root */\n",
+        result.css.toString().trim(),
+        indented`
+          /* Source: foo/bar/imported.css
+           * :scope (.imported)
+           *  └── .not-root (.imported__not-root)
+           */`,
       );
     });
   }

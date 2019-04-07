@@ -288,7 +288,7 @@ export abstract class Inheritable<
    * TypeScript can't figure out that `this` is the `Self` so this private
    * method casts it in a few places where it's needed.
    */
-  private asSelf(): Self {
+  protected asSelf(): Self {
     return <Self><object>this;
   }
 

@@ -150,16 +150,19 @@ export class RulesetContainer<S extends Styles> {
    * @param  pseudo  Optional pseudo element to get Rulesets for
    * @returns A set of Ruleset objects.
    */
-  getRulesets(prop: string, pseudo?: string): Set<Ruleset<S>> {
-    if (!pseudo) {
-      let res: Ruleset<S>[] = [];
-      for (let pseudo of this.getPseudos()) {
-        res = [...res, ...this.concerns.get(pseudo, prop)];
+  getRulesets(prop?: string, pseudo?: string): Set<Ruleset<S>> {
+    let res: Ruleset<S>[] = [];
+    let pseudos = pseudo ? [pseudo] : this.getPseudos();
+    if (!prop) {
+      for (let pseudo of pseudos) {
+        res = [...res, ...this.rules.get(pseudo)];
       }
       return new Set(res);
     }
-
-    return new Set(this.concerns.get(pseudo, prop));
+    for (let pseudo of pseudos) {
+      res = [...res, ...this.concerns.get(pseudo, prop)];
+    }
+    return new Set(res);
   }
 
   /**

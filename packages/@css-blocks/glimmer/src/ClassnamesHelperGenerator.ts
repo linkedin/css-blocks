@@ -193,8 +193,10 @@ function constructConditional(stateExpr: Conditional<BooleanAST> & HasAttrValue,
 function constructStateReferences(stateExpr: HasAttrValue, rewrite: IndexedClassRewrite<Style>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   // TODO: inheritance
-  expr.push(builders.number(1));
-  expr.push(builders.number(unwrap(rewrite.indexOf(stateExpr.value))));
+  expr.push(builders.number(stateExpr.value.size));
+  for (let val of stateExpr.value) {
+    expr.push(builders.number(unwrap(rewrite.indexOf(val))));
+  }
   return expr;
 }
 /*
@@ -213,7 +215,7 @@ function constructStateReferences(stateExpr: HasAttrValue, rewrite: IndexedClass
  *   2: number (s) of source styles set. s >= 1
  *   3..3+s-1: indexes of source styles set
  */
-function constructSwitch(stateExpr: Switch<StringAST> & HasGroup, rewrite: IndexedClassRewrite<Style>): AST.Expression[] {
+function constructSwitch(stateExpr: Switch<StringAST> & HasGroup & HasAttrValue, rewrite: IndexedClassRewrite<Style>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   let values = Object.keys(stateExpr.group);
   expr.push(builders.number(values.length));
@@ -226,8 +228,18 @@ function constructSwitch(stateExpr: Switch<StringAST> & HasGroup, rewrite: Index
   for (let value of values) {
     let obj = stateExpr.group[value];
     expr.push(builders.string(value));
-    expr.push(builders.number(1));
-    expr.push(builders.number(unwrap(rewrite.indexOf(obj))));
+    // If there are values provided for this conditional, they are meant to be
+    // applied instead of the selected attribute group member.
+    if (stateExpr.value.size) {
+      expr.push(builders.number(stateExpr.value.size));
+      for (let val of stateExpr.value) {
+        expr.push(builders.number(unwrap(rewrite.indexOf(val))));
+      }
+    }
+    else {
+      expr.push(builders.number(1));
+      expr.push(builders.number(unwrap(rewrite.indexOf(obj))));
+    }
   }
   return expr;
 }

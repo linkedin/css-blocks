@@ -1,9 +1,10 @@
-import { MultiMap, TwoKeyMultiMap, objectValues } from "@opticss/util";
+import { MultiMap, TwoKeyMultiMap, objectValues, whatever } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import { postcss } from "opticss";
 
-import { Ruleset, Style } from "../../BlockTree";
+import { AttrValue, BlockClass, Ruleset, Style, isBlockClass } from "../../BlockTree";
 import {
+  ElementAnalysis,
   isAttrGroup,
   isBooleanAttr,
   isFalseCondition,
@@ -122,6 +123,21 @@ function printRulesetConflict(prop: string, rule: Ruleset) {
   return out.join("\n");
 }
 
+function inStylesheetComposition(
+  blockClass: BlockClass,
+  analysis: ElementAnalysis<whatever, whatever, whatever>,
+  conflicts: ConflictMap,
+  allConditions: PropMap,
+) {
+  composed: for (let composed of blockClass.composedStyles()) {
+    for (let condition of composed.conditions) {
+      if (!analysis.hasAttribute(condition)) { break composed; }
+    }
+    evaluate(composed.style, allConditions, conflicts);
+    add(allConditions, composed.style);
+  }
+}
+
 /**
  * Prevent conflicting styles from being applied to the same element without an explicit resolution.
  * @param correlations The correlations object for a given element.
@@ -139,6 +155,10 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
   elAnalysis.static.forEach((obj) => {
     evaluate(obj, allConditions, conflicts);
     add(allConditions, obj);
+
+    // TODO: When we unify Element Analysis and Stylesheet Composition concepts, this check
+    //       can happen in another location during the BlockParse instead of Template Validation.
+    if (isBlockClass(obj)) { inStylesheetComposition(obj, elAnalysis, conflicts, allConditions); }
   });
 
   // For each dynamic class, test it against the static classes,
@@ -182,8 +202,10 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
     }
 
     else if (isBooleanAttr(condition)) {
-      evaluate(condition.value, allConditions, conflicts);
-      add(allConditions, condition.value);
+      for (let val of condition.value) {
+        evaluate(val as AttrValue, allConditions, conflicts);
+        add(allConditions, val as AttrValue);
+      }
     }
   });
 
@@ -194,7 +216,7 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
 
   // For every set of conflicting properties, throw the error.
   if (conflicts.size) {
-    let msg = "The following property conflicts must be resolved for these co-located Styles:";
+    let msg = "The following property conflicts must be resolved for these composed Styles:";
     let details = "\n";
     for (let [prop, matches] of conflicts.entries()) {
       if (!prop || !matches.length) { return; }

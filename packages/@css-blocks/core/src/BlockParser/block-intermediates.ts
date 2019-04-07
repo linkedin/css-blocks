@@ -1,7 +1,8 @@
 import { assertNever, whatever } from "@opticss/util";
-import { postcssSelectorParser as selectorParser } from "opticss";
+import { CompoundSelector, postcssSelectorParser as selectorParser } from "opticss";
 
 import { ATTR_PRESENT, AttrToken, ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
+import { AttrValue, Block, BlockClass } from "../BlockTree";
 
 export enum BlockType {
   block = 1,
@@ -126,4 +127,45 @@ export const isClassNode = selectorParser.isClassName;
  */
 export function isAttributeNode(node: selectorParser.Node): node is selectorParser.Attribute {
   return selectorParser.isAttribute(node) && node.namespace === STATE_NAMESPACE;
+}
+
+/**
+ * Describes all possible terminating styles in a CSS Blocks selector.
+ */
+export interface StyleTargets {
+  blockAttrs: AttrValue[];
+  blockClasses: BlockClass[];
+}
+
+/**
+ * Given a Block and ParsedSelector, return all terminating Style objects.
+ * These may be either a single `BlockClass` or 1 to many `AttrValue`s.
+ * @param block The Block to query against.
+ * @param sel The ParsedSelector
+ * @returns The array of discovered Style objects.
+ */
+export function getStyleTargets(block: Block, sel: CompoundSelector): StyleTargets {
+  let blockAttrs: AttrValue[] = [];
+  let blockClass: BlockClass | undefined = undefined;
+
+  for (let node of sel.nodes) {
+    if (isRootNode(node)) {
+      blockClass = block.rootClass;
+    }
+    else if (isClassNode(node)) {
+      blockClass = block.ensureClass(node.value);
+    }
+    else if (isAttributeNode(node)) {
+      // The fact that a base class exists for all state selectors is
+      // validated in `assertBlockObject`. BlockClass may be undefined
+      // here if parsing a global state.
+      if (!blockClass) { continue; }
+      blockAttrs.push(blockClass.ensureAttributeValue(toAttrToken(node)));
+    }
+  }
+
+  return {
+    blockAttrs,
+    blockClasses: blockClass ? [ blockClass ] : [],
+  };
 }

@@ -1,0 +1,5 @@
+@block util from "./utility.block.css";
+
+.red {
+  composes: "util.bold";
+}

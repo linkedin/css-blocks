@@ -1,0 +1,39 @@
+:scope {
+  font-style: italic;
+}
+
+:scope[state|pink] {
+  color: pink;
+}
+
+:scope[state|purple] {
+  color: purple;
+}
+
+.red {
+  color: red;
+}
+
+.green {
+  color: green;
+}
+
+.orange {
+  color: orange;
+}
+
+:scope[state|blue] {
+  color: blue;
+}
+
+:scope[state|yellow] {
+  color: yellow;
+}
+
+.brown {
+  color: brown;
+}
+
+.bold {
+  font-weight: bold;
+}

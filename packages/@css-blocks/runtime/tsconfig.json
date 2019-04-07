@@ -11,7 +11,7 @@
     "removeComments": true,
 
     // Environment Configuration
-    "experimentalDecorators": false,
+    "experimentalDecorators": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
 
@@ -34,6 +34,7 @@
     "outDir": "dist"
   },
   "include": [
-    "src/*.ts"
+    "src",
+    "test"
   ]
 }

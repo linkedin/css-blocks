@@ -1,11 +1,9 @@
 import { Attr } from "@opticss/element-analysis";
 
 import { ResolvedConfiguration } from "../configuration";
-import { unionInto } from "../util/unionInto";
 
 import { AnyNode, Inheritable } from "./Inheritable";
 import { RulesetContainer } from "./RulesetContainer";
-
 export { RulesetContainer, Resolution, Ruleset } from "./RulesetContainer";
 
 /**
@@ -73,8 +71,8 @@ export abstract class Style<
    * This takes inheritance, attr/class correlations, and any
    * other declared links between styles into account.
    *
-   * This block object is included in the returned result so the
-   * resolved value's size is always 1 or greater.
+   * This Block Object itself is included in the returned result
+   * so the resolved value's size is always 1 or greater.
    */
   public resolveStyles(): Set<Self> {
     if (this._resolvedStyles) {
@@ -83,27 +81,8 @@ export abstract class Style<
 
     let inheritedStyles = this.resolveInheritance();
     this._resolvedStyles = new Set(inheritedStyles);
-    this._resolvedStyles.add(this.asStyle());
-
-    for (let s of inheritedStyles) {
-      let implied = s.impliedStyles();
-      if (!implied) continue;
-      for (let i of implied) {
-        unionInto(this._resolvedStyles, i.resolveStyles());
-      }
-    }
-
+    this._resolvedStyles.add(this.asSelf());
     return new Set(this._resolvedStyles);
-  }
-
-  /**
-   * Returns the styles that are implied by this style.
-   * TODO: Placeholder for when we implement class composition. (https://github.com/linkedin/css-blocks/issues/72)
-   *
-   * @returns The Style objects, or undefined if no styles are implied.
-   */
-  impliedStyles(): Set<Self> | undefined {
-    return undefined;
   }
 
   /**
@@ -112,12 +91,8 @@ export abstract class Style<
    * @returns A debug string.
    */
   asDebug(config: ResolvedConfiguration) {
-    return `${this.asSource()} => ${this.cssClasses(config).map(n => `.${n}`).join(" ")}`;
+    const classes = this.cssClasses(config).join(".");
+    return `${this.asSource()}${classes ? ` (.${classes})` : ""}`;
   }
 
-  // TypeScript can't figure out that `this` is the `StyleType` so this private
-  // method casts it in a few places where it's needed.
-  private asStyle(): Self {
-    return <Self><object>this;
-  }
 }

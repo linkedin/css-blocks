@@ -1,19 +1,19 @@
 import { CompoundSelector, ParsedSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
-import { Block, BlockClass, Style } from "../../BlockTree";
+import { Block, Style } from "../../BlockTree";
 import * as errors from "../../errors";
 import { selectorSourceLocation as loc, sourceLocation } from "../../SourceLocation";
 import {
   BlockType,
   NodeAndType,
   blockTypeName,
+  getStyleTargets,
   isAttributeNode,
   isClassLevelObject,
   isClassNode,
   isExternalBlock,
   isRootLevelObject,
   isRootNode,
-  toAttrToken,
 } from "../block-intermediates";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
@@ -71,8 +71,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
       while (sel) {
 
         let isKey = (keySel === sel);
-        let blockClass: BlockClass | undefined = undefined;
-        let foundStyles: Style[] = [];
+        let foundStyles = getStyleTargets(block, sel);
 
         // If this is an external Style, move on. These are validated
         // in `assert-foreign-global-attribute`.
@@ -82,26 +81,13 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
           continue;
         }
 
-        for (let node of sel.nodes) {
-          if (isRootNode(node)) {
-            blockClass = block.rootClass;
-          }
-          else if (isClassNode(node)) {
-            blockClass = block.ensureClass(node.value);
-          }
-          else if (isAttributeNode(node)) {
-            // The fact that a base class exists for all state selectors is
-            // validated in `assertBlockObject`.
-            foundStyles.push(blockClass!.ensureAttributeValue(toAttrToken(node)));
-          }
-        }
-
-        // If we haven't found any terminating states, we're targeting the discovered Block class.
-        if (blockClass && !foundStyles.length) { foundStyles.push(blockClass); }
-
         // If this is the key selector, save this ruleset on the created style.
         if (isKey) {
-          foundStyles.map(s => styleRuleTuples.add([s, rule]));
+          if (foundStyles.blockAttrs.length) {
+            foundStyles.blockAttrs.map(s => styleRuleTuples.add([s, rule]));
+          } else {
+            foundStyles.blockClasses.map(s => styleRuleTuples.add([s, rule]));
+          }
         }
 
         sel = sel.next && sel.next.selector;
@@ -110,7 +96,7 @@ export async function constructBlock(root: postcss.Root, block: Block, file: str
   });
 
   // To allow self-referential block lookup when constructing ruleset concerns,
-  // we need to run `addRuleset()` only *after* all Style have been created.
+  // we need to run `addRuleset()` only *after* all Styles have been created.
   for (let [style, rule] of styleRuleTuples) {
     style.rulesets.addRuleset(file, rule);
   }

@@ -6,7 +6,7 @@ import {
 } from "@opticss/element-analysis";
 import { assertNever, assertNeverCalled } from "@opticss/util";
 
-import { ATTR_PRESENT } from "../BlockSyntax";
+import { ATTR_PRESENT, CLASS_NAME_IDENT } from "../BlockSyntax";
 import { OutputMode,
  ResolvedConfiguration } from "../configuration";
 
@@ -15,6 +15,8 @@ import { Block } from "./Block";
 import { BlockClass } from "./BlockClass";
 import { RulesetContainer } from "./RulesetContainer";
 import { Style } from "./Style";
+
+const isIdent = (ident?: string): boolean => !ident || CLASS_NAME_IDENT.test(ident);
 
 /**
  * AttrValue represents the value of an Attribute in a particular Block.
@@ -75,14 +77,22 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   }
 
   /**
+   * Return the bare AttrValue name.
+   * @returns String representing AttrValue.
+   */
+  name(): string {
+    let namespace = this.attribute.namespace ? `${this.attribute.namespace}|` : "";
+    let value = (this.value && this.value !== ATTR_PRESENT) ? isIdent(this.value) ? `=${this.value}` : `="${this.value}"` : "";
+    return `[${namespace}${this.parent.name}${value}]`;
+  }
+
+  /**
    * Export as original AttrValue name.
    * @param scope  Optional scope to resolve this name relative to. If `true`, return the Block name instead of `:scope`. If a Block object, return with the local name instead of `:scope`.
    * @returns String representing original AttrValue path.
    */
   asSource(scope?: Block | boolean): string {
-    let namespace = this.attribute.namespace ? `${this.attribute.namespace}|` : "";
-    let value = (this.value && this.value !== ATTR_PRESENT) ? `=${this.value}` : "";
-    return this.attribute.blockClass.asSource(scope) + `[${namespace}${this.parent.name}${value}]`;
+    return this.attribute.blockClass.asSource(scope) + this.name();
   }
 
   public cssClass(config: ResolvedConfiguration): string {

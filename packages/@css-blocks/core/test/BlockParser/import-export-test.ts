@@ -3,6 +3,7 @@ import { suite, test } from "mocha-typescript";
 
 import { assertError } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
+import { indented } from "../util/indented";
 import { MockImportRegistry } from "../util/MockImportRegistry";
 
 const { InvalidBlockSyntax } = require("../util/postcss-helper");
@@ -30,16 +31,20 @@ export class BlockImportExport extends BEMProcessor {
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/imported.css");
       assert.deepEqual(
-        result.css.toString(),
-        `/* Source: foo/bar/imported.css\n` +
-        "   :scope => .imported\n" +
-        "   .foo => .imported__foo\n" +
-        "   .foo[state|font=fancy] => .imported__foo--font-fancy\n" +
-        "   .foo[state|small] => .imported__foo--small\n" +
-        "   :scope[state|large] => .imported--large\n" +
-        "   :scope[state|theme=red] => .imported--theme-red */\n" +
-        ".test-block { color: red; }\n" +
-        ".test-block__b--big { color: blue; }\n",
+        result.css.toString().trim(),
+        indented`
+          /* Source: foo/bar/imported.css
+           * :scope (.imported)
+           *  states:
+           *  ├── :scope[state|large] (.imported--large)
+           *  └── :scope[state|theme=red] (.imported--theme-red)
+           *  └── .foo (.imported__foo)
+           *       states:
+           *       ├── .foo[state|font=fancy] (.imported__foo--font-fancy)
+           *       └── .foo[state|small] (.imported__foo--small)
+           */
+          .test-block { color: red; }
+          .test-block__b--big { color: blue; }`,
       );
     });
   }
@@ -58,8 +63,11 @@ export class BlockImportExport extends BEMProcessor {
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/imported.css");
       assert.deepEqual(
-        result.css.toString(),
-        `/* Source: foo/bar/imported.css\n   :scope => .phoebe */\n`,
+        result.css.toString().trim(),
+        indented`
+          /* Source: foo/bar/imported.css
+           * :scope (.phoebe)
+           */`,
       );
     });
   }
@@ -78,9 +86,11 @@ export class BlockImportExport extends BEMProcessor {
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/imported.css");
       assert.deepEqual(
-        result.css.toString(),
-        `/* Source: foo/bar/imported.css\n` +
-        "   :scope => .snow-flake */\n",
+        result.css.toString().trim(),
+        indented`
+          /* Source: foo/bar/imported.css
+           * :scope (.snow-flake)
+           */`,
       );
     });
   }
@@ -172,9 +182,12 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block ( a ) from "./imported.css";
                     @block-debug a to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
-    return assert.equal(
-      result.css,
-      `/* Source: a.css\n   :scope => .block-a */\n`,
+    return assert.deepEqual(
+      result.css.trim(),
+      indented`
+      /* Source: a.css
+       * :scope (.block-a)
+       */`,
     );
   }
 
@@ -196,9 +209,12 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block ( a ) from "./imported.css";
                     @block-debug a to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
-    return assert.equal(
-      result.css,
-      `/* Source: a.css\n   :scope => .block-a */\n`,
+    return assert.deepEqual(
+      result.css.trim(),
+      indented`
+        /* Source: a.css
+         * :scope (.block-a)
+         */`,
     );
   }
 
@@ -220,9 +236,12 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block ( foo ) from "./imported.css";
                     @block-debug foo to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
-    return assert.equal(
-      result.css,
-      `/* Source: a.css\n   :scope => .block-a */\n`,
+    return assert.deepEqual(
+      result.css.trim(),
+      indented`
+        /* Source: a.css
+         * :scope (.block-a)
+         */`,
     );
   }
 
@@ -244,10 +263,12 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block ( bar ) from "./imported.css";
                     @block-debug bar to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
-    return assert.equal(
-      result.css,
-      `/* Source: a.css\n   :scope => .block-a */\n`,
-    );
+    return assert.deepEqual(
+      result.css.trim(),
+      indented`
+       /* Source: a.css
+        * :scope (.block-a)
+        */`);
   }
 
   @test async "able to export multiple blocks under external alias of different name"() {
@@ -274,10 +295,15 @@ export class BlockImportExport extends BEMProcessor {
                     @block-debug foo to comment;
                     @block-debug bar to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
-    return assert.equal(
-      result.css,
-      `/* Source: a.css\n   :scope => .block-a */\n` +
-      `/* Source: b.css\n   :scope => .block-b */\n`,
+    return assert.deepEqual(
+      result.css.trim(),
+      indented`
+        /* Source: a.css
+         * :scope (.block-a)
+         */
+        /* Source: b.css
+         * :scope (.block-b)
+         */`,
     );
   }
   @test async "able to export without parens"() {
@@ -305,9 +331,14 @@ export class BlockImportExport extends BEMProcessor {
                     @block-debug bar to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
     return assert.equal(
-      result.css,
-      `/* Source: a.css\n   :scope => .block-a */\n` +
-      `/* Source: b.css\n   :scope => .block-b */\n`,
+      result.css.trim(),
+      indented`
+        /* Source: a.css
+         * :scope (.block-a)
+         */
+        /* Source: b.css
+         * :scope (.block-b)
+         */`,
     );
   }
 
@@ -336,9 +367,14 @@ export class BlockImportExport extends BEMProcessor {
                     @block-debug bar to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
     return assert.equal(
-      result.css,
-      `/* Source: a.css\n   :scope => .block-a */\n` +
-      `/* Source: b.css\n   :scope => .block-b */\n`,
+      result.css.trim(),
+      indented`
+        /* Source: a.css
+         * :scope (.block-a)
+         */
+        /* Source: b.css
+         * :scope (.block-b)
+         */`,
     );
   }
 
@@ -369,9 +405,14 @@ export class BlockImportExport extends BEMProcessor {
                     @block-debug bar to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
     return assert.equal(
-      result.css,
-      `/* Source: a.css\n   :scope => .block-a */\n` +
-      `/* Source: b.css\n   :scope => .block-b */\n`,
+      result.css.trim(),
+      indented`
+        /* Source: a.css
+         * :scope (.block-a)
+         */
+        /* Source: b.css
+         * :scope (.block-b)
+         */`,
     );
   }
 
@@ -408,10 +449,17 @@ export class BlockImportExport extends BEMProcessor {
                     @block-debug baz to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
     return assert.equal(
-      result.css,
-      `/* Source: a.css\n   :scope => .block-a */\n` +
-      `/* Source: b.css\n   :scope => .block-b */\n` +
-      `/* Source: c.css\n   :scope => .block-c */\n`,
+      result.css.trim(),
+      indented`
+        /* Source: a.css
+         * :scope (.block-a)
+         */
+        /* Source: b.css
+         * :scope (.block-b)
+         */
+        /* Source: c.css
+         * :scope (.block-c)
+         */`,
     );
   }
 
@@ -447,11 +495,20 @@ export class BlockImportExport extends BEMProcessor {
                     @block-debug baz to comment;`;
     let result = await this.process("test.css", inputCSS, {importer: imports.importer()});
     return assert.equal(
-      result.css,
-      `/* Source: imported.css\n   :scope => .imported-block */\n` +
-      `/* Source: a.css\n   :scope => .block-a */\n` +
-      `/* Source: b.css\n   :scope => .block-b */\n` +
-      `/* Source: c.css\n   :scope => .block-c */\n`,
+      result.css.trim(),
+      indented`
+        /* Source: imported.css
+         * :scope (.imported-block)
+         */
+        /* Source: a.css
+         * :scope (.block-a)
+         */
+        /* Source: b.css
+         * :scope (.block-b)
+         */
+        /* Source: c.css
+         * :scope (.block-c)
+         */`,
     );
   }
 

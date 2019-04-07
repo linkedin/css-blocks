@@ -1,0 +1,46 @@
+@block util from "./utility.block.css";
+@block inherited from "./inherited-compositions.block.css";
+
+:scope {
+  extends: inherited;
+}
+
+.red {
+  composes: "util.red";
+}
+
+.green {
+  composes: "util.green";
+}
+
+.green-bold {
+  composes: "util.green", "util.bold";
+}
+
+.pink {
+  composes: "util[state|pink]";
+}
+
+.purple {
+  composes: "util[state|purple]";
+}
+
+.blue[state|active] {
+  composes: "util[state|blue]";
+}
+
+.orange[state|active] {
+  composes: "util.orange";
+}
+
+.yellow[state|color="none"] { }
+
+.yellow[state|color="yellow"] {
+  composes: "util[state|yellow]";
+}
+
+.brown[state|color="none"] { }
+
+.brown[state|color="yellow"] {
+  composes: "util.brown";
+}
