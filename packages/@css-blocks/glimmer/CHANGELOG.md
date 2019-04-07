@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.21.0"></a>
+# [0.21.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v0.20.0...v0.21.0) (2019-04-07)
+
+
+### Features
+
+* In-Stylesheet Block Composition ([#229](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/issues/229)) ([da10830](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/da10830))
+
+
+
+
+
 <a name="0.20.0"></a>
 # [0.20.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v0.20.0-beta.8...v0.20.0) (2019-03-11)
 
