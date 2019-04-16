@@ -6,7 +6,7 @@
     "ember-engine"
   ],
   "dependencies": {
-    "@css-blocks/ember-cli": "^0.20.0-beta.0",
+    "@css-blocks/ember-cli": "*",
     "ember-cli": "*",
     "ember-cli-htmlbars": "*",
     "ember-cli-babel": "^6.16.0",
