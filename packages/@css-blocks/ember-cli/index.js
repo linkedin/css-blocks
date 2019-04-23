@@ -1,11 +1,10 @@
 'use strict';
-const fs = require("fs");
 const path = require("path");
 
 const { CSSBlocksAggregate, CSSBlocksAnalyze, Transport } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
+const { NodeJsImporter } = require("@css-blocks/core");
 
-const BroccoliStew = require("broccoli-stew");
 const BroccoliConcat = require("broccoli-concat");
 const BroccoliMerge = require("broccoli-merge-trees");
 
@@ -23,7 +22,12 @@ const NOOP = (tree) => tree;
 
 // Default no-op plugin for templates with no associated CSS Block.
 // `visitors` is used by Ember < 3.0.0. `visitor` is used by Glimmer and Ember >= 3.0.0.
-const NOOP_PLUGIN = { name: 'css-blocks-noop', visitors: {}, visitor: {} };
+const NOOP_PLUGIN = {
+  name: 'css-blocks-noop',
+  visitors: {},
+  visitor: {},
+  cacheKey: () => { return 1; }
+};
 
 module.exports = {
   name: '@css-blocks/ember-cli',
@@ -254,11 +258,18 @@ module.exports = {
     const options = app.options["css-blocks"]
       ? app.options["css-blocks"] // Do not clone! Contains non-json-safe data.
       : {
+        aliases: {},
         parserOpts: {},
         analysisOpts: {},
         optimization: {},
       };
-    options.parserOpts || (options.parserOpts = {});
+    options.aliases      || (options.aliases = {});
+
+    // if (!options.aliases[])
+
+    options.parserOpts   || (options.parserOpts = {
+      importer: new NodeJsImporter(options.aliases),
+    });
     options.analysisOpts || (options.analysisOpts = {});
     options.optimization || (options.optimization = {});
 
@@ -299,11 +310,11 @@ module.exports = {
     analyzer.transport = transport;
 
     const broccoliOptions = {
-      entry,
       analyzer,
-      root: rootDir,
+      entry,
       output: options.output,
       optimization: options.optimization,
+      root: rootDir,
     };
 
     return (tree) => {
