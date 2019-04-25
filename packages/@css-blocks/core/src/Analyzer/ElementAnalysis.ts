@@ -17,7 +17,6 @@ import {
   MultiMap,
   ObjectDictionary,
   objectValues,
-  whatever,
 } from "@opticss/util";
 
 import {
@@ -74,7 +73,7 @@ export interface Switch<StringExpression> {
   disallowFalsy?: boolean;
 }
 
-export function isSwitch(o: object): o is Switch<whatever> {
+export function isSwitch(o: object): o is Switch<unknown> {
   return o.hasOwnProperty("stringExpression");
 }
 

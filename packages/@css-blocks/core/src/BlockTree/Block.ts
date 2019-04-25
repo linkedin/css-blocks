@@ -1,7 +1,6 @@
 import * as crypto from "crypto";
 
 import { MultiMap, ObjectDictionary } from "@opticss/util";
-import { whatever } from "@opticss/util";
 import {
   CompoundSelector,
   ParsedSelector,
@@ -227,7 +226,7 @@ export class Block
     return this.all().find(e => e.asSource() === sourceName);
   }
 
-  eachBlockReference(callback: (name: string, block: Block) => whatever) {
+  eachBlockReference(callback: (name: string, block: Block) => unknown) {
     for (let name of Object.keys(this._blockReferences)) {
       callback(name, this._blockReferences[name]);
     }

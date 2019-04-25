@@ -1,4 +1,4 @@
-import { MultiMap, TwoKeyMultiMap, objectValues, whatever } from "@opticss/util";
+import { MultiMap, TwoKeyMultiMap, objectValues } from "@opticss/util";
 import * as propParser from "css-property-parser";
 import { postcss } from "opticss";
 
@@ -125,7 +125,7 @@ function printRulesetConflict(prop: string, rule: Ruleset) {
 
 function inStylesheetComposition(
   blockClass: BlockClass,
-  analysis: ElementAnalysis<whatever, whatever, whatever>,
+  analysis: ElementAnalysis<unknown, unknown, unknown>,
   conflicts: ConflictMap,
   allConditions: PropMap,
 ) {

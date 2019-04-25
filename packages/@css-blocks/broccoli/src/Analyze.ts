@@ -46,7 +46,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
    * @param transport Magical shared-memory Transport object shared with the aggregator and Template transformer.
    * @param options Analysis options.
    */
-  // tslint:disable-next-line:prefer-whatever-to-any
+  // tslint:disable-next-line:prefer-unknown-to-any
   constructor(inputNode: any, transport: Transport, options: BroccoliOptions) {
     super([inputNode], {
       name: "broccoli-css-blocks-analyze",

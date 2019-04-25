@@ -1,4 +1,3 @@
-import { whatever } from "@opticss/util";
 import { assert } from "chai";
 import { postcss } from "opticss";
 
@@ -15,7 +14,7 @@ export function assertError(errorType: typeof cssBlocks.CssBlockError, message: 
     });
 }
 
-export function assertParseError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: Promise<whatever>) {
+export function assertParseError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: Promise<unknown>) {
   return promise.then(
     () => {
       assert(false, `Error ${errorType.name} was not raised.`);

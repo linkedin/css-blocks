@@ -4,12 +4,12 @@ import {
   StyleMapping,
   resolveConfiguration,
 } from "@css-blocks/core";
-import { ObjectDictionary, whatever } from "@opticss/util";
+import { ObjectDictionary } from "@opticss/util";
 
 import { TEMPLATE_TYPE } from "../Analyzer/Template";
 
 export interface RewriterOptions {
-  meta?: ObjectDictionary<whatever>;
+  meta?: ObjectDictionary<unknown>;
   cssBlocks: {
     styleMapping: StyleMapping<TEMPLATE_TYPE> | null;
     compilationOptions: CSSBlocksOptions;

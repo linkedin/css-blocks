@@ -1,4 +1,4 @@
-import { ObjectDictionary, whatever } from "@opticss/util";
+import { ObjectDictionary } from "@opticss/util";
 
 import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
@@ -8,10 +8,10 @@ import { ResolvedConfiguration } from "../configuration";
  * options hash where custom importers can request for additional importer configuration
  * to be passed. All `Importer` methods are passed the configuration hash.
  */
-export type ImporterData = ObjectDictionary<whatever>;
+export type ImporterData = ObjectDictionary<unknown>;
 
 /**
- * A FileIdentifier is a string with a whatever internal encoding is needed to uniquely resolve
+ * A FileIdentifier is a string with a unknown internal encoding is needed to uniquely resolve
  * a file or relative importPath against the identifier by an importer. FileIdentifiers may be
  * serialized across processes and should not encode any transient state. If an importer
  * wraps another importer, it is responsible for mangling and de-mangling the import identifier to

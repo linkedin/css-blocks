@@ -3,7 +3,7 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from "@opticss/template-api";
-import { Maybe, none, whatever } from "@opticss/util";
+import { Maybe, none } from "@opticss/util";
 import { File } from "babel-types";
 
 export type TEMPLATE_TYPE = "Opticss.JSXTemplate";
@@ -26,7 +26,7 @@ export class JSXTemplate implements TemplateInfo<TEMPLATE_TYPE> {
     this.ast = none("The template was not yet parsed.");
   }
 
-  static deserialize(identifier: string, ..._data: whatever[]): JSXTemplate {
+  static deserialize(identifier: string, ..._data: unknown[]): JSXTemplate {
     return new JSXTemplate(identifier, <string>_data[0]);
   }
 

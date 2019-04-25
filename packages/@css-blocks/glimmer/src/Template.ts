@@ -3,7 +3,6 @@ import {
   TemplateInfo,
   TemplateInfoFactory,
 } from "@opticss/template-api";
-import { whatever } from "@opticss/util";
 
 export const TEMPLATE_NAME = "GlimmerTemplates.ResolvedFile";
 export type TEMPLATE_TYPE = typeof TEMPLATE_NAME;
@@ -34,7 +33,7 @@ export class ResolvedFile implements TemplateInfo<TEMPLATE_TYPE> {
       ],
     };
   }
-  static deserialize(identifier: string, str: whatever, fullPath: whatever): ResolvedFile {
+  static deserialize(identifier: string, str: unknown, fullPath: unknown): ResolvedFile {
     return new ResolvedFile(<string>str, identifier, <string>fullPath);
   }
 }

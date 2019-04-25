@@ -1,4 +1,4 @@
-import { assertNever, whatever } from "@opticss/util";
+import { assertNever } from "@opticss/util";
 import { CompoundSelector, postcssSelectorParser as selectorParser } from "opticss";
 
 import { ATTR_PRESENT, AttrToken, ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
@@ -114,7 +114,7 @@ export function isClassLevelObject(object: NodeAndType): object is ClassAttribut
 /**
  * Check if given selector node is targeting the root block node
  */
-export function isRootNode(node: whatever): node is selectorParser.Pseudo {
+export function isRootNode(node: unknown): node is selectorParser.Pseudo {
   return selectorParser.isPseudoClass(node) && node.value === ROOT_CLASS;
 }
 

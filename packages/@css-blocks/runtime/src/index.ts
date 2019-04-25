@@ -1,5 +1,3 @@
-// we can't import this from opticss because we compile for an older version of javascript.
-export type whatever = string | number | boolean | symbol | object | null | undefined | void;
 const enum SourceExpression {
   ternary = 0,
   dependency = 1,
@@ -22,15 +20,15 @@ const enum BooleanExpr {
 }
 
 const e = (m: string): never => { throw new Error(m); };
-const toStr = (v: whatever): string => typeof v === "symbol" ? v.toString() : "" + v;
-const num = (v: whatever[]): number => typeof v[0] === "number" ? <number>(v.shift()!) : e("not a number: " + toStr(v[0]));
-const str = (v: whatever[]): string => toStr(v.shift());
-const truthyString = (v: whatever[]): string | undefined => {
+const toStr = (v: unknown): string => typeof v === "symbol" ? v.toString() : "" + v;
+const num = (v: unknown[]): number => typeof v[0] === "number" ? <number>(v.shift()) : e("not a number: " + toStr(v[0]));
+const str = (v: unknown[]): string => toStr(v.shift());
+const truthyString = (v: unknown[]): string | undefined => {
   let s = v.shift();
   if (!s && s !== 0) return;
-  return s.toString();
+  return (s as string | number).toString();
 };
-const bool = (v: whatever[]): boolean => !!v.shift();
+const bool = (v: unknown[]): boolean => !!v.shift();
 
 type IsSourceSet = (n: number) => boolean;
 type SetSource = (n: number) => void;
@@ -108,7 +106,7 @@ type Abort = () => false;
  *   - switch statements where the value is not the same as the attribute value names
  */
 // tslint:disable-next-line:no-default-export
-export default function c(staticClasses: string | whatever[], stack?: whatever[]): string {
+export default function c(staticClasses: string | unknown[], stack?: unknown[]): string {
   if (Array.isArray(staticClasses)) {
     stack = staticClasses;
     staticClasses = "";
@@ -141,7 +139,7 @@ export default function c(staticClasses: string | whatever[], stack?: whatever[]
 }
 
 function sourceExpr(
-  stack: whatever[],
+  stack: unknown[],
   isSourceSet: IsSourceSet, setSource: SetSource,
   abort: Abort,
 ): void {
@@ -201,7 +199,7 @@ function sourceExpr(
   }
 }
 
-function boolExpr(stack: whatever[], isSourceSet: IsSourceSet): boolean {
+function boolExpr(stack: unknown[], isSourceSet: IsSourceSet): boolean {
   let result: boolean;
   let type = num(stack);
   switch (type) {

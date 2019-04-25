@@ -90,7 +90,7 @@ class TestSink extends Inheritable<
   get ChildConstructor(): never { return assertNeverCalled(); }
   get parent(): SinkNode["parent"] { return this._parent!; }
   get root(): SinkNode["root"] { return this.parent.root; }
-  // tslint:disable-next-line:prefer-whatever-to-any
+  // tslint:disable-next-line:prefer-unknown-to-any
   public lookup(_path: string, _errLoc?: SourceLocation | undefined): Inheritable<any, any, any, any> | undefined {
     throw new Error("Method not implemented.");
   }

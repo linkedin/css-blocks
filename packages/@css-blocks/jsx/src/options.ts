@@ -6,7 +6,7 @@ import { BabylonOptions, PluginName } from "babylon";
 // so, we can safely enable EVERY feature possible without worrying about
 // which the consumer actually uses, or if the features needs a runtime.
 // TODO: Remove this tslint disable when types for Babylon 7 are published.
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 const BABEL_PLUGINS: any = [
   "jsx",
   "doExpressions",

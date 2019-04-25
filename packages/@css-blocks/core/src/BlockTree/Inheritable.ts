@@ -12,7 +12,7 @@
 import { ObjectDictionary } from "@opticss/util";
 import { ParsedSelector, SelectorFactory, parseSelector, postcss } from "opticss";
 
-/* tslint:disable:prefer-whatever-to-any */
+/* tslint:disable:prefer-unknown-to-any */
 export type AnyNode = Inheritable<any, any, any, any, any>;
 
 export abstract class Inheritable<
@@ -25,7 +25,7 @@ export abstract class Inheritable<
 
   protected abstract get ChildConstructor(): { new(token: any, parent: Self): Child } | never;
 
-/* tslint:enable:prefer-whatever-to-any */
+/* tslint:enable:prefer-unknown-to-any */
 
   private readonly parsedRuleSelectors: WeakMap<postcss.Rule, ParsedSelector[]> | null;
 

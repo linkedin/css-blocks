@@ -6,7 +6,6 @@
  * state mappings for state style applications managed internally to
  * the helper or component (ex: `{{link-to}}`'s `activeClass`).
  */
-import { whatever } from "@opticss/util";
 
 interface IBuiltIns {
   "link-to": object;
@@ -22,7 +21,7 @@ const BUILT_INS: IBuiltIns = {
 
 export type BuiltIns = keyof IBuiltIns;
 
-export function isEmberBuiltIn(name: whatever): name is keyof IBuiltIns {
+export function isEmberBuiltIn(name: unknown): name is keyof IBuiltIns {
   if (typeof name === "string" && BUILT_INS[name]) { return true; }
   return false;
 }

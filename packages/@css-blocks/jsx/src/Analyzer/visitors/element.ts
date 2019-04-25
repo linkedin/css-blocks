@@ -70,7 +70,7 @@ export class JSXElementAnalyzer {
     while (attrPath && attrPath.node) {
       if (this.isClassAttribute(attrPath.node)) { found.push(attrPath); }
       // Any because the type def is incomplete
-      // tslint:disable-next-line:prefer-whatever-to-any
+      // tslint:disable-next-line:prefer-unknown-to-any
       attrPath = (<any>attrPath).getNextSibling() as NodePath<JSXAttribute> | undefined;
     }
     return found;

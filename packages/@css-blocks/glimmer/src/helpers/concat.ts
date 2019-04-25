@@ -1,4 +1,4 @@
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 export function concat(args: any[]) {
   return args.join("");
 }

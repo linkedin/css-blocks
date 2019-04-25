@@ -1,4 +1,4 @@
-// import { whatever } from "@opticss/util";
+// import { unknown } from "@opticss/util";
 import { outdent } from "outdent";
 // function getFirstIndentedString(strings: string[][]): string | undefined {
 //   for (let group of strings) {

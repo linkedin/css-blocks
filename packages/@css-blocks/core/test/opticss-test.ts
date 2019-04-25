@@ -7,7 +7,6 @@ import {
 } from "@opticss/template-api";
 import {
   clean,
-  whatever,
 } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
@@ -24,7 +23,7 @@ import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
 @suite("Optimization")
 export class TemplateAnalysisTests {
 
-  private useAttrs(element: ElementAnalysis<whatever, whatever, whatever>, klass: BlockClass) {
+  private useAttrs(element: ElementAnalysis<unknown, unknown, unknown>, klass: BlockClass) {
     for (let attribute of klass.getAttributes()) {
       if (attribute.hasResolvedValues()) {
         element.addDynamicGroup(klass, attribute, null);
@@ -36,7 +35,7 @@ export class TemplateAnalysisTests {
   }
   private useBlockStyles(
     analysis: Analysis<"Opticss.Template">, block: Block, blockName: string,
-    useAttrsCallback?: (container: BlockClass, element: ElementAnalysis<whatever, whatever, whatever>) => void,
+    useAttrsCallback?: (container: BlockClass, element: ElementAnalysis<unknown, unknown, unknown>) => void,
   ) {
     analysis.addBlock(blockName, block);
 

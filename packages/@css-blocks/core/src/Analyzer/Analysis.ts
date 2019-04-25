@@ -53,7 +53,7 @@ export class Analysis<K extends keyof TemplateTypes> {
    * A per-element correlation of styles used. The current correlation is added
    * to this list when [[endElement]] is called.
    */
-  // tslint:disable-next-line:prefer-whatever-to-any
+  // tslint:disable-next-line:prefer-unknown-to-any
   elements: Map<string, ElementAnalysis<any, any, any>>;
 
   /**
@@ -67,7 +67,7 @@ export class Analysis<K extends keyof TemplateTypes> {
    * The current element, created when calling [[startElement]].
    * The current element is unset after calling [[endElement]].
    */
-  // tslint:disable-next-line:prefer-whatever-to-any
+  // tslint:disable-next-line:prefer-unknown-to-any
   private currentElement: ElementAnalysis<any, any, any> | undefined;
 
   /**
@@ -367,7 +367,7 @@ export class Analysis<K extends keyof TemplateTypes> {
       analysis.elements.set(elID, element);
     });
 
-    // tslint:disable-next-line:prefer-whatever-to-any
+    // tslint:disable-next-line:prefer-unknown-to-any
     return analysis;
   }
 

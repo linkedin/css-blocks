@@ -11,7 +11,6 @@ import {
   NodeVisitor,
   Syntax,
 } from "@glimmer/syntax";
-import { whatever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 import { GlimmerAnalysis } from "./Analyzer";
@@ -54,7 +53,7 @@ export class GlimmerRewriter implements ASTPlugin {
     this.elementAnalyzer = new ElementAnalyzer(this.analysis, this.cssBlocksOpts);
   }
 
-  debug(message: string, ...args: whatever[]): void {
+  debug(message: string, ...args: unknown[]): void {
     DEBUG(`${this.template.path}: ${message}`, ...args);
   }
 

@@ -11,7 +11,6 @@ import {
 } from "@opticss/element-analysis";
 import {
   assertNever,
-  whatever,
 } from "@opticss/util";
 import { expect } from "chai";
 import { inspect } from "util";
@@ -25,12 +24,12 @@ import {
 import { CLASSNAMES_HELPER_NAME } from "../src/helpers";
 import { classnames } from "../src/helpers/classnames";
 
-function run(ast: AST.MustacheStatement, helper?: (name: string, params: whatever[]) => whatever) {
+function run(ast: AST.MustacheStatement, helper?: (name: string, params: unknown[]) => unknown) {
   let args = ast.params.map(p => astToLiterals(p, helper));
   return classnames(args);
 }
 
-function astToLiterals(node: AST.Expression, helper?: (name: string, params: whatever[]) => whatever): whatever {
+function astToLiterals(node: AST.Expression, helper?: (name: string, params: unknown[]) => unknown): unknown {
   switch (node.type) {
     case "SubExpression":
       if (helper) return helper(node.path.original, node.params.map(p => astToLiterals(p, helper)));

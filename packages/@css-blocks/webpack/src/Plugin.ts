@@ -45,7 +45,7 @@ export interface CssBlocksWebpackOptions {
 }
 
 // there's not any good types for webpack's internals.
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 export type WebpackAny = any;
 
 export interface BlockCompilationError {
@@ -114,7 +114,7 @@ export class CssBlocksPlugin
       entries = webpackEntry;
     }
     else if (typeof webpackEntry === "object") {
-      entries = flatten(objectValues(webpackEntry));
+      entries = flatten<string>(objectValues(webpackEntry));
     }
 
     let pending: PendingResult = this.analyzer.analyze("", entries)

@@ -3,7 +3,7 @@ import {
   TemplateIntegrationOptions,
   TemplateTypes,
  } from "@opticss/template-api";
-import { MultiMap, whatever } from "@opticss/util";
+import { MultiMap } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 import { BlockFactory } from "../BlockParser";
@@ -87,7 +87,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
 
   analysisCount(): number { return this.analysisMap.size; }
 
-  eachAnalysis(cb: (v: Analysis<K>) => whatever) { this.analysisMap.forEach(cb); }
+  eachAnalysis(cb: (v: Analysis<K>) => unknown) { this.analysisMap.forEach(cb); }
 
   analyses(): Analysis<K>[] {
     let analyses: Analysis<K>[] = [];

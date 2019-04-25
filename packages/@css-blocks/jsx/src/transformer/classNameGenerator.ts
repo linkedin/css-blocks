@@ -240,7 +240,7 @@ function constructSwitch(attr: Switch<StringAST> & HasGroup & HasAttrValue, rewr
   return expr;
 }
 
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 function constructOutputArgs(rewrite: IndexedClassRewrite<any>): Array<Expression> {
   let expr = new Array<Expression>();
   for (let out of rewrite.dynamicClasses) {

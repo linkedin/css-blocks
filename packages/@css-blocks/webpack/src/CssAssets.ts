@@ -11,7 +11,7 @@ import { ConcatSource, RawSource, Source, SourceMapSource } from "webpack-source
 
 import { WebpackAny } from "./Plugin";
 
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 export type PostcssAny = any;
 
 const debug = debugGenerator("css-blocks:webpack:assets");

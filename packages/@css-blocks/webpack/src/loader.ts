@@ -27,7 +27,7 @@ function trackBlockDependencies(loaderContext: LoaderContext, block: Block, opti
   });
 }
 
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 export function CSSBlocksWebpackAdapter(this: LoaderContext, source: any, map: any): void {
 
   // Make ourselves async. We'll be waiting for Blocks to finish compiling.
@@ -36,7 +36,7 @@ export function CSSBlocksWebpackAdapter(this: LoaderContext, source: any, map: a
 
   let thisLoader = this.loaders[this.loaderIndex];
   let path = this.resourcePath;
-  // tslint:disable-next-line:prefer-whatever-to-any
+  // tslint:disable-next-line:prefer-unknown-to-any
   let options: any;
 
   if (thisLoader.options) {

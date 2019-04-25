@@ -30,7 +30,7 @@ export class CSSBlocksAggregate extends BroccoliPlugin {
    * @param transport Magical shared-memory Transport object shared with the aggregator and Template transformer.
    * @param out Output file name.
    */
-  // tslint:disable-next-line:prefer-whatever-to-any
+  // tslint:disable-next-line:prefer-unknown-to-any
   constructor(inputNodes: any[], transport: Transport, out: string) {
     super(inputNodes, {
       name: "broccoli-css-blocks-aggregate",

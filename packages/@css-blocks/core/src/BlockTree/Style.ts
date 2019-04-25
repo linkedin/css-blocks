@@ -10,7 +10,7 @@ export { RulesetContainer, Resolution, Ruleset } from "./RulesetContainer";
  * Abstract class that serves as the base for all Styles. Contains basic
  * properties and abstract methods that extenders must implement.
  */
-/* tslint:disable:prefer-whatever-to-any */
+/* tslint:disable:prefer-unknown-to-any */
 
 export abstract class Style<
   Self extends Style<Self, Root, Parent, Child, Token>,
@@ -19,12 +19,12 @@ export abstract class Style<
   Child extends Inheritable<any, Root, Self, AnyNode | never, any> | never,
   Token extends any = string,
 > extends Inheritable<Self, Root, Parent, Child> {
-/* tslint:enable:prefer-whatever-to-any */
+/* tslint:enable:prefer-unknown-to-any */
 
   /** cache of resolveStyles() */
   private _resolvedStyles: Set<Self> | undefined;
 
-  // tslint:disable-next-line:prefer-whatever-to-any
+  // tslint:disable-next-line:prefer-unknown-to-any
   public abstract readonly rulesets: RulesetContainer<any>;
 
   /**

@@ -82,7 +82,7 @@ export function classnamesSubexpr(rewrite: IndexedClassRewrite<Style>, element: 
   );
 }
 
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 function constructArgs(rewrite: IndexedClassRewrite<any>, element: TemplateElement): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   expr.push(builders.number(element.dynamicClasses.length + element.dynamicAttributes.length));
@@ -92,7 +92,7 @@ function constructArgs(rewrite: IndexedClassRewrite<any>, element: TemplateEleme
   return expr;
 }
 
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 function constructSourceArgs(rewrite: IndexedClassRewrite<any>, element: TemplateElement): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   for (let classes of element.dynamicClasses) {
@@ -286,7 +286,7 @@ function moustacheToStringExpression(stringExpression: StringAST): AST.Expressio
   }
 }
 
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 function constructOutputArgs(rewrite: IndexedClassRewrite<any>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   for (let out of rewrite.dynamicClasses) {

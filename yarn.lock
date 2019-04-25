@@ -1551,28 +1551,32 @@
   version "1.1.1"
   resolved "https://registry.npmjs.org/@nodelib/fs.stat/-/fs.stat-1.1.1.tgz#53f349bb986ab273d601175aa1b25a655ab90ee3"
 
-"@opticss/code-style@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.npmjs.org/@opticss/code-style/-/code-style-0.4.0.tgz#469db8fc218a2900ebd1a40f1976efdc805c7856"
+"@opticss/code-style@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.npmjs.org/@opticss/code-style/-/code-style-0.6.0.tgz#3475e6420c4d6c4bdd7445eb793ae83bfbbf915d"
+  integrity sha512-K0n2/idu5E6Whauz26qeEAuA5S3jke+KTACwoLso9LVQ/GTieo/Cxs0q0tQn+O/4LpMCINHeleIxYa7qfx+guA==
 
-"@opticss/element-analysis@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.npmjs.org/@opticss/element-analysis/-/element-analysis-0.4.0.tgz#3eb75ffe843d33a1f2d318ab930aa7a9868ce43a"
+"@opticss/element-analysis@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.npmjs.org/@opticss/element-analysis/-/element-analysis-0.6.0.tgz#003c81821c459cc62cc6f389ea65905b4d64aa52"
+  integrity sha512-eJzZJb1gEqXBO/G5ze9rLmcOeI8+99yk64T3QR1cskS8uLUwq0RGBpiZsRuNugigmxefJ3pT4d6CgY0l6k4vqA==
   dependencies:
-    "@opticss/util" "^0.4.0"
+    "@opticss/util" "^0.6.0"
 
-"@opticss/template-api@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.npmjs.org/@opticss/template-api/-/template-api-0.4.0.tgz#041ef183e4fc3c6f280a8e2a9d4d5db10fae0237"
+"@opticss/template-api@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.npmjs.org/@opticss/template-api/-/template-api-0.6.0.tgz#71585df5a2ed403a14b72b3d2bd846f631a1b517"
+  integrity sha512-EEpOiahU3VX6E0oU/gUwsJYF8Qd3wPob3IOyAjodDE+Cj/riUyvas0AQkxzzBfO4Pr5h/M1Q35K8tkPDE6LKaw==
   dependencies:
-    "@opticss/element-analysis" "^0.4.0"
-    "@opticss/util" "^0.4.0"
+    "@opticss/element-analysis" "^0.6.0"
+    "@opticss/util" "^0.6.0"
     postcss "^6.0.21"
     typescript-collections "^1.2.5"
 
-"@opticss/util@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.npmjs.org/@opticss/util/-/util-0.4.0.tgz#a035174b012ff5712e5f1e65ec96a1ef052e4224"
+"@opticss/util@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.npmjs.org/@opticss/util/-/util-0.6.0.tgz#b467eba774d73cd306b4fcd78e5ec6999cb7b3aa"
+  integrity sha512-SZpVB55I9TIiADgCFK5Hw9FbWRm1xY/OiH4EQrr7Bvx4GDIy9QX0DpjEIs4Q0E/d4yDawJlhxPkJ0TWCqxp9wQ==
   dependencies:
     typescript-collections "^1.2.5"
 
@@ -10809,13 +10813,14 @@ opn@^5.2.0:
   dependencies:
     is-wsl "^1.1.0"
 
-opticss@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.npmjs.org/opticss/-/opticss-0.4.0.tgz#b9d86af439926f243247d2bdceea967d76dfd2ed"
+opticss@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.npmjs.org/opticss/-/opticss-0.6.0.tgz#16e1589994746f416a3401094e8e793e01e0c3d0"
+  integrity sha512-9LBEts0GNpSXqqRn+C8fqxoflAK2eVl9b5dpvGqW8oMdcy9Q+vg4aG+q/qdLhnvGnqpordOKIWYE5NX+WY4hUA==
   dependencies:
-    "@opticss/element-analysis" "^0.4.0"
-    "@opticss/template-api" "^0.4.0"
-    "@opticss/util" "^0.4.0"
+    "@opticss/element-analysis" "^0.6.0"
+    "@opticss/template-api" "^0.6.0"
+    "@opticss/util" "^0.6.0"
     "@types/debug" "0.0.29"
     concat-with-sourcemaps "^1.0.4"
     css-property-parser "^1.0.5"
@@ -14226,9 +14231,10 @@ typescript@~2.8.3:
   version "2.8.4"
   resolved "https://registry.npmjs.org/typescript/-/typescript-2.8.4.tgz#0b1db68e6bdfb0b767fa2ab642136a35b059b199"
 
-typescript@~3.1.6:
-  version "3.1.6"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-3.1.6.tgz#b6543a83cfc8c2befb3f4c8fba6896f5b0c9be68"
+typescript@~3.4.4:
+  version "3.4.5"
+  resolved "https://registry.npmjs.org/typescript/-/typescript-3.4.5.tgz#2d2618d10bb566572b8d7aad5180d84257d70a99"
+  integrity sha512-YycBxUb49UUhdNMU5aJ7z5Ej2XGmaIBL0x34vZ82fn3hGvD+bgrMrVDpatgz2f7YxUMJxMkbWxJZeAvDxVe7Vw==
 
 ua-parser-js@^0.7.18:
   version "0.7.18"
