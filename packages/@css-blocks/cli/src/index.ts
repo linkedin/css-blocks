@@ -1,4 +1,4 @@
-import { BlockFactory, CssBlockError } from "@css-blocks/core";
+import { BlockFactory, CssBlockError, Preprocessors } from "@css-blocks/core";
 import chalk = require("chalk");
 import fs = require("fs");
 import fse = require("fs-extra");
@@ -68,7 +68,7 @@ export class CLI {
   }
 
   async validate(blockFiles: Array<string>, options: ValidateOptions) {
-    let preprocessors = options.preprocessors ? require(options.preprocessors) : {};
+    let preprocessors: Preprocessors = options.preprocessors ? require(path.resolve(options.preprocessors)) : {};
     let factory = new BlockFactory({preprocessors});
     let errorCount = 0;
     for (let blockFile of blockFiles) {

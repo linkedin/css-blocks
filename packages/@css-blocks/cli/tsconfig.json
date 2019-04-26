@@ -3,7 +3,10 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",
-    "baseUrl": "dist"
+    "baseUrl": "dist",
+    "paths": {
+      "sass": ["../../../node_modules/@types/node-sass"]
+    }
   },
   "references": [
     {"path": "../core"}

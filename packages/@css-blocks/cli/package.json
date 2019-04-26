@@ -44,7 +44,9 @@
   },
   "devDependencies": {
     "@css-blocks/code-style": "^0.21.0",
+    "@types/node-sass": "^4.11.0",
     "@types/yargs": "^13.0.0",
+    "node-sass": "^4.11.0",
     "typescript": "~3.4.4",
     "watch": "^1.0.2"
   },
