@@ -8,17 +8,17 @@
     "@css-blocks/jsx": "file:../../../jsx",
     "@css-blocks/runtime": "file:../../../runtime",
     "@css-blocks/webpack": "file:../../../webpack",
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.4",
+    "babel-core": "6.26.3",
+    "babel-loader": "^8.0.5",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
-    "file-loader": "^1.1.11",
+    "file-loader": "3.0.1",
     "obj-str": "^1.0.0",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "typescript": "~3.4.4",
-    "webpack": "^3.6.9"
+    "webpack": "4.30.0"
   },
   "scripts": {
     "build": "NODE_ENV=development ./node_modules/.bin/webpack"
