@@ -1,0 +1,26 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "package.json",
+        "packages/@css-blocks/broccoli/package.json",
+        "packages/@css-blocks/code-style/package.json",
+        "packages/@css-blocks/core/package.json",
+        "packages/@css-blocks/ember-cli/package.json",
+        "packages/@css-blocks/glimmer/package.json",
+        "packages/@css-blocks/jsx/package.json",
+        "packages/@css-blocks/playground/package.json",
+        "packages/@css-blocks/runtime/package.json",
+        "packages/@css-blocks/test-utils/package.json",
+        "packages/@css-blocks/webpack/examples/jsx/package.json",
+        "packages/@css-blocks/webpack/package.json",
+        "packages/@css-blocks/website/package.json",
+        "types-local/inline-source-map-comment/package.json",
+        "types-local/loader-utils/package.json",
+        "types-local/perfectionist/package.json",
+        "types-local/regexpu-core/package.json",
+        "types-local/test-console/package.json"
+      ]
+    }
+  }
+}
