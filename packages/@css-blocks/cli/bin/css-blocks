@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+const { CLI } = require("../dist/src/index");
+let cli = new CLI();
+cli.run(process.argv.slice(2));

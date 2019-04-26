@@ -36,6 +36,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/test-utils"
+		},
+		{
+			"path": "packages/@css-blocks/cli"
 		}
 	],
 	"settings": {
