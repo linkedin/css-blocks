@@ -30,7 +30,7 @@
     "@types/prettier": "^1.8.0",
     "@types/tapable": "0.2.4",
     "chai": "^3.5.0",
-    "husky": "^0.14.3",
+    "husky": "^2.1.0",
     "istanbul": "^0.4.5",
     "lerna": "^3.1.1",
     "loader-utils": "^1.1.0",
