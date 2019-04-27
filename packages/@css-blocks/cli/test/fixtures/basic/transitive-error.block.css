@@ -1,0 +1,5 @@
+@block error from "./error.block.css";
+
+:scope {
+  extends: error;
+}

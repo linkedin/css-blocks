@@ -74,16 +74,18 @@ export class CLI {
     for (let blockFile of blockFiles) {
       try {
         await factory.getBlockFromPath(path.resolve(blockFile));
-        this.println(`${this.chalk.green("ok")}\t${blockFile}`);
+        this.println(`${this.chalk.green("ok")}\t${path.relative(process.cwd(), path.resolve(blockFile))}`);
       } catch (e) {
         errorCount++;
         if (e instanceof CssBlockError) {
           let loc = e.location;
-          if (loc) {
-            this.println(`${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFile)}:${loc.line}:${loc.column} ${e.origMessage}`);
-          } else {
-            this.println(`${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFile)} ${e.origMessage}`);
+          let filename = path.relative(process.cwd(), path.resolve(loc && loc.filename || blockFile));
+          let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(filename)}`;
+          if (loc && loc.filename && loc.line && loc.column) {
+            message += `:${loc.line}:${loc.column}`;
           }
+          message += ` ${e.origMessage}`;
+          this.println(message);
         } else {
           console.error(e);
         }
@@ -93,6 +95,7 @@ export class CLI {
   }
 
   println(...args: Array<string>) {
+    // tslint:disable-next-line:no-console
     console.log(...args);
   }
 

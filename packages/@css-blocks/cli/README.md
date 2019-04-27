@@ -11,7 +11,7 @@ yarn add @css-blocks/cli
 or run without installation:
 
 ```
-npx @css-blocks/cli --validate blocks/*.block.css
+npx @css-blocks/cli validate blocks/*.block.css
 ```
 
 ## Usage

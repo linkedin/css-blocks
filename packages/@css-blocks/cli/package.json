@@ -8,7 +8,7 @@
     "dist",
     "src",
     "README.md",
-    "types-local"
+    "CHANGELOG.md"
   ],
   "scripts": {
     "test": "yarn run test:runner",
