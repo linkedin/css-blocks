@@ -1279,6 +1279,31 @@ export class TemplateAnalysisTests {
     );
   }
 
+  @test "property conflicts don't arise internal to in-stylesheet composed block inheritance trees"() {
+    let imports = new MockImportRegistry();
+    let options = { importer: imports.importer() };
+    imports.registerSource(
+      "base.block.css",
+      `.baz { color: red; }`,
+    );
+    imports.registerSource(
+      "biz.block.css",
+      `
+        @block base from "./base.block.css";
+        :scope { extends: base; }
+        .baz { color: blue; }
+      `,
+    );
+
+    let css = `@block biz from "./biz.block.css";
+               .bar { composes: biz.baz; }`;
+
+    return this.parseBlock(css, "./foo.block.css", options).then(([block, _]) => {
+      return constructElement(block, ".bar").end();
+    }).then(() => {
+      assert.deepEqual(1, 1);
+    });
+  }
 }
 
 function constructElement(block: Block, ...styles: string[]) {

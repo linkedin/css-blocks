@@ -264,14 +264,11 @@ module.exports = {
         optimization: {},
       };
     options.aliases      || (options.aliases = {});
-
-    // if (!options.aliases[])
-
+    options.analysisOpts || (options.analysisOpts = {});
+    options.optimization || (options.optimization = {});
     options.parserOpts   || (options.parserOpts = {
       importer: new NodeJsImporter(options.aliases),
     });
-    options.analysisOpts || (options.analysisOpts = {});
-    options.optimization || (options.optimization = {});
 
     // Optimization is always disabled for now, until we get project-wide analysis working.
     options.optimization.enabled = false;
