@@ -125,14 +125,14 @@ function recursivelyPruneConflicts(prop: string, conflicts: ConflictMap): Rulese
  * @param  prop  The property we're printing on this Ruleset.
  * @param  rule  The Ruleset we're printing.
  */
-function printRulesetConflict(prop: string, rules: Ruleset<Style>[]) {
+function formatRulesetConflicts(prop: string, rules: Ruleset<Style>[]) {
   const out = new Set();
   for (let rule of rules) {
     let decl = rule.declarations.get(prop);
     let nodes: postcss.Rule[] | postcss.Declaration[] =  decl ? decl.map((d) => d.node) : [rule.node];
     for (let node of nodes) {
-      let line = node.source.start && `:${node.source.start.line}`;
-      let column = node.source.start && `:${node.source.start.column}`;
+      let line = node.source.start && `:${node.source.start.line}` || "";
+      let column = node.source.start && `:${node.source.start.column}` || "";
       out.add(`    ${rule.style.asSource(true)} (${rule.file}${line}${column})`);
     }
   }
@@ -236,7 +236,7 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
     let details = "\n";
     for (let [prop, matches] of conflicts.entries()) {
       if (!prop || !matches.length) { return; }
-      details += `  ${prop}:\n${printRulesetConflict(prop, matches)}\n\n`;
+      details += `  ${prop}:\n${formatRulesetConflicts(prop, matches)}\n\n`;
     }
     err(msg, null, details);
   }
