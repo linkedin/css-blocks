@@ -41,9 +41,9 @@
     "@css-blocks/code-style": "^0.21.0"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.6.0",
-    "@opticss/template-api": "^0.6.0",
-    "@opticss/util": "^0.6.0",
+    "@opticss/element-analysis": "^0.6.1",
+    "@opticss/template-api": "^0.6.1",
+    "@opticss/util": "^0.6.1",
     "@types/async": "^2.0.40",
     "@types/debug": "4.1.4",
     "async": "^2.5.0",
@@ -52,7 +52,7 @@
     "inline-source-map-comment": "^1.0.5",
     "json-parse-better-errors": "^1.0.1",
     "object.values": "^1.0.4",
-    "opticss": "^0.6.0",
+    "opticss": "^0.6.1",
     "regexpu-core": "^4.0.11",
     "source-map": "^0.7.3",
     "watch": "^1.0.2"
