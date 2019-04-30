@@ -1,12 +1,8 @@
 import { BlockFactory, CssBlockError, Preprocessors } from "@css-blocks/core";
 import chalk = require("chalk");
-import fs = require("fs");
 import fse = require("fs-extra");
 import path = require("path");
-import util = require("util");
 import yargs = require("yargs");
-
-const writeFile = util.promisify(fs.writeFile);
 
 /**
  * Typecast for result of command line argument parsing.
@@ -129,7 +125,7 @@ export class CLI {
    */
   async writeFile(filename: string, contents: string): Promise<void> {
     await fse.mkdirp(path.dirname(filename));
-    return writeFile(filename, contents, "utf8");
+    return fse.writeFile(filename, contents, "utf8");
   }
 
   /**
