@@ -8,16 +8,25 @@ import yargs = require("yargs");
 
 const writeFile = util.promisify(fs.writeFile);
 
+/**
+ * Typecast for result of command line argument parsing.
+ */
 interface GlobalArgs {
   preprocessors: string | undefined;
   [k: string]: unknown;
 }
 
+/**
+ * Typecast for result of command line argument parsing.
+ */
 interface ValidateArgs extends GlobalArgs {
   blocks: unknown;
 }
 
 interface ValidateOptions {
+  /**
+   * A path to the preprocessors code.
+   */
   preprocessors?: string;
 }
 
@@ -25,6 +34,9 @@ export class CLI {
   constructor() {
   }
 
+  /**
+   * Parse the arguments and run the corresponding code.
+   */
   run(args: Array<string>): Promise<void> {
     let argv = this.argumentParser().parse(args);
     if (argv.promise) {
@@ -34,10 +46,16 @@ export class CLI {
     }
   }
 
+  /**
+   * this is an instance method so tests can disable it.
+   */
   get chalk() {
     return chalk.default;
   }
 
+  /**
+   * Construct the argument parser using yargs.
+   */
   argumentParser() {
     return yargs
       .scriptName("css-blocks")
@@ -67,6 +85,9 @@ export class CLI {
       .help();
   }
 
+  /**
+   * Validate the syntax of a list of block files.
+   */
   async validate(blockFiles: Array<string>, options: ValidateOptions) {
     let preprocessors: Preprocessors = options.preprocessors ? require(path.resolve(options.preprocessors)) : {};
     let factory = new BlockFactory({preprocessors});
@@ -74,6 +95,7 @@ export class CLI {
     for (let blockFile of blockFiles) {
       try {
         await factory.getBlockFromPath(path.resolve(blockFile));
+        // if the above line doesn't throw then there wasn't a syntax error.
         this.println(`${this.chalk.green("ok")}\t${path.relative(process.cwd(), path.resolve(blockFile))}`);
       } catch (e) {
         errorCount++;
@@ -94,16 +116,25 @@ export class CLI {
     this.exit(errorCount);
   }
 
+  /**
+   * Instance method so tests can easily capture output.
+   */
   println(...args: Array<string>) {
     // tslint:disable-next-line:no-console
     console.log(...args);
   }
 
+  /**
+   * Instance method so tests can intercept the file write.
+   */
   async writeFile(filename: string, contents: string): Promise<void> {
     await fse.mkdirp(path.dirname(filename));
     return writeFile(filename, contents, "utf8");
   }
 
+  /**
+   * Instance method so tests can record the exit code without exiting.
+   */
   exit(code = 0) {
     process.exit(code);
   }
