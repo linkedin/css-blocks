@@ -55,12 +55,13 @@ export class NodeJsImporter implements Importer {
     // `from` or `rootDir`. If it exists, return.
     from = from ? this.filesystemPath(from, config) : from;
     let fromDir = from ? path.dirname(from) : config.rootDir;
+    // TODO: this won't work on windows because the import path is using `/`
     let resolvedPath = path.resolve(fromDir, importPath);
     if (existsSync(resolvedPath)) { return resolvedPath; }
     debug(`No relative or absolute Block file discovered for ${importPath}.`);
 
     // If not a real file, attempt to resolve to an aliased path instead, if present.
-    let alias = this.aliases.find(a => importPath.startsWith(a.alias) || importPath.startsWith(a.alias + path.sep));
+    let alias = this.aliases.find(a => importPath.startsWith(a.alias));
     if (alias) {
       importPath = path.join(alias.path, importPath.replace(alias.alias, ""));
     }
