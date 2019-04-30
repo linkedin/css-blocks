@@ -56,6 +56,20 @@ function evaluate(obj: Style, propToRules: PropMap, conflicts: ConflictMap) {
           // If these styles are from the same block, abort!
           if (other.style.block === self.style.block) { continue; }
 
+          // If these styles are descendants, abort! This may happen from
+          // in-stylesheet composition.
+          if (
+            other.style.block.isAncestorOf(self.style.block) ||
+            self.style.block.isAncestorOf(other.style.block)
+          ) { continue; }
+
+          // If one style composes the other somewhere in its hierarchy, abort!
+          // This will have been resolved on the base Block, No need to resolve.
+          if (
+            isBlockClass(other.style) && !other.style.composes(self.style, false) && other.style.composes(self.style) ||
+            isBlockClass(self.style) && !self.style.composes(other.style, false) && self.style.composes(other.style)
+          ) { continue; }
+
           // Get the declarations for this specific property.
           let selfDecl = self.declarations.get(prop);
           let otherDecl = other.declarations.get(prop);
@@ -71,9 +85,9 @@ function evaluate(obj: Style, propToRules: PropMap, conflicts: ConflictMap) {
             }
           }
           if (valuesEqual ||
-              other.hasResolutionFor(prop, self.style) ||
-              self.hasResolutionFor(prop, other.style)
-              ) { continue; }
+            other.hasResolutionFor(prop, self.style) ||
+            self.hasResolutionFor(prop, other.style)
+          ) { continue; }
 
           // Otherwise, we found an unresolved conflict!
           conflicts.set(prop, other);
@@ -111,16 +125,18 @@ function recursivelyPruneConflicts(prop: string, conflicts: ConflictMap): Rulese
  * @param  prop  The property we're printing on this Ruleset.
  * @param  rule  The Ruleset we're printing.
  */
-function printRulesetConflict(prop: string, rule: Ruleset) {
-  let decl = rule.declarations.get(prop);
-  let nodes: postcss.Rule[] | postcss.Declaration[] =  decl ? decl.map((d) => d.node) : [rule.node];
-  let out = [];
-  for (let node of nodes) {
-    let line = node.source.start && `:${node.source.start.line}`;
-    let column = node.source.start && `:${node.source.start.column}`;
-    out.push(`    ${rule.style.asSource(true)} (${rule.file}${line}${column})`);
+function formatRulesetConflicts(prop: string, rules: Ruleset<Style>[]) {
+  const out = new Set();
+  for (let rule of rules) {
+    let decl = rule.declarations.get(prop);
+    let nodes: postcss.Rule[] | postcss.Declaration[] =  decl ? decl.map((d) => d.node) : [rule.node];
+    for (let node of nodes) {
+      let line = node.source.start && `:${node.source.start.line}` || "";
+      let column = node.source.start && `:${node.source.start.column}` || "";
+      out.add(`    ${rule.style.asSource(true)} (${rule.file}${line}${column})`);
+    }
   }
-  return out.join("\n");
+  return [...out].join("\n");
 }
 
 function inStylesheetComposition(
@@ -220,7 +236,7 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
     let details = "\n";
     for (let [prop, matches] of conflicts.entries()) {
       if (!prop || !matches.length) { return; }
-      details += `  ${prop}:\n${matches.map((m) => printRulesetConflict(prop, m)).join("\n")}\n\n`;
+      details += `  ${prop}:\n${formatRulesetConflicts(prop, matches)}\n\n`;
     }
     err(msg, null, details);
   }

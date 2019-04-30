@@ -34,7 +34,7 @@ export class NodeJsImporter implements Importer {
     // Normalize aliases input.
     this.aliases = Array.isArray(aliases)
       ? aliases.slice()
-      : Object.keys(aliases).map(alias => ({ alias: alias, path: aliases[alias] }));
+      : Object.keys(aliases).map(alias => ({ alias, path: aliases[alias] }));
 
     // Sort aliases most specific to least specific.
     this.aliases.sort((a, b) => b.path.length - a.path.length);
@@ -51,20 +51,23 @@ export class NodeJsImporter implements Importer {
     // If absolute, this is the identifier.
     if (path.isAbsolute(importPath)) { return importPath; }
 
-    // Attempt to resolve to absolute path relative to `from` or `rootDir`.
-    // If it exists, return.
+    // Attempt to resolve relative path to absolute path relative to the
+    // `from` or `rootDir`. If it exists, return.
     from = from ? this.filesystemPath(from, config) : from;
     let fromDir = from ? path.dirname(from) : config.rootDir;
+    // TODO: this won't work on windows because the import path is using `/`
     let resolvedPath = path.resolve(fromDir, importPath);
     if (existsSync(resolvedPath)) { return resolvedPath; }
     debug(`No relative or absolute Block file discovered for ${importPath}.`);
 
-    // If not a real file, attempt to resolve to an aliased path instead.
-    let alias = this.aliases.find(a => importPath.startsWith(a.alias + path.sep));
+    // If not a real file, attempt to resolve to an aliased path instead, if present.
+    let alias = this.aliases.find(a => importPath.startsWith(a.alias));
     if (alias) {
-      return path.resolve(alias.path, importPath.substring(alias.alias.length + 1));
+      importPath = path.join(alias.path, importPath.replace(alias.alias, ""));
     }
-    debug(`No file path alias discovered for ${importPath}.`);
+    else {
+      debug(`No file path alias discovered for ${importPath}.`);
+    }
 
     // If no alias found, test for a node_module resolution as a file path.
     try {
