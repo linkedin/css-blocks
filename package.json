@@ -1,7 +1,7 @@
 {
+  "name": "css-blocks-monorepo",
   "private": true,
   "scripts": {
-    "commitmsg": "commitlint --edit $GIT_PARAMS",
     "ci": "lerna run test",
     "docs": "typedoc",
     "toc": "markdown-toc -i --maxdepth 2 README.md",
@@ -12,8 +12,8 @@
     "install:clean": "rm -rf node_modules packages/@css-blocks/*/node_modules && yarn"
   },
   "devDependencies": {
-    "@commitlint/cli": "^6.1.0",
-    "@commitlint/config-conventional": "^6.1.0",
+    "@commitlint/cli": "^7.5.2",
+    "@commitlint/config-conventional": "^7.5.0",
     "@types/async": "^2.0.40",
     "@types/babel-core": "^6.25.2",
     "@types/babel-generator": "^6.25.0",
@@ -54,5 +54,9 @@
   "workspaces": [
     "packages/@css-blocks/*"
   ],
-  "name": "css-blocks"
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
 }
