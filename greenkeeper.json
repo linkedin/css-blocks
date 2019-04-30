@@ -22,5 +22,20 @@
         "types-local/test-console/package.json"
       ]
     }
-  }
+  },
+  "commitMessages": {
+    "dependencyUpdate": "chore: Update ${dependency} to version ${version}.",
+    "devDependencyUpdate": "chore: Update dev ${dependency} to version ${version}.",
+    "dependencyPin": "chore: Pin ${dependency} to ${oldVersion}.",
+    "devDependencyPin": "chore: Pin dev ${dependency} to ${oldVersion}."
+  },
+  "ignore": [
+    "@types/extract-text-webpack-plugin",
+    "css-loader",
+    "extract-text-webpack-plugin",
+    "raw-loader",
+    "style-loader",
+    "webpack",
+    "tapable"
+  ]
 }
