@@ -73,7 +73,7 @@ export function config(): Promise<WebpackConfiguration> {
       analyzer,
     });
 
-    return merge(defaultOutputConfig(), {
+    let config = {
       entry: "./test/fixtures/javascripts/foo.js",
       output: {
         filename: "bundle.template.js",
@@ -94,6 +94,10 @@ export function config(): Promise<WebpackConfiguration> {
           inlineSourceMaps: false,
         }),
       ],
-    });
+    };
+
+    // The webpack types used by webpack-merge don't agree with ours.
+    // tslint:disable-next-line:prefer-unknown-to-any
+    return merge(defaultOutputConfig() as any, config as any) as any;
   });
 }

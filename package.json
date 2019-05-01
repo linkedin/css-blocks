@@ -7,6 +7,7 @@
     "toc": "markdown-toc -i --maxdepth 2 README.md",
     "compile": "tsc -b packages",
     "compile:watch": "tsc -b packages --watch",
+    "test": "lerna run test",
     "test:all": "lerna run test:runner",
     "compile:clean": "rm -rf packages/@css-blocks/*/dist && yarn run compile",
     "install:clean": "rm -rf node_modules packages/@css-blocks/*/node_modules && yarn"

@@ -14,7 +14,8 @@ export function config(entry: string, options?: LoaderOptions): WebpackConfigura
       filename: "[name].[contenthash].css",
   });
 
-  return merge(defaultOutputConfig(), {
+  let outputConfig = defaultOutputConfig();
+  let config = {
     entry: entry,
     output: {
       filename: "bundle.extractText.js",
@@ -36,5 +37,9 @@ export function config(entry: string, options?: LoaderOptions): WebpackConfigura
     plugins: [
       extractText,
     ],
-  });
+  };
+
+  // The webpack types used by webpack-merge don't agree with ours.
+  // tslint:disable-next-line:prefer-unknown-to-any
+  return merge(outputConfig as any, config as any) as any;
 }

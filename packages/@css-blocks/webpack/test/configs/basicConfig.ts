@@ -36,5 +36,8 @@ export function config(entry: EntryTypes, options?: LoaderOptions): WebpackConfi
         }),
     ],
   };
-  return merge(defaultOutputConfig(), baseConfig);
+
+  // The webpack types used by webpack-merge don't agree with ours.
+  // tslint:disable-next-line:prefer-unknown-to-any
+  return merge(defaultOutputConfig() as any, baseConfig as any) as any;
 }

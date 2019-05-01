@@ -131,8 +131,8 @@ function formatRulesetConflicts(prop: string, rules: Ruleset<Style>[]) {
     let decl = rule.declarations.get(prop);
     let nodes: postcss.Rule[] | postcss.Declaration[] =  decl ? decl.map((d) => d.node) : [rule.node];
     for (let node of nodes) {
-      let line = node.source.start && `:${node.source.start.line}` || "";
-      let column = node.source.start && `:${node.source.start.column}` || "";
+      let line = node.source && node.source.start && `:${node.source.start.line}` || "";
+      let column = node.source && node.source.start && `:${node.source.start.column}` || "";
       out.add(`    ${rule.style.asSource(true)} (${rule.file}${line}${column})`);
     }
   }
