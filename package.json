@@ -32,7 +32,7 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.13.7",
     "@types/prettier": "^1.8.0",
-    "@types/tapable": "1.0.4",
+    "@types/tapable": "^1.0.4",
     "chai": "^4.2.0",
     "husky": "^2.1.0",
     "istanbul": "^0.4.5",
