@@ -25,6 +25,7 @@
   },
   "ignore": [
     "@types/extract-text-webpack-plugin",
+    "@types/tapable",
     "css-loader",
     "extract-text-webpack-plugin",
     "raw-loader",
