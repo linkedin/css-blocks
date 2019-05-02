@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.22.0"></a>
+# [0.22.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v0.21.0...v0.22.0) (2019-05-02)
+
+
+### Bug Fixes
+
+* Handle legacy type definition for sourcemap's RawSourceMap. ([842454a](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/842454a))
+* Over-zealous conflicts from inherited in-stylesheet compositions. ([c70ed03](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/c70ed03))
+* Print an empty string if the source location isn't available. ([598477f](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/598477f))
+* Remove code branch that always returned false. ([df66b13](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/df66b13))
+
+
+
+
+
 <a name="0.21.0"></a>
 # [0.21.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v0.20.0...v0.21.0) (2019-04-07)
 

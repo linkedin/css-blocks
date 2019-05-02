@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.22.0"></a>
+# [0.22.0](https://github.com/linkedin/css-blocks/compare/v0.21.0...v0.22.0) (2019-05-02)
+
+
+### Bug Fixes
+
+* **webpack:** Compatibility w/ webpack-dev-server. ([8bf936b](https://github.com/linkedin/css-blocks/commit/8bf936b))
+* Display the file where the error occurred. ([114dd63](https://github.com/linkedin/css-blocks/commit/114dd63))
+* Handle legacy type definition for sourcemap's RawSourceMap. ([842454a](https://github.com/linkedin/css-blocks/commit/842454a))
+* Over-zealous conflicts from inherited in-stylesheet compositions. ([c70ed03](https://github.com/linkedin/css-blocks/commit/c70ed03))
+* Print an empty string if the source location isn't available. ([598477f](https://github.com/linkedin/css-blocks/commit/598477f))
+* Reduce vulnerabilities in packages/[@css-blocks](https://github.com/css-blocks)/website. ([b44f68e](https://github.com/linkedin/css-blocks/commit/b44f68e)), closes [#239](https://github.com/linkedin/css-blocks/issues/239)
+* Remove code branch that always returned false. ([df66b13](https://github.com/linkedin/css-blocks/commit/df66b13))
+
+
+### Features
+
+* Add preprocessor support to the cli. ([4027825](https://github.com/linkedin/css-blocks/commit/4027825))
+* Initial implementation of [@css-blocks](https://github.com/css-blocks)/cli. ([8fb561a](https://github.com/linkedin/css-blocks/commit/8fb561a))
+
+
+
+
+
 <a name="0.21.0"></a>
 # [0.21.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v0.20.0...v0.21.0) (2019-04-07)
 
