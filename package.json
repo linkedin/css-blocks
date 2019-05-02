@@ -1,6 +1,9 @@
 {
   "name": "css-blocks-monorepo",
   "private": true,
+  "workspaces": [
+    "packages/@css-blocks/*"
+  ],
   "scripts": {
     "ci": "lerna run test",
     "docs": "typedoc",
@@ -52,12 +55,18 @@
     "typescript": "~3.4.4",
     "watch": "^1.0.2"
   },
-  "workspaces": [
-    "packages/@css-blocks/*"
-  ],
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "greenkeeper": {
+    "commitMessages": {
+      "dependencyUpdate": "chore(greenkeeper): Update ${dependency} to version ${version}.",
+      "devDependencyUpdate": "chore(greenkeeper): Update dev ${dependency} to version ${version}.",
+      "dependencyPin": "chore(greenkeeper): Pin ${dependency} to ${oldVersion}.",
+      "devDependencyPin": "chore(greenkeeper): Pin dev ${dependency} to ${oldVersion}.",
+      "lockfileUpdate": "chore(greenkeeper): Update lockfile."
     }
   }
 }
