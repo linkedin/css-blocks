@@ -24,6 +24,7 @@
     }
   },
   "ignore": [
+    "@types/node",
     "@types/extract-text-webpack-plugin",
     "@types/tapable",
     "css-loader",
