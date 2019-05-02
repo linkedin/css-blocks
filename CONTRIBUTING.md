@@ -36,7 +36,7 @@ the path you pass it according to your needs).
 You may want to ensure that the tests for OptiCSS are all passing:
 
 ```
-$ cd build/opticss
+$ cd ../opticss
 $ lerna run test
 $ cd - # to return to the css-blocks directory
 ```
