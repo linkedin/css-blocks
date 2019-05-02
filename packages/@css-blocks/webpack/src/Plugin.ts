@@ -1,7 +1,7 @@
 import { TemplateTypes } from "@opticss/template-api";
 import { ObjectDictionary, flatten, objectValues } from "@opticss/util";
 import * as debugGenerator from "debug";
-import { postcss } from "opticss";
+import { LegacyRawSourceMap, adaptToLegacySourceMap, postcss } from "opticss";
 import * as path from "path";
 import { RawSourceMap } from "source-map";
 import * as Tapable from "tapable";
@@ -138,7 +138,7 @@ export class CssBlocksPlugin
         let source: Source;
         if (result.optimizationResult.output.sourceMap) {
           let resultMap = result.optimizationResult.output.sourceMap;
-          let rawSourceMap: RawSourceMap;
+          let rawSourceMap: LegacyRawSourceMap | RawSourceMap;
           if (typeof resultMap === "string") {
             rawSourceMap = JSON.parse(resultMap);
           } else {
@@ -147,7 +147,7 @@ export class CssBlocksPlugin
           source = new SourceMapSource(
             result.optimizationResult.output.content.toString(),
             "optimized css",
-            rawSourceMap);
+            adaptToLegacySourceMap(rawSourceMap));
         } else {
           source = new RawSource(result.optimizationResult.output.content.toString());
         }

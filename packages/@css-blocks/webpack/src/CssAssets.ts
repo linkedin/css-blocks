@@ -3,7 +3,7 @@ import * as  async from "async";
 import * as convertSourceMap from "convert-source-map";
 import * as debugGenerator from "debug";
 import * as fs from "fs";
-import { postcss } from "opticss";
+import { adaptFromLegacySourceMap, adaptToLegacySourceMap, postcss } from "opticss";
 import * as path from "path";
 import { RawSourceMap } from "source-map";
 import { Compiler as WebpackCompiler } from "webpack";
@@ -259,7 +259,7 @@ function assetAsSource(contents: string, filename: string): Source {
         let sm: RawSourceMap = sourcemap.toObject();
         contents = convertSourceMap.removeComments(contents);
         contents = convertSourceMap.removeMapFileComments(contents);
-        return new SourceMapSource(contents, filename, sm);
+        return new SourceMapSource(contents, filename, adaptToLegacySourceMap(sm));
     } else {
         return new RawSource(contents);
     }
@@ -315,7 +315,8 @@ function assetFileAsSource(sourcePath: string, callback: (err: Error | undefined
 function sourceAndMap(asset: Source): SourceAndMap {
     // sourceAndMap is supposedly more efficient when implemented.
     if (asset.sourceAndMap) {
-        return asset.sourceAndMap();
+        let {source, map} = asset.sourceAndMap();
+        return {source, map: adaptFromLegacySourceMap(map)};
     } else {
         let source = asset.source();
         let map: RawSourceMap | undefined = undefined;
@@ -349,7 +350,7 @@ function makePostcssProcessor (
             });
 
             return result.then((result) => {
-                return new SourceMapSource(result.css, assetPath, result.map.toJSON(), source, map);
+                return new SourceMapSource(result.css, assetPath, result.map.toJSON(), source, map && adaptToLegacySourceMap(map));
             });
         });
     };

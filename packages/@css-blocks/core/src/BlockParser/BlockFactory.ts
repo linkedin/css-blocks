@@ -1,6 +1,6 @@
 import { ObjectDictionary, isString } from "@opticss/util";
 import * as debugGenerator from "debug";
-import { postcss } from "opticss";
+import { LegacyRawSourceMap, adaptFromLegacySourceMap, postcss } from "opticss";
 import * as path from "path";
 import { RawSourceMap } from "source-map";
 
@@ -262,9 +262,13 @@ export class BlockFactory {
 }
 
 function sourceMapFromProcessedFile(result: ProcessedFile): RawSourceMap | string | undefined {
-  let sourceMap: RawSourceMap | string | undefined = result.sourceMap;
+  let sourceMap: LegacyRawSourceMap | RawSourceMap | string | undefined = result.sourceMap;
   if (!sourceMap && !isString(result.content) && result.content.map) {
     sourceMap = result.content.map.toJSON();
   }
-  return sourceMap;
+  if (typeof sourceMap === "object") {
+    return adaptFromLegacySourceMap(sourceMap);
+  } else {
+    return sourceMap;
+  }
 }
