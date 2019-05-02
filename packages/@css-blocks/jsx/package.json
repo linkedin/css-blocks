@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@css-blocks/core": "^0.21.0",
-    "@opticss/template-api": "^0.6.1",
+    "@opticss/template-api": "^0.6.2",
     "@opticss/util": "^0.6.1",
     "babel-traverse": "7.0.0-beta.3",
     "babel-types": "7.0.0-beta.3",
@@ -61,6 +61,6 @@
     "debug": "^4.1.1",
     "minimatch": "^3.0.4",
     "object.values": "^1.0.4",
-    "opticss": "^0.6.1"
+    "opticss": "^0.6.2"
   }
 }
