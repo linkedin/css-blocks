@@ -25,10 +25,6 @@ install:
 
 script: lerna run test
 
-matrix:
-  allow_failures:
-    - node_js: '12'
-
 cache:
   yarn: true
   directories:
