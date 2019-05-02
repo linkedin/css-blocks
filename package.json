@@ -68,5 +68,9 @@
       "devDependencyPin": "chore(greenkeeper): Pin dev ${dependency} to ${oldVersion}.",
       "lockfileUpdate": "chore(greenkeeper): Update lockfile."
     }
+  },
+  "toolchain": {
+    "node": "12.1.0",
+    "yarn": "1.15.2"
   }
 }
