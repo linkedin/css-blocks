@@ -1,0 +1,6 @@
+@block red from "basic/simple.block.css";
+
+:scope {
+  font-family: resolve("red");
+  color: blue;
+}

@@ -1,0 +1,6 @@
+@block font from "block-module";
+
+:scope {
+  font-family: resolve("font");
+  font-family: serif;
+}

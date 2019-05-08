@@ -1,14 +1,18 @@
-import { BlockFactory, CssBlockError, Preprocessors } from "@css-blocks/core";
+import { BlockFactory, CssBlockError, Importer, NodeJsImporter, Preprocessors } from "@css-blocks/core";
 import chalk = require("chalk");
 import fse = require("fs-extra");
 import path = require("path");
 import yargs = require("yargs");
+
+type Aliases = ConstructorParameters<typeof NodeJsImporter>[0];
 
 /**
  * Typecast for result of command line argument parsing.
  */
 interface GlobalArgs {
   preprocessors: string | undefined;
+  alias: Array<string | number> | undefined;
+  npm: boolean | undefined;
   [k: string]: unknown;
 }
 
@@ -24,6 +28,8 @@ interface ValidateOptions {
    * A path to the preprocessors code.
    */
   preprocessors?: string;
+  alias?: Array<string | number>;
+  npm?: boolean;
 }
 
 export class CLI {
@@ -64,6 +70,19 @@ export class CLI {
         description: "A JS file that exports an object that maps extensions to a preprocessor function for that type.",
         nargs: 1,
       })
+      .option("npm", {
+        type: "boolean",
+        global: true,
+        description: "Allow importing from node_modules",
+        nargs: 0,
+      })
+      .option("alias", {
+        type: "array",
+        global: true,
+        description: "Define an import alias. Requires two arguments: an alias and a directory.",
+        implies: "npm",
+        nargs: 2,
+      })
       .command<ValidateArgs>(
         "validate <blocks..>",
         "Validate block file syntax.", (y) =>
@@ -71,12 +90,15 @@ export class CLI {
             description: "files or directories containing css blocks.",
           }),
         (argv: ValidateArgs) => {
-          let { preprocessors } = argv;
+          let { preprocessors, alias, npm } = argv;
           argv.promise = this.validate(argv.blocks as Array<string>, {
             preprocessors,
+            alias,
+            npm,
           });
         },
       )
+      .wrap(yargs.terminalWidth())
       .demandCommand(1, "No command was provided.")
       .help();
   }
@@ -86,11 +108,27 @@ export class CLI {
    */
   async validate(blockFiles: Array<string>, options: ValidateOptions) {
     let preprocessors: Preprocessors = options.preprocessors ? require(path.resolve(options.preprocessors)) : {};
-    let factory = new BlockFactory({preprocessors});
+    let npm = options.npm || false;
+    let aliases: Aliases = [];
+    let aliasList = options.alias || [];
+    for (let i = 0; i < aliasList.length; i = i + 2) {
+      let alias = aliasList[i].toString();
+      let dir = path.resolve(aliasList[i + 1].toString());
+      aliases.push({alias, path: dir});
+    }
+    let importer: Importer | undefined;
+    if (npm) {
+      importer = new NodeJsImporter(aliases);
+    }
+    let factory = new BlockFactory({preprocessors, importer});
     let errorCount = 0;
     for (let blockFile of blockFiles) {
       try {
-        await factory.getBlockFromPath(path.resolve(blockFile));
+        if (importer) {
+          let ident = importer.identifier(null, blockFile, factory.configuration);
+          blockFile = importer.filesystemPath(ident, factory.configuration) || blockFile;
+        }
+        await factory.getBlockFromPath(blockFile);
         // if the above line doesn't throw then there wasn't a syntax error.
         this.println(`${this.chalk.green("ok")}\t${path.relative(process.cwd(), path.resolve(blockFile))}`);
       } catch (e) {
