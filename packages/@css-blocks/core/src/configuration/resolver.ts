@@ -28,7 +28,7 @@ const SIMPLE_KEYS: Array<ConfigurationSimpleKeys> = [
 const DEFAULTS: ResolvedConfiguration = {
   outputMode: OutputMode.BEM,
   importer: defaultImporter,
-  rootDir: process.cwd(),
+  rootDir: "",
   importerData: {},
   preprocessors: {},
   disablePreprocessChaining: false,
@@ -43,6 +43,7 @@ class Resolver implements ResolvedConfiguration {
 
   constructor(options?: Options, defaults?: Options) {
     this._opts = { ...DEFAULTS };
+    this.setAll({rootDir: process.cwd()});
     this.setAll(defaults);
     this.setAll(options);
   }
