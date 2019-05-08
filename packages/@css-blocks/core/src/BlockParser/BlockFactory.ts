@@ -145,25 +145,25 @@ export class BlockFactory {
         })
 
         // Run through PostCSS.
-        .then(async (preprocessResult): Promise<[ProcessedFile, postcss.Result]> => {
+        .then(async (preprocessResult): Promise<[ProcessedFile, postcss.Root]> => {
           debug(`Generating PostCSS AST for "${filename}"`);
           let sourceMap = sourceMapFromProcessedFile(preprocessResult);
           let content = preprocessResult.content;
           if (sourceMap) {
             content = annotateCssContentWithSourceMap(content, sourceMap);
           }
-          let result = await this.postcssImpl().process(content, { from: filename });
-          return [preprocessResult, result];
+          let root = await this.postcssImpl.parse(content, { from: filename });
+          return [preprocessResult, root];
         })
 
-        .then(([preprocessedResult, result]) => {
+        .then(([preprocessedResult, root]) => {
           debug(`Parsing Block object for "${filename}"`);
           // Skip parsing if we can.
           if (this.blocks[file.identifier]) { return this.blocks[file.identifier]; }
           let source: ParsedSource = {
             identifier: file.identifier,
             defaultName: file.defaultName,
-            parseResult: result,
+            parseResult: root,
             originalSource: file.contents,
             originalSyntax: file.syntax,
             dependencies: preprocessedResult.dependencies || [],

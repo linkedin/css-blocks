@@ -3,7 +3,6 @@ import { postcss } from "opticss";
 
 import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
-import * as errors from "../errors";
 import { FileIdentifier } from "../importing";
 
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
@@ -27,7 +26,7 @@ export interface ParsedSource {
   defaultName: string;
   originalSource: string;
   originalSyntax: Syntax;
-  parseResult: postcss.Result;
+  parseResult: postcss.Root;
   dependencies: string[];
 }
 
@@ -45,10 +44,7 @@ export class BlockParser {
   }
 
   public parseSource(source: ParsedSource): Promise<Block> {
-    let root = source.parseResult.root;
-
-    // This should never happen but it makes the typechecker happy.
-    if (!root) { throw new errors.CssBlockError("No postcss root found."); }
+    let root = source.parseResult;
 
     return this.parse(root, source.identifier, source.defaultName).then(block => {
       source.dependencies.forEach(block.addDependency);
