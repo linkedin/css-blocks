@@ -24,6 +24,9 @@
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "watch": "watch 'yarn run test' src test --wait=1"
   },
+  "bin": {
+    "css-blocks": "./bin/css-blocks"
+  },
   "keywords": [
     "css-blocks",
     "css",
