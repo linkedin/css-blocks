@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/jsx",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "description": "Statically analyzes JSX files for CSS Blocks use.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -41,9 +41,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@css-blocks/code-style": "^0.22.0",
-    "@css-blocks/runtime": "^0.22.0",
-    "@css-blocks/test-utils": "^0.22.0",
+    "@css-blocks/code-style": "^0.23.0",
+    "@css-blocks/runtime": "^0.23.0",
+    "@css-blocks/test-utils": "^0.23.0",
     "babel-core": "^6.25.0",
     "obj-str": "^1.0.0",
     "preact": "^8.2.1"
@@ -52,7 +52,7 @@
     "@css-blocks/runtime": "^0.22.0"
   },
   "dependencies": {
-    "@css-blocks/core": "^0.22.0",
+    "@css-blocks/core": "^0.23.0",
     "@opticss/template-api": "^0.6.2",
     "@opticss/util": "^0.6.1",
     "babel-traverse": "7.0.0-beta.3",
