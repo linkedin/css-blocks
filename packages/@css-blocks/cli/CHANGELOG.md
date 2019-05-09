@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.23.1"></a>
+## [0.23.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v0.23.0...v0.23.1) (2019-05-09)
+
+
+### Bug Fixes
+
+* Add missin bin script to cli. ([5c5bcf3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/5c5bcf3))
+
+
+
+
+
 <a name="0.23.0"></a>
 # [0.23.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v0.22.0...v0.23.0) (2019-05-08)
 

@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/cli",
-  "version": "0.23.0",
+  "version": "0.23.1",
   "description": "Command line interface to css-blocks.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
