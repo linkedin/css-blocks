@@ -23,7 +23,7 @@
     "@glimmer/test-helpers": "^0.31.2",
     "@types/qunit": "^2.0.31",
     "broccoli-asset-rev": "^3.0.0",
-    "ember-cli": "~3.9.0",
+    "ember-cli": "~3.10.0",
     "ember-cli-dependency-checker": "^3.1.0",
     "ember-cli-inject-live-reload": "^2.0.1",
     "ember-cli-tslint": "^0.1.3",
