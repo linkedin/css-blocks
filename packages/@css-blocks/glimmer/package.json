@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@css-blocks/code-style": "^0.23.0",
-    "@types/fs-extra": "^5.0.3",
+    "@types/fs-extra": "^7.0.0",
     "@types/glob": "^7.1.1",
     "watch": "^1.0.2"
   },
