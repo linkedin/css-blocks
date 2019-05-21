@@ -1,117 +1,116 @@
-type Invert = true | null;
-type Op     = number | null;
-type Value  = boolean | null;
-
-const enum OP_CODE {
-  CLOSE  = 0,
-  OPEN   = 1,
-  VAL    = 2,
-  NOT    = 3,
-  OR     = 4,
-  AND    = 5,
-  EQUAL  = 6,
-  CONCAT = 7,
+// All four op codes that we can find in one of our binary strings.
+// The SEP opcode is found when we have finished processing all
+// sub-expressions required by the class boolean expressions. Remaining
+// triples map directly to input classes.
+export const enum OP_CODE {
+  OR    = 0,
+  AND   = 1,
+  EQUAL = 2,
+  SEP   = 3,
 }
 
-export function runtime(shape: string[], classes: string[], exprs: unknown[]): string {
+// The three discovery states that our parser can be in. Looking for an
+// op code, the left operand, or the right operand.
+const enum STATE {
+  OP = 0,
+  LEFT = 1,
+  RIGHT = 2,
+}
 
-  // We dynamically determine the variable window size based on the number of
-  // expressions it is possible to reference. It is the compiler's responsibility
-  // to guarantee the expression shape matches at build time.
-  const NULL = (shape && null); // Minifier hax to save bytes.
-  const VAR_SIZE = ~~Math.log2(exprs.length - 1) + 1; // Variable token size is dependant on the number of dynamic values passed.
-  const stack: [Op, Value, Invert][]    = []; // Stack for nested boolean expressions
+/* I'm special. (The rules don't apply when you're coding for a minifier) */
+/* tslint:disable:triple-equals typedef-whitespace no-unnecessary-type-assertion prefer-for-of*/
+export function runtime(shape: string[], classes: string[], args: unknown[]): string {
 
-  let out   = "";    // Output class list.
-  let klass = 0;     // Current class we are determining presence for.
-  let current: Op    = NULL;  // Current discovered opcode to evaluate.
-  let val: Value     = NULL;  // Working boolean expression value.
-  let op: Op         = NULL;  // Operation to evaluate on next val discovered.
-  let invert: Invert = NULL;  // Should we invert the next discovered value.
+  const exprs = args.slice();  // Expressions storage.
+  let exprCount = args.length; // Running count of expressions.
 
-  // For each 32 bit integer passed to us as a base 36 string
-  for ( let segment of shape ) {
+  let out = ""; // Output class string.
 
-    let tmp: Value = NULL; // Stores the right side of a boolean operation.
-    let step  = 0;         // Character count used for opcode discovery.
-    let next  = 0;         // This is a single lookahead parser – next opcode will be stored here.
-    let integer = parseInt(segment, 36);    // Convert binary string segment to a base 10 integer
-    let iters = integer.toString(2).length; // Process each bit in this integer, minus the first `1` inserted for significant bit padding.
+  let left: boolean; // The left side of a boolean expression.
+  let op:   OP_CODE; // The operator for a boolean expression.
+  let val:  boolean; // Stores the right side of a boolean expression, and the final expression result.
 
+  // Holds state on token ingestion.
+  // We're either discovering an OP_CODE, a left, or a right value.
+  let state: STATE  = STATE.OP;
+
+  let classIdx = -1; // The class index we're determining presence for – set to 0 when `SEP` is encountered.
+  let working  = 0;  // Next ingested value will be stored here.
+  let size     = 2;  // Variable window size, re-computed as expressions are calculated and added.
+
+  // For every binary encoded string...
+  for (let i = 0; i < shape.length; i++) {
+
+    // Convert binary string segment to a base 10 integer.
+    let integer = parseInt(shape[i], 36);
+
+    // Process each bit in this integer. The parser ensures 32 bit integers
+    // are emitted. This is important because bitwise operations in JS clamp
+    // app operands to 32 bit integers.
     // Note: `while` loop is faster than a `for` loop here.
+    let iters = 32;
     while (iters--) {
 
-      // Construct our lookahead opcode and "pop" a bit off the end
-      // of our integer's binary representation.
-      let size = (current === OP_CODE.VAL ? VAR_SIZE : 3);
-      next += integer % 2 * (2 * (size - 1 - step) || 1); // tslint:disable-line
-      integer = integer >>> 1;                            // tslint:disable-line
+      // If we've discovered the separator opcode, begin applying classes.
+      if (op! == OP_CODE.SEP) { state = classIdx = 0; }
 
-      // When we have discovered the next opcode, or are on the last opcode, process.
-      if (!iters || !(step = ++step % size)) {
+      // Variable token size is dependant on the number of values it is possible to reference.
+      // Add an extra bit to token size to accommodate the "not" bit encoded with every var reference.
+      // This code block must happen *before* the !size check below to properly construct opcode vals.
+      if (!size) {
+        // This is a very clever way to do Math.ceil(Math.log2(exprCount-1)).
+        while(exprCount - 1 >> size++); // tslint:disable-line
+        // If state == 0, we know we're looking for an opcode and size is 2.
+        size = (!state) ? 2 : size;
+      }
 
-        // tslint:disable:switch-default
-        switch (current) {
+      // Construct our next value and "pop" a bit off the end. `<<` serves as a faster Base2 Math.pow()
+      working += integer % 2 * (1 << (--size) || 1); // tslint:disable-line
+      integer >>>= 1;                                // tslint:disable-line
 
-          // If no current op-code, move on.
-          case NULL: break;
+      // If we have a full value or opcode, process the expression.
+      // Otherwise, continue to consume the next bit until we do.
+      if (!size) {
 
-          // OPEN – Push state to stack and start fresh.
-          case OP_CODE.OPEN:
-            stack.push([op, val, invert]);
-            val = invert = op = NULL;
-            break;
+        // Fetch the resolved expression value if we're looking for the LEFT or RIGHT value.
+        // The last bit of every VAL token is the NOT bit. If `1`, invert the recovered value.
+        // This is a throwaway value if we're discovering the OP.
+        val = !!(state && (+!!exprs[working >>> 1] ^ (working % 2))); // tslint:disable-line
 
-          // VAL or CLOSE (fun fact: functionally the same thing!)
-          case OP_CODE.CLOSE:
-            tmp = val; // Save computed val.
-            [ op, val, invert] = stack.pop()!;
-            // Intentionally no break. Falls through to VAL evaluation.
+        // If discovering as opcode, save as an opcode.
+        if (state == STATE.OP) { op = working; }
 
-          case OP_CODE.VAL:
-            if (current !== OP_CODE.CLOSE) tmp = !!exprs[next]; // Save referenced val.
+        // If discovering a left side operation value, save as the left value.
+        if (state == STATE.LEFT) { left = val; }
 
-            tmp = invert ? !tmp : tmp; // Invert value if required.
+        // If we've found the right side value...
+        if (state == STATE.RIGHT) {
 
-            // Process boolean expression if requested. If no opcode, this is the left side value.
-            switch (op) {
-              case OP_CODE.OR:    val = val || tmp; break;
-              case OP_CODE.AND:   val = val && tmp; break;
-              case OP_CODE.EQUAL: val = val === tmp; break;
-              default: val = tmp;
-            }
+          // Run the correct operation on our left and right values.
+          // Not a switch for code size reasons.
+          if (op == OP_CODE.OR)    { val = left! || val;  }
+          if (op == OP_CODE.AND)   { val = left! && val;  }
+          if (op == OP_CODE.EQUAL) { val = left! === val; }
 
-            // Reset state. This is safe to do at all types here. Saves bytes.
-            invert = op = NULL;
-            break;
+          // Save our computed expression value to the next expression index.
+          exprs[exprCount++] = val;
 
-          // NOT – Save if we should invert the next value discovered.
-          case OP_CODE.NOT: invert = true; break;
-
-          // OR | AND | EQUAL – Save opcode value.
-          case OP_CODE.OR:
-          case OP_CODE.AND:
-          case OP_CODE.EQUAL:
-            op = current;
-            break;
-
-          // CONCAT – Apply class if `val` is truthy and reset state.
-          case OP_CODE.CONCAT:
-            out += val ? (out ? " " : "") + classes[klass] : "";
-            klass++;
-            op = invert = val = NULL;
-            break;
+          // If classIdx > -1, start concatenating classes based on result of `val`.
+          // Increment to the next class. If this was the last class, break
+          // out of the loops so we don't process extra 0's.
+          if (!!~classIdx) {
+            out += val ? (out ? " " : "") + classes[classIdx] : "";
+            if (++classIdx == classes.length) { break; }
+          }
         }
 
-        // Begin construction of next opcode. Skip processing`val` index tokens.
-        current = (current === OP_CODE.VAL) ? NULL : next;
-        next = 0;
+        // Reset our working state and begin discovering the next token.
+        working = 0;
+        state = ++state % 3;
       }
     }
   }
 
-  // End of expression does not require a CONCAT opcode.
-  // Apply final class if `val` is truthy.
-  out += val ? (out ? " " : "") + classes[klass] : "";
+  // Return the concatenated classes!
   return out;
 }
