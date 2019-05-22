@@ -69,7 +69,7 @@
       "lockfileUpdate": "chore(greenkeeper): Update lockfile."
     }
   },
-  "toolchain": {
+  "volta": {
     "node": "12.2.0",
     "yarn": "1.15.2"
   }
