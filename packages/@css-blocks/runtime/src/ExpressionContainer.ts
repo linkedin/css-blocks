@@ -4,13 +4,18 @@ import { OP_CODE, runtime } from "./runtime";
 export const OR  = OP_CODE.OR;
 export const AND = OP_CODE.AND;
 export const EQ  = OP_CODE.EQUAL;
-export const NOT = (val: Value | Expression) => ({ val, not: true });
+// the NOT operation only exists transiently because negation is expressed in the
+// arguments of the other operations. This allows it to use the 3rd bit while
+// there's only two bits at runtime.
+const NOT_OP: 4 = 4;
+
 
 // Maps OP_CODE values to human readable strings.
 const OP_STR = {
   [OR]: "OR",
   [AND]: "AND",
   [EQ]: "EQ",
+  [NOT_OP]: "NOT",
   [OP_CODE.SEP]: "SEP",
 };
 
@@ -18,17 +23,26 @@ const OP_STR = {
 export type Value = number;
 type UID = number;
 
-// Represents the inversion of a resolved or computed value.
+/**
+ * Represents the negation of a resolved or computed value.
+ **/
 export interface NotValue {
   val: Value | Expression;
-  not: boolean;
+  op: typeof NOT_OP;
+}
+
+/**
+ * Constructs an expression that negates a value or expression.
+ */
+export function NOT(val: Value | Expression): NotValue {
+  return { val, op: NOT_OP };
 }
 
 /**
  * Determine if a provided value is a `NotValue` interface.
  * @param v Any value.
  */
-function isNotValue(v: unknown): v is NotValue { return v && (v as NotValue).hasOwnProperty("val") && (v as NotValue).hasOwnProperty("not"); }
+function isNotValue(v: Operand): v is NotValue { return typeof v === "object" && v.op === NOT_OP; }
 
 /**
  * Represents a single node in a boolean expression binary tree.
@@ -75,11 +89,11 @@ export function expr(left: Operand, op: OP_CODE, right: Operand): Expression {
   let notLeft = false;
   let notRight = false;
   if (isNotValue(left)) {
-    notLeft = left.not;
+    notLeft = true;
     left = left.val;
   }
   if (isNotValue(right)) {
-    notRight = right.not;
+    notRight = true;
     right = right.val;
   }
   return { left, op, right, notLeft, notRight };
