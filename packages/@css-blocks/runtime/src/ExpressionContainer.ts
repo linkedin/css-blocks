@@ -16,6 +16,7 @@ const OP_STR = {
 
 // The index of an input value to be resolved at runtime.
 export type Value = number;
+type UID = number;
 
 // Represents the inversion of a resolved or computed value.
 export interface NotValue {
@@ -59,7 +60,7 @@ export interface SimpleExpression extends Expression {
 export interface Flattened {
   arguments: Set<number>;
   expressions: SimpleExpression[];
-  indices: Map<string, number>;
+  indices: Map<UID, number>;
 }
 
 /**
@@ -85,11 +86,27 @@ export function expr(left: Operand, op: OP_CODE, right: Operand): Expression {
 }
 
 /**
- * Generate a string UID for any SimpleExpression.
+ * Generate a human readable string for any SimpleExpression.
  * @param expr The SimpleExpression we're generating a UID for.
  */
-function genUid(expr: SimpleExpression): string {
+export function debugExpression(expr: SimpleExpression): string {
   return `VAR ${expr.notLeft ? "!" : ""}${expr.left} ${OP_STR[expr.op]} VAR ${expr.notRight ? "!" : ""}${expr.right}`;
+}
+
+/**
+ * Generates a unique identifier for an expression.
+ * This only works for values referencing an index of 16383 or less.
+ */
+function genUID(expr: SimpleExpression): UID {
+  if (expr.left > 16383 || expr.right > 16383) {
+    throw new Error("index out of bounds."); // just in case
+  }
+  let uid = (expr.notLeft ? 1 : 0) << 31;
+  uid |= expr.left << 17;
+  uid |= (expr.notRight ? 1 : 0) << 16;
+  uid |= (expr.right) << 2;
+  uid |= expr.op;
+  return uid;
 }
 
 /**
@@ -122,7 +139,7 @@ function visit(expr: Expression, out: Flattened): number {
   };
 
   // Generate a UID for this expression.
-  let uid = genUid(simpleExpr);
+  let uid = genUID(simpleExpr);
 
   // Save this expression in the simple expressions array, if an equivalent expression is not there.
   if (!out.indices.has(uid)) {
@@ -207,7 +224,7 @@ export class ExpressionContainer {
       let right = expr.right.toString(2).padStart(size, "0") + (expr.notRight ? "1" : "0");
       out += (isSep ? OP_CODE.SEP.toString(2) : "") + op + left + right;
       exprCount++;
-      // console.log(`${genUid(expr)}:`, op, left, right);
+      // console.log(`${debugExpression(expr)}:`, op, left, right);
     }
 
     return out;
