@@ -1,11 +1,17 @@
 import { OP_CODE, runtime } from "./runtime";
 
+// Convenience re-exports for ergonomic APIs (see test file).
+export const OR  = OP_CODE.OR;
+export const AND = OP_CODE.AND;
+export const EQ  = OP_CODE.EQUAL;
+export const NOT = (val: Value | Expression) => ({ val, not: true });
+
 // Maps OP_CODE values to human readable strings.
 const OP_STR = {
-  0: "OR",
-  1: "AND",
-  2: "EQ",
-  3: "SEP",
+  [OR]: "OR",
+  [AND]: "AND",
+  [EQ]: "EQ",
+  [OP_CODE.SEP]: "SEP",
 };
 
 // The index of an input value to be resolved at runtime.
@@ -55,12 +61,6 @@ export interface Flattened {
   expressions: SimpleExpression[];
   indices: Map<string, number>;
 }
-
-// Convenience re-exports for ergonomic APIs (see test file).
-export const OR  = OP_CODE.OR;
-export const AND = OP_CODE.AND;
-export const EQ  = OP_CODE.EQUAL;
-export const NOT = (val: Value | Expression) => ({ val, not: true });
 
 /**
  * Given a left operand, opcode, and right expression, return an expression object.
