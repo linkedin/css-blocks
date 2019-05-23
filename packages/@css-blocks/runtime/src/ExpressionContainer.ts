@@ -19,7 +19,9 @@ const OP_STR = {
   [OP_CODE.SEP]: "SEP",
 };
 
-// The index of an input value to be resolved at runtime.
+/**
+ * The index of an input value to be resolved at runtime.
+ **/
 export type Value = number;
 type UID = number;
 
@@ -55,7 +57,9 @@ export interface Expression {
   notRight: boolean;
 }
 
-// Valid operand values for our expr() function.
+/**
+ * Valid operand values for our expr() function.
+ **/
 export type Operand = Value | Expression | NotValue;
 
 /**
