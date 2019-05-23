@@ -9,7 +9,6 @@ export const EQ  = OP_CODE.EQUAL;
 // there's only two bits at runtime.
 const NOT_OP: 4 = 4;
 
-
 // Maps OP_CODE values to human readable strings.
 const OP_STR = {
   [OR]: "OR",
