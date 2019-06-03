@@ -10,6 +10,7 @@ const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const getClientEnvironment = require('./env');
 const cssAssets = require('./css');
 const paths = require('./paths');
+const highlight = require('highlight.js');
 
 const jsxCompilationOptions = {
   compilationOptions: {},
@@ -240,6 +241,24 @@ module.exports = {
                 }
               },
             ]
+          },
+
+          {
+            test: /\.(md)$/,
+            use: [
+              {
+                loader: 'frontmatter-markdown-loader',
+                options: {
+                  highlight: (code, lang) => {
+                    if (!lang || ['text', 'literal', 'nohighlight'].includes(lang)) {
+                      return `<pre class="hljs">${code}</pre>`;
+                    }
+                    const html = highlight.highlight(lang, code).value;
+                    return `<span class="hljs">${html}</span>`;
+                  },
+                },
+              },
+            ],
           },
 
           // "file" loader makes sure those assets get served by WebpackDevServer.

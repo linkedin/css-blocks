@@ -1,4 +1,8 @@
-:scope {}
+:scope {
+  display: flex;
+  flex-flow: column;
+  min-height: 100vh;
+}
 
 .nav {
   background-color: #222;
@@ -13,6 +17,11 @@
 
 .title {
   font-size: 1.5em;
+}
+
+.main {
+  flex-grow: 1;
+  width: 100vw;
 }
 
 .intro {

@@ -1,0 +1,13 @@
+:scope {
+  block-name: Learn;
+  display: flex;
+}
+
+.content {
+  max-width: 82.0rem
+}
+
+.nav {
+  width: 24.0rem;
+  margin-right: 1.6rem;
+}

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import objstr from "obj-str";
+import { Link } from 'react-router-dom'
 
 import SplitButton from '../../shared/SplitButton/index';
 import CodeDemo from './components/CodeDemo/index';
@@ -46,11 +47,10 @@ class Home extends Component {
           </ul>
 
           <div className={styles.buttonContainer}>
-            <a
-              href="https://github.com/linkedin/css-blocks#%EF%B8%8F-supported-integrations"
-              target="_blank"
-              className={button}
-            >Get Started</a>
+            <Link
+              to="/learn"
+              className={objstr({ [button]: true })}
+            >Get Started</Link>
             <a
               href="/api"
               target="_blank"

@@ -4,6 +4,7 @@ import { BrowserRouter, Link, Route } from 'react-router-dom'
 
 import Home from "./pages/Home/index";
 import Demo from "./pages/Demo";
+import Learn from "./pages/Learn/index";
 
 import styles from "./App.block.css";
 import linkedinLogo from "./images/linkedin-logo.svg";
@@ -22,8 +23,11 @@ class App extends Component {
               <li><Link to="/demo">Demo</Link></li>
             </ul>
           </nav>
-          <main>
+          <main className={styles.main}>
             <Route exact path="/" component={Home} />
+            <Route exact path="/learn/:section/:page" component={Learn} />
+            <Route exact path="/learn/:section" component={Learn} />
+            <Route exact path="/learn" component={Learn} />
             <Route path="/demo" component={Demo} />
           </main>
           <footer className={styles.footer}>
