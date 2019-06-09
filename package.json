@@ -36,7 +36,7 @@
     "chai": "^4.2.0",
     "husky": "^2.1.0",
     "istanbul": "^0.4.5",
-    "lerna": "^3.1.1",
+    "lerna": "^3.15.0",
     "loader-utils": "^1.1.0",
     "markdown-toc": "^1.2.0",
     "mocha": "^6.1.4",
