@@ -1,0 +1,100 @@
+/* This works, but I'm sure can be cleaned up significantly. */
+.markdown {
+  font-size: 1.8rem;
+}
+
+.markdown p {
+  font-size: 1.8rem;
+}
+
+.markdown a {
+  color: var(--pink);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: inset 0 -1px 0 0 var(--pink);
+  transition: box-shadow .15s, color .15s;
+  padding: 0 2px 1px;
+}
+
+.markdown a:hover, .markdown a:focus {
+  box-shadow: inset 0 -32px 0 0 var(--pink);
+  color: white;
+}
+
+.markdown h1 {
+  font-size: 4.8rem;
+}
+
+.markdown h2 {
+  font-size: 3.2rem;
+}
+
+.markdown h3 {
+  font-size: 2.8rem;
+}
+
+.markdown h4 {
+  font-size: 2.0rem;
+}
+
+.markdown h5 {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.markdown h6 {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.markdown h1::before, .markdown h2::before, .markdown h3::before {
+  content: "#";
+  color: var(--purple);
+  margin-right: 0.8rem;
+  font-size: 125%;
+  line-height: 1;
+  margin-left: -0.75em;
+}
+
+.markdown h1, .markdown h2, .markdown h3 {
+  margin-left: 1em;
+}
+
+
+.markdown blockquote {
+  color: var(--dark-gray);
+  font-family: "Enriqueta", sans-serif;
+  border-left: 8px solid var(--pink);
+  padding: 1.8rem;
+  background-color: rgba(237, 38, 81, .05); /* Pink 15% */
+  margin: 0 0 1.2rem 0;
+}
+
+.markdown blockquote * {
+  font-size: 2.0rem;
+}
+
+.markdown blockquote *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown blockquote h1::before, .markdown blockquote h2::before, .markdown blockquote h3::before {
+  content: "";
+}
+
+.markdown tr:nth-of-type(2n) {
+  background: rgba(0,0,0,.05);
+  padding: 0.8rem;
+}
+
+.markdown :not(pre) > code {
+  background: rgba(46, 24, 74, .1) /* Purple, 10% */;
+  padding: 0.2rem 0.6rem 0.2rem 0.6rem;
+  border-radius: 4px;
+  color: var(--purple);
+  line-height: calc(1em + 1.2rem);
+}
+
+.markdown table {
+  margin-bottom: 1.4rem;
+}

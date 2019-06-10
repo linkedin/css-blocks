@@ -11,3 +11,39 @@
   width: 24.0rem;
   margin-right: 1.6rem;
 }
+
+.navSection {
+  margin-bottom: 2.8rem;
+  list-style: none;
+  text-transform: capitalize;
+}
+
+.navItem {
+  color: red;
+  list-style: none;
+}
+
+.navLink {
+  color: var(--dark-gray);
+  text-decoration: none;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 2.8rem;
+  display: block;
+}
+
+.title {
+  font-size: 3.6rem;
+  font-size: 4.8rem;
+  font-weight: 600;
+  margin-left: 1em;
+}
+
+.title::before {
+  content: "#";
+  color: var(--purple);
+  margin-right: 0.8rem;
+  font-size: 125%;
+  line-height: 1;
+  margin-left: -0.75em;
+}

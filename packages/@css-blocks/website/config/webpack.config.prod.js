@@ -11,6 +11,7 @@ const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
 const cssAssets = require('./css');
+const highlight = require('highlight.js');
 
 const CssBlocks = require("@css-blocks/jsx");
 const CssBlocksPlugin = require("@css-blocks/webpack").CssBlocksPlugin;
@@ -262,6 +263,24 @@ module.exports = {
               },
 
             ]
+          },
+
+          {
+            test: /\.(md)$/,
+            use: [
+              {
+                loader: 'frontmatter-markdown-loader',
+                options: {
+                  highlight: (code, lang) => {
+                    if (!lang || ['text', 'literal', 'nohighlight'].includes(lang)) {
+                      return `<pre class="hljs">${code}</pre>`;
+                    }
+                    const html = highlight.highlight(lang, code).value;
+                    return `<span class="hljs">${html}</span>`;
+                  },
+                },
+              },
+            ],
           },
 
           // "file" loader makes sure assets end up in the `build` folder.

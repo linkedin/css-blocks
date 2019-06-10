@@ -316,7 +316,7 @@ function sourceAndMap(asset: Source): SourceAndMap {
     // sourceAndMap is supposedly more efficient when implemented.
     if (asset.sourceAndMap) {
         let {source, map} = asset.sourceAndMap();
-        return {source, map: adaptFromLegacySourceMap(map)};
+        return {source, map: map ? adaptFromLegacySourceMap(map) : map};
     } else {
         let source = asset.source();
         let map: RawSourceMap | undefined = undefined;

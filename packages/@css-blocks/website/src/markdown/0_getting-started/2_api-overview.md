@@ -1,40 +1,7 @@
 ---
-name: What is CSS Blocks?
+name: API Overview
+title: CSS Blocks Features
 ---
-# Why CSS Blocks?
-With css-blocks added to your project, you receive:
-
- - 💎 One CSS File Per Component
- - 📦 Scoped Styles
- - 🔎 Nearly Non-Existent Runtime (~500b)
- - 🔥 Blazing Fast Stylesheets
- - 🚀 Project-Wide Optimization
- - 🚨 Build Time CSS Errors
- - 🧟 Dead Code Elimination
- - ✨ Object Oriented Inheritance
-
-But, most importantly, CSS Blocks is **⚡️Statically Analyzable**.
-
-## The ⚡️ of Static Analysis
-Static analysis means css-blocks can look at your project and know with *certainty* that any given CSS declaration will, will not, or might under certain conditions, be used on any given element in your templates. 
-
-Most stylesheet architectures have to walk a fine line between performance and
-maintainability. Tilt too far in either direction and either your users or the developers
-will end up paying the cost. With CSS Blocks, you can focus on making sure your
-stylesheets are easy to maintain as your application changes, and with the new
-CSS optimizer, [OptiCSS](https://github.com/linkedin/opticss), the small size of your
-app's production stylesheets after compression will amaze you.
-
-Gone are the days where you spend several minutes debugging your app only to discover a subtle typo that caused a selector to not match – CSS Blocks will give you a build error and suggest possible fixes. With IDE integration, projects using CSS Blocks will be able to quickly navigate to selector definitions that match your current template element and find which template elements match your current selector, autocomplete class names. With CSS Blocks new resolution system, cascade conflicts will be caught for you before you even know they exist and you will never have to fight a specificity war ever again.
-
-<!-- ![CSS Blocks Example](https://user-images.githubusercontent.com/7856443/39090683-78ca1966-459a-11e8-8128-f50a9b2a1810.jpg) -->
-
-> CSS Blocks is inspired by [CSS Modules](https://github.com/css-modules/css-modules), [BEM](http://getbem.com/) and [Atomic CSS](https://acss.io/)
-> 
-> For a full deep-dive of the project architecture, I heavily recommend you review the [CSS Blocks Architecture README](./ARCHITECTURE.md)!
-
-
-# 🎁 API Features
 
 CSS Blocks is under active development and there are a number of features that have not yet been implemented! You can get a snapshot of the feature-set state here.
 

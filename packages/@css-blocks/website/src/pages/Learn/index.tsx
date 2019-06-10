@@ -2,11 +2,13 @@ import React from 'react';
 import Markdown from '../../shared/Markdown';
 import { Link } from 'react-router-dom'
 
+import { PAGES } from './pages';
+import MarkdownStyles from './markdown.css';
 import LearnStyles from './Learn.block.css';
 
 interface Params {
-  section: string;
-  page: string;
+  sectionSlug: string;
+  pageSlug: string;
 }
 
 interface Match {
@@ -21,42 +23,85 @@ const SECTION_DEFAULT = "getting-started";
 const PAGE_DEFAULT = "index";
 
 // TODO: Automate discovery.
-const pages = [
-  ["getting-started", "index"],
-  ["getting-started", "block-syntax"],
-];
 
 function genNav(): JSX.Element[] {
   const out = [];
-  for (let [section, page] of pages) {
-    try {
-      let obj = require(`../../markdown/${section}/${page}.md`) as MarkdownFile;
-      out.push((<li><Link to={`/learn/${section}/${page}`}>{obj.attributes.name}</Link></li>));
+  let sectionIdx = 0;
+  for (let section of PAGES.sections) {
+    let pageIdx = 0;
+    let pagesList = [];
+    for (let page of section.pages) {
+      try {
+        let obj = require(`../../markdown/${sectionIdx}_${section.name}/${pageIdx}_${page.name}.md`) as MarkdownFile;
+        pagesList.push((
+          <li className={LearnStyles.navItem}>
+            <Link
+              to={`/learn/${section.name}/${page.name}`}
+              className={LearnStyles.navLink}
+            >{obj.attributes.name}</Link>
+          </li>
+        ));
+      }
+      catch(err) { console.error(err); }
+      pageIdx++;
     }
-    catch(err) {}
+
+    out.push((
+      <li className={LearnStyles.navSection}>
+        <h2>{section.name.replace('-', ' ')}</h2>
+        <ul>{pagesList}</ul>
+      </li>
+    ))
+    sectionIdx++;
   }
   return out;
 }
 
 interface MarkdownFile {
   attributes: any;
-  body: string;
+  // body: string;
   html: string;
 }
 
-export default function Learn({ match: { params: { section = SECTION_DEFAULT, page = PAGE_DEFAULT }}}: Props) {
-  let html;
-  try { let obj = require(`../../markdown/${section}/${page}.md`) as MarkdownFile; html = obj.html; }
-  catch (err) { html = "404 Not Found"; }
+export default function Learn({ match: { params: { sectionSlug = SECTION_DEFAULT, pageSlug = PAGE_DEFAULT }}}: Props) {
+  let obj: MarkdownFile = {
+    attributes: {
+      title: "Oh No!",
+    },
+    html: "404 Not Found"
+  };
+
+  let sectionIdx = 0;
+  console.log(sectionSlug, pageSlug)
+  sectionLoop: for (let section of PAGES.sections) {
+    if (section.name === sectionSlug) {
+      let pageIdx = 0;
+      for (let page of section.pages) {
+        if (page.name === pageSlug) {
+          try {
+            obj = require(`../../markdown/${sectionIdx}_${sectionSlug}/${pageIdx}_${pageSlug}.md`) as MarkdownFile;
+            break sectionLoop;
+          } catch (err) { /* Remains a 404 page */ }
+        }
+        pageIdx++;
+      }
+    }
+    sectionIdx++;
+  }
+
   return (
     <div className={LearnStyles}>
+      <link href={MarkdownStyles} rel="stylesheet" />
       <nav className={LearnStyles.nav}>
         <ul>
           { genNav() }
         </ul>
       </nav>
       <section className={LearnStyles.content}>
-        <Markdown content={html}></Markdown>
+        <header>
+          <h1 className={LearnStyles.title}>{obj.attributes.title}</h1>
+        </header>
+        <Markdown content={obj.html}></Markdown>
       </section>
     </div>
   );
