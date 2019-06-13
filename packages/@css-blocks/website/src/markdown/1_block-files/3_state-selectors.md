@@ -108,7 +108,7 @@ It is important to note that the sub-states of a `[state]` are **Mutually Exclus
 > ```handlebars
 >  <div state:active={{isRootActive}}>
 >    I'm green when isRootActive is true.
->    <div state:active{{isElActive}}>
+>    <div state:active={{isElActive}}>
 >      I'm green when isElActive is true.
 >    </div>
 >  </div>

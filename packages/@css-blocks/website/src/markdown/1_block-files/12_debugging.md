@@ -3,9 +3,9 @@ name: Debugging
 title: Debugging Your Blocks
 ---
 
-Often you may have a reference to a block but aren't sure what Block objects
+Often you may have a reference to a block but aren't sure what styles
 are in its public interface. The `@block-debug` at-rule allows you to
-inspect the block's names, and see what classnames they will compile to.
+inspect the block's classes and states, and to see what classnames they will compile to.
 
 You must also tell the debug statement where to output the information.
 

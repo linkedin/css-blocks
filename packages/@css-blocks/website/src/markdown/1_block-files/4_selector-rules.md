@@ -11,7 +11,7 @@ Of course, because we statically analyze and compile all your code before it eve
 
 > As Opticss improves, we may choose to loosen some of these restrictions – keep an eye out for syntax updates as we approach the `v1.0.0` release!
 
-Lets quidly review these forbidden rules:
+Let's quickly review the restrictions:
 
 #### 1) ❌ `!important`
 The `!important` directive is one of CSS' most obvious code smells. It also does some gnarly things to the cascade, especially
@@ -46,7 +46,10 @@ CSS selectors are a pretty blatant code smell and are often the result of unness
 :scope[state|active] > .my-class { /* ... */ }
 :scope[state|color=red] .my-class { /* ... */ }
 
-/* ❌ Illegal! Left side's originating element is not `:scope` */
+/* ❌ Illegal! Left side's originating element is not `:scope`.
+ * Consider extracting these styles to their own block and declaring
+ * this element to also be the `:scope` of that block.
+ */
 .container:hover > .my-class { /* ... */ }
 .container[state|active] .my-class { /* ... */ }
 .container[state|color=red] .my-class { /* ... */ }

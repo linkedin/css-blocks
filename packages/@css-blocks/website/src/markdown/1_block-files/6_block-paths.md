@@ -13,7 +13,7 @@ Block Paths take the form:
 block.class[state|name="value"]
 ```
 
-All sections of this selector – except the leading Block name – are optional. The leading Block name *must* refer to an imported `@block` at the top of the file. If css-blocks is unable to resolve a Block Path at build time, you will get a friendly error message in your console!
+All sections of this selector – except the leading Block name – are optional. The leading Block name *must* refer to an `@block` import. If CSS Blocks is unable to resolve a Block Path at build time, you will get a friendly error message in your console!
 
 All the following syntaxes are legal to select any given stylable on a referenced Block:
 

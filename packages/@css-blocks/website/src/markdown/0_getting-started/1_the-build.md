@@ -19,9 +19,9 @@ Every template integration will have its own slightly unique syntax for how to i
 
 > 💡 **Feature Note: Template Integrations**
 > 
-> Each integration implements a slightly different API. Ex: JSX lets you `import` Block files, whereas Ember looks for, through filesystem convention, a `stylesheet.block.css` alongside every component template.
+> Each integration implements a slightly different API. Ex: JSX lets you `import` Block files, whereas the Ember integration looks for, through filesystem convention, a default stylesheet corresponding to every component template.
 
-However, whatever the template implementation happens to be, it should feel as though you're interfacing with regular CSS on the platform. For example, in Glimmer you simply write the classes and states exactly as you would expect to when working with a typical stylesheet:
+However, whatever the template implementation happens to be, it should feel as though you're interfacing with regular CSS on the platform. For example, in Ember you simply write the classes and states exactly as you would expect to when working with a typical stylesheet:
 
 ```css
 :scope                { /* ... */ }
@@ -34,7 +34,7 @@ However, whatever the template implementation happens to be, it should feel as t
 ```handlebars
 {{!--
   Our `:scope` is automagically applied to the template's root element.
-  Thanks Glimmer!
+  Yay! Conventions!
 --}}
 <section state:enabled={{isEnabled}}>
   <button class="button">
@@ -68,4 +68,4 @@ With Template integrations, CSS Blocks is able to read, analyze, and rewrite ind
 >
 > Learn how to make your own [Template Integration](./ARCHITECTURE.md#template-integrations) or [Build System Integration](./ARCHITECTURE.md#build-system-integrations) and contribute it back!
 
-To learn how to install css-blocks for in your application, please consult the specific docs for your templating system and build system.
+To learn how to install CSS Blocks for in your application, please consult the specific docs for your templating system and build system.

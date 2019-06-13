@@ -3,9 +3,9 @@ name: Global States
 title: Global States
 ---
 
-In rare occasions, a Block may choose to declare declare that a certain State is **global**. These states are special in that they can be used in other Blocks like they are local to that block.
+In rare occasions, a Block may choose to declare that a certain State is **global**. These states are special in that they can be used in other Blocks like they are local to that block.
 
-This is most useful for global application states – like during initial application boot, or when a modal is displayed.
+One common use for this feature is to put an application into a well known state  – like during initial application boot, or when a modal is displayed. Then, other blocks can use the global state to create descendant selectors that react to that state.
 
 > ⚙️ **Performance Note: Global States**
 > 

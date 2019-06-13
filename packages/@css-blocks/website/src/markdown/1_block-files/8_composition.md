@@ -54,13 +54,13 @@ In the above example, whenever an element in our template matches one of the sel
 However! Unlike the now well-known `@include` or `@extend` directives from SASS, `composes` will actually apply the correct combination of classes *in template* instead of duplicating CSS. This means that:
 
 ```handlebars
-<div class="class1 other.class2">
+<div class="class2 other.class1">
 ```
-is functionally equivalent to:
+is functionally equivalent to the following (but you only have to use `class2` in the template):
 ```css
 @block other from "other.block.css";
 
-.class1 {
-  composes: other.class2;
+.class2 {
+  composes: other.class1;
 }
 ```

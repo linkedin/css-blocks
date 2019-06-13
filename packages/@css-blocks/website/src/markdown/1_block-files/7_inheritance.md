@@ -54,6 +54,8 @@ For the build to pass, we need to implement the *full public interface* of `bloc
 .my-class[state|my-state] { /* ... */ }
 ```
 
+Note: You can use an empty ruleset to indicate that no styles are applied for some specific style in the implemented interface. Beware though, if you are authoring with Sass, empty rulesets are removed before CSS Blocks can see them. You can add a `/*` style comment within the ruleset to prevent this from happening.
+
 ### Block Inheritance
 
 A Block may also choose to extend another referenced Block. This exposes all declared styles from the extended Block on the extending Block. 
@@ -99,4 +101,4 @@ An extending block is able to re-define any property on any style it inherits fr
 
 > 🔮 **Future Feature: Extension Constraints**
 > 
-> Sometimes, properties inside of a component are **so** important, that authors may want to constrain the values that extenders and implementors are able to set. In the near future, css-blocks will enable this use case through the custom `constrain()` and `range()` CSS functions and possibly through other ideas like [custom constraints and conflicts](https://github.com/linkedin/css-blocks/issues/51). You can come help out over on Github to make this happen faster!
+> Sometimes, properties inside of a component are **so** important, that authors may want to constrain the values that extenders and implementors are able to set. In the near future, CSS Blocks will enable this use case through the custom `constrain()` and `range()` CSS functions and possibly through other ideas like [custom constraints and conflicts](https://github.com/linkedin/css-blocks/issues/51). You can come help out over on Github to make this happen faster!

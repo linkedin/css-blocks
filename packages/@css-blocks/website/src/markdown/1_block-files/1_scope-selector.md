@@ -3,7 +3,7 @@ name: The Scope Selector
 title: The Scope Selector
 ---
 
-Every Block file represents a scoped stylesheet. The styles defined therein are meant to **only** be applied to a specific DOM subtree – typically a single component's internals. The `:scope` ruleset contains styles to be applied to the root of the scoped style subtree.
+Every Block file represents a scoped stylesheet. The styles defined therein are meant to **only** be applied to a specific DOM subtree – for example, a single component's internals. The `:scope` ruleset contains styles to be applied to the root of the scoped style subtree.
 
 All other elements assigned styles from this Block must be contained inside the DOM subtree of the element we've assigned the Block's :scope. We use the special [`:scope` pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:scope) to represent these styles.
 

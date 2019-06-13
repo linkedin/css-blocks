@@ -3,7 +3,7 @@ name: Imports and Exports
 title: Importing and Exporting Blocks
 ---
 
-So now you know about Block files, the core usit of isolation in CSS Blocks, and the rules imposed on the selectors they contain.
+So now you know about Block files, the core unit of isolation in CSS Blocks, and the rules imposed on the selectors they contain.
 
 However, application styles rarely live in isolation! This is where Block imports and exports come in to play.
 
@@ -11,7 +11,7 @@ A Block may declare a dependency on another Block by using a `@block` import at 
 
 It is import to note that **Block references don't cause any styles to be included**. Instead, they are like an ES6 `import` statement -- they make it possible to refer to the public interface of another Block from within the current Block.
 
-Adding a `@block` import is as simple as:
+You can use the `@block` at-rule to import a block and assign a locally scoped name with which to reference it:
 
 ```css
 /* block-1.block.css */
@@ -27,7 +27,7 @@ Adding a `@block` import is as simple as:
 :scope { block-name: block-2; }
 ```
 
-With the above code, `block-2` now has a local reference, `other-block`, which points to `block-1`. We can now freely use the `other-block` identifier inside of `block-2` when we want to reference reference `block-1`. This comes in handy! Especially with some of the advanced features we will review in the following sections:
+With the above code, `block-2` now has a local reference, `other-block`, which points to `block-1`. We can now freely use the `other-block` identifier inside of `block-2` when we want to reference `block-1`. This comes in handy! Especially with some of the advanced features we will review in the following sections:
 
  - Block Extension
  - Block Implementation
@@ -68,7 +68,7 @@ Again, much like ES6 imports in Node.js, import paths may either reference the f
   version: "1.0.0",
   /*...*/
   "css-blocks": {
-    main: "path/to/block.css"
+    main: "path/to/main.block.css"
   }
 }
 ```
@@ -77,11 +77,11 @@ Now, if an app that depends on "my-module" tries to import:
 ```css
 @block my-module from "my-module";
 ```
-The app will receive the Block located at `node_modules/my-moudle/path/to/block.css`.
+The app will receive the Block located at `node_modules/my-module/path/to/main.block.css`.
 
 ## Block Exports
 
-Every Block that is imported in to scope is private by default. In order to expose an imported Block
+Importing a Block allows you to reference it locally. In order to expose an imported Block
 as importable under a specific name, you must explicitly re-export it. Exports are written using the
 `@export` directive. Exports may be done under the same local name:
 
