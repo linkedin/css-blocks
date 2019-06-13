@@ -44,6 +44,10 @@ export const PAGES: Pages = {
       name: "ember",
       pages: [
         { name: "install" },
+        { name: "configuration" },
+        { name: "using-styles" },
+        { name: "composing-styles" },
+
       ]
     }
   ]
