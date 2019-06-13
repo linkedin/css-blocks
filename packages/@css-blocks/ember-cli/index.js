@@ -225,7 +225,7 @@ module.exports = {
 
     // Because we have slightly different logic depending on the app type.
     // TODO: Is there a better way to get this env info?
-    let isEmber = !!~app.constructor.name.indexOf("Ember");
+    let isEmber = !!(app.registry && app.registry.availablePlugins && app.registry.availablePlugins["ember-source"]);
     let isAddon = isEmber && !~parent.constructor.name.indexOf("Ember");
     let isGlimmer = !isEmber;
 
