@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.23.2"></a>
+## [0.23.2](https://github.com/linkedin/css-blocks/compare/v0.23.1...v0.23.2) (2019-06-13)
+
+
+### Bug Fixes
+
+* **ember-cli:** Detect ember by presece of ember-source. ([28e8811](https://github.com/linkedin/css-blocks/commit/28e8811))
+
+
+### Features
+
+* Binary runtime helper. ([#255](https://github.com/linkedin/css-blocks/issues/255)) ([959fb8b](https://github.com/linkedin/css-blocks/commit/959fb8b))
+
+
+
+
+
 <a name="0.23.1"></a>
 ## [0.23.1](https://github.com/linkedin/css-blocks/compare/v0.23.0...v0.23.1) (2019-05-09)
 

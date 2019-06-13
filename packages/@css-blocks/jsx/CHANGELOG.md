@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.23.2"></a>
+## [0.23.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/jsx/compare/v0.23.1...v0.23.2) (2019-06-13)
+
+**Note:** Version bump only for package @css-blocks/jsx
+
+
+
+
+
 <a name="0.23.0"></a>
 # [0.23.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/jsx/compare/v0.22.0...v0.23.0) (2019-05-08)
 

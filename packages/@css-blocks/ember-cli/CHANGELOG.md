@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.23.2"></a>
+## [0.23.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v0.23.1...v0.23.2) (2019-06-13)
+
+
+### Bug Fixes
+
+* **ember-cli:** Detect ember by presece of ember-source. ([28e8811](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/28e8811))
+
+
+
+
+
 <a name="0.23.0"></a>
 # [0.23.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v0.22.0...v0.23.0) (2019-05-08)
 
