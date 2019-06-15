@@ -48,7 +48,7 @@
     "remap-istanbul": "^0.13.0",
     "source-map-support": "^0.5.12",
     "test-console": "^1.1.0",
-    "ts-node": "^8.1.0",
+    "ts-node": "^8.3.0",
     "tslint": "^5.9.1",
     "typedoc": "^0.14.2",
     "typedoc-plugin-monorepo": "^0.1.0",
