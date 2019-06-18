@@ -38,6 +38,8 @@ export const PAGES: Pages = {
         { name: "global-states" },
         { name: "external-selectors" },
         { name: "debugging" },
+        { name: "configuration" },
+        { name: "preprocessors" },
       ]
     },
     {
@@ -47,6 +49,8 @@ export const PAGES: Pages = {
         { name: "configuration" },
         { name: "using-styles" },
         { name: "composing-styles" },
+        { name: "conditional-styles" },
+        { name: "built-ins" },
 
       ]
     }

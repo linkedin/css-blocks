@@ -20,7 +20,7 @@ export interface Configuration {
   preprocessors: Preprocessors;
 
   /**
-   * An importer is an object that is in charge of findi
+   * An importer is an object that is in charge of resolving an `@block` import path to a file contents object.
    *
    */
   importer: Importer;

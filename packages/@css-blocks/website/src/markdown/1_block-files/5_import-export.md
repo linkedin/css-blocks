@@ -60,6 +60,48 @@ This alias-by-name import syntax becomes helpful when a Block chooses to export 
 > itself – it is not permitted to import a Block under the name `default`. You
 > will receive a build time error message if you try to.
 
+## Block Exports
+
+Importing a Block allows you to reference it locally. In order to expose an imported Block
+as importable under a specific name, you must explicitly re-export it. Exports are written using the
+`@export` directive. Exports may be done under the same local name:
+
+```css
+@block other from "other.block.css";
+
+/* Your Block Styles */
+
+@export other;
+```
+
+Or by mapping it to a new external alias:
+
+```css
+@block other from "other1.block.css";
+@block other2 from "other2.block.css";
+
+/* Your Block Styles */
+
+@export ( other, other2 as block1 );
+```
+
+If you are **only** re-exporting a Block, and don't need a local reference in your Block file, you can use the default or alias re-export shorthand syntax:
+
+```css
+/* Your Block Styles */
+
+@export block1 from "one.block.css";
+@export ( block2 as fubar ) from "two.block.css";
+```
+
+> Note: `default` as a Reserved Export Word
+>
+> Because every Block automatically has a `default` export – the rules inside the file
+> itself – it is not permitted to export a Block under the name `default`. You
+> will receive a build time error message if you try to.
+
+## Block Import/Export and `node_modules`
+
 Again, much like ES6 imports in Node.js, import paths may either reference the file system with relative paths, or a module in `node_modules` that specifies a main Block in its `package.json`. Modules expecting to deliver a Block for import can specify the default Block like so:
 
 ```js
@@ -79,29 +121,8 @@ Now, if an app that depends on "my-module" tries to import:
 ```
 The app will receive the Block located at `node_modules/my-module/path/to/main.block.css`.
 
-## Block Exports
-
-Importing a Block allows you to reference it locally. In order to expose an imported Block
-as importable under a specific name, you must explicitly re-export it. Exports are written using the
-`@export` directive. Exports may be done under the same local name:
+Also like the Node.js resolution algorithm, you can reach in to a node module by specifying a file deep in the module tree:
 
 ```css
-@block other from "other.block.css";
-
-@export other;
+@block my-module from "my-module/path/to/other.css";
 ```
-
-Or by mapping it to a new external alias:
-
-```css
-@block other from "other1.block.css";
-@block other2 from "other2.block.css";
-
-@export ( other, other2 as block1 );
-```
-
-> Note: `default` as a Reserved Export Word
->
-> Because every Block automatically has a `default` export – the rules inside the file
-> itself – it is not permitted to export a Block under the name `default`. You
-> will receive a build time error message if you try to.
