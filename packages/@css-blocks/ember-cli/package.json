@@ -19,7 +19,9 @@
     "start": "ember serve",
     "test": "ember test",
     "test:runner": "ember test",
-    "test:all": "ember try:each"
+    "test:all": "ember try:each",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "@css-blocks/broccoli": "^0.23.2",
@@ -32,7 +34,8 @@
     "ember-cli-babel": "7.7.3",
     "ember-cli-htmlbars": "^3.0.0",
     "fs-extra": "^8.0.0",
-    "symlink-or-copy": "^1.2.0"
+    "symlink-or-copy": "^1.2.0",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "broccoli-asset-rev": "^3.0.0",
@@ -77,5 +80,6 @@
       "tests/dummy/lib/in-repo-engine",
       "tests/dummy/lib/in-repo-lazy-engine"
     ]
-  }
+  },
+  "snyk": true
 }
