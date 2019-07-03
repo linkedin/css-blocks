@@ -9,13 +9,14 @@
     "test": "yarn run test:runner",
     "test:runner": "mocha dist/test --opts test/mocha.opts",
     "posttest": "yarn run lint",
-    "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
+    "prepublish": "npm run snyk-protect; rm -rf dist && yarn run compile && yarn run lintall",
     "lint": "tslint -t msbuild --project . -c tslint.cli.json",
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",
     "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "watch": "watch 'yarn run test' './src' './test' --wait=3"
+    "watch": "watch 'yarn run test' './src' './test' --wait=3",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "css"
@@ -55,10 +56,12 @@
     "opticss": "^0.6.2",
     "regexpu-core": "^4.0.11",
     "source-map": "^0.7.3",
-    "watch": "^1.0.2"
+    "watch": "^1.0.2",
+    "snyk": "^1.189.0"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
   },
-  "engineStrict": true
+  "engineStrict": true,
+  "snyk": true
 }
