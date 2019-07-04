@@ -15,13 +15,14 @@
     "compile": "tsc --version && tsc --build && tsc --build tsconfig.amd.json",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
-    "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
+    "prepublish": "npm run snyk-protect; rm -rf dist && yarn run compile && yarn run lintall",
     "lint": "tslint -t msbuild --project . -c tslint.cli.json",
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",
     "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
     "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "watch": "watch 'yarn run test' src test --wait=1"
+    "watch": "watch 'yarn run test' src test --wait=1",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "glimmer",
@@ -68,6 +69,8 @@
     "fs-extra": "^8.0.0",
     "glob": "^7.1.2",
     "global": "^4.3.2",
-    "object.values": "^1.0.4"
-  }
+    "object.values": "^1.0.4",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }
