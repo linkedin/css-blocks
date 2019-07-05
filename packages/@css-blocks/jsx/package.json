@@ -13,11 +13,12 @@
     "test": "yarn run test:runner",
     "test:runner": "mocha dist/test --recursive --opts test/mocha.opts && yarn run lint",
     "compile": "tsc --build",
-    "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
+    "prepublish": "npm run snyk-protect; rm -rf dist && yarn run compile && yarn run lintall",
     "watch": "watch 'yarn run test' './src' './test' --wait=3",
     "lint": "tslint -t msbuild -c tslint.cli.json --project .",
     "lintall": "tslint -t msbuild --project . -c tslint.release.json",
-    "lintfix": "tslint -t msbuild -c tslint.cli.json --project . --fix"
+    "lintfix": "tslint -t msbuild -c tslint.cli.json --project . --fix",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "jsx",
@@ -61,6 +62,8 @@
     "debug": "^4.1.1",
     "minimatch": "^3.0.4",
     "object.values": "^1.0.4",
-    "opticss": "^0.6.2"
-  }
+    "opticss": "^0.6.2",
+    "snyk": "^1.192.0"
+  },
+  "snyk": true
 }
