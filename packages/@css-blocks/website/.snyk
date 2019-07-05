@@ -1,5 +1,5 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.13.1
+version: v1.13.5
 ignore: {}
 # patches apply the minimum changes required to fix a vulnerability
 patch:
@@ -20,3 +20,40 @@ patch:
         patched: '2018-12-09T07:19:32.496Z'
     - webpack > watchpack > chokidar > fsevents > node-pre-gyp > hawk > cryptiles > boom > hoek:
         patched: '2018-12-09T07:19:32.496Z'
+  SNYK-JS-LODASH-450202:
+    - snyk > inquirer > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - eslint > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - snyk > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - eslint > inquirer > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - eslint > table > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - webpack-dev-server > http-proxy-middleware > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - webpack > async > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - react-dev-utils > inquirer > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - snyk > snyk-php-plugin > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - eslint-plugin-flowtype > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - snyk > snyk-nuget-plugin > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - snyk > @snyk/dep-graph > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - snyk > snyk-config > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - snyk > snyk-nodejs-lockfile-parser > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - snyk > snyk-nodejs-lockfile-parser > graphlib > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - snyk > @snyk/dep-graph > graphlib > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - snyk > snyk-go-plugin > graphlib > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
+    - jest > jest-cli > istanbul-api > async > lodash:
+        patched: '2019-07-05T05:40:16.283Z'
