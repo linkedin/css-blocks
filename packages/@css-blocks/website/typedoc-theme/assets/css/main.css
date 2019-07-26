@@ -779,7 +779,7 @@ footer .tsd-legend { display: inline-block; width: 25%; padding: 0; font-size: 1
 .tsd-signature { margin: 0 0 1em 0; padding: 10px; border: 1px solid #eee; font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px; }
 .tsd-signature.tsd-kind-icon { padding-left: 30px; }
 .tsd-signature.tsd-kind-icon:before { top: 10px; left: 10px; }
-.tsd-panel > .tsd-signature { margin-left: -20px; margin-right: -20px; border-width: 1px 0; }
+.tsd-panel > .tsd-signature { word-break: break-all; margin-left: -20px; margin-right: -20px; border-width: 1px 0; }
 .tsd-panel > .tsd-signature.tsd-kind-icon { padding-left: 40px; }
 .tsd-panel > .tsd-signature.tsd-kind-icon:before { left: 20px; }
 
