@@ -50,7 +50,7 @@
     "test-console": "^1.1.0",
     "ts-node": "^8.1.0",
     "tslint": "^5.9.1",
-    "typedoc": "^0.14.2",
+    "typedoc": "^0.15.0",
     "typedoc-plugin-monorepo": "^0.1.0",
     "typescript": "~3.4.4",
     "watch": "^1.0.2"
