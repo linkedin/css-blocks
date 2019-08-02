@@ -38,10 +38,11 @@ module.exports = {
   _owners: new Set(),
 
   _modulePrefix() {
-    let parent = this.parent;
-    let config = typeof parent.config === "function" ? parent.config() || {} : {};
-    let name = typeof parent.name === "function" ? parent.name() : parent.name;
-    return parent.modulePrefix || config.modulePrefix || name || "";
+    const parent = this.parent;
+    const config = typeof parent.config === "function" ? parent.config() || {} : {};
+    const name = typeof parent.name === "function" ? parent.name() : parent.name;
+    const moduleName = typeof parent.moduleName === "function" ? parent.moduleName() : parent.moduleName;
+    return moduleName || parent.modulePrefix || config.modulePrefix || name || "";
   },
 
   // Shared AST plugin implementation for Glimmer and Ember.
