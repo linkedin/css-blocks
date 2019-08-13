@@ -60,7 +60,7 @@
     "@glimmer/compiler": "^0.41.0",
     "@glimmer/resolution-map-builder": "0.5.1",
     "@glimmer/resolver": "^0.4.3",
-    "@glimmer/syntax": "^0.41.0",
+    "@glimmer/syntax": "^0.42.0",
     "@opticss/element-analysis": "^0.6.1",
     "@opticss/template-api": "^0.6.2",
     "@opticss/util": "^0.6.1",
