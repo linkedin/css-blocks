@@ -102,9 +102,9 @@ module.exports = {
     registry.add("htmlbars-ast-plugin", {
       name: "css-blocks-htmlbars",
       plugin: this.astPlugin.bind(this),
-      // cacheKey: () => {
-      //   return this.transports.get(this.parent).mapping;
-      // }
+      dependencyInvalidation: true,
+      cacheKey: () => this.optionsForCacheInvalidation(),
+      baseDir: () => __dirname,
     });
 
     // For Glimmer
@@ -267,9 +267,10 @@ module.exports = {
     options.aliases      || (options.aliases = {});
     options.analysisOpts || (options.analysisOpts = {});
     options.optimization || (options.optimization = {});
-    options.parserOpts   || (options.parserOpts = {
-      importer: new NodeJsImporter(options.aliases),
-    });
+    options.parserOpts   || (options.parserOpts = {});
+
+    // Use the node importer by default.
+    options.parserOpts.importer = options.parserOpts.importer || new NodeJsImporter(options.aliases);
 
     // Optimization is always disabled for now, until we get project-wide analysis working.
     options.optimization.enabled = false;
@@ -290,6 +291,27 @@ module.exports = {
     }
 
     return options;
+  },
+
+  optionsForCacheInvalidation() {
+    let aliases = this._options.aliases;
+    let analysisOpts = this._options.analysisOpts;
+    let optimization = this._options.optimization;
+    let parserOpts = {};
+    Object.assign(parserOpts, this._options.parserOpts);
+    let constructor = parserOpts.importer && parserOpts.importer.constructor;
+    if (constructor) {
+      parserOpts.importer = constructor.name;
+    } else {
+      delete parserOpts.importer;
+    }
+
+    return {
+      aliases,
+      analysisOpts,
+      optimization,
+      parserOpts
+    };
   },
 
   genTreeWrapper(env, options, prev = NOOP) {

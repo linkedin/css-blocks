@@ -26,7 +26,25 @@ const DEBUG = debugGenerator("css-blocks:glimmer:rewriter");
 
 export type GlimmerStyleMapping = StyleMapping<TEMPLATE_TYPE>;
 
-export class GlimmerRewriter implements ASTPlugin {
+interface ASTPluginWithDeps extends ASTPlugin {
+  /**
+   * If this method exists, it is called with the relative path to the current
+   * file just before processing starts. Use this method to reset the
+   * dependency tracking state associated with the file.
+   */
+  resetDependencies?(relativePath: string): void;
+  /**
+   * This method is called just as the template finishes being processed.
+   *
+   * @param relativePath A relative path to the file that may have dependencies.
+   * @return paths to files that are a dependency for the given
+   * file. Any relative paths returned by this method are taken to be relative
+   * to the file that was processed.
+   */
+  dependencies(relativePath: string): string[];
+}
+
+export class GlimmerRewriter implements ASTPluginWithDeps {
   template: ResolvedFile;
   analysis: GlimmerAnalysis;
   elementCount: number;
@@ -34,6 +52,8 @@ export class GlimmerRewriter implements ASTPlugin {
   block: Block;
   styleMapping: GlimmerStyleMapping;
   cssBlocksOpts: CSSBlocksConfiguration;
+  visitor: NodeVisitor;
+  visitors: NodeVisitor;
 
   private elementAnalyzer: ElementAnalyzer;
 
@@ -51,6 +71,16 @@ export class GlimmerRewriter implements ASTPlugin {
     this.cssBlocksOpts = resolveConfiguration(cssBlocksOpts);
     this.elementCount  = 0;
     this.elementAnalyzer = new ElementAnalyzer(this.analysis, this.cssBlocksOpts);
+    if (this.block) {
+      this.visitor = {
+        ElementNode: this.ElementNode.bind(this),
+        MustacheStatement: this.BuiltinStatement.bind(this),
+        BlockStatement: this.BuiltinStatement.bind(this),
+      };
+    } else {
+      this.visitor = {};
+    }
+    this.visitors = this.visitor;
   }
 
   debug(message: string, ...args: unknown[]): void {
@@ -59,15 +89,30 @@ export class GlimmerRewriter implements ASTPlugin {
 
   get name(): string { return this.block ? "css-blocks-glimmer-rewriter" : "css-blocks-noop"; }
 
-  // `visitors` is used by Ember < 3.0.0. `visitor` is used by Glimmer and Ember >= 3.0.0.
-  get visitor(): NodeVisitor { return this.visitors; }
-  get visitors(): NodeVisitor {
-    if (!this.block) { return {}; }
-    return {
-      ElementNode: this.ElementNode.bind(this),
-      MustacheStatement: this.BuiltinStatement.bind(this),
-      BlockStatement: this.BuiltinStatement.bind(this),
-    };
+  /**
+   * @param _relativePath Unused in this implementation.
+   * @returns Files this template file depends on.
+   */
+  dependencies(_relativePath: string): Array<string> {
+    this.debug("Getting dependencies for", _relativePath);
+    let deps: Set<string> = new Set();
+
+    // let importer = this.cssBlocksOpts.importer;
+    for (let block of this.analysis.transitiveBlockDependencies()) {
+      // TODO: Figure out why the importer is returning null here.
+      // let blockFile = importer.filesystemPath(block.identifier, this.cssBlocksOpts);
+      let blockFile = block.identifier;
+      this.debug("block file path is", blockFile);
+      if (blockFile) {
+        deps.add(blockFile);
+      }
+      // These dependencies happen when additional files get involved via preprocessors.
+      for (let additionalDep of block.dependencies) {
+        deps.add(additionalDep);
+      }
+    }
+    let depArray = new Array(...deps);
+    return depArray;
   }
 
   BuiltinStatement(node: AST.MustacheStatement | AST.BlockStatement) {
