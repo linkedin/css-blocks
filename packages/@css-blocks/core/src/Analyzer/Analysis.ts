@@ -21,6 +21,7 @@ import { ResolvedConfiguration } from "../configuration";
 import { Analyzer } from "./Analyzer";
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
 import { TemplateValidator, TemplateValidatorOptions } from "./validations";
+import { DEFAULT_EXPORT } from "../BlockSyntax";
 
 /**
  * This interface defines a JSON friendly serialization
@@ -152,13 +153,13 @@ export class Analysis<K extends keyof TemplateTypes> {
     let names = Object.keys(this.blocks);
     for (let name of names) {
       if (this.blocks[name] === block) {
-        return name;
+        return name === DEFAULT_EXPORT ? "" : name;
       }
     }
     for (let name of names) {
       let superBlock = this.blocks[name].base;
       while (superBlock) {
-        if (superBlock === block) return name;
+        if (superBlock === block) return name === DEFAULT_EXPORT ? "" : name;
         superBlock = superBlock.base;
       }
     }

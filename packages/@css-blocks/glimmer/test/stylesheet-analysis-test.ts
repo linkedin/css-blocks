@@ -16,7 +16,7 @@ describe("Stylesheet analysis", function() {
       let serializedAnalysis = analysis.serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/my-app");
       assert.deepEqual(serializedAnalysis.blocks, {
-        "": fixture("styled-app/src/ui/components/my-app/stylesheet.css"),
+        "default": fixture("styled-app/src/ui/components/my-app/stylesheet.css"),
       });
       assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" , ":scope", ":scope[state|is-loading]"]);
       let expected: ElementsAnalysis = {
@@ -45,7 +45,7 @@ describe("Stylesheet analysis", function() {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-multiple-blocks");
       assert.deepEqual(analysis.blocks, {
-        "": fixture("styled-app/src/ui/components/with-multiple-blocks/stylesheet.css"),
+        "default": fixture("styled-app/src/ui/components/with-multiple-blocks/stylesheet.css"),
         "h": fixture("styled-app/src/ui/components/with-multiple-blocks/header.css"),
       });
       assert.deepEqual(analysis.stylesFound, [".world", ".world[state|thick]", ":scope", "h.emphasis", "h.emphasis[state|extra]", "h:scope"]);
@@ -67,7 +67,7 @@ describe("Stylesheet analysis", function() {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-states");
       assert.deepEqual(analysis.blocks, {
-        "": fixture("styled-app/src/ui/components/with-dynamic-states/stylesheet.css"),
+        "default": fixture("styled-app/src/ui/components/with-dynamic-states/stylesheet.css"),
         "h": fixture("styled-app/src/ui/components/with-dynamic-states/header.css"),
       });
       assert.deepEqual(analysis.stylesFound, [
@@ -119,7 +119,7 @@ describe("Stylesheet analysis", function() {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-classes");
       assert.deepEqual(analysis.blocks, {
-        "": fixture("styled-app/src/ui/components/with-dynamic-classes/stylesheet.css"),
+        "default": fixture("styled-app/src/ui/components/with-dynamic-classes/stylesheet.css"),
         "h": fixture("styled-app/src/ui/components/with-dynamic-classes/header.css"),
         "t": fixture("styled-app/src/ui/components/with-dynamic-classes/typography.css"),
       });

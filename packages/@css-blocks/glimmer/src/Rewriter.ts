@@ -19,6 +19,7 @@ import { ElementAnalyzer } from "./ElementAnalyzer";
 import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
 import { CONCAT_HELPER_NAME } from "./helpers";
 import { ResolvedFile, TEMPLATE_TYPE } from "./Template";
+import { DEFAULT_EXPORT } from "@css-blocks/core/dist/src/BlockSyntax";
 
 // TODO: The state namespace should come from a config option.
 const STYLE_ATTR = /^(class$|state:)/;
@@ -66,7 +67,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     this.syntax        = syntax;
     this.analysis      = analysis;
     this.template      = analysis.template;
-    this.block         = analysis.getBlock("")!; // Local block check done elsewhere
+    this.block         = analysis.getBlock(DEFAULT_EXPORT)!; // Local block check done elsewhere
     this.styleMapping  = styleMapping;
     this.cssBlocksOpts = resolveConfiguration(cssBlocksOpts);
     this.elementCount  = 0;

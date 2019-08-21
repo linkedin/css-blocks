@@ -27,6 +27,7 @@ export type AttrRewriteMap = { [key: string]: TemplateElement };
 const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
 const STYLE_IF = "style-if";
 const STYLE_UNLESS = "style-unless";
+const DEFAULT_BLOCK_NAME = "default";
 
 const debug = debugGenerator("css-blocks:glimmer:element-analyzer");
 
@@ -40,7 +41,7 @@ export class ElementAnalyzer {
 
   constructor(analysis: GlimmerAnalysis, cssBlocksOpts: CSSBlocksConfiguration) {
     this.analysis = analysis;
-    this.block = analysis.getBlock("")!; // Local block check done elsewhere
+    this.block = analysis.getBlock(DEFAULT_BLOCK_NAME)!; // Local block check done elsewhere
     this.template = analysis.template;
     this.cssBlocksOpts = cssBlocksOpts;
   }
@@ -160,9 +161,9 @@ export class ElementAnalyzer {
   }
 
   private lookupClass(name: string, node: AST.Node): BlockClass {
-    let found = this.block.lookup(name);
+    let found = this.block.externalLookup(name);
     if (!found && !/\./.test(name)) {
-      found = this.block.lookup("." + name);
+      found = this.block.externalLookup("." + name);
     }
     if (found) {
       return <BlockClass>found;
@@ -257,7 +258,7 @@ export class ElementAnalyzer {
     element: TemplateElement,
     forRewrite: boolean,
   ): void {
-    let stateBlock = blockName ? this.block.getReferencedBlock(blockName) : this.block;
+    let stateBlock = blockName ? this.block.getExportedBlock(blockName) : this.block;
     if (stateBlock === null) {
       throw cssBlockError(`No block named ${blockName} referenced from ${this.debugBlockPath()}`, node, this.template);
     }

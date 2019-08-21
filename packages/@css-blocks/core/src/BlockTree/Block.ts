@@ -138,6 +138,51 @@ export class Block
     return attr || klass || undefined;
   }
 
+    /**
+   * Lookup a sub-block either locally, or on a exported foreign block.
+   * @param reference
+   *   A reference to a block object adhering to the following grammar:
+   *     reference -> <ident> '.' <sub-reference>  // reference through sub-block <ident>
+   *                | <ident>                      // reference to sub-block <ident>
+   *                | '.' <class-selector>         // reference to class in this block
+   *                | <attr-selector>             // reference to attribute in this block
+   *                | '.'                          // reference to this block
+   *     sub-reference -> <ident> '.' <sub-reference> // reference through sub-sub-block
+   *                    | <object-selector>        // reference to object in sub-block
+   *     object-selector -> <block-selector>       // reference to this sub-block
+   *                      | <class-selector>       // reference to class in sub-block
+   *                      | <attribute-selector>   // reference to attribute in this sub-block
+   *     block-selector -> 'root'
+   *     class-selector -> <ident>
+   *     attribute-selector -> '[state|' <ident> ']'
+   *     ident -> regex:[a-zA-Z_-][a-zA-Z0-9]*
+   *   A single dot by itself returns the current block.
+   * @returns The Style referenced at the supplied path.
+   */
+  public externalLookup(path: string | BlockPath, errLoc?: SourceLocation): Styles | undefined {
+    path = new BlockPath(path);
+    let block = this.getExportedBlock(path.block);
+    if (!block) {
+      if (errLoc) { throw new InvalidBlockSyntax(`No Block named "${path.block}" found in scope.`, errLoc); }
+      return undefined;
+    }
+    let klass = block.resolveClass(path.class);
+    let attrInfo = path.attribute;
+    let attr;
+    if (klass && attrInfo) {
+      attr = klass.resolveAttributeValue(attrInfo);
+      if (!attr) return undefined;
+    }
+
+    if (!attr && !klass && errLoc) {
+      throw new InvalidBlockSyntax(`No Style "${path.path}" found on Block "${block.name}".`, errLoc);
+    }
+
+    return attr || klass || undefined;
+  }
+
+
+
   /**
    * Add an absolute, normalized path as a compilation dependency. This is used
    * to invalidate caches and trigger watchers when those files change.
@@ -247,7 +292,7 @@ export class Block
    * @returns Block | null.
    */
   getReferencedBlock(localName: string): Block | null {
-    if (localName === "" || localName === DEFAULT_EXPORT) { return this; }
+    if (localName === DEFAULT_EXPORT) { return this; }
     return this._blockReferences[localName] || null;
   }
 
@@ -268,6 +313,16 @@ export class Block
   addBlockExport(remoteName: string, block: Block) {
     this._blockExports[remoteName] = block;
     this._blockExportReverseLookup.set(block, remoteName);
+  }
+
+  /**
+   * Iterates over each exported block, applying the callback to it
+   * @param callback the function to iterate over each exported block
+   */
+  eachBlockExport(callback: (name: string, block: Block) => unknown) {
+    for (let name of Object.keys(this._blockExports)) {
+      callback(name, this._blockExports[name]);
+    }
   }
 
   /**

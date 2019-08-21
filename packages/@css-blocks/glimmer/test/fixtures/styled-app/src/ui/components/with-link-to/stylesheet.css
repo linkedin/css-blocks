@@ -1,5 +1,5 @@
 @block external from "./external.css";
-@block util from "./util.css";
+@export util from "./util.css";
 
 :scope {
   extends: external;
@@ -33,3 +33,5 @@
 .link-4[state|disabled] {
   color: red;
 }
+
+@export external;

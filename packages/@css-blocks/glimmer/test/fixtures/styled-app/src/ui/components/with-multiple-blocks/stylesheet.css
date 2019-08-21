@@ -11,3 +11,5 @@
 .world[state|thick] {
     border-width: 3px;
 }
+
+@export h;
