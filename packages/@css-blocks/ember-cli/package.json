@@ -52,7 +52,7 @@
     "ember-resolver": "^5.0.0",
     "ember-source": "~3.10.0",
     "ember-try": "^1.1.0",
-    "eslint-plugin-ember": "^6.4.1",
+    "eslint-plugin-ember": "^7.0.0",
     "eslint-plugin-node": "^9.0.0",
     "in-repo-addon": "link:./tests/dummy/lib/in-repo-addon",
     "in-repo-engine": "link:./tests/dummy/lib/in-repo-engine",
