@@ -18,7 +18,7 @@
   "devDependencies": {
     "@commitlint/cli": "^7.5.2",
     "@commitlint/config-conventional": "^7.5.0",
-    "@types/async": "^2.0.40",
+    "@types/async": "^3.0.1",
     "@types/babel-core": "^6.25.2",
     "@types/babel-generator": "^6.25.0",
     "@types/babel-template": "^6.25.0",
