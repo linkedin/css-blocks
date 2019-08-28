@@ -298,7 +298,7 @@ export class Test {
             className={c$$([ 3, 2, 0, leSigh, 1, 0, 0, 1, 1, 0, 1, 1, 5, 1, 0, 1,
               0, dynamic, "yellow", 1, 2, "c", -2, 2, 0, 1, "d", 2
             ])}
-          />
+          ></div>
         </div>;
           `),
         );
@@ -354,7 +354,8 @@ export class Test {
         }
         <div className="a">
           <div className={c$$("b", [1,2,4,2,1,conditional() && \`\${dynamic}Color\`,
-                                "yellowColor",1,1,"greenColor",1,0,"d",0,"c",1])} />
+                                "yellowColor",1,1,"greenColor",1,0,"d",0,"c",1])}
+          ></div>
         </div>;`),
         );
         function conditional() { return true; }
