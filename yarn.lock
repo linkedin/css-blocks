@@ -15506,7 +15506,7 @@ snyk-try-require@1.3.1, snyk-try-require@^1.1.1, snyk-try-require@^1.3.1:
     lru-cache "^4.0.0"
     then-fs "^2.0.0"
 
-snyk@^1.116.2:
+snyk@^1.198.0:
   version "1.221.0"
   resolved "https://registry.npmjs.org/snyk/-/snyk-1.221.0.tgz#b9e32625b89ac82b23a75fa83e978204d4b49fdb"
   integrity sha512-SjKlBJ/Cdk7g/CR4WmRn07EO+Xew6Yxfb1kTIYUHhLY2RAEQ7dfMkKxQ4j7BCPPCFj40xhYG8+L/XudShJi+pg==
