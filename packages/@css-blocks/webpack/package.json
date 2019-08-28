@@ -63,7 +63,6 @@
     "async": "^3.1.0",
     "convert-source-map": "^1.5.0",
     "debug": "^4.1.1",
-    "install": "^0.12.2",
     "loader-utils": "^1.0.1",
     "opticss": "^0.6.2",
     "source-map": "^0.7.3",
