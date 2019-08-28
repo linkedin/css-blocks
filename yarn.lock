@@ -1086,15 +1086,15 @@
     "@glimmer/util" "^0.34.8"
     "@glimmer/wire-format" "^0.34.8"
 
-"@glimmer/compiler@^0.41.0":
-  version "0.41.0"
-  resolved "https://registry.npmjs.org/@glimmer/compiler/-/compiler-0.41.0.tgz#e7a719ff4215a1a5fa6af8f8cb5e6d634a2f7972"
-  integrity sha512-NFr22rJBKGqPxwTuYbFJcFsd6FLaRLKbOW3mgXj6DejgPG6ppOxVqysrQfi8Zp543FfKfy0isnPMRwzSAvECSg==
+"@glimmer/compiler@^0.42.0":
+  version "0.42.0"
+  resolved "https://registry.npmjs.org/@glimmer/compiler/-/compiler-0.42.0.tgz#8c3852e27177bbecd3eed5bdbd15ec729e09ef8a"
+  integrity sha512-3YkZkVuSv3e78WLYOz9YA1wKa/azFnBKADwcCNRhYpVOp9CHBJq4CzZ2pFcceYrCvL1CGgJ1crZJeuXfpkJyOw==
   dependencies:
-    "@glimmer/interfaces" "^0.41.0"
-    "@glimmer/syntax" "^0.41.0"
-    "@glimmer/util" "^0.41.0"
-    "@glimmer/wire-format" "^0.41.0"
+    "@glimmer/interfaces" "^0.42.0"
+    "@glimmer/syntax" "^0.42.0"
+    "@glimmer/util" "^0.42.0"
+    "@glimmer/wire-format" "^0.42.0"
 
 "@glimmer/component@^0.13.0":
   version "0.13.0"
@@ -1164,10 +1164,10 @@
   dependencies:
     "@glimmer/wire-format" "^0.34.8"
 
-"@glimmer/interfaces@^0.41.0":
-  version "0.41.0"
-  resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.41.0.tgz#3f571a181025406f29faed9006d0a914afb577b1"
-  integrity sha512-d0Ryj8iV3FiyMyT4QpwHNg2QFFEmdzI5cJFcbmC+OmuTe6eOQ52mLDlw1+D+a3ZDv8Jfj3l0QkEcEugCxDY+1Q==
+"@glimmer/interfaces@^0.42.0":
+  version "0.42.0"
+  resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.42.0.tgz#525f5352dd78011eef7b3eb0e3fb61b981c94319"
+  integrity sha512-lZlydeRRK3yL6pco0gCstPVuC5XYjBUtql1vSvWTRd+MUO0Chg8kxIvduFVg6f+Xfr1kqWd2YQq1MCMdmfzfvg==
 
 "@glimmer/low-level@^0.31.0":
   version "0.31.0"
@@ -1338,15 +1338,15 @@
     handlebars "^4.0.6"
     simple-html-tokenizer "^0.5.3"
 
-"@glimmer/syntax@^0.41.0":
-  version "0.41.0"
-  resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.41.0.tgz#af033e48475e29a4784900c13695925d752f462d"
-  integrity sha512-sYmgUMdK0jX+3ZNX9C2TKvL1YZGsKIcXRicwnzoTC7F56z29CbSCc7o6Zf0CI4L2Q7FSnHDxldlSe48wBAr6vQ==
+"@glimmer/syntax@^0.42.0":
+  version "0.42.0"
+  resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.42.0.tgz#65d38f6f6339e0e00cfbb34bc08ed3ff94f080c6"
+  integrity sha512-H0vydEQjlSqlVyjUmQxOy9BMBdL8OAII4GQjTXHWOQKmQBreZ05Dpr2EbXusiby6E2lMgbcPOqxGXdB/VVUBew==
   dependencies:
-    "@glimmer/interfaces" "^0.41.0"
-    "@glimmer/util" "^0.41.0"
+    "@glimmer/interfaces" "^0.42.0"
+    "@glimmer/util" "^0.42.0"
     handlebars "^4.0.13"
-    simple-html-tokenizer "^0.5.7"
+    simple-html-tokenizer "^0.5.8"
 
 "@glimmer/test-helpers@^0.31.2":
   version "0.31.2"
@@ -1363,10 +1363,10 @@
   resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.34.8.tgz#0f1349b3134bb55d4887da73919863401647525b"
   integrity sha512-a5RpA/dAHAf1GAsFuxmmDMzzPt8Yukyfi4sNkjVgBJ18OCq4AT2kGct32r3LZftEmJ1UmTzUPdSNnbRuyujI+A==
 
-"@glimmer/util@^0.41.0":
-  version "0.41.0"
-  resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.41.0.tgz#743fa455d1d7fa0ce29688e932c231a99c0752cf"
-  integrity sha512-aKmQy62eRFhOZET9XmTB8MOA32G1FmD4d9HWL21OfdcGM4IbguRrWLMQc2DRh1YOE2AaT0PBrFrPmpNwFp5tpQ==
+"@glimmer/util@^0.42.0":
+  version "0.42.0"
+  resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.42.0.tgz#3f3a647ecaa16bbe4fc0545923d3b0a527319d78"
+  integrity sha512-rvXxKVb7BoQUvdrEQgxyvIeqGRUFM4LZAc7X1OmIpMnoaEh3fyx/e8Bz0blF0Yk6QvHpfV/GKirhlGmfum/ISA==
 
 "@glimmer/vm@^0.31.0":
   version "0.31.0"
@@ -1400,13 +1400,13 @@
   dependencies:
     "@glimmer/util" "^0.34.8"
 
-"@glimmer/wire-format@^0.41.0":
-  version "0.41.0"
-  resolved "https://registry.npmjs.org/@glimmer/wire-format/-/wire-format-0.41.0.tgz#a50edcdcae0d11e68dffa04d96dd37a007f708b4"
-  integrity sha512-4n0xgXQ5czqxDUjeOq+rN+5C3qDJ+Ce1NCl2jfrhw9lUdQisT2BmjSRf7CMXQZTonjVub1Lgjk9jpuT0UBaNvg==
+"@glimmer/wire-format@^0.42.0":
+  version "0.42.0"
+  resolved "https://registry.npmjs.org/@glimmer/wire-format/-/wire-format-0.42.0.tgz#53f9a6cbcb9882af3a55aed83929f71799f73fab"
+  integrity sha512-/SmRH98Jm4NyvyWoBj05fqyz52pGDGHq91uX5Fn7sT4xgHDe8smlT+5Ht3Ewl4t2Pmtwqx/4YzitOy/1EKv0aA==
   dependencies:
-    "@glimmer/interfaces" "^0.41.0"
-    "@glimmer/util" "^0.41.0"
+    "@glimmer/interfaces" "^0.42.0"
+    "@glimmer/util" "^0.42.0"
 
 "@lerna/add@3.16.2":
   version "3.16.2"
@@ -15246,7 +15246,7 @@ simple-html-tokenizer@^0.4.1:
   resolved "https://registry.npmjs.org/simple-html-tokenizer/-/simple-html-tokenizer-0.4.3.tgz#9b00b766e30058b4bb377c0d4f97566a13ab1be1"
   integrity sha512-OpUzgR+P/Qsu6ztZehr4PxvTbV4sDW91hAqc2tnz4fjuFTqErWIUdUMbnzX+19F4IEpSSfa0vCAz5xJSs0LpPw==
 
-simple-html-tokenizer@^0.5.1, simple-html-tokenizer@^0.5.3, simple-html-tokenizer@^0.5.7:
+simple-html-tokenizer@^0.5.1, simple-html-tokenizer@^0.5.3, simple-html-tokenizer@^0.5.8:
   version "0.5.8"
   resolved "https://registry.npmjs.org/simple-html-tokenizer/-/simple-html-tokenizer-0.5.8.tgz#3417382f75954ee34515cc4fd32d9918e693f173"
   integrity sha512-0Sq4FvLlQEQODVA6PH2MIrc7tzYO0KT2HzzwvaVLYClWgIsuvaNUOrhrAvTi1pZHrcq7GDB4WiI3ukjqBMxcGQ==
