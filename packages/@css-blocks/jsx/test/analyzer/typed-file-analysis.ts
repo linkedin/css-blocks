@@ -1,5 +1,4 @@
 import { mock } from "@css-blocks/test-utils";
-
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 

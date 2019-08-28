@@ -1,13 +1,11 @@
-import * as path from "path";
-
 import { Analyzer, BlockCompiler, StyleMapping } from "@css-blocks/core";
 import { TemplateTypes } from "@opticss/template-api";
-
 import * as debugGenerator from "debug";
 import * as fs from "fs-extra";
 import * as FSTree from "fs-tree-diff";
 import * as glob from "glob";
 import { OptiCSSOptions, Optimizer, postcss } from "opticss";
+import * as path from "path";
 import * as walkSync from "walk-sync";
 
 import { Transport } from "./Transport";

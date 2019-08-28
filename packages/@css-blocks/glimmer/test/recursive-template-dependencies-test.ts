@@ -1,5 +1,4 @@
 import Analyzer from "@amiller-gh/glimmer-analyzer";
-
 import { expect } from "chai";
 
 import { fixture } from "./fixtures";

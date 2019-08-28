@@ -1,5 +1,4 @@
 import * as assert from "assert";
-
 import { TempDir, createBuilder, createTempDir } from "broccoli-test-helper";
 import * as FSTree from "fs-tree-diff";
 import * as walkSync from "walk-sync";

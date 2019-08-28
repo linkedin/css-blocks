@@ -1,8 +1,7 @@
-import { assert } from "chai";
-import * as path from "path";
-
 import { ImportedFile, Importer, NodeJsImporter, ResolvedConfiguration as CSSBlocksConfiguration, Syntax } from "@css-blocks/core";
 import { ObjectDictionary } from "@opticss/util";
+import { assert } from "chai";
+import * as path from "path";
 
 const PROJECT_DIR = path.resolve(__dirname, "../../..");
 

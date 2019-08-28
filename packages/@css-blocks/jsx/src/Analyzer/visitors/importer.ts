@@ -1,6 +1,3 @@
-import * as fs from "fs";
-import * as path from "path";
-
 import { Analysis, Block } from "@css-blocks/core";
 import { ObjectDictionary } from "@opticss/util";
 import { NodePath } from "babel-traverse";
@@ -16,6 +13,8 @@ import {
   isImportSpecifier,
 } from "babel-types";
 import * as debugGenerator from "debug";
+import * as fs from "fs";
+import * as path from "path";
 
 import { JSXTemplate, TEMPLATE_TYPE } from "../../Analyzer/Template";
 import { JSXOptionsReader } from "../../options";

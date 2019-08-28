@@ -1,5 +1,6 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
+import { postcss } from "opticss";
 
 import { assertError } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
@@ -11,7 +12,7 @@ const { InvalidBlockSyntax } = require("../util/postcss-helper");
 @suite("Block Names")
 export class BlockNames extends BEMProcessor {
 
-  @test "block names in double quotes fail parse with helpful error"() {
+  @test "block names in double quotes fail parse with helpful error"(): Promise<postcss.Result | void> {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/imported.css",
@@ -27,7 +28,7 @@ export class BlockNames extends BEMProcessor {
     });
   }
 
-  @test "block names in single quotes fail parse with helpful error"() {
+  @test "block names in single quotes fail parse with helpful error"(): Promise<postcss.Result | void> {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/imported.css",

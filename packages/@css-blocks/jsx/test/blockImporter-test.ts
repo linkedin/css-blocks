@@ -1,6 +1,5 @@
-import { mock } from "@css-blocks/test-utils";
-
 import { Block } from "@css-blocks/core";
+import { mock } from "@css-blocks/test-utils";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 

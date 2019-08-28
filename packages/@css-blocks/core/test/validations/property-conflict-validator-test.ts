@@ -7,7 +7,6 @@ import { BlockFactory } from "../../src/BlockParser";
 import { AttrValue, Block, BlockClass, isAttrValue, isBlockClass } from "../../src/BlockTree";
 import { Options, resolveConfiguration } from "../../src/configuration";
 import { CssBlockError, TemplateAnalysisError } from "../../src/errors";
-
 import { assertParseError } from "../util/assertError";
 import { indented } from "../util/indented";
 import { MockImportRegistry } from "../util/MockImportRegistry";

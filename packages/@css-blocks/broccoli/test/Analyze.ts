@@ -1,9 +1,7 @@
-import * as assert from "assert";
-import * as fs from "fs";
-
 import { GlimmerAnalyzer } from "@css-blocks/glimmer";
-
+import * as assert from "assert";
 import { TempDir, createBuilder, createTempDir } from "broccoli-test-helper";
+import * as fs from "fs";
 import * as FSTree from "fs-tree-diff";
 import * as walkSync from "walk-sync";
 

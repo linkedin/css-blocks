@@ -1,10 +1,8 @@
-import { mock } from "@css-blocks/test-utils";
-
 import { Analysis, BlockCompiler, Options as CSSBlocksOptions, StyleMapping, resolveConfiguration as resolveBlocksConfiguration } from "@css-blocks/core";
 import c$$ from "@css-blocks/runtime";
+import { mock } from "@css-blocks/test-utils";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import { flatten } from "@opticss/util";
-
 import * as babel from "babel-core";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";

@@ -2,14 +2,13 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import cssBlocks = require("./util/postcss-helper");
-
 import { BEMProcessor } from "./util/BEMProcessor";
+import cssBlocks = require("./util/postcss-helper");
 import { setupImporting } from "./util/setupImporting";
 
 @suite("Block Interfaces")
 export class BlockInterfaceTests extends BEMProcessor {
-  assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
+  assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult | Promise<postcss.Result>) {
     return promise.then(
       () => {
         assert(false, `Error ${errorType.name} was not raised.`);
@@ -40,8 +39,9 @@ export class BlockInterfaceTests extends BEMProcessor {
       cssBlocks.CssBlockError,
       `Missing implementations for: :scope[state|large], .foo[state|small] ` +
         `from foo/bar/base.css`,
-      this.process(filename, inputCSS, config).then(() => {
+      this.process(filename, inputCSS, config).then((res) => {
         imports.assertImported("foo/bar/base.css");
+        return res;
       }));
   }
 
@@ -75,9 +75,10 @@ export class BlockInterfaceTests extends BEMProcessor {
       cssBlocks.CssBlockError,
       `Missing implementations for: :scope[state|medium], .foo[state|medium] ` +
         `from foo/bar/other.css`,
-      this.process(filename, inputCSS, config).then(() => {
+      this.process(filename, inputCSS, config).then((res) => {
         imports.assertImported("foo/bar/base.css");
         imports.assertImported("foo/bar/other.css");
+        return res;
       }));
   }
 }

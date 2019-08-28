@@ -1,8 +1,7 @@
 
-import * as path from "path";
-
 import * as fs from "fs-extra";
 import * as FSTree from "fs-tree-diff";
+import * as path from "path";
 import * as walkSync from "walk-sync";
 
 import { Transport } from "./Transport";

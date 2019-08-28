@@ -4,7 +4,6 @@ import { BLOCK_EXPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT } from "../../BlockSynta
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceLocation } from "../../SourceLocation";
-
 import { BlockFactory } from "../index";
 import { parseBlockNames, stripQuotes } from "../utils";
 

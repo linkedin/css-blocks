@@ -1,13 +1,3 @@
-import { TemplateTypes } from "@opticss/template-api";
-import { ObjectDictionary, flatten, objectValues } from "@opticss/util";
-import * as debugGenerator from "debug";
-import { LegacyRawSourceMap, adaptToLegacySourceMap, postcss } from "opticss";
-import * as path from "path";
-import { RawSourceMap } from "source-map";
-import * as Tapable from "tapable";
-import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
-import { RawSource, Source, SourceMapSource } from "webpack-sources";
-
 import {
   Analysis,
   Analyzer as AnalyzerType,
@@ -17,6 +7,10 @@ import {
   StyleMapping,
   resolveConfiguration,
 } from "@css-blocks/core";
+import { TemplateTypes } from "@opticss/template-api";
+import { ObjectDictionary, flatten, objectValues } from "@opticss/util";
+import * as debugGenerator from "debug";
+import { LegacyRawSourceMap, adaptToLegacySourceMap, postcss } from "opticss";
 import {
   Actions,
   DEFAULT_OPTIONS,
@@ -24,6 +18,11 @@ import {
   OptimizationResult,
   Optimizer,
 } from "opticss";
+import * as path from "path";
+import { RawSourceMap } from "source-map";
+import * as Tapable from "tapable";
+import { Compiler as WebpackCompiler, Plugin as WebpackPlugin } from "webpack";
+import { RawSource, Source, SourceMapSource } from "webpack-sources";
 
 import { LoaderContext } from "./context";
 

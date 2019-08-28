@@ -1,7 +1,6 @@
-import * as assert from "assert";
-
 import { Block, StyleMapping } from "@css-blocks/core";
 import { GlimmerAnalyzer } from "@css-blocks/glimmer";
+import * as assert from "assert";
 
 import { Transport } from "../src/index";
 

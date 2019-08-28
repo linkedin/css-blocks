@@ -1,11 +1,9 @@
-import * as fs from "fs-extra";
-import * as path from "path";
-
 import DependencyAnalyzer from "@amiller-gh/glimmer-analyzer";
 import { ResolvedConfiguration } from "@css-blocks/core";
 import { ResolverConfiguration } from "@glimmer/resolver";
-
 import * as debugGenerator from "debug";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 import { ResolvedFile } from "./Template";
 

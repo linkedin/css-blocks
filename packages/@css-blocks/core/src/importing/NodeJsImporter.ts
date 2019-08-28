@@ -1,5 +1,4 @@
 import { ObjectDictionary } from "@opticss/util";
-
 import * as debugGenerator from "debug";
 import { existsSync, readFile, readFileSync } from "fs-extra";
 import * as path from "path";

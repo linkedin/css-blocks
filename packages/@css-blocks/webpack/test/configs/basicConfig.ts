@@ -1,11 +1,9 @@
 import { ObjectDictionary } from "@opticss/util";
-
 import { Configuration as WebpackConfiguration } from "webpack";
 import * as merge from "webpack-merge";
 
 import { LoaderOptions } from "../../src/LoaderOptions";
 import { CssBlocksPlugin } from "../../src/Plugin";
-
 import { TestAnalyzer } from "../util/TestAnalyzer";
 import { BLOCK_LOADER_PATH } from "../util/testPaths";
 

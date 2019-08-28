@@ -40,7 +40,6 @@ import {
   TemplateElement,
   TernaryExpression as TernaryAST,
 } from "./ElementAnalyzer";
-
 import { CLASSNAMES_HELPER_NAME, CONCAT_HELPER_NAME } from "./helpers";
 
 const enum SourceExpression {

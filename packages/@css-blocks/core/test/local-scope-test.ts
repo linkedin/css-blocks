@@ -2,9 +2,8 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import cssBlocks = require("./util/postcss-helper");
-
 import { BEMProcessor } from "./util/BEMProcessor";
+import cssBlocks = require("./util/postcss-helper");
 import { setupImporting } from "./util/setupImporting";
 
 @suite("Local Scope lookup")

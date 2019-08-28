@@ -1,10 +1,9 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
-import cssBlocks = require("./util/postcss-helper");
-
 import { assertError } from "./util/assertError";
 import { BEMProcessor } from "./util/BEMProcessor";
+import cssBlocks = require("./util/postcss-helper");
 import { setupImporting } from "./util/setupImporting";
 
 @suite("Resolves conflicts")

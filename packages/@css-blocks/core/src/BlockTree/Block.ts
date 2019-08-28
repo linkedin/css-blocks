@@ -1,6 +1,5 @@
-import * as crypto from "crypto";
-
 import { MultiMap, ObjectDictionary } from "@opticss/util";
+import * as crypto from "crypto";
 import {
   CompoundSelector,
   ParsedSelector,
