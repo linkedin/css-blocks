@@ -2901,11 +2901,6 @@ are-we-there-yet@~1.1.2:
     delegates "^1.0.0"
     readable-stream "^2.0.6"
 
-arg@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/arg/-/arg-4.1.0.tgz#583c518199419e0037abb74062c37f8519e575f0"
-  integrity sha512-ZWc51jO3qegGkVh8Hwpv636EkbesNV5ZNQPCtRa+0qytRYPEs9IYT9qITY9buezqUH5uqyzlWLcufrzU2rffdg==
-
 argparse@^1.0.7:
   version "1.0.10"
   resolved "https://registry.npmjs.org/argparse/-/argparse-1.0.10.tgz#bcd6791ea5ae09725e17e5ad988134cd40b3d911"
@@ -6726,7 +6721,7 @@ diacritics-map@^0.1.0:
   version "0.1.0"
   resolved "https://registry.npmjs.org/diacritics-map/-/diacritics-map-0.1.0.tgz#6dfc0ff9d01000a2edf2865371cac316e94977af"
 
-diff@3.5.0, diff@^3.1.0, diff@^3.2.0:
+diff@3.5.0, diff@^3.2.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.5.0.tgz#800c0dd1e0a8bfbc95835c202ad220fe317e5a12"
   integrity sha512-A46qtFgd+g7pDZinpnwiRJtxbC1hpgf0uzP3iG89scHk0AUC7A1TGxf5OiiOUv/JMZR8GOt8hL900hV0bOy5xA==
@@ -11559,10 +11554,6 @@ make-dir@^2.1.0:
     pify "^4.0.1"
     semver "^5.6.0"
 
-make-error@^1.1.1:
-  version "1.3.4"
-  resolved "https://registry.npmjs.org/make-error/-/make-error-1.3.4.tgz#19978ed575f9e9545d2ff8c13e33b5d18a67d535"
-
 make-fetch-happen@^5.0.0:
   version "5.0.0"
   resolved "https://registry.npmjs.org/make-fetch-happen/-/make-fetch-happen-5.0.0.tgz#a8e3fe41d3415dd656fe7b8e8172e1fb4458b38d"
@@ -15684,7 +15675,7 @@ source-map-support@^0.4.0, source-map-support@^0.4.15:
   dependencies:
     source-map "^0.5.6"
 
-source-map-support@^0.5.11, source-map-support@^0.5.12, source-map-support@^0.5.3, source-map-support@^0.5.6, source-map-support@^0.5.7, source-map-support@~0.5.10:
+source-map-support@^0.5.11, source-map-support@^0.5.12, source-map-support@^0.5.3, source-map-support@^0.5.7, source-map-support@~0.5.10:
   version "0.5.13"
   resolved "https://registry.npmjs.org/source-map-support/-/source-map-support-0.5.13.tgz#31b24a9c2e73c2de85066c0feb7d44767ed52932"
   integrity sha512-SHSKFHadjVA5oR4PPqhtAVdcBWwRYVd6g6cAXnIbRiIwc2EhPrTuKUBdSLvlEKyIP3GCf89fltvcZiP9MMFA1w==
@@ -16606,17 +16597,6 @@ ts-loader@^3.1.1:
     loader-utils "^1.0.2"
     micromatch "^3.1.4"
     semver "^5.0.1"
-
-ts-node@^8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-8.1.0.tgz#8c4b37036abd448577db22a061fd7a67d47e658e"
-  integrity sha512-34jpuOrxDuf+O6iW1JpgTRDFynUZ1iEqtYruBqh35gICNjN8x+LpVcPAcwzLPi9VU6mdA3ym+x233nZmZp445A==
-  dependencies:
-    arg "^4.1.0"
-    diff "^3.1.0"
-    make-error "^1.1.1"
-    source-map-support "^0.5.6"
-    yn "^3.0.0"
 
 tslib@1.9.3:
   version "1.9.3"
@@ -17845,8 +17825,3 @@ yeast@0.1.2:
   version "0.1.2"
   resolved "https://registry.npmjs.org/yeast/-/yeast-0.1.2.tgz#008e06d8094320c372dbc2f8ed76a0ca6c8ac419"
   integrity sha1-AI4G2AlDIMNy28L47XagymyKxBk=
-
-yn@^3.0.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/yn/-/yn-3.1.0.tgz#fcbe2db63610361afcc5eb9e0ac91e976d046114"
-  integrity sha512-kKfnnYkbTfrAdd0xICNFw7Atm8nKpLcLv9AZGEt+kczL/WQVai4e2V6ZN8U/O+iI6WrNuJjNNOyu4zfhl9D3Hg==
