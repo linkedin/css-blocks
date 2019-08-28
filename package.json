@@ -16,7 +16,7 @@
     "install:clean": "rm -rf node_modules packages/@css-blocks/*/node_modules && yarn"
   },
   "devDependencies": {
-    "@commitlint/cli": "^7.5.2",
+    "@commitlint/cli": "^8.0.0",
     "@commitlint/config-conventional": "^7.5.0",
     "@types/async": "^3.0.1",
     "@types/babel-core": "^6.25.2",
