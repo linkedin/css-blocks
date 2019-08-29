@@ -71,11 +71,5 @@
   "volta": {
     "node": "12.2.0",
     "yarn": "1.17.3"
-  },
-  "resolutions": {
-    "ansi-styles": "^3.2.0",
-    "chalk": "^2.3.1",
-    "lodash": "^4.17.15",
-    "micromatch": "^3.1.10"
   }
 }
