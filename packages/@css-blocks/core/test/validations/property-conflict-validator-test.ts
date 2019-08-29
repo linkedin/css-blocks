@@ -1305,7 +1305,6 @@ export class TemplateAnalysisTests {
   }
 }
 
-
 type TernaryCondition = boolean;
 
 function constructElement(block: Block, ...styles: string[]) {
@@ -1318,7 +1317,7 @@ function constructElement(block: Block, ...styles: string[]) {
     analysis.addBlock(name, ref);
   });
 
-  let element = analysis.startElement<boolean,string,TernaryCondition>({ line: 10, column: 32 });
+  let element = analysis.startElement<boolean, string, TernaryCondition>({ line: 10, column: 32 });
 
   for (let path of styles) {
     let style = block.lookup(path);

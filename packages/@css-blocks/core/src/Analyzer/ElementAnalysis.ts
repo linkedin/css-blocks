@@ -491,7 +491,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
             if (conditions === true ) {
               this.addedStyles.push({
                 value,
-                container: klass
+                container: klass,
               });
             } else {
               this.addedStyles.push({
