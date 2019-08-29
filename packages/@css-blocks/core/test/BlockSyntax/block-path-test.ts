@@ -300,8 +300,14 @@ export class BlockPathTests {
   @test "unescaped illegal characters in identifiers throw."() {
     let loc = {
       filename: "foo.scss",
-      line: 10,
-      column: 20,
+      start: {
+        line: 10,
+        column: 20,
+      },
+      end: {
+        line: 10,
+        column: 21,
+      },
     };
     assert.throws(
       () => {

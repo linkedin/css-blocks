@@ -2,7 +2,7 @@ import { postcss } from "opticss";
 
 import { Block } from "../BlockTree";
 import * as errors from "../errors";
-import { sourceLocation } from "../SourceLocation";
+import { sourceRange } from "../SourceLocation";
 
 export type DebugChannel = "comment" | "stderr" | "stdout";
 
@@ -13,7 +13,7 @@ export function parseBlockDebug(atRule: postcss.AtRule, sourceFile: string, scop
   if (!md) {
     throw new errors.InvalidBlockSyntax(
       `Malformed block debug: \`@block-debug ${atRule.params}\``,
-      sourceLocation(sourceFile, atRule));
+      sourceRange(sourceFile, atRule));
   }
 
   let localName = md[1];
@@ -27,7 +27,7 @@ export function parseBlockDebug(atRule: postcss.AtRule, sourceFile: string, scop
   if (!block) {
     throw new errors.InvalidBlockSyntax(
       `Invalid block debug: No Block named "${localName}" found in scope.`,
-      sourceLocation(sourceFile, atRule));
+      sourceRange(sourceFile, atRule));
   }
 
   return { block, channel };

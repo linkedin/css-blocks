@@ -7,7 +7,7 @@ import { Block, BlockClass, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 import * as errors from "../errors";
 import { QueryKeySelector } from "../query";
-import { SourceLocation, sourceLocation } from "../SourceLocation";
+import { SourceFile, SourceRange, sourceRange } from "../SourceLocation";
 import { expandProp } from "../util/propertyParser";
 
 import { Conflicts, detectConflicts } from "./conflictDetection";
@@ -179,7 +179,7 @@ export class ConflictResolver {
 
         // Throw if resolutions are not all before or after values for the same property.
         if (localDecls.length && foundRes) {
-          throw new errors.InvalidBlockSyntax(`Resolving ${decl.prop} must happen either before or after all other values for ${decl.prop}.`, this.sourceLocation(block, decl));
+          throw new errors.InvalidBlockSyntax(`Resolving ${decl.prop} must happen either before or after all other values for ${decl.prop}.`, this.sourceRange(block, decl));
         }
 
         // Save the applicable local decl.
@@ -188,23 +188,23 @@ export class ConflictResolver {
 
       // If no local declarations found setting this value, throw.
       if (!localDecls.length) {
-        throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, this.sourceLocation(block, decl));
+        throw new errors.InvalidBlockSyntax(`Cannot resolve ${decl.prop} without a concrete value.`, this.sourceRange(block, decl));
       }
 
       // Look up the block that contains the requested resolution.
       let other: Style | undefined = block.lookup(resolution.path);
       if (!other) {
-        throw new errors.InvalidBlockSyntax(`Cannot find ${resolution.path}`, decl.source && decl.source.start);
+        throw new errors.InvalidBlockSyntax(`Cannot find ${resolution.path}`, this.sourceRange(block, decl));
       }
 
       // If trying to resolve rule from the same block, throw.
       if (block.equal(other && other.block)) {
-        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with your own block.`, this.sourceLocation(block, decl));
+        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with your own block.`, this.sourceRange(block, decl));
       }
 
       // If trying to resolve (read: not inheritance resolution) from an ancestor block, throw.
       else if (!resolution.isInherited && other && other.block.isAncestorOf(block)) {
-        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with ancestors of your own block.`, this.sourceLocation(block, decl));
+        throw new errors.InvalidBlockSyntax(`Cannot resolve conflicts with ancestors of your own block.`, this.sourceRange(block, decl));
       }
 
       // Crawl up inheritance tree of the other block and attempt to resolve the conflict at each level.
@@ -217,7 +217,7 @@ export class ConflictResolver {
       // If no conflicting Declarations were found (aka: calling for a resolution
       // with nothing to resolve), throw error.
       if (!resolution.isInherited && foundConflict === ConflictType.noConflict) {
-        throw new errors.InvalidBlockSyntax(`There are no conflicting values for ${decl.prop} found in any selectors targeting ${resolution.path}.`, this.sourceLocation(block, decl));
+        throw new errors.InvalidBlockSyntax(`There are no conflicting values for ${decl.prop} found in any selectors targeting ${resolution.path}.`, this.sourceRange(block, decl));
       }
 
       // Remove resolution Declaration. Do after traversal because otherwise we mess up postcss' iterator.
@@ -433,8 +433,8 @@ export class ConflictResolver {
     // Wrap our list of CompoundSelectors in ParsedSelector containers and return.
     return mergedSelectors.map(sel => new ParsedSelector(sel, sel.toString()));
   }
-  sourceLocation(block: Block, node: postcss.Node): SourceLocation | undefined {
+  sourceRange(block: Block, node: postcss.Node): SourceRange | SourceFile | undefined {
     let blockPath = this.config.importer.debugIdentifier(block.identifier, this.config);
-    return sourceLocation(blockPath, node);
+    return sourceRange(blockPath, node);
   }
 }

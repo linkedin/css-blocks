@@ -14,7 +14,7 @@ import { BlockPath, CLASS_NAME_IDENT, DEFAULT_EXPORT, ROOT_CLASS } from "../Bloc
 import { ResolvedConfiguration } from "../configuration";
 import { CssBlockError, InvalidBlockSyntax } from "../errors";
 import { FileIdentifier } from "../importing";
-import { SourceLocation } from "../SourceLocation";
+import { SourceFile, SourceRange } from "../SourceLocation";
 
 import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";
@@ -116,7 +116,7 @@ export class Block
    *   A single dot by itself returns the current block.
    * @returns The Style referenced at the supplied path.
    */
-  public lookup(path: string | BlockPath, errLoc?: SourceLocation): Styles | undefined {
+  public lookup(path: string | BlockPath, errLoc?: SourceRange | SourceFile): Styles | undefined {
     path = new BlockPath(path);
     let block = this.getReferencedBlock(path.block);
     if (!block) {

@@ -99,8 +99,15 @@ export class TemplateValidator {
   validate(templateAnalysis: Analysis<keyof TemplateTypes>, element: ElementAnalysis<any, any, any>) {
 
     function err (message: string, locInfo?: errors.ErrorLocation | undefined | null, details?: string) {
+      let location = locInfo || {
+          filename: templateAnalysis.template.identifier,
+          start: element.sourceLocation.start,
+          end: element.sourceLocation.end
+               || { line: element.sourceLocation.start.line,
+                    column: (element.sourceLocation.start.column || 0) + 1},
+        };
       throw new errors.TemplateAnalysisError(
-        message, locInfo || element.sourceLocation.start, details);
+        message, location, details);
     }
 
     this.validators.forEach((func) => {

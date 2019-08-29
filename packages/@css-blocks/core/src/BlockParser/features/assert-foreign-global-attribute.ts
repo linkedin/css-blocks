@@ -2,7 +2,7 @@ import { postcss, postcssSelectorParser as selectorParser } from "opticss";
 
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
-import { selectorSourceLocation as loc } from "../../SourceLocation";
+import { selectorSourceRange as loc } from "../../SourceLocation";
 import { isAttributeNode, toAttrToken } from "../block-intermediates";
 
 /**

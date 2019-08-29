@@ -2,7 +2,7 @@ import { postcss } from "opticss";
 
 import { BLOCK_NAME, CLASS_NAME_IDENT } from "../../BlockSyntax";
 import * as errors from "../../errors";
-import { sourceLocation } from "../../SourceLocation";
+import { sourceRange } from "../../SourceLocation";
 
 export async function discoverName(root: postcss.Root, defaultName: string, file: string): Promise<string> {
 
@@ -12,7 +12,7 @@ export async function discoverName(root: postcss.Root, defaultName: string, file
       if (!CLASS_NAME_IDENT.test(decl.value)) {
         throw new errors.InvalidBlockSyntax(
           `Illegal block name. '${decl.value}' is not a legal CSS identifier.`,
-          sourceLocation(file, decl),
+          sourceRange(file, decl),
         );
       }
 

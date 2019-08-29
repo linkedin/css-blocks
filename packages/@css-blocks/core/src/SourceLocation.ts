@@ -1,18 +1,27 @@
 import { postcss, postcssSelectorParser as selectorParser } from "opticss";
 
-export interface SourceLocation {
-  filename?: string;
+export interface SourcePosition {
   line: number;
   column: number;
+}
+export interface SourceFile {
+  filename: string;
+}
+
+export type SourceLocation = Partial<SourceFile> & SourcePosition;
+
+export interface SourceRange extends Partial<SourceFile> {
+  start: SourcePosition;
+  end: SourcePosition;
 }
 
 /**
  * Reduces multiple `SourceLocation` objects into a single object capturing the
  * actual location of the source code on disk.
- * @param locations  An array of SourceLoation objects.
+ * @param locations  An array of SourceLocation objects.
  * @returns An object containing the line number and column number.
  */
-export function addSourceLocations(...locations: SourceLocation[]) {
+export function addSourcePositions(...locations: SourcePosition[]) {
   return locations.reduce((l, o) => {
     if (o.line === 1) {
       return {
@@ -29,40 +38,43 @@ export function addSourceLocations(...locations: SourceLocation[]) {
 }
 
 /**
- * Logging utility function to fetch the filename, line number and column number
+ * Utility function to fetch the filename, start and end positions
  * of a given `postcss.Node`.
  * @param sourceFile  The source file name that contains this rule.
  * @param node  The PostCSS Node object in question.
  * @returns An object representing the filename, line number and column number.
  */
-export function sourceLocation(sourceFile: string, node: postcss.Node): SourceLocation | undefined {
-  if (node.source && node.source.start) {
-    let loc = node.source.start;
+export function sourceRange(filename: string, node: postcss.Node): SourceRange | SourceFile {
+  if (node.source && node.source.start && node.source.end) {
+    let {start, end} = node.source;
     return {
-      filename: sourceFile,
-      line: loc.line,
-      column: loc.column,
+      filename,
+      start,
+      end,
     };
+  } else {
+    return { filename };
   }
-  return;
 }
 
 /**
  * Logging utility function to fetch the filename, line number and column number
  * of a given selector.
- * @param sourceFile  The source file name that contains this rule.
+ * @param filename  The source file name that contains this rule.
  * @param rule  The PostCSS Rule object containing this selector.
  * @param selector  The PostCSS selector node in question.
  * @returns An object representing the filename, line number and column number.
  */
-export function selectorSourceLocation(sourceFile: string, rule: postcss.Rule, selector: selectorParser.Node): SourceLocation | undefined {
-  if (rule.source && rule.source.start && selector.source && selector.source.start) {
-    let loc = addSourceLocations(rule.source.start, selector.source.start);
+export function selectorSourceRange(filename: string, rule: postcss.Rule, selector: selectorParser.Node): SourceRange | SourceFile {
+  if (rule.source && rule.source.start && rule.source.end &&
+      selector.source && selector.source.start && selector.source.end) {
+    let start = addSourcePositions(rule.source.start, selector.source.start);
+    let end = addSourcePositions(rule.source.start, selector.source.end);
     return {
-      filename: sourceFile,
-      line: loc.line,
-      column: loc.column,
+      filename,
+      start,
+      end,
     };
   }
-  return;
+  return { filename };
 }

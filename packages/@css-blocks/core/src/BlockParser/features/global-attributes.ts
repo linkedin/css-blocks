@@ -3,7 +3,7 @@ import { parseSelector, postcss, postcssSelectorParser as selectorParser } from 
 import { BLOCK_GLOBAL } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
-import { sourceLocation as loc } from "../../SourceLocation";
+import { sourceRange as range } from "../../SourceLocation";
 import { toAttrToken } from "../block-intermediates";
 
 export async function globalAttributes(root: postcss.Root, block: Block, file: string): Promise<Block> {
@@ -22,7 +22,7 @@ export async function globalAttributes(root: postcss.Root, block: Block, file: s
       } else {
         throw new errors.InvalidBlockSyntax(
           `Illegal global attribute declaration: ${atRule.toString()}`,
-          loc(file, atRule),
+          range(file, atRule),
         );
       }
     }

@@ -1,4 +1,4 @@
-import { BlockPathError, ErrorLocation } from "../errors";
+import { BlockPathError, ErrorLocation, Position, hasErrorPosition } from "../errors";
 
 import {
   ATTR_PRESENT,
@@ -132,14 +132,23 @@ export class BlockPath {
    * @param msg The error message.
    */
   private throw(msg: string, len = 0): never {
-    let location;
+    let filename: string | undefined;
+    let start: Position | undefined;
+    let end: Position | undefined;
     if (this._location) {
-      location = {
-        ...this._location,
-        column: (this._location.column || 0) + this.walker.index() - len,
-      };
+      filename = this._location.filename;
+      if (hasErrorPosition(this._location)) {
+        start = { ...this._location.start };
+        end = { ...this._location.end };
+      } else {
+        console.dir(this._location);
+        start = { column: 0, line: 1 };
+        end = { column: 0, line: 1 };
+      }
+      end.column = start.column + this.walker.index();
+      start.column = start.column + this.walker.index() - len;
     }
-    throw new BlockPathError(msg, location);
+    throw new BlockPathError(msg, {filename, start, end});
   }
 
   /**

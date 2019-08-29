@@ -31,7 +31,7 @@ export function parseSpecifier(specifier: string): { componentType: string; comp
 export function cssBlockError(message: string, node: AST.Node, template: TemplateInfo<TEMPLATE_TYPE>) {
   return new CssBlockError(message, {
     filename: node.loc.source || template.identifier,
-    line: node.loc.start.line,
-    column: node.loc.start.column,
+    start: node.loc.start,
+    end: node.loc.end,
   });
 }

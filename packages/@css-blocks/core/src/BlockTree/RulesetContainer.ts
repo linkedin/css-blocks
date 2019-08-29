@@ -11,7 +11,7 @@ import { ParsedSelector, postcss } from "opticss";
 
 import { BLOCK_PROP_NAMES, SELF_SELECTOR, getResolution } from "../BlockSyntax";
 import { InvalidBlockSyntax } from "../errors";
-import { sourceLocation } from "../SourceLocation";
+import { sourceRange } from "../SourceLocation";
 import { expandProp } from "../util/propertyParser";
 
 import { Styles, isStyle } from "./Styles";
@@ -115,7 +115,7 @@ export class RulesetContainer<S extends Styles> {
         // If this is a resolution, track that this property has been resolved
         // Resolution paths are always relative to the root node.
         if (resolution.path) {
-          let errLoc = sourceLocation(file, decl);
+          let errLoc = sourceRange(file, decl);
           let other = style.block.lookup(resolution.path, errLoc);
 
           if (other && other.block === style.block) {

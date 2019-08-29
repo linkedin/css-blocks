@@ -1,4 +1,4 @@
-import { BlockFactory, CssBlockError, Importer, NodeJsImporter, Preprocessors } from "@css-blocks/core";
+import { BlockFactory, CssBlockError, Importer, NodeJsImporter, Preprocessors, hasErrorPosition } from "@css-blocks/core";
 import chalk = require("chalk");
 import fse = require("fs-extra");
 import path = require("path");
@@ -137,8 +137,8 @@ export class CLI {
           let loc = e.location;
           let filename = path.relative(process.cwd(), path.resolve(loc && loc.filename || blockFile));
           let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(filename)}`;
-          if (loc && loc.filename && loc.line && loc.column) {
-            message += `:${loc.line}:${loc.column}`;
+          if (hasErrorPosition(loc)) {
+            message += `:${loc.start.line}:${loc.start.column}`;
           }
           message += ` ${e.origMessage}`;
           this.println(message);

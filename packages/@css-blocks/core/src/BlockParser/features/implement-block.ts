@@ -3,7 +3,7 @@ import { postcss } from "opticss";
 import { IMPLEMENTS } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
-import { sourceLocation } from "../../SourceLocation";
+import { sourceRange } from "../../SourceLocation";
 
 /**
  * For each `implements` property found in the passed ruleset, track the foreign
@@ -18,7 +18,7 @@ export async function implementBlock(rule: postcss.Root, block: Block, sourceFil
     refNames.forEach((refName) => {
       let refBlock = block.getReferencedBlock(refName);
       if (!refBlock) {
-        throw new errors.InvalidBlockSyntax(`No Block named "${refName}" found in scope.`, sourceLocation(sourceFile, decl));
+        throw new errors.InvalidBlockSyntax(`No Block named "${refName}" found in scope.`, sourceRange(sourceFile, decl));
       }
       block.addImplementation(refBlock);
     });

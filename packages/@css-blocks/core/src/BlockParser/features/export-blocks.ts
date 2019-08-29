@@ -3,7 +3,7 @@ import { postcss } from "opticss";
 import { BLOCK_EXPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
-import { sourceLocation } from "../../SourceLocation";
+import { sourceRange } from "../../SourceLocation";
 import { BlockFactory } from "../index";
 import { parseBlockNames, stripQuotes } from "../utils";
 
@@ -38,7 +38,7 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
     if (!exportList) {
       throw new errors.InvalidBlockSyntax(
         `Malformed block export: \`@export ${atRule.params}\``,
-        sourceLocation(file, atRule),
+        sourceRange(file, atRule),
       );
     }
 
@@ -55,32 +55,32 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
         if (remoteNames.has(remoteName)) {
         throw new errors.InvalidBlockSyntax(
           `Can not have duplicate Block export of same name: "${remoteName}".`,
-          sourceLocation(file, atRule),
+          sourceRange(file, atRule),
           );
         }
         let localName = blockNames[remoteName];
         if (!CLASS_NAME_IDENT.test(localName)) {
           throw new errors.InvalidBlockSyntax(
             `Illegal block name in export. "${localName}" is not a legal CSS identifier.`,
-            sourceLocation(file, atRule),
+            sourceRange(file, atRule),
           );
         }
         if (!CLASS_NAME_IDENT.test(remoteName)) {
           throw new errors.InvalidBlockSyntax(
             `Illegal block name in import. "${remoteName}" is not a legal CSS identifier.`,
-            sourceLocation(file, atRule),
+            sourceRange(file, atRule),
           );
         }
         if (localName === DEFAULT_EXPORT && remoteName === DEFAULT_EXPORT) {
           throw new errors.InvalidBlockSyntax(
             `Unnecessary re-export of default Block.`,
-            sourceLocation(file, atRule),
+            sourceRange(file, atRule),
           );
         }
         if (remoteName === DEFAULT_EXPORT) {
           throw new errors.InvalidBlockSyntax(
             `Can not export "${localName}" as reserved word "${DEFAULT_EXPORT}"`,
-            sourceLocation(file, atRule),
+            sourceRange(file, atRule),
           );
         }
 
@@ -88,7 +88,7 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
         if (!referencedBlock) {
           throw new errors.InvalidBlockSyntax(
             `Can not export Block "${localName}". No Block named "${localName}" in "${file}".`,
-            sourceLocation(file, atRule),
+            sourceRange(file, atRule),
           );
         }
 

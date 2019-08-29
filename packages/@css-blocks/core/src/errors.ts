@@ -1,7 +1,22 @@
-export interface ErrorLocation {
+export interface Position {
+  line: number;
+  column: number;
+}
+
+export interface ErrorWithoutPosition {
   filename?: string;
-  line?: number;
-  column?: number;
+}
+
+export interface ErrorWithPosition {
+  filename: string;
+  start: Position;
+  end: Position;
+}
+
+export type ErrorLocation = ErrorWithoutPosition | ErrorWithPosition;
+
+export function hasErrorPosition(location: ErrorLocation | void): location is ErrorWithPosition {
+  return location && typeof (<ErrorWithPosition>location).start === "object" || false;
 }
 
 /**
@@ -25,8 +40,12 @@ export class CssBlockError extends Error {
       return this.origMessage;
     }
     let filename = loc.filename || "";
-    let line = loc.line ? `:${loc.line}` : "";
-    let column = loc.column ? `:${loc.column}` : "";
+    let line: string | number = "";
+    let column: string | number = "";
+    if (hasErrorPosition(loc)) {
+      line = `:${loc.start.line}`;
+      column = `:${loc.start.column}`;
+    }
     let locMessage = ` (${filename}${line}${column})`;
     // tslint:disable-next-line:prefer-unknown-to-any
     return `[css-blocks] ${(this.constructor as any).prefix}: ${this.origMessage}${locMessage}`;

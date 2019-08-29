@@ -4,7 +4,7 @@ import { postcss } from "opticss";
 import { BLOCK_IMPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
-import { sourceLocation } from "../../SourceLocation";
+import { sourceRange } from "../../SourceLocation";
 import { BlockFactory } from "../index";
 import { parseBlockNames, stripQuotes } from "../utils";
 
@@ -37,7 +37,7 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
     if (!blockList || !blockPath) {
       throw new errors.InvalidBlockSyntax(
         `Malformed block reference: \`@block ${atRule.params}\``,
-        sourceLocation(file, atRule),
+        sourceRange(file, atRule),
         );
       }
 
@@ -51,25 +51,25 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
       if (!CLASS_NAME_IDENT.test(localName)) {
         throw new errors.InvalidBlockSyntax(
           `Illegal block name in import. "${localName}" is not a legal CSS identifier.`,
-          sourceLocation(file, atRule),
+          sourceRange(file, atRule),
         );
       }
       if (!CLASS_NAME_IDENT.test(remoteName)) {
         throw new errors.InvalidBlockSyntax(
           `Illegal block name in import. "${remoteName}" is not a legal CSS identifier.`,
-          sourceLocation(file, atRule),
+          sourceRange(file, atRule),
         );
       }
       if (localName === DEFAULT_EXPORT && remoteName === DEFAULT_EXPORT) {
         throw new errors.InvalidBlockSyntax(
           `Default Block from "${blockPath}" must be aliased to a unique local identifier.`,
-          sourceLocation(file, atRule),
+          sourceRange(file, atRule),
         );
       }
       if (localName === DEFAULT_EXPORT) {
         throw new errors.InvalidBlockSyntax(
           `Can not import "${remoteName}" as reserved word "${DEFAULT_EXPORT}"`,
-          sourceLocation(file, atRule),
+          sourceRange(file, atRule),
         );
       }
 
@@ -79,7 +79,7 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
         if (!referencedBlock) {
           throw new errors.InvalidBlockSyntax(
             `Can not import Block "${remoteName}". No Block named "${remoteName}" exported by "${blockPath}".`,
-            sourceLocation(file, atRule),
+            sourceRange(file, atRule),
           );
         }
         return [localName, blockPath, atRule, referencedBlock];
@@ -96,7 +96,7 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
     if (localNames[localName]) {
       throw new errors.InvalidBlockSyntax(
         `Blocks ${localNames[localName]} and ${importPath} cannot both have the name ${localName} in this scope.`,
-        sourceLocation(file, atRule),
+        sourceRange(file, atRule),
       );
     } else {
       block.addBlockReference(localName, otherBlock);

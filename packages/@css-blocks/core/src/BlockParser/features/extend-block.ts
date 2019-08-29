@@ -3,7 +3,7 @@ import { postcss } from "opticss";
 import { EXTENDS } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
-import { sourceLocation } from "../../SourceLocation";
+import { sourceRange } from "../../SourceLocation";
 
 /**
  * For each `extends` property found in the passed ruleset, set the block's base
@@ -15,11 +15,11 @@ import { sourceLocation } from "../../SourceLocation";
 export async function extendBlock(rule: postcss.Root, block: Block, sourceFile: string) {
   rule.walkDecls(EXTENDS, (decl) => {
     if (block.base) {
-      throw new errors.InvalidBlockSyntax(`A block can only be extended once.`, sourceLocation(sourceFile, decl));
+      throw new errors.InvalidBlockSyntax(`A block can only be extended once.`, sourceRange(sourceFile, decl));
     }
     let baseBlock = block.getReferencedBlock(decl.value);
     if (!baseBlock) {
-      throw new errors.InvalidBlockSyntax(`No Block named "${decl.value}" found in scope.`, sourceLocation(sourceFile, decl));
+      throw new errors.InvalidBlockSyntax(`No Block named "${decl.value}" found in scope.`, sourceRange(sourceFile, decl));
     }
     block.setBase(baseBlock);
   });
