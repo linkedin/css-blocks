@@ -29,7 +29,7 @@
     "ember-cli-tslint": "^0.1.3",
     "ember-cli-uglify": "^3.0.0",
     "qunitjs": "^2.3.3",
-    "typescript": "~3.4.4"
+    "typescript": "~3.5"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"

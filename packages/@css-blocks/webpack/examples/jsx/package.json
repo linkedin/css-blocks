@@ -17,7 +17,7 @@
     "obj-str": "^1.0.0",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
-    "typescript": "~3.4.4",
+    "typescript": "~3.5",
     "webpack": "4.30.0"
   },
   "scripts": {

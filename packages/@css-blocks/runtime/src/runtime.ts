@@ -88,9 +88,9 @@ export function runtime(shape: string[], classes: string[], args: unknown[]): st
 
           // Run the correct operation on our left and right values.
           // Not a switch for code size reasons.
-          if (op == OP_CODE.OR)    { val = left! || val;  }
-          if (op == OP_CODE.AND)   { val = left! && val;  }
-          if (op == OP_CODE.EQUAL) { val = left! === val; }
+          if (op! == OP_CODE.OR)    { val = left! || val;  }
+          if (op! == OP_CODE.AND)   { val = left! && val;  }
+          if (op! == OP_CODE.EQUAL) { val = left! === val; }
 
           // Save our computed expression value to the next expression index.
           exprs[exprCount++] = val;

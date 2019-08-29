@@ -51,7 +51,7 @@
     "tslint": "^5.9.1",
     "typedoc": "^0.14.2",
     "typedoc-plugin-monorepo": "^0.1.0",
-    "typescript": "~3.4.4",
+    "typescript": "~3.5",
     "watch": "^1.0.2"
   },
   "husky": {

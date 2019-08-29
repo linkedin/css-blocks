@@ -1305,6 +1305,9 @@ export class TemplateAnalysisTests {
   }
 }
 
+
+type TernaryCondition = boolean;
+
 function constructElement(block: Block, ...styles: string[]) {
   let info = new Template("templates/my-template.hbs");
   let analyzer = new TestAnalyzer();
@@ -1315,7 +1318,7 @@ function constructElement(block: Block, ...styles: string[]) {
     analysis.addBlock(name, ref);
   });
 
-  let element = analysis.startElement({ line: 10, column: 32 });
+  let element = analysis.startElement<boolean,string,TernaryCondition>({ line: 10, column: 32 });
 
   for (let path of styles) {
     let style = block.lookup(path);
@@ -1335,11 +1338,11 @@ function constructElement(block: Block, ...styles: string[]) {
         element.addDynamicAttr(state.blockClass, state, true);
         return this;
       }
-      let truthyStyles = truthy.map(block.lookup.bind(block));
-      let falsyStyles = falsy ? falsy.map(block.lookup.bind(block)) : undefined;
+      let truthyStyles = truthy.map((s) => block.lookup(s) as BlockClass);
+      let falsyStyles = falsy ? falsy.map((s) => block.lookup(s) as BlockClass) : undefined;
       element.addDynamicClasses({
         condition: true,
-        whenTrue: truthyStyles as BlockClass[],
+        whenTrue: truthyStyles,
         whenFalse: falsyStyles,
       });
       return this;
@@ -1348,7 +1351,7 @@ function constructElement(block: Block, ...styles: string[]) {
       let baseStyle = block.lookup(base) as BlockClass;
       let group = baseStyle.resolveAttribute(groupName);
       if (!group) throw new Error(`Error resolving group ${groupName}`);
-      element.addDynamicGroup(baseStyle, group, {});
+      element.addDynamicGroup(baseStyle, group, "");
       return this;
     },
     end() {

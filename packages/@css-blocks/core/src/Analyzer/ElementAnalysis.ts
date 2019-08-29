@@ -394,13 +394,17 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    * @returns True if should always be applied, False if should never be applied,
    *          otherwise an object detailing the application conditions.
    */
-  private fetchConditions(comp: Composition) {
+  private fetchConditions(comp: Composition):
+    boolean
+    | (Switch<StringExpression> & HasGroup<AttrValue>)
+    | Conditional<BooleanExpression>
+  {
     if (comp.conditions.length === 0) { return true; }
     let cond = comp.conditions[0];
     for (let style of this.addedStyles) {
       if (isAttrGroup(style) && style.group[cond.value] === cond) {
         return {
-          group: { [cond.value]: comp.style },
+          group: { [cond.value]: comp.style as AttrValue },
           disallowFalsy: style.disallowFalsy,
           stringExpression: style.stringExpression,
         };
@@ -484,11 +488,18 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
             const value = new Set(isAttrValue(comp.style) ? [comp.style.blockClass, comp.style] : [comp.style]);
             const conditions = this.fetchConditions(comp);
             if (conditions === false) { continue; }
-            this.addedStyles.push({
-              value,
-              container: klass,
-              ...conditions === true ? {} : conditions,
-            });
+            if (conditions === true ) {
+              this.addedStyles.push({
+                value,
+                container: klass
+              });
+            } else {
+              this.addedStyles.push({
+                value,
+                container: klass,
+                ...conditions,
+              });
+            }
             value.forEach((o) => this.composedStyles.add(o));
           }
         }

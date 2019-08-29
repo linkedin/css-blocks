@@ -8,23 +8,15 @@ import {
 import { OutputMode } from "./OutputMode";
 import {
   Configuration,
-  ConfigurationObjectKeys,
-  ConfigurationSimpleKeys,
   Options,
   ResolvedConfiguration,
 } from "./types";
 
-const OBJECT_KEYS: Array<ConfigurationObjectKeys> = [
+const OBJECT_KEYS = [
   "importerData",
   "preprocessors",
-];
-const SIMPLE_KEYS: Array<ConfigurationSimpleKeys> = [
-  "outputMode",
-  "importer",
-  "rootDir",
-  "disablePreprocessChaining",
-  "maxConcurrentCompiles",
-];
+] as const;
+
 const DEFAULTS: ResolvedConfiguration = {
   outputMode: OutputMode.BEM,
   importer: defaultImporter,
@@ -49,12 +41,8 @@ class Resolver implements ResolvedConfiguration {
   }
   private setAll(opts: Options | undefined) {
     if (opts === undefined) return;
-    for (let k of SIMPLE_KEYS) {
-      let v = opts[k];
-      if (v !== undefined) {
-        this._opts[k] = v;
-      }
-    }
+    Object.assign(this._opts, opts);
+
     for (let k of OBJECT_KEYS) {
       let v = opts[k];
       if (v !== undefined) {
