@@ -90,20 +90,19 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
   });
 
   // When all import promises have resolved, save the block references and resolve.
-  return Promise.all(namedBlockReferences).then((results) => {
-    let localNames: ObjectDictionary<string> = {};
-    results.forEach(([localName, importPath, atRule, otherBlock]) => {
-      if (localNames[localName]) {
-        throw new errors.InvalidBlockSyntax(
-          `Blocks ${localNames[localName]} and ${importPath} cannot both have the name ${localName} in this scope.`,
-          sourceLocation(file, atRule),
-        );
-      } else {
-        block.addBlockReference(localName, otherBlock);
-        localNames[localName] = importPath;
-      }
-    });
-  }).then(() => {
-    return block;
+  let results = await Promise.all(namedBlockReferences);
+  let localNames: ObjectDictionary<string> = {};
+  results.forEach(([localName, importPath, atRule, otherBlock]) => {
+    if (localNames[localName]) {
+      throw new errors.InvalidBlockSyntax(
+        `Blocks ${localNames[localName]} and ${importPath} cannot both have the name ${localName} in this scope.`,
+        sourceLocation(file, atRule),
+      );
+    } else {
+      block.addBlockReference(localName, otherBlock);
+      localNames[localName] = importPath;
+    }
   });
+  return block;
+
 }
