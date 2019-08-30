@@ -110,81 +110,22 @@ export class BlockFactory {
     return this._getBlockPromise(identifier);
   }
 
-  _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
+  async _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
 
     return this.promises[identifier] = this.importer.import(identifier, this.configuration)
-
-      // Parse the file into a `Block`.
-      .then(file => {
-
-        // If the file identifier maps back to a real filename, ensure it is actually unique.
-        let realFilename = this.importer.filesystemPath(file.identifier, this.configuration);
-        if (realFilename) {
-          if (this.paths[realFilename] && this.paths[realFilename] !== file.identifier) {
-            throw new Error(`The same block file was returned with different identifiers: ${this.paths[realFilename]} and ${file.identifier}`);
-          } else {
-            this.paths[realFilename] = file.identifier;
-          }
-        }
-
-        // Skip preprocessing if we can.
-        if (this.blocks[file.identifier]) {
-          debug(`Using pre-compiled Block for "${file.identifier}"`);
-          return this.blocks[file.identifier];
-        }
-
-        // Preprocess the file.
-        let filename: string = realFilename || this.importer.debugIdentifier(file.identifier, this.configuration);
-        let preprocessor = this.preprocessor(file);
-
-        debug(`Preprocessing "${filename}"`);
-        return this.preprocessQueue.enqueue({
-          preprocessor,
-          filename,
-          contents: file.contents,
-        })
-
-        // Run through PostCSS.
-        .then(async (preprocessResult): Promise<[ProcessedFile, postcss.Root]> => {
-          debug(`Generating PostCSS AST for "${filename}"`);
-          let sourceMap = sourceMapFromProcessedFile(preprocessResult);
-          let content = preprocessResult.content;
-          if (sourceMap) {
-            content = annotateCssContentWithSourceMap(content, sourceMap);
-          }
-          let root = await this.postcssImpl.parse(content, { from: filename });
-          return [preprocessResult, root];
-        })
-
-        .then(([preprocessedResult, root]) => {
-          debug(`Parsing Block object for "${filename}"`);
-          // Skip parsing if we can.
-          if (this.blocks[file.identifier]) { return this.blocks[file.identifier]; }
-          let source: ParsedSource = {
-            identifier: file.identifier,
-            defaultName: file.defaultName,
-            parseResult: root,
-            originalSource: file.contents,
-            originalSyntax: file.syntax,
-            dependencies: preprocessedResult.dependencies || [],
-          };
-          return this.parser.parseSource(source);
-        });
-      })
-
+      .then(file => this._importAndPreprocessBlock(file))
       .then(block => {
-
         debug(`Finalizing Block object for "${block.identifier}"`);
 
         // last check  to make sure we don't return a new instance
-        if (this.blocks[block.identifier]) { return this.blocks[block.identifier]; }
+        if (this.blocks[block.identifier]) {
+          return this.blocks[block.identifier];
+        }
 
         // Ensure this block name is unique.
         block.setName(this.getUniqueBlockName(block.name));
         return this.blocks[block.identifier] = block;
-
       })
-
       .catch((error) => {
         if (this.preprocessQueue.activeJobCount > 0) {
           debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
@@ -197,7 +138,61 @@ export class BlockFactory {
           throw error;
         }
       });
+  }
 
+  /**
+   * Parse the file into a `Block`.
+   **/
+  async _importAndPreprocessBlock(file: ImportedFile): Promise<Block> {
+    // If the file identifier maps back to a real filename, ensure it is actually unique.
+    let realFilename = this.importer.filesystemPath(file.identifier, this.configuration);
+    if (realFilename) {
+      if (this.paths[realFilename] && this.paths[realFilename] !== file.identifier) {
+        throw new Error(`The same block file was returned with different identifiers: ${this.paths[realFilename]} and ${file.identifier}`);
+      } else {
+        this.paths[realFilename] = file.identifier;
+      }
+    }
+
+    // Skip preprocessing if we can.
+    if (this.blocks[file.identifier]) {
+      debug(`Using pre-compiled Block for "${file.identifier}"`);
+      return this.blocks[file.identifier];
+    }
+
+    // Preprocess the file.
+    let filename: string = realFilename || this.importer.debugIdentifier(file.identifier, this.configuration);
+    let preprocessor = this.preprocessor(file);
+
+    debug(`Preprocessing "${filename}"`);
+    let preprocessResult = await this.preprocessQueue.enqueue({
+      preprocessor,
+      filename,
+      contents: file.contents,
+    });
+
+    debug(`Generating PostCSS AST for "${filename}"`);
+    let sourceMap = sourceMapFromProcessedFile(preprocessResult);
+    let content = preprocessResult.content;
+    if (sourceMap) {
+      content = annotateCssContentWithSourceMap(content, sourceMap);
+    }
+    let root = await this.postcssImpl.parse(content, { from: filename });
+
+    // Skip parsing if we can.
+    if (this.blocks[file.identifier]) {
+      return this.blocks[file.identifier];
+    }
+    debug(`Parsing Block object for "${filename}"`);
+    let source: ParsedSource = {
+      identifier: file.identifier,
+      defaultName: file.defaultName,
+      parseResult: root,
+      originalSource: file.contents,
+      originalSyntax: file.syntax,
+      dependencies: preprocessResult.dependencies || [],
+    };
+    return this.parser.parseSource(source);
   }
 
   getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Promise<Block> {
