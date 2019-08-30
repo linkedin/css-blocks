@@ -17,6 +17,14 @@ const OBJECT_KEYS = [
   "preprocessors",
 ] as const;
 
+const SIMPLE_KEYS = [
+  "outputMode",
+  "importer",
+  "rootDir",
+  "disablePreprocessChaining",
+  "maxConcurrentCompiles",
+] as const;
+
 const DEFAULTS: ResolvedConfiguration = {
   outputMode: OutputMode.BEM,
   importer: defaultImporter,
@@ -26,6 +34,7 @@ const DEFAULTS: ResolvedConfiguration = {
   disablePreprocessChaining: false,
   maxConcurrentCompiles: 4,
 };
+
 /**
  * Provides read-only access to resolved configuration values.
  * Provides default values for any unspecified configuration values.
@@ -41,7 +50,13 @@ class Resolver implements ResolvedConfiguration {
   }
   private setAll(opts: Options | undefined) {
     if (opts === undefined) return;
-    Object.assign(this._opts, opts);
+
+    for (let k of SIMPLE_KEYS) {
+      if (opts[k] !== undefined) {
+        // XXX this cast is annoying
+        (<{}>this._opts)[k] = opts[k];
+      }
+    }
 
     for (let k of OBJECT_KEYS) {
       let v = opts[k];
