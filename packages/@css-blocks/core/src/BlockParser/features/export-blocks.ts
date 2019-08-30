@@ -103,5 +103,6 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
   });
 
   // After all export promises have resolved, resolve the decorated Block.
-  return Promise.all(exportPromises).then(() => block);
+  await Promise.all(exportPromises);
+  return block;
 }

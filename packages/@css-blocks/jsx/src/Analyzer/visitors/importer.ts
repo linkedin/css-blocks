@@ -142,15 +142,12 @@ export function importVisitor(
       }
 
       // When block parsing is done, add to analysis object.
-      res.then((block): Block => {
+      let blockPromise = res.then((block): Block => {
         analysis.addBlock(localName, block);
         return block;
-      })
+      });
 
-      // Failures handled upstream by Promise.all() in `parseWith` method. Swallow error.
-      .catch(() => {});
-
-      blockPromises.push(res);
+      blockPromises.push(blockPromise);
 
     },
 

@@ -43,13 +43,13 @@ export class BlockParser {
     this.factory = factory;
   }
 
-  public parseSource(source: ParsedSource): Promise<Block> {
+  public async parseSource(source: ParsedSource): Promise<Block> {
     let root = source.parseResult;
-
-    return this.parse(root, source.identifier, source.defaultName).then(block => {
-      source.dependencies.forEach(block.addDependency);
-      return block;
-    });
+    let block = await this.parse(root, source.identifier, source.defaultName);
+    for (let dependency of source.dependencies) {
+      block.addDependency(dependency);
+    }
+    return block;
   }
 
   /**
