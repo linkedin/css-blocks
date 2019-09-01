@@ -39,7 +39,7 @@ export class CssBlockError extends Error {
     if (!loc) {
       return this.origMessage;
     }
-    let filename = loc.filename || "";
+    let filename = loc.filename || "<unknown file>";
     let line: string | number = "";
     let column: string | number = "";
     if (hasErrorPosition(loc)) {

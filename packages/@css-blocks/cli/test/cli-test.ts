@@ -29,13 +29,27 @@ describe("validate", () => {
   it("can check syntax for a bad block file", async () => {
     let cli = new CLI();
     await cli.run(["validate", fixture("basic/error.block.css")]);
-    assert.equal(cli.output, `error\t${relFixture("basic/error.block.css")}:1:5 Two distinct classes cannot be selected on the same element: .foo.bar\n`);
+    assert.equal(cli.output,
+                 `error\t${relFixture("basic/error.block.css")}
+\tAt ${relFixture("basic/error.block.css")}:1:5 Two distinct classes cannot be selected on the same element: .foo.bar
+\t1: .foo.bar {
+\t2:   color: red;
+\t3: }
+Found 1 error in 1 file.
+`);
     assert.equal(cli.exitCode, 1);
   });
   it("correctly displays errors in referenced blocks.", async () => {
     let cli = new CLI();
     await cli.run(["validate", fixture("basic/transitive-error.block.css")]);
-    assert.equal(cli.output, `error\t${relFixture("basic/error.block.css")}:1:5 Two distinct classes cannot be selected on the same element: .foo.bar\n`);
+    assert.equal(cli.output,
+                 `error\t${relFixture("basic/transitive-error.block.css")}
+\tAt ${relFixture("basic/error.block.css")}:1:5 Two distinct classes cannot be selected on the same element: .foo.bar
+\t1: .foo.bar {
+\t2:   color: red;
+\t3: }
+Found 1 error in 1 file.
+`);
     assert.equal(cli.exitCode, 1);
   });
   it("can import from node_modules", async () => {
@@ -64,7 +78,7 @@ describe("validate with preprocessors", () => {
   it("can check syntax for a bad block file", async () => {
     let cli = new CLI();
     await cli.run(["validate", "--preprocessors", distFile("test/preprocessors"), fixture("scss/error.block.scss")]);
-    assert.equal(cli.output, `error\t${relFixture("scss/error.block.scss")}:5:5 Two distinct classes cannot be selected on the same element: .foo.bar\n`);
+    assert.equal(cli.output.split(/\n/)[1].trim(), `At ${relFixture("scss/error.block.scss")}:5:5 Two distinct classes cannot be selected on the same element: .foo.bar`);
     assert.equal(cli.exitCode, 1);
   });
 });

@@ -1,8 +1,10 @@
-import { BlockFactory, CssBlockError, Importer, NodeJsImporter, Preprocessors, hasErrorPosition } from "@css-blocks/core";
+import { BlockFactory, CssBlockError, ErrorWithPosition, Importer, NodeJsImporter, Preprocessors, hasErrorPosition } from "@css-blocks/core";
 import chalk = require("chalk");
 import fse = require("fs-extra");
 import path = require("path");
 import yargs = require("yargs");
+
+import { ExtractionResult, extractLinesFromSource } from "./extract-lines-from-source";
 
 type Aliases = ConstructorParameters<typeof NodeJsImporter>[0];
 
@@ -123,33 +125,100 @@ export class CLI {
     let factory = new BlockFactory({preprocessors, importer});
     let errorCount = 0;
     for (let blockFile of blockFiles) {
+      let blockFileRelative = path.relative(process.cwd(), path.resolve(blockFile));
       try {
         if (importer) {
           let ident = importer.identifier(null, blockFile, factory.configuration);
-          blockFile = importer.filesystemPath(ident, factory.configuration) || blockFile;
+          blockFile = importer.filesystemPath(ident, factory.configuration) || path.join(blockFile);
         }
-        await factory.getBlockFromPath(blockFile);
+        await factory.getBlockFromPath(path.resolve(blockFile));
         // if the above line doesn't throw then there wasn't a syntax error.
-        this.println(`${this.chalk.green("ok")}\t${path.relative(process.cwd(), path.resolve(blockFile))}`);
+        this.println(`${this.chalk.green("ok")}\t${this.chalk.whiteBright(blockFileRelative)}`);
       } catch (e) {
         errorCount++;
         if (e instanceof CssBlockError) {
           let loc = e.location;
-          let filename = path.relative(process.cwd(), path.resolve(loc && loc.filename || blockFile));
-          let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(filename)}`;
-          if (hasErrorPosition(loc)) {
-            message += `:${loc.start.line}:${loc.start.column}`;
+          let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFileRelative)}`;
+          if (!hasErrorPosition(loc)) {
+            this.println(message, e.origMessage);
+            continue;
+          } else {
+            this.println(message);
+            this.displayError(blockFileRelative, e);
           }
-          message += ` ${e.origMessage}`;
-          this.println(message);
         } else {
           console.error(e);
         }
       }
     }
+    if (errorCount) {
+      this.println(`Found ${this.chalk.redBright(`${errorCount} error${errorCount > 1 ? "s" : ""}`)} in ${blockFiles.length} file${blockFiles.length > 1 ? "s" : ""}.`);
+    }
     this.exit(errorCount);
   }
 
+  displayError(blockFileRelative: string, e: CssBlockError) {
+    let loc = e.location;
+    if (!hasErrorPosition(loc)) {
+      return;
+    }
+    loc.end.line = 4;
+    let filename = path.relative(process.cwd(), path.resolve(loc && loc.filename || blockFileRelative));
+    let context: ExtractionResult | undefined;
+    let lineNumber: number | undefined;
+    context = extractLinesFromSource(loc, 1, 1);
+    lineNumber = loc.start.line - context.additionalLines.before;
+    if (context) {
+      this.println(
+        this.chalk.bold.white("\tAt"),
+        this.chalk.bold.whiteBright(`${filename}:${loc.start.line}:${loc.start.column}`),
+        `${e.origMessage}`,
+      );
+      for (let i = 0; i < context.lines.length; i++) {
+        let prefix;
+        let line = context.lines[i];
+        if (i < context.additionalLines.before ||
+            i >= context.lines.length - context.additionalLines.after) {
+          prefix = this.chalk.bold(`${lineNumber}: `);
+        } else {
+          prefix = this.chalk.bold.redBright(`${lineNumber}: `);
+          let {before, during, after } = this.splitLineOnErrorRange(line, lineNumber, loc);
+          line = `${before}${this.chalk.underline.redBright(during)}${after}`;
+        }
+        this.println("\t" + prefix + line);
+        if (lineNumber) lineNumber++;
+      }
+    }
+  }
+
+  splitLineOnErrorRange(line: string, lineNumber: number, loc: ErrorWithPosition) {
+    if (lineNumber === loc.start.line && lineNumber === loc.end.line) {
+      let before = line.slice(0, loc.start.column - 1);
+      let during = line.slice(loc.start.column - 1, loc.end.column);
+      let after = line.slice(loc.end.column);
+      return { before, during, after };
+    } else if (lineNumber === loc.start.line) {
+      let before = line.slice(0, loc.start.column - 1);
+      let during = line.slice(loc.start.column - 1);
+      return { before, during, after: "" };
+    } else if (lineNumber === loc.end.line) {
+      let leadingWhitespace = "";
+      let during = line.slice(0, loc.end.column);
+      if (during.match(/^(\s+)/)) {
+        leadingWhitespace = RegExp.$1;
+        during = during.replace(/^\s+/, "");
+      }
+      let after = line.slice(loc.end.column);
+      return {before: leadingWhitespace, during, after };
+    } else {
+      let leadingWhitespace = "";
+      if (line.match(/^(\s+)/)) {
+        leadingWhitespace = RegExp.$1;
+        line = line.replace(/^\s+/, "");
+      }
+      return {before: leadingWhitespace, during: line, after: "" };
+    }
+  }
   /**
    * Instance method so tests can easily capture output.
    */

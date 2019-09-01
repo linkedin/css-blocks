@@ -8,8 +8,8 @@ export class TestCLI extends CLI {
     this.output = "";
     this.chalk.enabled = false;
   }
-  println(text: string) {
-    this.output += text + "\n";
+  println(...texts: string[]) {
+    this.output += texts.join(" ") + "\n";
   }
   argumentParser() {
     let parser = super.argumentParser();
