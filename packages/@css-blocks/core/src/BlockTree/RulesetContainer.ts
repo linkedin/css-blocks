@@ -15,6 +15,7 @@ import { sourceRange } from "../SourceLocation";
 import { expandProp } from "../util/propertyParser";
 
 import { Styles, isStyle } from "./Styles";
+import { Configuration } from "../configuration";
 export { Styles, BlockClass, AttrValue } from "./Styles";
 
 // Convenience types to help our code read better.
@@ -95,7 +96,7 @@ export class RulesetContainer<S extends Styles> {
    * @param  rule  PostCSS ruleset
    * @param  block  External block
    */
-  addRuleset(file: string, rule: postcss.Rule) {
+  addRuleset(configuration: Configuration, file: string, rule: postcss.Rule) {
     let style = this.parent;
     let selectors: ParsedSelector[] = style.getParsedSelectors(rule);
 
@@ -115,7 +116,7 @@ export class RulesetContainer<S extends Styles> {
         // If this is a resolution, track that this property has been resolved
         // Resolution paths are always relative to the root node.
         if (resolution.path) {
-          let errLoc = sourceRange(file, decl);
+          let errLoc = sourceRange(configuration, style.block.stylesheet, file, decl);
           let other = style.block.lookup(resolution.path, errLoc);
 
           if (other && other.block === style.block) {

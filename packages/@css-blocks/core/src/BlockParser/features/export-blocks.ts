@@ -38,7 +38,7 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
     if (!exportList) {
       throw new errors.InvalidBlockSyntax(
         `Malformed block export: \`@export ${atRule.params}\``,
-        sourceRange(file, atRule),
+        sourceRange(factory.configuration, block.stylesheet, file, atRule),
       );
     }
 
@@ -55,32 +55,32 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
         if (remoteNames.has(remoteName)) {
         throw new errors.InvalidBlockSyntax(
           `Can not have duplicate Block export of same name: "${remoteName}".`,
-          sourceRange(file, atRule),
+          sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }
         let localName = blockNames[remoteName];
         if (!CLASS_NAME_IDENT.test(localName)) {
           throw new errors.InvalidBlockSyntax(
             `Illegal block name in export. "${localName}" is not a legal CSS identifier.`,
-            sourceRange(file, atRule),
+            sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }
         if (!CLASS_NAME_IDENT.test(remoteName)) {
           throw new errors.InvalidBlockSyntax(
             `Illegal block name in import. "${remoteName}" is not a legal CSS identifier.`,
-            sourceRange(file, atRule),
+            sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }
         if (localName === DEFAULT_EXPORT && remoteName === DEFAULT_EXPORT) {
           throw new errors.InvalidBlockSyntax(
             `Unnecessary re-export of default Block.`,
-            sourceRange(file, atRule),
+            sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }
         if (remoteName === DEFAULT_EXPORT) {
           throw new errors.InvalidBlockSyntax(
             `Can not export "${localName}" as reserved word "${DEFAULT_EXPORT}"`,
-            sourceRange(file, atRule),
+            sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }
 
@@ -88,7 +88,7 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
         if (!referencedBlock) {
           throw new errors.InvalidBlockSyntax(
             `Can not export Block "${localName}". No Block named "${localName}" in "${file}".`,
-            sourceRange(file, atRule),
+            sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }
 

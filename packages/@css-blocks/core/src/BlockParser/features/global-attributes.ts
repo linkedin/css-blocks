@@ -5,8 +5,9 @@ import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceRange as range } from "../../SourceLocation";
 import { toAttrToken } from "../block-intermediates";
+import { Configuration } from "../../configuration";
 
-export async function globalAttributes(root: postcss.Root, block: Block, file: string): Promise<Block> {
+export async function globalAttributes(configuration: Configuration, root: postcss.Root, block: Block, file: string): Promise<Block> {
   root.walkAtRules(BLOCK_GLOBAL, (atRule) => {
 
     let selectors = parseSelector(atRule.params.trim());
@@ -22,7 +23,7 @@ export async function globalAttributes(root: postcss.Root, block: Block, file: s
       } else {
         throw new errors.InvalidBlockSyntax(
           `Illegal global attribute declaration: ${atRule.toString()}`,
-          range(file, atRule),
+          range(configuration, root, file, atRule),
         );
       }
     }

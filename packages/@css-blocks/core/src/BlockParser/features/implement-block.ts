@@ -4,6 +4,7 @@ import { IMPLEMENTS } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
+import { Configuration } from "../../configuration";
 
 /**
  * For each `implements` property found in the passed ruleset, track the foreign
@@ -12,13 +13,13 @@ import { sourceRange } from "../../SourceLocation";
  * @param sourceFile  Source file name, used for error output.
  * @param rule Ruleset to crawl
  */
-export async function implementBlock(rule: postcss.Root, block: Block, sourceFile: string) {
+export async function implementBlock(configuration: Configuration, rule: postcss.Root, block: Block, sourceFile: string) {
   rule.walkDecls(IMPLEMENTS, (decl) => {
     let refNames = decl.value.split(/,\s*/);
     refNames.forEach((refName) => {
       let refBlock = block.getReferencedBlock(refName);
       if (!refBlock) {
-        throw new errors.InvalidBlockSyntax(`No Block named "${refName}" found in scope.`, sourceRange(sourceFile, decl));
+        throw new errors.InvalidBlockSyntax(`No Block named "${refName}" found in scope.`, sourceRange(configuration, block.stylesheet, sourceFile, decl));
       }
       block.addImplementation(refBlock);
     });

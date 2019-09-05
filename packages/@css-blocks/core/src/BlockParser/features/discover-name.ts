@@ -3,8 +3,9 @@ import { postcss } from "opticss";
 import { BLOCK_NAME, CLASS_NAME_IDENT } from "../../BlockSyntax";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
+import { Configuration } from "../../configuration";
 
-export async function discoverName(root: postcss.Root, defaultName: string, file: string): Promise<string> {
+export async function discoverName(configuration: Configuration, root: postcss.Root, defaultName: string, file: string): Promise<string> {
 
   // Eagerly fetch custom `block-name` from the root block rule.
   root.walkRules(":scope", (rule) => {
@@ -12,7 +13,7 @@ export async function discoverName(root: postcss.Root, defaultName: string, file
       if (!CLASS_NAME_IDENT.test(decl.value)) {
         throw new errors.InvalidBlockSyntax(
           `Illegal block name. '${decl.value}' is not a legal CSS identifier.`,
-          sourceRange(file, decl),
+          sourceRange(configuration, root, file, decl),
         );
       }
 

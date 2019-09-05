@@ -435,6 +435,6 @@ export class ConflictResolver {
   }
   sourceRange(block: Block, node: postcss.Node): SourceRange | SourceFile | undefined {
     let blockPath = this.config.importer.debugIdentifier(block.identifier, this.config);
-    return sourceRange(blockPath, node);
+    return sourceRange(this.config, block.stylesheet, blockPath, node);
   }
 }

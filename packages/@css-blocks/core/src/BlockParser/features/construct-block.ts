@@ -38,14 +38,14 @@ function shouldBeParsedAsBlockSelector(rule: postcss.Rule): boolean {
  * @param file  string  The filepath of the file we are parsing for error reporting.
  * @returns The ParsedSelector array.
  **/
-function getParsedSelectors(block: Block, rule: postcss.Rule, file: string): ParsedSelector[] {
+function getParsedSelectors(configuration: Configuration, block: Block, rule: postcss.Rule, file: string): ParsedSelector[] {
   let res;
   try { res = block.getParsedSelectors(rule); }
-  catch (e) { throw new errors.InvalidBlockSyntax(e.message, sourceRange(file, rule)); }
+  catch (e) { throw new errors.InvalidBlockSyntax(e.message, sourceRange(configuration, block.stylesheet, file, rule)); }
   return res;
 }
 
-export async function constructBlock(root: postcss.Root, block: Block, configuration: Configuration, file: string): Promise<Block> {
+export async function constructBlock(configuration: Configuration, root: postcss.Root, block: Block, file: string): Promise<Block> {
 
   let styleRuleTuples: Set<[Style, postcss.Rule]> = new Set();
 
@@ -56,7 +56,7 @@ export async function constructBlock(root: postcss.Root, block: Block, configura
     if (!shouldBeParsedAsBlockSelector(rule)) { return; }
 
     // Fetch the parsed selectors list. Throw a helpful error if we can't parse.
-    let parsedSelectors = getParsedSelectors(block, rule, file);
+    let parsedSelectors = getParsedSelectors(configuration, block, rule, file);
 
     // Iterate over the all selectors for this rule – one for each comma separated selector.
     parsedSelectors.forEach((iSel) => {
@@ -99,7 +99,7 @@ export async function constructBlock(root: postcss.Root, block: Block, configura
   // To allow self-referential block lookup when constructing ruleset concerns,
   // we need to run `addRuleset()` only *after* all Styles have been created.
   for (let [style, rule] of styleRuleTuples) {
-    style.rulesets.addRuleset(file, rule);
+    style.rulesets.addRuleset(configuration, file, rule);
   }
 
   return block;

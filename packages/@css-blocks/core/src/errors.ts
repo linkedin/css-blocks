@@ -1,12 +1,10 @@
 import * as SourceLocation from "./SourceLocation";
+
+// TODO: Remove these types and use source location types everywhere.
 export type Position = SourceLocation.SourcePosition;
-
 export type ErrorWithoutPosition = Partial<SourceLocation.SourceFile>;
-
 export type ErrorWithPosition = Required<SourceLocation.SourceRange>;
-
 export type ErrorWithMappedPosition = SourceLocation.MappedSourceRange;
-
 export type ErrorLocation = ErrorWithoutPosition | ErrorWithPosition | ErrorWithMappedPosition;
 
 export function hasMappedPosition(loc: ErrorLocation): loc is ErrorWithMappedPosition {

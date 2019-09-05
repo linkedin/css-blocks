@@ -73,7 +73,7 @@ export class BlockCompiler {
    */
   public processDebugStatements(sourceFile: string, root: postcss.Root, block: Block) {
     root.walkAtRules(BLOCK_DEBUG, (atRule) => {
-      let {block: ref, channel} = parseBlockDebug(atRule, sourceFile, block);
+      let {block: ref, channel} = parseBlockDebug(this.config, root, atRule, sourceFile, block);
       if (channel === "comment") {
         let text = `${ref.debug(this.config).join("\n * ")}\n`;
         atRule.replaceWith(this.postcss.comment({ text }));

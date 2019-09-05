@@ -66,14 +66,14 @@ export class BlockParser {
     debug(`Begin parse: "${debugIdent}"`);
 
     // Discover the block's preferred name.
-    name = await discoverName(root, name, sourceFile);
+    name = await discoverName(this.factory.configuration, root, name, sourceFile);
 
     // Create our new Block object and save reference to the raw AST.
     let block = new Block(name, identifier, root);
 
     // Throw if we encounter any `!important` decls.
     debug(` - Disallow Import`);
-    await disallowImportant(root, sourceFile);
+    await disallowImportant(this.factory.configuration, root, sourceFile);
     // Discover and parse all block references included by this block.
     debug(` - Import Blocks`);
     await importBlocks(block, this.factory, sourceFile);
@@ -82,21 +82,21 @@ export class BlockParser {
     await exportBlocks(block, this.factory, sourceFile);
     // Handle any global attributes defined by this block.
     debug(` - Global Attributes`);
-    await globalAttributes(root, block, sourceFile);
+    await globalAttributes(this.factory.configuration, root, block, sourceFile);
     // Parse all block styles and build block tree.
     debug(` - Construct Block`);
-    await constructBlock(root, block, this.factory.configuration, debugIdent);
+    await constructBlock(this.factory.configuration, root, block, debugIdent);
     // Verify that external blocks referenced have been imported, have defined the attribute being selected, and have marked it as a global state.
     debug(` - Assert Foreign Globals`);
     await assertForeignGlobalAttribute(this.factory.configuration, root, block, debugIdent);
     // Construct block extensions and validate.
     debug(` - Extend Block`);
-    await extendBlock(root, block, debugIdent);
+    await extendBlock(this.factory.configuration, root, block, debugIdent);
     // Validate that all required Styles are implemented.
     debug(` - Implement Block`);
-    await implementBlock(root, block, debugIdent);
+    await implementBlock(this.factory.configuration, root, block, debugIdent);
     // Register all block compositions.
-    await composeBlock(root, block, debugIdent);
+    await composeBlock(this.factory.configuration, root, block, debugIdent);
     // Log any debug statements discovered.
     debug(` - Process Debugs`);
     await processDebugStatements(root, block, debugIdent, this.config);

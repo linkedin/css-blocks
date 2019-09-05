@@ -77,34 +77,17 @@ export function addSourcePositions(...locations: SourcePosition[]) {
  * @param node  The PostCSS Node object in question.
  * @returns An object representing the filename, line number and column number.
  */
-export function sourceRange(filename: string, node: postcss.Node): SourceRange | SourceFile {
+export function sourceRange(configuration: Configuration, root: postcss.Root | null | undefined, filename: string, node: postcss.Node): SourceRange | SourceFile {
   if (node.source && node.source.start && node.source.end) {
     let {start, end} = node.source;
-    return {
-      filename,
-      start,
-      end,
-    };
+    return sourceOrSourceMappedRange(configuration, root, filename, start, end);
   } else {
     return { filename };
   }
 }
 
 const CSS_CONTENT_CACHE = new WeakMap();
-
-/**
- * Utility function to fetch the filename, line number and column number
- * of a given selector.
- * @param filename  The source file name that contains this rule.
- * @param rule  The PostCSS Rule object containing this selector.
- * @param selector  The PostCSS selector node in question.
- * @returns An object representing the filename, line number and column number.
- */
-export function selectorSourceRange(configuration: Configuration, root: postcss.Root | null | undefined, filename: string, rule: postcss.Rule, selector: selectorParser.Node): SourceRange | SourceFile | MappedSourceRange {
-  if (rule.source && rule.source.start && rule.source.end &&
-      selector.source && selector.source.start && selector.source.end) {
-    let start = addSourcePositions(rule.source.start, selector.source.start);
-    let end = addSourcePositions(rule.source.start, selector.source.end);
+function sourceOrSourceMappedRange(configuration: Configuration, root: postcss.Root | null | undefined, filename: string, start: SourcePosition, end: SourcePosition): SourceRange | MappedSourceRange {
     // try to trace the error back to the source file using sourcemap information.
     if (root && root.source && root.source.input.map) {
       let consumer = root.source.input.map.consumer();
@@ -122,6 +105,22 @@ export function selectorSourceRange(configuration: Configuration, root: postcss.
       start,
       end,
     };
+}
+
+/**
+ * Utility function to fetch the filename, line number and column number
+ * of a given selector.
+ * @param filename  The source file name that contains this rule.
+ * @param rule  The PostCSS Rule object containing this selector.
+ * @param selector  The PostCSS selector node in question.
+ * @returns An object representing the filename, line number and column number.
+ */
+export function selectorSourceRange(configuration: Configuration, root: postcss.Root | null | undefined, filename: string, rule: postcss.Rule, selector: selectorParser.Node): SourceRange | SourceFile | MappedSourceRange {
+  if (rule.source && rule.source.start && rule.source.end &&
+      selector.source && selector.source.start && selector.source.end) {
+    let start = addSourcePositions(rule.source.start, selector.source.start);
+    let end = addSourcePositions(rule.source.start, selector.source.end);
+    return sourceOrSourceMappedRange(configuration, root, filename, start, end);
   }
   return { filename };
 }
