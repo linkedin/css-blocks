@@ -138,7 +138,7 @@ export class CLI {
       try {
         if (importer) {
           let ident = importer.identifier(null, blockFile, factory.configuration);
-          blockFile = importer.filesystemPath(ident, factory.configuration) || path.join(blockFile);
+          blockFile = importer.filesystemPath(ident, factory.configuration) || blockFile;
         }
         await factory.getBlockFromPath(path.resolve(blockFile));
         // if the above line doesn't throw then there wasn't a syntax error.
