@@ -149,7 +149,7 @@ export class Test {
     ).then((_analysis: Analyzer) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
-      assert.equal(err.message, `[css-blocks] TemplateError: Can not apply multiple states at the same time from the exclusive state group ".pretty[state|color]". (:11:6)`);
+      assert.equal(err.message, `[css-blocks] TemplateError: Can not apply multiple states at the same time from the exclusive state group ".pretty[state|color]". (<unknown file>:11:6)`);
     });
   }
 

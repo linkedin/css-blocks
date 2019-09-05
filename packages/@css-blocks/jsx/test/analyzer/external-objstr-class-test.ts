@@ -145,7 +145,7 @@ export class Test {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
-        assert.equal(err.message, '[css-blocks] TemplateError: Classes "baz" and "foo" from the same block are not allowed on the same element at the same time. (:10:6)');
+        assert.equal(err.message, '[css-blocks] TemplateError: Classes "baz" and "foo" from the same block are not allowed on the same element at the same time. (<unknown file>:10:6)');
       });
   }
 

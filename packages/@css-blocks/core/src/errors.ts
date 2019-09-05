@@ -1,19 +1,17 @@
-export interface Position {
-  line: number;
-  column: number;
-}
+import * as SourceLocation from "./SourceLocation";
+export type Position = SourceLocation.SourcePosition;
 
-export interface ErrorWithoutPosition {
-  filename?: string;
-}
+export type ErrorWithoutPosition = Partial<SourceLocation.SourceFile>;
 
-export interface ErrorWithPosition {
-  filename: string;
-  start: Position;
-  end: Position;
-}
+export type ErrorWithPosition = Required<SourceLocation.SourceRange>;
 
-export type ErrorLocation = ErrorWithoutPosition | ErrorWithPosition;
+export type ErrorWithMappedPosition = SourceLocation.MappedSourceRange;
+
+export type ErrorLocation = ErrorWithoutPosition | ErrorWithPosition | ErrorWithMappedPosition;
+
+export function hasMappedPosition(loc: ErrorLocation): loc is ErrorWithMappedPosition {
+  return (typeof (<ErrorWithMappedPosition>loc).generated === "object");
+}
 
 export function hasErrorPosition(location: ErrorLocation | void): location is ErrorWithPosition {
   return location && typeof (<ErrorWithPosition>location).start === "object" || false;

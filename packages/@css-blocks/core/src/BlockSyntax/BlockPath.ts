@@ -141,7 +141,6 @@ export class BlockPath {
         start = { ...this._location.start };
         end = { ...this._location.end };
       } else {
-        console.dir(this._location);
         start = { column: 0, line: 1 };
         end = { column: 0, line: 1 };
       }

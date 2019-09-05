@@ -175,7 +175,7 @@ export class BlockFactory {
     let sourceMap = sourceMapFromProcessedFile(preprocessResult);
     let content = preprocessResult.content;
     if (sourceMap) {
-      content = annotateCssContentWithSourceMap(content, sourceMap);
+      content = annotateCssContentWithSourceMap(this.configuration, filename, content, sourceMap);
     }
     let root = await this.postcssImpl.parse(content, { from: filename });
 

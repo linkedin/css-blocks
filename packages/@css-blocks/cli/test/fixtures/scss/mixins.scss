@@ -1,0 +1,24 @@
+@mixin add-bar() {
+  &.bar {
+    @content;
+  }
+}
+
+@mixin plus-b() {
+  & + .bbb {
+    @content;
+  }
+}
+
+@mixin in-state($state-name, $state-value: null) {
+  @if $state-value {
+    &[state|#{$state-name}=#{$state-value}] {
+      @content;
+    }
+  }
+  @else {
+    &[state|#{$state-name}] {
+      @content;
+    }
+  }
+}

@@ -85,10 +85,10 @@ export class BlockParser {
     await globalAttributes(root, block, sourceFile);
     // Parse all block styles and build block tree.
     debug(` - Construct Block`);
-    await constructBlock(root, block, debugIdent);
+    await constructBlock(root, block, this.factory.configuration, debugIdent);
     // Verify that external blocks referenced have been imported, have defined the attribute being selected, and have marked it as a global state.
     debug(` - Assert Foreign Globals`);
-    await assertForeignGlobalAttribute(root, block, debugIdent);
+    await assertForeignGlobalAttribute(this.factory.configuration, root, block, debugIdent);
     // Construct block extensions and validate.
     debug(` - Extend Block`);
     await extendBlock(root, block, debugIdent);

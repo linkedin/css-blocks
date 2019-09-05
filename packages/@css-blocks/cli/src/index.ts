@@ -1,4 +1,13 @@
-import { BlockFactory, CssBlockError, ErrorWithPosition, Importer, NodeJsImporter, Preprocessors, hasErrorPosition } from "@css-blocks/core";
+import {
+  BlockFactory,
+  CssBlockError,
+  ErrorWithPosition,
+  Importer,
+  NodeJsImporter,
+  Preprocessors,
+  hasErrorPosition,
+  hasMappedPosition,
+} from "@css-blocks/core";
 import chalk = require("chalk");
 import fse = require("fs-extra");
 import path = require("path");
@@ -162,32 +171,40 @@ export class CLI {
     if (!hasErrorPosition(loc)) {
       return;
     }
-    loc.end.line = 4;
     let filename = path.relative(process.cwd(), path.resolve(loc && loc.filename || blockFileRelative));
-    let context: ExtractionResult | undefined;
-    let lineNumber: number | undefined;
-    context = extractLinesFromSource(loc, 1, 1);
-    lineNumber = loc.start.line - context.additionalLines.before;
-    if (context) {
+    this.println("\t" + this.chalk.bold.redBright(e.origMessage));
+    if (hasMappedPosition(loc)) {
       this.println(
-        this.chalk.bold.white("\tAt"),
-        this.chalk.bold.whiteBright(`${filename}:${loc.start.line}:${loc.start.column}`),
-        `${e.origMessage}`,
+        this.chalk.bold.white("\tAt compiled output of"),
+        this.chalk.bold.whiteBright(`${loc.generated.filename}:${loc.generated.start.line}:${loc.generated.start.column}`),
       );
-      for (let i = 0; i < context.lines.length; i++) {
-        let prefix;
-        let line = context.lines[i];
-        if (i < context.additionalLines.before ||
-            i >= context.lines.length - context.additionalLines.after) {
-          prefix = this.chalk.bold(`${lineNumber}: `);
-        } else {
-          prefix = this.chalk.bold.redBright(`${lineNumber}: `);
-          let {before, during, after } = this.splitLineOnErrorRange(line, lineNumber, loc);
-          line = `${before}${this.chalk.underline.redBright(during)}${after}`;
-        }
-        this.println("\t" + prefix + line);
-        if (lineNumber) lineNumber++;
+      this.displaySnippet(extractLinesFromSource(loc.generated, 1, 1), loc.generated);
+    }
+    this.println(
+      this.chalk.bold.white(hasMappedPosition(loc) ? "\tSource Mapped to" : "\tAt"),
+      this.chalk.bold.whiteBright(`${filename}:${loc.start.line}:${loc.start.column}`),
+    );
+    this.displaySnippet(extractLinesFromSource(loc, 1, 1), loc);
+  }
+
+  displaySnippet(context: ExtractionResult | undefined, loc: ErrorWithPosition) {
+    if (!context) return;
+    let lineNumber: number | undefined;
+    lineNumber = loc.start.line - context.additionalLines.before;
+
+    for (let i = 0; i < context.lines.length; i++) {
+      let prefix;
+      let line = context.lines[i];
+      if (i < context.additionalLines.before ||
+          i >= context.lines.length - context.additionalLines.after) {
+        prefix = this.chalk.bold(`${lineNumber}:${line ? " " : ""}`);
+      } else {
+        prefix = this.chalk.bold.redBright(`${lineNumber}:${line ? " " : ""}`);
+        let {before, during, after } = this.splitLineOnErrorRange(line, lineNumber, loc);
+        line = `${before}${this.chalk.underline.redBright(during)}${after}`;
       }
+      this.println("\t" + prefix + line);
+      if (lineNumber) lineNumber++;
     }
   }
 

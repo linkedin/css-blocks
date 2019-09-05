@@ -8,12 +8,17 @@ export interface ExtractionResult {
   };
 }
 export function extractLinesFromSource(
-  range: Required<SourceRange>,
+  range: Required<SourceRange> & { source?: string },
   additionalLinesBefore = 1,
   additionalLinesAfter = 0,
-): ExtractionResult {
-  let { filename, start, end } = range;
-  let contents = fs.readFileSync(filename, "utf-8");
+): ExtractionResult | undefined {
+  let contents: string | undefined;
+  let { filename, start, end, source } = range;
+  try {
+    contents = source || fs.readFileSync(filename, "utf-8");
+  } catch (e) {
+    return;
+  }
   let allLines = contents.split(/\r?\n/);
   if (start.line <= additionalLinesBefore) {
     additionalLinesBefore = start.line - 1;

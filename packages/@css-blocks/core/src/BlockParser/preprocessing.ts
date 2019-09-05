@@ -1,11 +1,12 @@
 import * as inlineSourceMapComment from "inline-source-map-comment";
 import { postcss } from "opticss";
+import * as path from "path";
 import {
   RawSourceMap,
 } from "source-map";
 
 import {
-  ResolvedConfiguration,
+  Configuration, ResolvedConfiguration,
 } from "../configuration";
 
 export enum Syntax {
@@ -58,15 +59,23 @@ export type Preprocessors = {
  * should be called from within a css preprocessor function when an inline
  * sourcemap is needed and is provided for convenience.
  */
-export function annotateCssContentWithSourceMap(content: string | postcss.Result, sourceMap: RawSourceMap | string): string {
+export function annotateCssContentWithSourceMap(configuration: Configuration, filename: string, content: string | postcss.Result, sourceMap: RawSourceMap | string): string {
   let contentStr: string;
+  let sourceMapObj: RawSourceMap;
   if (typeof content === "string") {
     contentStr = content;
   } else {
     contentStr = content.content.toString();
   }
   if (typeof sourceMap === "string") {
-    sourceMap = JSON.parse(sourceMap);
+    sourceMapObj = JSON.parse(sourceMap);
+  } else {
+    sourceMapObj = sourceMap;
   }
-  return contentStr + (contentStr.endsWith("\n") ? "" : "\n") + inlineSourceMapComment(sourceMap, {block: true});
+  // postcss resolves relative paths against the current working directory so we
+  // have to resolve them instead against the file itself first.
+  sourceMapObj.sources = sourceMapObj.sources.map((src) => path.resolve(configuration.rootDir, path.dirname(filename), src));
+  // Remove any existing source map references before adding the inline version.
+  contentStr = contentStr.replace(/\/\*# sourceMappingURL=.*\*\/\n?/g, "");
+  return contentStr + (contentStr.endsWith("\n") ? "" : "\n") + inlineSourceMapComment(sourceMapObj, {block: true}) + "\n";
 }

@@ -1,0 +1,7 @@
+@import "mixins";
+
+.a {
+  @include plus-b() {
+    color: purple;
+  }
+}

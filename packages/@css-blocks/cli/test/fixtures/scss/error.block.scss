@@ -1,6 +1,8 @@
+@import "mixins";
+
 .foo {
   color: red;
-  &.bar {
+  @include add-bar() {
     color: blue;
   }
 }
