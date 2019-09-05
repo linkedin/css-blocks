@@ -10,7 +10,7 @@ export interface ExtractionResult {
 export function extractLinesFromSource(
   range: Required<SourceRange> & { source?: string },
   additionalLinesBefore = 1,
-  additionalLinesAfter = 0,
+  additionalLinesAfter = 1,
 ): ExtractionResult | undefined {
   let contents: string | undefined;
   let { filename, start, end, source } = range;

@@ -178,13 +178,13 @@ export class CLI {
         this.chalk.bold.white("\tAt compiled output of"),
         this.chalk.bold.whiteBright(`${loc.generated.filename}:${loc.generated.start.line}:${loc.generated.start.column}`),
       );
-      this.displaySnippet(extractLinesFromSource(loc.generated, 1, 1), loc.generated);
+      this.displaySnippet(extractLinesFromSource(loc.generated), loc.generated);
     }
     this.println(
       this.chalk.bold.white(hasMappedPosition(loc) ? "\tSource Mapped to" : "\tAt"),
       this.chalk.bold.whiteBright(`${filename}:${loc.start.line}:${loc.start.column}`),
     );
-    this.displaySnippet(extractLinesFromSource(loc, 1, 1), loc);
+    this.displaySnippet(extractLinesFromSource(loc), loc);
   }
 
   displaySnippet(context: ExtractionResult | undefined, loc: ErrorWithPosition) {
