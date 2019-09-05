@@ -3,11 +3,11 @@ import { isRule } from "opticss/dist/src/util/cssIntrospection";
 
 import { COMPOSES } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
+import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 import { getStyleTargets } from "../block-intermediates";
 import { stripQuotes } from "../utils";
-import { Configuration } from "../../configuration";
 
 /**
  * For each `composes` property found in the passed ruleset, track the foreign

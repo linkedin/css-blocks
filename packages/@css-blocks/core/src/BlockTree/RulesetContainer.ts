@@ -10,12 +10,12 @@ import { MultiMap, TwoKeyMultiMap } from "@opticss/util";
 import { ParsedSelector, postcss } from "opticss";
 
 import { BLOCK_PROP_NAMES, SELF_SELECTOR, getResolution } from "../BlockSyntax";
+import { Configuration } from "../configuration";
 import { InvalidBlockSyntax } from "../errors";
 import { sourceRange } from "../SourceLocation";
 import { expandProp } from "../util/propertyParser";
 
 import { Styles, isStyle } from "./Styles";
-import { Configuration } from "../configuration";
 export { Styles, BlockClass, AttrValue } from "./Styles";
 
 // Convenience types to help our code read better.

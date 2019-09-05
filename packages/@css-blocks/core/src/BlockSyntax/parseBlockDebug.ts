@@ -1,9 +1,9 @@
 import { postcss } from "opticss";
 
 import { Block } from "../BlockTree";
+import { Configuration } from "../configuration";
 import * as errors from "../errors";
 import { sourceRange } from "../SourceLocation";
-import { Configuration } from "../configuration";
 
 export type DebugChannel = "comment" | "stderr" | "stdout";
 

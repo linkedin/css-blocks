@@ -2,9 +2,9 @@ import { postcss } from "opticss";
 
 import { EXTENDS } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
+import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
-import { Configuration } from "../../configuration";
 
 /**
  * For each `extends` property found in the passed ruleset, set the block's base

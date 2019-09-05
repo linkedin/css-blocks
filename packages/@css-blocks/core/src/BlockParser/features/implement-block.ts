@@ -2,9 +2,9 @@ import { postcss } from "opticss";
 
 import { IMPLEMENTS } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
+import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
-import { Configuration } from "../../configuration";
 
 /**
  * For each `implements` property found in the passed ruleset, track the foreign

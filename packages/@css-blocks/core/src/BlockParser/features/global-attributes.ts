@@ -2,10 +2,10 @@ import { parseSelector, postcss, postcssSelectorParser as selectorParser } from 
 
 import { BLOCK_GLOBAL } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
+import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange as range } from "../../SourceLocation";
 import { toAttrToken } from "../block-intermediates";
-import { Configuration } from "../../configuration";
 
 export async function globalAttributes(configuration: Configuration, root: postcss.Root, block: Block, file: string): Promise<Block> {
   root.walkAtRules(BLOCK_GLOBAL, (atRule) => {

@@ -3,10 +3,12 @@ import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
 import { Block } from "../../src";
+import { resolveConfiguration } from "../../src/configuration";
 
 @suite("Ruleset Containers")
 export class RulesetContainerTests {
   @test "addRuleset saves property concerns for multiple rulesets"() {
+    let config = resolveConfiguration({});
     let b = new Block("name", "filepath");
     let c = b.ensureClass("test");
     let rulesets = c.rulesets;
@@ -23,7 +25,7 @@ export class RulesetContainerTests {
       .baz::after {
         background: blue;
       }
-    `).walkRules(rulesets.addRuleset.bind(rulesets, "file.css"));
+    `).walkRules(rulesets.addRuleset.bind(rulesets, config, "file.css"));
 
     assert.deepEqual([...rulesets.getProperties()], ["display", "float", "color"]);
     assert.deepEqual([...rulesets.getProperties("::after")], ["background-color", "background"]);

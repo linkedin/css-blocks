@@ -1,9 +1,9 @@
 import { postcss } from "opticss";
 
 import { BLOCK_NAME, CLASS_NAME_IDENT } from "../../BlockSyntax";
+import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
-import { Configuration } from "../../configuration";
 
 export async function discoverName(configuration: Configuration, root: postcss.Root, defaultName: string, file: string): Promise<string> {
 

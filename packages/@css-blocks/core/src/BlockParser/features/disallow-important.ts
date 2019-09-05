@@ -1,8 +1,8 @@
 import { postcss } from "opticss";
 
+import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
-import { Configuration } from "../../configuration";
 
 export async function disallowImportant(configuration: Configuration, root: postcss.Root, file: string): Promise<postcss.Root> {
   root.walkDecls((decl) => {
