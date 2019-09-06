@@ -3,7 +3,7 @@ import { postcss, postcssSelectorParser as selectorParser } from "opticss";
 import { Block } from "../../BlockTree";
 import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
-import { selectorSourceRange as loc } from "../../SourceLocation";
+import { selectorSourceRange as range } from "../../SourceLocation";
 import { isAttributeNode, toAttrToken } from "../block-intermediates";
 
 /**
@@ -36,7 +36,7 @@ export async function assertForeignGlobalAttribute(configuration: Configuration,
           if (!isAttributeNode(node)) {
             throw new errors.InvalidBlockSyntax(
               `Only global states from other blocks can be used in selectors: ${rule.selector}`,
-              loc(configuration, block.stylesheet, file, rule, node));
+              range(configuration, block.stylesheet, file, rule, node));
           }
 
           // If referenced block does not exist, throw.
@@ -44,7 +44,7 @@ export async function assertForeignGlobalAttribute(configuration: Configuration,
           if (!otherBlock) {
             throw new errors.InvalidBlockSyntax(
               `No Block named "${blockName.value}" found in scope: ${rule.selector}`,
-              loc(configuration, block.stylesheet, file, rule, node));
+              range(configuration, block.stylesheet, file, rule, node));
           }
 
           // If state referenced does not exist on external block, throw
@@ -52,14 +52,14 @@ export async function assertForeignGlobalAttribute(configuration: Configuration,
           if (!otherAttr) {
             throw new errors.InvalidBlockSyntax(
               `No state ${node.toString()} found in : ${rule.selector}`,
-              loc(configuration, block.stylesheet, file, rule, node));
+              range(configuration, block.stylesheet, file, rule, node));
           }
 
           // If external state is not set as global, throw.
           if (!otherAttr.isGlobal) {
             throw new errors.InvalidBlockSyntax(
               `${node.toString()} is not global: ${rule.selector}`,
-              loc(configuration, block.stylesheet, file, rule, node));
+              range(configuration, block.stylesheet, file, rule, node));
           }
 
         }
