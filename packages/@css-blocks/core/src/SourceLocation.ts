@@ -77,7 +77,7 @@ export function addSourcePositions(...locations: SourcePosition[]) {
  * @param node  The PostCSS Node object in question.
  * @returns An object representing the filename, line number and column number.
  */
-export function sourceRange(configuration: Configuration, root: postcss.Root | null | undefined, filename: string, node: postcss.Node): SourceRange | SourceFile {
+export function sourceRange(configuration: Configuration, root: postcss.Root | null | undefined, filename: string, node: postcss.Node): MappedSourceRange | SourceRange | SourceFile {
   if (node.source && node.source.start && node.source.end) {
     let {start, end} = node.source;
     return sourceOrSourceMappedRange(configuration, root, filename, start, end);

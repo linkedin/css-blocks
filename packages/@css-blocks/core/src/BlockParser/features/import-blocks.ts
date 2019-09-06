@@ -44,10 +44,17 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
     // Import file, then parse file, then save block reference.
     let blockPromise: Promise<Block> = factory.getBlockRelative(block.identifier, blockPath);
 
-    // Validate our imported block name is a valid CSS identifier.
+    blockPromise = blockPromise.catch((e) => {
+      if (e instanceof errors.CssBlockError) {
+        e.importStack.push(sourceRange(factory.configuration, block.stylesheet, file, atRule));
+      }
+      throw e;
+    });
+
     let blockNames = parseBlockNames(blockList, true);
     for (let localName of Object.keys(blockNames)) {
       let remoteName = blockNames[localName];
+      // Validate our imported block name is a valid CSS identifier.
       if (!CLASS_NAME_IDENT.test(localName)) {
         throw new errors.InvalidBlockSyntax(
           `Illegal block name in import. "${localName}" is not a legal CSS identifier.`,
@@ -104,5 +111,4 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
     }
   });
   return block;
-
 }

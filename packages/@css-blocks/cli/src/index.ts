@@ -173,6 +173,15 @@ export class CLI {
     if (!errorHasRange(loc)) return;
     let filename = path.relative(process.cwd(), path.resolve(loc && loc.filename || blockFileRelative));
     this.println("\t" + this.chalk.bold.redBright(e.origMessage));
+    for (let referenceLocation of e.importStack.reverse()) {
+      if (referenceLocation.filename) {
+        referenceLocation.filename = path.relative(process.cwd(), path.resolve(referenceLocation.filename));
+      }
+      this.println(
+        this.chalk.bold.white("\tIn block referenced at"),
+        this.chalk.bold.whiteBright(charInFile(referenceLocation)),
+      );
+    }
     if (hasMappedPosition(loc)) {
       this.println(
         this.chalk.bold.white("\tAt compiled output of"),

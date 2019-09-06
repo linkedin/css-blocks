@@ -26,11 +26,13 @@ interface HasPrefix {
 export class CssBlockError extends Error {
   static prefix = "Error";
   origMessage: string;
+  importStack: Array<SourceLocation.SourceRange | SourceLocation.MappedSourceRange | SourceLocation.SourceFile>;
   private _location?: ErrorLocation;
   constructor(message: string, location?: ErrorLocation) {
     super(message);
     this.origMessage = message;
     this._location = location;
+    this.importStack = new Array();
     super.message = this.annotatedMessage();
   }
 

@@ -1,0 +1,5 @@
+@block error from "./transitive-error.block.css";
+
+:scope {
+  extends: error;
+}

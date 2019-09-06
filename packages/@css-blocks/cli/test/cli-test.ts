@@ -45,6 +45,7 @@ Found 1 error in 1 file.
     assert.equal(cli.output,
                  `error\t${relFixture("basic/transitive-error.block.css")}
 \tTwo distinct classes cannot be selected on the same element: .foo.bar
+\tIn block referenced at test/fixtures/basic/transitive-error.block.css:1:1
 \tAt ${relFixture("basic/error.block.css")}:1:5
 \t1: .foo.bar {
 \t2:   color: red;
