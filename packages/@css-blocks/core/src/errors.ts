@@ -11,8 +11,12 @@ export function hasMappedPosition(loc: ErrorLocation): loc is ErrorWithMappedPos
   return (typeof (<ErrorWithMappedPosition>loc).generated === "object");
 }
 
-export function hasErrorPosition(location: ErrorLocation | void): location is ErrorWithPosition {
+export function errorHasRange(location: ErrorLocation | undefined): location is ErrorWithPosition {
   return location && typeof (<ErrorWithPosition>location).start === "object" || false;
+}
+
+interface HasPrefix {
+  prefix?: string;
 }
 
 /**
@@ -22,8 +26,8 @@ export function hasErrorPosition(location: ErrorLocation | void): location is Er
 export class CssBlockError extends Error {
   static prefix = "Error";
   origMessage: string;
-  private _location?: ErrorLocation | void;
-  constructor(message: string, location?: ErrorLocation | void) {
+  private _location?: ErrorLocation;
+  constructor(message: string, location?: ErrorLocation) {
     super(message);
     this.origMessage = message;
     this._location = location;
@@ -32,25 +36,52 @@ export class CssBlockError extends Error {
 
   private annotatedMessage() {
     let loc = this.location;
-    if (!loc) {
+    if (loc) {
+      let prefix = (<HasPrefix>this.constructor).prefix;
+      return `[css-blocks] ${prefix || CssBlockError.prefix}: ${this.origMessage} (${charInFile(loc)})`;
+    } else {
       return this.origMessage;
     }
-    let filename = loc.filename || "<unknown file>";
-    let line: string | number = "";
-    let column: string | number = "";
-    if (hasErrorPosition(loc)) {
-      line = `:${loc.start.line}`;
-      column = `:${loc.start.column}`;
-    }
-    let locMessage = ` (${filename}${line}${column})`;
-    // tslint:disable-next-line:prefer-unknown-to-any
-    return `[css-blocks] ${(this.constructor as any).prefix}: ${this.origMessage}${locMessage}`;
   }
 
-  get location(): ErrorLocation | void {
+  get location(): ErrorLocation | undefined {
     return this._location;
   }
+}
 
+function hasSourcePosition(filenameOrPosition: string | ErrorWithoutPosition | ErrorWithPosition | SourceLocation.SourceLocation): filenameOrPosition is SourceLocation.SourceLocation {
+  return typeof (<SourceLocation.SourceLocation>filenameOrPosition).line === "number";
+}
+
+export function charInFile(filename: string | ErrorWithoutPosition, position: SourceLocation.SourcePosition | undefined): string;
+export function charInFile(position: ErrorWithPosition | SourceLocation.SourceLocation | ErrorLocation): string;
+export function charInFile(filename: string, line: number, column: number): string;
+export function charInFile(filenameOrPosition: string | ErrorWithoutPosition | ErrorWithPosition | SourceLocation.SourceLocation | ErrorLocation, lineOrPosition?: SourceLocation.SourcePosition | number | undefined, column?: number | undefined): string {
+  let filename: string;
+  let line: number | undefined;
+  if (typeof filenameOrPosition === "object") {
+    filename = filenameOrPosition.filename || "<unknown file>";
+    if (errorHasRange(filenameOrPosition)) {
+      line = filenameOrPosition.start.line;
+      column = filenameOrPosition.start.column;
+    } else if (hasSourcePosition(filenameOrPosition)) {
+      line = filenameOrPosition.line;
+      column = filenameOrPosition.column;
+    }
+  } else {
+    filename = filenameOrPosition;
+  }
+  if (typeof lineOrPosition === "object") {
+    line = lineOrPosition.line;
+    column = lineOrPosition.column;
+  } else if (typeof lineOrPosition === "number") {
+    line = lineOrPosition;
+  }
+  if (typeof line === "number" && typeof column === "number") {
+    return `${filename}:${line}:${column}`;
+  } else {
+    return filename;
+  }
 }
 
 /**

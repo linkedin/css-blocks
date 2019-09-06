@@ -112,7 +112,7 @@ export class Test {
         assert.ok(false, "should not get here.");
       },
       (e) => {
-        assert.equal(e.message, "[css-blocks] AnalysisError: The spread operator is not allowed in CSS Block states. (9:18)");
+        assert.equal(e.message, "[css-blocks] AnalysisError: The spread operator is not allowed in CSS Block states. (<unknown file>:9:18)");
       });
   }
 }

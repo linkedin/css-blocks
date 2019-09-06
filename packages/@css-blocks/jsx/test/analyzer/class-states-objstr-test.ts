@@ -235,7 +235,7 @@ export class Test {
     `).then((_analysis: Analyzer) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
-      assert.equal(err.message, `[css-blocks] MalformedBlockPath: State "bar.pretty[state|color]" expects a value. (9:9)`);
+      assert.equal(err.message, `[css-blocks] MalformedBlockPath: State "bar.pretty[state|color]" expects a value. (<unknown file>:9:9)`);
     });
   }
 
@@ -294,7 +294,7 @@ export class Test {
     `).then((_analysis: Analyzer) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: State ".pretty[state|awesome]" has no value "wat" on Block "bar".\n  Did you mean: .pretty[state|awesome]? (7:9)');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: State ".pretty[state|awesome]" has no value "wat" on Block "bar".\n  Did you mean: .pretty[state|awesome]? (<unknown file>:7:9)');
     });
   }
 

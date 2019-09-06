@@ -98,7 +98,7 @@ export class Test {
       <div class={style}></div>;
     `,
     ).catch((err: Error) => {
-      assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
+      assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (<unknown file>:5:18)');
     });
   }
 
@@ -120,7 +120,7 @@ export class Test {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
-        assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (5:18)');
+        assert.equal(err.message, '[css-blocks] AnalysisError: First argument passed to "objstr" call must be an object literal. (<unknown file>:5:18)');
       });
   }
 
@@ -245,7 +245,7 @@ export class Test {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
-        assert.equal(err.message, `[css-blocks] AnalysisError: Undefined function for styling: objstr (4:18)`);
+        assert.equal(err.message, `[css-blocks] AnalysisError: Undefined function for styling: objstr (<unknown file>:4:18)`);
       });
   }
 
@@ -271,7 +271,7 @@ export class Test {
         assert.ok(false, "should not have succeeded.");
       },
       (err) => {
-        assert.equal(err.message, `[css-blocks] AnalysisError: Cannot override the objstr import of 'obj-str' (5:6)`);
+        assert.equal(err.message, `[css-blocks] AnalysisError: Cannot override the objstr import of 'obj-str' (<unknown file>:5:6)`);
       });
   }
 
@@ -296,7 +296,7 @@ export class Test {
     ).then((_analysis: Analyzer) => {
       assert.ok(false, "should not have succeeded.");
     },     (err) => {
-      assert.equal(err.message, `[css-blocks] MalformedBlockPath: Nested expressions are not allowed in block expressions. (8:9)`);
+      assert.equal(err.message, `[css-blocks] MalformedBlockPath: Nested expressions are not allowed in block expressions. (<unknown file>:8:9)`);
     });
   }
 

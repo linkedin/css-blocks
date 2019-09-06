@@ -2,6 +2,7 @@ import {
   Analysis,
   ResolvedConfiguration as CSSBlocksConfiguration,
   StyleMapping,
+  charInFile,
 } from "@css-blocks/core";
 import { PluginObj } from "babel-core";
 import { NodePath } from "babel-traverse";
@@ -219,7 +220,7 @@ function detectStrayReferenceToImport(
           if (!filename.endsWith("x")) {
             console.warn(`WARNING: For performance reasons, only jsx and tsx files are properly analyzed for block dependencies and rewritten. Consider renaming ${filename} to ${filename}x as well as any leading to importing it from the entry point.`);
           }
-          console.warn(`WARNING: Stray reference to block import (${specifier.local.name}). Imports are removed during rewrite so this will probably be a runtime error. (${filename}:${ref.node.loc.start.line}:${ref.node.loc.start.column})`);
+          console.warn(`WARNING: Stray reference to block import (${specifier.local.name}). Imports are removed during rewrite so this will probably be a runtime error. (${charInFile(filename, ref.node.loc.start)})`);
           console.warn(`WARNING: This usually happens when a style reference is incorrectly used outside a jsx expression. But sometimes when an application is improperly configured. Be sure that only files ending in jsx or tsx are involved in the importing of components using css blocks.`);
           // throw new TemplateAnalysisError(`Stray reference to block import (${specifier.local.name}). Imports are removed during rewrite.`, {filename, ...ref.node.loc.start});
         }

@@ -111,7 +111,7 @@ export class Test {
     `).then(() => {
       assert.equal("Should never get here", "");
     }).catch((err: Error) => {
-      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (4:8)`);
+      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (<unknown file>:4:8)`);
     });
   }
 
@@ -127,7 +127,7 @@ export class Test {
     `).then(() => {
       assert.equal("Should never get here", "");
     }).catch((err: Error) => {
-      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (4:8)`);
+      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (<unknown file>:4:8)`);
     });
   }
 
@@ -143,7 +143,7 @@ export class Test {
     `).then(() => {
       assert.equal("Should never get here", "");
     }).catch((err: Error) => {
-      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (4:8)`);
+      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (<unknown file>:4:8)`);
     });
   }
 
@@ -159,7 +159,7 @@ export class Test {
     `).then(() => {
       assert.equal("Should never get here", "");
     }).catch((err: Error) => {
-      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (3:6)`);
+      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (<unknown file>:3:6)`);
     });
   }
 
@@ -175,7 +175,7 @@ export class Test {
     `).then(() => {
       assert.equal("Should never get here", "");
     }).catch((err: Error) => {
-      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (4:8)`);
+      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (<unknown file>:4:8)`);
     });
   }
 
@@ -191,7 +191,7 @@ export class Test {
     `).then(() => {
       assert.equal("Should never get here", "");
     }).catch((err: Error) => {
-      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (4:8)`);
+      assert.equal(err.message, `[css-blocks] ImportError: Block identifier "biz" cannot be re-defined in any scope once imported. (<unknown file>:4:8)`);
     });
   }
 }

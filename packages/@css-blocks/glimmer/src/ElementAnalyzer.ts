@@ -4,6 +4,7 @@ import {
   BlockClass,
   ElementAnalysis,
   ResolvedConfiguration as CSSBlocksConfiguration,
+  charInFile,
 } from "@css-blocks/core";
 import { AST, print } from "@glimmer/syntax";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
@@ -68,7 +69,7 @@ export class ElementAnalyzer {
 
   private debugTemplateLocation(node: AnalyzableNodes) {
     let templatePath = this.cssBlocksOpts.importer.debugIdentifier(this.template.identifier, this.cssBlocksOpts);
-    return `${templatePath}:${node.loc.start.line}:${node.loc.start.column}`;
+    return charInFile(templatePath, node.loc.start);
   }
   private debugBlockPath() {
     return this.cssBlocksOpts.importer.debugIdentifier(this.block.identifier, this.cssBlocksOpts);

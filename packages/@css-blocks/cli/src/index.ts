@@ -5,7 +5,8 @@ import {
   Importer,
   NodeJsImporter,
   Preprocessors,
-  hasErrorPosition,
+  charInFile,
+  errorHasRange,
   hasMappedPosition,
 } from "@css-blocks/core";
 import chalk = require("chalk");
@@ -148,7 +149,7 @@ export class CLI {
         if (e instanceof CssBlockError) {
           let loc = e.location;
           let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFileRelative)}`;
-          if (!hasErrorPosition(loc)) {
+          if (!errorHasRange(loc)) {
             this.println(message, e.origMessage);
             continue;
           } else {
@@ -168,21 +169,20 @@ export class CLI {
 
   displayError(blockFileRelative: string, e: CssBlockError) {
     let loc = e.location;
-    if (!hasErrorPosition(loc)) {
-      return;
-    }
+    if (!loc) return;
+    if (!errorHasRange(loc)) return;
     let filename = path.relative(process.cwd(), path.resolve(loc && loc.filename || blockFileRelative));
     this.println("\t" + this.chalk.bold.redBright(e.origMessage));
     if (hasMappedPosition(loc)) {
       this.println(
         this.chalk.bold.white("\tAt compiled output of"),
-        this.chalk.bold.whiteBright(`${loc.generated.filename}:${loc.generated.start.line}:${loc.generated.start.column}`),
+        this.chalk.bold.whiteBright(charInFile(loc.generated)),
       );
       this.displaySnippet(extractLinesFromSource(loc.generated), loc.generated);
     }
     this.println(
       this.chalk.bold.white(hasMappedPosition(loc) ? "\tSource Mapped to" : "\tAt"),
-      this.chalk.bold.whiteBright(`${filename}:${loc.start.line}:${loc.start.column}`),
+      this.chalk.bold.whiteBright(charInFile(filename, loc.start)),
     );
     this.displaySnippet(extractLinesFromSource(loc), loc);
   }

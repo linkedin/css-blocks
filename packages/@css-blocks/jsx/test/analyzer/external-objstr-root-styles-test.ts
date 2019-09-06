@@ -32,7 +32,7 @@ export class Test {
         assert.ok(false, "should not have succeeded.");
       },
       e => {
-        assert.equal(e.message, "[css-blocks] AnalysisError: Cannot mix class names with block styles. (8:10)");
+        assert.equal(e.message, "[css-blocks] AnalysisError: Cannot mix class names with block styles. (<unknown file>:8:10)");
       });
   }
 
@@ -219,7 +219,7 @@ export class Test {
         assert.ok(false, "should not have succeeded.");
       },
       e => {
-        assert.equal(e.message, "[css-blocks] AnalysisError: illegal use of a style variable. (9:8)");
+        assert.equal(e.message, "[css-blocks] AnalysisError: illegal use of a style variable. (<unknown file>:9:8)");
       });
   }
 
@@ -244,7 +244,7 @@ export class Test {
         assert.ok(false, "should not have succeeded.");
       },
       e => {
-        assert.equal(e.message, "[css-blocks] AnalysisError: illegal assignment to a style variable. (9:8)");
+        assert.equal(e.message, "[css-blocks] AnalysisError: illegal assignment to a style variable. (<unknown file>:9:8)");
       });
   }
 

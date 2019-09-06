@@ -3,6 +3,7 @@ import * as propParser from "css-property-parser";
 import { postcss } from "opticss";
 
 import { AttrValue, BlockClass, Ruleset, Style, isBlockClass } from "../../BlockTree";
+import { charInFile } from "../../errors";
 import {
   ElementAnalysis,
   isAttrGroup,
@@ -131,9 +132,7 @@ function formatRulesetConflicts(prop: string, rules: Ruleset<Style>[]) {
     let decl = rule.declarations.get(prop);
     let nodes: postcss.Rule[] | postcss.Declaration[] =  decl ? decl.map((d) => d.node) : [rule.node];
     for (let node of nodes) {
-      let line = node.source && node.source.start && `:${node.source.start.line}` || "";
-      let column = node.source && node.source.start && `:${node.source.start.column}` || "";
-      out.add(`    ${rule.style.asSource(true)} (${rule.file}${line}${column})`);
+      out.add(`    ${rule.style.asSource(true)} (${charInFile(rule.file, node.source && node.source.start)})`);
     }
   }
   return [...out].join("\n");

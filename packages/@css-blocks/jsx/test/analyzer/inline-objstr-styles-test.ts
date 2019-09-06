@@ -72,7 +72,7 @@ export class Test {
       }
     `,
   ).catch((err: Error) => {
-      assert.equal(err.message, "[css-blocks] AnalysisError: The call to style function 'objstr' does not resolve to an import statement of a known style helper. (7:21)");
+      assert.equal(err.message, "[css-blocks] AnalysisError: The call to style function 'objstr' does not resolve to an import statement of a known style helper. (<unknown file>:7:21)");
     });
   }
 
@@ -91,7 +91,7 @@ export class Test {
       <div class={ wtf('nope') }></div>;
     `,
   ).catch((err: Error) => {
-      assert.equal(err.message, "[css-blocks] AnalysisError: Function called within class attribute value 'wtf' must be either an 'objstr' call, or a state reference (8:19)");
+      assert.equal(err.message, "[css-blocks] AnalysisError: Function called within class attribute value 'wtf' must be either an 'objstr' call, or a state reference (<unknown file>:8:19)");
     });
   }
 

@@ -1,45 +1,9 @@
+import { CssBlockError } from "@css-blocks/core";
 
 export interface ErrorLocation {
   filename?: string;
   line?: number;
   column?: number;
-}
-
-interface HasPrefix {
-  prefix?: string;
-}
-/**
- * Custom CSS Blocks error base class. Will format `SourceLocation` into thrown
- * error message if provided.
- */
-export class CssBlockError extends Error {
-  static prefix = "Error";
-  origMessage: string;
-  private _location?: ErrorLocation | void;
-  constructor(message: string, location?: ErrorLocation | void) {
-    super(message);
-    this.origMessage = message;
-    this._location = location;
-    super.message = this.annotatedMessage();
-  }
-
-  private annotatedMessage() {
-    let loc = this.location;
-    if (!loc) {
-      return this.origMessage;
-    }
-    let filename = loc.filename || "";
-    let line = loc.line ? `${filename ? ":" : ""}${loc.line}` : "";
-    let column = loc.column ? `:${loc.column}` : "";
-    let locMessage = ` (${filename}${line}${column})`;
-    let c = <HasPrefix>this.constructor;
-    return `[css-blocks] ${c.prefix || CssBlockError.prefix}: ${this.origMessage}${locMessage}`;
-  }
-
-  get location(): ErrorLocation | void {
-    return this._location;
-  }
-
 }
 
 /**

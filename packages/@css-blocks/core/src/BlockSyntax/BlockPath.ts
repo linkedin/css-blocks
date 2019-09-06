@@ -1,4 +1,4 @@
-import { BlockPathError, ErrorLocation, Position, hasErrorPosition } from "../errors";
+import { BlockPathError, ErrorLocation, Position, errorHasRange } from "../errors";
 
 import {
   ATTR_PRESENT,
@@ -137,7 +137,7 @@ export class BlockPath {
     let end: Position | undefined;
     if (this._location) {
       filename = this._location.filename;
-      if (hasErrorPosition(this._location)) {
+      if (errorHasRange(this._location)) {
         start = { ...this._location.start };
         end = { ...this._location.end };
       } else {
