@@ -9,7 +9,6 @@ const scss: Preprocessors["scss"] = async (fullPath, content, _configuration, _s
         outFile: fullPath.replace("scss", "css"),
         data: content,
         sourceMap: true,
-        sourceMapContents: true,
         outputStyle: "expanded",
         indentedSyntax: false,
       },
