@@ -63,17 +63,18 @@ export class BlockParser {
     let importer = this.config.importer;
     let debugIdent = importer.debugIdentifier(identifier, this.config);
     let sourceFile = importer.filesystemPath(identifier, this.config) || debugIdent;
+    let configuration = this.factory.configuration;
     debug(`Begin parse: "${debugIdent}"`);
 
     // Discover the block's preferred name.
-    name = await discoverName(this.factory.configuration, root, name, sourceFile);
+    name = await discoverName(configuration, root, name, sourceFile);
 
     // Create our new Block object and save reference to the raw AST.
     let block = new Block(name, identifier, root);
 
     // Throw if we encounter any `!important` decls.
     debug(` - Disallow Import`);
-    await disallowImportant(this.factory.configuration, root, sourceFile);
+    await disallowImportant(configuration, root, sourceFile);
     // Discover and parse all block references included by this block.
     debug(` - Import Blocks`);
     await importBlocks(block, this.factory, sourceFile);
@@ -82,21 +83,21 @@ export class BlockParser {
     await exportBlocks(block, this.factory, sourceFile);
     // Handle any global attributes defined by this block.
     debug(` - Global Attributes`);
-    await globalAttributes(this.factory.configuration, root, block, sourceFile);
+    await globalAttributes(configuration, root, block, sourceFile);
     // Parse all block styles and build block tree.
     debug(` - Construct Block`);
-    await constructBlock(this.factory.configuration, root, block, debugIdent);
+    await constructBlock(configuration, root, block, debugIdent);
     // Verify that external blocks referenced have been imported, have defined the attribute being selected, and have marked it as a global state.
     debug(` - Assert Foreign Globals`);
-    await assertForeignGlobalAttribute(this.factory.configuration, root, block, debugIdent);
+    await assertForeignGlobalAttribute(configuration, root, block, debugIdent);
     // Construct block extensions and validate.
     debug(` - Extend Block`);
-    await extendBlock(this.factory.configuration, root, block, debugIdent);
+    await extendBlock(configuration, root, block, debugIdent);
     // Validate that all required Styles are implemented.
     debug(` - Implement Block`);
-    await implementBlock(this.factory.configuration, root, block, debugIdent);
+    await implementBlock(configuration, root, block, debugIdent);
     // Register all block compositions.
-    await composeBlock(this.factory.configuration, root, block, debugIdent);
+    await composeBlock(configuration, root, block, debugIdent);
     // Log any debug statements discovered.
     debug(` - Process Debugs`);
     await processDebugStatements(root, block, debugIdent, this.config);
