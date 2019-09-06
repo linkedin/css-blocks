@@ -194,10 +194,3 @@ function isGreaterPosition(p1: SourcePosition, p2: SourcePosition): boolean {
   return p1.line === p2.line && p1.column > p2.column
       || p1.line > p2.line;
 }
-
-// function samePosition(p1: NullableMappedPosition, p2: NullableMappedPosition): boolean {
-//   return p1.column === p2.column &&
-//          p1.line === p2.line &&
-//          p1.source === p2.source &&
-//          p1.name === p2.name;
-// }
