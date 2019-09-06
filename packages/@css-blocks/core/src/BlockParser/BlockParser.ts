@@ -73,7 +73,7 @@ export class BlockParser {
     let block = new Block(name, identifier, root);
 
     // Throw if we encounter any `!important` decls.
-    debug(` - Disallow Import`);
+    debug(` - Disallow Important`);
     await disallowImportant(configuration, root, sourceFile);
     // Discover and parse all block references included by this block.
     debug(` - Import Blocks`);
