@@ -147,6 +147,7 @@ export class BlockPath {
       end.column = start.column + this.walker.index();
       start.column = start.column + this.walker.index() - len;
     }
+    // TODO: Add sourcemap handling.
     throw new BlockPathError(msg, {filename, start, end});
   }
 
