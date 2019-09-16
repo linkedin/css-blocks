@@ -3,7 +3,7 @@
   "author": "Chris Eppstein",
   "description": "Configuration and tools to manage the code style of css-blocks.",
   "license": "BSD-2-Clause",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "main": "configs/tslint.interactive.json",
   "readme": "README.md",
   "keywords": [

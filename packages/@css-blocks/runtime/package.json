@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/runtime",
-  "version": "0.23.2",
+  "version": "0.24.0",
   "description": "Browser runtime for computing dynamic classnames with css-blocks.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -36,6 +36,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "@css-blocks/code-style": "^0.23.0"
+    "@css-blocks/code-style": "^0.24.0"
   }
 }

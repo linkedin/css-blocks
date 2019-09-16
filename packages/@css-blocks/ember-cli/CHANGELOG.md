@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.24.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v0.23.2...v0.24.0) (2019-09-16)
+
+
+### Bug Fixes
+
+* Respect custom Ember module names. ([#303](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/issues/303)) ([8732070](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/8732070))
+
+
+### Features
+
+* Invalidate handlebar template caches when dependent blocks change. ([e3fd6f2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/e3fd6f2))
+
+
+
+
+
 <a name="0.23.2"></a>
 ## [0.23.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v0.23.1...v0.23.2) (2019-06-13)
 

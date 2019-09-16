@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/cli",
-  "version": "0.23.1",
+  "version": "0.24.0",
   "description": "Command line interface to css-blocks.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -47,16 +47,16 @@
     "access": "public"
   },
   "devDependencies": {
-    "@css-blocks/code-style": "^0.23.0",
+    "@css-blocks/code-style": "^0.24.0",
+    "@types/fs-extra": "^8.0.0",
     "@types/node-sass": "^4.11.0",
     "@types/yargs": "^13.0.0",
-    "@types/fs-extra": "^8.0.0",
     "node-sass": "^4.12.0",
     "typescript": "~3.5",
     "watch": "^1.0.2"
   },
   "dependencies": {
-    "@css-blocks/core": "^0.23.0",
+    "@css-blocks/core": "^0.24.0",
     "chalk": "^2.4.2",
     "debug": "^4.1.1",
     "fs-extra": "^8.0.0",

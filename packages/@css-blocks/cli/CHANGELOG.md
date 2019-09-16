@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.24.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v0.23.2...v0.24.0) (2019-09-16)
+
+
+### Features
+
+* Display block import references in error output. ([190993f](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/190993f)), closes [#248](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/issues/248)
+* Display selector error locations using sourcemaps. ([78756f2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/78756f2))
+* Track ranges instead of only the start position for errors. ([f7f2dfb](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/f7f2dfb))
+* Use sourcemaps for errors involving non-selector nodes. ([f7b53fd](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/f7b53fd))
+* **cli:** Display error in context with the source file's contents. ([2317880](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/2317880))
+
+
+
+
+
 <a name="0.23.1"></a>
 ## [0.23.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v0.23.0...v0.23.1) (2019-05-09)
 

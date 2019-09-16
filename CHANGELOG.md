@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.24.0](https://github.com/linkedin/css-blocks/compare/v0.23.2...v0.24.0) (2019-09-16)
+
+
+### Bug Fixes
+
+* Respect custom Ember module names. ([#303](https://github.com/linkedin/css-blocks/issues/303)) ([8732070](https://github.com/linkedin/css-blocks/commit/8732070))
+
+
+### Features
+
+* Display block import references in error output. ([190993f](https://github.com/linkedin/css-blocks/commit/190993f)), closes [#248](https://github.com/linkedin/css-blocks/issues/248)
+* Display selector error locations using sourcemaps. ([78756f2](https://github.com/linkedin/css-blocks/commit/78756f2))
+* Invalidate handlebar template caches when dependent blocks change. ([e3fd6f2](https://github.com/linkedin/css-blocks/commit/e3fd6f2))
+* Use sourcemaps for errors involving non-selector nodes. ([f7b53fd](https://github.com/linkedin/css-blocks/commit/f7b53fd))
+* **cli:** Display error in context with the source file's contents. ([2317880](https://github.com/linkedin/css-blocks/commit/2317880))
+* Track ranges instead of only the start position for errors. ([f7f2dfb](https://github.com/linkedin/css-blocks/commit/f7f2dfb))
+
+
+
+
+
 <a name="0.23.2"></a>
 ## [0.23.2](https://github.com/linkedin/css-blocks/compare/v0.23.1...v0.23.2) (2019-06-13)
 
