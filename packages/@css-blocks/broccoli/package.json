@@ -41,7 +41,7 @@
     "@css-blocks/core": "^0.23.0",
     "@glimmer/compiler": "^0.42.0",
     "@glimmer/syntax": "^0.42.0",
-    "@opticss/template-api": "^0.6.2",
+    "@opticss/template-api": "^0.6.3",
     "broccoli-funnel": "^2.0.1",
     "broccoli-merge-trees": "^3.0.0",
     "broccoli-plugin": "^3.0.0",
@@ -50,7 +50,7 @@
     "fs-extra": "^8.0.0",
     "fs-tree-diff": "^2.0.0",
     "glob": "^7.1.2",
-    "opticss": "^0.6.2",
+    "opticss": "^0.6.3",
     "symlink-or-copy": "^1.2.0",
     "walk-sync": "^2.0.0"
   }

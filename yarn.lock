@@ -40,7 +40,7 @@
     semver "^5.4.1"
     source-map "^0.5.0"
 
-"@babel/generator@^7.4.4":
+"@babel/generator@^7.4.4", "@babel/generator@^7.6.0":
   version "7.6.0"
   resolved "https://registry.npmjs.org/@babel/generator/-/generator-7.6.0.tgz#e2c21efbfd3293ad819a2359b448f002bfdfda56"
   integrity sha512-Ms8Mo7YBdMMn1BYuNtKuP/z0TgEIhbcyB8HVR6PPNYp4P61lMsABiS4A3VG1qznjXVCf3r+fVHhm4efTYVsySA==
@@ -229,14 +229,14 @@
     "@babel/traverse" "^7.1.0"
     "@babel/types" "^7.2.0"
 
-"@babel/helpers@^7.5.5":
-  version "7.5.5"
-  resolved "https://registry.npmjs.org/@babel/helpers/-/helpers-7.5.5.tgz#63908d2a73942229d1e6685bc2a0e730dde3b75e"
-  integrity sha512-nRq2BUhxZFnfEn/ciJuhklHvFOqjJUD5wpx+1bxUF2axL9C+v4DE/dmp5sT2dKnpOs4orZWzpAZqlCy8QqE/7g==
+"@babel/helpers@^7.4.4":
+  version "7.6.0"
+  resolved "https://registry.npmjs.org/@babel/helpers/-/helpers-7.6.0.tgz#21961d16c6a3c3ab597325c34c465c0887d31c6e"
+  integrity sha512-W9kao7OBleOjfXtFGgArGRX6eCP0UEcA2ZWEWNkJdRZnHhW4eEbeswbG3EwaRsnQUAEGWYgMq1HsIXuNNNy2eQ==
   dependencies:
-    "@babel/template" "^7.4.4"
-    "@babel/traverse" "^7.5.5"
-    "@babel/types" "^7.5.5"
+    "@babel/template" "^7.6.0"
+    "@babel/traverse" "^7.6.0"
+    "@babel/types" "^7.6.0"
 
 "@babel/highlight@^7.0.0":
   version "7.5.0"
@@ -256,6 +256,11 @@
   version "7.5.5"
   resolved "https://registry.npmjs.org/@babel/parser/-/parser-7.5.5.tgz#02f077ac8817d3df4a832ef59de67565e71cca4b"
   integrity sha512-E5BN68cqR7dhKan1SfqgPGhQ178bkVKpXTPEXnFJBrEt8/DKRZlybmy+IgYLTeN7tp1R5Ccmbm2rBk17sHYU3g==
+
+"@babel/parser@^7.6.0":
+  version "7.6.0"
+  resolved "https://registry.npmjs.org/@babel/parser/-/parser-7.6.0.tgz#3e05d0647432a8326cb28d0de03895ae5a57f39b"
+  integrity sha512-+o2q111WEx4srBs7L9eJmcwi655eD8sXniLqMB93TBK9GrNzGrxDWSjiqz2hLU0Ha8MTXFIP0yd9fNdP+m43ZQ==
 
 "@babel/plugin-proposal-async-generator-functions@^7.2.0":
   version "7.2.0"
@@ -702,6 +707,15 @@
     "@babel/parser" "^7.4.4"
     "@babel/types" "^7.4.4"
 
+"@babel/template@^7.6.0":
+  version "7.6.0"
+  resolved "https://registry.npmjs.org/@babel/template/-/template-7.6.0.tgz#7f0159c7f5012230dad64cca42ec9bdb5c9536e6"
+  integrity sha512-5AEH2EXD8euCk446b7edmgFdub/qfH1SN6Nii3+fyXP807QRx9Q73A2N5hNwRRslC2H9sNzaFhsPubkS4L8oNQ==
+  dependencies:
+    "@babel/code-frame" "^7.0.0"
+    "@babel/parser" "^7.6.0"
+    "@babel/types" "^7.6.0"
+
 "@babel/traverse@^7.1.0", "@babel/traverse@^7.4.4":
   version "7.4.5"
   resolved "https://registry.npmjs.org/@babel/traverse/-/traverse-7.4.5.tgz#4e92d1728fd2f1897dafdd321efbff92156c3216"
@@ -716,6 +730,21 @@
     debug "^4.1.0"
     globals "^11.1.0"
     lodash "^4.17.11"
+
+"@babel/traverse@^7.4.5", "@babel/traverse@^7.6.0":
+  version "7.6.0"
+  resolved "https://registry.npmjs.org/@babel/traverse/-/traverse-7.6.0.tgz#389391d510f79be7ce2ddd6717be66d3fed4b516"
+  integrity sha512-93t52SaOBgml/xY74lsmt7xOR4ufYvhb5c5qiM6lu4J/dWGMAfAh6eKw4PjLes6DI6nQgearoxnFJk60YchpvQ==
+  dependencies:
+    "@babel/code-frame" "^7.5.5"
+    "@babel/generator" "^7.6.0"
+    "@babel/helper-function-name" "^7.1.0"
+    "@babel/helper-split-export-declaration" "^7.4.4"
+    "@babel/parser" "^7.6.0"
+    "@babel/types" "^7.6.0"
+    debug "^4.1.0"
+    globals "^11.1.0"
+    lodash "^4.17.13"
 
 "@babel/traverse@^7.5.5":
   version "7.5.5"
@@ -2219,27 +2248,27 @@
   resolved "https://registry.npmjs.org/@opticss/code-style/-/code-style-0.6.0.tgz#3475e6420c4d6c4bdd7445eb793ae83bfbbf915d"
   integrity sha512-K0n2/idu5E6Whauz26qeEAuA5S3jke+KTACwoLso9LVQ/GTieo/Cxs0q0tQn+O/4LpMCINHeleIxYa7qfx+guA==
 
-"@opticss/element-analysis@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.npmjs.org/@opticss/element-analysis/-/element-analysis-0.6.1.tgz#437ad611cd5e7396970995bb261e84b52ae86084"
-  integrity sha512-16aSUj+0a4+sAM3EpsblFolR8L1QSnaYp5YrBy0Q1duBxMyC3Bev3v3Ko3pkhxoIKWsg2ols8+V+W3fVnVsFwg==
-  dependencies:
-    "@opticss/util" "^0.6.1"
-
-"@opticss/template-api@^0.6.2":
+"@opticss/element-analysis@^0.6.2":
   version "0.6.2"
-  resolved "https://registry.npmjs.org/@opticss/template-api/-/template-api-0.6.2.tgz#81676186519ce60d58ced70792d636be4ba65c19"
-  integrity sha512-247Ox16VvBDJS8bx1hi+s3xkIC0xSQ4CwgL+yziO0rf9W0epESDMqh+nCpbq8jXEWqm+OdLeBc6OfkDNJQwrPQ==
+  resolved "https://registry.npmjs.org/@opticss/element-analysis/-/element-analysis-0.6.2.tgz#da8b7453d168a080aae02bff9987a4125e03c696"
+  integrity sha512-rdh4zJjr36opHpZbzMzhVkMzhP1fFD7g6XRU5hOY8pncCj1sugpOBfSO0UUr4HM2KIqz/H5yA23i28EyQ5wWRA==
   dependencies:
-    "@opticss/element-analysis" "^0.6.1"
-    "@opticss/util" "^0.6.1"
+    "@opticss/util" "^0.7.0"
+
+"@opticss/template-api@^0.6.3":
+  version "0.6.3"
+  resolved "https://registry.npmjs.org/@opticss/template-api/-/template-api-0.6.3.tgz#fdacfd8371d65eb597813c8b92070ed8a366ad09"
+  integrity sha512-WJbykPO8Qk4HZbPW+5ikmML/7zTTMlecXNCfMxQF1qB8k1pKxdW0tV+Ab8YcQv8udoPXKTJxrNBDqiaYxXecWQ==
+  dependencies:
+    "@opticss/element-analysis" "^0.6.2"
+    "@opticss/util" "^0.7.0"
     postcss "^7.0.14"
     typescript-collections "^1.2.5"
 
-"@opticss/util@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.npmjs.org/@opticss/util/-/util-0.6.1.tgz#579ebfcb73acb0ac773df2299e4d11c695afb021"
-  integrity sha512-AauoF1r41Quz07rOIhk2Z4f7xQ4RMtKzUcEFf9LZeqdGvIm2rx0JGlTzD57oYm8Ami7SpM1YSGS+vRcZCLaifw==
+"@opticss/util@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.npmjs.org/@opticss/util/-/util-0.7.0.tgz#47075cd77294f9e1048b3f862202a3c3945648db"
+  integrity sha512-gw9VJfwyrshMBdzWaKrtbU1+ot2KX3LuQYFUR9DawCe8HQWUH+kWiVctugZwb2SmW4SBNFdNmcQdceziXKh6Uw==
   dependencies:
     typescript-collections "^1.2.5"
 
@@ -2293,6 +2322,11 @@
   dependencies:
     "@types/events" "*"
     "@types/node" "*"
+
+"@types/anymatch@*":
+  version "1.3.1"
+  resolved "https://registry.npmjs.org/@types/anymatch/-/anymatch-1.3.1.tgz#336badc1beecb9dacc38bea2cf32adf627a8421a"
+  integrity sha512-/+CRPXpBDpo2RK9C68N3b2cOvO0Cf5B9aPijHsoDQTHivnGSObdOF2BRQOYjojWTDy6nQvMjmqRXIxH55VjxxA==
 
 "@types/async@^2.0.40":
   version "2.0.49"
@@ -2564,9 +2598,10 @@
   resolved "https://registry.npmjs.org/@types/symlink-or-copy/-/symlink-or-copy-1.2.0.tgz#4151a81b4052c80bc2becbae09f3a9ec010a9c7a"
   integrity sha512-Lja2xYuuf2B3knEsga8ShbOdsfNOtzT73GyJmZyY7eGl2+ajOqrs8yM5ze0fsSoYwvA6bw7/Qr7OZ7PEEmYwWg==
 
-"@types/tapable@1.0.4":
+"@types/tapable@*", "@types/tapable@1.0.4":
   version "1.0.4"
   resolved "https://registry.npmjs.org/@types/tapable/-/tapable-1.0.4.tgz#b4ffc7dc97b498c969b360a41eee247f82616370"
+  integrity sha512-78AdXtlhpCHT0K3EytMpn4JNxaf5tbqbLcbIRoQIHzpTIyjpxLQKRoxU55ujBXAtg3Nl2h/XWvfDa9dsMOd0pQ==
 
 "@types/tapable@^0.2.4":
   version "0.2.5"
@@ -2577,6 +2612,13 @@
   version "0.0.33"
   resolved "https://registry.npmjs.org/@types/tmp/-/tmp-0.0.33.tgz#1073c4bc824754ae3d10cfab88ab0237ba964e4d"
   integrity sha1-EHPEvIJHVK49EM+riKsCN7qWTk0=
+
+"@types/uglify-js@*":
+  version "3.0.4"
+  resolved "https://registry.npmjs.org/@types/uglify-js/-/uglify-js-3.0.4.tgz#96beae23df6f561862a830b4288a49e86baac082"
+  integrity sha512-SudIN9TRJ+v8g5pTG8RRCqfqTMNqgWCKKd3vtynhGzkIIjxaicNAMuY5TRadJ6tzDu3Dotf3ngaMILtmOdmWEQ==
+  dependencies:
+    source-map "^0.6.1"
 
 "@types/webpack-merge@4.1.5":
   version "4.1.5"
@@ -5018,7 +5060,7 @@ broccoli@^1.1.0:
     tmp "0.0.31"
     underscore.string "^3.2.2"
 
-broccoli@^2.0.0:
+broccoli@^2.0.0, broccoli@^2.3.0:
   version "2.3.0"
   resolved "https://registry.npmjs.org/broccoli/-/broccoli-2.3.0.tgz#b3f71b2c3d02fc042988e208827a09c75dd7b350"
   integrity sha512-TeYMYlCGFK8EGk4Wce1G1uU3i52+YxRqP3WPOVDojC1zUk+Gi40wHBzUT2fncQZDl26dmCQMNugtHKjvUpcGQg==
@@ -7681,7 +7723,7 @@ ember-resolver@^5.0.0:
     ember-cli-version-checker "^3.0.0"
     resolve "^1.10.0"
 
-ember-rfc176-data@^0.3.11, ember-rfc176-data@^0.3.12:
+ember-rfc176-data@^0.3.11, ember-rfc176-data@^0.3.12, ember-rfc176-data@^0.3.9:
   version "0.3.12"
   resolved "https://registry.npmjs.org/ember-rfc176-data/-/ember-rfc176-data-0.3.12.tgz#90d82878e69e2ac9a5438e8ce14d12c6031c5bd2"
   integrity sha512-g9HeZj/gU5bfIIrGXkP7MhS2b3Vu5DfNUrYr14hy99TgIvtZETO+96QF4WOEUXGjIJdfTRjerVnQlqngPQSv1g==
@@ -13031,14 +13073,14 @@ opn@^5.1.0, opn@^5.5.0:
   dependencies:
     is-wsl "^1.1.0"
 
-opticss@^0.6.2:
-  version "0.6.2"
-  resolved "https://registry.npmjs.org/opticss/-/opticss-0.6.2.tgz#37fc1d8a7b91089a17e673af679648f4ab2027fe"
-  integrity sha512-OcFG4pfmsfdid4/5Vt0lscprGnfso8fjtOOfj6oYKx0/yVjC7tz8WR01yrCPjPulaNisiTdRlFXMOqWgJ1UqIA==
+opticss@^0.6.3:
+  version "0.6.3"
+  resolved "https://registry.npmjs.org/opticss/-/opticss-0.6.3.tgz#f6141e707cdb7b7b1619b3bbd576dc21cd3f0c59"
+  integrity sha512-CCcIh0wcOUo300XsioG7NYvI9Q3y7suhmENpXRw1e68us4tQgPjP22pEJnPET6EkO742a7/y+0qoSGzGA2lRlg==
   dependencies:
-    "@opticss/element-analysis" "^0.6.1"
-    "@opticss/template-api" "^0.6.2"
-    "@opticss/util" "^0.6.1"
+    "@opticss/element-analysis" "^0.6.2"
+    "@opticss/template-api" "^0.6.3"
+    "@opticss/util" "^0.7.0"
     "@types/debug" "4.1.4"
     concat-with-sourcemaps "^1.0.4"
     css-property-parser "^1.0.5"
@@ -15588,6 +15630,11 @@ slash@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/slash/-/slash-2.0.0.tgz#de552851a1759df3a8f206535442f5ec4ddeab44"
   integrity sha512-ZYKh3Wh2z1PpEXWr0MpSBZ0V6mZHAQfYevttO11c51CaWjGTaadiKZ+wVt1PbMlDV5qhMFslpZCemhwOK7C89A==
+
+slash@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
+  integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
 slice-ansi@^2.1.0:
   version "2.1.0"
