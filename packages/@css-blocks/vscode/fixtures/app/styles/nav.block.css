@@ -1,0 +1,11 @@
+:scope {
+  color: red;
+}
+
+.foo {
+  color: green;
+}
+
+.foo.bar {
+  color: blue;
+}

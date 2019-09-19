@@ -1,0 +1,33 @@
+{
+	"name": "@css-blocks/vscode",
+	"description": "VSCode part of CSS Blocks' language server",
+	"author": "LinkedIn",
+	"license": "BSD-2-Clause",
+	"version": "0.0.1",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/LinkedIn/css-blocks"
+	},
+	"engines": {
+		"vscode": "^1.33.0"
+	},
+	"activationEvents": [
+	  "onLanguage:handlebars",
+	  "onLanguage:scss",
+	  "onLanguage:css"
+	],
+	"main": "./out/extension",
+	"scripts": {
+		"update-vscode": "vscode-install",
+		"postinstall": "vscode-install",
+		"compile": "tsc --build",
+    "watch": "tsc --build --watch"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^5.2.1",
+		"@css-blocks/language-server": "^0.0.1"
+	},
+	"devDependencies": {
+		"vscode": "^1.1.35"
+	}
+}
