@@ -39,6 +39,12 @@
 		},
 		{
 			"path": "packages/@css-blocks/cli"
+		},
+		{
+			"path": "packages/@css-blocks/vscode"
+		},
+		{
+			"path": "packages/@css-blocks/language-server"
 		}
 	],
 	"settings": {
