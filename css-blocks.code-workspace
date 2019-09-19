@@ -64,6 +64,7 @@
 			"typings",
 			"**/package.json"
 		],
-		"typescript.tsdk": "Workspace Root/node_modules/typescript/lib"
+		"typescript.tsdk": "Workspace Root/node_modules/typescript/lib",
+		"npm.packageManager": "yarn"
 	}
 }
