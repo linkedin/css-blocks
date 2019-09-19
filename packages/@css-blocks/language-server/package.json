@@ -1,4 +1,5 @@
 {
+	"private": true,
 	"name": "@css-blocks/language-server",
 	"description": "CSS Blocks Language Server",
 	"version": "0.0.1",
