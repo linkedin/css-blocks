@@ -51,7 +51,7 @@
     "ember-load-initializers": "^2.0.0",
     "ember-maybe-import-regenerator": "^0.1.6",
     "ember-resolver": "^5.0.0",
-    "ember-source": "~3.11.0",
+    "ember-source": "~3.13.0",
     "ember-try": "^1.1.0",
     "eslint-plugin-ember": "^7.0.0",
     "eslint-plugin-node": "^9.0.0",
