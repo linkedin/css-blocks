@@ -20,6 +20,9 @@ export class BlockInheritance extends BEMProcessor {
 
     let filename = "widget.block.css";
     let inputCSS = `@block app from "./app.block.css";
+                    app[state|is-loading] :scope {
+                      border: none;
+                    }
                     app[state|is-loading] .b {
                       border: none;
                     }`;
@@ -28,6 +31,7 @@ export class BlockInheritance extends BEMProcessor {
       imports.assertImported("app.block.css");
       assert.deepEqual(
         result.css.toString(),
+        ".app--is-loading .widget { border: none; }\n" +
         ".app--is-loading .widget__b { border: none; }\n",
       );
     });

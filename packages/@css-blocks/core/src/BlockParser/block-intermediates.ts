@@ -99,6 +99,8 @@ export function isExternalBlock(object: NodeAndType): boolean {
  * @param object The NodeAndType's descriptor object.
  */
 export function isRootLevelObject(object: NodeAndType): object is RootAttributeNode | RootClassNode {
+  // Exclude foreign blocks from being considered root level objects.
+  if (object.blockType === BlockType.attribute && object.blockName) return false;
   return object.blockType === BlockType.root || object.blockType === BlockType.attribute;
 }
 
