@@ -5,6 +5,7 @@ import {
   StyleMapping,
   resolveConfiguration,
 } from "@css-blocks/core";
+import { DEFAULT_EXPORT } from "@css-blocks/core/dist/src/BlockSyntax";
 import {
   AST,
   ASTPlugin,
@@ -19,7 +20,6 @@ import { ElementAnalyzer } from "./ElementAnalyzer";
 import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
 import { CONCAT_HELPER_NAME } from "./helpers";
 import { ResolvedFile, TEMPLATE_TYPE } from "./Template";
-import { DEFAULT_EXPORT } from "@css-blocks/core/dist/src/BlockSyntax";
 
 // TODO: The state namespace should come from a config option.
 const STYLE_ATTR = /^(class$|state:)/;

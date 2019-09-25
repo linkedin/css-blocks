@@ -3,11 +3,11 @@ import { postcss } from "opticss";
 
 import { Analyzer } from "../Analyzer";
 import {
+  BLOCK_AT_RULES,
   BLOCK_DEBUG,
   BLOCK_PROP_NAMES_RE,
   ROOT_CLASS,
   parseBlockDebug,
-  BLOCK_AT_RULES,
 } from "../BlockSyntax";
 import { Block } from "../BlockTree";
 import {

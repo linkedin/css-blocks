@@ -13,7 +13,7 @@ export class BlockInterfaceTests extends BEMProcessor {
       () => {
         assert(false, `Error ${errorType.name} was not raised.`);
       },
-      (reason) => {
+      (reason: Error) => {
         assert(reason instanceof errorType, reason.toString());
         assert.deepEqual(reason.message, message);
       });

@@ -159,7 +159,7 @@ export class Block
    *   A single dot by itself returns the current block.
    * @returns The Style referenced at the supplied path.
    */
-  public externalLookup(path: string | BlockPath, errLoc?: SourceLocation): Styles | undefined {
+  public externalLookup(path: string | BlockPath, errLoc?: SourceRange | SourceFile): Styles | undefined {
     path = new BlockPath(path);
     let block = this.getExportedBlock(path.block);
     if (!block) {
@@ -180,8 +180,6 @@ export class Block
 
     return attr || klass || undefined;
   }
-
-
 
   /**
    * Add an absolute, normalized path as a compilation dependency. This is used

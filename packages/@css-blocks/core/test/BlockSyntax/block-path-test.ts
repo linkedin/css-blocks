@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
-import { BlockPath, ERRORS, DEFAULT_EXPORT } from "../../src/BlockSyntax";
+import { BlockPath, DEFAULT_EXPORT, ERRORS  } from "../../src/BlockSyntax";
 import { ErrorLocation } from "../../src/errors";
 
 function parseBlockPath(blockPath: string, loc?: ErrorLocation): BlockPath {

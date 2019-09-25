@@ -15,13 +15,13 @@ import { ObjectDictionary, objectValues } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
 import { BlockFactory } from "../BlockParser";
+import { DEFAULT_EXPORT } from "../BlockSyntax";
 import { Block, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 
 import { Analyzer } from "./Analyzer";
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
 import { TemplateValidator, TemplateValidatorOptions } from "./validations";
-import { DEFAULT_EXPORT } from "../BlockSyntax";
 
 /**
  * This interface defines a JSON friendly serialization
