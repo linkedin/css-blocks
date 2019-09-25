@@ -393,6 +393,22 @@ export class Block
     return map;
   }
 
+  /**
+   * Return all the style aliases defined on the block.
+   * @param shallow Pass true to not include inherited objects.
+   * @returns Array of style aliases.
+   */
+  getAllStyleAliases(shallow?: boolean): Set<string> {
+    let result = new Set<string>();
+    for (let blockClass of this.classes) {
+      result = new Set([...result, ...blockClass.getStyleAliases()]);
+    }
+    if (!shallow && this.base) {
+      result = new Set([...result, ...this.base.getAllStyleAliases(shallow)]);
+    }
+    return result;
+  }
+
   nodeAsStyle(node: selectorParser.Node): [Styles, number] | null {
     if (selectorParser.isTag(node)) {
       let otherBlock = this.getReferencedBlock(node.value);
@@ -500,8 +516,10 @@ export class Block
     let result: string[] = [`Source: ${this.identifier}`];
 
     // Log Root Class and all children first at root level.
-    const classes = this.rootClass.cssClasses(config).join(".");
-    result.push(`${ROOT_CLASS} (.${classes})`, ...this.rootClass.debug(config));
+    const classes = [...this.rootClass.cssClasses(config)].join(".");
+    const aliases = this.rootClass.getStyleAliases();
+
+    result.push(`${ROOT_CLASS} (.${classes}${aliases.size ? `, aliases: .${[...aliases].join(" .")}` : ""})`, ...this.rootClass.debug(config));
 
     // Log all BlockClasses and children at second level.
     let sourceNames = new Set<string>(this.resolveChildren().map(s => s.asSource()));

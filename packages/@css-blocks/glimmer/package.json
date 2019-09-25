@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "test": "yarn run test:runner",
-    "test:runner": "mocha --opts test/mocha.opts dist/cjs/test",
+    "test:runner": "mocha --opts test/mocha.opts dist/cjs/test/template-rewrite-test.js",
     "compile": "tsc --version && tsc --build && tsc --build tsconfig.amd.json",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
@@ -52,7 +52,8 @@
     "@css-blocks/code-style": "^0.24.0",
     "@types/fs-extra": "^8.0.0",
     "@types/glob": "^7.1.1",
-    "watch": "^1.0.2"
+    "watch": "^1.0.2",
+    "typescript": "~3.6"
   },
   "dependencies": {
     "@amiller-gh/glimmer-analyzer": "^0.4.0",

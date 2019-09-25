@@ -67,8 +67,8 @@ describe("Template Rewriting", function() {
 
     // TODO why is `f` class both static and dynamic?
     assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="b">
-        <h1 class="e">Hello, <span class="f c {{-css-blocks-classnames 2 3 2 isThick 1 2 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2}}">World</span>!</h1>
+      <div class="my-alias-for-scope b">
+        <h1 class="e">Hello, <span class="f c {{-css-blocks-classnames 2 4 2 isThick 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "my-alias-for-state" 2 "d" 3}}">World</span>!</h1>
       </div>
     `));
     assert.deepEqual(minify(result.css.toString()), minify(`

@@ -1,6 +1,7 @@
 import { CompoundSelector, ParsedSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
-import { Block, Style } from "../../BlockTree";
+import { BLOCK_ALIAS } from "../../BlockSyntax";
+import { AttrValue, Block, BlockClass, Style } from "../../BlockTree";
 import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { selectorSourceRange as range, sourceRange } from "../../SourceLocation";
@@ -85,9 +86,9 @@ export async function constructBlock(configuration: Configuration, root: postcss
         // If this is the key selector, save this ruleset on the created style.
         if (isKey) {
           if (foundStyles.blockAttrs.length) {
-            foundStyles.blockAttrs.map(s => styleRuleTuples.add([s, rule]));
+            foundStyles.blockAttrs.map(s => addStyleRules(s, rule, styleRuleTuples));
           } else {
-            foundStyles.blockClasses.map(s => styleRuleTuples.add([s, rule]));
+            foundStyles.blockClasses.map(s => addStyleRules(s, rule, styleRuleTuples));
           }
         }
 
@@ -103,6 +104,17 @@ export async function constructBlock(configuration: Configuration, root: postcss
   }
 
   return block;
+}
+
+function addStyleRules(style: AttrValue | BlockClass, rule: postcss.Rule, tuple: Set<[Style, postcss.Rule]>): void {
+  rule.walkDecls(BLOCK_ALIAS, decl => {
+    // TODO: check for errors
+    // 1. check that the only separators are spaces
+    // 2. check that there are no block aliases to complex selectors
+    style.setStyleAliases(new Set(decl.value.split(/\s+/)));
+    decl.remove();
+  });
+  tuple.add([style, rule]);
 }
 
 /**

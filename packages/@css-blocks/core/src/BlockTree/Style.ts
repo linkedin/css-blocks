@@ -24,6 +24,9 @@ export abstract class Style<
   /** cache of resolveStyles() */
   private _resolvedStyles: Set<Self> | undefined;
 
+  /** cache of all style aliases */
+  private _styleAliases: Set<string> | undefined;
+
   // tslint:disable-next-line:prefer-unknown-to-any
   public abstract readonly rulesets: RulesetContainer<any>;
 
@@ -61,9 +64,45 @@ export abstract class Style<
   cssClasses(config: ResolvedConfiguration): string[] {
     let classes: string[] = [];
     for (let style of this.resolveStyles()) {
-      classes.push(style.cssClass(config));
+        classes.push(style.cssClass(config));
+      }
+    return classes;
+  }
+
+  /**
+   * Returns all the classes needed to represent this block object
+   * including inherited classes and block aliases.
+   * @returns this object's css class and all inherited classes.
+   */
+  public cssClassesWithAliases(config: ResolvedConfiguration): Set<string> {
+    let classes = new Set<string>();
+    for (let style of this.resolveStyles()) {
+      classes = new Set([...classes, style.cssClass(config)]);
+      // if this has a set of style aliases, push those too
+      classes = new Set([...classes, ...style.getStyleAliases()]);
     }
     return classes;
+  }
+
+  /**
+   * Adds a set of aliases to the to this object
+   */
+  public setStyleAliases(aliases: Set<string>): void {
+    if (aliases.size) {
+      // clear the existing styleAliases if they exist
+      if (this._styleAliases) {
+        this._styleAliases.clear();
+      } else {
+        this._styleAliases = aliases;
+      }
+    }
+  }
+
+  /**
+   * Returns the alisses on this object
+   */
+  public getStyleAliases(): Set<string> {
+    return this._styleAliases || new Set();
   }
 
   /**
@@ -91,8 +130,8 @@ export abstract class Style<
    * @returns A debug string.
    */
   asDebug(config: ResolvedConfiguration) {
-    const classes = this.cssClasses(config).join(".");
-    return `${this.asSource()}${classes ? ` (.${classes})` : ""}`;
+    const classes = [...this.cssClasses(config)].join(".");
+    const aliases = this.getStyleAliases();
+    return `${this.asSource()}${classes ? ` (.${classes}` : ""}${aliases.size ? `, aliases: .${[...aliases].join(" .")}` : ""}${classes || aliases ? ")" : ""}`;
   }
-
 }

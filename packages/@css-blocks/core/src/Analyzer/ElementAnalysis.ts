@@ -818,9 +818,11 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     let classes = new Array<AttributeValueSetItem>();
     let classMap = new Map<string, Style>();
     for (let style of this.allStaticStyles) {
-      let className = style.cssClass(configuration);
-      classes.push(attrValues.constant(className));
-      classMap.set(className, style);
+      let classNames = style.cssClassesWithAliases(configuration);
+      classNames.forEach(className => {
+        classes.push(attrValues.constant(className));
+        classMap.set(className, style);
+      });
     }
 
     let mapper: ClassMapper = mapClasses.bind(null, configuration, classMap);
@@ -990,9 +992,11 @@ function mapClasses(
   let classes = new Array<string>();
   let resolvedStyles = style.resolveStyles();
   for (let resolvedStyle of resolvedStyles) {
-    let cls = resolvedStyle.cssClass(configuration);
-    map.set(cls, resolvedStyle);
-    classes.push(cls);
+    let classNames = resolvedStyle.cssClassesWithAliases(configuration);
+    classNames.forEach(cls => {
+      map.set(cls, resolvedStyle);
+      classes.push(cls);
+    });
   }
   if (classes.length === 1) {
     return attrValues.constant(classes[0]);
