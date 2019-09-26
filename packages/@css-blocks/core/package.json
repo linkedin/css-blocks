@@ -44,7 +44,7 @@
     "@opticss/element-analysis": "^0.6.2",
     "@opticss/template-api": "^0.6.3",
     "@opticss/util": "^0.7.0",
-    "@types/async": "^2.0.40",
+    "@types/async": "^3.0.2",
     "@types/debug": "4.1.5",
     "async": "^3.1.0",
     "css-property-parser": "^1.0.6",
