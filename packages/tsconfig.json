@@ -10,5 +10,7 @@
     {"path": "@css-blocks/runtime"},
     {"path": "@css-blocks/test-utils"},
     {"path": "@css-blocks/webpack"},
+    {"path": "@css-blocks/language-server"},
+    {"path": "@css-blocks/vscode"}
   ]
 }
