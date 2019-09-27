@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
-import { BlockPath, ERRORS } from "../../src/BlockSyntax";
+import { BlockPath, DEFAULT_EXPORT, ERRORS  } from "../../src/BlockSyntax";
 import { ErrorLocation } from "../../src/errors";
 
 function parseBlockPath(blockPath: string, loc?: ErrorLocation): BlockPath {
@@ -18,7 +18,7 @@ export class BlockPathTests {
 
   @test "finds the class"() {
     let path = new BlockPath(".test");
-    assert.equal(path.block, "");
+    assert.equal(path.block, DEFAULT_EXPORT);
     assert.equal(path.path, ".test");
   }
 
@@ -42,37 +42,37 @@ export class BlockPathTests {
 
   @test "finds a namespaced attribute with value"() {
     let path = new BlockPath("[state|my-attr=value]");
-    assert.equal(path.block, "");
+    assert.equal(path.block, DEFAULT_EXPORT);
     assert.equal(path.path, `:scope[state|my-attr="value"]`);
   }
 
   @test "finds a namespace with value in single quotes"() {
     let path = new BlockPath("[state|my-attr='my value']");
-    assert.equal(path.block, "");
+    assert.equal(path.block, DEFAULT_EXPORT);
     assert.equal(path.path, `:scope[state|my-attr="my value"]`);
   }
 
   @test "finds a namespace with value in double quotes"() {
     let path = new BlockPath(`[state|my-attr="my value"]`);
-    assert.equal(path.block, "");
+    assert.equal(path.block, DEFAULT_EXPORT);
     assert.equal(path.path, `:scope[state|my-attr="my value"]`);
   }
 
   @test "finds a class with a namespace and value"() {
     let path = new BlockPath(".class[state|my-attr=value]");
-    assert.equal(path.block, "");
+    assert.equal(path.block, DEFAULT_EXPORT);
     assert.equal(path.path, `.class[state|my-attr="value"]`);
   }
 
   @test "finds a class with a namespace and value in single quotes"() {
     let path = new BlockPath(".class[state|my-attr='my value']");
-    assert.equal(path.block, "");
+    assert.equal(path.block, DEFAULT_EXPORT);
     assert.equal(path.path, `.class[state|my-attr="my value"]`);
   }
 
   @test "finds a class with a namespace and value in double quotes"() {
     let path = new BlockPath(`.class[state|my-attr="my value"]`);
-    assert.equal(path.block, "");
+    assert.equal(path.block, DEFAULT_EXPORT);
     assert.equal(path.path, `.class[state|my-attr="my value"]`);
   }
 
@@ -96,7 +96,7 @@ export class BlockPathTests {
 
   @test "finds :scope when passed empty string"() {
     let path = new BlockPath("");
-    assert.equal(path.block, "");
+    assert.equal(path.block, DEFAULT_EXPORT);
     assert.equal(path.path, ":scope");
     assert.equal(path.attribute, undefined);
   }

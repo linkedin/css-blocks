@@ -15,6 +15,7 @@ import { ObjectDictionary, objectValues } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
 import { BlockFactory } from "../BlockParser";
+import { DEFAULT_EXPORT } from "../BlockSyntax";
 import { Block, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 
@@ -152,13 +153,13 @@ export class Analysis<K extends keyof TemplateTypes> {
     let names = Object.keys(this.blocks);
     for (let name of names) {
       if (this.blocks[name] === block) {
-        return name;
+        return name === DEFAULT_EXPORT ? "" : name;
       }
     }
     for (let name of names) {
       let superBlock = this.blocks[name].base;
       while (superBlock) {
-        if (superBlock === block) return name;
+        if (superBlock === block) return name === DEFAULT_EXPORT ? "" : name;
         superBlock = superBlock.base;
       }
     }

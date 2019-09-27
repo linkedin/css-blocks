@@ -110,14 +110,11 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     let block: Block | undefined = await this.resolveBlock(dir, componentName);
     if (!block) { return analysis; }
 
-    analysis.addBlock("", block);
     self.debug(`Analyzing ${componentName}. Got block for component.`);
 
     // Add all transitive block dependencies
     let localBlockNames: string[] = [];
-    analysis.addBlock("", block);
-    localBlockNames.push("<default>");
-    block.eachBlockReference((name, refBlock) => {
+    block.eachBlockExport((name, refBlock) => {
       analysis.addBlock(name, refBlock);
       localBlockNames.push(name);
     });

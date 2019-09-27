@@ -3,6 +3,7 @@ import { BlockPathError, ErrorLocation, Position, errorHasRange } from "../error
 import {
   ATTR_PRESENT,
   CLASS_NAME_IDENT,
+  DEFAULT_EXPORT,
   ROOT_CLASS,
   STATE_NAMESPACE,
 } from "./BlockSyntax";
@@ -67,7 +68,7 @@ export const ERRORS = {
 function stringify(tokens: Token[]): string {
   let out = "";
   for (let token of tokens) {
-         if (isBlock(token)) { out += token.name; }
+         if (isBlock(token)) { out += token.name === DEFAULT_EXPORT ? "" : token.name; }
     else if (isClass(token)) { out += token.name === ROOT_CLASS ? token.name : `.${token.name}`; }
     else if (isAttribute(token)) {
       let namespace = token.namespace ? `${token.namespace}|` : "";
@@ -165,12 +166,13 @@ export class BlockPath {
 
     // Ensure we only have a single token of each type per block path.
     if (isBlock(token)) {
+      token.name = token.name || DEFAULT_EXPORT;
       this._block = this._block ? this.throw(ERRORS.multipleOfType(token.type)) : token;
     }
     if (isClass(token)) {
       this._class = this._class ? this.throw(ERRORS.multipleOfType(token.type)) : token;
       // If no block has been added yet, automatically inject the `self` block name.
-      if (!this._block) { this.addToken({ type: "block", name: "" }, false); }
+      if (!this._block) { this.addToken({ type: "block", name: DEFAULT_EXPORT }, false); }
     }
     if (isAttribute(token)) {
       this._attribute = this._attribute ? this.throw(ERRORS.multipleOfType(token.type)) : token;
@@ -341,7 +343,7 @@ export class BlockPath {
    * Get the parsed block name of this Block Path
    */
   get block(): string {
-    return this._block ? this._block.name : "";
+    return this._block ? this._block.name : DEFAULT_EXPORT;
   }
 
   /**
@@ -370,7 +372,7 @@ export class BlockPath {
    * Return a new BlockPath without the parent-most token.
    */
   childPath() {
-    return BlockPath.from(this.parts.slice(this._block && this._block.name ? 1 : 2));
+    return BlockPath.from(this.parts.slice(this._block && this._block.name !== DEFAULT_EXPORT ? 1 : 2));
   }
 
   /**

@@ -1,4 +1,4 @@
-@block h from "./header.css";
+@export h from "./header.css";
 
 :scope {
     color: red;
@@ -11,3 +11,4 @@
 .world[state|thick] {
     border-width: 3px;
 }
+

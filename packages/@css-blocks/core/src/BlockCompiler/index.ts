@@ -3,8 +3,8 @@ import { postcss } from "opticss";
 
 import { Analyzer } from "../Analyzer";
 import {
+  BLOCK_AT_RULES,
   BLOCK_DEBUG,
-  BLOCK_IMPORT,
   BLOCK_PROP_NAMES_RE,
   ROOT_CLASS,
   parseBlockDebug,
@@ -40,10 +40,11 @@ export class BlockCompiler {
     // Process all debug statements for this block.
     this.processDebugStatements(filename, root, block);
 
-    // Clean up CSS Block specific properties.
-    root.walkAtRules(BLOCK_IMPORT, (atRule) => {
-      atRule.remove();
-    });
+    // Clean up CSS Block specific at-rules.
+    for (let atRuleName of BLOCK_AT_RULES) {
+      root.walkAtRules(atRuleName, (atRule) => atRule.remove());
+    }
+
     root.walkRules(ROOT_CLASS, (rule) => {
       rule.walkDecls(BLOCK_PROP_NAMES_RE, (decl) => {
         decl.remove();
@@ -77,9 +78,6 @@ export class BlockCompiler {
       if (channel === "comment") {
         let text = `${ref.debug(this.config).join("\n * ")}\n`;
         atRule.replaceWith(this.postcss.comment({ text }));
-      } else {
-        // stderr/stdout are emitted during parse.
-        atRule.remove();
       }
     });
   }

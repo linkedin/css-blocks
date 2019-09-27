@@ -1313,7 +1313,7 @@ function constructElement(block: Block, ...styles: string[]) {
   let analysis = analyzer.newAnalysis(info);
 
   analysis.addBlock(":scope", block);
-  block.eachBlockReference((name, ref) => {
+  block.eachBlockExport((name, ref) => {
     analysis.addBlock(name, ref);
   });
 

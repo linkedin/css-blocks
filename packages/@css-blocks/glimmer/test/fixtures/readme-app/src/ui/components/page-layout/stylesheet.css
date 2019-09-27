@@ -5,3 +5,5 @@
 .sidebar[state|collapsed] { display: none; }
 .main { border-right: 2px groove gray; }
 .recommended { background-color: orange }
+
+@export grid;

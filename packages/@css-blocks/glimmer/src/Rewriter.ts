@@ -5,6 +5,7 @@ import {
   StyleMapping,
   resolveConfiguration,
 } from "@css-blocks/core";
+import { DEFAULT_EXPORT } from "@css-blocks/core/dist/src/BlockSyntax";
 import {
   AST,
   ASTPlugin,
@@ -66,7 +67,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     this.syntax        = syntax;
     this.analysis      = analysis;
     this.template      = analysis.template;
-    this.block         = analysis.getBlock("")!; // Local block check done elsewhere
+    this.block         = analysis.getBlock(DEFAULT_EXPORT)!; // Local block check done elsewhere
     this.styleMapping  = styleMapping;
     this.cssBlocksOpts = resolveConfiguration(cssBlocksOpts);
     this.elementCount  = 0;
