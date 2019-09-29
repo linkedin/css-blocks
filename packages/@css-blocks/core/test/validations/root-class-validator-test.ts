@@ -33,11 +33,11 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
-      .fdsa[state|larger] { font-size: 26px; }
+      .fdsa[larger] { font-size: 26px; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
@@ -61,17 +61,17 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
-      .fdsa[state|larger] { font-size: 26px; }
+      .fdsa[larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]): [Block, postcss.Container] => {
       analysis.addBlock("", block);
       let element = analysis.startElement({ line: 10, column: 32 });
       element.addStaticClass(block.rootClass);
-      element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|foo]")!);
+      element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[foo]")!);
       analysis.endElement(element);
       return [block, _];
     });

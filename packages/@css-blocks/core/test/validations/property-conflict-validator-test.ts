@@ -135,7 +135,7 @@ export class TemplateAnalysisTests {
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
       .klass { color: blue; background: yellow; }
-      :scope[state|colorful] .klass { color: red; }
+      :scope[colorful] .klass { color: red; }
     `);
 
     let css = `
@@ -151,7 +151,7 @@ export class TemplateAnalysisTests {
 
           color:
             block-a.klass (blocks/foo.block.css:4:16)
-            block-b.klass (blocks/b.block.css:4:39)`,
+            block-b.klass (blocks/b.block.css:4:33)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
         constructElement(block, ".klass", "b.klass").end();
@@ -166,7 +166,7 @@ export class TemplateAnalysisTests {
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
       .klass { color: blue; background: yellow; }
-      :scope[state|colorful] .klass { color: red; }
+      :scope[colorful] .klass { color: red; }
     `);
 
     let css = `
@@ -370,11 +370,11 @@ export class TemplateAnalysisTests {
 
     let css = `
       .foo { color: red; }
-      .foo[state|bar]  { color: blue;}
+      .foo[bar]  { color: blue;}
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-      constructElement(block, ".foo", ".foo[state|bar]").end();
+      constructElement(block, ".foo", ".foo[bar]").end();
       assert.deepEqual(1, 1);
     }).then(() => {
       assert.ok(1, "no error thrown");
@@ -387,11 +387,11 @@ export class TemplateAnalysisTests {
 
     let css = `
       .foo { color: red; }
-      .foo[state|bar]  { color: blue;}
+      .foo[bar]  { color: blue;}
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-      constructElement(block).addDynamic([".foo"]).addDynamic(".foo[state|bar]").end();
+      constructElement(block).addDynamic([".foo"]).addDynamic(".foo[bar]").end();
     }).then(() => {
       assert.ok(1, "no error thrown");
     });
@@ -551,7 +551,7 @@ export class TemplateAnalysisTests {
     let css = `
       @block b from "./b.block.css";
       :scope { block-name: block-a; }
-      :scope[state|foo] { color: red; background-color: red; }
+      :scope[foo] { color: red; background-color: red; }
     `;
 
     return assertParseError(
@@ -561,14 +561,14 @@ export class TemplateAnalysisTests {
 
           color:
             block-b (blocks/b.block.css:1:31)
-            block-a[state|foo] (blocks/foo.block.css:4:27)
+            block-a[foo] (blocks/foo.block.css:4:21)
 
           background-color:
             block-b (blocks/b.block.css:1:44)
-            block-a[state|foo] (blocks/foo.block.css:4:39)`,
+            block-a[foo] (blocks/foo.block.css:4:33)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-        constructElement(block, ":scope", "b").addDynamic("[state|foo]").end();
+        constructElement(block, ":scope", "b").addDynamic("[foo]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -586,7 +586,7 @@ export class TemplateAnalysisTests {
     let css = `
       @block b from "./b.block.css";
       :scope { block-name: block-a; }
-      :scope[state|foo] {
+      :scope[foo] {
         color: resolve('b');
         color: red;
         background-color: red;
@@ -595,7 +595,7 @@ export class TemplateAnalysisTests {
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-      constructElement(block, ":scope", "b").addDynamic("[state|foo]").end();
+      constructElement(block, ":scope", "b").addDynamic("[foo]").end();
       assert.equal(1, 1);
     });
   }
@@ -607,14 +607,14 @@ export class TemplateAnalysisTests {
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
       .klass {}
-      .klass[state|foo] { color: blue; }
+      .klass[foo] { color: blue; }
     `);
 
     let css = `
       @block b from "./b.block.css";
       :scope { block-name: block-a; }
       .klass {}
-      .klass[state|foo] { color: red; }
+      .klass[foo] { color: red; }
     `;
 
     return assertParseError(
@@ -624,11 +624,11 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-a.klass[state|foo] (blocks/foo.block.css:5:27)
-            block-b.klass[state|foo] (blocks/b.block.css:4:27)`,
+            block-a.klass[foo] (blocks/foo.block.css:5:21)
+            block-b.klass[foo] (blocks/b.block.css:4:21)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-        return constructElement(block, ".klass", "b.klass", ".klass[state|foo]", "b.klass[state|foo]").end();
+        return constructElement(block, ".klass", "b.klass", ".klass[foo]", "b.klass[foo]").end();
       }),
     );
   }
@@ -639,17 +639,17 @@ export class TemplateAnalysisTests {
 
     imports.registerSource("blocks/b.block.css", `
       .klass {}
-      .klass[state|foo] { color: blue; }
+      .klass[foo] { color: blue; }
     `);
 
     let css = `
       @block b from "./b.block.css";
       .klass {}
-      .klass[state|foo] { color: resolve('b.klass[state|foo]'); color: red; }
+      .klass[foo] { color: resolve('b.klass[foo]'); color: red; }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-      return constructElement(block, ".klass", "b.klass", ".klass[state|foo]", "b.klass[state|foo]").end();
+      return constructElement(block, ".klass", "b.klass", ".klass[foo]", "b.klass[foo]").end();
     }).then(() => {
       assert.deepEqual(1, 1);
     });
@@ -661,14 +661,14 @@ export class TemplateAnalysisTests {
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
-      :scope[state|bar] { color: blue; background-color: yellow; }
+      :scope[bar] { color: blue; background-color: yellow; }
     `,
     );
 
     let css = `
       @block b from "./b.block.css";
       :scope { block-name: block-a; }
-      :scope[state|foo] { color: red; background-color: red; }
+      :scope[foo] { color: red; background-color: red; }
     `;
 
     return assertParseError(
@@ -677,15 +677,15 @@ export class TemplateAnalysisTests {
         The following property conflicts must be resolved for these composed Styles: (templates/my-template.hbs:10:32)
 
           color:
-            block-a[state|foo] (blocks/foo.block.css:4:27)
-            block-b[state|bar] (blocks/b.block.css:3:27)
+            block-a[foo] (blocks/foo.block.css:4:21)
+            block-b[bar] (blocks/b.block.css:3:21)
 
           background-color:
-            block-a[state|foo] (blocks/foo.block.css:4:39)
-            block-b[state|bar] (blocks/b.block.css:3:40)`,
+            block-a[foo] (blocks/foo.block.css:4:33)
+            block-b[bar] (blocks/b.block.css:3:34)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-        constructElement(block, ":scope", "b").addDynamic("[state|foo]").addDynamic("b:scope[state|bar]").end();
+        constructElement(block, ":scope", "b").addDynamic("[foo]").addDynamic("b:scope[bar]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -697,22 +697,22 @@ export class TemplateAnalysisTests {
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; }
-      :scope[state|bar] { color: blue; background-color: yellow; }
+      :scope[bar] { color: blue; background-color: yellow; }
     `,
     );
 
     let css = `
       @block b from "./b.block.css";
       :scope { block-name: block-a; }
-      :scope[state|foo] {
-        color: resolve('b:scope[state|bar]');
+      :scope[foo] {
+        color: resolve('b:scope[bar]');
         color: red;
         background-color: red;
-        background-color: resolve('b:scope[state|bar]'); }
+        background-color: resolve('b:scope[bar]'); }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-        constructElement(block, ":scope", "b:scope").addDynamic(":scope[state|foo]").addDynamic("b:scope[state|bar]").end();
+        constructElement(block, ":scope", "b:scope").addDynamic(":scope[foo]").addDynamic("b:scope[bar]").end();
       }).then(() => {
         assert.equal(1, 1);
       });
@@ -730,8 +730,8 @@ export class TemplateAnalysisTests {
     let css = `
       @block b from "./b.block.css";
       :scope { block-name: block-a; }
-      :scope[state|foo=one] { color: red; background-color: red; }
-      :scope[state|foo=two] { text-decoration: underline; }
+      :scope[foo=one] { color: red; background-color: red; }
+      :scope[foo=two] { text-decoration: underline; }
     `;
 
     return assertParseError(
@@ -741,14 +741,14 @@ export class TemplateAnalysisTests {
 
           color:
             block-b (blocks/b.block.css:2:37)
-            block-a[state|foo=one] (blocks/foo.block.css:4:31)
+            block-a[foo=one] (blocks/foo.block.css:4:25)
 
           background-color:
             block-b (blocks/b.block.css:2:50)
-            block-a[state|foo=one] (blocks/foo.block.css:4:43)`,
+            block-a[foo=one] (blocks/foo.block.css:4:37)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-        constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").end();
+        constructElement(block, ":scope", "b").addStateGroup(":scope", "[foo]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -766,12 +766,12 @@ export class TemplateAnalysisTests {
     let css = `
       @block b from "./b.block.css";
       :scope { block-name: block-a; }
-      :scope[state|foo=one] { color: resolve('b'); color: red; background-color: red; background-color: resolve('b');  }
-      :scope[state|foo=two] { text-decoration: underline; }
+      :scope[foo=one] { color: resolve('b'); color: red; background-color: red; background-color: resolve('b');  }
+      :scope[foo=two] { text-decoration: underline; }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-        constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").end();
+        constructElement(block, ":scope", "b").addStateGroup(":scope", "[foo]").end();
       }).then(() => {
         assert.equal(1, 1);
       });
@@ -783,16 +783,16 @@ export class TemplateAnalysisTests {
 
     imports.registerSource("blocks/b.block.css", `
       :scope { block-name: block-b; color: blue; background-color: yellow; }
-      :scope[state|bar=one] { color: red; background-color: red; }
-      :scope[state|bar=two] { color: yellow; background-color: purple; }
+      :scope[bar=one] { color: red; background-color: red; }
+      :scope[bar=two] { color: yellow; background-color: purple; }
     `,
     );
 
     let css = `
       @block b from "./b.block.css";
       :scope { block-name: block-a; }
-      :scope[state|foo=one] { color: orange; background-color: green; }
-      :scope[state|foo=two] { text-decoration: underline; }
+      :scope[foo=one] { color: orange; background-color: green; }
+      :scope[foo=two] { text-decoration: underline; }
     `;
 
     return assertParseError(
@@ -802,18 +802,18 @@ export class TemplateAnalysisTests {
 
           color:
             block-b (blocks/b.block.css:2:37)
-            block-a[state|foo=one] (blocks/foo.block.css:4:31)
-            block-b[state|bar=one] (blocks/b.block.css:3:31)
-            block-b[state|bar=two] (blocks/b.block.css:4:31)
+            block-a[foo=one] (blocks/foo.block.css:4:25)
+            block-b[bar=one] (blocks/b.block.css:3:25)
+            block-b[bar=two] (blocks/b.block.css:4:25)
 
           background-color:
             block-b (blocks/b.block.css:2:50)
-            block-a[state|foo=one] (blocks/foo.block.css:4:46)
-            block-b[state|bar=one] (blocks/b.block.css:3:43)
-            block-b[state|bar=two] (blocks/b.block.css:4:46)`,
+            block-a[foo=one] (blocks/foo.block.css:4:40)
+            block-b[bar=one] (blocks/b.block.css:3:37)
+            block-b[bar=two] (blocks/b.block.css:4:40)`,
 
       this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-        constructElement(block, ":scope", "b").addStateGroup(":scope", "[state|foo]").addStateGroup("b", "[state|bar]").end();
+        constructElement(block, ":scope", "b").addStateGroup(":scope", "[foo]").addStateGroup("b", "[bar]").end();
       }).then(() => {
         assert.ok(1, "does not throw");
       }));
@@ -896,11 +896,11 @@ export class TemplateAnalysisTests {
     let css = `
       @block b from "./b.block.css";
       :scope { block-name: block-a; }
-      .klass-2[state|one][state|two] { color: red; color: }
+      .klass-2[one][two] { color: red; color: }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", options).then(([block, _]) => {
-      constructElement(block, ".klass-2", "b.klass-1").addStateGroup(".klass-2", "[state|one]").end();
+      constructElement(block, ".klass-2", "b.klass-1").addStateGroup(".klass-2", "[one]").end();
     });
   }
 

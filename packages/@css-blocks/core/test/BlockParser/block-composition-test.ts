@@ -72,11 +72,11 @@ export class BlockNames extends BEMProcessor {
 
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block biz from "./biz.css";
-                    :scope[state|awesome] .bar { composes: biz.baz; }`;
+                    :scope[awesome] .bar { composes: biz.baz; }`;
 
     return assertError(
       InvalidBlockSyntax,
-      `Style composition is not allowed in rule sets with a scope selector. (foo/bar/test-block.css:2:50)`,
+      `Style composition is not allowed in rule sets with a scope selector. (foo/bar/test-block.css:2:44)`,
       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 
@@ -133,8 +133,8 @@ export class BlockNames extends BEMProcessor {
     let inputCSS = `@block biz from "./biz.css";
                     :scope { composes: biz; }
                     .bar { composes: biz.baz; }
-                    .bar[state|active] { composes: biz.buz; }
-                    .bar[state|color][state|inverse] { composes: biz.baz; background: blue; }
+                    .bar[active] { composes: biz.buz; }
+                    .bar[color][inverse] { composes: biz.baz; background: blue; }
                     @block-debug self to comment;
                     `;
 
@@ -152,10 +152,10 @@ export class BlockNames extends BEMProcessor {
            *  └── .bar (.test-block__bar)
            *       composes:
            *       ├── biz.baz
-           *       ├── biz.buz when [state|active]
-           *       └── biz.baz when [state|color] && [state|inverse]
+           *       ├── biz.buz when [active]
+           *       └── biz.baz when [color] && [inverse]
            *       states:
-           *       └── .bar[state|inverse] (.test-block__bar--inverse)
+           *       └── .bar[inverse] (.test-block__bar--inverse)
            */`,
       );
     });

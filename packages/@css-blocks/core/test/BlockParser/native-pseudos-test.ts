@@ -11,10 +11,10 @@ export class DisallowedPseudos extends BEMProcessor {
   @test "disallows the :not() pseudoclass."() {
     let filename = "foo/bar/illegal-not-pseudoclass.css";
     let inputCSS = `:scope {color: #111;}
-                    .another-class:not([state|foo]) { display: block; }`;
+                    .another-class:not([foo]) { display: block; }`;
     return assertError(
       InvalidBlockSyntax,
-      "The :not() pseudoclass cannot be used: .another-class:not([state|foo])" +
+      "The :not() pseudoclass cannot be used: .another-class:not([foo])" +
         " (foo/bar/illegal-not-pseudoclass.css:2:35)",
       this.process(filename, inputCSS));
   }
@@ -22,10 +22,10 @@ export class DisallowedPseudos extends BEMProcessor {
   @test "disallows the :matches() pseudoclass."() {
     let filename = "foo/bar/illegal-not-pseudoclass.css";
     let inputCSS = `:scope {color: #111;}
-                    .another-class:matches([state|foo]) { display: block; }`;
+                    .another-class:matches([foo]) { display: block; }`;
     return assertError(
       InvalidBlockSyntax,
-      "The :matches() pseudoclass cannot be used: .another-class:matches([state|foo])" +
+      "The :matches() pseudoclass cannot be used: .another-class:matches([foo])" +
         " (foo/bar/illegal-not-pseudoclass.css:2:35)",
       this.process(filename, inputCSS));
   }

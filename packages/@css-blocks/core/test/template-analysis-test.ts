@@ -36,9 +36,9 @@ export class AnalysisTests {
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.addBlock("", block);
@@ -68,9 +68,9 @@ export class AnalysisTests {
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.addBlock("", block);
@@ -102,9 +102,9 @@ export class AnalysisTests {
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.addBlock("", block);
@@ -112,7 +112,7 @@ export class AnalysisTests {
       let klass = block.getClass("asdf");
       if (klass) {
         element.addStaticClass(klass);
-        let state = klass.getAttributeValue("[state|larger]");
+        let state = klass.getAttributeValue("[larger]");
         if (state) {
           element.addStaticAttr(klass, state);
         }
@@ -122,7 +122,7 @@ export class AnalysisTests {
       let expectedResult: SerializedAnalysis<TemplateType> = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".asdf", ".asdf[state|larger]"],
+        stylesFound: [".asdf", ".asdf[larger]"],
         elements: {
           "a": {
             staticStyles: [ 0, 1 ],
@@ -143,9 +143,9 @@ export class AnalysisTests {
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
     `;
 
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block1, _]) => {
@@ -196,11 +196,11 @@ export class AnalysisTests {
       @block a from "a.css";
 
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
-      .fdsa[state|larger] { font-size: 26px; }
+      .fdsa[larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.addBlock("", block);
@@ -209,13 +209,13 @@ export class AnalysisTests {
       let klass = block.getClass("asdf") as BlockClass;
       element.addStaticClass(klass);
       element.addDynamicClasses({ condition: null, whenTrue: [aBlock.getClass("foo")!] });
-      element.addDynamicAttr(klass, klass.getAttributeValue("[state|larger]")!, null);
+      element.addDynamicAttr(klass, klass.getAttributeValue("[larger]")!, null);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedAnalysis<TemplateType> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".asdf", ".asdf[state|larger]", "a.foo"],
+        stylesFound: [".asdf", ".asdf[larger]", "a.foo"],
         elements: {
           a: {
             staticStyles: [0],
@@ -239,22 +239,22 @@ export class AnalysisTests {
     let { config } = setupImporting();
 
     let css = `
-      :scope[state|color]   { color: red; }
-      :scope[state|bgcolor] { color: red; }
+      :scope[color]   { color: red; }
+      :scope[bgcolor] { color: red; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addDynamicClasses({condition: null, whenTrue: [block.rootClass]});
-        element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[state|color]") as Attribute, null);
-        element.addDynamicAttr(block.rootClass, block.rootClass.getAttributeValue("[state|bgcolor]")!, null);
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[color]") as Attribute, null);
+        element.addDynamicAttr(block.rootClass, block.rootClass.getAttributeValue("[bgcolor]")!, null);
         analysis.endElement(element);
 
         let result = analysis.serialize();
         let expectedResult: SerializedAnalysis<TemplateType> = {
           blocks: {"": "blocks/foo.block.css"},
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-          stylesFound: [":scope", ":scope[state|bgcolor]", ":scope[state|color]"],
+          stylesFound: [":scope", ":scope[bgcolor]", ":scope[color]"],
           elements: {
             a: {
               sourceLocation: { start: { filename: "templates/my-template.hbs", line: 10, column: 32 } },
@@ -278,17 +278,17 @@ export class AnalysisTests {
     let { config } = setupImporting();
 
     let css = `
-      :scope[state|color=red]    { color: red; }
-      :scope[state|color=blue]   { color: blue; }
-      :scope[state|bgcolor=red]  { color: red; }
-      :scope[state|bgcolor=blue] { color: blue; }
+      :scope[color=red]    { color: red; }
+      :scope[color=blue]   { color: blue; }
+      :scope[bgcolor=red]  { color: red; }
+      :scope[bgcolor=blue] { color: blue; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element: TestElement = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[state|color]") as Attribute, null);
-        element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[state|bgcolor]") as Attribute, null, true);
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[color]") as Attribute, null);
+        element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[bgcolor]") as Attribute, null, true);
         analysis.endElement(element);
 
         let result = analysis.serialize();
@@ -297,10 +297,10 @@ export class AnalysisTests {
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
           stylesFound: [
             ":scope",
-            ":scope[state|bgcolor=blue]",
-            ":scope[state|bgcolor=red]",
-            ":scope[state|color=blue]",
-            ":scope[state|color=red]",
+            ":scope[bgcolor=blue]",
+            ":scope[bgcolor=red]",
+            ":scope[color=blue]",
+            ":scope[color=red]",
           ],
           elements: {
             "a": {
@@ -351,11 +351,11 @@ export class AnalysisTests {
       @block a from "a.css";
 
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
-      .fdsa[state|larger] { font-size: 26px; }
+      .fdsa[larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.addBlock("", block);
@@ -367,14 +367,14 @@ export class AnalysisTests {
       element.addDynamicClasses({condition: null, whenTrue: [asdf], whenFalse: [fdsa, foo]});
       // This is what we do when the same state is in the template for two
       // classes that have the states of the same name.
-      element.addStaticAttr(asdf, asdf.getAttributeValue("[state|larger]")!);
-      element.addStaticAttr(fdsa, fdsa.getAttributeValue("[state|larger]")!);
+      element.addStaticAttr(asdf, asdf.getAttributeValue("[larger]")!);
+      element.addStaticAttr(fdsa, fdsa.getAttributeValue("[larger]")!);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedAnalysis<TemplateType> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".asdf", ".asdf[state|larger]", ".fdsa", ".fdsa[state|larger]", "a.foo"],
+        stylesFound: [".asdf", ".asdf[larger]", ".fdsa", ".fdsa[larger]", "a.foo"],
         elements: {
           a: {
             staticStyles: [ ],
@@ -398,7 +398,7 @@ export class AnalysisTests {
     imports.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }
-       .foo[state|bar] { font-size: 26px; }
+       .foo[bar] { font-size: 26px; }
       `,
     );
 
@@ -406,9 +406,9 @@ export class AnalysisTests {
       @block a from "a.css";
 
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
-      .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
-      .fdsa { font-size: resolve('a.foo[state|bar]'); font-size: 22px; }
+      :scope[foo] { color: red; }
+      .asdf { font-size: resolve('a.foo[bar]'); font-size: 20px; }
+      .fdsa { font-size: resolve('a.foo[bar]'); font-size: 22px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.addBlock("", block);
@@ -421,13 +421,13 @@ export class AnalysisTests {
         whenTrue: [block.getClass("asdf")!],
         whenFalse: [block.getClass("fdsa")!],
       });
-      element.addStaticAttr(klass, klass.getAttributeValue("[state|bar]")!);
+      element.addStaticAttr(klass, klass.getAttributeValue("[bar]")!);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedAnalysis<TemplateType> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[state|bar]"],
+        stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[bar]"],
         elements: {
           a: {
             staticStyles: [ 2, 3 ],
@@ -448,7 +448,7 @@ export class AnalysisTests {
     imports.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }
-       .foo[state|bar] { font-size: 26px; }
+       .foo[bar] { font-size: 26px; }
       `,
     );
 
@@ -456,8 +456,8 @@ export class AnalysisTests {
       @block a from "a.css";
 
       :scope { color: blue; }
-      :scope[state|foo=red] { color: red; }
-      :scope[state|foo=purple] { color: purple; }
+      :scope[foo=red] { color: red; }
+      :scope[foo=purple] { color: purple; }
       .asdf { font-size: 20px; }
       .fdsa { font-size: 22px; }
     `;
@@ -465,13 +465,13 @@ export class AnalysisTests {
       analysis.addBlock("", block);
       let element: TestElement = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.rootClass);
-      element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[state|foo]") as Attribute, null, true);
+      element.addDynamicGroup(block.rootClass, block.rootClass.resolveAttribute("[foo]") as Attribute, null, true);
       analysis.endElement(element);
       let result = analysis.serialize();
       let expectedResult: SerializedAnalysis<TemplateType> = {
         blocks: {"": "blocks/foo.block.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [":scope", ":scope[state|foo=purple]", ":scope[state|foo=red]"],
+        stylesFound: [":scope", ":scope[foo=purple]", ":scope[foo=red]"],
         elements: {
           a: {
             staticStyles: [ 0 ],
@@ -494,7 +494,7 @@ export class AnalysisTests {
     imports.registerSource(
       "blocks/a.css",
       `.foo { border: 3px; }
-       .foo[state|bar] { font-size: 26px; }
+       .foo[bar] { font-size: 26px; }
       `,
     );
 
@@ -502,9 +502,9 @@ export class AnalysisTests {
       @block a from "a.css";
 
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
-      .asdf { font-size: resolve('a.foo[state|bar]'); font-size: 20px; }
-      .fdsa { font-size: 22px; font-size: resolve('a.foo[state|bar]'); }
+      :scope[foo] { color: red; }
+      .asdf { font-size: resolve('a.foo[bar]'); font-size: 20px; }
+      .fdsa { font-size: 22px; font-size: resolve('a.foo[bar]'); }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config, "main").then(([block, _]) => {
       analysis.addBlock("", block);
@@ -513,7 +513,7 @@ export class AnalysisTests {
       let klass = aBlock.getClass("foo") as BlockClass;
       element.addStaticClass(klass);
       element.addDynamicClasses({condition: null, whenTrue: [block.getClass("asdf")!], whenFalse: [block.getClass("fdsa")!]});
-      element.addStaticAttr(klass, klass.getAttributeValue("[state|bar]")!);
+      element.addStaticAttr(klass, klass.getAttributeValue("[bar]")!);
       analysis.endElement(element);
       let optimizerAnalysis = analysis.forOptimizer(config);
       let result = optimizerAnalysis.serialize();
@@ -569,11 +569,11 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
-      .fdsa[state|larger] { font-size: 26px; }
+      .fdsa[larger] { font-size: 26px; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
@@ -596,11 +596,11 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
-      .fdsa[state|larger] { font-size: 26px; }
+      .fdsa[larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           analysis.addBlock("", block);
@@ -639,11 +639,11 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
-      .fdsa[state|larger] { font-size: 26px; }
+      .fdsa[larger] { font-size: 26px; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
@@ -667,17 +667,17 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
-      .fdsa[state|larger] { font-size: 26px; }
+      .fdsa[larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]): [Block, postcss.Container] => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 32 });
           element.addStaticClass(block.rootClass);
-          element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|foo]")!);
+          element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[foo]")!);
           analysis.endElement(element);
           return [block, _];
       });
@@ -739,15 +739,15 @@ export class AnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|test] { color: red; }
+      :scope[test] { color: red; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state ":scope[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
+      'Cannot use state ":scope[test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 32 });
-          element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test]")!);
+          element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[test]")!);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
       }));
@@ -761,17 +761,17 @@ export class AnalysisTests {
 
     let css = `
       .foo { color: blue; }
-      .foo[state|test] { color: red; }
+      .foo[test] { color: red; }
     `;
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state ".foo[state|test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
+      'Cannot use state ".foo[test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           analysis.addBlock("", block);
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass("foo") as BlockClass;
-          element.addStaticAttr(klass, klass.getAttributeValue("[state|test]")!);
+          element.addStaticAttr(klass, klass.getAttributeValue("[test]")!);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
     }));
@@ -788,10 +788,10 @@ export class AnalysisTests {
       "blocks/a.css",
       `:scope { color: blue; }
       .pretty { color: red; }
-      .pretty[state|color=yellow] {
+      .pretty[color=yellow] {
         color: yellow;
       }
-      .pretty[state|color=green] {
+      .pretty[color=green] {
         color: green;
       }`,
     );
@@ -799,21 +799,21 @@ export class AnalysisTests {
     let css = `
       @block a from "a.css";
       :scope { extends: a; }
-      .pretty[state|color=black] {
+      .pretty[color=black] {
         color: black;
       }
     `;
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state ".pretty[state|color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
+      'Cannot use state ".pretty[color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
           let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
           analysis.addBlock("", block);
           analysis.addBlock("a", aBlock);
           let element = analysis.startElement({ line: 10, column: 32 });
           let klass = block.getClass("pretty") as BlockClass;
-          let state = klass.resolveAttributeValue("[state|color=yellow]")!;
+          let state = klass.resolveAttributeValue("[color=yellow]")!;
           element.addStaticAttr(klass, state);
           analysis.endElement(element);
           assert.deepEqual(1, 1);
@@ -830,10 +830,10 @@ export class AnalysisTests {
       "blocks/a.css",
       `:scope { color: blue; }
       .pretty { color: red; }
-      .pretty[state|color=yellow] {
+      .pretty[color=yellow] {
         color: yellow;
       }
-      .pretty[state|color=green] {
+      .pretty[color=green] {
         color: green;
       }`,
     );
@@ -841,7 +841,7 @@ export class AnalysisTests {
     let css = `
       @block a from "a.css";
       :scope { extends: a; }
-      .pretty[state|color=black] {
+      .pretty[color=black] {
         color: black;
       }
     `;
@@ -853,7 +853,7 @@ export class AnalysisTests {
           let element = analysis.startElement({ line: 10, column: 32 });
 
           let klass = block.getClass("pretty") as BlockClass;
-          let state = klass.resolveAttributeValue("[state|color=yellow]") as AttrValue;
+          let state = klass.resolveAttributeValue("[color=yellow]") as AttrValue;
           element.addStaticClass(klass);
           element.addStaticAttr(klass, state);
           analysis.endElement(element);
@@ -875,7 +875,7 @@ export class AnalysisTests {
     let css = `
       @block a from "a.css";
       :scope { composes: a.foo; color: blue; }
-      :scope[state|active] { composes: a.bar; color: blue; }
+      :scope[active] { composes: a.bar; color: blue; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
@@ -913,8 +913,8 @@ export class AnalysisTests {
     let source = `
       :scope {}
       .myclass {}
-      :scope[state|a-state] {}
-      .myclass[state|a-sub-state] {}
+      :scope[a-state] {}
+      .myclass[a-sub-state] {}
     `;
     let processPromise = postcss().process(source, {from: "test.css"});
     let registry = new MockImportRegistry();
@@ -946,15 +946,15 @@ export class AnalysisTests {
       analysis.endElement(element);
       element = analysis.startElement(POSITION_UNKNOWN);
       element.addStaticClass(block.find(".myclass") as BlockClass);
-      element.addDynamicState(block.find(".myclass[state|a-sub-state]") as State, null);
+      element.addDynamicState(block.find(".myclass[a-sub-state]") as State, null);
       analysis.endElement(element);
       element = analysis.startElement(POSITION_UNKNOWN);
       element.addDynamicClasses({condition: null, whenTrue: [block.find(".myclass") as BlockClass]});
-      element.addStaticState(block.find(".myclass[state|a-sub-state]") as State);
+      element.addStaticState(block.find(".myclass[a-sub-state]") as State);
       analysis.endElement(element);
       element = analysis.startElement(POSITION_UNKNOWN);
       element.addDynamicClasses({condition: null, whenFalse: [block.find(".myclass") as BlockClass]});
-      element.addStaticState(block.find(".myclass[state|a-sub-state]") as State);
+      element.addStaticState(block.find(".myclass[a-sub-state]") as State);
       analysis.endElement(element);
       return analysis;
     });

@@ -40,20 +40,20 @@ export class KeyQueryTests {
     });
   }
   @test "finds states as key selector"() {
-    let css = `:scope[state|foo] { color: red; }
-               :scope[state|foo] .a { width: 100%; }`;
+    let css = `:scope[foo] { color: red; }
+               :scope[foo] .a { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let state = block.rootClass.allAttributeValues()[0];
-        assert.equal(state.asSource(), ":scope[state|foo]");
+        assert.equal(state.asSource(), ":scope[foo]");
         let q = new QueryKeySelector(state);
         let result = q.execute(root);
         assert.equal(result.main.length, 1);
     });
   }
   @test "finds classes as key selector"() {
-    let css = `:scope[state|foo] { color: red; }
-               :scope[state|foo] .a { width: 100%; }`;
+    let css = `:scope[foo] { color: red; }
+               :scope[foo] .a { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[1]);
@@ -63,7 +63,7 @@ export class KeyQueryTests {
   }
   @test "finds classes as key selector with class states"() {
     let css = `.a { color: red; }
-               .a[state|foo] { width: 100%; }`;
+               .a[foo] { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
         let q = new QueryKeySelector(block.classes[1]);
@@ -73,12 +73,12 @@ export class KeyQueryTests {
   }
 
   @test "finds class states as key selector"() {
-    let css = `.b[state|foo] { color: red; }
-               .a[state|foo] { width: 100%; }`;
+    let css = `.b[foo] { color: red; }
+               .a[foo] { width: 100%; }`;
     let filename = "query-test.css";
     return this.parseBlock(css, filename).then(([block, root]) => {
-        let state = block.classes[1].getAttributeValue("[state|foo]")!;
-        assert.equal(state.asSource(), ".b[state|foo]");
+        let state = block.classes[1].getAttributeValue("[foo]")!;
+        assert.equal(state.asSource(), ".b[foo]");
         let q = new QueryKeySelector(state);
         let result = q.execute(root);
         assert.deepEqual(result.main.length, 1);

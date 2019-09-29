@@ -24,7 +24,7 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
   private _sourceAttributes: Attr[] | undefined;
 
   protected get ChildConstructor(): typeof AttrValue { return AttrValue; }
-  protected tokenToUid(token: AttrToken): string { return `${token.namespace}|${token.name}`; }
+  protected tokenToUid(token: AttrToken): string { return token.name; }
 
   public get name(): string { return this.token.name; }
   public get namespace(): string | null { return this.token.namespace || null; }

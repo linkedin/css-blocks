@@ -13,14 +13,14 @@ export class LookupTests {
   }
   @test "finds a state attribute"() {
     let block = new Block("test", "test.block.css");
-    let attr = block.rootClass.ensureAttributeValue("[state|foo]");
-    let found = block.lookup("[state|foo]");
+    let attr = block.rootClass.ensureAttributeValue("[foo]");
+    let found = block.lookup("[foo]");
     assert.deepEqual(attr, found);
   }
   @test "finds a state attribute with a value"() {
     let block = new Block("test", "test.block.css");
-    let attr = block.rootClass.ensureAttributeValue("[state|foo=bar]");
-    let found = block.lookup("[state|foo=bar]");
+    let attr = block.rootClass.ensureAttributeValue("[foo=bar]");
+    let found = block.lookup("[foo=bar]");
     assert.deepEqual(attr, found);
   }
   @test "invalid namespaces throw"() {
@@ -39,15 +39,15 @@ export class LookupTests {
   @test "finds a class with state attribute"() {
     let block = new Block("test", "test.block.css");
     let klass = block.ensureClass("foo");
-    let attr = klass.ensureAttributeValue("[state|a]");
-    let found = block.lookup(".foo[state|a]");
+    let attr = klass.ensureAttributeValue("[a]");
+    let found = block.lookup(".foo[a]");
     assert.deepEqual(attr, found);
   }
   @test "finds an class state attribute value"() {
     let block = new Block("test", "test.block.css");
     let klass = block.ensureClass("foo");
-    let attr = klass.ensureAttributeValue("[state|b=a]");
-    let found = block.lookup(".foo[state|b=a]");
+    let attr = klass.ensureAttributeValue("[b=a]");
+    let found = block.lookup(".foo[b=a]");
     assert.deepEqual(attr, found);
   }
   @test "finds referenced blocks"() {

@@ -1,11 +1,10 @@
 import { assertNever } from "@opticss/util";
 import { CompoundSelector, postcssSelectorParser as selectorParser } from "opticss";
 
-import { ATTR_PRESENT, AttrToken, ROOT_CLASS, STATE_NAMESPACE } from "../BlockSyntax";
+import { ATTR_PRESENT, AttrToken, ROOT_CLASS } from "../BlockSyntax";
 import { AttrValue, Block, BlockClass } from "../BlockTree";
 
 export enum BlockType {
-  block = 1,
   root,
   attribute,
   class,
@@ -40,13 +39,7 @@ export type BlockClassNode = {
 
 export type ClassNode = RootClassNode | BlockClassNode;
 
-export type BlockNode = {
-  blockName?: string;
-  blockType: BlockType.block;
-  node: selectorParser.Tag;
-};
-
-export type NodeAndType = AttributeNode | ClassNode | BlockNode;
+export type NodeAndType = AttributeNode | ClassNode;
 
 /** Extract an Attribute's value from a `selectorParser` attribute selector */
 function attrValue(attr: selectorParser.Attribute): string {
@@ -76,7 +69,6 @@ export function toAttrToken(attr: selectorParser.Attribute): AttrToken {
 export function blockTypeName(t: BlockType, options?: { plural: boolean }): string {
   let isPlural = options && options.plural;
   switch (t) {
-    case BlockType.block: return isPlural ? "external blocks" : "external block";
     case BlockType.root: return isPlural ? "block roots" : "block root";
     case BlockType.attribute: return isPlural ? "root-level states" : "root-level state";
     case BlockType.class: return isPlural ? "classes" : "class";
@@ -89,8 +81,8 @@ export function blockTypeName(t: BlockType, options?: { plural: boolean }): stri
  * Test if the provided node representation is an external block.
  * @param object The NodeAndType's descriptor object.
  */
-export function isExternalBlock(object: NodeAndType): boolean {
-  return object.blockType === BlockType.block;
+export function isExternalBlock(object: NodeAndType): object is RootAttributeNode | RootClassNode {
+  return (object.blockType === BlockType.attribute && !!object.blockName);
 }
 
 /**
@@ -122,13 +114,16 @@ export function isRootNode(node: unknown): node is selectorParser.Pseudo {
 
 export const isClassNode = selectorParser.isClassName;
 
+export const RESERVED_NAMESPACES = new Set<string | undefined | true>(["html", "math", "svg"]);
+Object.freeze(RESERVED_NAMESPACES);
+
 /**
  * Check if given selector node is an attribute selector
  * @param  node The selector to test.
  * @return True if attribute selector, false if not.
  */
 export function isAttributeNode(node: selectorParser.Node): node is selectorParser.Attribute {
-  return selectorParser.isAttribute(node) && node.namespace === STATE_NAMESPACE;
+  return selectorParser.isAttribute(node) && !RESERVED_NAMESPACES.has(node.namespace);
 }
 
 /**
@@ -152,7 +147,12 @@ export function getStyleTargets(block: Block, sel: CompoundSelector): StyleTarge
 
   for (let node of sel.nodes) {
     if (isRootNode(node)) {
-      blockClass = block.rootClass;
+      let nextNode = node.next();
+      if (nextNode && isAttributeNode(nextNode) && typeof nextNode.namespace === "string") {
+        break;
+      } else {
+        blockClass = block.rootClass;
+      }
     }
     else if (isClassNode(node)) {
       blockClass = block.ensureClass(node.value);
@@ -161,7 +161,7 @@ export function getStyleTargets(block: Block, sel: CompoundSelector): StyleTarge
       // The fact that a base class exists for all state selectors is
       // validated in `assertBlockObject`. BlockClass may be undefined
       // here if parsing a global state.
-      if (!blockClass) { continue; }
+      if (!blockClass) { break; }
       blockAttrs.push(blockClass.ensureAttributeValue(toAttrToken(node)));
     }
   }

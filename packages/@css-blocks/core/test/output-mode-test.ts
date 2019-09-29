@@ -16,10 +16,10 @@ export class BEMOutputMode extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `
       :scope { color: red; }
-      :scope[state|active] { color: orange; }
+      :scope[active] { color: orange; }
       .foo {color: yellow; }
-      .foo[state|color="green"] { color: green; }
-      .foo[state|color="blue"] { color: blue; }
+      .foo[color="green"] { color: green; }
+      .foo[color="blue"] { color: blue; }
     `;
     return this.process(filename, inputCSS, { outputMode: OutputMode.BEM }).then((result) => {
       assert.deepEqual(
@@ -38,10 +38,10 @@ export class BEMOutputMode extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `
       :scope { color: red; }
-      :scope[state|active] { color: orange; }
+      :scope[active] { color: orange; }
       .foo {color: yellow; }
-      .foo[state|color="green"] { color: green; }
-      .foo[state|color="blue"] { color: blue; }
+      .foo[color="green"] { color: green; }
+      .foo[color="blue"] { color: blue; }
     `;
     return this.process(filename, inputCSS, { outputMode: OutputMode.BEM_UNIQUE }).then((result) => {
       let css = result.css.toString();

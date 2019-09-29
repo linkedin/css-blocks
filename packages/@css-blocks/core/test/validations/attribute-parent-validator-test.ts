@@ -32,15 +32,15 @@ export class TemplateAnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|test] { color: red; }
+      :scope[test] { color: red; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state ":scope[state|test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
+      'Cannot use state ":scope[test]" without parent block also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
-        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test]")!);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[test]")!);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -54,17 +54,17 @@ export class TemplateAnalysisTests {
 
     let css = `
       .foo { color: blue; }
-      .foo[state|test] { color: red; }
+      .foo[test] { color: red; }
     `;
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state ".foo[state|test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
+      'Cannot use state ".foo[test]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         let klass = block.getClass("foo") as BlockClass;
-        element.addStaticAttr(klass, klass.getAttributeValue("[state|test]")!);
+        element.addStaticAttr(klass, klass.getAttributeValue("[test]")!);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -81,10 +81,10 @@ export class TemplateAnalysisTests {
       "blocks/a.css",
       `:scope { color: blue; }
       .pretty { color: red; }
-      .pretty[state|color=yellow] {
+      .pretty[color=yellow] {
         color: yellow;
       }
-      .pretty[state|color=green] {
+      .pretty[color=green] {
         color: green;
       }`,
     );
@@ -92,21 +92,21 @@ export class TemplateAnalysisTests {
     let css = `
       @block a from "a.css";
       :scope { extends: a; }
-      .pretty[state|color=black] {
+      .pretty[color=black] {
         color: black;
       }
     `;
 
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Cannot use state ".pretty[state|color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
+      'Cannot use state ".pretty[color=yellow]" without parent class also applied or implied by another style. (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         let aBlock = analysis.addBlock("a", block.getReferencedBlock("a") as Block);
         analysis.addBlock("", block);
         analysis.addBlock("a", aBlock);
         let element = analysis.startElement({ line: 10, column: 32 });
         let klass = block.getClass("pretty") as BlockClass;
-        let state = klass.resolveAttributeValue("[state|color=yellow]")!;
+        let state = klass.resolveAttributeValue("[color=yellow]")!;
         if (!state) { throw new Error("No state group `color` resolved"); }
         element.addStaticAttr(klass, state);
         analysis.endElement(element);
@@ -124,10 +124,10 @@ export class TemplateAnalysisTests {
       "blocks/a.css",
       `:scope { color: blue; }
       .pretty { color: red; }
-      .pretty[state|color=yellow] {
+      .pretty[color=yellow] {
         color: yellow;
       }
-      .pretty[state|color=green] {
+      .pretty[color=green] {
         color: green;
       }`,
     );
@@ -135,7 +135,7 @@ export class TemplateAnalysisTests {
     let css = `
       @block a from "a.css";
       :scope { extends: a; }
-      .pretty[state|color=black] {
+      .pretty[color=black] {
         color: black;
       }
     `;
@@ -146,7 +146,7 @@ export class TemplateAnalysisTests {
       analysis.addBlock("a", aBlock);
       let element = analysis.startElement({ line: 10, column: 32 });
       let klass = block.getClass("pretty") as BlockClass;
-      let state = klass.resolveAttributeValue("[state|color=yellow]");
+      let state = klass.resolveAttributeValue("[color=yellow]");
       if (!state) { throw new Error("No state group `color` resolved"); }
       element.addStaticClass(klass);
       element.addStaticAttr(klass, state);

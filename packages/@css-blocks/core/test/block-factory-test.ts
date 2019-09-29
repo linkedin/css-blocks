@@ -26,9 +26,9 @@ export class BlockFactoryTests extends BEMProcessor {
     imports.registerSource(
       baseFilename,
       `:scope { color: purple; }
-       :scope[state|large] { font-size: 20px; }
+       :scope[large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`,
+       .foo[small] { font-size: 5px; }`,
     );
 
     let extendsFilename = "foo/bar/extends.css";
@@ -44,7 +44,7 @@ export class BlockFactoryTests extends BEMProcessor {
     });
   }
 
-  @test "handles blocks with the same name"() {
+  @test async "handles blocks with the same name"() {
     let { imports, importer, config, factory } = setupImporting();
 
     let blockFilename1 = "foo/bar/block_1.css";
@@ -66,13 +66,10 @@ export class BlockFactoryTests extends BEMProcessor {
       }
     `);
 
-    let blockPromise1 = factory.getBlock(importer.identifier(null, blockFilename1, config));
-    let blockPromise2 = factory.getBlock(importer.identifier(null, blockFilename2, config));
-    return Promise.all([blockPromise1, blockPromise2]).then(([block1, block2]) => {
-      assert.equal(block1.name, "block");
-      assert.equal(block2.name, "block-2");
-    });
-
+    let block1 = await factory.getBlock(importer.identifier(null, blockFilename1, config));
+    let block2 = await factory.getBlock(importer.identifier(null, blockFilename2, config));
+    assert.equal(block1.name, "block");
+    assert.equal(block2.name, "block-2");
   }
 
 }

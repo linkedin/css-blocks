@@ -5,7 +5,6 @@ import {
   CLASS_NAME_IDENT,
   DEFAULT_EXPORT,
   ROOT_CLASS,
-  STATE_NAMESPACE,
 } from "./BlockSyntax";
 
 interface BlockToken {
@@ -39,7 +38,7 @@ const isAttribute = (token?: Partial<Token>): token is AttrToken  => !!token && 
 const isQuoted = (token?: Partial<AttrToken>): boolean => !!token && !!token.quoted;
 const isIdent = (ident?: string): boolean => !ident || CLASS_NAME_IDENT.test(ident);
 const hasName = (token?: Partial<Token>): boolean => !!token && !!token.name;
-const isValidNamespace = (token?: Partial<AttrToken>): boolean => !!token && (token.namespace === undefined || token.namespace === STATE_NAMESPACE);
+const isValidNamespace = (token?: Partial<AttrToken>): boolean => !!token && (token.namespace === undefined);
 
 const ATTR_BEGIN = "[";
 const ATTR_END = "]";
@@ -54,7 +53,7 @@ const SEPARATORS = new Set([CLASS_BEGIN, ATTR_BEGIN, PSEUDO_BEGIN]);
 
 export const ERRORS = {
   whitespace: "Whitespace is only allowed in quoted attribute values",
-  namespace: "State attribute selectors are required to use a valid namespace.",
+  namespace: "Namespaces aren't used for states in a block path.",
   noname: "Block path segments must include a valid name",
   unclosedAttribute: "Unclosed attribute selector",
   mismatchedQuote: "No closing quote found in Block path",

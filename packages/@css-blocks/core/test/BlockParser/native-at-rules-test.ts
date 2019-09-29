@@ -29,7 +29,7 @@ export class AtRulesUntouched extends BEMProcessor {
     let inputCSS = `
     :scope { color: red; }
     @media all and (max-width: 400px) {
-      :scope[state|responsive] { color: blue; }
+      :scope[responsive] { color: blue; }
       .a-class { width: 100%; }
     }`;
 

@@ -76,7 +76,7 @@ export async function constructBlock(configuration: Configuration, root: postcss
 
         // If this is an external Style, move on. These are validated
         // in `assert-foreign-global-attribute`.
-        let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
+        let blockName = sel.nodes.find(n => isAttributeNode(n) && n.namespace );
         if (blockName) {
           sel = sel.next && sel.next.selector;
           continue;
@@ -226,24 +226,19 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
  */
 function assertBlockObject(configuration: Configuration, block: Block, sel: CompoundSelector, rule: postcss.Rule, file: string): NodeAndType {
 
-  // If selecting a block or tag, check that the referenced block has been imported.
-  // Otherwise, referencing a tag name is not allowed in blocks, throw an error.
-  let blockName = sel.nodes.find(selectorParser.isTag);
-  if (blockName) {
-    let refBlock = block.getReferencedBlock(blockName.value);
-    if (!refBlock) {
-      throw new errors.InvalidBlockSyntax(
-        `Tag name selectors are not allowed: ${rule.selector}`,
-        range(configuration, block.stylesheet, file, rule, blockName),
-      );
-    }
+  let tagNode = sel.nodes.find(selectorParser.isTag);
+  if (tagNode) {
+    throw new errors.InvalidBlockSyntax(
+      `Tag name selectors are not allowed: ${rule.selector}`,
+      range(configuration, block.stylesheet, file, rule, tagNode),
+    );
   }
 
   // Targeting attributes that are not state selectors is not allowed in blocks, throw.
   let nonStateAttribute = sel.nodes.find(n => selectorParser.isAttribute(n) && !isAttributeNode(n));
   if (nonStateAttribute) {
     throw new errors.InvalidBlockSyntax(
-      `Cannot select attributes other than states: ${rule.selector}`,
+      `Cannot select attributes in the \`${selectorParser.isAttribute(nonStateAttribute) && nonStateAttribute.namespaceString}\` namespace: ${rule.selector}`,
       range(configuration, block.stylesheet, file, rule, nonStateAttribute),
     );
   }
@@ -264,23 +259,6 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
   // Test each node in selector
   let result = sel.nodes.reduce<NodeAndType | null>(
     (found, n) => {
-
-      // If this is an external Block reference, indicate we have encountered it.
-      // If this is not the first BlockType encountered, throw the appropriate error.
-      if (n.type === selectorParser.TAG) {
-        if (found === null) {
-          found = {
-            blockType: BlockType.block,
-            node: n,
-          };
-        } else {
-          throw new errors.InvalidBlockSyntax(
-            `External Block ${n} must be the first selector in "${rule.selector}"`,
-            range(configuration, block.stylesheet, file, rule, sel.nodes[0]),
-          );
-        }
-      }
-
       // If selecting the root element, indicate we have encountered it. If this
       // is not the first BlockType encountered, throw the appropriate error
       if (isRootNode(n)) {
@@ -314,10 +292,19 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
             `States without an explicit :scope or class selector are not supported: ${rule.selector}`,
             range(configuration, block.stylesheet, file, rule, n),
           );
-        } else if (found.blockType === BlockType.class || found.blockType === BlockType.classAttribute) {
+        }
+        if (found.blockType === BlockType.class || found.blockType === BlockType.classAttribute) {
           found = { node: n, blockType: BlockType.classAttribute };
-        } else if (found.blockType === BlockType.block || found.blockType === BlockType.root || found.blockType === BlockType.attribute) {
-          found = { node: n, blockType: BlockType.attribute };
+        } else if (found.blockType === BlockType.root || found.blockType === BlockType.attribute) {
+          if (n.namespace === true) {
+            throw new errors.InvalidBlockSyntax(
+              `The "any namespace" selector is not supported: ${rule.selector}`,
+              range(configuration, block.stylesheet, file, rule, n),
+            );
+          }
+          // XXX this is where we drop the ref to the other attribute nodes,
+          // XXX potentially causing the interface to not be fully discovered
+          found = { node: n, blockType: BlockType.attribute, blockName: n.namespace };
         }
       }
 
@@ -348,9 +335,9 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
         }
       }
       return found;
-  },
+    },
     null,
-);
+  );
 
   // If no rules found in selector, we have a problem. Throw.
   if (!result) {
@@ -360,24 +347,33 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
   }
 
   if (isExternalBlock(result)) {
-    let external = block.getReferencedBlock(result.node.value!);
-    if (!external) { throw new errors.InvalidBlockSyntax(``, range(configuration, block.stylesheet, file, rule, sel.nodes[0])); }
+    let blockName: string | undefined;
+    if (result.blockType === BlockType.attribute) {
+      blockName = result.blockName!;
+    } else {
+      blockName = result.node.value;
+    }
+    let external = block.getReferencedBlock(blockName);
+    if (!external) {
+      throw new errors.InvalidBlockSyntax(`A block named "${blockName}" does not exist in this context.`,
+                                          range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
+    }
     let globalStates = external.rootClass.allAttributeValues().filter((a) => a.isGlobal);
     if (!globalStates.length) {
       throw new errors.InvalidBlockSyntax(
-        `External Block '${result.node.value}' has no global states.`,
+        `External Block '${blockName}' has no global states.`,
         range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
     }
-    throw new errors.InvalidBlockSyntax(
-      `Missing global state selector on external Block '${result.node.value}'. Did you mean one of: ${globalStates.map((s) => s.asSource()).join(" ")}`,
-      range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
+    if (result.blockType !== BlockType.attribute) {
+      throw new errors.InvalidBlockSyntax(
+        `Missing global state selector on external Block '${blockName}'. Did you mean one of: ${globalStates.map((s) => s.asSource()).join(" ")}`,
+        range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
+    }
+    return result;
   }
 
   // Otherwise, return the block, type and associated node.
   else {
-    return {
-      blockName: blockName && blockName.value,
-      ...result,
-    };
+    return result;
   }
 }

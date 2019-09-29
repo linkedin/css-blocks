@@ -1,5 +1,6 @@
 import { postcss, postcssSelectorParser as selectorParser } from "opticss";
 
+import { ROOT_CLASS } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
@@ -25,22 +26,28 @@ export async function assertForeignGlobalAttribute(configuration: Configuration,
 
         // Only test rules that are block references (this is validated in parse-styles and shouldn't happen).
         // If node isn't selecting a block, move on
-        let blockName = sel.nodes.find(n => n.type === selectorParser.TAG);
-        if (!blockName || !blockName.value) { return; }
+        let blockName = sel.nodes.find(n => isAttributeNode(n) && n.namespace) as selectorParser.Attribute | undefined;
+
+        if (!blockName || !blockName.namespace) { return; }
+
+        if (blockName.namespace === true) {
+          // universal namespace selector was already validated; it won't occur here.
+          return;
+        }
 
         for (let node of sel.nodes) {
 
-          if (node.type === selectorParser.TAG) { continue; }
+          if ( node.type === selectorParser.PSEUDO && node.value === ROOT_CLASS) { continue; }
 
-          // If selecting something other than an attribute on external block, throw.
+          // If selecting something other than an attribute on external attribute, throw.
           if (!isAttributeNode(node)) {
             throw new errors.InvalidBlockSyntax(
-              `Only global states from other blocks can be used in selectors: ${rule.selector}`,
+              `Illegal global state selector: ${rule.selector}`,
               range(configuration, block.stylesheet, file, rule, node));
           }
 
           // If referenced block does not exist, throw.
-          let otherBlock = block.getReferencedBlock(blockName.value);
+          let otherBlock = block.getReferencedBlock(blockName.namespace);
           if (!otherBlock) {
             throw new errors.InvalidBlockSyntax(
               `No Block named "${blockName.value}" found in scope: ${rule.selector}`,

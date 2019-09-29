@@ -12,18 +12,18 @@ export class BlockInheritance extends BEMProcessor {
     let { imports, config } = setupImporting();
     imports.registerSource(
       "app.block.css",
-      `@block-global [state|is-loading];
-       :scope[state|is-loading] .profile {
+      `@block-global [is-loading];
+       :scope[is-loading] .profile {
          pointer-events: none;
        }`,
     );
 
     let filename = "widget.block.css";
     let inputCSS = `@block app from "./app.block.css";
-                    app[state|is-loading] :scope {
+                    :scope[app|is-loading] :scope {
                       border: none;
                     }
-                    app[state|is-loading] .b {
+                    :scope[app|is-loading] .b {
                       border: none;
                     }`;
 
@@ -36,39 +36,18 @@ export class BlockInheritance extends BEMProcessor {
       );
     });
   }
-  @test "Global state usage must specify a global state, not just a block name."() {
-    let { imports, config } = setupImporting();
-    imports.registerSource(
-      "app.block.css",
-      `@block-global [state|is-loading];
-       :scope[state|is-loading] .profile {
-         pointer-events: none;
-       }`,
-    );
-
-    let filename = "widget.block.css";
-    let inputCSS = `@block app from "./app.block.css";
-                    app .b {
-                      border: none;
-                    }`;
-
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
-      "Missing global state selector on external Block 'app'. Did you mean one of: :scope[state|is-loading] (widget.block.css:2:21)",
-      this.process(filename, inputCSS, config));
-  }
   @test "External block error has better error if mis-used but has no global states."() {
     let { imports, config } = setupImporting();
     imports.registerSource(
       "app.block.css",
-      `:scope[state|is-loading] .profile {
+      `:scope[is-loading] .profile {
          pointer-events: none;
        }`,
     );
 
     let filename = "widget.block.css";
     let inputCSS = `@block app from "./app.block.css";
-                    app .b {
+                    :scope[app|is-not-loading] .b {
                       border: none;
                     }`;
 
@@ -81,20 +60,24 @@ export class BlockInheritance extends BEMProcessor {
     let { imports, config } = setupImporting();
     imports.registerSource(
       "app.block.css",
-      `:scope[state|is-loading] .profile {
+      `@block-global [modal-visible];
+       :scope[is-loading] .profile {
          pointer-events: none;
+       }
+       :scope[modal-visible] {
+         background-color: gray;
        }`,
     );
 
     let filename = "widget.block.css";
     let inputCSS = `@block app from "./app.block.css";
-                    app[state|is-loading] .b {
+                    :scope[app|is-loading] .b {
                       border: none;
                     }`;
 
     return assertError(
       cssBlocks.InvalidBlockSyntax,
-      "[state|is-loading] is not global: app[state|is-loading] .b (widget.block.css:2:24)",
+      "[app|is-loading] is not global: :scope[app|is-loading] .b (widget.block.css:2:27)",
       this.process(filename, inputCSS, config));
   }
 }

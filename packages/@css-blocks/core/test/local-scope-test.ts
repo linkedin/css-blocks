@@ -25,22 +25,22 @@ export class LocalScopeLookupTest extends BEMProcessor {
     imports.registerSource(
       filename,
       `:scope { color: purple; }
-       :scope[state|large] { font-size: 20px; }
+       :scope[large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`,
+       .foo[small] { font-size: 5px; }`,
     );
 
     return factory.getBlock(importer.identifier(null, filename, config)).then(block => {
       assert.equal(block.lookup(":scope"), block.rootClass);
-      let largeState = block.rootClass.getAttributeValue("[state|large]");
+      let largeState = block.rootClass.getAttributeValue("[large]");
       assert(largeState);
-      assert.equal(block.lookup("[state|large]"), largeState);
+      assert.equal(block.lookup("[large]"), largeState);
       let fooClass = block.classes.find(c => c.name === "foo");
       if (fooClass) {
         assert.equal(block.lookup(".foo"), fooClass);
-        let smallState = fooClass.getAttributeValue("[state|small]");
+        let smallState = fooClass.getAttributeValue("[small]");
         assert(smallState);
-        assert.equal(block.lookup(".foo[state|small]"), smallState);
+        assert.equal(block.lookup(".foo[small]"), smallState);
       } else {
         assert.fail("wtf");
       }
@@ -52,9 +52,9 @@ export class LocalScopeLookupTest extends BEMProcessor {
     imports.registerSource(
       "foo/bar/a-block.block.css",
       `:scope { color: purple; }
-       :scope[state|large] { font-size: 20px; }
+       :scope[large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`,
+       .foo[small] { font-size: 5px; }`,
     );
     let filename = "foo/bar/hasref.block.css";
     imports.registerSource(
@@ -69,15 +69,15 @@ export class LocalScopeLookupTest extends BEMProcessor {
         return;
       }
       assert.equal(refblock.lookup("a-block"), block.rootClass);
-      let largeState = block.rootClass.getAttributeValue("[state|large]");
+      let largeState = block.rootClass.getAttributeValue("[large]");
       assert(largeState);
-      assert.equal(refblock.lookup("a-block[state|large]"), largeState);
+      assert.equal(refblock.lookup("a-block[large]"), largeState);
       let fooClass = block.classes.find(c => c.name === "foo");
       if (fooClass) {
         assert.equal(refblock.lookup("a-block.foo"), fooClass);
-        let smallState = fooClass.getAttributeValue("[state|small]");
+        let smallState = fooClass.getAttributeValue("[small]");
         assert(smallState);
-        assert.equal(refblock.lookup("a-block.foo[state|small]"), smallState);
+        assert.equal(refblock.lookup("a-block.foo[small]"), smallState);
       } else {
         assert.fail("wtf");
       }
@@ -89,9 +89,9 @@ export class LocalScopeLookupTest extends BEMProcessor {
     imports.registerSource(
       "foo/bar/a-block.block.css",
       `:scope { color: purple; }
-       :scope[state|large] { font-size: 20px; }
+       :scope[large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`,
+       .foo[small] { font-size: 5px; }`,
     );
     let filename = "foo/bar/hasref.block.css";
     imports.registerSource(
@@ -106,15 +106,15 @@ export class LocalScopeLookupTest extends BEMProcessor {
         return;
       }
       assert.equal(refblock.lookup("my-block"), block.rootClass);
-      let largeState = block.rootClass.getAttributeValue("[state|large]");
+      let largeState = block.rootClass.getAttributeValue("[large]");
       assert(largeState);
-      assert.equal(refblock.lookup("my-block[state|large]"), largeState);
+      assert.equal(refblock.lookup("my-block[large]"), largeState);
       let fooClass = block.classes.find(c => c.name === "foo");
       if (fooClass) {
         assert.equal(refblock.lookup("my-block.foo"), fooClass);
-        let smallState = fooClass.getAttributeValue("[state|small]");
+        let smallState = fooClass.getAttributeValue("[small]");
         assert(smallState);
-        assert.equal(refblock.lookup("my-block.foo[state|small]"), smallState);
+        assert.equal(refblock.lookup("my-block.foo[small]"), smallState);
       } else {
         assert.fail("wtf");
       }

@@ -15,18 +15,18 @@ export class BlockImportExport extends BEMProcessor {
     imports.registerSource(
       "foo/bar/imported.css",
       `:scope { color: purple; }
-       :scope[state|large] { font-size: 20px; }
-       :scope[state|theme=red] { color: red; }
+       :scope[large] { font-size: 20px; }
+       :scope[theme=red] { color: red; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }
-       .foo[state|font=fancy] { font-family: fancy; }`,
+       .foo[small] { font-size: 5px; }
+       .foo[font=fancy] { font-family: fancy; }`,
     );
 
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block imported from "./imported.css";
                     @block-debug imported to comment;
                     :scope { color: red; }
-                    .b[state|big] {color: blue;}`;
+                    .b[big] {color: blue;}`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
       imports.assertImported("foo/bar/imported.css");
@@ -36,12 +36,12 @@ export class BlockImportExport extends BEMProcessor {
           /* Source: foo/bar/imported.css
            * :scope (.imported)
            *  states:
-           *  ├── :scope[state|large] (.imported--large)
-           *  └── :scope[state|theme=red] (.imported--theme-red)
+           *  ├── :scope[large] (.imported--large)
+           *  └── :scope[theme=red] (.imported--theme-red)
            *  └── .foo (.imported__foo)
            *       states:
-           *       ├── .foo[state|font=fancy] (.imported__foo--font-fancy)
-           *       └── .foo[state|small] (.imported__foo--small)
+           *       ├── .foo[font=fancy] (.imported__foo--font-fancy)
+           *       └── .foo[small] (.imported__foo--small)
            */
           .test-block { color: red; }
           .test-block__b--big { color: blue; }`,

@@ -31,11 +31,11 @@ export class TemplateAnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; }
+      .asdf[larger] { font-size: 26px; }
       .fdsa { font-size: 20px; }
-      .fdsa[state|larger] { font-size: 26px; }
+      .fdsa[larger] { font-size: 26px; }
     `;
     return this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
       analysis.addBlock("", block);

@@ -57,9 +57,9 @@ export class TemplateAnalysisTests {
     let filename = "blocks/foo.block.css";
     let css = clean`
       :scope { color: blue; font-size: 20px; }
-      :scope[state|foo] { color: red; }
+      :scope[foo] { color: red; }
       .asdf { font-size: 20px; }
-      .asdf[state|larger] { font-size: 26px; color: red; }
+      .asdf[larger] { font-size: 26px; color: red; }
     `;
     class TestAnalyzer extends Analyzer<"Opticss.Template"> {
       analyze(): Promise<TestAnalyzer> {
@@ -69,7 +69,7 @@ export class TemplateAnalysisTests {
         return this.blockFactory.parse(root, filename, "optimized").then((block: Block) => {
           self.useBlockStyles(analysis, block, "", (container, el) => {
             if (container.asSource() === ".asdf") {
-              el.addDynamicAttr(container, block.find(".asdf[state|larger]") as AttrValue, true);
+              el.addDynamicAttr(container, block.find(".asdf[larger]") as AttrValue, true);
             } else {
               self.useAttrs(el, container);
             }
@@ -127,14 +127,14 @@ export class TemplateAnalysisTests {
         let expr = rewrite2.dynamicClass("e");
         if (isAndExpression(expr)) {
           assert.deepEqual(expr.and.length, 1);
-          assert.deepEqual(expr.and[0], block.find(".asdf[state|larger]")!);
+          assert.deepEqual(expr.and[0], block.find(".asdf[larger]")!);
         } else {
           assert.isTrue(false, "Expected and expression");
         }
         // This isn't compiling right now :(
         // typedAssert.isType<Partial<BooleanExpression<Style>>, BooleanExpression<Style>, AndExpression<Style>>(isAndExpression, expr).and(expr => {
         //   assert.deepEqual(expr.and.length, 1);
-        //   assert.deepEqual(expr.and[0], block.find(".asdf[state|larger]")!);
+        //   assert.deepEqual(expr.and[0], block.find(".asdf[larger]")!);
         // });
       });
     });

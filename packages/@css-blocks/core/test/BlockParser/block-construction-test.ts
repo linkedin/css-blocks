@@ -1,20 +1,31 @@
 import { assert } from "chai";
-import { skip, suite, test } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 
 import { BEMProcessor } from "../util/BEMProcessor";
 
 @suite("In BEM output mode")
 export class BEMOutputMode extends BEMProcessor {
 
-  @skip
+  @test async "cannot select attributes in the html namespace"() {
+    let filename = "foo/bar/html-attrs.css";
+    let inputCSS = `:scope[html|data-foo=bar] { color: red }`;
+    try {
+      await this.process(filename, inputCSS);
+    } catch (e) {
+      assert.equal(e.toString(), "Error: [css-blocks] BlockSyntaxError: Cannot select attributes in the `html` namespace: :scope[html|data-foo=bar] (foo/bar/html-attrs.css:1:7)");
+      return;
+    }
+    assert.fail("Error was expected.");
+  }
+
   @test "supports arbitrary whitespace in combinators"() {
     let filename = "foo/bar/self-combinator.css";
-    let inputCSS = `:scope[state|big]
-     :scope[state|big]::after { content: "" }`;
+    let inputCSS = `:scope[big]
+     .foo::after { content: "" }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
-        ".self-combinator--big .self-combinator--big::after { content: \"\"; }\n",
+        ".self-combinator--big\n     .self-combinator__foo::after { content: \"\"; }\n",
       );
     });
   }
@@ -46,7 +57,7 @@ export class BEMOutputMode extends BEMProcessor {
   @test "handles states"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:scope {color: #111;}
-                    :scope[state|big] { transform: scale(2); }`;
+                    :scope[big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -56,11 +67,11 @@ export class BEMOutputMode extends BEMProcessor {
     });
   }
 
-  @test "handles states as scopes"() {
+  @test "handles states on scopes"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:scope {color: #111;}
-                    :scope[state|big] .thing { transform: scale(2); }
-                    :scope[state|big] .thing[state|medium] { transform: scale(1.8); }`;
+                    :scope[big] .thing { transform: scale(2); }
+                    :scope[big] .thing[medium] { transform: scale(1.8); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -73,7 +84,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "handles comma-delimited states"() {
     let filename = "foo/bar/test-state.css";
-    let inputCSS = `:scope[state|big], :scope[state|really-big] { transform: scale(2); }`;
+    let inputCSS = `:scope[big], :scope[really-big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -84,7 +95,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "a state can be combined with itself"() {
     let filename = "foo/bar/self-combinator.css";
-    let inputCSS = `:scope[state|big] + :scope[state|big]::after { content: "" }`;
+    let inputCSS = `:scope[big] + :scope[big]::after { content: "" }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -96,7 +107,7 @@ export class BEMOutputMode extends BEMProcessor {
   @test "checkbox with sibling label"() {
     let filename = "foo/bar/checkbox.block.css";
     let inputCSS = `
-      :scope:checked + :scope[state|when-checked] {
+      :scope:checked + :scope[when-checked] {
         color: green;
       }
     `;
@@ -111,7 +122,7 @@ export class BEMOutputMode extends BEMProcessor {
   @test "handles exclusive states"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:scope {color: #111;}
-                    :scope[state|font=big] { transform: scale(2); }`;
+                    :scope[font=big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -124,7 +135,7 @@ export class BEMOutputMode extends BEMProcessor {
   @test "handles exclusive states with single quotes"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:scope {color: #111;}
-                    :scope[state|size='1dp'] { transform: scale(2); }`;
+                    :scope[size='1dp'] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -137,7 +148,7 @@ export class BEMOutputMode extends BEMProcessor {
   @test "handles exclusive states with double quotes"() {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:scope {color: #111;}
-                    :scope[state|size="1dp"] { transform: scale(2); }`;
+                    :scope[size="1dp"] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -149,7 +160,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "handles comma-delimited exclusive states"() {
     let filename = "foo/bar/test-state.css";
-    let inputCSS = `:scope[state|font=big], :scope[state|font=really-big] { transform: scale(2); }`;
+    let inputCSS = `:scope[font=big], :scope[font=really-big] { transform: scale(2); }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -160,7 +171,7 @@ export class BEMOutputMode extends BEMProcessor {
 
   @test "a exclusive state can be combined with itself"() {
     let filename = "foo/bar/self-combinator.css";
-    let inputCSS = `:scope[state|font=big] + :scope[state|font=big]::after { content: "" }`;
+    let inputCSS = `:scope[font=big] + :scope[font=big]::after { content: "" }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -186,7 +197,7 @@ export class BEMOutputMode extends BEMProcessor {
     let filename = "foo/bar/stateful-class.css";
     let inputCSS = `:scope {color: #111;}
                     .my-class { display: none; }
-                    :scope[state|visible] .my-class { display: block; }`;
+                    :scope[visible] .my-class { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -201,7 +212,7 @@ export class BEMOutputMode extends BEMProcessor {
     let filename = "foo/bar/stateful-class.css";
     let inputCSS = `:scope {color: #111;}
                     .my-class { display: none; }
-                    .my-class[state|visible] { display: block; }`;
+                    .my-class[visible] { display: block; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -216,7 +227,7 @@ export class BEMOutputMode extends BEMProcessor {
     let filename = "foo/bar/stateful.css";
     let inputCSS = `:scope {color: #111;}
                     .my-class { display: none; }
-                    :scope[state|translucent] .my-class[state|visible] { display: block; opacity: 0.75; }`;
+                    :scope[translucent] .my-class[visible] { display: block; opacity: 0.75; }`;
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),

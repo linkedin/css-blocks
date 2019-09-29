@@ -32,18 +32,18 @@ export class TemplateAnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|test=foo] { color: red; }
-      :scope[state|test=bar] { color: blue; }
+      :scope[test=foo] { color: red; }
+      :scope[test=bar] { color: blue; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Can not apply multiple states at the same time from the exclusive state group ":scope[state|test]". (templates/my-template.hbs:10:32)',
+      'Can not apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=foo]")!);
-        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=bar]")!);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[test=foo]")!);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[test=bar]")!);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -57,18 +57,18 @@ export class TemplateAnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|test=foo] { color: red; }
-      :scope[state|test=bar] { color: blue; }
+      :scope[test=foo] { color: red; }
+      :scope[test=bar] { color: blue; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Can not apply multiple states at the same time from the exclusive state group ":scope[state|test]". (templates/my-template.hbs:10:32)',
+      'Can not apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=foo]")!);
-        element.addDynamicAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=bar]")!, true);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[test=foo]")!);
+        element.addDynamicAttr(block.rootClass, block.rootClass.getAttributeValue("[test=bar]")!, true);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -82,18 +82,18 @@ export class TemplateAnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|test=foo] { color: red; }
-      :scope[state|test=bar] { color: blue; }
+      :scope[test=foo] { color: red; }
+      :scope[test=bar] { color: blue; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Can not apply multiple states at the same time from the exclusive state group ":scope[state|test]". (templates/my-template.hbs:10:32)',
+      'Can not apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[state|test=foo]")!);
-        element.addDynamicGroup(block.rootClass, block.rootClass.getAttribute("[state|test]")!, true);
+        element.addStaticAttr(block.rootClass, block.rootClass.getAttributeValue("[test=foo]")!);
+        element.addDynamicGroup(block.rootClass, block.rootClass.getAttribute("[test]")!, true);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));
@@ -107,18 +107,18 @@ export class TemplateAnalysisTests {
 
     let css = `
       :scope { color: blue; }
-      :scope[state|test=foo] { color: red; }
-      :scope[state|test=bar] { color: blue; }
+      :scope[test=foo] { color: red; }
+      :scope[test=bar] { color: blue; }
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Can not apply multiple states at the same time from the exclusive state group ":scope[state|test]". (templates/my-template.hbs:10:32)',
+      'Can not apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
         element.addStaticClass(block.rootClass);
-        element.addDynamicGroup(block.rootClass, block.rootClass.getAttribute("[state|test]")!, true);
-        element.addDynamicGroup(block.rootClass, block.rootClass.getAttribute("[state|test]")!, true);
+        element.addDynamicGroup(block.rootClass, block.rootClass.getAttribute("[test]")!, true);
+        element.addDynamicGroup(block.rootClass, block.rootClass.getAttribute("[test]")!, true);
         analysis.endElement(element);
         assert.deepEqual(1, 1);
       }));

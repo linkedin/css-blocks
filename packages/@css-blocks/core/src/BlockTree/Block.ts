@@ -111,7 +111,7 @@ export class Block
    *                      | <attribute-selector>   // reference to attribute in this sub-block
    *     block-selector -> 'root'
    *     class-selector -> <ident>
-   *     attribute-selector -> '[state|' <ident> ']'
+   *     attribute-selector -> '[' <ident> ']'
    *     ident -> regex:[a-zA-Z_-][a-zA-Z0-9]*
    *   A single dot by itself returns the current block.
    * @returns The Style referenced at the supplied path.
@@ -154,7 +154,7 @@ export class Block
    *                      | <attribute-selector>   // reference to attribute in this sub-block
    *     block-selector -> 'root'
    *     class-selector -> <ident>
-   *     attribute-selector -> '[state|' <ident> ']'
+   *     attribute-selector -> '[' <ident> ']'
    *     ident -> regex:[a-zA-Z_-][a-zA-Z0-9]*
    *   A single dot by itself returns the current block.
    * @returns The Style referenced at the supplied path.
@@ -394,10 +394,10 @@ export class Block
   }
 
   nodeAsStyle(node: selectorParser.Node): [Styles, number] | null {
-    if (selectorParser.isTag(node)) {
-      let otherBlock = this.getReferencedBlock(node.value);
+    let next = node.next();
+    if (isRootNode(node) && next && isAttributeNode(next) && typeof next.namespace === "string") {
+      let otherBlock = this.getReferencedBlock(next.namespace);
       if (otherBlock) {
-        let next = node.next();
         if (next && isClassNode(next)) {
           let klass = otherBlock.getClass(next.value);
           if (klass) {

@@ -13,16 +13,16 @@ export class BlockInheritance extends BEMProcessor {
     imports.registerSource(
       "foo/bar/base.css",
       `:scope { color: purple; }
-       :scope[state|large] { font-size: 20px; }
+       :scope[large] { font-size: 20px; }
        .foo   { float: left;   }
-       .foo[state|small] { font-size: 5px; }`,
+       .foo[small] { font-size: 5px; }`,
     );
 
     let filename = "foo/bar/inherits.css";
     let inputCSS = `@block base from "./base.css";
                     :scope { extends: base; color: red; }
                     .foo { clear: both; }
-                    .b[state|small] {color: blue;}
+                    .b[small] {color: blue;}
                     @block-debug self to comment;`;
 
     return this.process(filename, inputCSS, config).then((result) => {
@@ -37,13 +37,13 @@ export class BlockInheritance extends BEMProcessor {
           /* Source: foo/bar/inherits.css
            * :scope (.base.inherits)
            *  states:
-           *  └── :scope[state|large] (.base--large)
+           *  └── :scope[large] (.base--large)
            *  ├── .b (.inherits__b)
            *  |    states:
-           *  |    └── .b[state|small] (.inherits__b--small)
+           *  |    └── .b[small] (.inherits__b--small)
            *  └── .foo (.base__foo.inherits__foo)
            *       states:
-           *       └── .foo[state|small] (.base__foo--small)
+           *       └── .foo[small] (.base__foo--small)
            */`,
       );
     });
@@ -109,7 +109,7 @@ export class BlockInheritance extends BEMProcessor {
           color: white;
           background-color: green;
         }
-        .button[state|disabled] {
+        .button[disabled] {
           color: #333;
           background-color: lightgray;
         }
@@ -123,7 +123,7 @@ export class BlockInheritance extends BEMProcessor {
 
       :scope  { extends: basic-form; }
       .button { background-color: darkred; }
-      .button[state|disabled] {
+      .button[disabled] {
         background-color: #957D7D;
       }
       .label  { color: darkred; }
