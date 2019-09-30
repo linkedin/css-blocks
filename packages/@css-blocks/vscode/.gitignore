@@ -3,3 +3,4 @@ node_modules
 client/server
 .vscode-test
 *.tsbuildinfo
+!.vscode/
