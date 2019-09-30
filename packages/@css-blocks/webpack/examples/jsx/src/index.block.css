@@ -6,6 +6,6 @@
   background-color: papayawhip;
 }
 
-:scope[state|test] {
+:scope[test] {
   color: blue;
 }

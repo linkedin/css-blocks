@@ -3,6 +3,6 @@
   background-color: gray;
 }
 
-:scope[state|active] {
+:scope[active] {
   background-color: red;
 }

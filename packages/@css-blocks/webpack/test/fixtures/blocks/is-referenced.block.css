@@ -1,6 +1,6 @@
 :scope {
   color: red;
 }
-[state|active] {
+[active] {
   color: yellow;
 }
