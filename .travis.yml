@@ -16,7 +16,7 @@ addons:
     chrome: stable
 
 before_install:
-  - npm install -g lerna yarn
+  - npm install -g lerna yarn@1.17.3
   - ./scripts/if-opticss-dev.sh ./scripts/checkout-opticss.sh ../opticss
   - ./scripts/if-opticss-dev.sh ./scripts/link-to-opticss.js --file ../opticss
 
