@@ -129,7 +129,7 @@ export class ExpressionReader {
       else if (token === CALL_START && !this.stateName) {
         // XXX This err appears to be completely swallowed?
         debug(`Discovered invalid block expression ${this.toString()} in objstr`);
-        this.err = "Can not select state without a block or class.";
+        this.err = "Cannot select state without a block or class.";
       }
       else if (typeof token === "string") {
         if (this.stateName) { this.stateValue = token; }

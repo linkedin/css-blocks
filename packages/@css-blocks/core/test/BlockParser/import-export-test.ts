@@ -558,7 +558,7 @@ export class BlockImportExport extends BEMProcessor {
 
     return assertError(
       InvalidBlockSyntax,
-      `Can not import "a" as reserved word "default" (test.css:1:1)`,
+      `Cannot import "a" as reserved word "default" (test.css:1:1)`,
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }
@@ -574,7 +574,7 @@ export class BlockImportExport extends BEMProcessor {
 
     return assertError(
       InvalidBlockSyntax,
-      `Can not import "a" as reserved word "html" (test.css:1:1)`,
+      `Cannot import "a" as reserved word "html" (test.css:1:1)`,
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }
@@ -590,7 +590,7 @@ export class BlockImportExport extends BEMProcessor {
 
     return assertError(
       InvalidBlockSyntax,
-      `Can not import "default" as reserved word "html" (test.css:1:1)`,
+      `Cannot import "default" as reserved word "html" (test.css:1:1)`,
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }
@@ -626,7 +626,7 @@ export class BlockImportExport extends BEMProcessor {
 
     return assertError(
       InvalidBlockSyntax,
-      `Can not export "a" as reserved word "default" (test.css:3:7)`,
+      `Cannot export "a" as reserved word "default" (test.css:3:7)`,
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }
@@ -661,7 +661,7 @@ export class BlockImportExport extends BEMProcessor {
 
     return assertError(
       InvalidBlockSyntax,
-      `Can not export Block "nonexistant". No Block named "nonexistant" in "test.css". (test.css:1:1)`,
+      `Cannot export Block "nonexistant". No Block named "nonexistant" in "test.css". (test.css:1:1)`,
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }
@@ -677,7 +677,7 @@ export class BlockImportExport extends BEMProcessor {
 
     return assertError(
       InvalidBlockSyntax,
-      `Can not import Block "nonexistant". No Block named "nonexistant" exported by "./a.css". (test.css:1:1)`,
+      `Cannot import Block "nonexistant". No Block named "nonexistant" exported by "./a.css". (test.css:1:1)`,
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }

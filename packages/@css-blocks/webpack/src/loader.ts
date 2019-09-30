@@ -32,7 +32,7 @@ export function CSSBlocksWebpackAdapter(this: LoaderContext, source: any, map: a
 
   // Make ourselves async. We'll be waiting for Blocks to finish compiling.
   let callback = this.async()!;
-  if (!callback) { throw new Error("Can not initialize CSS Blocks async Webpack loader."); }
+  if (!callback) { throw new Error("Cannot initialize CSS Blocks async Webpack loader."); }
 
   let thisLoader = this.loaders[this.loaderIndex];
   let path = this.resourcePath;

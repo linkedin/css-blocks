@@ -81,7 +81,7 @@ export class TemplateValidator {
         this.validators.push(opts[key] as Validator);
       }
       else if (!VALIDATORS[key]) {
-        throw new errors.CssBlockError(`Can not find template validator "${key}".`);
+        throw new errors.CssBlockError(`Cannot find template validator "${key}".`);
       }
       else if (opts[key] && VALIDATORS[key]) {
         this.validators.push(VALIDATORS[key]);

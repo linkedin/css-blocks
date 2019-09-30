@@ -12,7 +12,7 @@ function ensureUniqueAttributeGroup(discovered: Set<Attribute>, group: Attribute
   let groups = [...group.resolveInheritance(), group];
   for (let g of groups) {
     if (discovered.has(g)) {
-      err(`Can not apply multiple states at the same time from the exclusive state group "${g.asSource()}".`);
+      err(`Cannot apply multiple states at the same time from the exclusive state group "${g.asSource()}".`);
     }
     if (track) { discovered.add(g); }
   }

@@ -75,7 +75,7 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
       }
       if (RESERVED_BLOCK_NAMES.has(localName)) {
         throw new errors.InvalidBlockSyntax(
-          `Can not import "${remoteName}" as reserved word "${localName}"`,
+          `Cannot import "${remoteName}" as reserved word "${localName}"`,
           sourceRange(factory.configuration, block.stylesheet, file, atRule),
         );
       }
@@ -85,7 +85,7 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
         let referencedBlock = block.getExportedBlock(remoteName);
         if (!referencedBlock) {
           throw new errors.InvalidBlockSyntax(
-            `Can not import Block "${remoteName}". No Block named "${remoteName}" exported by "${blockPath}".`,
+            `Cannot import Block "${remoteName}". No Block named "${remoteName}" exported by "${blockPath}".`,
             sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }

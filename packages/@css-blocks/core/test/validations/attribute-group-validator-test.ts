@@ -37,7 +37,7 @@ export class TemplateAnalysisTests {
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Can not apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
+      'Cannot apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
@@ -62,7 +62,7 @@ export class TemplateAnalysisTests {
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Can not apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
+      'Cannot apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
@@ -87,7 +87,7 @@ export class TemplateAnalysisTests {
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Can not apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
+      'Cannot apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });
@@ -112,7 +112,7 @@ export class TemplateAnalysisTests {
     `;
     return assertParseError(
       cssBlocks.TemplateAnalysisError,
-      'Can not apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
+      'Cannot apply multiple states at the same time from the exclusive state group ":scope[test]". (templates/my-template.hbs:10:32)',
       this.parseBlock(css, "blocks/foo.block.css", config).then(([block, _]) => {
         analysis.addBlock("", block);
         let element = analysis.startElement({ line: 10, column: 32 });

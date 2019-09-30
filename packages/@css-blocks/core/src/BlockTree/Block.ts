@@ -82,7 +82,7 @@ export class Block
    * @prop  name  string  The new uid for this `Block`.
    */
   public setName(name: string): void {
-    if (this.hasHadNameReset) { throw new CssBlockError("Can not set block name more than once."); }
+    if (this.hasHadNameReset) { throw new CssBlockError("Cannot set block name more than once."); }
     this._token = name;
     this.hasHadNameReset = true;
   }

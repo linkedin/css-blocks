@@ -54,7 +54,7 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
       for (let remoteName of Object.keys(blockNames)) {
         if (remoteNames.has(remoteName)) {
         throw new errors.InvalidBlockSyntax(
-          `Can not have duplicate Block export of same name: "${remoteName}".`,
+          `Cannot have duplicate Block export of same name: "${remoteName}".`,
           sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }
@@ -79,7 +79,7 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
         }
         if (remoteName === DEFAULT_EXPORT) {
           throw new errors.InvalidBlockSyntax(
-            `Can not export "${localName}" as reserved word "${DEFAULT_EXPORT}"`,
+            `Cannot export "${localName}" as reserved word "${remoteName}"`,
             sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }
@@ -87,7 +87,7 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
         let referencedBlock = srcBlock.getReferencedBlock(localName);
         if (!referencedBlock) {
           throw new errors.InvalidBlockSyntax(
-            `Can not export Block "${localName}". No Block named "${localName}" in "${file}".`,
+            `Cannot export Block "${localName}". No Block named "${localName}" in "${file}".`,
             sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }

@@ -61,7 +61,7 @@ export const ERRORS = {
   expectsSepInsteadRec: (c: string) => `Expected separator tokens "[" or ".", instead found \`${c}\``,
   illegalCharNotInAttribute: (c: string) => `Only attribute selectors may contain the \`${c}\` character.`,
   illegalCharInAttribute: (c: string) => `Attribute selectors may not contain the \`${c}\` character.`,
-  multipleOfType: (t: string) => `Can not have more than one ${t} selector in the same Block path`,
+  multipleOfType: (t: string) => `Cannot have more than one ${t} selector in the same Block path`,
 };
 
 function stringify(tokens: Token[]): string {
