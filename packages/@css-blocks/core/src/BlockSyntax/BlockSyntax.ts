@@ -66,3 +66,9 @@ export const ROOT_CLASS = ":scope";
 
 // The string `default` is used throughout the system to represent the default export of a block file.
 export const DEFAULT_EXPORT = "default";
+
+/**
+ * Names that a block cannot have lest it collides with other syntax.
+ */
+export const RESERVED_BLOCK_NAMES = new Set<string>([DEFAULT_EXPORT, "html", "svg", "math"]);
+Object.freeze(RESERVED_BLOCK_NAMES);

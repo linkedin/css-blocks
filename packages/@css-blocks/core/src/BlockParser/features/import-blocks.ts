@@ -1,7 +1,7 @@
 import { ObjectDictionary } from "@opticss/util";
 import { postcss } from "opticss";
 
-import { BLOCK_IMPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT } from "../../BlockSyntax";
+import { BLOCK_IMPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT, RESERVED_BLOCK_NAMES } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
@@ -73,9 +73,9 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
           sourceRange(factory.configuration, block.stylesheet, file, atRule),
         );
       }
-      if (localName === DEFAULT_EXPORT) {
+      if (RESERVED_BLOCK_NAMES.has(localName)) {
         throw new errors.InvalidBlockSyntax(
-          `Can not import "${remoteName}" as reserved word "${DEFAULT_EXPORT}"`,
+          `Can not import "${remoteName}" as reserved word "${localName}"`,
           sourceRange(factory.configuration, block.stylesheet, file, atRule),
         );
       }

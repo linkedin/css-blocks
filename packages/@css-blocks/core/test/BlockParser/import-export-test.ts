@@ -563,6 +563,38 @@ export class BlockImportExport extends BEMProcessor {
     );
   }
 
+  @test async "html is a reserved word – named imports"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource(
+      "a.css",
+      `:scope { block-name: block-a; }`,
+    );
+
+    let inputCSS = `@block ( a as html ) from "./a.css";`;
+
+    return assertError(
+      InvalidBlockSyntax,
+      `Can not import "a" as reserved word "html" (test.css:1:1)`,
+      this.process("test.css", inputCSS, {importer: imports.importer()}),
+    );
+  }
+
+  @test async "html filename is a reserved word – named imports"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource(
+      "html.block.css",
+      `:scope { color: red; }`,
+    );
+
+    let inputCSS = `@block html from "./html.block.css";`;
+
+    return assertError(
+      InvalidBlockSyntax,
+      `Can not import "default" as reserved word "html" (test.css:1:1)`,
+      this.process("test.css", inputCSS, {importer: imports.importer()}),
+    );
+  }
+
   @test async "default is a reserved word – bare exports"() {
     let imports = new MockImportRegistry();
 
