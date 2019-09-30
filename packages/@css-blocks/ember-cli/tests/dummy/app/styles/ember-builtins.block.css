@@ -3,7 +3,7 @@
   color: red;
 }
 
-.link-to-helper[state|active] {
+.link-to-helper[active] {
   --link-to-helper-active: applied;
   color: green;
 }

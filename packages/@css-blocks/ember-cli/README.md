@@ -37,14 +37,14 @@ For CSS Blocks syntax, plese see [the main project's readme](../../../README.md)
 
 ## Styling `{{link-to}}`
 
-In the Ember + CSS Blocks build, the built-in `{{link-to}}` component receives special treatment. The `{{link-to}}` component manages its own internal style application for `[state|loading]`, `[state|active]` and `[state|disabled]`. To style a `{{link-to}} in these special states, simply apply a class with those special state names and Ember will apply the correct classes at runtime as required. For example:
+In the Ember + CSS Blocks build, the built-in `{{link-to}}` component receives special treatment. The `{{link-to}}` component manages its own internal style application for `[loading]`, `[active]` and `[disabled]`. To style a `{{link-to}} in these special states, simply apply a class with those special state names and Ember will apply the correct classes at runtime as required. For example:
 
 ```css
 /* stylesheet.block.css */
 .link                 { color: gray; }
-.link[state|loading]  { color: yellow; }
-.link[state|active]   { color: green; }
-.link[state|disabled] { color: red; }
+.link[loading]  { color: yellow; }
+.link[active]   { color: green; }
+.link[disabled] { color: red; }
 ```
 
 ```hbs

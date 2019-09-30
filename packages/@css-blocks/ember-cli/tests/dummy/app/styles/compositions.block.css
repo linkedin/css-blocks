@@ -18,29 +18,29 @@
 }
 
 .pink {
-  composes: "util[state|pink]";
+  composes: "util[pink]";
 }
 
 .purple {
-  composes: "util[state|purple]";
+  composes: "util[purple]";
 }
 
-.blue[state|active] {
-  composes: "util[state|blue]";
+.blue[active] {
+  composes: "util[blue]";
 }
 
-.orange[state|active] {
+.orange[active] {
   composes: "util.orange";
 }
 
-.yellow[state|color="none"] { }
+.yellow[color="none"] { }
 
-.yellow[state|color="yellow"] {
-  composes: "util[state|yellow]";
+.yellow[color="yellow"] {
+  composes: "util[yellow]";
 }
 
-.brown[state|color="none"] { }
+.brown[color="none"] { }
 
-.brown[state|color="yellow"] {
+.brown[color="yellow"] {
   composes: "util.brown";
 }

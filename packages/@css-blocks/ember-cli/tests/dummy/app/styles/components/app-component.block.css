@@ -8,12 +8,12 @@
   color: orange;
 }
 
-:scope[state|enabled] {
+:scope[enabled] {
   --app-component-block-scope-state: applied;
   color: green;
 }
 
-.sub-class[state|enabled] {
+.sub-class[enabled] {
   --app-component-block-class-state: applied;
   color: blue;
 }

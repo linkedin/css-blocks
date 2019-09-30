@@ -2,11 +2,11 @@
   font-style: italic;
 }
 
-:scope[state|pink] {
+:scope[pink] {
   color: pink;
 }
 
-:scope[state|purple] {
+:scope[purple] {
   color: purple;
 }
 
@@ -22,11 +22,11 @@
   color: orange;
 }
 
-:scope[state|blue] {
+:scope[blue] {
   color: blue;
 }
 
-:scope[state|yellow] {
+:scope[yellow] {
   color: yellow;
 }
 
