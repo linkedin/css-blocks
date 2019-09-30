@@ -13,9 +13,9 @@ interface IBuiltIns {
 
 const BUILT_INS: IBuiltIns = {
   "link-to": {
-    "activeClass": "[state|active]",
-    "loadingClass": "[state|loading]",
-    "disabledClass": "[state|disabled]",
+    "activeClass": "[active]",
+    "loadingClass": "[loading]",
+    "disabledClass": "[disabled]",
   },
 };
 

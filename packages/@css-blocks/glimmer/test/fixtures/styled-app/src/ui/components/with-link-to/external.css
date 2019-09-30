@@ -11,6 +11,6 @@
   color: pink;
 }
 
-.link-3[state|active] {
+.link-3[active] {
   color: purple
 }

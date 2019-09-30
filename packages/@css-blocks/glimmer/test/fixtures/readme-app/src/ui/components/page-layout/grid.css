@@ -4,10 +4,10 @@
 .one-fifth {
   width: 20%;
 }
-.one-fifth[state|gutter="right"] {
+.one-fifth[gutter="right"] {
   width: calc(20% - 20px);
   margin-right: 20px;
 }
-.four-fifths { 
+.four-fifths {
   width: 80%;
 }

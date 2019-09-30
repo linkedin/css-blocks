@@ -31,16 +31,16 @@ Given the following CSS Block definition:
   block-name: my-component;
   /* ... */
 }
-[state|loading] { /* ... */ }
+[loading] { /* ... */ }
 .sidebar { /* ... */ }
-.sidebar[state|collapsed] { /* ... */ }
+.sidebar[collapsed] { /* ... */ }
 .main { /* ... */ }
 .recommended { /* ... */ }
 ```
 
 ```css
 .one-fifth { /* ... */ }
-.one-fifth[state|gutter-right] { /* ... */ }
+.one-fifth[gutter-right] { /* ... */ }
 .four-fifths { /* ... */ }
 ```
 

@@ -1,8 +1,8 @@
 @block grid from "./grid.css";
 :scope { color: red; width: 100vw; }
-:scope[state|loading] { color: blue }
+:scope[loading] { color: blue }
 .sidebar { float: left; }
-.sidebar[state|collapsed] { display: none; }
+.sidebar[collapsed] { display: none; }
 .main { border-right: 2px groove gray; }
 .recommended { background-color: orange }
 

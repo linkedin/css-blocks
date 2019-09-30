@@ -18,7 +18,7 @@ describe("Stylesheet analysis", function() {
       assert.deepEqual(serializedAnalysis.blocks, {
         "default": fixture("styled-app/src/ui/components/my-app/stylesheet.css"),
       });
-      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[state|disabled]" , ":scope", ":scope[state|is-loading]"]);
+      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[disabled]" , ":scope", ":scope[is-loading]"]);
       let expected: ElementsAnalysis = {
         a: { tagName: "div", staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
         b: { tagName: "page-banner", staticStyles: [], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" } } },
@@ -48,7 +48,7 @@ describe("Stylesheet analysis", function() {
         "default": fixture("styled-app/src/ui/components/with-multiple-blocks/stylesheet.css"),
         "h": fixture("styled-app/src/ui/components/with-multiple-blocks/header.css"),
       });
-      assert.deepEqual(analysis.stylesFound, [".world", ".world[state|thick]", ":scope", "h.emphasis", "h.emphasis[state|extra]", "h:scope"]);
+      assert.deepEqual(analysis.stylesFound, [".world", ".world[thick]", ":scope", "h.emphasis", "h.emphasis[extra]", "h:scope"]);
       assert.deepEqual(analysis.elements, {
         a: { tagName: "div", staticStyles: [2], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
         b: { tagName: "h1", staticStyles: [5], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
@@ -72,11 +72,11 @@ describe("Stylesheet analysis", function() {
       });
       assert.deepEqual(analysis.stylesFound, [
         ".world",
-        ".world[state|thick]",
+        ".world[thick]",
         ":scope",
         "h.emphasis",
-        "h.emphasis[state|style=bold]",
-        "h.emphasis[state|style=italic]",
+        "h.emphasis[style=bold]",
+        "h.emphasis[style=italic]",
         "h:scope",
       ]);
       assert.deepEqual(analysis.elements, {
@@ -125,11 +125,11 @@ describe("Stylesheet analysis", function() {
       });
       assert.deepEqual(analysis.stylesFound, [
         ".world",
-        ".world[state|thick]",
+        ".world[thick]",
         ":scope",
         "h.emphasis",
-        "h.emphasis[state|style=bold]",
-        "h.emphasis[state|style=italic]",
+        "h.emphasis[style=bold]",
+        "h.emphasis[style=italic]",
         "h:scope",
         "t.underline",
       ]);

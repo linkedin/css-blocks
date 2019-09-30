@@ -2,13 +2,13 @@
   color: red;
 }
 
-:scope[state|is-loading] {
+:scope[is-loading] {
   color: blue;
 }
 
 .editor {
   display: block;
 }
-.editor[state|disabled] {
+.editor[disabled] {
   pointer-events: none;
 }

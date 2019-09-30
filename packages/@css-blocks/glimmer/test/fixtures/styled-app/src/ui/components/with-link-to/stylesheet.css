@@ -14,7 +14,7 @@
   color: green;
 }
 
-.link-2[state|active] {
+.link-2[active] {
   color: blue;
 }
 
@@ -22,15 +22,15 @@
   color: gray;
 }
 
-.link-4[state|active] {
+.link-4[active] {
   color: green;
 }
 
-.link-4[state|loading] {
+.link-4[loading] {
   color: yellow;
 }
 
-.link-4[state|disabled] {
+.link-4[disabled] {
   color: red;
 }
 

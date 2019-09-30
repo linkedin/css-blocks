@@ -1,11 +1,11 @@
 :scope {
-   font-size: 18px; 
+   font-size: 18px;
 }
 
 .emphasis {
     font-style: italic;
 }
 
-.emphasis[state|extra] {
+.emphasis[extra] {
     font-weight: bold;
 }

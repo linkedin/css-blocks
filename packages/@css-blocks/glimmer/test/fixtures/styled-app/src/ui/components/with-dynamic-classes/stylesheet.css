@@ -9,7 +9,7 @@
     border: 1px solid black;
 }
 
-.world[state|thick] {
+.world[thick] {
     border-width: 3px;
 }
 
