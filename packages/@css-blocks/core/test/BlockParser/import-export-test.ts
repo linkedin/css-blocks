@@ -612,6 +612,25 @@ export class BlockImportExport extends BEMProcessor {
     );
   }
 
+  @test async "svg is a reserved word – bare exports"() {
+    let imports = new MockImportRegistry();
+    imports.registerSource(
+      "images.block.css",
+      `:scope { color: red; }`,
+    );
+
+
+    let inputCSS = `
+      @export (default as svg) from "./images.block.css";
+    `;
+
+    return assertError(
+      InvalidBlockSyntax,
+      `Cannot export "default" as reserved word "svg" (test.css:2:7)`,
+      this.process("test.css", inputCSS, {importer: imports.importer()}),
+    );
+  }
+
   @test async "default is a reserved word – named exports"() {
     let imports = new MockImportRegistry();
     imports.registerSource(

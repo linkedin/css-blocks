@@ -1,6 +1,6 @@
 import { postcss } from "opticss";
 
-import { BLOCK_EXPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT } from "../../BlockSyntax";
+import { BLOCK_EXPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT, RESERVED_BLOCK_NAMES } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
@@ -77,7 +77,8 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
             sourceRange(factory.configuration, block.stylesheet, file, atRule),
           );
         }
-        if (remoteName === DEFAULT_EXPORT) {
+
+        if (RESERVED_BLOCK_NAMES.has(remoteName)) {
           throw new errors.InvalidBlockSyntax(
             `Cannot export "${localName}" as reserved word "${remoteName}"`,
             sourceRange(factory.configuration, block.stylesheet, file, atRule),
