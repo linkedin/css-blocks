@@ -619,7 +619,6 @@ export class BlockImportExport extends BEMProcessor {
       `:scope { color: red; }`,
     );
 
-
     let inputCSS = `
       @export (default as svg) from "./images.block.css";
     `;
