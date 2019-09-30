@@ -287,6 +287,12 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
             range(configuration, block.stylesheet, file, rule, n),
           );
         }
+        if (n.attribute === "scope") {
+          throw new errors.InvalidBlockSyntax(
+            `A state cannot be named 'scope'.`,
+            range(configuration, block.stylesheet, file, rule, n),
+          );
+        }
         if (!found) {
           throw new errors.InvalidBlockSyntax(
             `States without an explicit :scope or class selector are not supported: ${rule.selector}`,
