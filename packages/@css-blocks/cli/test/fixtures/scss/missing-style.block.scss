@@ -1,6 +1,6 @@
 @block simple from "./simple.block.scss";
 
 .composer {
-  composes: "simple[state|light]";
+  composes: "simple[light]";
   color: blue;
 }

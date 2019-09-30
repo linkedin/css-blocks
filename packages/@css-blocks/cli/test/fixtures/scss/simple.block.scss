@@ -2,7 +2,7 @@
   color: red;
   background-color: white;
 
-  &[state|dark] {
+  &[dark] {
     color: darkred;
     background-color: gray;
   }

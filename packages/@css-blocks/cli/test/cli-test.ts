@@ -97,14 +97,14 @@ Found 1 error in 1 file.
     let cli = new CLI();
     await cli.run(["validate", "--preprocessors", distFile("test/preprocessors"), fixture("scss/missing-style.block.scss")]);
     assert.equal(cli.output, `error\ttest/fixtures/scss/missing-style.block.scss
-\tNo style "simple[state|light]" found.
+\tNo style "simple[light]" found.
 \tAt compiled output of test/fixtures/scss/missing-style.block.scss:3:3
 \t2: .composer {
-\t3:   composes: "simple[state|light]";
+\t3:   composes: "simple[light]";
 \t4:   color: blue;
 \tSource Mapped to test/fixtures/scss/missing-style.block.scss:4:3
 \t3: .composer {
-\t4:   composes: "simple[state|light]";
+\t4:   composes: "simple[light]";
 \t5:   color: blue;
 Found 1 error in 1 file.
 `);
