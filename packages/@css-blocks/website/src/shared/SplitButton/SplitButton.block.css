@@ -29,7 +29,7 @@
   background-color: rgba(255, 255, 255, .25);
 }
 
-.button[state|active], .button[state|active]:hover, .button[state|active]:focus {
+.button[active], .button[active]:hover, .button[active]:focus {
   background-color: white;
   color: var(--pink);
 }

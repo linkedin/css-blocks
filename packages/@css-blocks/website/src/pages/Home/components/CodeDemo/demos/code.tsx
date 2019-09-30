@@ -14,12 +14,12 @@ const data: Data = {
       padding: 0 16px;
     }
 
-    :scope[state|inverse] {
+    :scope[inverse] {
       background-color: white;
       color: #ed2651;
     }
 
-    :scope[state|size=small] {
+    :scope[size=small] {
       height: 16px;
       line-height: 16px;
       padding: 0px 8px;
@@ -32,15 +32,15 @@ const data: Data = {
       width: 16px;
     }
 
-    .icon[state|animate] {
+    .icon[animate] {
       animation: 3s ease-in 1s icon-animation;
     }`,
   cssTooltips: [
     { label: "1", value: "Every component stylesheet may have a root style", y: 2.4, x: 13.3 },
-    { label: "2", value: "Root styles may be modified by states", y: 27.6, x: 26 },
-    { label: "3", value: "States may have one or more substate values", y: 38.2, x: 28.7 },
+    { label: "2", value: "Root styles may be modified by states", y: 27.6, x: 21 },
+    { label: "3", value: "States may have one or more substate values", y: 38.2, x: 23.7 },
     { label: "4", value: "Blocks may contain other classes to be applied to sub-elements", y: 50.7, x: 12.7 },
-    { label: "5", value: "Classes may also have states and substates", y: 65.4, x: 25.2 }
+    { label: "5", value: "Classes may also have states and substates", y: 65.4, x: 20.2 }
   ],
 
   jsxExample: `

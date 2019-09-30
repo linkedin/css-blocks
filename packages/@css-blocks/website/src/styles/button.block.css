@@ -50,16 +50,16 @@
   z-index: -2;
 }
 
-:scope[state|color="purple"]::after {
+:scope[color="purple"]::after {
   background: var(--purple);
 }
 
-:scope[state|color="purple"]::before {
+:scope[color="purple"]::before {
   background: rgba(255,255,255,.15);
   mix-blend-mode: lighten;
 }
 
-:scope[state|color="purple"]:active::before {
+:scope[color="purple"]:active::before {
   background: rgba(255,255,255,.25);
 }
 
