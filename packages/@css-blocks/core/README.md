@@ -77,7 +77,7 @@ Block compilation becomes a little more complicated once we begin emitting confl
 ```css
 /* other.css */
 :scope { block-name: "other"; }
-:scope[state|active] .bar { color: blue; }
+:scope[active] .bar { color: blue; }
 
 /* main.css */
 @block other from "./other.css";
@@ -149,9 +149,9 @@ For example, given the following Block file, we can determine the type of usage 
 ```css
 .my-class            { /* ... */ }
 .other-class         { /* ... */ }
-[state|active]       { /* ... */ }
-[state|color="red"]  { /* ... */ }
-[state|color="blue"] { /* ... */ }
+[active]       { /* ... */ }
+[color="red"]  { /* ... */ }
+[color="blue"] { /* ... */ }
 ```
 
 Static styles are guaranteed to never change:
@@ -167,7 +167,7 @@ Dynamic styles may or may not be applied depending on application state:
 Mutually Exclusive styles are guaranteed to never be used on the element at the same time:
 ```handlebars
 {{!-- `my-class` and `other-class` are mutually exclusive --}}
-{{!-- `[state|color=red]` and `[state|color=blue]` are mutually exclusive --}}
+{{!-- `[color=red]` and `[color=blue]` are mutually exclusive --}}
 <div class="{{style-if value 'my-class' 'other-class'}}" state:color={{color}}></div>
 ```
 

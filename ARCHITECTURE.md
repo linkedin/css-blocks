@@ -29,24 +29,24 @@ Oh, you're back? Good! Glad you're a css-blocks master now –  welcome to the c
 
 # Build Phases
 
-Lets kick this off with a high-level overview of what happens when you run a css-blocks build. We'll dive deeper into the project structure and organization a little later, but there's a **lot** going on here, and what's the point of reading about APIs if you don't know what we're trying to accomplish? 
+Lets kick this off with a high-level overview of what happens when you run a css-blocks build. We'll dive deeper into the project structure and organization a little later, but there's a **lot** going on here, and what's the point of reading about APIs if you don't know what we're trying to accomplish?
 
 After all, as Uncle Ben once said – "With great power, comes great...computational complexity" (Sorry, its been a while since I've seen Spider Man).
 
 To pull off all the features promised by css-blocks, we need to do a *lot* of work. Over the course of a single build, css-blocks will bring your application through five (5) distinct phases:
 
 1. Block Parsing
-2. Template Analysis 
+2. Template Analysis
 3. Block Compilation
 4. Optimization (Production Only)
 5. Template Rewrite
 
 ## Block Parsing
-Lets start at the very beginning – a very good place to start! In css-blocks, we start with your templates – unexpected for a CSS framework, I know! 
+Lets start at the very beginning – a very good place to start! In css-blocks, we start with your templates – unexpected for a CSS framework, I know!
 
-CSS Blocks starts at the entry point template(s) passed to it by your build, and crawls the template dependency trees. Every time we encounter a referenced Block file in a template (remember: the syntax for this changes depending on the templating language), we pass it off to the [BlockFactory](./packages/@css-blocks/core/src/BlockParser/BlockFactory.ts) for parsing. 
+CSS Blocks starts at the entry point template(s) passed to it by your build, and crawls the template dependency trees. Every time we encounter a referenced Block file in a template (remember: the syntax for this changes depending on the templating language), we pass it off to the [BlockFactory](./packages/@css-blocks/core/src/BlockParser/BlockFactory.ts) for parsing.
 
-The `BlockFactory` parses every Block file discovered into an internally used, intermediate data model that is well indexed, easily searchable, and manages all the complexity of Block composition, inheritance and implementation. This data model is affectionately called a [BlockTree](./packages/@css-blocks/core/src/BlockTree/index.ts). 
+The `BlockFactory` parses every Block file discovered into an internally used, intermediate data model that is well indexed, easily searchable, and manages all the complexity of Block composition, inheritance and implementation. This data model is affectionately called a [BlockTree](./packages/@css-blocks/core/src/BlockTree/index.ts).
 
 The `BlockFactory` also ensures we only ever have a single instance of each unique Block file's data model at any time, and encapsulates all the logic around Block reference resolution, CSS parsing and preprocessor integration.
 
@@ -58,13 +58,13 @@ In this phase we validate Block syntax and will stop the build with a helpful er
  - Malformed Block paths or block-references
  - And more!
 
-At the end of a successful __Block Parsing Phase__, we are left with a collection of `Block` objects that my be used to query any and all relevant information about a Block file. Any valid `Block` may contain one to many `Style` objects that represent individual `BlockClass`es, or `AttrValue`s accessible on the `Block`. These in turn map directly back to one or more declared rulesets in the source Block file. 
+At the end of a successful __Block Parsing Phase__, we are left with a collection of `Block` objects that my be used to query any and all relevant information about a Block file. Any valid `Block` may contain one to many `Style` objects that represent individual `BlockClass`es, or `AttrValue`s accessible on the `Block`. These in turn map directly back to one or more declared rulesets in the source Block file.
 
 You can read more about `Block` objects and their associated APIs in the [CSS Blocks Core README](./packages/%40css-blocks/core).
 
 ## Template Analysis
 Once we're finished constructing our `Block` objects, these data are passed off to a template `Analyzer` for the __Template Analysis Phase__. It is the job of the analyzer to inspect every element, in every template of the application, and report back information, like:
-  
+
   - which styles are used;
   - which styles are dynamic;
   - which styles are mutually exclusive;
@@ -82,7 +82,7 @@ The `Analyzer` will crawl the template dependency tree and create a new `Analysi
 
 In this phase we validate style composition and will stop the build with a helpful error if we notice anything wrong, including but not limited to:
 
- - Invalid application of `Style`s, like: 
+ - Invalid application of `Style`s, like:
 	 - an `AttrValue` used without parent `BlockClass`,
 	 - two classes from the same block applied to the same element,
 	 - a `:scope` and `BlockClass` applied on the same element;
@@ -109,16 +109,16 @@ I encourage you to read up about Opticss and its internals [over in its reposito
 
   1. a re-written, optimized, CSS file;
   2. a `StyleMapping` object with queryable rewrite data, described below;
-  3. an `Action` queue describing every transformation step the optimizer made. 
+  3. an `Action` queue describing every transformation step the optimizer made.
 
 > Note: In a non-optimized build, this step is essentially a pass through. The Optimizer will return un-transformed CSS and `StyleMapping` data that is the same as the input data.
 
 The [`StyleMapping`](./packages/%40css-blocks/core/src/TemplateRewriter/StyleMapping.ts) object returned by css-blocks after an Opticss run contains APIs that allow you to query a `RewriteMapping` for any Element analyzed during the __Analysis Phase__. This `RewriteMapping` contains all the information required to rewrite that Element from the old, pre-optimized classes, to the new, fully-optimized classes, as we will see in the __Rewrite Phase__.
 
 ## Rewrite Phase
-Phew! Last step. Now that we have our final CSS stylesheet and it's corresponding `StyleMapping`, we can re-visit every Element we encountered during our __Analysis Phase__ and make sure it uses the correct classes at the right times. 
+Phew! Last step. Now that we have our final CSS stylesheet and it's corresponding `StyleMapping`, we can re-visit every Element we encountered during our __Analysis Phase__ and make sure it uses the correct classes at the right times.
 
-As mentioned above, every Element has a corresponding [`RewriteMapping`](./packages/%40css-blocks/core/src/TemplateRewriter/RewriteMapping.ts) returned from Opticss. Any given Class, ID or Attribute associated with an element will map back to one (or many) optimized class names that should **only** be applied if a certain set of conditions are met. 
+As mentioned above, every Element has a corresponding [`RewriteMapping`](./packages/%40css-blocks/core/src/TemplateRewriter/RewriteMapping.ts) returned from Opticss. Any given Class, ID or Attribute associated with an element will map back to one (or many) optimized class names that should **only** be applied if a certain set of conditions are met.
 
 Some classes are static – they are always present on the element. Other classes are dynamic, and should only be applied if the application is in a specific state.
 
@@ -135,10 +135,10 @@ For example, given this Block file and template:
   color: red;
   float: right;
 }
-.class-0[state|active] {
+.class-0[active] {
   color: blue;
 }
-.class-1[state|color=yellow] {
+.class-1[color=yellow] {
   color: yellow;
 }
 ```
@@ -161,12 +161,12 @@ We can easily conceptualize the `RewriteMapping` data for each element in develo
   float: right;
 }
 
-/* Notice: `[state|active]` will *only* be applied when `.class-0` is also applied! */
+/* Notice: `[active]` will *only* be applied when `.class-0` is also applied! */
 .block__class-0.block__class-0--active {
   color: blue;
 }
 
-/* Notice: `[state|color=yellow]` will *only* be applied when `.class-1` is also applied! */
+/* Notice: `[color=yellow]` will *only* be applied when `.class-1` is also applied! */
 .block__class-1.block__class-1--color-yellow {
   color: yellow;
 }
@@ -175,15 +175,15 @@ We can easily conceptualize the `RewriteMapping` data for each element in develo
 ```javascript
 // For Element 1:
 //   - `.class-0` is always applied
-//   - `.class-0[state|active]` is *only* applied when `isActive` is true
+//   - `.class-0[active]` is *only* applied when `isActive` is true
 const el1Classes = [
-  "block__class-0",  
+  "block__class-0",
   isActive && "block__class-0--active"
 ].join(' ');
 
 // For Element 2:
 //   - `.class-1` is applied when `isColorful` is true
-//   -  `[state|color=yellow]` is applied when `dynamicColor` === "yellow"
+//   -  `[color=yellow]` is applied when `dynamicColor` === "yellow"
 const el2Classes = [
   isColorful ? "block__class-1" : "",
   dynamicColor === "yellow" ? "block__class-1--color-yellow" : "",
@@ -209,13 +209,13 @@ And our `RewriteMapping`s will adjust to accommodate:
 ```javascript
 // Element 1 styling logic remains the same, but uses updated classes.
 const el1Classes = [
-  "a b", 
+  "a b",
   isActive && "d"
 ].join(' ');
 
-// Element 2 styling logic is updated to use the new minified classes, 
-// but also pushes some stylesheet logic to the template! 
-// `[state|color=yellow]` will *only every be applied when `isColorful` 
+// Element 2 styling logic is updated to use the new minified classes,
+// but also pushes some stylesheet logic to the template!
+// `[color=yellow]` will *only every be applied when `isColorful`
 // is also truthy.
 const el2Classes = [
   isColorful ? "a c" : "",
@@ -260,7 +260,7 @@ A core requirement of css-blocks is the ability to analyze and rewrite your appl
 **Template Integration** packages' sole responsibility is to understand your project's specific templating syntax (ex: Glimmer, JSX, etc) and provide language specific `Analyzer` and `Rewriter`s.
 
 **Analyzers** will typically be run on one (1) entry point template and are responsible for two (2) things as the crawl the template dependency tree:
- 
+
   1. Discover Block files referenced by the templates and pass them to the `BlockFactory` (provided by `@css-blocks/core`) for compilation and,
   2. After Block compilation, crawl every element in every template and log relevant Block class/state usage information on an `Analysis` object (also provided by `@css-blocks/core`).
 
