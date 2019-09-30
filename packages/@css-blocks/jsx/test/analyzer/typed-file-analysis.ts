@@ -16,7 +16,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
       `,
@@ -37,7 +37,7 @@ export class Test {
     ).then((analyzer: Analyzer) => {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=yellow]"]);
     });
   }
 
@@ -46,7 +46,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
       `,
@@ -77,7 +77,7 @@ export class Test {
     ).then((analyzer: Analyzer) => {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=yellow]"]);
     });
   }
 
@@ -87,7 +87,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
       `,
@@ -119,7 +119,7 @@ export class Test {
     ).then((analyzer: Analyzer) => {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=yellow]"]);
     });
   }
 
@@ -128,7 +128,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
       `,
@@ -166,7 +166,7 @@ export class Test {
     ).then((analyzer: Analyzer) => {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=yellow]"]);
     });
   }
 

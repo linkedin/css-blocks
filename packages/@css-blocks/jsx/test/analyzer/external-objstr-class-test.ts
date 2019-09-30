@@ -16,7 +16,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: red; }
         .foo { color: blue; }
-        .foo[state|happy] { color: balloons; }
+        .foo[happy] { color: balloons; }
       `,
     });
 
@@ -39,7 +39,7 @@ export class Test {
     ).then((analyzer: Analyzer) => {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
-      assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar.foo[state|happy]", "bar:scope"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.foo", "bar.foo[happy]", "bar:scope"]);
 
       let aAnalysis = analysis.elements.a;
       assert.deepEqual(aAnalysis.dynamicClasses, []);

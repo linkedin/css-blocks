@@ -22,10 +22,10 @@ import styles from "my-block.block.css";
 // References the class `.myClass` from the imported block.
 <div className={styles.myClass} />;
 
-// References the state `:scope[state|rootState]` from the imported block.
+// References the state `:scope[rootState]` from the imported block.
 <div className={styles.rootState()} />;
 
-// References the state `.myClass[state|classState]` from the imported block.
+// References the state `.myClass[classState]` from the imported block.
 <div className={styles.myClass.classState()} />;
 
 ```
@@ -37,10 +37,10 @@ To reference sub-states on a state, pass the sub-state value as the first (and o
 ```jsx
 import styles from "my-block.block.css";
 
-// References the sub-state `:scope[state|rootState="foo"]` from the imported block.
+// References the sub-state `:scope[rootState="foo"]` from the imported block.
 <div className={styles.rootState("foo")} />;
 
-// References the sub-state `.myClass[state|classState="bar"]` from the imported block.
+// References the sub-state `.myClass[classState="bar"]` from the imported block.
 let tmp = "bar"
 <div className={styles.myClass.classState(tmp)} />;
 
@@ -62,7 +62,7 @@ let styleOne = objstr({
 });
 <div className={styleOne} />;
 
-// Apply `my-block:scope` and `my-blocks[state|enabled]`
+// Apply `my-block:scope` and `my-blocks[enabled]`
 let styleOne = objstr({
   [styles]: true,
   [styles.enabled()]: isEnabled

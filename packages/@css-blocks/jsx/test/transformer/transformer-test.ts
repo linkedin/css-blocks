@@ -102,7 +102,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
       `,
@@ -141,7 +141,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=true] {
+        .pretty[color=true] {
           color: yellow;
         }
       `,
@@ -176,7 +176,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=100] {
+        .pretty[color=100] {
           color: yellow;
         }
       `,
@@ -211,10 +211,10 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
-        .pretty[state|color=green] {
+        .pretty[color=green] {
           color: green;
         }
       `,
@@ -261,8 +261,8 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|bool] { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[bool] { color: red; }
+        .pretty[color=yellow] {
           color: yellow;
         }
       `,
@@ -314,10 +314,10 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellowColor] {
+        .pretty[color=yellowColor] {
           color: yellow;
         }
-        .pretty[state|color=greenColor] {
+        .pretty[color=greenColor] {
           color: green;
         }
       `,
@@ -400,7 +400,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: red; }
         .foo { color: blue; }
-        .foo[state|happy] { color: balloons; }
+        .foo[happy] { color: balloons; }
       `,
     });
 
@@ -443,7 +443,7 @@ export class Test {
     mock({
       "foo.block.css": `
         :scope { }
-        :scope[state|cool] { }
+        :scope[cool] { }
       `,
     });
 

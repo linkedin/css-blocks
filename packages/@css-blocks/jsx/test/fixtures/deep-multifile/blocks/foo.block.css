@@ -6,6 +6,6 @@
   color: red;
 }
 
-.pretty[state|color=yellow] {
+.pretty[color=yellow] {
   color: yellow;
 }

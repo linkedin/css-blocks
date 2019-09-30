@@ -16,7 +16,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
       `,
@@ -39,7 +39,7 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=yellow]"]);
     });
   }
 
@@ -48,10 +48,10 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
-        .pretty[state|color=green] {
+        .pretty[color=green] {
           color: green;
         }
       `,
@@ -74,7 +74,7 @@ export class Test {
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: [ 1 ]}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=yellow]"]);
     });
   }
 
@@ -83,14 +83,14 @@ export class Test {
       "bar.block.css": `
         @block foo from "./foo.block.css";
         :scope { extends: foo; }
-        .pretty[state|color=black] {
+        .pretty[color=black] {
           color: black;
         }
       `,
       "foo.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=green] {
+        .pretty[color=green] {
           color: green;
         }
       `,
@@ -110,7 +110,7 @@ export class Test {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=green]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=green]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
@@ -122,14 +122,14 @@ export class Test {
       "bar.block.css": `
         @block foo from "./foo.block.css";
         :scope { extends: foo; }
-        .pretty[state|color=black] {
+        .pretty[color=black] {
           color: black;
         }
       `,
       "foo.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=green] {
+        .pretty[color=green] {
           color: green;
         }
       `,
@@ -149,7 +149,7 @@ export class Test {
     ).then((_analysis: Analyzer) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
-      assert.equal(err.message, `[css-blocks] TemplateError: Can not apply multiple states at the same time from the exclusive state group ".pretty[state|color]". (<unknown file>:11:6)`);
+      assert.equal(err.message, `[css-blocks] TemplateError: Can not apply multiple states at the same time from the exclusive state group ".pretty[color]". (<unknown file>:11:6)`);
     });
   }
 
@@ -158,17 +158,17 @@ export class Test {
       "bar.block.css": `
         @block foo from "./foo.block.css";
         :scope { extends: foo; }
-        .pretty[state|color=black] {
+        .pretty[color=black] {
           color: black;
         }
       `,
       "foo.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
-        .pretty[state|color=green] {
+        .pretty[color=green] {
           color: green;
         }
       `,
@@ -192,7 +192,7 @@ export class Test {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|color=black]", "bar.pretty[state|color=green]", "bar.pretty[state|color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=black]", "bar.pretty[color=green]", "bar.pretty[color=yellow]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, [{ stringExpression: true, group: {black: 1, green: 2, yellow: 3}, value: [] }]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
@@ -204,17 +204,17 @@ export class Test {
       "bar.block.css": `
         @block foo from "./foo.block.css";
         :scope { extends: foo; }
-        .pretty[state|color=black] {
+        .pretty[color=black] {
           color: black;
         }
       `,
       "foo.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
-        .pretty[state|color=green] {
+        .pretty[color=green] {
           color: green;
         }
       `,
@@ -235,7 +235,7 @@ export class Test {
     `).then((_analysis: Analyzer) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
-      assert.equal(err.message, `[css-blocks] MalformedBlockPath: State "bar.pretty[state|color]" expects a value. (<unknown file>:9:9)`);
+      assert.equal(err.message, `[css-blocks] MalformedBlockPath: State "bar.pretty[color]" expects a value. (<unknown file>:9:9)`);
     });
   }
 
@@ -244,7 +244,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|awesome] {
+        .pretty[awesome] {
           color: yellow;
         }
       `,
@@ -264,7 +264,7 @@ export class Test {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[state|awesome]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[awesome]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, [{condition: true, value: [ 1 ]}]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);
@@ -276,7 +276,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|awesome] {
+        .pretty[awesome] {
           color: yellow;
         }
       `,
@@ -294,7 +294,7 @@ export class Test {
     `).then((_analysis: Analyzer) => {
       assert.ok(false, "Should never get here");
     }).catch((err) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: State ".pretty[state|awesome]" has no value "wat" on Block "bar".\n  Did you mean: .pretty[state|awesome]? (<unknown file>:7:9)');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: State ".pretty[awesome]" has no value "wat" on Block "bar".\n  Did you mean: .pretty[awesome]? (<unknown file>:7:9)');
     });
   }
 

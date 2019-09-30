@@ -18,7 +18,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
       `,
@@ -39,10 +39,10 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
-        .pretty[state|color=green] {
+        .pretty[color=green] {
           color: green;
         }
       `,
@@ -63,10 +63,10 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|color=yellow] {
+        .pretty[color=yellow] {
           color: yellow;
         }
-        .pretty[state|color=green] {
+        .pretty[color=green] {
           color: green;
         }
       `,
@@ -87,7 +87,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|awesome] {
+        .pretty[awesome] {
           color: yellow;
         }
       `,
@@ -108,7 +108,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|awesome] {
+        .pretty[awesome] {
           color: yellow;
         }
       `,
@@ -129,7 +129,7 @@ export class Test {
       "bar.block.css": `
         :scope { color: blue; }
         .pretty { color: red; }
-        .pretty[state|awesome] {
+        .pretty[awesome] {
           color: yellow;
         }
       `,

@@ -72,7 +72,7 @@ export class Test {
         :scope { color: red; }
         .foo { color: blue; }
         .baz { color: yellow; }
-        .foo[state|baz] { color: red; }`,
+        .foo[baz] { color: red; }`,
     });
 
     return parse(`
@@ -83,7 +83,7 @@ export class Test {
     ).then(() => {
       assert.equal("Should never get here", "");
     }).catch((err: Error) => {
-      assert.equal(err.message, '[css-blocks] MalformedBlockPath: State ".foo[state|baz]" has no value "biz" on Block "bar".\n  Did you mean: .foo[state|baz]? (<unknown file>:4:47)');
+      assert.equal(err.message, '[css-blocks] MalformedBlockPath: State ".foo[baz]" has no value "biz" on Block "bar".\n  Did you mean: .foo[baz]? (<unknown file>:4:47)');
     });
   }
 }

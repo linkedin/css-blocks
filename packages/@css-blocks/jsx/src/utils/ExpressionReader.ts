@@ -225,10 +225,10 @@ export class ExpressionReader {
 
       if (!state) {
         if (stateGroup.hasResolvedValues) {
-          let message = `State "${this.block}${blockClass.asSource()}[state|${this.stateName}]" expects a value.`;
+          let message = `State "${this.block}${blockClass.asSource()}[${this.stateName}]" expects a value.`;
           throw new MalformedBlockPath(message, this.loc);
         } else {
-          let message = `State "${this.block}${blockClass.asSource()}[state|${this.stateName}]" not found.`;
+          let message = `State "${this.block}${blockClass.asSource()}[${this.stateName}]" not found.`;
           throw new MalformedBlockPath(message, this.loc);
         }
       }
