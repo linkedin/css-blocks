@@ -2,22 +2,13 @@
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "baseUrl": "out",
-		"target": "es2018",
-		"outDir": "out",
-		"rootDir": "src",
-		"lib": ["es2018"]
+    "baseUrl": "dist",
+    "target": "es2018",
+    "outDir": "dist",
+    "rootDir": "src",
+    "lib": ["es2018"]
   },
-  "include": [
-    "src",
-    "test"
-  ],
-  "exclude": [
-    "out",
-    "node_modules",
-    ".vscode-test"
-  ],
-	"references": [
-		{"path": "../language-server"}
-	]
+  "include": ["src", "test"],
+  "exclude": ["dist", "node_modules", ".vscode-test"],
+  "references": [{ "path": "../language-server" }]
 }
