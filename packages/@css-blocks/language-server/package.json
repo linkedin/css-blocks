@@ -1,24 +1,29 @@
 {
-	"private": true,
-	"name": "@css-blocks/language-server",
-	"description": "CSS Blocks Language Server",
-	"version": "0.0.1",
-	"author": "LinkedIn Corporation",
-	"license": "BSD-2-Clause",
-	"engines": {
-		"node": "*"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/LinkedIn/css-blocks"
-	},
-	"dependencies": {
-		"@css-blocks/core": "^0.24.0",
-		"opticss": "^0.6.2",
-		"vscode-languageserver": "^5.2.1"
-	},
-	"scripts": {
-		"compile": "tsc --build",
-		"watch": "tsc --build --watch"
-	}
+  "private": true,
+  "name": "@css-blocks/language-server",
+  "description": "CSS Blocks Language Server",
+  "version": "0.0.1",
+  "author": "LinkedIn Corporation",
+  "license": "BSD-2-Clause",
+  "engines": {
+    "node": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LinkedIn/css-blocks"
+  },
+  "dependencies": {
+    "@css-blocks/core": "^0.24.0",
+    "opticss": "^0.6.2",
+    "vscode-languageserver": "^5.2.1"
+  },
+  "scripts": {
+    "compile": "tsc --version && tsc --build",
+    "pretest": "yarn run compile",
+    "lint": "tslint --fix -t msbuild --project . -c tslint.cli.json",
+    "posttest": "yarn run lint",
+    "test": "mocha dist/test --opts src/test/mocha.opts",
+    "test:runner": "mocha dist/test",
+    "watch": "watch 'yarn run test' './src' './test' --wait=3"
+  }
 }

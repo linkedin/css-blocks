@@ -12,7 +12,7 @@ let client: LanguageClient;
 
 export function activate(_context: ExtensionContext) {
 	// The server is implemented in node
-	let serverModule = require.resolve('@css-blocks/language-server/out/server.js');
+	let serverModule = require.resolve('@css-blocks/language-server/dist/server.js');
 	let exists = fs.existsSync(serverModule);
 	console.log({exists});
 	// The debug options for the server
