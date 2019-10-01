@@ -31,16 +31,16 @@ export class DiagnosticsManager {
         range: {
           start: {
             line: range.start.line - 1,
-            character: range.start.column - 1
+            character: range.start.column - 1,
           },
           end: {
             line: range.end.line - 1,
             // TODO: explain why we are doing this better. their end character is
             // the next character after the end of the range.
-            character: range.end.column
-          }
+            character: range.end.column,
+          },
         },
-        message: error.origMessage
+        message: error.origMessage,
       };
 
       diagnostics.push(diagnostic);

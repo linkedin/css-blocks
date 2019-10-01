@@ -1,35 +1,36 @@
 import {
-  createConnection,
-  TextDocuments,
-  // TextDocument,
-  // Diagnostic,
-  // DiagnosticSeverity,
-  ProposedFeatures,
-  InitializeParams,
-  DidChangeConfigurationNotification,
-  CompletionItem,
-  CompletionItemKind,
-  TextDocumentPositionParams,
-  // TextDocumentSyncKind,
-  // DidChangeTextDocumentParams,
-  // Range
-} from "vscode-languageserver";
-import { postcss } from "opticss";
-import {
   // Attribute,
   Block,
   // BlockClass,
   BlockFactory,
   // Options,
   // isBlockClass,
-  resolveConfiguration,
-  Syntax,
   CssBlockError,
+  SourceRange,
+  Syntax,
   // errorHasRange,
-  SourceRange
+  resolveConfiguration,
 } from "@css-blocks/core";
-import * as path from "path";
 import { BlockParser } from "@css-blocks/core/dist/src/BlockParser/BlockParser";
+import { postcss } from "opticss";
+import * as path from "path";
+import {
+  CompletionItem,
+  CompletionItemKind,
+  // TextDocument,
+  // Diagnostic,
+  // DiagnosticSeverity,
+  DidChangeConfigurationNotification,
+  InitializeParams,
+  ProposedFeatures,
+  TextDocumentPositionParams,
+  TextDocuments,
+  createConnection,
+  // TextDocumentSyncKind,
+  // DidChangeTextDocumentParams,
+  // Range
+} from "vscode-languageserver";
+
 import { DiagnosticsManager } from "./services/diagnostics";
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
@@ -40,8 +41,8 @@ const diagnostics = new DiagnosticsManager(connection);
 // Initialize simple documents manager
 let documents: TextDocuments = new TextDocuments();
 
-let hasConfigurationCapability: boolean = false;
-let hasWorkspaceFolderCapability: boolean = false;
+let hasConfigurationCapability = false;
+let hasWorkspaceFolderCapability = false;
 // let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 connection.onInitialize((params: InitializeParams) => {
@@ -67,9 +68,9 @@ connection.onInitialize((params: InitializeParams) => {
       definitionProvider: true,
       documentSymbolProvider: false,
       completionProvider: {
-        resolveProvider: true
-      }
-    }
+        resolveProvider: true,
+      },
+    },
   };
 });
 
@@ -78,7 +79,7 @@ connection.onInitialized(() => {
     // Register for all configuration changes.
     connection.client.register(
       DidChangeConfigurationNotification.type,
-      undefined
+      undefined,
     );
   }
   if (hasWorkspaceFolderCapability) {
@@ -142,6 +143,10 @@ const config = resolveConfiguration({});
 const factory = new BlockFactory(config, postcss);
 const parser = new BlockParser(config, factory);
 
+documents.onDidSave(_ => {
+  factory.reset();
+});
+
 documents.onDidChangeContent(async change => {
   const uri = change.document.uri;
   // TODO: figure out why this is not working and use it instead of the
@@ -157,7 +162,7 @@ documents.onDidChangeContent(async change => {
         .replace(/.hbs$/, ".block.css")
         .replace(
           new RegExp(`${path.sep}templates${path.sep}`),
-          `${path.sep}styles${path.sep}`
+          `${path.sep}styles${path.sep}`,
         );
       let block: Block;
 
@@ -179,7 +184,7 @@ documents.onDidChangeContent(async change => {
             let previousClassName = "";
             let matchIndexOffset = 8;
 
-            match[2].split(" ").forEach(className => {
+            match[2].split(/\s+/).forEach(className => {
               if (match === null) {
                 return;
               }
@@ -193,14 +198,14 @@ documents.onDidChangeContent(async change => {
                 range: {
                   start: {
                     line: index + 1,
-                    column: match.index + matchIndexOffset
+                    column: match.index + matchIndexOffset,
                   },
                   end: {
                     line: index + 1,
                     column:
-                      match.index + matchIndexOffset + className.length - 1
-                  }
-                }
+                      match.index + matchIndexOffset + className.length - 1,
+                  },
+                },
               });
 
               previousClassName = className;
@@ -237,7 +242,7 @@ documents.onDidChangeContent(async change => {
           originalSource: text,
           originalSyntax: Syntax.css,
           parseResult: postcss.parse(text, { from: filepath }),
-          dependencies: []
+          dependencies: [],
         });
         await diagnostics.sendDiagnostics([], uri);
       } catch (e) {
@@ -246,6 +251,8 @@ documents.onDidChangeContent(async change => {
         }
       }
       break;
+
+    default:
   }
 });
 
@@ -304,7 +311,7 @@ connection.onCompletion(
             .replace(/.hbs$/, ".block.css")
             .replace(
               new RegExp(`${path.sep}templates${path.sep}`),
-              `${path.sep}styles${path.sep}`
+              `${path.sep}styles${path.sep}`,
             );
 
           try {
@@ -313,17 +320,17 @@ connection.onCompletion(
             let completions = attributes.map(
               (attr): CompletionItem => ({
                 label: `${attr.namespace}:${attr.name}`,
-                kind: CompletionItemKind.Property
-              })
+                kind: CompletionItemKind.Property,
+              }),
             );
 
             block.classes
-            	// TODO: figure out if this is a reliable way to remove :scope
+              // TODO: figure out if this is a reliable way to remove :scope
               .filter(blockClass => !blockClass.isRoot)
               .forEach(blockClass => {
                 const classCompletion: CompletionItem = {
                   label: blockClass.name,
-                  kind: CompletionItemKind.Property
+                  kind: CompletionItemKind.Property,
                 };
 
                 const classAttributeCompletions = blockClass
@@ -331,13 +338,13 @@ connection.onCompletion(
                   .map(
                     (attr): CompletionItem => ({
                       label: `${attr.namespace}:${attr.name}`,
-                      kind: CompletionItemKind.Property
-                    })
+                      kind: CompletionItemKind.Property,
+                    }),
                   );
 
                 completions = completions.concat(
                   classCompletion,
-                  classAttributeCompletions
+                  classAttributeCompletions,
                 );
               });
 
@@ -355,7 +362,7 @@ connection.onCompletion(
     }
 
     return [];
-  }
+  },
 );
 
 // This handler resolves additional information for the item selected in
@@ -370,7 +377,7 @@ connection.onCompletionResolve(
       item.documentation = "JavaScript documentation";
     }
     return item;
-  }
+  },
 );
 
 connection.onDidChangeWatchedFiles(_change => {
