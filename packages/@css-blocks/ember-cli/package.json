@@ -34,7 +34,7 @@
     "symlink-or-copy": "^1.2.0"
   },
   "devDependencies": {
-    "@ember/jquery": "^0.6.1",
+    "@ember/jquery": "^1.0.0",
     "broccoli-asset-rev": "^3.0.0",
     "ember-ajax": "^5.0.0",
     "ember-cli": "~3.11",
