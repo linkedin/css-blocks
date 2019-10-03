@@ -1,22 +1,7 @@
 import { CssBlockError, errorHasRange } from "@css-blocks/core/dist/src";
-import {
-  Diagnostic,
-  DiagnosticSeverity,
-  PublishDiagnosticsParams,
-} from "vscode-languageserver";
+import { Diagnostic, DiagnosticSeverity } from "vscode-languageserver";
 
-export interface SendDiagnosticsDelegate {
-  sendDiagnostics(params: PublishDiagnosticsParams): void;
-}
-
-export class DiagnosticsManager {
-  connection: SendDiagnosticsDelegate;
-
-  constructor(connection: SendDiagnosticsDelegate) {
-    this.connection = connection;
-  }
-
-  async sendDiagnostics(errors: CssBlockError[], uri: string): Promise<void> {
+export function convertErrorsToDiagnostics(errors: CssBlockError[]): Diagnostic[] {
     let diagnostics: Diagnostic[] = [];
 
     errors.forEach(error => {
@@ -46,6 +31,5 @@ export class DiagnosticsManager {
       diagnostics.push(diagnostic);
     });
 
-    this.connection.sendDiagnostics({ uri, diagnostics });
-  }
+    return diagnostics;
 }
