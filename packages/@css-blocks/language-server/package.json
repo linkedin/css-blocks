@@ -14,8 +14,16 @@
   },
   "dependencies": {
     "@css-blocks/core": "^0.24.0",
+    "@glimmer/syntax": "^0.42.1",
     "opticss": "^0.6.2",
-    "vscode-languageserver": "^5.2.1"
+    "vscode-languageserver": "^5.2.1",
+    "vscode-uri": "^2.0.3"
+  },
+  "devDependencies": {
+    "mocha": "^6.1.4",
+    "tslint": "^5.9.1",
+    "typescript": "~3.6",
+    "watch": "^1.0.2"
   },
   "scripts": {
     "compile": "tsc --version && tsc --build",
@@ -24,6 +32,6 @@
     "posttest": "yarn run lint",
     "test": "mocha dist/test --opts src/test/mocha.opts",
     "test:runner": "mocha dist/test",
-    "watch": "watch 'yarn run test' './src' './test' --wait=3"
+    "watch": "watch 'yarn run test' './src' --wait=3"
   }
 }

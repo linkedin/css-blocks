@@ -1,0 +1,7 @@
+.a {
+  text-decoration: none;
+}
+
+.a.b {
+  display: inline;
+}
