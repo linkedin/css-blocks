@@ -106,15 +106,14 @@ CSS Blocks is under active development and there are a number of features that h
 | **Selectors** ||
 | ✅ | `:scope` | Scope selector for component root. |
 | ✅ | `.class` | Class selectors for component sub-elements. |
-| ✅ | <code>.class[state&#124;name]</code> | State that is applied to scope and class selectors on state existence. |
-| ✅ | <code>.class[state&#124;name="value"]</code> | Mutually exclusive sub-states for scope and class selectors to be applied when a sub-state value matches. |
-| ❌ | <code>[state&#124;name=value]</code> | Bare state (not associated with an Originating Element) and optional substate selectors for targeting all elements in the Block that possess the state an/or sub-state. |
-| 🖌 | <code>.class[state&#124;name default]</code> | Default state value to be applied when there is no other match. |
+| ✅ | <code>.class[name]</code> | State that is applied to scope and class selectors on state existence. |
+| ✅ | <code>.class[name="value"]</code> | Mutually exclusive sub-states for scope and class selectors to be applied when a sub-state value matches. |
+| ❌ | <code>[name=value]</code> | Bare state (not associated with an Originating Element) and optional substate selectors for targeting all elements in the Block that possess the state and/or sub-state. |
+| 🖌 | <code>.class[name=value default]</code> | Default state value to be applied when there is no other match. |
 | **At Rules** ||
 | ✅ | `@block local-name from "./file/path.css"` | Reference another Block using a local name. |
 | ✅ | `@block-debug block-name to channel` | Debug call that will print a block interface to a "channel": `comment`, `stderr`, or `stdout`. |
 | ✅ | `@block-global block.path` | Declare a Block class or state as public. It may be used as a context selector in other Blocks. |
-| 🖌 | `@is-block block-name` | Block class can declare itself to be the root of another block in a specific state or set of states.  |
 | **Properties** ||
 | ✅ | `block-name: "custom-name";` | Provide custom Block names in `:scope` for a nicer debugging experience. |
 | ✅ | `implements: block-name;` | A Block can declare that it implements one or more other Block's interfaces in its `:scope` selector and the compiler will ensure that all of those states and classes are styled locally. |
@@ -472,11 +471,11 @@ All the following syntaxes are legal to select any given stylable on a reference
 |Stylable|Syntax|
 |:--|:--|
 |Scope|`block`|
-|Scope State|<code>block[state&#124;name]</code>|
-|Scope Sub-State|<code>block[state&#124;name=value]</code>|
+|Scope State|<code>block[name]</code>|
+|Scope Sub-State|<code>block[name=value]</code>|
 |Class|`block.class`|
-|Scope State|<code>block.class[state&#124;name]</code>|
-|Scope Sub-State|<code>block.class[state&#124;name=value]</code>|
+|Class State|<code>block.class[name]</code>|
+|Class Sub-State|<code>block.class[name=value]</code>|
 
 > 🔮 **Future Feature: Block Path Wildcards**
 >
