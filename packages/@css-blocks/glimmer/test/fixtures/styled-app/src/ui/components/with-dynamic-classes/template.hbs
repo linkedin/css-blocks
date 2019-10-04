@@ -1,6 +1,6 @@
 <div>
-  <h1 class="h">Hello, <span class="{{style-if isWorld 'world'}} h.emphasis t.underline" state:thick={{eq isThick 1}} state:h.style={{textStyle}}>World</span>!</h1>
-  <div class={{style-if isWorld 'world' 'h.emphasis'}}>World</div>
-  <div class={{style-unless isWorld 'world' 'h.emphasis'}}>World</div>
-  <div class={{style-unless isWorld 'world'}}>World</div>
+  <h1 h:scope>Hello, <span block:class={{style-if isWorld 'world'}} h:class="emphasis" t:class="underline" block:thick={{eq isThick 1}} h:style={{textStyle}}>World</span>!</h1>
+  <div block:class={{style-if isWorld 'world' 'planet'}}>World</div>
+  <div block:class={{style-unless isWorld 'world' 'planet'}}>World</div>
+  <div block:class={{style-unless isWorld 'world'}}>World</div>
 </div>

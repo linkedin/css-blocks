@@ -89,9 +89,9 @@ describe("Template Rewriting", function() {
     let result = await pipeline(projectDir, analyzer, "with-dynamic-classes", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
       <div class="a">
-        <h1 class="d">Hello, <span class="e h {{-css-blocks-classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "f" 0 "g" 1 "b" 2 "c" 3}}">World</span>!</h1>
-        <div class={{-css-blocks-classnames 1 2 0 isWorld 1 1 1 0 "e" 0 "b" 1}}>World</div>
-        <div class={{-css-blocks-classnames 1 2 0 isWorld 1 0 1 1 "e" 0 "b" 1}}>World</div>
+        <h1 class="e">Hello, <span class="f i {{-css-blocks-classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "h" 1 "b" 2 "c" 3}}">World</span>!</h1>
+        <div class={{-css-blocks-classnames 1 2 0 isWorld 1 1 1 0 "d" 0 "b" 1}}>World</div>
+        <div class={{-css-blocks-classnames 1 2 0 isWorld 1 0 1 1 "d" 0 "b" 1}}>World</div>
         <div class={{-css-blocks-classnames 1 1 0 isWorld 0 1 0 "b" 0}}>World</div>
       </div>
     `));
@@ -102,12 +102,6 @@ describe("Template Rewriting", function() {
     let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
     let templatePath = fixture("readme-app/src/ui/components/page-layout/template.hbs");
     let result = await pipeline(projectDir, analyzer, "page-layout", templatePath);
-    assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="a {{-css-blocks-classnames 1 1 2 isLoading 1 0 "b" 0}}">
-        <aside class="g h c d"> </aside>
-        <article class="i {{-css-blocks-classnames 1 2 0 isRecommended 1 1 1 0 "e" 0 "f" 1}}"> </article>
-      </div>
-    `));
     assert.deepEqual(minify(result.css.toString()), minify(`
       .a { color: red; width: 100vw; }
       .b { color: blue }
@@ -120,6 +114,12 @@ describe("Template Rewriting", function() {
       .i { width: 80%; }
     `),
     );
+    assert.deepEqual(minify(print(result.ast)), minify(`
+      <div class="a {{-css-blocks-classnames 1 1 2 isLoading 1 0 "b" 0}}">
+        <aside class="g h c d"> </aside>
+        <article class="i {{-css-blocks-classnames 1 2 0 isRecommended 1 1 1 0 "e" 0 "f" 1}}"> </article>
+      </div>
+    `));
   });
 
   it("rewrites link-to helpers", async function() {

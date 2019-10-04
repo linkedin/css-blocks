@@ -23,11 +23,11 @@ export type BooleanExpression = AST.Expression | AST.MustacheStatement;
 export type TemplateElement  = ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>;
 export type AttrRewriteMap = { [key: string]: TemplateElement };
 
-// TODO: The state namespace should come from a config option.
-const STATE = /^state:(?:([^.]+)\.)?([^.]+)$/;
+const NAMESPACED_ATTR = /^([^:]+):([^:]+)$/;
 const STYLE_IF = "style-if";
 const STYLE_UNLESS = "style-unless";
 const DEFAULT_BLOCK_NAME = "default";
+const DEFAULT_BLOCK_NS = "block";
 
 const debug = debugGenerator("css-blocks:glimmer:element-analyzer");
 
@@ -72,8 +72,8 @@ export class ElementAnalyzer {
     let templatePath = this.cssBlocksOpts.importer.debugIdentifier(this.template.identifier, this.cssBlocksOpts);
     return charInFile(templatePath, node.loc.start);
   }
-  private debugBlockPath() {
-    return this.cssBlocksOpts.importer.debugIdentifier(this.block.identifier, this.cssBlocksOpts);
+  private debugBlockPath(block: Block | null = null) {
+    return this.cssBlocksOpts.importer.debugIdentifier((block || this.block).identifier, this.cssBlocksOpts);
   }
 
   private newElement(node: AnalyzableNodes, forRewrite: boolean): TemplateElement {
@@ -91,6 +91,16 @@ export class ElementAnalyzer {
     if (!forRewrite) { this.analysis.endElement(element); }
   }
 
+  isAttributeAnalyzed(attributeName: string): [string, string] | [null, null] {
+    if (NAMESPACED_ATTR.test(attributeName)) {
+      let namespace = RegExp.$1;
+      let attrName = RegExp.$2;
+      return [namespace, attrName];
+    } else {
+      return [null, null];
+    }
+  }
+
   private _analyze(
     node: AnalyzableNodes,
     atRootElement: boolean,
@@ -106,21 +116,43 @@ export class ElementAnalyzer {
     }
 
     // Find the class attribute and process.
-    if (node.type === "ElementNode") {
-      let classAttr: AST.AttrNode | undefined = node.attributes.find(n => n.name === "class");
-      if (classAttr) { this.processClass(classAttr, element, forRewrite); }
+    if (isElementNode(node)) {
+      for (let attribute of node.attributes) {
+        let [namespace, attrName] = this.isAttributeAnalyzed(attribute.name);
+        if (namespace && attrName) {
+          if (attrName === "class") {
+            this.processClass(namespace, attribute, element, forRewrite);
+          } else if (attrName === "scope") {
+            this.processScope(namespace, attribute, element, forRewrite);
+          }
+        }
+      }
     }
-
     else {
-      let classAttr: AST.HashPair | undefined = node.hash.pairs.find(n => n.key === "class");
-      if (classAttr) { this.processClass(classAttr, element, forRewrite); }
+      for (let pair of node.hash.pairs) {
+        let [namespace, attrName] = this.isAttributeAnalyzed(pair.key);
+        if (namespace && attrName) {
+          if (attrName === "class") {
+            this.processClass(namespace, pair, element, forRewrite);
+          } else if (attrName === "scope") {
+            this.processScope(namespace, pair, element, forRewrite);
+          }
+        }
+      }
     }
 
     // Only ElementNodes may use states right now.
     if (isElementNode(node)) {
       for (let attribute of node.attributes) {
-        if (!STATE.test(attribute.name)) { continue; }
-        this.processState(RegExp.$1, RegExp.$2, attribute, element, forRewrite);
+        if (attribute.name === "class") {
+          throw cssBlockError(`The class attribute is forbidden. Did you mean block:class?`, node, this.template);
+        }
+        let [namespace, attrName] = this.isAttributeAnalyzed(attribute.name);
+        if (namespace && attrName) {
+          if (attrName !== "class" && attrName !== "scope") {
+            this.processState(namespace, attrName, attribute, element, forRewrite);
+          }
+        }
       }
     }
 
@@ -151,35 +183,36 @@ export class ElementAnalyzer {
     return attrRewrites;
   }
 
-  private lookupClasses(classes: string, node: AST.Node): Array<BlockClass> {
+  private lookupClasses(namespace: string, classes: string, node: AST.Node): Array<BlockClass> {
     let classNames = classes.trim().split(/\s+/);
     let found = new Array<BlockClass>();
     for (let name of classNames) {
-      found.push(this.lookupClass(name, node));
+      found.push(this.lookupClass(namespace, name, node));
     }
     return found;
   }
 
-  private lookupClass(name: string, node: AST.Node): BlockClass {
-    let found = this.block.externalLookup(name);
-    if (!found && !/\./.test(name)) {
-      found = this.block.externalLookup("." + name);
+  private lookupBlock(namespace: string, node: AST.Node): Block {
+    let block = (namespace === DEFAULT_BLOCK_NS) ? this.block : this.block.getExportedBlock(namespace);
+    if (block === null) {
+      throw cssBlockError(`No block '${namespace}' is exported from ${this.debugBlockPath()}`, node, this.template);
     }
-    if (found) {
-      return <BlockClass>found;
-    } else {
-      if (/\./.test(name)) {
-        throw cssBlockError(`No class or block named ${name} is referenced from ${this.debugBlockPath()}`, node, this.template);
-      } else {
-        throw cssBlockError(`No class or block named ${name}`, node, this.template);
-      }
+    return block;
+  }
+
+  private lookupClass(namespace: string, name: string, node: AST.Node): BlockClass {
+    let block = this.lookupBlock(namespace, node);
+    let found = block.resolveClass(name);
+    if (found === null) {
+      throw cssBlockError(`No class '${name}' was found in block at ${this.debugBlockPath(block)}`, node, this.template);
     }
+    return found;
   }
 
   /**
    * Adds blocks and block classes to the current node from the class attribute.
    */
-  private processClass(node: AST.AttrNode | AST.HashPair, element: TemplateElement, forRewrite: boolean): void {
+  private processClass(namespace: string, node: AST.AttrNode | AST.HashPair, element: TemplateElement, forRewrite: boolean): void {
     let statements: AST.Node[];
 
     let value = node.value;
@@ -193,7 +226,7 @@ export class ElementAnalyzer {
     for (let statement of statements) {
       if (isTextNode(statement) || isStringLiteral(statement)) {
         let value = isTextNode(statement) ? statement.chars : statement.value;
-        for (let container of this.lookupClasses(value, statement)) {
+        for (let container of this.lookupClasses(namespace, value, statement)) {
           element.addStaticClass(container);
         }
       }
@@ -210,7 +243,7 @@ export class ElementAnalyzer {
 
           // Calculate the classes in the main branch of the style helper
           if (isStringLiteral(mainBranch)) {
-            let containers = this.lookupClasses(mainBranch.value, mainBranch);
+            let containers = this.lookupClasses(namespace, mainBranch.value, mainBranch);
             if (helperType === "style-if") {
               whenTrue = containers;
             } else {
@@ -223,7 +256,7 @@ export class ElementAnalyzer {
           // Calculate the classes in the else branch of the style helper, if it exists.
           if (elseBranch) {
             if (isStringLiteral(elseBranch)) {
-              let containers = this.lookupClasses(elseBranch.value, elseBranch);
+              let containers = this.lookupClasses(namespace, elseBranch.value, elseBranch);
               if (helperType === "style-if") {
                 whenFalse = containers;
               } else {
@@ -247,21 +280,34 @@ export class ElementAnalyzer {
       }
     }
   }
+  private processScope(namespace: string, node: AST.AttrNode | AST.HashPair, element: TemplateElement, _forRewrite: boolean): void {
+    let value = node.value;
+    let block = this.lookupBlock(namespace, node);
+
+    if (isTextNode(value)) {
+      if (value.chars === "") {
+        element.addStaticClass(block.rootClass);
+      } else {
+        throw cssBlockError("String literal values are not allowed for the scope attribute", node, this.template);
+      }
+    } else if (isBooleanLiteral(value)) {
+      if (value.value) {
+        element.addStaticClass(block.rootClass);
+      }
+    }
+  }
 
   /**
    * Adds states to the current node.
    */
   private processState(
-    blockName: string | undefined,
+    blockName: string,
     stateName: string,
     node: AST.AttrNode,
     element: TemplateElement,
     forRewrite: boolean,
   ): void {
-    let stateBlock = blockName ? this.block.getExportedBlock(blockName) : this.block;
-    if (stateBlock === null) {
-      throw cssBlockError(`No block named ${blockName} referenced from ${this.debugBlockPath()}`, node, this.template);
-    }
+    let stateBlock = this.lookupBlock(blockName, node);
     let containers = element.classesForBlock(stateBlock);
     if (containers.length === 0) {
       throw cssBlockError(`No block or class from ${blockName || "the default block"} is assigned to the element so a state from that block cannot be used.`, node, this.template);
@@ -322,7 +368,7 @@ export class ElementAnalyzer {
         if (staticSubStateName) {
           errors.push([`No state found named ${stateName} with a sub-state of ${staticSubStateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template]);
         } else {
-          errors.push([`No state(s) found named ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template]);
+          errors.push([`No state(s) found named ${stateName} for ${container.asSource()} in ${blockName === "block" && "the default block" || blockName}.`, node, this.template]);
         }
       }
     }
@@ -340,6 +386,9 @@ function isConcatStatement(value: AST.Node | undefined): value is AST.ConcatStat
 }
 function isTextNode(value: AST.Node | undefined): value is AST.TextNode {
   return !!value && value.type === "TextNode";
+}
+function isBooleanLiteral(value: AST.Node | undefined): value is AST.BooleanLiteral {
+  return !!value && value.type === "BooleanLiteral";
 }
 function isMustacheStatement(value: AST.Node | undefined): value is AST.MustacheStatement {
   return !!value && value.type === "MustacheStatement";

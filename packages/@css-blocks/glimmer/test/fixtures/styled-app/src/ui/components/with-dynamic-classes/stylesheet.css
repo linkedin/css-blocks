@@ -13,4 +13,8 @@
     border-width: 3px;
 }
 
+.planet {
+    border: 3px groove gray;
+}
+
 @export (h, t);

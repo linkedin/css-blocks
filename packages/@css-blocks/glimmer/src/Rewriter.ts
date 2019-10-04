@@ -21,8 +21,6 @@ import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
 import { CONCAT_HELPER_NAME } from "./helpers";
 import { ResolvedFile, TEMPLATE_TYPE } from "./Template";
 
-// TODO: The state namespace should come from a config option.
-const STYLE_ATTR = /^(class$|state:)/;
 const DEBUG = debugGenerator("css-blocks:glimmer:rewriter");
 
 export type GlimmerStyleMapping = StyleMapping<TEMPLATE_TYPE>;
@@ -132,7 +130,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     const attrMap = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
 
     // Remove all the source attributes for styles.
-    node.hash.pairs = node.hash.pairs.filter(a => !STYLE_ATTR.test(a.key)).filter(a => !attrToStateMap[a.key]);
+    node.hash.pairs = node.hash.pairs.filter(a => this.elementAnalyzer.isAttributeAnalyzed(a.key)[0] === null).filter(a => !attrToStateMap[a.key]);
 
     for (let attr of Object.keys(attrMap)) {
       let element = attrMap[attr];
@@ -170,7 +168,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     let attrMap = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
 
     // Remove all the source attributes for styles.
-    node.attributes = node.attributes.filter(a => !STYLE_ATTR.test(a.name));
+    node.attributes = node.attributes.filter(a => this.elementAnalyzer.isAttributeAnalyzed(a.name)[0] === null);
 
     for (let attr of Object.keys(attrMap)) {
       let element = attrMap[attr];

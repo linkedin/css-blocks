@@ -52,7 +52,7 @@ describe("Stylesheet analysis", function() {
       assert.deepEqual(analysis.elements, {
         a: { tagName: "div", staticStyles: [2], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 1, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
         b: { tagName: "h1", staticStyles: [5], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
-        c: { tagName: "span", staticStyles: [0, 1, 3, 4], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
+        c: { tagName: "span", staticStyles: [0, 1, 3, 4], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 21, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 21, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
       });
     }).catch((error) => {
       console.error(error);
@@ -102,7 +102,7 @@ describe("Stylesheet analysis", function() {
             { condition: true, value: [ 1 ] },
             { stringExpression: true, group: { bold: 4, italic: 5 }, value: [] },
           ],
-          sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-states" } },
+          sourceLocation: { start: { line: 2, column: 21, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 21, "filename": "template:/styled-app/components/with-dynamic-states" } },
         },
 
       });
@@ -124,6 +124,7 @@ describe("Stylesheet analysis", function() {
         "t": fixture("styled-app/src/ui/components/with-dynamic-classes/typography.css"),
       });
       assert.deepEqual(analysis.stylesFound, [
+        ".planet",
         ".world",
         ".world[thick]",
         ":scope",
@@ -136,46 +137,46 @@ describe("Stylesheet analysis", function() {
       assert.deepEqual(analysis.elements, {
         a: {
           tagName: "div",
-          staticStyles: [ 2 ],
+          staticStyles: [ 3 ],
           dynamicClasses: [],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         b: {
           tagName: "h1",
-          staticStyles: [ 6 ],
+          staticStyles: [ 7 ],
           dynamicClasses: [],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         c: {
           tagName: "span",
-          staticStyles: [ 3, 7 ],
-          dynamicClasses: [ {condition: true, whenTrue: [ 0 ]} ],
+          staticStyles: [ 4, 8 ],
+          dynamicClasses: [ {condition: true, whenTrue: [ 1 ]} ],
           dynamicAttributes: [
-            { condition: true, value: [ 1 ], container: 0 },
-            { stringExpression: true, group: { bold: 4, italic: 5 }, value: [] },
+            { condition: true, value: [ 2 ], container: 1 },
+            { stringExpression: true, group: { bold: 5, italic: 6 }, value: [] },
           ],
-          sourceLocation: { start: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 23, "filename": "template:/styled-app/components/with-dynamic-classes" } },
+          sourceLocation: { start: { line: 2, column: 21, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 21, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         d: {
           tagName: "div",
           staticStyles: [],
-          dynamicClasses: [ { condition: true, whenTrue: [ 0 ], whenFalse: [ 3 ]} ],
+          dynamicClasses: [ { condition: true, whenTrue: [ 1 ], whenFalse: [ 0 ]} ],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         e: {
           tagName: "div",
           staticStyles: [],
-          dynamicClasses: [ { condition: true, whenTrue: [ 3 ], whenFalse: [ 0 ]} ],
+          dynamicClasses: [ { condition: true, whenTrue: [ 0 ], whenFalse: [ 1 ]} ],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         f: {
           tagName: "div",
           staticStyles: [],
-          dynamicClasses: [ { condition: true, whenFalse: [ 0 ]} ],
+          dynamicClasses: [ { condition: true, whenFalse: [ 1 ]} ],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },

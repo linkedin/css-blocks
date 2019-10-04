@@ -1,6 +1,6 @@
-<div state:loading={{isLoading}}>
-  <aside class="sidebar grid.one-fifth" state:collapsed state:grid.gutter="right">
+<div block:scope block:loading={{isLoading}}>
+  <aside block:class="sidebar" grid:class="one-fifth" block:collapsed grid:gutter="right">
   </aside>
-  <article class="{{style-if isRecommended 'recommended' 'main'}} grid.four-fifths">
+  <article block:class="{{style-if isRecommended 'recommended' 'main'}}" grid:class="four-fifths">
   </article>
 </div>

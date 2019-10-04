@@ -31,7 +31,7 @@ Given the following CSS Block definition:
   block-name: my-component;
   /* ... */
 }
-[loading] { /* ... */ }
+:scope[loading] { /* ... */ }
 .sidebar { /* ... */ }
 .sidebar[collapsed] { /* ... */ }
 .main { /* ... */ }
@@ -47,10 +47,10 @@ Given the following CSS Block definition:
 We can style a glimmer template like so:
 
 ```hbs
-<div state:loading={{isLoading}}>
-  <aside class="sidebar grid.one-fifth" state:collapsed state:grid.gutter-right>
+<div block:scope block:loading={{isLoading}}>
+  <aside block:class="sidebar" grid:class="one-fifth" block:collapsed grid:gutter="right">
   </aside>
-  <article class="{{style-if isRecommended 'recommended' 'main'}} grid.four-fifths">
+  <article class="{{style-if isRecommended 'recommended' 'main'}}" grid:class="four-fifths">
   </article>
 </div>
 ```
