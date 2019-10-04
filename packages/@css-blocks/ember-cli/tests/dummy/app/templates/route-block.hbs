@@ -1,6 +1,6 @@
-<div state:enabled={{enabled}} id="scope">
+<div block:enabled={{enabled}} id="scope">
   Route Scope Styles State: {{enabled}}
-  <div class="sub-class" id="sub-class" state:enabled={{enabled}}>
+  <div block:class="sub-class" id="sub-class" block:enabled={{enabled}}>
     Route Sub-class Styles State: {{enabled}}
   </div>
   <button {{action "toggleEnabled"}} id="toggle-enabled">Toggle Enabled States</button>

@@ -130,6 +130,9 @@ export class ElementAnalyzer {
     }
     else {
       for (let pair of node.hash.pairs) {
+        if (pair.key === "class") {
+          throw cssBlockError(`The class attribute is forbidden. Did you mean block:class?`, node, this.template);
+        }
         let [namespace, attrName] = this.isAttributeAnalyzed(pair.key);
         if (namespace && attrName) {
           if (attrName === "class") {
@@ -167,15 +170,20 @@ export class ElementAnalyzer {
       const attrToState = getEmberBuiltInStates(node.path.original);
       for (let attrName of Object.keys(attrToState)) {
         const stateName = attrToState[attrName];
-        element = this.newElement(node, forRewrite);
+        let element: ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> | undefined;
         for (let style of klasses) {
           let attr = style.resolveAttribute(stateName);
           if (!attr || !attr.presenceRule) { continue; }
+          if (!element) {
+            element = this.newElement(node, forRewrite);
+          }
           attrRewrites[attrName] = element; // Only save this element on output if a state is found.
           if (!forRewrite) { element.addStaticClass(style); } // In rewrite mode we only want the states.
           element.addStaticAttr(style, attr.presenceRule);
         }
-        this.finishElement(element, forRewrite);
+        if (element) {
+          this.finishElement(element, forRewrite);
+        }
       }
     }
 

@@ -28,7 +28,7 @@ describe("Broccoli Analyze Plugin Test", function () {
           ui: {
             components: {
               [entryComponentName]: {
-                "template.hbs": `<div><h1 class="foo">Welcome to Glimmer!</h1></div>`,
+                "template.hbs": `<div><h1 block:class="foo">Welcome to Glimmer!</h1></div>`,
                 "stylesheet.css": `:scope { color: red; } .foo { color: green; }`,
               },
             },
