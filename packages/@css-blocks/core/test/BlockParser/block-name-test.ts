@@ -20,8 +20,8 @@ export class BlockNames extends BEMProcessor {
     );
 
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block block from "./imported.css";
-                    @block-debug block to comment;`;
+    let inputCSS = `@block a-block from "./imported.css";
+                    @block-debug a-block to comment;`;
 
     return this.process(filename, inputCSS, {importer: imports.importer()}).catch((err) => {
       assert.equal(err.message, "[css-blocks] BlockSyntaxError: Illegal block name. '\"snow-flake\"' is not a legal CSS identifier. (foo/bar/imported.css:1:10)");
@@ -84,7 +84,7 @@ export class BlockNames extends BEMProcessor {
     );
 
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block block from "./imported.css";`;
+    let inputCSS = `@block a-block from "./imported.css";`;
 
     return assertError(
       InvalidBlockSyntax,

@@ -67,8 +67,22 @@ export const ROOT_CLASS = ":scope";
 // The string `default` is used throughout the system to represent the default export of a block file.
 export const DEFAULT_EXPORT = "default";
 
+// The namespace used for referencing a default block from a template
+export const DEFAULT_NAMESPACE = "block";
+
+/**
+ * Names that a block cannot have as a namespace.
+ */
+export const RESERVED_NAMESPACES = new Set<string>([DEFAULT_EXPORT, "html", "svg", "math", "mathml", "xlink", "xml", "xmlns", "xhtml"]);
+
 /**
  * Names that a block cannot have lest it collides with other syntax.
  */
-export const RESERVED_BLOCK_NAMES = new Set<string>([DEFAULT_EXPORT, "html", "svg", "math"]);
-Object.freeze(RESERVED_BLOCK_NAMES);
+export const RESERVED_BLOCK_NAMES = new Set<string>([DEFAULT_EXPORT, DEFAULT_NAMESPACE, ...RESERVED_NAMESPACES]);
+
+export function isNamespaceReserved(name: string | undefined | null): boolean {
+  return name && RESERVED_NAMESPACES.has(name.toLowerCase()) || false;
+}
+export function isBlockNameReserved(name: string | undefined | null): boolean {
+  return name && RESERVED_BLOCK_NAMES.has(name.toLowerCase()) || false;
+}

@@ -8,6 +8,7 @@ export * from "./errors";
 export * from "./SourceLocation";
 export * from "./configuration";
 export * from "./BlockCompiler";
+export * from "./BlockSyntax";
 export * from "./BlockParser";
 export * from "./errors";
 export * from "./importing";

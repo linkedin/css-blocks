@@ -5,6 +5,7 @@ import {
   ElementAnalysis,
   ResolvedConfiguration as CSSBlocksConfiguration,
   charInFile,
+  isNamespaceReserved,
 } from "@css-blocks/core";
 import { AST, print } from "@glimmer/syntax";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
@@ -95,7 +96,11 @@ export class ElementAnalyzer {
     if (NAMESPACED_ATTR.test(attributeName)) {
       let namespace = RegExp.$1;
       let attrName = RegExp.$2;
-      return [namespace, attrName];
+      if (isNamespaceReserved(namespace)) {
+        return [null, null];
+      } else {
+        return [namespace, attrName];
+      }
     } else {
       return [null, null];
     }
