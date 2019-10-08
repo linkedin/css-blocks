@@ -109,9 +109,6 @@ export async function constructBlock(configuration: Configuration, root: postcss
 
 function addStyleRules(style: AttrValue | BlockClass, rule: postcss.Rule, tuple: Set<[Style, postcss.Rule]>): void {
   rule.walkDecls(BLOCK_ALIAS, decl => {
-    // TODO: check for errors
-    // 1. check that the only separators are spaces
-    // 2. check that there are no block aliases to complex selectors
     style.setStyleAliases(new Set(decl.value.split(/\s+/).map(stripQuotes)));
     decl.remove();
   });
