@@ -1,16 +1,16 @@
 @block h from "./header.css";
-@block t from "./typography.css";
 
 :scope {
+    block-alias: my-scope-alias stylesheet__world;
     color: red;
 }
 
 .world {
+    block-alias: stylesheet__world--thick;
     border: 1px solid black;
 }
 
 .world[state|thick] {
+    block-alias: my-alias-for-state;
     border-width: 3px;
 }
-
-@export (h, t);

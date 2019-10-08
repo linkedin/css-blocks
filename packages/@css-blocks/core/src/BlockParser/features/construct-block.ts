@@ -17,6 +17,7 @@ import {
   isRootLevelObject,
   isRootNode,
 } from "../block-intermediates";
+import { stripQuotes } from "../utils";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
@@ -111,7 +112,7 @@ function addStyleRules(style: AttrValue | BlockClass, rule: postcss.Rule, tuple:
     // TODO: check for errors
     // 1. check that the only separators are spaces
     // 2. check that there are no block aliases to complex selectors
-    style.setStyleAliases(new Set(decl.value.split(/\s+/)));
+    style.setStyleAliases(new Set(decl.value.split(/\s+/).map(stripQuotes)));
     decl.remove();
   });
   tuple.add([style, rule]);

@@ -1,7 +1,6 @@
 @export h from "./header.css";
 
 :scope {
-    block-alias: my-alias-for-scope;
     color: red;
 }
 
@@ -10,7 +9,6 @@
 }
 
 .world[state|thick] {
-    block-alias: my-alias-for-state;
     border-width: 3px;
 }
 

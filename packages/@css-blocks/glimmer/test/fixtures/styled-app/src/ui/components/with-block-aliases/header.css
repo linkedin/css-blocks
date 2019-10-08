@@ -1,0 +1,15 @@
+:scope {
+   font-size: 18px;
+}
+
+.emphasis {
+    font-style: italic;
+}
+
+.emphasis[state|style=bold] {
+    font-weight: bold;
+}
+
+.emphasis[state|style=italic] {
+    font-style: italic;
+}

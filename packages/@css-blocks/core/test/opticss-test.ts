@@ -56,7 +56,7 @@ export class TemplateAnalysisTests {
     let self = this;
     let filename = "blocks/foo.block.css";
     let css = clean`
-      :scope { block-alias: my-foo-alias; color: blue; font-size: 20px; }
+      :scope { block-alias: my-foo-alias "somethingwith,splcharacters;"; color: blue; font-size: 20px; }
       :scope[state|foo] { block-alias: my-foo-alias-red; color: red; }
       .asdf { font-size: 20px; }
       .asdf[state|larger] { font-size: 26px; color: red; }
@@ -129,7 +129,7 @@ export class TemplateAnalysisTests {
         let it = analyses[0].elements.values();
         let element1 = it.next().value;
         let rewrite1 = blockMapping.rewriteMapping(element1);
-        assert.deepEqual([...rewrite1.staticClasses].sort(), ["c", "d", "e", "my-foo-alias", "my-foo-alias-red"]);
+        assert.deepEqual([...rewrite1.staticClasses].sort(), ["c", "d", "e", "my-foo-alias", "my-foo-alias-red", "somethingwith,splcharacters;"]);
         assert.deepEqual(rewrite1.dynamicClasses, []);
         let element2 = it.next().value;
         let rewrite2 = blockMapping.rewriteMapping(element2);

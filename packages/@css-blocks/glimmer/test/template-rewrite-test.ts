@@ -59,7 +59,7 @@ async function pipeline(projectDir: string, analyzer: GlimmerAnalyzer, entry: st
 
 describe("Template Rewriting", function() {
 
-  it("rewrites styles from dynamic attributes with block aliases", async function() {
+  it("rewrites styles from dynamic attributes", async function() {
     let projectDir = fixture("styled-app");
     let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-states/template.hbs");
@@ -67,9 +67,9 @@ describe("Template Rewriting", function() {
 
     // TODO why is `f` class both static and dynamic?
     assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="my-alias-for-scope b">
-        <h1 class="e">Hello, <span class="f c {{-css-blocks-classnames 2 4 2 isThick 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "my-alias-for-state" 2 "d" 3}}">World</span>!</h1>
-      </div>
+    <div class="b">
+      <h1 class="e">Hello, <span class="f c {{-css-blocks-classnames 2 3 2 isThick 1 2 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2}}">World</span>!</h1>
+    </div>
     `));
     assert.deepEqual(minify(result.css.toString()), minify(`
       .b { color: red; }
@@ -82,18 +82,30 @@ describe("Template Rewriting", function() {
     );
   });
 
-  it("rewrites styles from dynamic classes. Also doesn't error when the block alias has the same className as that of a generated style", async function() {
+  it("rewrites styles from dynamic classes", async function() {
     let projectDir = fixture("styled-app");
     let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-classes/template.hbs");
     let result = await pipeline(projectDir, analyzer, "with-dynamic-classes", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="my-scope-alias a stylesheet__world">
-        <h1 class="d">Hello, <span class="e h {{-css-blocks-classnames 3 5 0 isWorld 1 4 0 3 1 4 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "f" 0 "g" 1 "b" 2 "c" 3 "stylesheet__world--thick" 4}}">World</span>!</h1>
-        <div class={{-css-blocks-classnames 1 3 0 isWorld 1 2 1 0 "e" 0 "b" 1 "stylesheet__world--thick" 2}}>World</div>
-        <div class={{-css-blocks-classnames 1 3 0 isWorld 1 0 1 2 "e" 0 "b" 1 "stylesheet__world--thick" 2}}>World</div>
-        <div class={{-css-blocks-classnames 1 2 0 isWorld 0 1 1 "b" 0 "stylesheet__world--thick" 1}}>World</div>
-      </div>
+    <div class="a">
+      <h1 class="d">Hello, <span class="e h {{-css-blocks-classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "f" 0 "g" 1 "b" 2 "c" 3}}">World</span>!</h1>
+      <div class={{-css-blocks-classnames 1 2 0 isWorld 1 1 1 0 "e" 0 "b" 1}}>World</div>
+      <div class={{-css-blocks-classnames 1 2 0 isWorld 1 0 1 1 "e" 0 "b" 1}}>World</div>
+      <div class={{-css-blocks-classnames 1 1 0 isWorld 0 1 0 "b" 0}}>World</div>
+    </div>
+    `));
+  });
+
+  it("rewrites styles with block aliases", async function() {
+    let projectDir = fixture("styled-app");
+    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let templatePath = fixture("styled-app/src/ui/components/with-block-aliases/template.hbs");
+    let result = await pipeline(projectDir, analyzer, "with-block-aliases", templatePath);
+    assert.deepEqual(minify(print(result.ast)), minify(`
+    <div class="my-scope-alias b stylesheet__world">
+      <h1 class="e">Hello, <span class="f c stylesheet__world--thick {{-css-blocks-classnames 2 4 2 isThick 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "my-alias-for-state" 2 "d" 3}}">World</span>!</h1>
+    </div>
     `));
   });
 
