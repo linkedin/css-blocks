@@ -2,10 +2,12 @@
 @block t from "./typography.css";
 
 :scope {
+    block-alias: my-scope-alias stylesheet__world;
     color: red;
 }
 
 .world {
+    block-alias: stylesheet__world--thick;
     border: 1px solid black;
 }
 

@@ -59,7 +59,7 @@ async function pipeline(projectDir: string, analyzer: GlimmerAnalyzer, entry: st
 
 describe("Template Rewriting", function() {
 
-  it("rewrites styles from dynamic attributes", async function() {
+  it("rewrites styles from dynamic attributes with block aliases", async function() {
     let projectDir = fixture("styled-app");
     let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-states/template.hbs");
@@ -82,17 +82,17 @@ describe("Template Rewriting", function() {
     );
   });
 
-  it("rewrites styles from dynamic classes", async function() {
+  it("rewrites styles from dynamic classes. Also doesn't error when the block alias has the same className as that of a generated style", async function() {
     let projectDir = fixture("styled-app");
     let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-classes/template.hbs");
     let result = await pipeline(projectDir, analyzer, "with-dynamic-classes", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="a">
-        <h1 class="d">Hello, <span class="e h {{-css-blocks-classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "f" 0 "g" 1 "b" 2 "c" 3}}">World</span>!</h1>
-        <div class={{-css-blocks-classnames 1 2 0 isWorld 1 1 1 0 "e" 0 "b" 1}}>World</div>
-        <div class={{-css-blocks-classnames 1 2 0 isWorld 1 0 1 1 "e" 0 "b" 1}}>World</div>
-        <div class={{-css-blocks-classnames 1 1 0 isWorld 0 1 0 "b" 0}}>World</div>
+      <div class="my-scope-alias a stylesheet__world">
+        <h1 class="d">Hello, <span class="e h {{-css-blocks-classnames 3 5 0 isWorld 1 4 0 3 1 4 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "f" 0 "g" 1 "b" 2 "c" 3 "stylesheet__world--thick" 4}}">World</span>!</h1>
+        <div class={{-css-blocks-classnames 1 3 0 isWorld 1 2 1 0 "e" 0 "b" 1 "stylesheet__world--thick" 2}}>World</div>
+        <div class={{-css-blocks-classnames 1 3 0 isWorld 1 0 1 2 "e" 0 "b" 1 "stylesheet__world--thick" 2}}>World</div>
+        <div class={{-css-blocks-classnames 1 2 0 isWorld 0 1 1 "b" 0 "stylesheet__world--thick" 1}}>World</div>
       </div>
     `));
   });
