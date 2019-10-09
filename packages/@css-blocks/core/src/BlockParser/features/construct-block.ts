@@ -114,7 +114,7 @@ function addStyleRules(configuration: Configuration, block: Block, rule: postcss
       let cleanedAlias = stripQuotes(alias);
       if (!CLASS_NAME_IDENT.test(cleanedAlias)) {
         throw new errors.InvalidBlockSyntax(
-          `Illegal block-alias in export. "${alias}" is not a legal CSS identifier.`,
+          `Illegal block-alias. "${alias}" is not a legal CSS identifier.`,
           sourceRange(configuration, block.stylesheet, file, rule),
         );
       }
