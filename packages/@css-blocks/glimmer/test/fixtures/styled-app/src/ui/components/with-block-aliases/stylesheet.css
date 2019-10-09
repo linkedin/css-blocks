@@ -1,4 +1,4 @@
-@block h from "./header.css";
+@export h from "./header.css";
 
 :scope {
     block-alias: my-scope-alias stylesheet__world;
