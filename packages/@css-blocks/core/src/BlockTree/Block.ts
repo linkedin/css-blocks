@@ -395,16 +395,12 @@ export class Block
 
   /**
    * Return all the style aliases defined on the block.
-   * @param shallow Pass true to not include inherited objects.
    * @returns Array of style aliases.
    */
-  getAllStyleAliases(shallow?: boolean): Set<string> {
+  getAllStyleAliases(): Set<string> {
     let result = new Set<string>();
     for (let blockClass of this.classes) {
-      result = new Set([...result, ...blockClass.getStyleAliases()]);
-    }
-    if (!shallow && this.base) {
-      result = new Set([...result, ...this.base.getAllStyleAliases(shallow)]);
+      blockClass.getStyleAliases().forEach(alias => result.add(alias));
     }
     return result;
   }

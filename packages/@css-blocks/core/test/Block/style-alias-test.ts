@@ -80,7 +80,7 @@ export class StyleAlias extends BEMProcessor {
     let { config } = setupImporting();
 
     let filename = "foo/bar/a-block.css";
-    let inputCSS = `:scope { block-alias: a-block-alias1 "a-block-alias2-;-with"; color: red; }
+    let inputCSS = `:scope { block-alias: a-block-alias1 "a-block-alias2--with"; color: red; }
                     .foo { block-alias: my-class-alias1 my-class-alias-2; clear: both; }
                     .b[state|small] {block-alias: my-state-alias1 my-state-alias2; color: blue;}
                     @block-debug self to comment;`;
@@ -93,7 +93,7 @@ export class StyleAlias extends BEMProcessor {
           .a-block__foo { clear: both; }
           .a-block__b--small { color: blue; }
           /* Source: foo/bar/a-block.css
-           * :scope (.a-block, aliases: .a-block-alias1 .a-block-alias2-;-with)
+           * :scope (.a-block, aliases: .a-block-alias1 .a-block-alias2--with)
            *  ├── .b (.a-block__b)
            *  |    states:
            *  |    └── .b[state|small] (.a-block__b--small, aliases: .my-state-alias1 .my-state-alias2)

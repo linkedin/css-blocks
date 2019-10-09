@@ -88,14 +88,7 @@ export abstract class Style<
    * Adds a set of aliases to the to this object
    */
   public setStyleAliases(aliases: Set<string>): void {
-    if (aliases.size) {
-      // clear the existing styleAliases if they exist
-      if (this._styleAliases) {
-        this._styleAliases.clear();
-      } else {
-        this._styleAliases = aliases;
-      }
-    }
+    this._styleAliases = aliases;
   }
 
   /**

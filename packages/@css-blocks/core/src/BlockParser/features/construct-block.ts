@@ -1,6 +1,6 @@
 import { CompoundSelector, ParsedSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
-import { BLOCK_ALIAS } from "../../BlockSyntax";
+import { BLOCK_ALIAS, CLASS_NAME_IDENT } from "../../BlockSyntax";
 import { AttrValue, Block, BlockClass, Style } from "../../BlockTree";
 import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
@@ -87,9 +87,9 @@ export async function constructBlock(configuration: Configuration, root: postcss
         // If this is the key selector, save this ruleset on the created style.
         if (isKey) {
           if (foundStyles.blockAttrs.length) {
-            foundStyles.blockAttrs.map(s => addStyleRules(s, rule, styleRuleTuples));
+            foundStyles.blockAttrs.map(s => addStyleRules(configuration, block, rule, file, s, styleRuleTuples));
           } else {
-            foundStyles.blockClasses.map(s => addStyleRules(s, rule, styleRuleTuples));
+            foundStyles.blockClasses.map(s => addStyleRules(configuration, block, rule, file, s, styleRuleTuples));
           }
         }
 
@@ -107,10 +107,20 @@ export async function constructBlock(configuration: Configuration, root: postcss
   return block;
 }
 
-function addStyleRules(style: AttrValue | BlockClass, rule: postcss.Rule, tuple: Set<[Style, postcss.Rule]>): void {
+function addStyleRules(configuration: Configuration, block: Block, rule: postcss.Rule, file: string, style: AttrValue | BlockClass, tuple: Set<[Style, postcss.Rule]>): void {
   rule.walkDecls(BLOCK_ALIAS, decl => {
-    style.setStyleAliases(new Set(decl.value.split(/\s+/).map(stripQuotes)));
-    decl.remove();
+    let aliases: Set<string> = new Set();
+    decl.value.split(/\s+/).map(alias => {
+      let cleanedAlias = stripQuotes(alias);
+      if (!CLASS_NAME_IDENT.test(cleanedAlias)) {
+        throw new errors.InvalidBlockSyntax(
+          `Illegal block-alias in export. "${alias}" is not a legal CSS identifier.`,
+          sourceRange(configuration, block.stylesheet, file, rule),
+        );
+      }
+      aliases.add(cleanedAlias);
+    });
+    style.setStyleAliases(aliases);
   });
   tuple.add([style, rule]);
 }
