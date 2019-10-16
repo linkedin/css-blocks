@@ -61,10 +61,10 @@ export class BlockCompiler {
     resolver.resolveInheritance(root, block);
     root.walkRules((rule) => {
       let parsedSelectors = block.getParsedSelectors(rule);
-      rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config)).join(",\n");
+      rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config, analyzer ? analyzer.reservedClassNames() : new Set())).join(",\n");
     });
 
-    resolver.resolve(root, block);
+    resolver.resolve(root, block, analyzer ? analyzer.reservedClassNames() : new Set());
 
     return root;
   }

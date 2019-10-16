@@ -204,13 +204,13 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    * @param config Option hash configuring output mode.
    * @returns String representing output class.
    */
-  public cssClass(config: ResolvedConfiguration): string {
+  public cssClass(config: ResolvedConfiguration, reservedClassNames: Set<string>): string {
     switch (config.outputMode) {
       case OutputMode.BEM:
         let bemName = this.isRoot ? `${this.block.name}` : `${this.block.name}__${this.name}`;
-        // if the generated name exists as an alias on the block, then generate a
-        // unique name instead
-        if (this.block.getAllStyleAliases().has(bemName)) {
+        // if the generated name exists as a reserved classname (generated from
+        // blocks aliases), then generate a unique name instead
+        if (reservedClassNames.has(bemName)) {
           return this.isRoot ? `${this.block.name}_${this.block.guid}` : `${this.block.name}_${this.block.guid}__${this.name}`;
         } else {
           return bemName;

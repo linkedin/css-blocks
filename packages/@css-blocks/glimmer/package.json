@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "test": "yarn run test:runner",
-    "test:runner": "mocha --opts test/mocha.opts dist/cjs/test",
+    "test:runner": "mocha --opts test/mocha.opts dist/cjs/test/template-rewrite-test.js",
     "compile": "tsc --version && tsc --build && tsc --build tsconfig.amd.json",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",

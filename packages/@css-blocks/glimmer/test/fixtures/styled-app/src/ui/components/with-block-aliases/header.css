@@ -1,8 +1,10 @@
 :scope {
+   block-alias: "my-header-alias";
    font-size: 18px;
 }
 
 .emphasis {
+    block-alias: "stylesheet__world";
     font-style: italic;
 }
 

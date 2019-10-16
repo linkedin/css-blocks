@@ -400,7 +400,10 @@ export class Block
   getAllStyleAliases(): Set<string> {
     let result = new Set<string>();
     for (let blockClass of this.classes) {
+      // add aliases on the block class
       blockClass.getStyleAliases().forEach(alias => result.add(alias));
+      // add aliases for each of the state attributes within the block class
+      blockClass.allAttributeValues().forEach(value => value.getStyleAliases().forEach(alias => result.add(alias)));
     }
     return result;
   }
@@ -466,7 +469,7 @@ export class Block
     return null;
   }
 
-  rewriteSelectorNodes(nodes: selectorParser.Node[], config: ResolvedConfiguration): selectorParser.Node[] {
+  rewriteSelectorNodes(nodes: selectorParser.Node[], config: ResolvedConfiguration, reservedClassNames: Set<string>): selectorParser.Node[] {
     let newNodes: selectorParser.Node[] = [];
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
@@ -474,20 +477,21 @@ export class Block
       if (result === null) {
         newNodes.push(node);
       } else {
-        newNodes.push(selectorParser.className({ value: result[0].cssClass(config) }));
+        // TODO: check if this needs to be passed the global value as well
+        newNodes.push(selectorParser.className({ value: result[0].cssClass(config, reservedClassNames)}));
         i += result[1];
       }
     }
     return newNodes;
   }
 
-  rewriteSelectorToString(selector: ParsedSelector, config: ResolvedConfiguration): string {
+  rewriteSelectorToString(selector: ParsedSelector, config: ResolvedConfiguration, reservedClassNames: Set<string>): string {
     let firstNewSelector = new CompoundSelector();
     let newSelector = firstNewSelector;
     let newCurrentSelector = newSelector;
     let currentSelector: CompoundSelector | undefined = selector.selector;
     do {
-      newCurrentSelector.nodes = this.rewriteSelectorNodes(currentSelector.nodes, config);
+      newCurrentSelector.nodes = this.rewriteSelectorNodes(currentSelector.nodes, config, reservedClassNames);
       newCurrentSelector.pseudoelement = currentSelector.pseudoelement;
       if (currentSelector.next !== undefined) {
         let tempSel = newCurrentSelector;
@@ -501,10 +505,10 @@ export class Block
     return firstNewSelector.toString();
   }
 
-  rewriteSelector(selector: ParsedSelector, config: ResolvedConfiguration): ParsedSelector {
+  rewriteSelector(selector: ParsedSelector, config: ResolvedConfiguration, reservedClassNames: Set<string>): ParsedSelector {
     // generating a string and re-parsing ensures the internal structure is consistent
     // otherwise the parent/next/prev relationships will be wonky with the new nodes.
-    let s = this.rewriteSelectorToString(selector, config);
+    let s = this.rewriteSelectorToString(selector, config, reservedClassNames);
     return parseSelector(s)[0];
   }
 

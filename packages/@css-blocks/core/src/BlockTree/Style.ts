@@ -42,7 +42,7 @@ export abstract class Style<
    * @param config Option hash configuring output mode.
    * @returns The CSS class.
    */
-  public abstract cssClass(config: ResolvedConfiguration): string;
+  public abstract cssClass(config: ResolvedConfiguration, reservedClassNames: Set<string>): string;
 
   /**
    * Return the source selector this `Style` was read from.
@@ -64,7 +64,7 @@ export abstract class Style<
   cssClasses(config: ResolvedConfiguration): string[] {
     let classes: string[] = [];
     for (let style of this.resolveStyles()) {
-        classes.push(style.cssClass(config));
+        classes.push(style.cssClass(config, new Set()));
       }
     return classes;
   }
@@ -74,10 +74,10 @@ export abstract class Style<
    * including inherited classes and block aliases.
    * @returns this object's css class and all inherited classes.
    */
-  public cssClassesWithAliases(config: ResolvedConfiguration): Set<string> {
+  public cssClassesWithAliases(config: ResolvedConfiguration, reservedClassNames: Set<string>): Set<string> {
     let classes = new Set<string>();
     for (let style of this.resolveStyles()) {
-      classes = new Set([...classes, style.cssClass(config)]);
+      classes = new Set([...classes, style.cssClass(config, reservedClassNames)]);
       // if this has a set of style aliases, push those too
       classes = new Set([...classes, ...style.getStyleAliases()]);
     }

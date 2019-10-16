@@ -117,6 +117,14 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     return allBlocks;
   }
 
+  reservedClassNames(): Set<string> {
+    let allAliases = new Set<string>();
+    this.analysisMap.forEach(analysis => {
+      allAliases = new Set<string>([...allAliases, ...analysis.reservedClassNames()]);
+    });
+    return allAliases;
+  }
+
   serialize(): SerializedAnalyzer<K> {
     let analyses: SerializedAnalysis<K>[] = [];
     this.eachAnalysis(a => {

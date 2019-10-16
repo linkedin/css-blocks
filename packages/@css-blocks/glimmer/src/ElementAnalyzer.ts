@@ -38,12 +38,14 @@ export class ElementAnalyzer {
   block: Block;
   template: ResolvedFile;
   cssBlocksOpts: CSSBlocksConfiguration;
+  reservedClassNames: Set<string>;
 
   constructor(analysis: GlimmerAnalysis, cssBlocksOpts: CSSBlocksConfiguration) {
     this.analysis = analysis;
     this.block = analysis.getBlock(DEFAULT_BLOCK_NAME)!; // Local block check done elsewhere
     this.template = analysis.template;
     this.cssBlocksOpts = cssBlocksOpts;
+    this.reservedClassNames = analysis.reservedClassNames();
   }
 
   analyze(node: AnalyzableNodes, atRootElement: boolean): AttrRewriteMap {
@@ -79,7 +81,7 @@ export class ElementAnalyzer {
   private newElement(node: AnalyzableNodes, forRewrite: boolean): TemplateElement {
     let label = isElementNode(node) ? node.tag : node.path.original as string;
     if (forRewrite) {
-      return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);
+      return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(this.reservedClassNames, nodeLocation(node), label);
     }
     else {
       return this.analysis.startElement<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);

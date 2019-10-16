@@ -231,12 +231,14 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
   private _sealed: boolean;
 
+  private _reservedClassNames: Set<string>;
+
   /** whether all styles have been added and the styles can be analyzed now. */
   get sealed(): boolean {
     return this._sealed;
   }
 
-  constructor(location: SourceLocation, tagName?: string, id?: string) {
+  constructor(reservedClassNames: Set<string>, location: SourceLocation, tagName?: string, id?: string) {
     this.id = id;
     this.tagName = tagName;
     this.sourceLocation = location;
@@ -249,6 +251,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     this.allAttributes = new Set();
     this.addedStyles = new Array();
     this._sealed = false;
+    this._reservedClassNames = reservedClassNames;
   }
 
   hasStyles(): boolean {
@@ -818,15 +821,15 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     let classes = new Array<AttributeValueSetItem>();
     let classMap = new Map<string, Style>();
     for (let style of this.allStaticStyles) {
-      let classNames = style.cssClassesWithAliases(configuration);
+      let classNames = style.cssClassesWithAliases(configuration, this._reservedClassNames);
       classNames.forEach(className => {
         classes.push(attrValues.constant(className));
         classMap.set(className, style);
       });
     }
 
-    let mapper: ClassMapper = mapClasses.bind(null, configuration, classMap);
-    let choices: ChoiceMapper = mapChoiceClasses.bind(null, configuration, classMap);
+    let mapper: ClassMapper = mapClasses.bind(null, configuration, this._reservedClassNames, classMap);
+    let choices: ChoiceMapper = mapChoiceClasses.bind(null, configuration, this._reservedClassNames, classMap);
 
     let depAttrsMap = new MultiMap<BlockClass, DynamicAttrs<BooleanExpression, StringExpression>>();
     for (let dynAttr of this.dynamicAttributes) {
@@ -986,13 +989,15 @@ function addToSet(
 type ClassMapper = (style: Style) => ValueConstant | AttributeValueSet;
 function mapClasses(
   configuration: ResolvedConfiguration,
+  reservedClassNames: Set<string>,
   map: Map<string, Style>,
   style: Style,
 ): ValueConstant | AttributeValueSet {
   let classes = new Array<string>();
   let resolvedStyles = style.resolveStyles();
   for (let resolvedStyle of resolvedStyles) {
-    let classNames = resolvedStyle.cssClassesWithAliases(configuration);
+    // TODO: update with a non empty set here
+    let classNames = resolvedStyle.cssClassesWithAliases(configuration, reservedClassNames);
     classNames.forEach(cls => {
       map.set(cls, resolvedStyle);
       classes.push(cls);
@@ -1008,6 +1013,7 @@ function mapClasses(
 type ChoiceMapper = (includeAbsent: boolean, ...styles: Style[]) => AttributeValueChoice;
 function mapChoiceClasses(
   configuration: ResolvedConfiguration,
+  reservedClassNames: Set<string>,
   map: Map<string, Style>,
   includeAbsent: boolean,
   /* tslint:disable-next-line */
@@ -1018,7 +1024,7 @@ function mapChoiceClasses(
     choices.push(attrValues.absent());
   }
   for (let style of styles) {
-    choices.push(mapClasses(configuration, map, style));
+    choices.push(mapClasses(configuration, reservedClassNames, map, style));
   }
   return attrValues.oneOf(choices);
 }

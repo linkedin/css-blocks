@@ -180,7 +180,7 @@ export class Analysis<K extends keyof TemplateTypes> {
     if (this.currentElement) {
       throw new Error("Internal Error: failure to call endElement before previous call to startElement.");
     }
-    this.currentElement = new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(location, tagName, this.idGenerator.nextIdent());
+    this.currentElement = new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(this.reservedClassNames(), location, tagName, this.idGenerator.nextIdent());
     return this.currentElement;
   }
 
@@ -238,6 +238,19 @@ export class Analysis<K extends keyof TemplateTypes> {
    */
   referencedBlocks(): Block[] {
     return objectValues(this.blocks);
+  }
+
+  /**
+   * For now, returns all aliases referenced by this block and all the blocks they
+   * reference recursively. We can add more to this set in future
+   */
+  reservedClassNames(): Set<string> {
+    let aliases = new Set<string>();
+    let blocks = this.transitiveBlockDependencies();
+    blocks.forEach(block => {
+      block.getAllStyleAliases().forEach(alias => aliases.add(alias));
+    });
+    return aliases;
   }
 
   /**
@@ -325,7 +338,7 @@ export class Analysis<K extends keyof TemplateTypes> {
    * @param options The plugin options that are used to parse the blocks.
    * @param postcssImpl The instance of postcss that should be used to parse the block's css.
    */
-  static async deserialize (
+  async deserialize (
     serializedAnalysis: SerializedAnalysis<keyof TemplateTypes>,
     blockFactory: BlockFactory,
     parent: Analyzer<keyof TemplateTypes>,
@@ -364,7 +377,7 @@ export class Analysis<K extends keyof TemplateTypes> {
     let elementNames = Object.keys(serializedAnalysis.elements);
     elementNames.forEach((elID) => {
       let data = serializedAnalysis.elements[elID];
-      let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, undefined, elID);
+      let element = new ElementAnalysis<null, null, null>(this.reservedClassNames(), data.sourceLocation || {start: POSITION_UNKNOWN}, undefined, elID);
       analysis.elements.set(elID, element);
     });
 

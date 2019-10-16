@@ -61,7 +61,7 @@ describe("Classnames Helper", () => {
 
     let inputs: Style[] = [b.rootClass, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], { });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [r, c2],
@@ -82,7 +82,7 @@ describe("Classnames Helper", () => {
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], { });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [r],
@@ -103,7 +103,7 @@ describe("Classnames Helper", () => {
 
     let inputs = [r, c1, c2, s1];
     let rewrite = new IndexedClassMapping(inputs, [], { });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [r],
@@ -125,7 +125,7 @@ describe("Classnames Helper", () => {
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], { });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicGroup(r, red.attribute, builders.mustache(builders.string("blue")));
     element.seal();
     let result = print(helperGenerator(rewrite, element));
@@ -143,7 +143,7 @@ describe("Classnames Helper", () => {
 
     let inputs = [r, red, orange, blue];
     let rewrite = new IndexedClassMapping(inputs, [], { });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [ r ],
@@ -166,7 +166,7 @@ describe("Classnames Helper", () => {
     let rewrite = new IndexedClassMapping(inputs, [], {
       a: {and: [ 0, 2 ]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [r, c2],
@@ -189,7 +189,7 @@ describe("Classnames Helper", () => {
     let rewrite = new IndexedClassMapping(inputs, [], {
       a: {and: [ {or: [0]}, {and: [2]} ]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [r, c2],
@@ -212,7 +212,7 @@ describe("Classnames Helper", () => {
     let rewrite = new IndexedClassMapping(inputs, [], {
       a: {and: [0, {not: 2}]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [r, c2],
@@ -235,7 +235,7 @@ describe("Classnames Helper", () => {
     let rewrite = new IndexedClassMapping(inputs, [], {
       a: {or: [0, {not: 2}]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [r, c2],
@@ -261,7 +261,7 @@ describe("Classnames Helper", () => {
       c: {and: [ 2 ]},
       d: {and: [ 3 ]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [r, c2],
@@ -287,7 +287,7 @@ describe("Classnames Helper", () => {
       c: {and: [ 2 ]},
       d: {and: [ 3 ]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(false),
       whenTrue: [r, c2],
@@ -313,7 +313,7 @@ describe("Classnames Helper", () => {
       c: {and: [ 2 ]},
       d: {and: [ 3 ]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [ r ],
@@ -340,7 +340,7 @@ describe("Classnames Helper", () => {
       c: {and: [ 2 ]},
       d: {and: [ 3 ]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(false),
       whenTrue: [ r ],
@@ -367,7 +367,7 @@ describe("Classnames Helper", () => {
       c: {and: [ 2 ]},
       d: {and: [ 3 ]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [ r ],
@@ -394,7 +394,7 @@ describe("Classnames Helper", () => {
       c: {and: [ 2 ]},
       d: {and: [ 3 ]},
     });
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [ r ],
@@ -416,7 +416,7 @@ describe("Classnames Helper", () => {
     let orange = r.ensureAttributeValue("[state|theme=orange]");
     let blue = r.ensureAttributeValue("[state|theme=blue]");
 
-    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>({start: POSITION_UNKNOWN});
+    let element = new ElementAnalysis<BooleanAST, StringAST, TernaryAST>(new Set(), {start: POSITION_UNKNOWN});
     element.addDynamicClasses({
       condition: builders.boolean(true),
       whenTrue: [ r ],
