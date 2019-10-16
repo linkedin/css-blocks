@@ -180,7 +180,7 @@ export class Analysis<K extends keyof TemplateTypes> {
     if (this.currentElement) {
       throw new Error("Internal Error: failure to call endElement before previous call to startElement.");
     }
-    this.currentElement = new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(this.reservedClassNames(), location, tagName, this.idGenerator.nextIdent());
+    this.currentElement = new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(location, this.reservedClassNames(), tagName, this.idGenerator.nextIdent());
     return this.currentElement;
   }
 
@@ -377,7 +377,7 @@ export class Analysis<K extends keyof TemplateTypes> {
     let elementNames = Object.keys(serializedAnalysis.elements);
     elementNames.forEach((elID) => {
       let data = serializedAnalysis.elements[elID];
-      let element = new ElementAnalysis<null, null, null>(this.reservedClassNames(), data.sourceLocation || {start: POSITION_UNKNOWN}, undefined, elID);
+      let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, this.reservedClassNames(), undefined, elID);
       analysis.elements.set(elID, element);
     });
 

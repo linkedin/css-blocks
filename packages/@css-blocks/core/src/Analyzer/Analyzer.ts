@@ -117,12 +117,17 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     return allBlocks;
   }
 
+  /**
+   * Iterates through all the analyses objects for all the templates and creates
+   * a set of reservedClassNames here. This is what the block compiler calls to
+   * get the list of reservedClassNames.
+   */
   reservedClassNames(): Set<string> {
-    let allAliases = new Set<string>();
+    let allReservedClassNames = new Set<string>();
     this.analysisMap.forEach(analysis => {
-      allAliases = new Set<string>([...allAliases, ...analysis.reservedClassNames()]);
+      allReservedClassNames = new Set<string>([...allReservedClassNames, ...analysis.reservedClassNames()]);
     });
-    return allAliases;
+    return allReservedClassNames;
   }
 
   serialize(): SerializedAnalyzer<K> {

@@ -61,10 +61,10 @@ export abstract class Style<
    * including inherited classes.
    * @returns this object's css class and all inherited classes.
    */
-  cssClasses(config: ResolvedConfiguration): string[] {
+  cssClasses(config: ResolvedConfiguration, reservedClassNames: Set<string>): string[] {
     let classes: string[] = [];
     for (let style of this.resolveStyles()) {
-        classes.push(style.cssClass(config, new Set()));
+        classes.push(style.cssClass(config, reservedClassNames));
       }
     return classes;
   }
@@ -123,7 +123,10 @@ export abstract class Style<
    * @returns A debug string.
    */
   asDebug(config: ResolvedConfiguration) {
-    const classes = [...this.cssClasses(config)].join(".");
+    // NOTE: debug statements don't take into account the reservedClassNames as
+    // debug happens during parse and we can only get the entire list of
+    // reservedClassNames once block parsing is complete
+    const classes = [...this.cssClasses(config, new Set())].join(".");
     const aliases = this.getStyleAliases();
     return `${this.asSource()}${classes ? ` (.${classes}` : ""}${aliases.size ? `, aliases: .${[...aliases].join(" .")}` : ""}${classes || aliases ? ")" : ""}`;
   }

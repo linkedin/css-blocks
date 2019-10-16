@@ -81,7 +81,7 @@ export class ElementAnalyzer {
   private newElement(node: AnalyzableNodes, forRewrite: boolean): TemplateElement {
     let label = isElementNode(node) ? node.tag : node.path.original as string;
     if (forRewrite) {
-      return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(this.reservedClassNames, nodeLocation(node), label);
+      return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), this.reservedClassNames, label);
     }
     else {
       return this.analysis.startElement<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);

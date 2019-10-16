@@ -477,7 +477,6 @@ export class Block
       if (result === null) {
         newNodes.push(node);
       } else {
-        // TODO: check if this needs to be passed the global value as well
         newNodes.push(selectorParser.className({ value: result[0].cssClass(config, reservedClassNames)}));
         i += result[1];
       }
@@ -516,7 +515,10 @@ export class Block
     let result: string[] = [`Source: ${this.identifier}`];
 
     // Log Root Class and all children first at root level.
-    const classes = [...this.rootClass.cssClasses(config)].join(".");
+    // NOTE: debug statements don't take into account the reservedClassNames as
+    // debug happens during parse and we can only get the entire list of
+    // reservedClassNames once block parsing is complete
+    const classes = [...this.rootClass.cssClasses(config, new Set())].join(".");
     const aliases = this.rootClass.getStyleAliases();
 
     result.push(`${ROOT_CLASS} (.${classes}${aliases.size ? `, aliases: .${[...aliases].join(" .")}` : ""})`, ...this.rootClass.debug(config));

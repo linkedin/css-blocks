@@ -238,7 +238,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     return this._sealed;
   }
 
-  constructor(reservedClassNames: Set<string>, location: SourceLocation, tagName?: string, id?: string) {
+  constructor(location: SourceLocation, reservedClassNames: Set<string>, tagName?: string, id?: string) {
     this.id = id;
     this.tagName = tagName;
     this.sourceLocation = location;

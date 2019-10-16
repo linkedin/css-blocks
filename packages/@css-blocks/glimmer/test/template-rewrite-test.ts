@@ -104,7 +104,7 @@ describe("Template Rewriting", function() {
     let result = await pipeline(projectDir, analyzer, "with-block-aliases", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
     <div class="my-scope-alias b stylesheet__world">
-      <h1 class="e my-header-alias">Hello, <span class="f stylesheet__world stylesheet__world--thick c {{-css-blocks-classnames 2 4 2 isThick 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "my-alias-for-state" 2 "d" 3}}">World</span>!</h1>
+      <h1 class="e my-header-alias">Hello, <span class="f c stylesheet__world stylesheet__world--thick {{-css-blocks-classnames 2 4 2 isThick 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "my-alias-for-state" 2 "d" 3}}">World</span>!</h1>
     </div>
     `));
   });

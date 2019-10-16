@@ -7,7 +7,7 @@
     "compile": "tsc --version && tsc --build",
     "pretest": "yarn run compile",
     "test": "yarn run test:runner",
-    "test:runner": "mocha dist/test/opticss-test.js --opts test/mocha.opts",
+    "test:runner": "mocha dist/test --opts test/mocha.opts",
     "posttest": "yarn run lint",
     "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
     "lint": "tslint -t msbuild --project . -c tslint.cli.json",
