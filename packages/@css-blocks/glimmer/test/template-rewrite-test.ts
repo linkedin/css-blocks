@@ -68,7 +68,7 @@ describe("Template Rewriting", function() {
     // TODO why is `f` class both static and dynamic?
     assert.deepEqual(minify(print(result.ast)), minify(`
     <div class="b">
-      <h1 class="e">Hello, <span class="f c {{-css-blocks-classnames 2 3 2 isThick 1 2 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2}}">World</span>!</h1>
+      <h1 class="e">Hello, <span class="c f {{-css-blocks-classnames 2 3 2 isThick 1 2 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2}}">World</span>!</h1>
     </div>
     `));
     assert.deepEqual(minify(result.css.toString()), minify(`
@@ -103,8 +103,8 @@ describe("Template Rewriting", function() {
     let templatePath = fixture("styled-app/src/ui/components/with-block-aliases/template.hbs");
     let result = await pipeline(projectDir, analyzer, "with-block-aliases", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
-    <div class="my-scope-alias b stylesheet__world">
-      <h1 class="e my-header-alias">Hello, <span class="f c stylesheet__world stylesheet__world--thick {{-css-blocks-classnames 2 4 2 isThick 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "my-alias-for-state" 2 "d" 3}}">World</span>!</h1>
+    <div class="b my-scope-alias stylesheet__world">
+      <h1 class="e my-header-alias">Hello, <span class="c f stylesheet__world stylesheet__world--thick {{-css-blocks-classnames 2 4 2 isThick 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "my-alias-for-state" 2 "d" 3}}">World</span>!</h1>
     </div>
     `));
   });
@@ -116,7 +116,7 @@ describe("Template Rewriting", function() {
     let result = await pipeline(projectDir, analyzer, "page-layout", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
       <div class="a {{-css-blocks-classnames 1 1 2 isLoading 1 0 "b" 0}}">
-        <aside class="g h c d"> </aside>
+        <aside class="c d g h"> </aside>
         <article class="i {{-css-blocks-classnames 1 2 0 isRecommended 1 1 1 0 "e" 0 "f" 1}}"> </article>
       </div>
     `));
@@ -142,9 +142,9 @@ describe("Template Rewriting", function() {
 
     // TODO why is `f` class both static and dynamic?
     assert.deepEqual(minify(print(result.ast)), minify(`
-    <div class="i a">
-      {{link-to "Inline Form" "inline-form" class="j b"}}
-      {{#link-to "block-form" class="j b m"}}Block Form{{/link-to}}
+    <div class="a i">
+      {{link-to "Inline Form" "inline-form" class="b j"}}
+      {{#link-to "block-form" class="b j m"}}Block Form{{/link-to}}
 
       {{link-to "Inline Form" "inline-form-active" class="c" activeClass="d"}}
       {{#link-to "block-form-active" class="c" activeClass="d"}}Block Form{{/link-to}}
