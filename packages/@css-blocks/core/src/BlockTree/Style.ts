@@ -6,6 +6,8 @@ import { AnyNode, Inheritable } from "./Inheritable";
 import { RulesetContainer } from "./RulesetContainer";
 export { RulesetContainer, Resolution, Ruleset } from "./RulesetContainer";
 
+const NO_STYLE_ALIASES = new Set<string>();
+
 /**
  * Abstract class that serves as the base for all Styles. Contains basic
  * properties and abstract methods that extenders must implement.
@@ -95,7 +97,7 @@ export abstract class Style<
    * Returns the alisses on this object
    */
   public getStyleAliases(): Set<string> {
-    return this._styleAliases || new Set();
+    return this._styleAliases || NO_STYLE_ALIASES;
   }
 
   /**

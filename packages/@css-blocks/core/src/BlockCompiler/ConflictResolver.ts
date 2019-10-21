@@ -60,9 +60,11 @@ interface SimpleDecl {
  */
 export class ConflictResolver {
   readonly config: ResolvedConfiguration;
+  private _reservedClassNames: Set<string>;
 
-  constructor(config: ResolvedConfiguration) {
+  constructor(config: ResolvedConfiguration, reservedClassNames: Set<string>) {
     this.config = config;
+    this._reservedClassNames = reservedClassNames;
   }
 
   /**
@@ -146,7 +148,7 @@ export class ConflictResolver {
    * @param root  The PostCSS ruleset to operate on.
    * @param block  The owner block of these rules.
    */
-  resolve(root: postcss.Root, block: Block, reservedClassNames: Set<string>) {
+  resolve(root: postcss.Root, block: Block) {
     const resolutions: Set<ResolutionDecls> = new Set();
 
     root.walkDecls((decl) => {
@@ -210,7 +212,7 @@ export class ConflictResolver {
       // Crawl up inheritance tree of the other block and attempt to resolve the conflict at each level.
       let foundConflict = ConflictType.noConflict;
       do {
-        foundConflict = this.resolveConflictWith(resolution.path, other, res, reservedClassNames);
+        foundConflict = this.resolveConflictWith(resolution.path, other, res);
         other = other.base;
       } while (other && foundConflict === ConflictType.noConflict);
 
@@ -229,7 +231,6 @@ export class ConflictResolver {
     referenceStr: string,
     other: Style,
     resolution: ResolutionDecls,
-    reservedClassNames: Set<string>,
   ): ConflictType {
     const { decl, localDecls, isOverride } = resolution;
 
@@ -255,7 +256,7 @@ export class ConflictResolver {
       // we reverse the selectors because otherwise the insertion order causes them to be backwards from the
       // source order of the target selector
       for (let s of resultSelectors.reverse()) {
-        let newSelectors = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.config, reservedClassNames), cs);
+        let newSelectors = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.config, this._reservedClassNames), cs);
         if (newSelectors === null) { continue; }
 
         // avoid duplicate selector via permutation

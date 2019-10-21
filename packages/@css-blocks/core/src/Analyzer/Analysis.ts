@@ -338,7 +338,7 @@ export class Analysis<K extends keyof TemplateTypes> {
    * @param options The plugin options that are used to parse the blocks.
    * @param postcssImpl The instance of postcss that should be used to parse the block's css.
    */
-  async deserialize (
+  static async deserialize (
     serializedAnalysis: SerializedAnalysis<keyof TemplateTypes>,
     blockFactory: BlockFactory,
     parent: Analyzer<keyof TemplateTypes>,
@@ -377,7 +377,7 @@ export class Analysis<K extends keyof TemplateTypes> {
     let elementNames = Object.keys(serializedAnalysis.elements);
     elementNames.forEach((elID) => {
       let data = serializedAnalysis.elements[elID];
-      let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, this.reservedClassNames(), undefined, elID);
+      let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, parent.reservedClassNames(), undefined, elID);
       analysis.elements.set(elID, element);
     });
 

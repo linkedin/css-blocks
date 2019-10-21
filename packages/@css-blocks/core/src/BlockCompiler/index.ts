@@ -32,7 +32,7 @@ export class BlockCompiler {
   }
 
   compile(block: Block, root: postcss.Root, analyzer?: Analyzer<keyof TemplateTypes>): postcss.Root {
-    let resolver = new ConflictResolver(this.config);
+    let resolver = new ConflictResolver(this.config, analyzer ? analyzer.reservedClassNames() : new Set());
     let filename = this.config.importer.debugIdentifier(block.identifier, this.config);
 
     if (analyzer) { /* Do something smart with the Analyzer here */ }
@@ -64,7 +64,7 @@ export class BlockCompiler {
       rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config, analyzer ? analyzer.reservedClassNames() : new Set())).join(",\n");
     });
 
-    resolver.resolve(root, block, analyzer ? analyzer.reservedClassNames() : new Set());
+    resolver.resolve(root, block);
 
     return root;
   }
