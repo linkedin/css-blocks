@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import { workspace, ExtensionContext } from 'vscode';
 
 import {
@@ -12,9 +11,8 @@ let client: LanguageClient;
 
 export function activate(_context: ExtensionContext) {
 	// The server is implemented in node
-	let serverModule = require.resolve('@css-blocks/language-server/out/server.js');
-	let exists = fs.existsSync(serverModule);
-	console.log({exists});
+	let serverModule = require.resolve('@css-blocks/language-server/dist/run.js');
+
 	// The debug options for the server
 	// --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
 	let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
@@ -32,6 +30,8 @@ export function activate(_context: ExtensionContext) {
 
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
+		// TODO: we should configure these based on the project type and
+		// which preprocessor is being used
 		documentSelector: ['handlebars', 'scss', 'css'],
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace

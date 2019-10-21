@@ -17,7 +17,7 @@
 	  "onLanguage:scss",
 	  "onLanguage:css"
 	],
-	"main": "./out/extension",
+	"main": "./dist/extension",
 	"scripts": {
 		"update-vscode": "vscode-install",
 		"postinstall": "vscode-install",

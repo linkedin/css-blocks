@@ -1,14 +1,7 @@
 import { CssBlockError, errorHasRange } from "@css-blocks/core/dist/src";
-import { Diagnostic, DiagnosticSeverity, Connection } from "vscode-languageserver";
+import { Diagnostic, DiagnosticSeverity } from "vscode-languageserver";
 
-export class DiagnosticsManager {
-	connection: Connection;
-
-	constructor(connection: Connection) {
-		this.connection = connection;
-	}
-
-  async sendDiagnostics(errors: CssBlockError[], uri: string): Promise<void> {
+export function convertErrorsToDiagnostics(errors: CssBlockError[]): Diagnostic[] {
     let diagnostics: Diagnostic[] = [];
 
     errors.forEach(error => {
@@ -23,21 +16,20 @@ export class DiagnosticsManager {
         range: {
           start: {
             line: range.start.line - 1,
-            character: range.start.column - 1
+            character: range.start.column - 1,
           },
           end: {
             line: range.end.line - 1,
             // TODO: explain why we are doing this better. their end character is
             // the next character after the end of the range.
-            character: range.end.column
-          }
+            character: range.end.column,
+          },
         },
-        message: error.origMessage
+        message: error.origMessage,
       };
 
       diagnostics.push(diagnostic);
     });
 
-    this.connection.sendDiagnostics({ uri, diagnostics });
-  }
+    return diagnostics;
 }
