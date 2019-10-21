@@ -50,7 +50,7 @@
     "@types/webpack-sources": "^0.1.5",
     "css-loader": "^0.28.4",
     "extract-text-webpack-plugin": "^2.1.2",
-    "glob": "^7.1.2",
+    "glob": "^7.1.5",
     "raw-loader": "^0.5.1",
     "style-loader": "^0.18.2",
     "webpack": "^3.0.0",
