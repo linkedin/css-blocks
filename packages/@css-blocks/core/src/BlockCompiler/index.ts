@@ -3,6 +3,7 @@ import { postcss } from "opticss";
 
 import { Analyzer } from "../Analyzer";
 import {
+  BLOCK_ALIAS,
   BLOCK_AT_RULES,
   BLOCK_DEBUG,
   BLOCK_PROP_NAMES_RE,
@@ -31,8 +32,7 @@ export class BlockCompiler {
   }
 
   compile(block: Block, root: postcss.Root, analyzer?: Analyzer<keyof TemplateTypes>): postcss.Root {
-
-    let resolver = new ConflictResolver(this.config);
+    let resolver = new ConflictResolver(this.config, analyzer ? analyzer.reservedClassNames() : new Set());
     let filename = this.config.importer.debugIdentifier(block.identifier, this.config);
 
     if (analyzer) { /* Do something smart with the Analyzer here */ }
@@ -54,11 +54,14 @@ export class BlockCompiler {
       }
     });
 
+    // Clean up block aliases across all styles (the above only cleans the root).
+    root.walkDecls(BLOCK_ALIAS, (decl) => decl.remove());
+
     // Resolve inheritance based conflicts
     resolver.resolveInheritance(root, block);
     root.walkRules((rule) => {
       let parsedSelectors = block.getParsedSelectors(rule);
-      rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config)).join(",\n");
+      rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config, analyzer ? analyzer.reservedClassNames() : new Set())).join(",\n");
     });
 
     resolver.resolve(root, block);

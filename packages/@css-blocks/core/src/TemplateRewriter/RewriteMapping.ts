@@ -24,7 +24,7 @@ export class IndexedClassMapping implements IndexedClassRewrite<Style> {
   private _inputMap: Map<Style, number>;
   constructor(inputs: Style[], staticClasses: string[], map: ClassExpressionMap) {
     this.inputs = inputs;
-    this.staticClasses = staticClasses;
+    this.staticClasses = staticClasses.sort();
     this._inputMap = new Map<Style, number>();
     inputs.forEach((i, n) => this._inputMap.set(i, n));
     this.map = map;
