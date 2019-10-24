@@ -72,9 +72,9 @@ const data: Data = {
     ],
 
     glimmerExample: `
-    <button state:inverse={{inverse}} state:size={{size}}>
+    <button block:inverse={{inverse}} block:size={{size}}>
       {{#if icon}}
-        <span class="icon">
+        <span block:class="icon">
           {{icon}}
         </span>
       {{/if}}

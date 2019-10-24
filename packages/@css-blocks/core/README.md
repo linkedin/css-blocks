@@ -156,19 +156,19 @@ For example, given the following Block file, we can determine the type of usage 
 
 Static styles are guaranteed to never change:
 ```handlebars
-<div class="my-class" state:active="true"></div>
+<div block:class="my-class" block:active="true"></div>
 ```
 
 Dynamic styles may or may not be applied depending on application state:
 ```handlebars
-<div class="{{style-if value 'my-class'}}" state:active={{isActive}}></div>
+<div block:class="{{style-if value 'my-class'}}" block:active={{isActive}}></div>
 ```
 
 Mutually Exclusive styles are guaranteed to never be used on the element at the same time:
 ```handlebars
 {{!-- `my-class` and `other-class` are mutually exclusive --}}
 {{!-- `[color=red]` and `[color=blue]` are mutually exclusive --}}
-<div class="{{style-if value 'my-class' 'other-class'}}" state:color={{color}}></div>
+<div block:class="{{style-if value 'my-class' 'other-class'}}" block:color={{color}}></div>
 ```
 
 Every Template Integration's syntax for consuming Blocks will differ slightly. It is the responsibility of the integration to implement template parsing and Block object discovery to feed in to the `ElementAnalysis` APIs. You can read more about these style tracking methods on the [`ElementAnalysis` API documentation][https://css-blocks.com/api/classes/_css_blocks_core.elementanalysis.html].

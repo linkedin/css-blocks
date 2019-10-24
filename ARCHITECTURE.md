@@ -144,8 +144,8 @@ For example, given this Block file and template:
 ```
 
 ```handlebars
-<div class="class-0" state:active={{isActive}}>
-<div class="{{style-if isColorful 'class-1'}}" state:color={{dynamicColor}}>
+<div block:class="class-0" block:active={{isActive}}>
+<div block:class="{{style-if isColorful 'class-1'}}" block:color={{dynamicColor}}>
 ```
 
 We can easily conceptualize the `RewriteMapping` data for each element in development mode, when the CSS output is just BEM.

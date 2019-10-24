@@ -279,9 +279,9 @@ However, whatever the implementation is, it will feel as though you're interfaci
 
 ```hbs
 {{!-- :scope selector is automagically applied to the template's root-level element. Thanks Glimmer! --}}
-<section state:enabled={{isEnabled}}>
-  <button class="button">
-    <div class="icon" state:inverse={{isInverse}}></div>
+<section block:enabled={{isEnabled}}>
+  <button block:class="button">
+    <div block:class="icon" block:inverse={{isInverse}}></div>
     {{value}}
   </button>
 </section>
