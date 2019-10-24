@@ -3,8 +3,9 @@ import {
   BlockFactory,
   CssBlockError,
   SourceRange,
-} from "@css-blocks/core/dist/src";
-import { AST, preprocess } from "@glimmer/syntax";
+  isNamespaceReserved,
+} from "@css-blocks/core";
+import { AST, preprocess, Walker } from "@glimmer/syntax";
 import { ElementNode } from "@glimmer/syntax/dist/types/lib/types/nodes";
 import { Position, TextDocuments } from "vscode-languageserver";
 
@@ -14,37 +15,24 @@ import { FocusPath, createFocusPath } from "./createFocusPath";
 import { toPosition } from "./estTreeUtils";
 import { transformPathsFromUri } from "./pathTransformer";
 
+
 /**
  * Recursively walk a glimmer ast and execute a callback for each class
  * attribute.
  */
-function walkClasses(astNode: AST.Node | AST.Node[], callback: (classAttr: AST.TextNode) => void) {
-  if (Array.isArray(astNode)) {
-    astNode.forEach((node: AST.Node) => {
-      if (node.type === "ElementNode") {
-        node.attributes.forEach((attr: AST.AttrNode) => {
-          if (attr.name === "class" && attr.value.type === "TextNode") {
-            callback(attr.value);
-          }
-        });
-        if (node.children.length) {
-          walkClasses(node.children, callback);
+function walkClasses(astNode: AST.Node, callback: (namespace: string, classAttr: AST.AttrNode, classAttrValue: AST.TextNode) => void) {
+  let walker = new Walker();
+  walker.visit(astNode, (node) => {
+    if (node.type === "ElementNode") {
+      console.debug(node);
+      for (let attrNode of node.attributes) {
+        let nsAttr = parseNamespacedBlockAttribute(attrNode);
+        if (isClassAttribute(nsAttr) && attrNode.value.type === "TextNode") {
+          callback(nsAttr.ns, attrNode, attrNode.value);
         }
-      }
-    });
-  } else {
-    if (astNode.type === "ElementNode") {
-      astNode.attributes.forEach((attr: AST.AttrNode) => {
-        if (attr.name === "class" && attr.value.type === "TextNode") {
-          callback(attr.value);
-        }
-      });
-
-      if (astNode.children.length) {
-        walkClasses(astNode.children, callback);
       }
     }
-  }
+  });
 }
 
 /**
@@ -74,42 +62,54 @@ export function hbsErrorParser(
   let ast = preprocess(documentText);
   let errors: CssBlockError[] = [];
 
-  walkClasses(ast.body, (classAttr) => {
-    let rawTextChars = classAttr.chars;
+  walkClasses(ast, (blockName, classAttr, classAttrValue) => {
+    let rawTextChars = classAttrValue.chars;
     let lines = rawTextChars.split(/\r?\n/);
+    let blockOfClass = blockName === "block" ? block : block.getExportedBlock(blockName);
 
-    lines.forEach((line, i) => {
+    if (!blockOfClass) {
+      let range: SourceRange = {
+        start: {
+          line: classAttr.loc.start.line,
+          column: classAttr.loc.start.column + 1,
+        },
+        end: {
+          line: classAttr.loc.start.line,
+          column: classAttr.loc.start.column + blockName.length,
+        }
+      };
+      errors.push(new CssBlockError(`No exported block named '${blockName}'.`, range));
+      return;
+    }
+
+    lines.forEach((line, lineNum) => {
       if (!line.trim().length) {
         return;
       }
 
       line.split(/\s+/).forEach(className => {
-        if (!className.trim().length) {
+        if (className.length === 0) {
           return;
         }
 
-        let startColumnOffset = hasQuotedAttributeValue(classAttr) ? 1 : 0;
-        let classNameStartColumn = i === 0 ? classAttr.loc.start.column + line.indexOf(className) + startColumnOffset : line.indexOf(className);
-        let classNameLine = classAttr.loc.start.line + i;
+        let klass = blockOfClass!.getClass(className);
+        if (klass === null) {
+          let startColumnOffset = hasQuotedAttributeValue(classAttrValue) ? 1 : 0;
+          let classNameStartColumn = lineNum === 0 ? classAttrValue.loc.start.column + line.indexOf(className) + startColumnOffset : line.indexOf(className);
+          let classNameLine = classAttrValue.loc.start.line + lineNum;
 
-        let range: SourceRange = {
-          start: {
-            line: classNameLine,
-            column: classNameStartColumn + 1,
-          },
-          end: {
-            line: classNameLine,
-            column: classNameStartColumn + className.length,
-          },
-        };
+          let range: SourceRange = {
+            start: {
+              line: classNameLine,
+              column: classNameStartColumn + 1,
+            },
+            end: {
+              line: classNameLine,
+              column: classNameStartColumn + className.length,
+            },
+          };
 
-        try {
-          const blockName = className.includes(".")
-            ? className
-            : `.${className}`;
-          block.lookup(blockName, range);
-        } catch (e) {
-          errors.push(e);
+          errors.push(new CssBlockError(`Class name '${className}' not found.`, range));
         }
       });
     });
@@ -170,9 +170,10 @@ export async function validateTemplates(
   },                         new Map());
 }
 
-export enum SupportedAttributes {
+export const enum SupportedAttributes {
   state = "state",
   class = "class",
+  scope = "scope",
 }
 
 interface BlockSegments {
@@ -198,28 +199,62 @@ function getParentElement(focusRoot: FocusPath | null): ElementNode | null {
   return null;
 }
 
-function buildBlockSegments(className: string): BlockSegments {
-  let segments = className.split(".");
-
-  if (segments.length > 1) {
-    return {
-      referencedBlock: segments[0],
-      className: segments[1],
-    };
+function buildBlockSegments(attr: NamespacedAttr | null, attrValue: AST.AttrNode["value"]): BlockSegments | null {
+  if (attr === null) return null;
+  if (attrValue.type === "TextNode") {
+    if (attr.ns === "block") {
+      return {
+        className: attrValue.chars,
+      };
+    } else {
+      return {
+        referencedBlock: attr.ns,
+        className: attrValue.chars,
+      };
+    }
+  } else {
+    return null;
   }
-
-  return {
-    className: segments[0],
-  };
 }
 
-function isStateAttribute(parentNode: FocusPath): Boolean {
-  return !!(parentNode.data && parentNode.data.type === "AttrNode" && parentNode.data.name === SupportedAttributes.state);
+interface NamespacedAttr {
+  ns: string;
+  name: string;
 }
 
-function isClassAttribute(parentNode: FocusPath): Boolean {
-  return !!(parentNode.data && parentNode.data.type === "AttrNode" && parentNode.data.name === SupportedAttributes.class);
+function parseNamespacedBlockAttribute(attrNode: AST.Node | null | undefined): NamespacedAttr | null {
+  if (!attrNode || !isAttrNode(attrNode)) return null;
+  if (/([^:]+):([^:]+)/.test(attrNode.name)) {
+    let ns = RegExp.$1;
+    let name = RegExp.$2;
+    if (isNamespaceReserved(ns)) {
+      return null;
+    }
+    return {ns, name};
+  }
+  return null;
 }
+
+function isAttrNode(node: FocusPath | AST.Node | NamespacedAttr | null): node is AST.AttrNode {
+  return node !== null && ((<AST.Node>node).type) === "AttrNode";
+}
+
+function isStateAttribute(attr: NamespacedAttr | null): attr is NamespacedAttr {
+  if (attr === null) return false;
+  return attr.name !== SupportedAttributes.class && attr.name !== SupportedAttributes.scope;
+}
+
+function isClassAttribute(attr: NamespacedAttr | null): attr is NamespacedAttr {
+  if (attr === null) return false;
+  return attr.name === SupportedAttributes.class;
+}
+
+// TODO: this will be handy when we add support for the scope attribute.
+//
+// function isScopeAttribute(attr: NamespacedAttr | null): attr is NamespacedAttr {
+//   if (attr === null) return false;
+//   return attr.name === SupportedAttributes.scope;
+// }
 
 /**
  * Returns an object that represents the item under the cursor in the client
@@ -231,71 +266,65 @@ function isClassAttribute(parentNode: FocusPath): Boolean {
 export function getItemAtCursor(text: string, position: Position): ItemAtCursor | null {
   let ast = preprocess(text);
   let focusRoot = createFocusPath(ast, toPosition(position));
+  let data = focusRoot && focusRoot.data;
 
-  if (!(focusRoot && focusRoot.data && focusRoot.data.type === "TextNode")) {
+  let focusedAttr = focusRoot;
+  while (focusedAttr && focusedAttr.data && focusedAttr.data.type !== "AttrNode") {
+    focusedAttr = focusedAttr.parent;
+  }
+
+  let attrNode = focusedAttr && <AST.AttrNode | null>focusedAttr.data;
+
+  if (!attrNode || !focusedAttr) {
     return null;
   }
 
-  let parentNode = focusRoot.parent;
+  let attr = parseNamespacedBlockAttribute(attrNode);
 
-  if (!parentNode) {
-    return null;
+  if (isStateAttribute(attr)) {
+    return getStateAtCursor(focusRoot);
   }
 
-  if (isStateAttribute(parentNode)) {
+  // TODO: Handle the other types of attribute value nodes
+  if (isClassAttribute(attr) && data && data.type === "TextNode") {
+    let blockSegments = buildBlockSegments(attr, data);
+    if (blockSegments) {
+      return Object.assign({
+        parentType: SupportedAttributes.class
+      }, blockSegments);
+    } else {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+function getStateAtCursor(focusRoot: FocusPath | null) {
     let parentElement = getParentElement(focusRoot);
 
     if (!parentElement) {
       return null;
     }
 
-    let classAttrNode = parentElement.attributes.find(attrNode => attrNode.name === SupportedAttributes.class);
-    let classAttrValue = classAttrNode && classAttrNode.value;
+    let classAttributes = parentElement.attributes.map(attrNode => {
+      return [parseNamespacedBlockAttribute(attrNode), attrNode.value] as const;
+    }).filter(([attr, _attrValue]) => {
+      return isClassAttribute(attr);
+    });
 
-    if (classAttrValue && classAttrValue.type === "TextNode") {
+    let siblingBlocks = classAttributes.map(([attr, attrValue]) => {
+      return buildBlockSegments(attr, attrValue);
+    }).filter((bs): bs is BlockSegments => {
+      return bs !== null;
+    });
+
+    if (siblingBlocks.length > 0) {
       return {
         parentType: SupportedAttributes.state,
-        siblingBlocks: classAttrValue.chars.split(/\s+/).map(buildBlockSegments),
+        siblingBlocks,
       };
+    } else {
+      return null;
     }
-  }
-
-  if (isClassAttribute(parentNode)) {
-    let focusedLineInNode = position.line - focusRoot.data.loc.start.line + 1;
-    let { chars } = focusRoot.data;
-    let lines = chars.split(/\r?\n/);
-    let classNameString = lines[focusedLineInNode];
-    let focusedColumnInNode = focusedLineInNode === 0 ?
-      position.character - focusRoot.data.loc.start.column - 1 :
-      position.character;
-
-    let suffix = classNameString
-      .slice(focusedColumnInNode)
-      .split(/\s+/)
-      .shift();
-    let prefix = classNameString
-      .slice(0, focusedColumnInNode)
-      .split(/\s+/)
-      .reverse()
-      .shift();
-
-    let selectedText = `${prefix}${suffix}`;
-    let segments = selectedText.split(".");
-    let hasBlockReference = segments.length > 1;
-
-    if (hasBlockReference) {
-      return {
-        referencedBlock: segments[0],
-        className: segments[1],
-        parentType: SupportedAttributes.class,
-      };
-    }
-
-    return {
-      className: segments[0],
-      parentType: SupportedAttributes.class,
-    };
-  }
-
-  return null;
 }

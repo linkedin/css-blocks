@@ -6,6 +6,6 @@
   color: green;
 }
 
-.foo.bar {
+.foo[is-bar] {
   color: blue;
 }

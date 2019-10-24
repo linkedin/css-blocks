@@ -11,7 +11,7 @@ import { PathTransformer } from "./pathTransformers/PathTransformer";
 import { SERVER_CAPABILITIES } from "./serverCapabilities";
 import { isBlockFile } from "./util/blockUtils";
 import { convertErrorsToDiagnostics } from "./util/diagnosticsUtils";
-import { validateTemplates } from "./util/hbsUtils";
+import { validateTemplates, isTemplateFile } from "./util/hbsUtils";
 
 export class Server {
   connection: IConnection;
@@ -55,12 +55,14 @@ export class Server {
       // template with errors since the error locations do not get updated until
       // saving the file. We may want to validate the open template files on
       // every change?
-      if (!isBlockFile(e.document.uri)) {
-        return;
+      if (isBlockFile(e.document.uri)) {
+        const cssBlockErrors = await documentContentChange(e, this.blockParser);
+        this.sendDiagnostics(cssBlockErrors, e.document.uri);
+
+      } else if (isTemplateFile(e.document.uri)) {
+        // Validate template
       }
 
-      const cssBlockErrors = await documentContentChange(e, this.blockParser);
-      this.sendDiagnostics(cssBlockErrors, e.document.uri);
   }
 
   private registerDocumentEvents() {

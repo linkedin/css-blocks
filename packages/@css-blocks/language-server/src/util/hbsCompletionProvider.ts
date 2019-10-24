@@ -54,8 +54,6 @@ export async function getHbsCompletions(document: TextDocument, position: Positi
             if (referencedBlock && blockSegments.className) {
               const blockClass = referencedBlock.getClass(blockSegments.className);
               if (blockClass) {
-                // TODO: this is currently getting all attributes, it should filter
-                // to state only.
                 const attributes = blockClass.getAttributes();
                 completions = completions.concat(attributes.map(
                   (attr): CompletionItem => {

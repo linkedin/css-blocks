@@ -22,7 +22,8 @@
 		"update-vscode": "vscode-install",
 		"postinstall": "vscode-install",
 		"compile": "tsc --build",
-    "watch": "tsc --build --watch"
+    "watch": "tsc --build --watch",
+    "test": "echo 'No tests.'"
 	},
 	"dependencies": {
 		"vscode-languageclient": "^5.2.1",

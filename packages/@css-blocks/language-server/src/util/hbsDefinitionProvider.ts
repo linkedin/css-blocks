@@ -30,7 +30,7 @@ export async function getHbsDefinition(document: TextDocument, position: Positio
           encoding: "utf8",
         });
       }
-    } else {
+    } else if (itemAtCursor) {
       blockUri = URI.file(block.identifier).toString();
       blockDocumentText = fs.readFileSync(block.identifier, {
         encoding: "utf8",

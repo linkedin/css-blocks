@@ -12,8 +12,8 @@
   color: red;
 }
 
-.a-3[state|whuut] {
+.a-3[whuut] {
   vertical-align: bottom;
 }
 
-@export utils
+@export utils;
