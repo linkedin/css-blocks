@@ -5,7 +5,7 @@ import {
   SourceRange,
   isNamespaceReserved,
 } from "@css-blocks/core";
-import { AST, preprocess, Walker } from "@glimmer/syntax";
+import { AST, Walker, preprocess } from "@glimmer/syntax";
 import { ElementNode } from "@glimmer/syntax/dist/types/lib/types/nodes";
 import { Position, TextDocuments } from "vscode-languageserver";
 
@@ -14,7 +14,6 @@ import { PathTransformer } from "../pathTransformers/PathTransformer";
 import { FocusPath, createFocusPath } from "./createFocusPath";
 import { toPosition } from "./estTreeUtils";
 import { transformPathsFromUri } from "./pathTransformer";
-
 
 /**
  * Recursively walk a glimmer ast and execute a callback for each class
@@ -76,7 +75,7 @@ export function hbsErrorParser(
         end: {
           line: classAttr.loc.start.line,
           column: classAttr.loc.start.column + blockName.length,
-        }
+        },
       };
       errors.push(new CssBlockError(`No exported block named '${blockName}'.`, range));
       return;
@@ -290,8 +289,8 @@ export function getItemAtCursor(text: string, position: Position): ItemAtCursor 
     let blockSegments = buildBlockSegments(attr, data);
     if (blockSegments) {
       return Object.assign({
-        parentType: SupportedAttributes.class
-      }, blockSegments);
+        parentType: SupportedAttributes.class,
+      },                   blockSegments);
     } else {
       return null;
     }

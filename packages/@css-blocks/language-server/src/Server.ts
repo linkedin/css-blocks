@@ -11,7 +11,7 @@ import { PathTransformer } from "./pathTransformers/PathTransformer";
 import { SERVER_CAPABILITIES } from "./serverCapabilities";
 import { isBlockFile } from "./util/blockUtils";
 import { convertErrorsToDiagnostics } from "./util/diagnosticsUtils";
-import { validateTemplates, isTemplateFile } from "./util/hbsUtils";
+import { isTemplateFile, validateTemplates } from "./util/hbsUtils";
 
 export class Server {
   connection: IConnection;

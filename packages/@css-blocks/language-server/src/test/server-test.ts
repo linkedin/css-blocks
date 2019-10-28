@@ -60,7 +60,7 @@ export class LanguageServerServerTest {
       },
       position: {
         line: 0,
-        character: 11,
+        character: 17,
       },
     };
 
@@ -150,7 +150,7 @@ export class LanguageServerServerTest {
       },
       position: {
         line: 0,
-        character: 15,
+        character: 17,
       },
     };
 
@@ -171,7 +171,7 @@ export class LanguageServerServerTest {
       },
       position: {
         line: 1,
-        character: 19,
+        character: 20,
       },
     };
 
@@ -215,54 +215,28 @@ export class LanguageServerServerTest {
         severity: DiagnosticSeverity.Error,
         range: {
           start: {
-            line: 0,
-            character: 14,
+            line: 5,
+            character: 17,
           },
           end: {
-            line: 0,
-            character: 32,
+            line: 5,
+            character: 33,
           },
         },
-        message: 'No Style ".non-existent-class" found on Block "a".',
-      },            {
-        severity: DiagnosticSeverity.Error,
-        range: {
-          start: {
-            line: 2,
-            character: 12,
-          },
-          end: {
-            line: 2,
-            character: 32,
-          },
-        },
-        message: 'No Style ".non-existent-class-2" found on Block "a".',
-      },            {
-        severity: DiagnosticSeverity.Error,
-        range: {
-          start: {
-            line: 4,
-            character: 2,
-          },
-          end: {
-            line: 4,
-            character: 22,
-          },
-        },
-        message: 'No Style ".spans-multiple-lines" found on Block "a".',
+        message: "Class name 'i-do-not-exist-1' not found.",
       },            {
         severity: DiagnosticSeverity.Error,
         range: {
           start: {
             line: 6,
-            character: 11,
+            character: 26,
           },
           end: {
             line: 6,
-            character: 19,
+            character: 42,
           },
         },
-        message: 'No Style ".baretext" found on Block "a".',
+        message: "Class name 'i-do-not-exist-2' not found.",
       }],
     });
   }
