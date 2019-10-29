@@ -463,7 +463,7 @@ export class Test {
         assert.deepEqual(minify(res.jsx.code!), minify(`
           import objstr from 'obj-str';
 
-          <div className="foo a"></div>;
+          <div className="a foo"></div>;
         `));
       });
     });

@@ -6,6 +6,8 @@ import { AnyNode, Inheritable } from "./Inheritable";
 import { RulesetContainer } from "./RulesetContainer";
 export { RulesetContainer, Resolution, Ruleset } from "./RulesetContainer";
 
+const NO_STYLE_ALIASES = new Set<string>();
+
 /**
  * Abstract class that serves as the base for all Styles. Contains basic
  * properties and abstract methods that extenders must implement.
@@ -24,6 +26,9 @@ export abstract class Style<
   /** cache of resolveStyles() */
   private _resolvedStyles: Set<Self> | undefined;
 
+  /** cache of all style aliases */
+  private _styleAliases: Set<string> | undefined;
+
   // tslint:disable-next-line:prefer-unknown-to-any
   public abstract readonly rulesets: RulesetContainer<any>;
 
@@ -39,7 +44,7 @@ export abstract class Style<
    * @param config Option hash configuring output mode.
    * @returns The CSS class.
    */
-  public abstract cssClass(config: ResolvedConfiguration): string;
+  public abstract cssClass(config: ResolvedConfiguration, reservedClassNames: Set<string>): string;
 
   /**
    * Return the source selector this `Style` was read from.
@@ -58,12 +63,41 @@ export abstract class Style<
    * including inherited classes.
    * @returns this object's css class and all inherited classes.
    */
-  cssClasses(config: ResolvedConfiguration): string[] {
+  cssClasses(config: ResolvedConfiguration, reservedClassNames: Set<string>): string[] {
     let classes: string[] = [];
     for (let style of this.resolveStyles()) {
-      classes.push(style.cssClass(config));
+        classes.push(style.cssClass(config, reservedClassNames));
+      }
+    return classes;
+  }
+
+  /**
+   * Returns all the classes needed to represent this block object
+   * including inherited classes and block aliases.
+   * @returns this object's css class and all inherited classes.
+   */
+  public cssClassesWithAliases(config: ResolvedConfiguration, reservedClassNames: Set<string>): Set<string> {
+    let classes = new Set<string>();
+    for (let style of this.resolveStyles()) {
+      classes = new Set([...classes, style.cssClass(config, reservedClassNames)]);
+      // if this has a set of style aliases, push those too
+      classes = new Set([...classes, ...style.getStyleAliases()]);
     }
     return classes;
+  }
+
+  /**
+   * Adds a set of aliases to the to this object
+   */
+  public setStyleAliases(aliases: Set<string>): void {
+    this._styleAliases = aliases;
+  }
+
+  /**
+   * Returns the alisses on this object
+   */
+  public getStyleAliases(): Set<string> {
+    return this._styleAliases || NO_STYLE_ALIASES;
   }
 
   /**
@@ -91,8 +125,11 @@ export abstract class Style<
    * @returns A debug string.
    */
   asDebug(config: ResolvedConfiguration) {
-    const classes = this.cssClasses(config).join(".");
-    return `${this.asSource()}${classes ? ` (.${classes})` : ""}`;
+    // NOTE: debug statements don't take into account the reservedClassNames as
+    // debug happens during parse and we can only get the entire list of
+    // reservedClassNames once block parsing is complete
+    const classes = [...this.cssClasses(config, new Set())].join(".");
+    const aliases = this.getStyleAliases();
+    return `${this.asSource()}${classes ? ` (.${classes}` : ""}${aliases.size ? `, aliases: .${[...aliases].join(" .")}` : ""}${classes || aliases ? ")" : ""}`;
   }
-
 }

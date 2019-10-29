@@ -38,6 +38,7 @@ export class JSXElementAnalyzer {
   private filename: string;
   private classProperties: Flags;
   private isRewriteMode: boolean;
+  reservedClassNames: Set<string>;
 
   constructor(analysis: JSXAnalysis, isRewriteMode = false) {
     this.analysis = analysis;
@@ -47,10 +48,11 @@ export class JSXElementAnalyzer {
       class: true,
       className: true,
     };
+    this.reservedClassNames = analysis.reservedClassNames();
   }
 
   private startElement(location: TemplateSourceLocation, tagName?: string): JSXElementAnalysis {
-    if (this.isRewriteMode) { return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(location, tagName); }
+    if (this.isRewriteMode) { return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(location, this.reservedClassNames, tagName); }
     return this.analysis.startElement<BooleanExpression, StringExpression, TernaryExpression>(location, tagName);
   }
 

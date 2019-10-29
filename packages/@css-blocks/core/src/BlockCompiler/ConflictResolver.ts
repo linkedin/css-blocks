@@ -60,9 +60,11 @@ interface SimpleDecl {
  */
 export class ConflictResolver {
   readonly config: ResolvedConfiguration;
+  private _reservedClassNames: Set<string>;
 
-  constructor(config: ResolvedConfiguration) {
+  constructor(config: ResolvedConfiguration, reservedClassNames: Set<string>) {
     this.config = config;
+    this._reservedClassNames = reservedClassNames;
   }
 
   /**
@@ -254,7 +256,7 @@ export class ConflictResolver {
       // we reverse the selectors because otherwise the insertion order causes them to be backwards from the
       // source order of the target selector
       for (let s of resultSelectors.reverse()) {
-        let newSelectors = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.config), cs);
+        let newSelectors = this.mergeKeySelectors(other.block.rewriteSelector(s.parsedSelector, this.config, this._reservedClassNames), cs);
         if (newSelectors === null) { continue; }
 
         // avoid duplicate selector via permutation

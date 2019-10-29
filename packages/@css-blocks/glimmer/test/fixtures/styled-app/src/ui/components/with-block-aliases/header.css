@@ -1,0 +1,17 @@
+:scope {
+   block-alias: "my-header-alias";
+   font-size: 18px;
+}
+
+.emphasis {
+    block-alias: "stylesheet__world";
+    font-style: italic;
+}
+
+.emphasis[state|style=bold] {
+    font-weight: bold;
+}
+
+.emphasis[state|style=italic] {
+    font-style: italic;
+}

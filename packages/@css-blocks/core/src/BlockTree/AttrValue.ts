@@ -95,12 +95,12 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
     return this.attribute.blockClass.asSource(scope) + this.name();
   }
 
-  public cssClass(config: ResolvedConfiguration): string {
+  public cssClass(config: ResolvedConfiguration, reservedClassNames: Set<string>): string {
     switch (config.outputMode) {
       case OutputMode.BEM:
-        return `${this.parent.cssClass(config)}${ this.isPresenceRule ? "" : `-${this.value}`}`;
+        return `${this.parent.cssClass(config, reservedClassNames)}${ this.isPresenceRule ? "" : `-${this.value}`}`;
       case OutputMode.BEM_UNIQUE:
-        return `${this.parent.cssClass(config)}${ this.isPresenceRule ? "" : `-${this.value}`}`;
+        return `${this.parent.cssClass(config, reservedClassNames)}${ this.isPresenceRule ? "" : `-${this.value}`}`;
       default:
         return assertNever(config.outputMode);
     }

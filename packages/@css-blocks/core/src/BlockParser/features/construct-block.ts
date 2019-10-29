@@ -1,6 +1,7 @@
 import { CompoundSelector, ParsedSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
-import { Block, Style } from "../../BlockTree";
+import { BLOCK_ALIAS, CLASS_NAME_IDENT } from "../../BlockSyntax";
+import { AttrValue, Block, BlockClass, Style } from "../../BlockTree";
 import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { selectorSourceRange as range, sourceRange } from "../../SourceLocation";
@@ -16,6 +17,7 @@ import {
   isRootLevelObject,
   isRootNode,
 } from "../block-intermediates";
+import { stripQuotes } from "../utils";
 
 const SIBLING_COMBINATORS = new Set(["+", "~"]);
 const HIERARCHICAL_COMBINATORS = new Set([" ", ">"]);
@@ -85,9 +87,9 @@ export async function constructBlock(configuration: Configuration, root: postcss
         // If this is the key selector, save this ruleset on the created style.
         if (isKey) {
           if (foundStyles.blockAttrs.length) {
-            foundStyles.blockAttrs.map(s => styleRuleTuples.add([s, rule]));
+            foundStyles.blockAttrs.map(s => addStyleRules(configuration, block, rule, file, s, styleRuleTuples));
           } else {
-            foundStyles.blockClasses.map(s => styleRuleTuples.add([s, rule]));
+            foundStyles.blockClasses.map(s => addStyleRules(configuration, block, rule, file, s, styleRuleTuples));
           }
         }
 
@@ -103,6 +105,24 @@ export async function constructBlock(configuration: Configuration, root: postcss
   }
 
   return block;
+}
+
+function addStyleRules(configuration: Configuration, block: Block, rule: postcss.Rule, file: string, style: AttrValue | BlockClass, tuple: Set<[Style, postcss.Rule]>): void {
+  rule.walkDecls(BLOCK_ALIAS, decl => {
+    let aliases: Set<string> = new Set();
+    decl.value.split(/\s+/).map(alias => {
+      let cleanedAlias = stripQuotes(alias);
+      if (!CLASS_NAME_IDENT.test(cleanedAlias)) {
+        throw new errors.InvalidBlockSyntax(
+          `Illegal block-alias. "${alias}" is not a legal CSS identifier.`,
+          sourceRange(configuration, block.stylesheet, file, rule),
+        );
+      }
+      aliases.add(cleanedAlias);
+    });
+    style.setStyleAliases(aliases);
+  });
+  tuple.add([style, rule]);
 }
 
 /**

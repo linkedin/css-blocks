@@ -166,12 +166,12 @@ export class Attribute extends Inheritable<Attribute, Block, BlockClass, AttrVal
    * @param config Option hash configuring output mode.
    * @returns String representing output class.
    */
-  cssClass(config: ResolvedConfiguration) {
+  cssClass(config: ResolvedConfiguration, reservedClassNames: Set<string>) {
     switch (config.outputMode) {
       case OutputMode.BEM:
-        return `${this.blockClass.cssClass(config)}--${this.token.name}`;
+        return `${this.blockClass.cssClass(config, reservedClassNames)}--${this.token.name}`;
       case OutputMode.BEM_UNIQUE:
-        return `${this.blockClass.cssClass(config)}--${this.token.name}`;
+        return `${this.blockClass.cssClass(config, reservedClassNames)}--${this.token.name}`;
       default:
         return assertNever(config.outputMode);
     }
