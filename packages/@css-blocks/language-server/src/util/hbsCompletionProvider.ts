@@ -1,9 +1,9 @@
-import { Block, BlockFactory } from "@css-blocks/core/dist/src";
+import { Block, BlockFactory } from "@css-blocks/core";
 import { CompletionItem, CompletionItemKind, Position, TextDocument } from "vscode-languageserver-types";
 
 import { PathTransformer } from "../pathTransformers/PathTransformer";
 
-import { getItemAtCursor } from "./hbsUtils";
+import { getItemAtCursor, AttributeType, ClassAttribute } from "./hbsUtils";
 import { transformPathsFromUri } from "./pathTransformer";
 
 export async function getHbsCompletions(document: TextDocument, position: Position, blockFactory: BlockFactory, pathTransformer: PathTransformer): Promise<CompletionItem[]> {
@@ -22,15 +22,32 @@ export async function getHbsCompletions(document: TextDocument, position: Positi
       return [];
     }
 
-    if (itemAtCursor.referencedBlock) {
-      block = block.getExportedBlock(itemAtCursor.referencedBlock);
+    let attributeAtCursor = itemAtCursor.attribute;
+    if (attributeAtCursor.referencedBlock) {
+      block = block.getExportedBlock(attributeAtCursor.referencedBlock);
     }
 
     if (!block) {
       return [];
     }
 
-    if (itemAtCursor.parentType === "class") {
+    if (attributeAtCursor.attributeType === AttributeType.ambiguous) {
+      let completions: CompletionItem[] = [
+        {
+          label: "block:",
+          kind: CompletionItemKind.Property,
+        }
+      ];
+      block.eachBlockExport((name) => {
+        completions.push({
+          label: `${name}:`,
+          kind: CompletionItemKind.Property,
+        });
+      });
+      return completions;
+    }
+
+    if (attributeAtCursor.attributeType === AttributeType.class) {
       return block.classes
         // TODO: we should look at scope attributes if the user is on the
         // root element.
@@ -43,43 +60,43 @@ export async function getHbsCompletions(document: TextDocument, position: Positi
         });
     }
 
-    if (itemAtCursor.parentType === "state") {
+    if (attributeAtCursor.attributeType === AttributeType.state) {
       let completions: CompletionItem[] = [];
 
-      if (itemAtCursor.siblingBlocks && itemAtCursor.siblingBlocks.length) {
-        itemAtCursor.siblingBlocks.forEach(blockSegments => {
-          if (block && blockSegments.referencedBlock) {
-            let referencedBlock = block.getExportedBlock(blockSegments.referencedBlock);
-
-            if (referencedBlock && blockSegments.className) {
-              const blockClass = referencedBlock.getClass(blockSegments.className);
+      // The state might be a partially typed "class" or "scope"
+      if ("class".startsWith(attributeAtCursor.name)) {
+        let siblingClass: ClassAttribute | undefined = itemAtCursor.siblingAttributes.find((attr) => attr.referencedBlock === attributeAtCursor.referencedBlock);
+        if (!siblingClass) { // don't suggest if the class for a block that is already added.
+          completions.push({
+            label: "class",
+            kind: CompletionItemKind.Property,
+          });
+        }
+      }
+      if ("scope".startsWith(attributeAtCursor.name)) {
+        if (attributeAtCursor.referencedBlock) { // don't suggest scope for the default block.
+          completions.push({
+            label: "scope",
+            kind: CompletionItemKind.Property,
+          });
+        }
+      }
+      if (itemAtCursor.siblingAttributes && itemAtCursor.siblingAttributes.length) {
+        itemAtCursor.siblingAttributes.forEach(classAttribute => {
+          if (block && classAttribute.referencedBlock === attributeAtCursor.referencedBlock) {
+            if (classAttribute.name) {
+              const blockClass = block.getClass(classAttribute.name);
               if (blockClass) {
                 const attributes = blockClass.getAttributes();
                 completions = completions.concat(attributes.map(
                   (attr): CompletionItem => {
                     return {
-                      label: `${attr.namespace}:${attr.name}`,
+                      label: attr.name,
                       kind: CompletionItemKind.Property,
                     };
                   },
                 ));
               }
-            }
-          } else if (block && blockSegments.className) {
-            const blockClass = block.getClass(blockSegments.className);
-
-            if (blockClass) {
-              // TODO: this is currently getting all attributes, it should filter
-              // to state only.
-              const attributes = blockClass.getAttributes();
-              completions = completions.concat(attributes.map(
-                (attr): CompletionItem => {
-                  return {
-                    label: `${attr.namespace}:${attr.name}`,
-                    kind: CompletionItemKind.Property,
-                  };
-                },
-              ));
             }
           }
         });

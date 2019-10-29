@@ -4,6 +4,7 @@ import {
   CssBlockError,
   SourceRange,
   isNamespaceReserved,
+  DEFAULT_NAMESPACE,
 } from "@css-blocks/core";
 import { AST, preprocess, Walker } from "@glimmer/syntax";
 import { ElementNode } from "@glimmer/syntax/dist/types/lib/types/nodes";
@@ -27,7 +28,7 @@ function walkClasses(astNode: AST.Node, callback: (namespace: string, classAttr:
       console.debug(node);
       for (let attrNode of node.attributes) {
         let nsAttr = parseNamespacedBlockAttribute(attrNode);
-        if (isClassAttribute(nsAttr) && attrNode.value.type === "TextNode") {
+        if (nsAttr && isClassAttribute(nsAttr) && attrNode.value.type === "TextNode") {
           callback(nsAttr.ns, attrNode, attrNode.value);
         }
       }
@@ -170,20 +171,51 @@ export async function validateTemplates(
   },                         new Map());
 }
 
-export const enum SupportedAttributes {
+export const enum AttributeType {
   state = "state",
   class = "class",
   scope = "scope",
+  ambiguous = "ambiguous"
 }
 
-interface BlockSegments {
+interface BlockAttributeBase {
+  attributeType: AttributeType;
   referencedBlock?: string;
-  className?: string;
 }
 
-interface ItemAtCursor extends BlockSegments {
-  parentType: SupportedAttributes;
-  siblingBlocks?: BlockSegments[];
+export interface ScopeAttribute extends BlockAttributeBase {
+  attributeType: AttributeType.scope;
+}
+
+export interface ClassAttribute extends BlockAttributeBase {
+  attributeType: AttributeType.class;
+  name?: string;
+}
+
+export interface StateAttribute extends BlockAttributeBase {
+  attributeType: AttributeType.state;
+  name: string;
+  value?: string;
+}
+
+export interface AmbiguousAttribute extends BlockAttributeBase {
+  attributeType: AttributeType.ambiguous;
+  referencedBlock?: undefined;
+  name: string;
+}
+
+export type BlockAttribute = ScopeAttribute | ClassAttribute | StateAttribute | AmbiguousAttribute;
+
+interface NamespacedAttr {
+  ns: string;
+  name: string;
+  value?: string;
+}
+
+
+interface ItemAtCursor {
+  attribute: BlockAttribute;
+  siblingAttributes: ClassAttribute[];
 }
 
 function getParentElement(focusRoot: FocusPath | null): ElementNode | null {
@@ -199,17 +231,19 @@ function getParentElement(focusRoot: FocusPath | null): ElementNode | null {
   return null;
 }
 
-function buildBlockSegments(attr: NamespacedAttr | null, attrValue: AST.AttrNode["value"]): BlockSegments | null {
+function buildClassAttribute(attr: NamespacedAttr | null, attrValue: AST.AttrNode["value"]): ClassAttribute | null {
   if (attr === null) return null;
   if (attrValue.type === "TextNode") {
     if (attr.ns === "block") {
       return {
-        className: attrValue.chars,
+        attributeType: AttributeType.class,
+        name: attrValue.chars,
       };
     } else {
       return {
+        attributeType: AttributeType.class,
         referencedBlock: attr.ns,
-        className: attrValue.chars,
+        name: attrValue.chars,
       };
     }
   } else {
@@ -217,14 +251,9 @@ function buildBlockSegments(attr: NamespacedAttr | null, attrValue: AST.AttrNode
   }
 }
 
-interface NamespacedAttr {
-  ns: string;
-  name: string;
-}
-
 function parseNamespacedBlockAttribute(attrNode: AST.Node | null | undefined): NamespacedAttr | null {
   if (!attrNode || !isAttrNode(attrNode)) return null;
-  if (/([^:]+):([^:]+)/.test(attrNode.name)) {
+  if (/([^:]+):([^:]+|$)/.test(attrNode.name)) {
     let ns = RegExp.$1;
     let name = RegExp.$2;
     if (isNamespaceReserved(ns)) {
@@ -239,14 +268,12 @@ function isAttrNode(node: FocusPath | AST.Node | NamespacedAttr | null): node is
   return node !== null && ((<AST.Node>node).type) === "AttrNode";
 }
 
-function isStateAttribute(attr: NamespacedAttr | null): attr is NamespacedAttr {
-  if (attr === null) return false;
-  return attr.name !== SupportedAttributes.class && attr.name !== SupportedAttributes.scope;
+function isStateAttribute(attr: NamespacedAttr): boolean {
+  return attr.name !== AttributeType.class && attr.name !== AttributeType.scope;
 }
 
-function isClassAttribute(attr: NamespacedAttr | null): attr is NamespacedAttr {
-  if (attr === null) return false;
-  return attr.name === SupportedAttributes.class;
+function isClassAttribute(attr: NamespacedAttr): boolean {
+  return attr.name === AttributeType.class;
 }
 
 // TODO: this will be handy when we add support for the scope attribute.
@@ -281,17 +308,25 @@ export function getItemAtCursor(text: string, position: Position): ItemAtCursor 
 
   let attr = parseNamespacedBlockAttribute(attrNode);
 
+  if (!attr) {
+    return {
+      attribute: {
+        attributeType: AttributeType.ambiguous,
+        name: attrNode.name,
+      },
+      siblingAttributes: [],
+    };
+  }
+
   if (isStateAttribute(attr)) {
-    return getStateAtCursor(focusRoot);
+    return getStateAtCursor(focusRoot, attr);
   }
 
   // TODO: Handle the other types of attribute value nodes
   if (isClassAttribute(attr) && data && data.type === "TextNode") {
-    let blockSegments = buildBlockSegments(attr, data);
-    if (blockSegments) {
-      return Object.assign({
-        parentType: SupportedAttributes.class
-      }, blockSegments);
+    let attribute = buildClassAttribute(attr, data);
+    if (attribute) {
+      return { attribute, siblingAttributes: []};
     } else {
       return null;
     }
@@ -300,29 +335,33 @@ export function getItemAtCursor(text: string, position: Position): ItemAtCursor 
   return null;
 }
 
-function getStateAtCursor(focusRoot: FocusPath | null) {
+function getStateAtCursor(focusRoot: FocusPath | null, attr: NamespacedAttr): ItemAtCursor | null {
     let parentElement = getParentElement(focusRoot);
 
     if (!parentElement) {
       return null;
     }
-
+    let attribute: StateAttribute = {
+      attributeType: AttributeType.state,
+      referencedBlock: attr.ns === DEFAULT_NAMESPACE ? undefined : attr.ns,
+      name: attr.name
+    };
     let classAttributes = parentElement.attributes.map(attrNode => {
       return [parseNamespacedBlockAttribute(attrNode), attrNode.value] as const;
     }).filter(([attr, _attrValue]) => {
-      return isClassAttribute(attr);
+      return attr && isClassAttribute(attr);
     });
 
-    let siblingBlocks = classAttributes.map(([attr, attrValue]) => {
-      return buildBlockSegments(attr, attrValue);
-    }).filter((bs): bs is BlockSegments => {
+    let siblingAttributes = classAttributes.map(([attr, attrValue]) => {
+      return buildClassAttribute(attr, attrValue);
+    }).filter((bs): bs is ClassAttribute => {
       return bs !== null;
     });
 
-    if (siblingBlocks.length > 0) {
+    if (siblingAttributes.length > 0) {
       return {
-        parentType: SupportedAttributes.state,
-        siblingBlocks,
+        attribute,
+        siblingAttributes,
       };
     } else {
       return null;

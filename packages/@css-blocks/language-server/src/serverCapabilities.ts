@@ -7,6 +7,7 @@ export const SERVER_CAPABILITIES: ServerCapabilities = {
   // hoverProvider: true,
   documentSymbolProvider: false,
   completionProvider: {
-    resolveProvider: true,
+    resolveProvider: false,
+    "triggerCharacters": [ ':', '"', "=" ],
   },
 };

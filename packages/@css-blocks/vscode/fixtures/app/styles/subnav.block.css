@@ -1,0 +1,16 @@
+:scope {
+  border: 1px solid black;
+  border-top-width: 0px;
+}
+
+:scope[open] {
+  display: block;
+}
+
+.asdf {
+  color: red;
+}
+
+.asdf[qwerty] {
+  color: blue;
+}

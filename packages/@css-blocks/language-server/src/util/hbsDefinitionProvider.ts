@@ -5,7 +5,7 @@ import { URI } from "vscode-uri";
 
 import { PathTransformer } from "../pathTransformers/PathTransformer";
 
-import { getItemAtCursor } from "./hbsUtils";
+import { getItemAtCursor, AttributeType } from "./hbsUtils";
 import { transformPathsFromUri } from "./pathTransformer";
 
 export async function getHbsDefinition(document: TextDocument, position: Position, blockFactory: BlockFactory, pathTransformer: PathTransformer): Promise<Definition> {
@@ -22,8 +22,8 @@ export async function getHbsDefinition(document: TextDocument, position: Positio
   let itemAtCursor = getItemAtCursor(document.getText(), position);
 
   try {
-    if (itemAtCursor && itemAtCursor.referencedBlock) {
-      let referencedBlock = block.getExportedBlock(itemAtCursor.referencedBlock);
+    if (itemAtCursor && itemAtCursor.attribute.referencedBlock) {
+      let referencedBlock = block.getExportedBlock(itemAtCursor.attribute.referencedBlock);
       if (referencedBlock) {
         blockUri = URI.file(referencedBlock.identifier).toString();
         blockDocumentText = fs.readFileSync(referencedBlock.identifier, {
@@ -43,7 +43,8 @@ export async function getHbsDefinition(document: TextDocument, position: Positio
   if (blockDocumentText) {
     let lines = blockDocumentText.split(/\r?\n/);
     let selectorPositionLine;
-    let className = (itemAtCursor && itemAtCursor.className) || "";
+    let attribute = itemAtCursor && itemAtCursor.attribute;
+    let className = (attribute && attribute.attributeType === AttributeType.class && attribute.name) || "";
 
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].includes(className)) {
