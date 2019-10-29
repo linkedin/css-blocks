@@ -10,7 +10,7 @@
     border: 1px solid black;
 }
 
-.world[state|thick] {
+.world[thick] {
     block-alias: my-alias-for-state;
     border-width: 3px;
 }

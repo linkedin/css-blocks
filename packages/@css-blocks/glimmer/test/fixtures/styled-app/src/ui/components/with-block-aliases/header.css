@@ -8,10 +8,10 @@
     font-style: italic;
 }
 
-.emphasis[state|style=bold] {
+.emphasis[style=bold] {
     font-weight: bold;
 }
 
-.emphasis[state|style=italic] {
+.emphasis[style=italic] {
     font-style: italic;
 }
