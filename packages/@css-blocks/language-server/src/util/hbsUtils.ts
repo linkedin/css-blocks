@@ -2,9 +2,9 @@ import {
   Block,
   BlockFactory,
   CssBlockError,
+  DEFAULT_NAMESPACE,
   SourceRange,
   isNamespaceReserved,
-  DEFAULT_NAMESPACE,
 } from "@css-blocks/core";
 import { AST, Walker, preprocess } from "@glimmer/syntax";
 import { ElementNode } from "@glimmer/syntax/dist/types/lib/types/nodes";
@@ -24,7 +24,6 @@ function walkClasses(astNode: AST.Node, callback: (namespace: string, classAttr:
   let walker = new Walker();
   walker.visit(astNode, (node) => {
     if (node.type === "ElementNode") {
-      console.debug(node);
       for (let attrNode of node.attributes) {
         let nsAttr = parseNamespacedBlockAttribute(attrNode);
         if (nsAttr && isClassAttribute(nsAttr) && attrNode.value.type === "TextNode") {
@@ -174,7 +173,7 @@ export const enum AttributeType {
   state = "state",
   class = "class",
   scope = "scope",
-  ambiguous = "ambiguous"
+  ambiguous = "ambiguous",
 }
 
 interface BlockAttributeBase {
@@ -211,7 +210,6 @@ interface NamespacedAttr {
   value?: string;
 }
 
-
 interface ItemAtCursor {
   attribute: BlockAttribute;
   siblingAttributes: ClassAttribute[];
@@ -236,13 +234,13 @@ function buildClassAttribute(attr: NamespacedAttr | null, attrValue: AST.AttrNod
     if (attr.ns === "block") {
       return {
         attributeType: AttributeType.class,
-        name: attrValue.chars,
+        name: attrValue.chars.trim(),
       };
     } else {
       return {
         attributeType: AttributeType.class,
         referencedBlock: attr.ns,
-        name: attrValue.chars,
+        name: attrValue.chars.trim(),
       };
     }
   } else {
@@ -343,7 +341,7 @@ function getStateAtCursor(focusRoot: FocusPath | null, attr: NamespacedAttr): It
     let attribute: StateAttribute = {
       attributeType: AttributeType.state,
       referencedBlock: attr.ns === DEFAULT_NAMESPACE ? undefined : attr.ns,
-      name: attr.name
+      name: attr.name,
     };
     let classAttributes = parentElement.attributes.map(attrNode => {
       return [parseNamespacedBlockAttribute(attrNode), attrNode.value] as const;

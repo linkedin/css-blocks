@@ -5,7 +5,7 @@ import { URI } from "vscode-uri";
 
 import { PathTransformer } from "../pathTransformers/PathTransformer";
 
-import { getItemAtCursor, AttributeType } from "./hbsUtils";
+import { AttributeType, getItemAtCursor } from "./hbsUtils";
 import { transformPathsFromUri } from "./pathTransformer";
 
 export async function getHbsDefinition(document: TextDocument, position: Position, blockFactory: BlockFactory, pathTransformer: PathTransformer): Promise<Definition> {

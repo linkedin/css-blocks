@@ -3,7 +3,7 @@ import { CompletionItem, CompletionItemKind, Position, TextDocument } from "vsco
 
 import { PathTransformer } from "../pathTransformers/PathTransformer";
 
-import { getItemAtCursor, AttributeType, ClassAttribute } from "./hbsUtils";
+import { AttributeType, ClassAttribute, getItemAtCursor } from "./hbsUtils";
 import { transformPathsFromUri } from "./pathTransformer";
 
 export async function getHbsCompletions(document: TextDocument, position: Position, blockFactory: BlockFactory, pathTransformer: PathTransformer): Promise<CompletionItem[]> {
@@ -36,7 +36,7 @@ export async function getHbsCompletions(document: TextDocument, position: Positi
         {
           label: "block:",
           kind: CompletionItemKind.Property,
-        }
+        },
       ];
       block.eachBlockExport((name) => {
         completions.push({

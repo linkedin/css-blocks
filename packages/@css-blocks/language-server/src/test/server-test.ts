@@ -84,7 +84,7 @@ export class LanguageServerServerTest {
       },
       position: {
         line: 3,
-        character: 4,
+        character: 5,
       },
     };
 
@@ -131,7 +131,7 @@ export class LanguageServerServerTest {
         uri: EMBER_CLASSIC_TEMPLATE_A_URI,
       },
       position: {
-        line: 2,
+        line: 5,
         character: 17,
       },
     };

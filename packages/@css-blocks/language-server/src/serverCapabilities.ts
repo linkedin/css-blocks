@@ -8,6 +8,6 @@ export const SERVER_CAPABILITIES: ServerCapabilities = {
   documentSymbolProvider: false,
   completionProvider: {
     resolveProvider: false,
-    "triggerCharacters": [ ':', '"', "=" ],
+    "triggerCharacters": [ ":", '"', "=" ],
   },
 };
