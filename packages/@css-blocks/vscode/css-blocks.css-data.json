@@ -1,0 +1,13 @@
+{
+  "version": 1.1,
+  "atDirectives": [
+    {
+      "name": "@block",
+      "description": "Import a block reference for use within another block"
+    },
+    {
+      "name": "@export",
+      "description": "Export a block reference to expose it to the template context of the current block"
+    }
+  ]
+}
