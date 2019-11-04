@@ -37,7 +37,7 @@ export async function assertForeignGlobalAttribute(configuration: Configuration,
 
         for (let node of sel.nodes) {
 
-          if ( node.type === selectorParser.PSEUDO && node.value === ROOT_CLASS) { continue; }
+          if (node.type === selectorParser.PSEUDO && node.value === ROOT_CLASS) { continue; }
 
           // If selecting something other than an attribute on external attribute, throw.
           if (!isAttributeNode(node)) {

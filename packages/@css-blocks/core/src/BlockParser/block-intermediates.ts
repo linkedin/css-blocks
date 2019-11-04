@@ -1,7 +1,7 @@
 import { assertNever } from "@opticss/util";
 import { CompoundSelector, postcssSelectorParser as selectorParser } from "opticss";
 
-import { ATTR_PRESENT, AttrToken, ROOT_CLASS } from "../BlockSyntax";
+import { ATTR_PRESENT, AttrToken, RESERVED_NAMESPACES, ROOT_CLASS } from "../BlockSyntax";
 import { AttrValue, Block, BlockClass } from "../BlockTree";
 
 export enum BlockType {
@@ -114,16 +114,13 @@ export function isRootNode(node: unknown): node is selectorParser.Pseudo {
 
 export const isClassNode = selectorParser.isClassName;
 
-export const RESERVED_NAMESPACES = new Set<string | undefined | true>(["html", "math", "svg"]);
-Object.freeze(RESERVED_NAMESPACES);
-
 /**
  * Check if given selector node is an attribute selector
  * @param  node The selector to test.
  * @return True if attribute selector, false if not.
  */
 export function isAttributeNode(node: selectorParser.Node): node is selectorParser.Attribute {
-  return selectorParser.isAttribute(node) && !RESERVED_NAMESPACES.has(node.namespace);
+  return selectorParser.isAttribute(node) && node.namespace !== true && !RESERVED_NAMESPACES.has(node.namespace);
 }
 
 /**
