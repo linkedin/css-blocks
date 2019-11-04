@@ -5,6 +5,9 @@ export const SERVER_CAPABILITIES: ServerCapabilities = {
   definitionProvider: true,
   // TODO: implement support for this for showing documentation
   // hoverProvider: true,
+  documentLinkProvider: {
+    resolveProvider: true,
+  },
   documentSymbolProvider: false,
   completionProvider: {
     resolveProvider: false,

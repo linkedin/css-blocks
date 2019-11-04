@@ -1,11 +1,12 @@
 import { BlockFactory, CssBlockError, Options, resolveConfiguration } from "@css-blocks/core/dist/src";
 import { BlockParser } from "@css-blocks/core/dist/src/BlockParser/BlockParser";
-import { CompletionItem, Definition, DidChangeConfigurationNotification, IConnection, InitializeParams, InitializeResult, TextDocumentChangeEvent, TextDocumentPositionParams, TextDocuments } from "vscode-languageserver";
+import { CompletionItem, Definition, DidChangeConfigurationNotification, DocumentLink, DocumentLinkParams, IConnection, InitializeParams, InitializeResult, TextDocumentChangeEvent, TextDocumentPositionParams, TextDocuments } from "vscode-languageserver";
 
 import { emberCompletionProvider } from "./completionProviders/emberCompletionProvider";
 import { createBlockFactory } from "./createBlockFactory";
 import { createBlockParser } from "./createBlockParser";
 import { emberDefinitionProvider } from "./definitionProviders/emberDefinitionProvider";
+import { blockLinksProvider } from "./documentLinksProviders/blockLinkProvider";
 import { documentContentChange } from "./eventHandlers/documentContentChange";
 import { PathTransformer } from "./pathTransformers/PathTransformer";
 import { SERVER_CAPABILITIES } from "./serverCapabilities";
@@ -82,6 +83,10 @@ export class Server {
 
     this.connection.onDefinition(async (params: TextDocumentPositionParams): Promise<Definition> => {
       return await emberDefinitionProvider(this.documents, this.blockFactory, params, this.pathTransformer);
+    });
+
+    this.connection.onDocumentLinks(async (params: DocumentLinkParams): Promise<DocumentLink[]> => {
+      return await blockLinksProvider(this.documents, params);
     });
   }
 

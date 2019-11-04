@@ -2,7 +2,7 @@ import { Syntax } from "@css-blocks/core/dist/src";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import * as path from "path";
-import { CompletionItemKind, CompletionRequest, DefinitionRequest, DiagnosticSeverity, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DidSaveTextDocumentNotification, DidSaveTextDocumentParams, IConnection, TextDocument, TextDocumentPositionParams, TextDocuments, createConnection } from "vscode-languageserver";
+import { CompletionItemKind, CompletionRequest, DefinitionRequest, DiagnosticSeverity, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DidSaveTextDocumentNotification, DidSaveTextDocumentParams, DocumentLinkParams, DocumentLinkRequest, IConnection, TextDocument, TextDocumentPositionParams, TextDocuments, createConnection } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
 import { EmberClassicTransformer } from "../pathTransformers/EmberClassicTransformer";
@@ -324,5 +324,31 @@ export class LanguageServerServerTest {
       }],
     });
 
+  }
+
+  @test async "it returns the expected document links"() {
+    this.startServer();
+
+    let params: DocumentLinkParams = {
+      textDocument: {
+        uri: pathToUri("fixtures/ember-classic/styles/components/a.block.css"),
+      },
+    };
+
+    let response = await this.mockClientConnection.sendRequest(DocumentLinkRequest.type, params);
+
+    assert.deepEqual(response, [{
+      range: {
+        start: {
+          character: 19,
+          line: 0,
+        },
+        end: {
+          character: 44,
+          line: 0,
+        },
+      },
+      target: pathToUri("fixtures/ember-classic/styles/blocks/utils.block.css"),
+    }]);
   }
 }
