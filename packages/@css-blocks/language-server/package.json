@@ -15,6 +15,7 @@
   "dependencies": {
     "@css-blocks/core": "^0.24.0",
     "@glimmer/syntax": "^0.42.1",
+    "glob": "^7.1.5",
     "opticss": "^0.6.2",
     "vscode-languageserver": "^5.2.1",
     "vscode-uri": "^2.0.3"

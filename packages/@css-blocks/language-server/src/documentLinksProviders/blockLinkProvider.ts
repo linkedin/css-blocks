@@ -5,7 +5,7 @@ import { URI } from "vscode-uri";
 
 import { isBlockFile } from "../util/blockUtils";
 
-const LINK_REGEX = /from\s+(['"])([^'"]+)\1;/;
+export const LINK_REGEX = /from\s+(['"])([^'"]+)\1;?/;
 
 export async function blockLinksProvider(documents: TextDocuments, params: DocumentLinkParams): Promise<DocumentLink[]> {
   let { uri } = params.textDocument;
