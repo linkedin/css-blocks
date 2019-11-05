@@ -32,6 +32,6 @@
     "posttest": "yarn run lint",
     "test": "mocha dist/test --opts src/test/mocha.opts",
     "test:runner": "mocha dist/test",
-    "watch": "watch 'yarn run test' './src' --wait=3"
+    "watch": "watch 'yarn run compile' './src' --wait=3"
   }
 }
