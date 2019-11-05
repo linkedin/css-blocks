@@ -48,6 +48,30 @@ function shouldCompleteImportPath(importPathMatches: RegExpMatchArray, position:
   return relativeImportPathStartLinePosition <= position.character && relativeImportPathEndLinePosition >= position.character;
 }
 
+interface PathCompletionCandidateInfo {
+  pathName: string;
+  stats: fs.Stats;
+}
+
+function maybeCompletionItem(completionCandidateInfo: PathCompletionCandidateInfo, currentFileExtension: string): CompletionItem | null {
+    let completionKind: CompletionItemKind | undefined;
+
+    if (completionCandidateInfo.stats.isDirectory()) {
+      completionKind = CompletionItemKind.Folder;
+    } else if (completionCandidateInfo.stats.isFile() && completionCandidateInfo.pathName.endsWith(`.block${currentFileExtension}`)) {
+      completionKind = CompletionItemKind.File;
+    }
+
+    if (completionKind) {
+      return {
+        label: path.basename(completionCandidateInfo.pathName),
+        kind: completionKind,
+      };
+    }
+
+    return null;
+}
+
 async function getImportPathCompletions(documentUri: string, relativeImportPath: string): Promise<CompletionItem[]> {
   let completionItems: CompletionItem[] = [];
 
@@ -59,46 +83,31 @@ async function getImportPathCompletions(documentUri: string, relativeImportPath:
   let blockDirPath = path.dirname(URI.parse(documentUri).fsPath);
   let absoluteImportPath = path.resolve(blockDirPath, relativeImportPath);
   let globPatternSuffix = relativeImportPath.endsWith("/") ? "/*" : "*";
-  let blockSyntax = path.extname(documentUri);
+  let currentFileExtension = path.extname(documentUri);
 
-  return new Promise(outerResolve => {
-    glob(`${absoluteImportPath}${globPatternSuffix}`, async (_, pathNames) => {
-      let items: (CompletionItem | null)[] = await Promise.all(pathNames.map(pathName => {
-        return new Promise(innerResolve => {
-          fs.stat(pathName, (_, stats) => {
-            let completionKind: CompletionItemKind | undefined;
-
-            if (stats.isDirectory()) {
-              completionKind = CompletionItemKind.Folder;
-            } else if (stats.isFile() && path.extname(pathName) === blockSyntax) {
-              completionKind = CompletionItemKind.File;
-            }
-
-            if (!completionKind) {
-              innerResolve(null);
-            }
-
-            innerResolve({
-              label: path.basename(pathName),
-              kind: completionKind,
-            });
-          });
-        });
-      }));
-
-      // NOTE: it seems typescript is not happy with items.filter(Boolean)
-      items.forEach(item => {
-        if (item) {
-          completionItems.push(item);
-        }
-      });
-
-      outerResolve(completionItems);
-    });
+  let pathNames: string[] = await new Promise(r => {
+    glob(`${absoluteImportPath}${globPatternSuffix}`, async (_, paths) => r(paths));
   });
+
+  let fileInfos: PathCompletionCandidateInfo[] = await Promise.all(pathNames.map(pathName => {
+    return new Promise(r => {
+      fs.stat(pathName, (_, stats) => r({ pathName, stats }));
+    });
+  }));
+
+  return fileInfos.reduce((completionItems: CompletionItem[], fileInfo) => {
+    let completionItem = maybeCompletionItem(fileInfo, currentFileExtension);
+
+    if (completionItem) {
+      completionItems.push(completionItem);
+    }
+
+    return completionItems;
+  },                      []);
 }
 
-// TODO: handle other completion cases (extending imported block, etc);
+// TODO: handle other completion cases (extending imported block, etc). Right
+// this is only providing completions for import path;
 export async function getBlockCompletions(document: TextDocument, position: Position): Promise<CompletionItem[]> {
   let text = document.getText();
   let lineAtCursor = text.split(/\r?\n/)[position.line];
