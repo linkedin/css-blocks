@@ -1,2 +1,4 @@
 @block randoBlock from "../";
 @export utils from "../blocks/";
+@block aBlock from "../blocks/ut";
+@export bBlock from "./";

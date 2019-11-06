@@ -360,6 +360,7 @@ export class LanguageServerServerTest {
 
     this.startServer();
 
+    // directory completions
     const params1: TextDocumentPositionParams = {
       textDocument: {
         uri: importCompletionsFixtureUri,
@@ -373,17 +374,19 @@ export class LanguageServerServerTest {
     const response1 = await this.mockClientConnection.sendRequest(CompletionRequest.type, params1);
 
     assert.deepEqual(
-                                response1, [
+      response1, [
       {
-        "kind": 19,
-        "label": "blocks",
+        kind: 19,
+        label: "blocks",
       },
       {
-        "kind": 19,
-        "label": "components",
+        kind: 19,
+        label: "components",
       },
-    ],                          "it returns the expected folder completions");
+    ],
+      "it returns the expected folder completions");
 
+    // file name completions
     const params2: TextDocumentPositionParams = {
       textDocument: {
         uri: importCompletionsFixtureUri,
@@ -394,10 +397,10 @@ export class LanguageServerServerTest {
       },
     };
 
-    const response = await this.mockClientConnection.sendRequest(CompletionRequest.type, params2);
+    const response2 = await this.mockClientConnection.sendRequest(CompletionRequest.type, params2);
 
     assert.deepEqual(
-                               response, [
+      response2, [
       {
         "kind": 17,
         "label": "block-with-errors.block.css",
@@ -406,6 +409,55 @@ export class LanguageServerServerTest {
         "kind": 17,
         "label": "utils.block.css",
       },
-    ],                         "it returns the expected file completions");
+    ],
+      "it returns the expected file completions");
+
+    // partially typed filename completion
+    const params3: TextDocumentPositionParams = {
+      textDocument: {
+        uri: importCompletionsFixtureUri,
+      },
+      position: {
+        line: 2,
+        character: 32,
+      },
+    };
+
+    const response3 = await this.mockClientConnection.sendRequest(CompletionRequest.type, params3);
+
+    assert.deepEqual(
+      response3, [
+      {
+        kind: 17,
+        label: "block-with-errors.block.css",
+      },
+      {
+        kind: 17,
+        label: "utils.block.css",
+      },
+    ],
+      "it returns the expected file completions");
+
+    // local directory reference
+    const params4: TextDocumentPositionParams = {
+      textDocument: {
+        uri: importCompletionsFixtureUri,
+      },
+      position: {
+        line: 3,
+        character: 23,
+      },
+    };
+
+    const response4 = await this.mockClientConnection.sendRequest(CompletionRequest.type, params4);
+
+    assert.deepEqual(
+      response4, [
+      {
+        kind: 17,
+        label: "a.block.css",
+      },
+    ],
+      "it returns the expected file completions");
   }
 }

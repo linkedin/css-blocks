@@ -1,13 +1,12 @@
 import { CssBlockError, Syntax } from "@css-blocks/core/dist/src";
 import { BlockParser } from "@css-blocks/core/dist/src/BlockParser/BlockParser";
 import * as fs from "fs";
-import * as glob from "glob";
 import { postcss } from "opticss";
 import * as path from "path";
 import { CompletionItem, CompletionItemKind, Position, TextDocument } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
-import { LINK_REGEX } from "../documentLinksProviders/blockLinkProvider";
+const IMPORT_PATH_REGEX = /from\s+(['"])([^'"]+)/;
 
 // TODO: Currently we are only supporting css. This should eventually support all
 // of the file types supported by css blocks
@@ -53,23 +52,23 @@ interface PathCompletionCandidateInfo {
   stats: fs.Stats;
 }
 
-function maybeCompletionItem(completionCandidateInfo: PathCompletionCandidateInfo, currentFileExtension: string): CompletionItem | null {
-    let completionKind: CompletionItemKind | undefined;
+function maybeCompletionItem(completionCandidateInfo: PathCompletionCandidateInfo): CompletionItem | null {
+  let completionKind: CompletionItemKind | undefined;
 
-    if (completionCandidateInfo.stats.isDirectory()) {
-      completionKind = CompletionItemKind.Folder;
-    } else if (completionCandidateInfo.stats.isFile() && completionCandidateInfo.pathName.endsWith(`.block${currentFileExtension}`)) {
-      completionKind = CompletionItemKind.File;
-    }
+  if (completionCandidateInfo.stats.isDirectory()) {
+    completionKind = CompletionItemKind.Folder;
+  } else if (completionCandidateInfo.stats.isFile() && completionCandidateInfo.pathName.indexOf(".block.") >= 0) {
+    completionKind = CompletionItemKind.File;
+  }
 
-    if (completionKind) {
-      return {
-        label: path.basename(completionCandidateInfo.pathName),
-        kind: completionKind,
-      };
-    }
+  if (completionKind) {
+    return {
+      label: path.basename(completionCandidateInfo.pathName),
+      kind: completionKind,
+    };
+  }
 
-    return null;
+  return null;
 }
 
 async function getImportPathCompletions(documentUri: string, relativeImportPath: string): Promise<CompletionItem[]> {
@@ -81,29 +80,35 @@ async function getImportPathCompletions(documentUri: string, relativeImportPath:
   }
 
   let blockDirPath = path.dirname(URI.parse(documentUri).fsPath);
-  let absoluteImportPath = path.resolve(blockDirPath, relativeImportPath);
-  let globPatternSuffix = relativeImportPath.endsWith("/") ? "/*" : "*";
-  let currentFileExtension = path.extname(documentUri);
-
+  let relativeScanDir = relativeImportPath.endsWith(path.sep) ? relativeImportPath : relativeImportPath.substring(0, relativeImportPath.lastIndexOf(path.sep) + 1);
+  let absoluteScanDir = path.resolve(blockDirPath, relativeScanDir);
+  let blockFsPath = URI.parse(documentUri).fsPath;
   let pathNames: string[] = await new Promise(r => {
-    glob(`${absoluteImportPath}${globPatternSuffix}`, async (_, paths) => r(paths));
+    fs.readdir(absoluteScanDir, (_, paths) => r(paths || []));
   });
 
   let fileInfos: PathCompletionCandidateInfo[] = await Promise.all(pathNames.map(pathName => {
     return new Promise(r => {
-      fs.stat(pathName, (_, stats) => r({ pathName, stats }));
+      let absolutePath = `${absoluteScanDir}/${pathName}`;
+      fs.stat(absolutePath, (_, stats) => r({ pathName: absolutePath, stats }));
     });
   }));
 
-  return fileInfos.reduce((completionItems: CompletionItem[], fileInfo) => {
-    let completionItem = maybeCompletionItem(fileInfo, currentFileExtension);
+  return fileInfos.reduce(
+    (completionItems: CompletionItem[], fileInfo) => {
+      if (fileInfo.pathName === blockFsPath) {
+        return completionItems;
+      }
 
-    if (completionItem) {
-      completionItems.push(completionItem);
-    }
+      let completionItem = maybeCompletionItem(fileInfo);
 
-    return completionItems;
-  },                      []);
+      if (completionItem) {
+        completionItems.push(completionItem);
+      }
+
+      return completionItems;
+    },
+    []);
 }
 
 // TODO: handle other completion cases (extending imported block, etc). Right
@@ -111,7 +116,7 @@ async function getImportPathCompletions(documentUri: string, relativeImportPath:
 export async function getBlockCompletions(document: TextDocument, position: Position): Promise<CompletionItem[]> {
   let text = document.getText();
   let lineAtCursor = text.split(/\r?\n/)[position.line];
-  let importPathMatches = lineAtCursor.match(LINK_REGEX);
+  let importPathMatches = lineAtCursor.match(IMPORT_PATH_REGEX);
 
   if (importPathMatches && shouldCompleteImportPath(importPathMatches, position, lineAtCursor)) {
     let relativeImportPath = importPathMatches[2];
