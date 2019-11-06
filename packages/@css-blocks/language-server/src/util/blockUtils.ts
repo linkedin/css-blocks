@@ -87,16 +87,18 @@ async function getImportPathCompletions(documentUri: string, relativeImportPath:
     fs.readdir(absoluteScanDir, (_, paths) => r(paths || []));
   });
 
-  let fileInfos: PathCompletionCandidateInfo[] = await Promise.all(pathNames.map(pathName => {
+  let fileInfos: (PathCompletionCandidateInfo | null)[] = await Promise.all(pathNames.map(pathName => {
     return new Promise(r => {
       let absolutePath = `${absoluteScanDir}/${pathName}`;
-      fs.stat(absolutePath, (_, stats) => r({ pathName: absolutePath, stats }));
+      fs.stat(absolutePath, (_, stats) => r(
+        stats ? { pathName: absolutePath, stats } : null,
+      ));
     });
   }));
 
   return fileInfos.reduce(
     (completionItems: CompletionItem[], fileInfo) => {
-      if (fileInfo.pathName === blockFsPath) {
+      if (!fileInfo || fileInfo.pathName === blockFsPath) {
         return completionItems;
       }
 
