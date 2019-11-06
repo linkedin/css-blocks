@@ -52,12 +52,16 @@ interface PathCompletionCandidateInfo {
   stats: fs.Stats;
 }
 
+/**
+ * We only return folders/directories or block files as completion items.
+ */
 function maybeCompletionItem(completionCandidateInfo: PathCompletionCandidateInfo): CompletionItem | null {
   let completionKind: CompletionItemKind | undefined;
+  let isBlockFile = (candidate: PathCompletionCandidateInfo) => candidate.pathName.indexOf(".block.") >= 0;
 
   if (completionCandidateInfo.stats.isDirectory()) {
     completionKind = CompletionItemKind.Folder;
-  } else if (completionCandidateInfo.stats.isFile() && completionCandidateInfo.pathName.indexOf(".block.") >= 0) {
+  } else if (completionCandidateInfo.stats.isFile() && isBlockFile(completionCandidateInfo)) {
     completionKind = CompletionItemKind.File;
   }
 
@@ -69,6 +73,30 @@ function maybeCompletionItem(completionCandidateInfo: PathCompletionCandidateInf
   }
 
   return null;
+}
+
+async function getFilesInDirectory(directoryPath: string): Promise<string[]> {
+  try {
+    return await new Promise((resolve, reject) => {
+      fs.readdir(directoryPath, (error, fileNames) => {
+        error ? reject(error) : resolve(fileNames);
+      });
+    });
+  } catch (e) {
+    return [];
+  }
+}
+
+async function getStatsForFile(filePath: string): Promise<fs.Stats | null> {
+  try {
+    return await new Promise((resolve, reject) => {
+      fs.stat(filePath, (error, stats) => {
+        error ? reject(error) : resolve(stats);
+      });
+    });
+  } catch (e) {
+    return null;
+  }
 }
 
 async function getImportPathCompletions(documentUri: string, relativeImportPath: string): Promise<CompletionItem[]> {
@@ -83,26 +111,26 @@ async function getImportPathCompletions(documentUri: string, relativeImportPath:
   let relativeScanDir = relativeImportPath.endsWith(path.sep) ? relativeImportPath : relativeImportPath.substring(0, relativeImportPath.lastIndexOf(path.sep) + 1);
   let absoluteScanDir = path.resolve(blockDirPath, relativeScanDir);
   let blockFsPath = URI.parse(documentUri).fsPath;
-  let pathNames: string[] = await new Promise(r => {
-    fs.readdir(absoluteScanDir, (_, paths) => r(paths || []));
-  });
+  let fileNames: string[] = await getFilesInDirectory(absoluteScanDir);
 
-  let fileInfos: (PathCompletionCandidateInfo | null)[] = await Promise.all(pathNames.map(pathName => {
-    return new Promise(r => {
-      let absolutePath = `${absoluteScanDir}/${pathName}`;
-      fs.stat(absolutePath, (_, stats) => r(
-        stats ? { pathName: absolutePath, stats } : null,
-      ));
-    });
-  }));
+  let completionCandidates: (PathCompletionCandidateInfo | null)[] = await Promise.all(
+    fileNames.map(async (fileName): Promise<PathCompletionCandidateInfo | null> => {
+      let absolutePath = `${absoluteScanDir}/${fileName}`;
+      let stats: fs.Stats | null = await getStatsForFile(absolutePath);
 
-  return fileInfos.reduce(
-    (completionItems: CompletionItem[], fileInfo) => {
-      if (!fileInfo || fileInfo.pathName === blockFsPath) {
+      return stats ? {
+        pathName: absolutePath,
+        stats,
+      } : null;
+    }));
+
+  return completionCandidates.reduce(
+    (completionItems: CompletionItem[], candidate) => {
+      if (!candidate || candidate.pathName === blockFsPath) {
         return completionItems;
       }
 
-      let completionItem = maybeCompletionItem(fileInfo);
+      let completionItem = maybeCompletionItem(candidate);
 
       if (completionItem) {
         completionItems.push(completionItem);
