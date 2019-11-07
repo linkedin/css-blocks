@@ -75,28 +75,20 @@ function maybeCompletionItem(completionCandidateInfo: PathCompletionCandidateInf
   return null;
 }
 
-async function getFilesInDirectory(directoryPath: string): Promise<string[]> {
-  try {
-    return await new Promise((resolve, reject) => {
-      fs.readdir(directoryPath, (error, fileNames) => {
-        error ? reject(error) : resolve(fileNames);
-      });
+function getFilesInDirectory(directoryPath: string): Promise<string[]> {
+  return new Promise((resolve) => {
+    fs.readdir(directoryPath, (error, fileNames) => {
+      error ? resolve([]) : resolve(fileNames);
     });
-  } catch (e) {
-    return [];
-  }
+  });
 }
 
-async function getStatsForFile(filePath: string): Promise<fs.Stats | null> {
-  try {
-    return await new Promise((resolve, reject) => {
-      fs.stat(filePath, (error, stats) => {
-        error ? reject(error) : resolve(stats);
-      });
+function getStatsForFile(filePath: string): Promise<fs.Stats | null> {
+  return new Promise((resolve) => {
+    fs.stat(filePath, (error, stats) => {
+      error ? resolve(null) : resolve(stats);
     });
-  } catch (e) {
-    return null;
-  }
+  });
 }
 
 async function getImportPathCompletions(documentUri: string, relativeImportPath: string): Promise<CompletionItem[]> {

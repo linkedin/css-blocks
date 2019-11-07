@@ -6,7 +6,7 @@
   "author": "LinkedIn Corporation",
   "license": "BSD-2-Clause",
   "engines": {
-    "node": "10.11.0"
+    "node": "*"
   },
   "repository": {
     "type": "git",
