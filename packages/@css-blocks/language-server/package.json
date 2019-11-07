@@ -33,5 +33,8 @@
     "test": "mocha dist/test --opts src/test/mocha.opts",
     "test:runner": "mocha dist/test",
     "watch": "watch 'yarn run test' './src' --wait=3"
+  },
+  "volta": {
+    "node": "10.11.0"
   }
 }
