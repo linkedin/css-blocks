@@ -1,16 +1,25 @@
-import { CssBlockError } from "@css-blocks/core/dist/src";
-import { BlockParser } from "@css-blocks/core/dist/src/BlockParser/BlockParser";
+import { BlockFactory, CssBlockError } from "@css-blocks/core/dist/src";
 import { TextDocumentChangeEvent } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
-import { isBlockFile, parseBlockErrors } from "../util/blockUtils";
+import { isBlockFile } from "../util/blockUtils";
 
-export async function documentContentChange(e: TextDocumentChangeEvent, parser: BlockParser): Promise<CssBlockError[]> {
+export async function documentContentChange(e: TextDocumentChangeEvent, blockFactory: BlockFactory): Promise<CssBlockError[]> {
   const { uri } = e.document;
 
   if (isBlockFile(uri)) {
-    return await parseBlockErrors(parser, URI.parse(uri).fsPath, e.document.getText());
+    let errors: CssBlockError[] = [];
+    try {
+      // parses the block file to get the block and errors if there's a problem
+      // along the way. The importer ensures that we're getting live contents if
+      // the block file is opened
+      await blockFactory.getBlockFromPath(URI.parse(uri).fsPath);
+    } catch (error) {
+      if (error instanceof CssBlockError) {
+        errors = errors.concat(error);
+      }
+      return errors;
+    }
   }
-
   return [];
 }
