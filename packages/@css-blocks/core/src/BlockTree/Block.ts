@@ -14,7 +14,7 @@ import { isAttributeNode, isClassNode } from "../BlockParser";
 import { isRootNode, toAttrToken } from "../BlockParser";
 import { BlockPath, CLASS_NAME_IDENT, DEFAULT_EXPORT, ROOT_CLASS } from "../BlockSyntax";
 import { ResolvedConfiguration } from "../configuration";
-import { CssBlockError, InvalidBlockSyntax } from "../errors";
+import { CssBlockError, InvalidBlockSyntax, MultipleCssBlockErrors } from "../errors";
 import { FileIdentifier } from "../importing";
 import { SourceFile, SourceRange } from "../SourceLocation";
 
@@ -51,6 +51,7 @@ export class Block
   private _blockExportReverseLookup: Map<Block, string> = new Map();
   private _identifier: FileIdentifier;
   private _implements: Block[] = [];
+  private _blockErrors: CssBlockError[] = [];
   private hasHadNameReset = false;
 
   public readonly guid: string;
@@ -183,6 +184,25 @@ export class Block
     }
 
     return attr || klass || undefined;
+  }
+
+  /**
+   * Stores a block error along with the block
+   * @param error CssBlockError that is added to the block
+   */
+  addError(error: CssBlockError) {
+    this._blockErrors.push(error);
+  }
+
+  /**
+   * Checks for errors on the block
+   * @returns true if the block is valid else throws the errors on the block
+   */
+  assertValid(): Boolean {
+    if (this._blockErrors.length) {
+      throw new MultipleCssBlockErrors(this._blockErrors);
+    }
+    return true;
   }
 
   /**
