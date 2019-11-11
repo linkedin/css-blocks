@@ -45,6 +45,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/language-server"
+		},
+		{
+			"path": "packages/@css-blocks/config"
 		}
 	],
 	"settings": {
