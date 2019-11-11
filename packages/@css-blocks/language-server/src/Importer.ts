@@ -1,5 +1,6 @@
-import { NodeJsImporter } from "@css-blocks/core/dist/src";
+import { NodeJsImporter, Configuration, ImportedFile } from "@css-blocks/core";
 import { TextDocuments } from "vscode-languageserver";
+import { URI } from "vscode-uri";
 
 /**
  * Imports the contents of the file from the language server client if its
@@ -13,9 +14,9 @@ export class LSImporter extends NodeJsImporter {
     this.documents = documents;
   }
 
-  async import(identifier: string, config: Readonly<import("@css-blocks/core/dist/src").Configuration>): Promise<import("@css-blocks/core/dist/src").ImportedFile> {
+  async import(identifier: string, config: Configuration): Promise<ImportedFile> {
     // the uri expected is that of a file
-    let clientDocument = this.documents.get(`file://${identifier}`);
+    let clientDocument = this.documents.get(URI.file(identifier).toString());
     // if the document is opened on the client, read from there
     // this will allow us to access the contents of an unsaved file
     if (clientDocument) {

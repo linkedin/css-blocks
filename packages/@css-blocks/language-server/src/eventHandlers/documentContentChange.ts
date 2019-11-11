@@ -15,10 +15,7 @@ export async function documentContentChange(e: TextDocumentChangeEvent, blockFac
       // the block file is opened
       await blockFactory.getBlockFromPath(URI.parse(uri).fsPath);
     } catch (error) {
-      if (error instanceof CssBlockError) {
-        errors = errors.concat(error);
-      }
-      return errors;
+      return error instanceof CssBlockError ? [error] : [];
     }
   }
   return [];
