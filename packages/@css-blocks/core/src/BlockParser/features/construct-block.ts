@@ -66,8 +66,11 @@ export async function constructBlock(configuration: Configuration, root: postcss
       let keySel = iSel.key;
       let sel: CompoundSelector | undefined = iSel.selector;
 
-      // Assert this selector is well formed according to CSS Blocks' selector rules.
+      // Assert this selector is well formed according to CSS Blocks' selector
+      // rules.
       assertValidSelector(configuration, block, rule, iSel, file);
+      // this should list all the errors
+      // block.assertValid();
 
       // For each `CompoundSelector` in this rule, configure the `Block` object
       // depending on the BlockType.
@@ -137,9 +140,9 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
   // Verify our key selector targets a block object, but not one from an another block.
   let keyObject = assertBlockObject(configuration, block, selector.key, rule, file);
   if (keyObject.blockName) {
-    throw new errors.InvalidBlockSyntax(
+    block.addError(new errors.InvalidBlockSyntax(
       `Cannot style values from other blocks: ${rule.selector}`,
-      range(configuration, block.stylesheet, file, rule, keyObject.node));
+      range(configuration, block.stylesheet, file, rule, keyObject.node)));
   }
 
   // Fetch and validate our first `CompoundSelector`
@@ -167,45 +170,45 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
     // Don't allow weird combinators like the column combinator (`||`)
     // or the attribute target selector (e.g. `/for/`)
     if (!LEGAL_COMBINATORS.has(combinator)) {
-      throw new errors.InvalidBlockSyntax(
+      block.addError(new errors.InvalidBlockSyntax(
         `Illegal Combinator '${combinator}': ${rule.selector}`,
         range(configuration, block.stylesheet, file, rule, currentCompoundSel.next.combinator),
-      );
+      ));
     }
 
     // Class level objects cannot be ancestors of root level objects
     if (isClassLevelObject(currentObject) && nextLevelIsRoot && SIBLING_COMBINATORS.has(combinator)) {
-      throw new errors.InvalidBlockSyntax(
+      block.addError(new errors.InvalidBlockSyntax(
         `A class is never a sibling of a ${blockTypeName(nextObject.blockType)}: ${rule.selector}`,
         range(configuration, block.stylesheet, file, rule, selector.selector.nodes[0]),
-      );
+      ));
     }
 
     // Once you go to the class level there's no combinator that gets you back to the root level
     if (foundClassLevel && nextLevelIsRoot) {
-      throw new errors.InvalidBlockSyntax(
+      block.addError(new errors.InvalidBlockSyntax(
         `Illegal scoping of a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
         range(configuration, block.stylesheet, file, rule, currentCompoundSel.next.combinator),
-      );
+      ));
     }
 
     // You can't reference a new root level object once you introduce descend the hierarchy
     if (foundRootLevel && nextLevelIsRoot && foundCombinators.some(c => HIERARCHICAL_COMBINATORS.has(c))) {
       // unless it's only referencing the same object.
       if (!foundObjects.every(f => f.node.toString() === nextObject.node.toString())) {
-        throw new errors.InvalidBlockSyntax(
+        block.addError(new errors.InvalidBlockSyntax(
           `Illegal scoping of a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
           range(configuration, block.stylesheet, file, rule, currentCompoundSel.next.combinator),
-        );
+        ));
       }
     }
 
     // class-level and root-level objects cannot be siblings.
     if (isRootLevelObject(currentObject) && nextLevelIsClass && SIBLING_COMBINATORS.has(combinator)) {
-      throw new errors.InvalidBlockSyntax(
+      block.addError(new errors.InvalidBlockSyntax(
         `A ${blockTypeName(nextObject.blockType)} cannot be a sibling with a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
         range(configuration, block.stylesheet, file, rule, currentCompoundSel.next.combinator),
-      );
+      ));
     }
 
     // Class-level objects cannot be combined with each other. only with themselves.
@@ -214,15 +217,15 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
       if (conflictObj) {
         // slightly better error verbiage for objects of the same type.
         if (conflictObj.blockType === nextObject.blockType) {
-          throw new errors.InvalidBlockSyntax(
+          block.addError(new errors.InvalidBlockSyntax(
             `Distinct ${blockTypeName(conflictObj.blockType, { plural: true })} cannot be combined: ${rule.selector}`,
             range(configuration, block.stylesheet, file, rule, nextObject.node),
-          );
+          ));
         } else {
-          throw new errors.InvalidBlockSyntax(
+          block.addError(new errors.InvalidBlockSyntax(
             `Cannot combine a ${blockTypeName(conflictObj.blockType)} with a ${blockTypeName(nextObject.blockType)}}: ${rule.selector}`,
             range(configuration, block.stylesheet, file, rule, nextObject.node),
-          );
+          ));
         }
       }
     }
@@ -302,10 +305,10 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
       else if (isAttributeNode(n)) {
         // Assert this state node uses a valid operator if specifying a value.
         if (n.value && n.operator !== "=") {
-          throw new errors.InvalidBlockSyntax(
+          block.addError(new errors.InvalidBlockSyntax(
             `A state with a value must use the = operator (found ${n.operator} instead).`,
             range(configuration, block.stylesheet, file, rule, n),
-          );
+          ));
         }
         if (n.attribute === "scope") {
           throw new errors.InvalidBlockSyntax(
@@ -344,19 +347,19 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
           };
         } else {
           if (found.blockType === BlockType.root) {
-            throw new errors.InvalidBlockSyntax(
+            block.addError(new errors.InvalidBlockSyntax(
               `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
-              range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
+              range(configuration, block.stylesheet, file, rule, sel.nodes[0])));
           } else if (found.blockType === BlockType.class) {
             if (n.toString() !== found.node.toString()) {
-              throw new errors.InvalidBlockSyntax(
+              block.addError(new errors.InvalidBlockSyntax(
                 `Two distinct classes cannot be selected on the same element: ${rule.selector}`,
-                range(configuration, block.stylesheet, file, rule, n));
+                range(configuration, block.stylesheet, file, rule, n)));
             }
           } else if (found.blockType === BlockType.classAttribute || found.blockType === BlockType.attribute) {
-            throw new errors.InvalidBlockSyntax(
+            block.addError(new errors.InvalidBlockSyntax(
               `The class must precede the state: ${rule.selector}`,
-              range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
+              range(configuration, block.stylesheet, file, rule, sel.nodes[0])));
           }
         }
       }

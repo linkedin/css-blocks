@@ -198,11 +198,11 @@ export class Block
    * Checks for errors on the block
    * @returns true if the block is valid else throws the errors on the block
    */
-  assertValid(): Boolean {
+  assertValid(): Block {
     if (this._blockErrors.length) {
       throw new MultipleCssBlockErrors(this._blockErrors);
     }
-    return true;
+    return this;
   }
 
   /**

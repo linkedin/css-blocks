@@ -27,7 +27,7 @@ class Plugin {
    * @param  root  PostCSS AST
    * @param  result  Provides the result of the PostCSS transformations
    */
-  public process(root: postcss.Root, result: postcss.Result) {
+  public async process(root: postcss.Root, result: postcss.Result) {
 
     // Fetch the CSS source file path. Throw if not present.
     let sourceFile: string;
@@ -42,12 +42,11 @@ class Plugin {
     let defaultName: string = this.config.importer.defaultName(identifier, this.config);
     let factory = new BlockFactory(this.config, this.postcss);
 
-    return factory.parse(root, sourceFile, defaultName).then((block) => {
+    await factory.parseSync(root, sourceFile, defaultName).then((block) => {
       let compiler = new BlockCompiler(postcss, this.config);
       compiler.compile(block, root);
     });
   }
-
 }
 
 // This is ugly but it's the only thing I have been able to make work.

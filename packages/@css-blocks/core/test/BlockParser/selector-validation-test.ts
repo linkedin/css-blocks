@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
-import { assertError } from "../util/assertError";
+import { assertError, assertMultipleErrors } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
 
 const { InvalidBlockSyntax } = require("../util/postcss-helper");
@@ -14,6 +14,7 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/multi-class-state.css";
     let inputCSS = `.foo {color: #111;}
                     .foo[first][second] { display: block; }`;
+
     return this.process(filename, inputCSS).then((result) => {
       assert.deepEqual(
         result.css.toString(),
@@ -27,10 +28,12 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:scope {color: #111;}
                     :scope[asdf^=foo] { transform: scale(2); }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "A state with a value must use the = operator (found ^= instead). (foo/bar/test-state.css:2:27)",
-      this.process(filename, inputCSS));
+
+    return assertMultipleErrors([{
+        type: InvalidBlockSyntax,
+        message: "A state with a value must use the = operator (found ^= instead). (foo/bar/test-state.css:2:27)",
+      }],
+                                this.process(filename, inputCSS));
   }
 
   @test "catches states with colon instead of bar"() {
@@ -46,76 +49,79 @@ export class StraightJacket extends BEMProcessor {
   @test "cannot combine two different states"() {
     let filename = "foo/bar/illegal-state-combinator.css";
     let inputCSS = `:scope[a] :scope[b] { float: left; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "Illegal scoping of a root-level state: :scope[a] :scope[b]" +
-        " (foo/bar/illegal-state-combinator.css:1:10)",
-      this.process(filename, inputCSS));
+
+    return assertMultipleErrors([{
+        type: InvalidBlockSyntax,
+        message: "Illegal scoping of a root-level state: :scope[a] :scope[b]" + " (foo/bar/illegal-state-combinator.css:1:10)",
+      }],
+                                this.process(filename, inputCSS));
   }
 
   @test "cannot combine two different exclusive states"() {
     let filename = "foo/bar/illegal-state-combinator.css";
     let inputCSS = `:scope[a] :scope[exclusive=b] { float: left; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "Illegal scoping of a root-level state: :scope[a] :scope[exclusive=b]" +
-        " (foo/bar/illegal-state-combinator.css:1:10)",
-      this.process(filename, inputCSS));
+    return assertMultipleErrors([{
+        type: InvalidBlockSyntax,
+        message: "Illegal scoping of a root-level state: :scope[a] :scope[exclusive=b]" + " (foo/bar/illegal-state-combinator.css:1:10)",
+      }],
+                                this.process(filename, inputCSS));
   }
 
   @test "disallows combining classes"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope {color: #111;}
                     .my-class .another-class { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "Distinct classes cannot be combined: .my-class .another-class" +
+    return assertMultipleErrors([{
+      type: InvalidBlockSyntax,
+      message: "Distinct classes cannot be combined: .my-class .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:31)",
-      this.process(filename, inputCSS));
+    }],
+                                this.process(filename, inputCSS));
   }
 
   @test "disallows sibling combinators with root states"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope {color: #111;}
                     :scope[foo] ~ .another-class { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "A class cannot be a sibling with a root-level state: :scope[foo] ~ .another-class" +
+    return assertMultipleErrors([{
+      type: InvalidBlockSyntax,
+      message: "A class cannot be a sibling with a root-level state: :scope[foo] ~ .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:33)",
-      this.process(filename, inputCSS));
+    }],                         this.process(filename, inputCSS));
   }
 
   @test "disallows sibling combinators with root states after adjacent root"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope {color: #111;}
                     :scope[foo] + :scope[foo] ~ .another-class { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "A class cannot be a sibling with a root-level state: :scope[foo] + :scope[foo] ~ .another-class" +
+    return assertMultipleErrors([{
+      type: InvalidBlockSyntax,
+      message: "A class cannot be a sibling with a root-level state: :scope[foo] + :scope[foo] ~ .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:47)",
-      this.process(filename, inputCSS));
+    }],                         this.process(filename, inputCSS));
   }
 
   @test "disallows adjacent sibling combinators with root states"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope {color: #111;}
                     :scope[foo] + .another-class { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "A class cannot be a sibling with a root-level state: :scope[foo] + .another-class" +
+    return assertMultipleErrors([{
+      type: InvalidBlockSyntax,
+      message: "A class cannot be a sibling with a root-level state: :scope[foo] + .another-class" +
         " (foo/bar/illegal-class-combinator.css:2:33)",
-      this.process(filename, inputCSS));
+      }],                       this.process(filename, inputCSS));
   }
 
   @test "disallows combining classes without a combinator"() {
     let filename = "foo/bar/illegal-class-combinator.css";
+
     let inputCSS = `:scope {color: #111;}
                     .my-class.another-class { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "Two distinct classes cannot be selected on the same element: .my-class.another-class" +
+    return assertMultipleErrors([{
+        type: InvalidBlockSyntax,
+        message: "Two distinct classes cannot be selected on the same element: .my-class.another-class" +
         " (foo/bar/illegal-class-combinator.css:2:30)",
-      this.process(filename, inputCSS));
+      }],                       this.process(filename, inputCSS));
   }
 
   @test "allows combining states without a combinator"() {
@@ -168,22 +174,24 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope {color: #111;}
                     :scope[foo].another-class { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "The class must precede the state: :scope[foo].another-class" +
+    return assertMultipleErrors([{
+      type: InvalidBlockSyntax,
+      message: "The class must precede the state: :scope[foo].another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
-      this.process(filename, inputCSS));
+      }],                       this.process(filename, inputCSS));
   }
+
   @test "disallows combining blocks and classes without a combinator"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope {color: #111;}
                     :scope.another-class { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      ".another-class cannot be on the same element as :scope: :scope.another-class" +
+    return assertMultipleErrors([{
+      type: InvalidBlockSyntax,
+      message: ".another-class cannot be on the same element as :scope: :scope.another-class" +
         " (foo/bar/illegal-class-combinator.css:2:21)",
-      this.process(filename, inputCSS));
+    }],                         this.process(filename, inputCSS));
   }
+
   @test "disallows bare state selectors (for now!)"() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope {color: #111;}
@@ -194,6 +202,7 @@ export class StraightJacket extends BEMProcessor {
         " (foo/bar/illegal-class-combinator.css:2:21)",
       this.process(filename, inputCSS));
   }
+
   @test "disallows !important"() {
     let filename = "foo/bar/no-important.css";
     let inputCSS = `:scope {color: #111 !important;}`;

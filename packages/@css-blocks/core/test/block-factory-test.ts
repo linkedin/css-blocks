@@ -3,6 +3,7 @@ import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
 import * as cssBlocks from "../src";
+import { BlockFactory } from "../src";
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
@@ -72,4 +73,43 @@ export class BlockFactoryTests extends BEMProcessor {
     assert.equal(block2.name, "block-2");
   }
 
+  @test async "can import a block with errors by setting faultTolerant to true"() {
+    let { imports, importer, config } = setupImporting();
+    // create a block factory that's fault tolerant
+    let factory = new BlockFactory(config, postcss, true);
+    let baseFilename = "foo/bar/base.css";
+    // create a block with an error
+    imports.registerSource(
+      baseFilename,
+      `:scope { color: purple; }
+       :scope[large] :scope[error] { font-size: 20px; }
+       .foo   { float: left;   }
+       .foo[small] { font-size: 5px; }`,
+    );
+
+    try {
+      await factory.getBlock(importer.identifier(null, baseFilename, config));
+    } catch (e) {}
+  }
+
+  @test async "cannot import a block with errors when faultTolerant is not set"() {
+    let { imports, importer, config } = setupImporting();
+    // create a block factory that's fault tolerant
+    let factory = new BlockFactory(config, postcss);
+    let baseFilename = "foo/bar/base.css";
+    // create a block with an error
+    imports.registerSource(
+      baseFilename,
+      `:scope { color: purple; }
+       :scope[large] :scope[error] { font-size: 20px; }
+       .foo   { float: left;   }
+       .foo[small] { font-size: 5px; }`,
+    );
+
+    try {
+      await factory.getBlock(importer.identifier(null, baseFilename, config));
+    } catch (e) {
+      assert.ok(true);
+    }
+  }
 }

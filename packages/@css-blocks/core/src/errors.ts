@@ -132,14 +132,21 @@ export class BlockPathError extends CssBlockError {
  * Acts as a collection of CssBlockErrors along with utility methods to add and
  * clear errors
  */
-export class MultipleCssBlockErrors extends Error {
+export class MultipleCssBlockErrors extends CssBlockError {
+  static prefix = "MultipleCssBlocksError";
   private _errors: CssBlockError[] = [];
-  constructor(errors: CssBlockError[]) {
-    super();
+
+  constructor(errors: CssBlockError[], location?: ErrorLocation, details?: string) {
+    super(MultipleCssBlockErrors.prefix, location);
     this._errors = errors;
+    if (details) { this.message += `\n${details}`; }
   }
-  add(error:CssBlockError) {
+
+  add(error: CssBlockError) {
     this._errors.push(error);
+  }
+  get errors(): CssBlockError[] {
+    return this._errors;
   }
   clear() {
     this._errors = [];

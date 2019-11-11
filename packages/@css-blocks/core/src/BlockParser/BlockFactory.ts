@@ -39,13 +39,14 @@ export class BlockFactory {
   blockNames: ObjectDictionary<number>;
   parser: BlockParser;
   preprocessors: Preprocessors;
+  faultTolerant: boolean;
 
   private promises: ObjectDictionary<Promise<Block>>;
   private blocks: ObjectDictionary<Block>;
   private paths: ObjectDictionary<string>;
   private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
-  constructor(options: Options, postcssImpl = postcss) {
+  constructor(options: Options, postcssImpl = postcss, faultTolerant = false) {
     this.postcssImpl = postcssImpl;
     this.configuration = resolveConfiguration(options);
     this.importer = this.configuration.importer;
@@ -58,6 +59,7 @@ export class BlockFactory {
     this.preprocessQueue = new PromiseQueue(this.configuration.maxConcurrentCompiles, (item: PreprocessJob) => {
       return item.preprocessor(item.filename, item.contents, this.configuration);
     });
+    this.faultTolerant = faultTolerant;
   }
 
   reset() {
@@ -75,7 +77,24 @@ export class BlockFactory {
    * @returns The Block object promise.
    */
   parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
+    // TODO: this function is referenced only in tests. Use parseSync if we need
+    // to catch errors
     return this.promises[identifier] = this.parser.parse(root, identifier, name);
+  }
+
+  /**
+   * Parse a `postcss.Root` into a Block object. Save the Block promise and return it.
+   * Also assert that the block is valid so that we can catch any errors that
+   * the block contains
+   * This function is only used in tests
+   * @param root The postcss.Root to parse.
+   * @param identifier A unique identifier for this Block file.
+   * @param name Default name for the block.
+   * @returns The Block object promise.
+   */
+  async parseSync(root: postcss.Root, identifier: string, name: string): Promise<Block> {
+    const block = await this.parser.parse(root, identifier, name);
+    return this._surfaceBlockErrors(block);
   }
 
   /**
@@ -130,6 +149,10 @@ export class BlockFactory {
 
         // Ensure this block name is unique.
         block.setName(this.getUniqueBlockName(block.name));
+
+        // if the block has any errors, surface them here
+        this._surfaceBlockErrors(block);
+
         return this.blocks[block.identifier] = block;
       })
       .catch((error) => {
@@ -144,6 +167,19 @@ export class BlockFactory {
           throw error;
         }
       });
+  }
+
+  /**
+   * Depending on whether the blockFactory is fault tolerant or not, it either
+   * surfaces the errors or swallows them and reexports the block interface
+   * @param block the block to check for errors
+   */
+  _surfaceBlockErrors(block: Block): Block {
+    if (this.faultTolerant) {
+      return block;
+    } else {
+      return block.assertValid();
+    }
   }
 
   /**
@@ -198,6 +234,7 @@ export class BlockFactory {
       originalSyntax: file.syntax,
       dependencies: preprocessResult.dependencies || [],
     };
+
     return this.parser.parseSource(source);
   }
 
