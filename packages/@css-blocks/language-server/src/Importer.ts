@@ -1,4 +1,4 @@
-import { NodeJsImporter, Configuration, ImportedFile } from "@css-blocks/core";
+import { Configuration, ImportedFile, NodeJsImporter } from "@css-blocks/core";
 import { TextDocuments } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
