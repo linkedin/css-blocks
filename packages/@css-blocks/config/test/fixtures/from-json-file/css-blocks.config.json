@@ -1,0 +1,6 @@
+{
+  "extends": "../from-pkg-json/package.json",
+  "outputMode": "BEM_UNIQUE",
+  "preprocessors": "config/preprocessors.js",
+  "importer": "config/importer.js"
+}

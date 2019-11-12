@@ -1,0 +1,8 @@
+{
+  "name": "test-from-package-json",
+  "private": true,
+  "css-blocks": {
+    "outputMode": "BEM",
+    "preprocessors": "config/preprocessors.js"
+  }
+}
