@@ -1,5 +1,5 @@
 import {
-  Options,
+  Configuration,
 } from "@css-blocks/core";
 import { Transform, cosmiconfig } from "cosmiconfig";
 import * as debugGenerator from "debug";
@@ -94,7 +94,7 @@ const transformFinal: Transform = async (result) => {
  * @param [searchDirectory] (optional) The directory to start looking in.
  *   Defaults to the current working directory.
  */
-export async function search(searchDirectory?: string): Promise<Options | null> {
+export async function search(searchDirectory?: string): Promise<Partial<Configuration> | null> {
   let loader = cosmiconfig("css-blocks", {
     transform: transformFinal,
     searchPlaces: [
@@ -104,7 +104,7 @@ export async function search(searchDirectory?: string): Promise<Options | null> 
     ],
   });
   let result = await loader.search(searchDirectory);
-  return result && result.config as Options;
+  return result && result.config as Partial<Configuration>;
 }
 
 /**
@@ -117,14 +117,14 @@ export async function search(searchDirectory?: string): Promise<Options | null> 
  * @throws If the file does not exist or is not readable.
  * @returns The options found
  */
-export async function load(configPath: string): Promise<Options> {
+export async function load(configPath: string): Promise<Partial<Configuration>> {
   return _load(configPath, transformFinal);
 }
 
-async function _load(configPath: string, transform: Transform): Promise<Options> {
+async function _load(configPath: string, transform: Transform): Promise<Partial<Configuration>> {
   let loader = cosmiconfig("css-blocks", {
     transform,
   });
   let result = await loader.load(configPath);
-  return result!.config as Options;
+  return result!.config as Partial<Configuration>;
 }
