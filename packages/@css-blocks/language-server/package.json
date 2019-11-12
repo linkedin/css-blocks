@@ -35,6 +35,6 @@
     "watch": "watch 'yarn run test' './src' --wait=3"
   },
   "volta": {
-    "node": "10.11.0"
+    "node": "10.13.0"
   }
 }

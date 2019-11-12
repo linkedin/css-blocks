@@ -52,16 +52,17 @@ export class Server {
 
   async onDidChangeContent(e: TextDocumentChangeEvent) {
       // only track incremental changes within block files
-      // NOTE: this does seem to cause a little bit of weirdness when editing a
-      // template with errors since the error locations do not get updated until
-      // saving the file. We may want to validate the open template files on
-      // every change?
+      this.blockFactory.reset();
       if (isBlockFile(e.document.uri)) {
-        const cssBlockErrors = await documentContentChange(e, this.blockParser);
+        const cssBlockErrors = await documentContentChange(e, this.blockFactory);
         this.sendDiagnostics(cssBlockErrors, e.document.uri);
 
       } else if (isTemplateFile(e.document.uri)) {
         // Validate template
+        // NOTE: this does seem to cause a little bit of weirdness when editing a
+        // template with errors since the error locations do not get updated until
+        // saving the file. We may want to validate the open template files on
+        // every change?
       }
 
   }
