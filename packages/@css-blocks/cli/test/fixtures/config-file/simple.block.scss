@@ -1,0 +1,9 @@
+:scope {
+  color: red;
+  background-color: white;
+
+  &[dark] {
+    color: darkred;
+    background-color: gray;
+  }
+}

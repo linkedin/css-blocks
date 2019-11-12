@@ -9,7 +9,8 @@
     }
   },
   "references": [
-    {"path": "../core"}
+    {"path": "../core"},
+    {"path": "../config"}
   ],
   "include": [
     "src",

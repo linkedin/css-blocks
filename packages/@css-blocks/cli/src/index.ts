@@ -1,5 +1,7 @@
+import { search as searchForConfiguration } from "@css-blocks/config";
 import {
   BlockFactory,
+  Configuration,
   CssBlockError,
   ErrorWithPosition,
   Importer,
@@ -119,7 +121,7 @@ export class CLI {
    * Validate the syntax of a list of block files.
    */
   async validate(blockFiles: Array<string>, options: ValidateOptions) {
-    let preprocessors: Preprocessors = options.preprocessors ? require(path.resolve(options.preprocessors)) : {};
+    let preprocessors: Preprocessors | null = options.preprocessors ? require(path.resolve(options.preprocessors)) : null;
     let npm = options.npm || false;
     let aliases: Aliases = [];
     let aliasList = options.alias || [];
@@ -132,7 +134,21 @@ export class CLI {
     if (npm) {
       importer = new NodeJsImporter(aliases);
     }
-    let factory = new BlockFactory({preprocessors, importer});
+    let searchDir: string;
+    let blockOptions: Partial<Configuration>;
+    if (blockFiles.length > 0) {
+      searchDir = path.dirname(path.resolve(blockFiles[0]));
+    } else {
+      searchDir = process.cwd();
+    }
+    blockOptions = await searchForConfiguration(searchDir) || {};
+    if (preprocessors) {
+      blockOptions.preprocessors = preprocessors;
+    }
+    if (importer) {
+      blockOptions.importer = importer;
+    }
+    let factory = new BlockFactory(blockOptions);
     let errorCount = 0;
     for (let blockFile of blockFiles) {
       let blockFileRelative = path.relative(process.cwd(), path.resolve(blockFile));

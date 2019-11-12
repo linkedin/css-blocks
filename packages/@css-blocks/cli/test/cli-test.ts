@@ -111,3 +111,12 @@ Found 1 error in 1 file.
     assert.equal(cli.exitCode, 1);
   });
 });
+
+describe("validate with config file", () => {
+  it("can check syntax for a valid block file", async () => {
+    let cli = new CLI();
+    await cli.run(["validate", fixture("config-file/simple.block.scss")]);
+    assert.equal(cli.output, `ok\t${relFixture("config-file/simple.block.scss")}\n`);
+    assert.equal(cli.exitCode, 0);
+  });
+});
