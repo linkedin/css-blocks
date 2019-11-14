@@ -1,13 +1,14 @@
-import { BlockFactory, CssBlockError, Options, resolveConfiguration } from "@css-blocks/core/dist/src";
-import { BlockParser } from "@css-blocks/core/dist/src/BlockParser/BlockParser";
+import { search as searchForConfig } from "@css-blocks/config";
+import { BlockFactory, Configuration, CssBlockError, resolveConfiguration } from "@css-blocks/core";
 import { CompletionItem, Definition, DidChangeConfigurationNotification, DocumentLink, DocumentLinkParams, IConnection, InitializeParams, InitializeResult, TextDocumentChangeEvent, TextDocumentPositionParams, TextDocuments } from "vscode-languageserver";
+import { URI } from "vscode-uri";
 
 import { emberCompletionProvider } from "./completionProviders/emberCompletionProvider";
 import { createBlockFactory } from "./createBlockFactory";
-import { createBlockParser } from "./createBlockParser";
 import { emberDefinitionProvider } from "./definitionProviders/emberDefinitionProvider";
 import { blockLinksProvider } from "./documentLinksProviders/blockLinkProvider";
 import { documentContentChange } from "./eventHandlers/documentContentChange";
+import { LSImporter } from "./Importer";
 import { PathTransformer } from "./pathTransformers/PathTransformer";
 import { SERVER_CAPABILITIES } from "./serverCapabilities";
 import { isBlockFile } from "./util/blockUtils";
@@ -15,28 +16,36 @@ import { convertErrorsToDiagnostics } from "./util/diagnosticsUtils";
 import { isTemplateFile, validateTemplates } from "./util/hbsUtils";
 
 export class Server {
+  _blockFactory: BlockFactory | undefined;
+  _config: Readonly<Configuration> | undefined;
   connection: IConnection;
   documents: TextDocuments;
-  blockFactory: BlockFactory;
-  blockParser: BlockParser;
   pathTransformer: PathTransformer;
   hasConfigurationCapability = false;
   hasWorkspaceFolderCapability = false;
 
-  constructor(connection: IConnection, documents: TextDocuments, pathTransformer: PathTransformer, cssBlocksOptions?: Options) {
+  constructor(connection: IConnection, documents: TextDocuments, pathTransformer: PathTransformer) {
     this.connection = connection;
     this.documents = documents;
     this.pathTransformer = pathTransformer;
 
-    // NOTE: creating these instances directly in the constructor because we
-    // don't currently have a need to expose them for mocking in testing.
-    const config = resolveConfiguration(cssBlocksOptions);
-    let blockFactory = createBlockFactory(config);
-    this.blockFactory = blockFactory;
-    this.blockParser = createBlockParser(config, blockFactory);
-
     this.registerDocumentEvents();
     this.registerConnectionEvents();
+  }
+
+  get config(): Readonly<Configuration> {
+    if (!this._config) {
+      this._config = resolveConfiguration({});
+      return this._config;
+    }
+    return this._config;
+  }
+
+  get blockFactory(): BlockFactory {
+    if (!this._blockFactory) {
+      this._blockFactory = createBlockFactory(this.config);
+    }
+    return this._blockFactory;
   }
 
   listen() {
@@ -91,8 +100,35 @@ export class Server {
     });
   }
 
-  private onConnectionInitialize(params: InitializeParams): InitializeResult {
+  private async onConnectionInitialize(params: InitializeParams): Promise<InitializeResult> {
     let capabilities = params.capabilities;
+    let options: Partial<Configuration>;
+
+    // TODO #1: We need to spin up a server per workspace folder.
+    // TODO #1: Then the rootUri should come in as part of the constructor params.
+    // TODO #1: But the rest of the config lookup logic should remain basically the same.
+    // TODO #2: There should be a configuration option to set the rootDir for CSS Blocks
+    // TODO #2: as well as a configuration option to set the configuration file explicitly
+    // TODO #2: instead of only doing a search for the configuration file.
+    let result: Partial<Configuration> | null = null;
+    let rootDir: string | null = null;
+    if (params.workspaceFolders) {
+      for (let wsFolder of params.workspaceFolders) {
+        let folderPath = URI.parse(wsFolder.uri).fsPath;
+        result = await searchForConfig(folderPath);
+        if (result) {
+          rootDir = folderPath;
+          break;
+        }
+      }
+    } else if (params.rootPath) {
+      rootDir = params.rootPath;
+      result = await searchForConfig(params.rootPath);
+    }
+    options = result || (rootDir ? {rootDir} : {});
+    options.importer = new LSImporter(this.documents, options.importer);
+    this._config = resolveConfiguration(options);
+    this._blockFactory = createBlockFactory(this._config);
 
     // Does the client support the `workspace/configuration` request?
     // If not, we will fall back using global settings

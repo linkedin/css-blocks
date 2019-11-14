@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@css-blocks/core": "^0.24.0",
+    "@css-blocks/config": "^0.24.0",
     "@glimmer/syntax": "^0.42.1",
     "opticss": "^0.6.2",
     "vscode-languageserver": "^5.2.1",

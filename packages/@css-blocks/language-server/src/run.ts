@@ -1,7 +1,6 @@
-import { Syntax } from "@css-blocks/core/dist/src";
+import { Syntax } from "@css-blocks/core";
 import { ProposedFeatures, TextDocuments, createConnection } from "vscode-languageserver";
 
-import { LSImporter } from "./Importer";
 import { EmberClassicTransformer } from "./pathTransformers/EmberClassicTransformer";
 import { Server } from "./Server";
 
@@ -12,6 +11,6 @@ const pathTransformer = new EmberClassicTransformer(Syntax.css);
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments();
 
-let server = new Server(connection, documents, pathTransformer, {importer: new LSImporter(documents)});
+let server = new Server(connection, documents, pathTransformer);
 
 server.listen();
