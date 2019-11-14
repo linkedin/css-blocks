@@ -36,7 +36,6 @@ export class Server {
   get config(): Readonly<Configuration> {
     if (!this._config) {
       this._config = resolveConfiguration({});
-      return this._config;
     }
     return this._config;
   }
