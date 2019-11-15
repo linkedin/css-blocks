@@ -7,7 +7,7 @@ import { AttributeType, ClassAttribute, getItemAtCursor } from "./hbsUtils";
 import { transformPathsFromUri } from "./pathTransformer";
 
 export async function getHbsCompletions(document: TextDocument, position: Position, blockFactory: BlockFactory, pathTransformer: PathTransformer): Promise<CompletionItem[]> {
-  let transformedPaths = transformPathsFromUri(document.uri, pathTransformer);
+  let transformedPaths = transformPathsFromUri(document.uri, pathTransformer, blockFactory.configuration);
   let { blockFsPath } = transformedPaths;
 
   if (!blockFsPath) {

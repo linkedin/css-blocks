@@ -141,6 +141,7 @@ export async function validateTemplates(
         const { blockFsPath, templateUri } = transformPathsFromUri(
           document.uri,
           pathTransformer,
+          factory.configuration,
         );
         if (blockFsPath && templateUri) {
           try {

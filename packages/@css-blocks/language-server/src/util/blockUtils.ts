@@ -1,3 +1,4 @@
+import { Configuration, Syntax } from "@css-blocks/core";
 import * as fs from "fs";
 import * as path from "path";
 import { CompletionItem, CompletionItemKind, Position, TextDocument } from "vscode-languageserver";
@@ -5,10 +6,28 @@ import { URI } from "vscode-uri";
 
 const IMPORT_PATH_REGEX = /from\s+(['"])([^'"]+)/;
 
-// TODO: Currently we are only supporting css. This should eventually support all
-// of the file types supported by css blocks
-export function isBlockFile(uriOrFsPath: string) {
-  return uriOrFsPath.endsWith(".block.css");
+export function isBlockFile(uriOrFsPath: string, config: Readonly<Configuration>): boolean {
+  let fsPath: string;
+  if (uriOrFsPath.startsWith("file://")) {
+    fsPath = URI.parse(uriOrFsPath).fsPath;
+  } else {
+    fsPath = uriOrFsPath;
+  }
+  let pathObj = path.parse(fsPath);
+  let isBlock = pathObj.name.endsWith(".block");
+  if (isBlock) {
+    if (pathObj.ext === ".css") {
+      return true;
+    } else {
+      if (!!config.preprocessors[Syntax.other]) {
+        return true;
+      } else {
+        return !!config.preprocessors[pathObj.ext.substring(1)];
+      }
+    }
+  } else {
+    return false;
+  }
 }
 
 /**

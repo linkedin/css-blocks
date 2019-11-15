@@ -9,7 +9,7 @@ import { AttributeType, getItemAtCursor } from "./hbsUtils";
 import { transformPathsFromUri } from "./pathTransformer";
 
 export async function getHbsDefinition(document: TextDocument, position: Position, blockFactory: BlockFactory, pathTransformer: PathTransformer): Promise<Definition> {
-  let transformedPaths = transformPathsFromUri(document.uri, pathTransformer);
+  let transformedPaths = transformPathsFromUri(document.uri, pathTransformer, blockFactory.configuration);
   let { blockFsPath } = transformedPaths;
 
   if (!blockFsPath) {

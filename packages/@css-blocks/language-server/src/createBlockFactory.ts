@@ -1,4 +1,4 @@
-import { BlockFactory, Options } from "@css-blocks/core/dist/src";
+import { BlockFactory, Options } from "@css-blocks/core";
 import { postcss } from "opticss";
 
 export function createBlockFactory(config: Options) {

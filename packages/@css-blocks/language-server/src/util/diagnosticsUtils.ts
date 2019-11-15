@@ -1,4 +1,4 @@
-import { CssBlockError, errorHasRange } from "@css-blocks/core/dist/src";
+import { CssBlockError, errorHasRange } from "@css-blocks/core";
 import { Diagnostic, DiagnosticSeverity } from "vscode-languageserver";
 
 export function convertErrorsToDiagnostics(errors: CssBlockError[]): Diagnostic[] {

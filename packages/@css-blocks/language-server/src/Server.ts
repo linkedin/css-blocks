@@ -1,5 +1,5 @@
 import { search as searchForConfig } from "@css-blocks/config";
-import { BlockFactory, Configuration, CssBlockError, resolveConfiguration } from "@css-blocks/core";
+import { BlockFactory, Configuration, CssBlockError, Syntax, resolveConfiguration } from "@css-blocks/core";
 import { CompletionItem, Definition, DidChangeConfigurationNotification, DocumentLink, DocumentLinkParams, IConnection, InitializeParams, InitializeResult, TextDocumentChangeEvent, TextDocumentPositionParams, TextDocuments } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
@@ -9,6 +9,7 @@ import { emberDefinitionProvider } from "./definitionProviders/emberDefinitionPr
 import { blockLinksProvider } from "./documentLinksProviders/blockLinkProvider";
 import { documentContentChange } from "./eventHandlers/documentContentChange";
 import { LSImporter } from "./Importer";
+import { EmberClassicTransformer } from "./pathTransformers/EmberClassicTransformer";
 import { PathTransformer } from "./pathTransformers/PathTransformer";
 import { SERVER_CAPABILITIES } from "./serverCapabilities";
 import { isBlockFile } from "./util/blockUtils";
@@ -18,16 +19,15 @@ import { isTemplateFile, validateTemplates } from "./util/hbsUtils";
 export class Server {
   _blockFactory: BlockFactory | undefined;
   _config: Readonly<Configuration> | undefined;
+  _pathTransformer: PathTransformer | undefined;
   connection: IConnection;
   documents: TextDocuments;
-  pathTransformer: PathTransformer;
   hasConfigurationCapability = false;
   hasWorkspaceFolderCapability = false;
 
-  constructor(connection: IConnection, documents: TextDocuments, pathTransformer: PathTransformer) {
+  constructor(connection: IConnection, documents: TextDocuments) {
     this.connection = connection;
     this.documents = documents;
-    this.pathTransformer = pathTransformer;
 
     this.registerDocumentEvents();
     this.registerConnectionEvents();
@@ -47,6 +47,23 @@ export class Server {
     return this._blockFactory;
   }
 
+  get pathTransformer(): PathTransformer {
+    if (!this._pathTransformer) {
+      let syntaxes = new Array<Syntax>();
+      let keys = Object.keys(this.config.preprocessors);
+      for (let k of keys) {
+        if (Syntax[k]) {
+          syntaxes.push(Syntax[k]);
+        }
+      }
+      if (!syntaxes.includes(Syntax.css)) {
+        syntaxes.push(Syntax.css);
+      }
+      this._pathTransformer = new EmberClassicTransformer(syntaxes);
+    }
+    return this._pathTransformer;
+  }
+
   listen() {
     this.documents.listen(this.connection);
     this.connection.listen();
@@ -61,7 +78,7 @@ export class Server {
   async onDidChangeContent(e: TextDocumentChangeEvent) {
       // only track incremental changes within block files
       this.blockFactory.reset();
-      if (isBlockFile(e.document.uri)) {
+      if (isBlockFile(e.document.uri, this.config)) {
         const cssBlockErrors = await documentContentChange(e, this.blockFactory);
         this.sendDiagnostics(cssBlockErrors, e.document.uri);
 
@@ -95,7 +112,7 @@ export class Server {
     });
 
     this.connection.onDocumentLinks(async (params: DocumentLinkParams): Promise<DocumentLink[]> => {
-      return await blockLinksProvider(this.documents, params);
+      return await blockLinksProvider(this.documents, params, this.config);
     });
   }
 
@@ -126,6 +143,8 @@ export class Server {
     }
     options = result || (rootDir ? {rootDir} : {});
     options.importer = new LSImporter(this.documents, options.importer);
+    // We set both of these explicitly here just in case they were accessed
+    // before initialization.
     this._config = resolveConfiguration(options);
     this._blockFactory = createBlockFactory(this._config);
 

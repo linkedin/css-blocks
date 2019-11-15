@@ -1,4 +1,4 @@
-import { BlockFactory } from "@css-blocks/core/dist/src";
+import { BlockFactory } from "@css-blocks/core";
 import { Definition, TextDocumentPositionParams, TextDocuments } from "vscode-languageserver";
 
 import { PathTransformer } from "../pathTransformers/PathTransformer";

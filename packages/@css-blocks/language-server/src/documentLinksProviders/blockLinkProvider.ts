@@ -1,3 +1,4 @@
+import { Configuration } from "@css-blocks/core";
 import * as path from "path";
 import { DocumentLinkParams, TextDocuments } from "vscode-languageserver";
 import { DocumentLink } from "vscode-languageserver-types";
@@ -7,10 +8,10 @@ import { isBlockFile } from "../util/blockUtils";
 
 const LINK_REGEX = /from\s+(['"])([^'"]+)\1;/;
 
-export async function blockLinksProvider(documents: TextDocuments, params: DocumentLinkParams): Promise<DocumentLink[]> {
+export async function blockLinksProvider(documents: TextDocuments, params: DocumentLinkParams, config: Readonly<Configuration>): Promise<DocumentLink[]> {
   let { uri } = params.textDocument;
 
-  if (!isBlockFile(uri)) {
+  if (!isBlockFile(uri, config)) {
     return [];
   }
 

@@ -1,12 +1,9 @@
-import { Syntax } from "@css-blocks/core/dist/src";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import * as path from "path";
 import { CompletionItemKind, CompletionRequest, DefinitionRequest, DiagnosticSeverity, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DidSaveTextDocumentNotification, DidSaveTextDocumentParams, DocumentLinkParams, DocumentLinkRequest, IConnection, TextDocument, TextDocumentPositionParams, TextDocuments, createConnection } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
-import { EmberClassicTransformer } from "../pathTransformers/EmberClassicTransformer";
-import { PathTransformer } from "../pathTransformers/PathTransformer";
 import { Server } from "../Server";
 import { transformPathsFromUri } from "../util/pathTransformer";
 
@@ -25,7 +22,6 @@ export class LanguageServerServerTest {
   mockServerConnection: IConnection;
   mockClientConnection: IConnection;
   documents: TextDocuments;
-  pathTransformer: PathTransformer;
 
   constructor() {
     const input = new TestStream();
@@ -40,11 +36,10 @@ export class LanguageServerServerTest {
     textDocumentsByUri.set(EMBER_CLASSIC_BLOCK_A_URI, createTextDocumentMock(EMBER_CLASSIC_BLOCK_A_URI));
 
     this.documents = createTextDocumentsMock(textDocumentsByUri);
-    this.pathTransformer = new EmberClassicTransformer(Syntax.css);
   }
 
   private startServer() {
-    const server = new Server(this.mockServerConnection, this.documents, this.pathTransformer);
+    const server = new Server(this.mockServerConnection, this.documents);
 
     server.listen();
 
@@ -52,7 +47,7 @@ export class LanguageServerServerTest {
   }
 
   @test async "it returns the expected definitions for local block"() {
-    this.startServer();
+    let server = this.startServer();
 
     const params: TextDocumentPositionParams = {
       textDocument: {
@@ -67,7 +62,7 @@ export class LanguageServerServerTest {
     const response = await this.mockClientConnection.sendRequest(DefinitionRequest.type, params);
 
     assert.deepEqual(response, {
-      uri: transformPathsFromUri(EMBER_CLASSIC_TEMPLATE_A_URI, this.pathTransformer).blockUri || "",
+      uri: transformPathsFromUri(EMBER_CLASSIC_TEMPLATE_A_URI, server.pathTransformer, server.config).blockUri || "",
       range: {
         start: { line: 6, character: 1 },
         end: { line: 6, character: 1 },
@@ -76,7 +71,7 @@ export class LanguageServerServerTest {
   }
 
   @test async "it returns the expected definitions for a class that is defined as part of a multiline string"() {
-    this.startServer();
+    let server = this.startServer();
 
     const params: TextDocumentPositionParams = {
       textDocument: {
@@ -91,7 +86,7 @@ export class LanguageServerServerTest {
     const response = await this.mockClientConnection.sendRequest(DefinitionRequest.type, params);
 
     assert.deepEqual(response, {
-      uri: transformPathsFromUri(EMBER_CLASSIC_TEMPLATE_A_URI, this.pathTransformer).blockUri || "",
+      uri: transformPathsFromUri(EMBER_CLASSIC_TEMPLATE_A_URI, server.pathTransformer, server.config).blockUri || "",
       range: {
         start: { line: 10, character: 1 },
         end: { line: 10, character: 1 },

@@ -1,4 +1,4 @@
-import { BlockFactory } from "@css-blocks/core/dist/src";
+import { BlockFactory } from "@css-blocks/core";
 import { CompletionItem, TextDocumentPositionParams, TextDocuments } from "vscode-languageserver";
 
 import { PathTransformer } from "../pathTransformers/PathTransformer";
@@ -15,7 +15,7 @@ export async function emberCompletionProvider(documents: TextDocuments, factory:
 
   if (isTemplateFile(document.uri)) {
     return await getHbsCompletions(document, params.position, factory, pathTransformer);
-  } else if (isBlockFile(document.uri)) {
+  } else if (isBlockFile(document.uri, factory.configuration)) {
     return await getBlockCompletions(document, params.position);
   } else {
     return [];
