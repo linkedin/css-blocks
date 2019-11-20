@@ -1,0 +1,19 @@
+@block utils from "../blocks/utils.block.scss";
+
+.a-1 {
+  vertical-align: top;
+}
+
+.a-2 {
+  vertical-align: middle;
+}
+
+.a-3 {
+  color: red;
+}
+
+.a-3[whuut] {
+  vertical-align: bottom;
+}
+
+@export utils;

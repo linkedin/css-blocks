@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "mocha": "^6.1.4",
+    "node-sass": "^4.13.0",
     "tslint": "^5.9.1",
     "typescript": "~3.6",
     "watch": "^1.0.2"
