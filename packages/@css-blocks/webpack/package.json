@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "@css-blocks/webpack",
   "version": "0.24.0",
   "description": "Webpack plugin for css-blocks.",
