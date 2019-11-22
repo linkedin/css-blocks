@@ -140,20 +140,31 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows element names attached to states."() {
     let filename = "foo/bar/illegal.css";
     let inputCSS = `div[foo] { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "Tag name selectors are not allowed: div[foo]" +
-        " (foo/bar/illegal.css:1:1)",
-      this.process(filename, inputCSS));
+    return assertMultipleErrors([{
+      type: InvalidBlockSyntax,
+      message: "Tag name selectors are not allowed: div[foo] (foo/bar/illegal.css:1:1)"
+    },
+    {
+      type: InvalidBlockSyntax,
+      message: "States without an explicit :scope or class selector are not supported: div[foo] (foo/bar/illegal.css:1:4)"},
+    {
+      type: InvalidBlockSyntax,
+      message: "Missing block object in selector component 'div[foo]': div[foo] (foo/bar/illegal.css:1:1)"
+    }], this.process(filename, inputCSS));
   }
 
   @test "disallows stand-alone attribute selectors except for states."() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope [href] { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "States without an explicit :scope or class selector are not supported: " +
-        ":scope [href] (foo/bar/illegal-class-combinator.css:1:8)",
+    return assertMultipleErrors(
+      [{
+        type: InvalidBlockSyntax,
+        message: "States without an explicit :scope or class selector are not supported: " +
+          ":scope [href] (foo/bar/illegal-class-combinator.css:1:8)",
+      }, {
+        type: InvalidBlockSyntax,
+        message: "Missing block object in selector component '[href]': :scope [href] (foo/bar/illegal-class-combinator.css:1:8)",
+      }],
       this.process(filename, inputCSS));
   }
 
@@ -163,10 +174,10 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows attribute selectors except for states."() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope[html|href] { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "Cannot select attributes in the `html` namespace: :scope[html|href] " +
-        "(foo/bar/illegal-class-combinator.css:1:7)",
+    return assertMultipleErrors([{
+        type: InvalidBlockSyntax,
+        message: "Cannot select attributes in the `html` namespace: :scope[html|href] " +
+          "(foo/bar/illegal-class-combinator.css:1:7)"}],
       this.process(filename, inputCSS));
   }
 
@@ -196,11 +207,14 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope {color: #111;}
                     [foo] { display: block; }`;
-    return assertError(
-      InvalidBlockSyntax,
-      "States without an explicit :scope or class selector are not supported: [foo]" +
-        " (foo/bar/illegal-class-combinator.css:2:21)",
-      this.process(filename, inputCSS));
+    return assertMultipleErrors([{
+        type: InvalidBlockSyntax,
+        message: "States without an explicit :scope or class selector are not supported: [foo]" +
+          " (foo/bar/illegal-class-combinator.css:2:21)",
+      },                         {
+        type: InvalidBlockSyntax,
+        message: "Missing block object in selector component '[foo]': [foo] (foo/bar/illegal-class-combinator.css:2:21)",
+      }],                       this.process(filename, inputCSS));
   }
 
   @test "disallows !important"() {

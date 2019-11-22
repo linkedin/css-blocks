@@ -36,10 +36,17 @@ export function assertMultipleErrors(errors: ErrorTypeMessage[], promise: postcs
     () => {
       assert(false, `Error MultpleCssBlockErrors was not raised.`);
     },
-    (multipleErrorsError: MultipleCssBlockErrors) => {
-      return errors.forEach((error, idx) => {
-        assert(error.type.name, typeof multipleErrorsError.errors[idx]);
-        assert.deepEqual(multipleErrorsError.errors[idx].message.split(error.type.prefix + ":")[1].trim(), error.message);
-      });
-    });
+    (multipleErrorsError: MultipleCssBlockErrors) => assertMultipleErrorsWithoutPromise(multipleErrorsError, errors));
+}
+
+export function assertMultipleErrorsWithoutPromise(multipleErrorsError: MultipleCssBlockErrors, errors: ErrorTypeMessage[]) {
+  if (multipleErrorsError.errors.length !== errors.length) {
+    console.log(multipleErrorsError.errors.length, errors.length);
+    console.log(multipleErrorsError.errors);
+    assert(false, "The number of errors thrown and expected does not match");
+  }
+  return errors.forEach((error, idx) => {
+    assert(error.type.name, typeof multipleErrorsError.errors[idx]);
+    assert.deepEqual(multipleErrorsError.errors[idx].message.split(error.type.prefix + ":")[1].trim(), error.message);
+  });
 }

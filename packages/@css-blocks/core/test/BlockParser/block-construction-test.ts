@@ -12,7 +12,7 @@ export class BEMOutputMode extends BEMProcessor {
     try {
       await this.process(filename, inputCSS);
     } catch (e) {
-      assert.equal(e.toString(), "Error: [css-blocks] BlockSyntaxError: Cannot select attributes in the `html` namespace: :scope[html|data-foo=bar] (foo/bar/html-attrs.css:1:7)");
+      assert.equal(e.errors[0].toString(), "Error: [css-blocks] BlockSyntaxError: Cannot select attributes in the `html` namespace: :scope[html|data-foo=bar] (foo/bar/html-attrs.css:1:7)");
       return;
     }
     assert.fail("Error was expected.");

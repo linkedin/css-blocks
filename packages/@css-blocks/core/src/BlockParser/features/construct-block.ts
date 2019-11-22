@@ -69,8 +69,6 @@ export async function constructBlock(configuration: Configuration, root: postcss
       // Assert this selector is well formed according to CSS Blocks' selector
       // rules.
       assertValidSelector(configuration, block, rule, iSel, file);
-      // this should list all the errors
-      // block.assertValid();
 
       // For each `CompoundSelector` in this rule, configure the `Block` object
       // depending on the BlockType.
@@ -137,9 +135,10 @@ function addStyleRules(configuration: Configuration, block: Block, rule: postcss
  */
 function assertValidSelector(configuration: Configuration, block: Block, rule: postcss.Rule, selector: ParsedSelector, file: string) {
 
-  // Verify our key selector targets a block object, but not one from an another block.
+  // Verify our key selector targets a block object, but not one from an another
+  // block.
   let keyObject = assertBlockObject(configuration, block, selector.key, rule, file);
-  if (keyObject.blockName) {
+  if (keyObject && keyObject.blockName) {
     block.addError(new errors.InvalidBlockSyntax(
       `Cannot style values from other blocks: ${rule.selector}`,
       range(configuration, block.stylesheet, file, rule, keyObject.node)));
@@ -147,13 +146,15 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
 
   // Fetch and validate our first `CompoundSelector`
   let currentCompoundSel: CompoundSelector = selector.selector;
-  let currentObject = assertBlockObject(configuration, block, currentCompoundSel, rule, file);
+  // if the selector is the key selecter, then we can use the keyObject as
+  // itself to avoid multiple calls to assertBlockObject
+  let currentObject = selector.key === currentCompoundSel ? keyObject : assertBlockObject(configuration, block, currentCompoundSel, rule, file);
 
   // Init caches to cumulatively track what we've discovered in the selector
   // as we iterate over each `CompoundSelector` inside it.
-  let foundRootLevel = isRootLevelObject(currentObject);
-  let foundClassLevel = isClassLevelObject(currentObject);
-  let foundObjects: NodeAndType[] = [currentObject];
+  let foundRootLevel = currentObject ? isRootLevelObject(currentObject) : false;
+  let foundClassLevel = currentObject ? isClassLevelObject(currentObject) : false;
+  let foundObjects: NodeAndType[] = currentObject ? [currentObject] : [];
   let foundCombinators: string[] = [];
 
   // For each `CompoundSelector` in this rule:
@@ -163,9 +164,11 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
     let combinator = currentCompoundSel.next.combinator.value;
     foundCombinators.push(combinator);
     let nextCompoundSel = currentCompoundSel.next.selector;
-    let nextObject = assertBlockObject(configuration, block, nextCompoundSel, rule, file);
-    let nextLevelIsRoot = isRootLevelObject(nextObject);
-    let nextLevelIsClass = isClassLevelObject(nextObject);
+    // similarly, if the selector is the key selecter, then we can use the keyObject as
+    // itself to avoid multiple calls to assertBlockObject
+    let nextObject = selector.key === nextCompoundSel ? keyObject : assertBlockObject(configuration, block, nextCompoundSel, rule, file);
+    let nextLevelIsRoot = nextObject ? isRootLevelObject(nextObject) : false;
+    let nextLevelIsClass = nextObject ? isClassLevelObject(nextObject) : false;
 
     // Don't allow weird combinators like the column combinator (`||`)
     // or the attribute target selector (e.g. `/for/`)
@@ -177,9 +180,9 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
     }
 
     // Class level objects cannot be ancestors of root level objects
-    if (isClassLevelObject(currentObject) && nextLevelIsRoot && SIBLING_COMBINATORS.has(combinator)) {
+    if (currentObject && isClassLevelObject(currentObject) && nextLevelIsRoot && SIBLING_COMBINATORS.has(combinator)) {
       block.addError(new errors.InvalidBlockSyntax(
-        `A class is never a sibling of a ${blockTypeName(nextObject.blockType)}: ${rule.selector}`,
+        `A class is never a sibling of a ${blockTypeName((nextObject as NodeAndType).blockType)}: ${rule.selector}`,
         range(configuration, block.stylesheet, file, rule, selector.selector.nodes[0]),
       ));
     }
@@ -187,7 +190,7 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
     // Once you go to the class level there's no combinator that gets you back to the root level
     if (foundClassLevel && nextLevelIsRoot) {
       block.addError(new errors.InvalidBlockSyntax(
-        `Illegal scoping of a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
+        `Illegal scoping of a ${blockTypeName((currentObject as NodeAndType).blockType)}: ${rule.selector}`,
         range(configuration, block.stylesheet, file, rule, currentCompoundSel.next.combinator),
       ));
     }
@@ -195,25 +198,25 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
     // You can't reference a new root level object once you introduce descend the hierarchy
     if (foundRootLevel && nextLevelIsRoot && foundCombinators.some(c => HIERARCHICAL_COMBINATORS.has(c))) {
       // unless it's only referencing the same object.
-      if (!foundObjects.every(f => f.node.toString() === nextObject.node.toString())) {
+      if (!foundObjects.every(f => f.node.toString() === (nextObject as NodeAndType).node.toString())) {
         block.addError(new errors.InvalidBlockSyntax(
-          `Illegal scoping of a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
+          `Illegal scoping of a ${blockTypeName((currentObject as NodeAndType).blockType)}: ${rule.selector}`,
           range(configuration, block.stylesheet, file, rule, currentCompoundSel.next.combinator),
         ));
       }
     }
 
     // class-level and root-level objects cannot be siblings.
-    if (isRootLevelObject(currentObject) && nextLevelIsClass && SIBLING_COMBINATORS.has(combinator)) {
+    if (currentObject && isRootLevelObject(currentObject) && nextLevelIsClass && SIBLING_COMBINATORS.has(combinator)) {
       block.addError(new errors.InvalidBlockSyntax(
-        `A ${blockTypeName(nextObject.blockType)} cannot be a sibling with a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
+        `A ${blockTypeName((nextObject as NodeAndType).blockType)} cannot be a sibling with a ${blockTypeName(currentObject.blockType)}: ${rule.selector}`,
         range(configuration, block.stylesheet, file, rule, currentCompoundSel.next.combinator),
       ));
     }
 
     // Class-level objects cannot be combined with each other. only with themselves.
-    if (isClassLevelObject(nextObject)) {
-      let conflictObj = foundObjects.find(obj => isClassLevelObject(obj) && obj.node.toString() !== nextObject.node.toString());
+    if (nextObject && isClassLevelObject(nextObject)) {
+      let conflictObj = foundObjects.find(obj => isClassLevelObject(obj) && obj.node.toString() !== (nextObject as NodeAndType).node.toString());
       if (conflictObj) {
         // slightly better error verbiage for objects of the same type.
         if (conflictObj.blockType === nextObject.blockType) {
@@ -231,7 +234,10 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
     }
 
     // Update caches and move on to the next `CompoundSelector`
-    foundObjects.push(nextObject);
+    if (nextObject) {
+      foundObjects.push(nextObject);
+    }
+
     foundRootLevel = foundRootLevel || nextLevelIsRoot;
     foundClassLevel = foundClassLevel || nextLevelIsClass;
     currentObject = nextObject;
@@ -247,23 +253,22 @@ function assertValidSelector(configuration: Configuration, block: Block, rule: p
  * @param rule The full `postcss.Rule` for nice error reporting.
  * @return Returns the block's name, type and node.
  */
-function assertBlockObject(configuration: Configuration, block: Block, sel: CompoundSelector, rule: postcss.Rule, file: string): NodeAndType {
-
+function assertBlockObject(configuration: Configuration, block: Block, sel: CompoundSelector, rule: postcss.Rule, file: string): NodeAndType | null {
   let tagNode = sel.nodes.find(selectorParser.isTag);
   if (tagNode) {
-    throw new errors.InvalidBlockSyntax(
+    block.addError(new errors.InvalidBlockSyntax(
       `Tag name selectors are not allowed: ${rule.selector}`,
       range(configuration, block.stylesheet, file, rule, tagNode),
-    );
+    ));
   }
 
   // Targeting attributes that are not state selectors is not allowed in blocks, throw.
   let nonStateAttribute = sel.nodes.find(n => selectorParser.isAttribute(n) && !isAttributeNode(n));
   if (nonStateAttribute) {
-    throw new errors.InvalidBlockSyntax(
+    block.addError(new errors.InvalidBlockSyntax(
       `Cannot select attributes in the \`${selectorParser.isAttribute(nonStateAttribute) && nonStateAttribute.namespaceString}\` namespace: ${rule.selector}`,
       range(configuration, block.stylesheet, file, rule, nonStateAttribute),
-    );
+    ));
   }
 
   // Disallow pseudoclasses that take selectors as arguments.
@@ -271,10 +276,10 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
     if (selectorParser.isPseudoClass(n)) {
       let pseudo = n;
       if (pseudo.value === ":not" || pseudo.value === ":matches") {
-        throw new errors.InvalidBlockSyntax(
+        block.addError(new errors.InvalidBlockSyntax(
           `The ${pseudo.value}() pseudoclass cannot be used: ${rule.selector}`,
           range(configuration, block.stylesheet, file, rule, pseudo),
-        );
+        ));
       }
     }
   });
@@ -317,12 +322,11 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
           );
         }
         if (!found) {
-          throw new errors.InvalidBlockSyntax(
+          block.addError(new errors.InvalidBlockSyntax(
             `States without an explicit :scope or class selector are not supported: ${rule.selector}`,
             range(configuration, block.stylesheet, file, rule, n),
-          );
-        }
-        if (found.blockType === BlockType.class || found.blockType === BlockType.classAttribute) {
+          ));
+        } else if (found.blockType === BlockType.class || found.blockType === BlockType.classAttribute) {
           found = { node: n, blockType: BlockType.classAttribute };
         } else if (found.blockType === BlockType.root || found.blockType === BlockType.attribute) {
           if (n.namespace === true) {
@@ -370,12 +374,13 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
 
   // If no rules found in selector, we have a problem. Throw.
   if (!result) {
-    throw new errors.InvalidBlockSyntax(
+    block.addError(new errors.InvalidBlockSyntax(
       `Missing block object in selector component '${sel.nodes.join("")}': ${rule.selector}`,
-      range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
+      range(configuration, block.stylesheet, file, rule, sel.nodes[0])));
+    return null;
   }
 
-  if (isExternalBlock(result)) {
+  else if (isExternalBlock(result)) {
     let blockName: string | undefined;
     if (result.blockType === BlockType.attribute) {
       blockName = result.blockName!;
