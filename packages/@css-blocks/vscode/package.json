@@ -1,7 +1,8 @@
 {
   "private": true,
-  "name": "@css-blocks/vscode",
-  "description": "VSCode part of CSS Blocks' language server",
+  "name": "ember",
+  "publisher": "css-blocks",
+  "description": "VSCode Extension for CSS Blocks + Ember",
   "author": "LinkedIn",
   "license": "BSD-2-Clause",
   "version": "0.0.1",
@@ -26,16 +27,19 @@
   },
   "main": "./dist/extension",
   "scripts": {
+    "vscode:prepublish": "tsc --build",
     "update-vscode": "vscode-install",
     "postinstall": "vscode-install",
     "compile": "tsc --build",
-    "watch": "tsc --build --watch"
+    "watch": "tsc --build --watch",
+    "package": "vsce package"
   },
   "dependencies": {
-    "vscode-languageclient": "^5.2.1",
-    "@css-blocks/language-server": "^0.0.1"
+    "@css-blocks/language-server": "^0.0.1",
+    "vscode-languageclient": "^5.2.1"
   },
   "devDependencies": {
+    "vsce": "^1.69.0",
     "vscode": "^1.1.35"
   }
 }
