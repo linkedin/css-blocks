@@ -3,6 +3,56 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.0](https://github.com/LinkedIn/css-blocks/compare/v0.24.0...v1.0.0-alpha.0) (2019-11-22)
+
+
+### Bug Fixes
+
+* A state cannot be named 'scope'. ([12a0f32](https://github.com/LinkedIn/css-blocks/commit/12a0f32))
+* Addressing comments from Chris. ([afedab9](https://github.com/LinkedIn/css-blocks/commit/afedab9))
+* Cannot export a block as a reserved namespace identifier. ([e82f636](https://github.com/LinkedIn/css-blocks/commit/e82f636))
+* Don't allow blocks to be imported with a well-known namespace. ([6fc3675](https://github.com/LinkedIn/css-blocks/commit/6fc3675))
+* Fix bugs introduced by per-block namespaces. ([180b416](https://github.com/LinkedIn/css-blocks/commit/180b416))
+* Fix common misspelling of 'cannot'. ([457e08c](https://github.com/LinkedIn/css-blocks/commit/457e08c))
+* Fixing a few lint errors after a rebase. ([4a05b40](https://github.com/LinkedIn/css-blocks/commit/4a05b40))
+* Fixing tests. ([7d368cc](https://github.com/LinkedIn/css-blocks/commit/7d368cc))
+* For when the block-alias is the same name as a generated className. ([bd36033](https://github.com/LinkedIn/css-blocks/commit/bd36033))
+* Global states can be combined with the :scope selector. ([92f8093](https://github.com/LinkedIn/css-blocks/commit/92f8093))
+* Handle possible fs.stat failure gracefully. ([e1d1c2d](https://github.com/LinkedIn/css-blocks/commit/e1d1c2d))
+* Incorrect paths in package.json. ([d5f4c4c](https://github.com/LinkedIn/css-blocks/commit/d5f4c4c))
+* Making an error message slightly nicer. ([e74d019](https://github.com/LinkedIn/css-blocks/commit/e74d019))
+* Merge conflict was checked in. ([3dcd620](https://github.com/LinkedIn/css-blocks/commit/3dcd620))
+* Removing an addressed TODO. ([0e763de](https://github.com/LinkedIn/css-blocks/commit/0e763de))
+* Small tweaks around parameter passing. ([5d91c56](https://github.com/LinkedIn/css-blocks/commit/5d91c56))
+* Use a more flexible configuration type. ([38fd823](https://github.com/LinkedIn/css-blocks/commit/38fd823))
+* Using the export syntax for blocks in tests. ([bc86451](https://github.com/LinkedIn/css-blocks/commit/bc86451))
+
+
+### Features
+
+* Add document links provider. ([8a940d4](https://github.com/LinkedIn/css-blocks/commit/8a940d4))
+* Adding a custom importer for the language-server. ([d5bd9c3](https://github.com/LinkedIn/css-blocks/commit/d5bd9c3))
+* Adds custom css data for css-blocks at rules. ([9d230d5](https://github.com/LinkedIn/css-blocks/commit/9d230d5))
+* Basic preprocessor support. ([414b32e](https://github.com/LinkedIn/css-blocks/commit/414b32e))
+* Basic workings of language server and vscode client. ([ce11443](https://github.com/LinkedIn/css-blocks/commit/ce11443))
+* Basic workings of language server and vscode client. ([4c156d1](https://github.com/LinkedIn/css-blocks/commit/4c156d1))
+* CLI will use configuration files now. ([9dbfdd9](https://github.com/LinkedIn/css-blocks/commit/9dbfdd9))
+* Code completion and definitions for per-block namespace syntax. ([a88ebd5](https://github.com/LinkedIn/css-blocks/commit/a88ebd5))
+* Configuration file API for CSS Blocks. ([736f460](https://github.com/LinkedIn/css-blocks/commit/736f460))
+* Implement autocomplete for import paths. ([bc0316d](https://github.com/LinkedIn/css-blocks/commit/bc0316d))
+* Introducing the block-alias. ([5517d72](https://github.com/LinkedIn/css-blocks/commit/5517d72))
+* Load css-blocks configuration from the config file for vscode. ([e564970](https://github.com/LinkedIn/css-blocks/commit/e564970))
+* Passing all block aliases as reserved classNames for compilation. ([aea5fcc](https://github.com/LinkedIn/css-blocks/commit/aea5fcc))
+* Passing block error validation through the importer. ([a5123fc](https://github.com/LinkedIn/css-blocks/commit/a5123fc))
+* Per block namespaces. ([053ed47](https://github.com/LinkedIn/css-blocks/commit/053ed47))
+* Per block namespaces. ([b9c4938](https://github.com/LinkedIn/css-blocks/commit/b9c4938))
+* Respect explicit exports for a block interface. ([d37e704](https://github.com/LinkedIn/css-blocks/commit/d37e704))
+* WIP Migration of vscode integration to per-block namespace syntax. ([146b71d](https://github.com/LinkedIn/css-blocks/commit/146b71d))
+
+
+
+
+
 # [0.24.0](https://github.com/linkedin/css-blocks/compare/v0.23.2...v0.24.0) (2019-09-16)
 
 

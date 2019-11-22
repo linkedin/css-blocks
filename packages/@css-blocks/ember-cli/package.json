@@ -1,5 +1,5 @@
 {
-  "version": "0.24.0",
+  "version": "1.0.0-alpha.0",
   "name": "@css-blocks/ember-cli",
   "description": "Use CSS Blocks with your Ember and Glimmer projects.",
   "keywords": [
@@ -22,8 +22,8 @@
     "test:all": "ember try:each"
   },
   "dependencies": {
-    "@css-blocks/broccoli": "^0.24.0",
-    "@css-blocks/glimmer": "^0.24.0",
+    "@css-blocks/broccoli": "^1.0.0-alpha.0",
+    "@css-blocks/glimmer": "^1.0.0-alpha.0",
     "@glimmer/application-pipeline": "^0.15.0",
     "broccoli-concat": "^3.7.3",
     "broccoli-funnel": "^2.0.1",

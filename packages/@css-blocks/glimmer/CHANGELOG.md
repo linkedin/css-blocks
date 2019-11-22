@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v0.24.0...v1.0.0-alpha.0) (2019-11-22)
+
+
+### Bug Fixes
+
+* Fix bugs introduced by per-block namespaces. ([180b416](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/180b416))
+* Fixing a few lint errors after a rebase. ([4a05b40](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/4a05b40))
+* Fixing tests. ([7d368cc](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/7d368cc))
+* For when the block-alias is the same name as a generated className. ([bd36033](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/bd36033))
+* Small tweaks around parameter passing. ([5d91c56](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/5d91c56))
+* Using the export syntax for blocks in tests. ([bc86451](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/bc86451))
+
+
+### Features
+
+* Introducing the block-alias. ([5517d72](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/5517d72))
+* Passing all block aliases as reserved classNames for compilation. ([aea5fcc](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/aea5fcc))
+* Per block namespaces. ([053ed47](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/053ed47))
+* Respect explicit exports for a block interface. ([d37e704](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/d37e704))
+
+
+
+
+
 # [0.24.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v0.23.2...v0.24.0) (2019-09-16)
 
 
