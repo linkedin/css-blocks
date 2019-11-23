@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "ember",
+  "name": "css-blocks-ember",
   "publisher": "css-blocks",
   "description": "VSCode Extension for CSS Blocks + Ember",
   "author": "LinkedIn",
@@ -27,19 +27,18 @@
   },
   "main": "./dist/extension",
   "scripts": {
-    "vscode:prepublish": "tsc --build",
+    "vscode:prepublish": "tsc",
     "update-vscode": "vscode-install",
     "postinstall": "vscode-install",
     "compile": "tsc --build",
     "watch": "tsc --build --watch",
-    "package": "vsce package"
+    "package": "rm -rf node_modules && npm install --only=production && npx vsce package"
   },
   "dependencies": {
     "@css-blocks/language-server": "^1.0.0-alpha.0",
     "vscode-languageclient": "^5.2.1"
   },
   "devDependencies": {
-    "vsce": "^1.69.0",
     "vscode": "^1.1.35"
   }
 }
