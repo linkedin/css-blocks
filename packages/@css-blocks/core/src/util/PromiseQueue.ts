@@ -19,13 +19,14 @@ export class PromiseQueue<WorkItem, Result> {
   private queue: async.AsyncQueue<PendingWork<WorkItem, Result>>;
   private queueId: number;
   private jobId: number;
-  private draining: Promise<void> | undefined;
+  private draining: boolean;
   private promiseProcessor: (item: WorkItem) => Promise<Result>;
   constructor(concurrency: number, processor: (item: WorkItem) => Promise<Result>) {
     this.promiseProcessor = processor;
     this.queue = async.queue<PendingWork<WorkItem, Result>, Error>(this.processWork.bind(this), concurrency);
     this.queueId = queueInstanceId++;
     this.jobId = 0;
+    this.draining = false;
   }
 
   private processWork(work: PendingWork<WorkItem, Result>, callback: (err?: unknown) => void) {
@@ -54,17 +55,10 @@ export class PromiseQueue<WorkItem, Result> {
   }
 
   drain(): Promise<void> {
-    if (!this.draining) {
-      this.draining = new Promise<void>((resolve, _reject) => {
-        this.debug(`Starting to drain current work queue.`);
-        this.queue.drain = () => {
-          this.debug(`queue is drained`);
-          this.draining = undefined;
-          resolve();
-        };
-      });
-    }
-    return this.draining;
+    this.draining = true;
+    return this.queue.drain().then(() => {
+      this.draining = false;
+    });
   }
 
   restart() {
