@@ -5,7 +5,7 @@
     "ember-addon"
   ],
   "dependencies": {
-    "@css-blocks/ember-cli": "*",
+    "@css-blocks/ember-cli": "^1.0.0-alpha.0",
     "ember-cli": "*",
     "ember-cli-htmlbars": "*",
     "ember-cli-babel": "^6.16.0"
