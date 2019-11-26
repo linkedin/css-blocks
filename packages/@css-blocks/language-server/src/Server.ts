@@ -1,6 +1,6 @@
 import { search as searchForConfig } from "@css-blocks/config";
 import { BlockFactory, Configuration, CssBlockError, Syntax, resolveConfiguration } from "@css-blocks/core";
-import { CompletionItem, Definition, DidChangeConfigurationNotification, DocumentLink, DocumentLinkParams, IConnection, InitializeParams, InitializeResult, TextDocumentChangeEvent, TextDocumentPositionParams, TextDocuments } from "vscode-languageserver";
+import { CompletionItem, Definition, DidChangeConfigurationNotification, DocumentLink, DocumentLinkParams, IConnection, InitializeParams, InitializeResult, Location, ReferenceParams, TextDocumentChangeEvent, TextDocumentPositionParams, TextDocuments } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
 import { emberCompletionProvider } from "./completionProviders/emberCompletionProvider";
@@ -109,6 +109,22 @@ export class Server {
 
     this.connection.onDefinition(async (params: TextDocumentPositionParams): Promise<Definition> => {
       return await emberDefinitionProvider(this.documents, this.blockFactory, params, this.pathTransformer);
+    });
+
+    this.connection.onReferences(async (params: ReferenceParams): Promise<Location[]> => {
+      let uri = params.textDocument.uri;
+      let locations: Location[] = [];
+
+      // TODO: construct glimmer analyzer and see what information we currently
+      // have to work with.
+      if (isTemplateFile(uri)) {
+        let document = this.documents.get(params.textDocument.uri);
+        if (!document) {
+          return locations;
+        }
+      }
+
+      return locations;
     });
 
     this.connection.onDocumentLinks(async (params: DocumentLinkParams): Promise<DocumentLink[]> => {
