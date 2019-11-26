@@ -12,7 +12,7 @@ export interface FocusPath {
  * Returns a linked list where the root node is the item found at the corresponding
  * position with links back to all of its parent nodes.
  */
-export function createFocusPath(node: AST.Template, position: Position, seen = new Set(), astPathNode: FocusPath = { parent: null, data: null }): FocusPath | null {
+export function createFocusPath(node: AST.Node, position: Position, seen = new Set(), astPathNode: FocusPath = { parent: null, data: null }): FocusPath | null {
   seen.add(node);
 
   let range: SourceLocation = node.loc;
