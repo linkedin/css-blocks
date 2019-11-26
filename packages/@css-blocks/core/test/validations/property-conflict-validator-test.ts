@@ -1309,7 +1309,7 @@ type TernaryCondition = boolean;
 
 function constructElement(block: Block, ...styles: string[]) {
   let info = new Template("templates/my-template.hbs");
-  let analyzer = new TestAnalyzer();
+  let analyzer = new TestAnalyzer(new BlockFactory({}));
   let analysis = analyzer.newAnalysis(info);
 
   analysis.addBlock(":scope", block);

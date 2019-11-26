@@ -26,7 +26,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when two static attributes from the same group are applied"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
@@ -51,7 +51,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when static and dynamic attributes from the same group are applied"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
@@ -76,7 +76,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when static attributes and dynamic group from the same group are applied"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
@@ -101,7 +101,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when duplicate dynamic groups are applied"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 

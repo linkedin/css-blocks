@@ -1,3 +1,4 @@
+import { BlockFactory } from "@css-blocks/core";
 import { ObjectDictionary } from "@opticss/util";
 import { Configuration as WebpackConfiguration } from "webpack";
 import * as merge from "webpack-merge";
@@ -30,7 +31,7 @@ export function config(entry: EntryTypes, options?: LoaderOptions): WebpackConfi
         new CssBlocksPlugin({
             name: "preact",
             outputCssFile: "css-blocks.css",
-            analyzer: new TestAnalyzer(),
+            analyzer: new TestAnalyzer(new BlockFactory({})),
         }),
     ],
   };

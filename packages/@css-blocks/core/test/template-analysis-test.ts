@@ -32,7 +32,7 @@ export class AnalysisTests {
   @test "can add styles from a block"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory(config));
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
@@ -64,7 +64,7 @@ export class AnalysisTests {
   @test "can add dynamic styles from a block"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory(config));
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
@@ -98,7 +98,7 @@ export class AnalysisTests {
   @test "can correlate styles"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory(config));
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
@@ -139,7 +139,7 @@ export class AnalysisTests {
   @test "can add styles from two blocks"() {
     let config = resolveConfiguration({});
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory(config));
     let analysis = analyzer.newAnalysis(info);
     let css = `
       :scope { color: blue; }
@@ -183,7 +183,7 @@ export class AnalysisTests {
 
   @test "adding dynamic styles enumerates correlation in analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 
@@ -234,7 +234,7 @@ export class AnalysisTests {
 
   @test "multiple dynamic values added using `addExclusiveStyles` enumerate correlations correctly in analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
@@ -273,7 +273,7 @@ export class AnalysisTests {
 
   @test "multiple exclusive dynamic values added using enumerate correlations correctly in analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
@@ -338,7 +338,7 @@ export class AnalysisTests {
 
   @test "toggling between two classes with states of the same name"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 
@@ -392,7 +392,7 @@ export class AnalysisTests {
 
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is true"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
     imports.registerSource(
@@ -442,7 +442,7 @@ export class AnalysisTests {
 
   @test "addExclusiveStyles generates correct correlations when `alwaysPresent` is false"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
     imports.registerSource(
@@ -488,7 +488,7 @@ export class AnalysisTests {
   }
   @test "can generate an analysis for the optimizer"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
     imports.registerSource(
@@ -563,9 +563,9 @@ export class AnalysisTests {
 
   @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
-    let analysis = analyzer.newAnalysis(info);
     let config = resolveConfiguration({});
+    let analyzer = new TestAnalyzer(new BlockFactory(config));
+    let analysis = analyzer.newAnalysis(info);
 
     let css = `
       :scope { color: blue; }
@@ -590,9 +590,10 @@ export class AnalysisTests {
 
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer({}, { validations: { "no-class-pairs": false }});
-    let analysis = analyzer.newAnalysis(info);
     let config = resolveConfiguration({});
+    let blockFactory = new BlockFactory(config);
+    let analyzer = new TestAnalyzer(blockFactory, { validations: { "no-class-pairs": false }});
+    let analysis = analyzer.newAnalysis(info);
 
     let css = `
       :scope { color: blue; }
@@ -613,9 +614,9 @@ export class AnalysisTests {
 
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer({}, { validations: { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } } });
-    let analysis = analyzer.newAnalysis(info);
     let config = resolveConfiguration({});
+    let analyzer = new TestAnalyzer(new BlockFactory(config), { validations: { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } } });
+    let analysis = analyzer.newAnalysis(info);
 
     let css = `
       :scope { color: blue; }
@@ -633,9 +634,9 @@ export class AnalysisTests {
 
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
-    let analysis = analyzer.newAnalysis(info);
     let config = resolveConfiguration({});
+    let analyzer = new TestAnalyzer(new BlockFactory(config));
+    let analysis = analyzer.newAnalysis(info);
 
     let css = `
       :scope { color: blue; }
@@ -661,9 +662,9 @@ export class AnalysisTests {
 
   @test "adding both root and a state from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
-    let analysis = analyzer.newAnalysis(info);
     let config = resolveConfiguration({});
+    let analyzer = new TestAnalyzer(new BlockFactory(config));
+    let analysis = analyzer.newAnalysis(info);
 
     let css = `
       :scope { color: blue; }
@@ -685,7 +686,7 @@ export class AnalysisTests {
 
   @test "classes from other blocks may be added to the root element"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 
@@ -733,7 +734,7 @@ export class AnalysisTests {
 
   @test "throws when states are applied without their parent root"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
@@ -755,7 +756,7 @@ export class AnalysisTests {
 
   @test "throws when states are applied without their parent BlockClass"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
@@ -780,7 +781,7 @@ export class AnalysisTests {
 
   @test "Throws when inherited states are applied without their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 
@@ -822,7 +823,7 @@ export class AnalysisTests {
 
   @test "Inherited states pass validation when applied with their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 
@@ -863,7 +864,7 @@ export class AnalysisTests {
 
   @test "composition test"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 

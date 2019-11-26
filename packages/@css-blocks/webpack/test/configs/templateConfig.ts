@@ -57,7 +57,7 @@ export function config(): Promise<WebpackConfiguration> {
   let block1 = factory.getBlock(fixture("concat-1"));
   let block2 = factory.getBlock(fixture("concat-2"));
   return Promise.all([block1, block2]).then(blocks => {
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory(blockOpts));
     analyzer.newAnalysis(new TestTemplateInfo("test.html", 1));
     blocks.forEach((b, i) => {
       analyzer.eachAnalysis(a => {

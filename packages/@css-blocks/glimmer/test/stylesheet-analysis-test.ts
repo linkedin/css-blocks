@@ -1,4 +1,4 @@
-import { SerializedElementAnalysis } from "@css-blocks/core";
+import { BlockFactory, SerializedElementAnalysis } from "@css-blocks/core";
 import { ObjectDictionary } from "@opticss/util";
 import { assert } from "chai";
 
@@ -8,9 +8,9 @@ import { fixture, moduleConfig } from "./fixtures";
 
 type ElementsAnalysis = ObjectDictionary<SerializedElementAnalysis>;
 
-describe("Stylesheet analysis", function() {
-  it("analyzes styles from the implicit block", function() {
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+describe("Stylesheet analysis", function () {
+  it("analyzes styles from the implicit block", function () {
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     return analyzer.analyze(fixture("styled-app"), ["my-app"]).then((analyzer: GlimmerAnalyzer) => {
       let analysis = analyzer.getAnalysis(0);
       let serializedAnalysis = analysis.serialize();
@@ -18,11 +18,11 @@ describe("Stylesheet analysis", function() {
       assert.deepEqual(serializedAnalysis.blocks, {
         "default": fixture("styled-app/src/ui/components/my-app/stylesheet.css"),
       });
-      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[disabled]" , ":scope", ":scope[is-loading]"]);
+      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[disabled]", ":scope", ":scope[is-loading]"]);
       let expected: ElementsAnalysis = {
-        a: { tagName: "div", staticStyles: [ 2, 3 ], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
+        a: { tagName: "div", staticStyles: [2, 3], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/my-app" }, end: { line: 1, "filename": "template:/styled-app/components/my-app" } } },
         b: { tagName: "page-banner", staticStyles: [], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" } } },
-        c: { tagName: "text-editor", staticStyles: [0, 1], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" } }},
+        c: { tagName: "text-editor", staticStyles: [0, 1], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/my-app" } } },
       };
       assert.deepEqual(serializedAnalysis.elements, expected);
 
@@ -38,9 +38,9 @@ describe("Stylesheet analysis", function() {
     });
   });
 
-  it("analyzes styles from a referenced block", function() {
+  it("analyzes styles from a referenced block", function () {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     return analyzer.analyze(projectDir, ["with-multiple-blocks"]).then((analyzer: GlimmerAnalyzer) => {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-multiple-blocks");
@@ -60,9 +60,9 @@ describe("Stylesheet analysis", function() {
     });
   });
 
-  it("analyzes styles from built-ins", function() {
+  it("analyzes styles from built-ins", function () {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     return analyzer.analyze(projectDir, ["with-link-to"]).then((analyzer: GlimmerAnalyzer) => {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-link-to");
@@ -655,9 +655,9 @@ describe("Stylesheet analysis", function() {
     });
   });
 
-  it("analyzes styles from a referenced block with dynamic state", function() {
+  it("analyzes styles from a referenced block with dynamic state", function () {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     return analyzer.analyze(projectDir, ["with-dynamic-states"]).then((analyzer: GlimmerAnalyzer) => {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-states");
@@ -677,24 +677,24 @@ describe("Stylesheet analysis", function() {
       assert.deepEqual(analysis.elements, {
         a: {
           tagName: "div",
-          staticStyles: [ 2 ],
+          staticStyles: [2],
           dynamicClasses: [],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-states" } },
         },
         b: {
           tagName: "h1",
-          staticStyles: [ 6 ],
+          staticStyles: [6],
           dynamicClasses: [],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-states" } },
         },
         c: {
           tagName: "span",
-          staticStyles: [ 0, 3 ],
+          staticStyles: [0, 3],
           dynamicClasses: [],
           dynamicAttributes: [
-            { condition: true, value: [ 1 ] },
+            { condition: true, value: [1] },
             { stringExpression: true, group: { bold: 4, italic: 5 }, value: [] },
           ],
           sourceLocation: { start: { line: 2, column: 21, "filename": "template:/styled-app/components/with-dynamic-states" }, end: { line: 2, column: 21, "filename": "template:/styled-app/components/with-dynamic-states" } },
@@ -707,9 +707,9 @@ describe("Stylesheet analysis", function() {
     });
   });
 
-  it("analyzes styles from a referenced block with dynamic classes", function() {
+  it("analyzes styles from a referenced block with dynamic classes", function () {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     return analyzer.analyze(projectDir, ["with-dynamic-classes"]).then((analyzer) => {
       let analysis = analyzer.getAnalysis(0).serialize();
       assert.equal(analysis.template.identifier, "template:/styled-app/components/with-dynamic-classes");
@@ -732,24 +732,24 @@ describe("Stylesheet analysis", function() {
       assert.deepEqual(analysis.elements, {
         a: {
           tagName: "div",
-          staticStyles: [ 3 ],
+          staticStyles: [3],
           dynamicClasses: [],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 1, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         b: {
           tagName: "h1",
-          staticStyles: [ 7 ],
+          staticStyles: [7],
           dynamicClasses: [],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         c: {
           tagName: "span",
-          staticStyles: [ 4, 8 ],
-          dynamicClasses: [ {condition: true, whenTrue: [ 1 ]} ],
+          staticStyles: [4, 8],
+          dynamicClasses: [{ condition: true, whenTrue: [1] }],
           dynamicAttributes: [
-            { condition: true, value: [ 2 ], container: 1 },
+            { condition: true, value: [2], container: 1 },
             { stringExpression: true, group: { bold: 5, italic: 6 }, value: [] },
           ],
           sourceLocation: { start: { line: 2, column: 21, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 2, column: 21, "filename": "template:/styled-app/components/with-dynamic-classes" } },
@@ -757,21 +757,21 @@ describe("Stylesheet analysis", function() {
         d: {
           tagName: "div",
           staticStyles: [],
-          dynamicClasses: [ { condition: true, whenTrue: [ 1 ], whenFalse: [ 0 ]} ],
+          dynamicClasses: [{ condition: true, whenTrue: [1], whenFalse: [0] }],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 3, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         e: {
           tagName: "div",
           staticStyles: [],
-          dynamicClasses: [ { condition: true, whenTrue: [ 0 ], whenFalse: [ 1 ]} ],
+          dynamicClasses: [{ condition: true, whenTrue: [0], whenFalse: [1] }],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 4, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
         f: {
           tagName: "div",
           staticStyles: [],
-          dynamicClasses: [ { condition: true, whenFalse: [ 1 ]} ],
+          dynamicClasses: [{ condition: true, whenFalse: [1] }],
           dynamicAttributes: [],
           sourceLocation: { start: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },

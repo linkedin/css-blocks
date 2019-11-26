@@ -3,7 +3,7 @@ const path = require("path");
 
 const { CSSBlocksAggregate, CSSBlocksAnalyze, Transport } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
-const { NodeJsImporter } = require("@css-blocks/core");
+const { NodeJsImporter, BlockFactory } = require("@css-blocks/core");
 
 const BroccoliConcat = require("broccoli-concat");
 const BroccoliMerge = require("broccoli-merge-trees");
@@ -326,7 +326,7 @@ module.exports = {
     this.transports.set(this.parent, transport);
     DEBUG(`Created transport object for ${modulePrefix}`);
 
-    let analyzer = new GlimmerAnalyzer(options.parserOpts, options.analysisOpts, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory(options.parserOpts), options.analysisOpts, moduleConfig);
     analyzer.transport = transport;
 
     const broccoliOptions = {

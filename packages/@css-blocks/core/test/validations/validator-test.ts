@@ -25,9 +25,9 @@ export class TemplateAnalysisTests {
 
   @test "built-in template validators may be configured with boolean values"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer({}, { validations: { "no-class-pairs": false }});
-    let analysis = analyzer.newAnalysis(info);
     let config = resolveConfiguration({});
+    let analyzer = new TestAnalyzer(new BlockFactory(config), { validations: { "no-class-pairs": false }});
+    let analysis = analyzer.newAnalysis(info);
 
     let css = `
       :scope { color: blue; }
@@ -48,9 +48,9 @@ export class TemplateAnalysisTests {
 
   @test "custom template validators may be passed to analysis"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer({}, { validations: { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } } });
-    let analysis = analyzer.newAnalysis(info);
     let config = resolveConfiguration({});
+    let analyzer = new TestAnalyzer(new BlockFactory(config), { validations: { customValidator(data, _a, err) { if (data) err("CUSTOM ERROR"); } } });
+    let analysis = analyzer.newAnalysis(info);
 
     let css = `
       :scope { color: blue; }

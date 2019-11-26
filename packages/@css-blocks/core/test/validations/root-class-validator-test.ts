@@ -27,7 +27,7 @@ export class AnalysisTests {
 
   @test "adding both root and a class from the same block to the same elment throws an error"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let options = {};
 
@@ -55,7 +55,7 @@ export class AnalysisTests {
 
   @test "adding both root and an attribute from the same block to the same element is allowed"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let options = {};
 
@@ -79,7 +79,7 @@ export class AnalysisTests {
 
   @test "classes from other blocks may be added to the root element"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let imports = new MockImportRegistry();
     let options = { importer: imports.importer() };

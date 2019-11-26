@@ -1,4 +1,4 @@
-import { Analysis, Analyzer, Block } from "@css-blocks/core";
+import { Analysis, Analyzer, Block, BlockFactory } from "@css-blocks/core";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import { some, unwrap } from "@opticss/util";
 import traverse from "babel-traverse";
@@ -44,7 +44,10 @@ export class CSSBlocksJSXAnalyzer extends Analyzer<TEMPLATE_TYPE> {
    */
   constructor(name: string | JSXOptions & AnalyzerOptions, options: JSXOptions & AnalyzerOptions = {}) {
     // ewww need to get rid of this deprecation soon.
-    super(options && options.compilationOptions || (name && typeof name !== "string" && name.compilationOptions) || {});
+    let blockOpts = options && options.compilationOptions || (name && typeof name !== "string" && name.compilationOptions) || {};
+    let blockFactory = new BlockFactory(blockOpts);
+    super(blockFactory);
+
     if (typeof name === "string") {
       deprecatedName(name, options);
     } else {

@@ -6,13 +6,11 @@ import {
   Block,
   BlockClass,
   BlockFactory,
-  Options,
 } from "@css-blocks/core";
 import { ResolverConfiguration } from "@glimmer/resolver";
 import {  AST, preprocess, traverse } from "@glimmer/syntax";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as debugGenerator from "debug";
-import { postcss } from "opticss";
 
 import { ElementAnalyzer } from "./ElementAnalyzer";
 import { isEmberBuiltIn } from "./EmberBuiltins";
@@ -28,13 +26,13 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   debug: debugGenerator.IDebugger;
 
   constructor(
-    cssBlocksOpts: Options,
+    blockFactory: BlockFactory,
     analysisOpts: AnalysisOptions,
     moduleConfig: ResolverConfiguration,
   ) {
-    super(cssBlocksOpts, analysisOpts);
-    this.blockFactory = new BlockFactory(this.cssBlocksOptions, postcss);
-    this.resolver = new Resolver(this.cssBlocksOptions, moduleConfig);
+    super(blockFactory, analysisOpts);
+    this.blockFactory = blockFactory;
+    this.resolver = new Resolver(blockFactory.configuration, moduleConfig);
     this.debug = debugGenerator("css-blocks:glimmer:analyzer");
   }
 
