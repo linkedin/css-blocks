@@ -16,6 +16,7 @@ import { postcss } from "opticss";
 import { Analysis, Analyzer } from "../src/Analyzer";
 import { ElementAnalysis } from "../src/Analyzer";
 import { BlockCompiler } from "../src/BlockCompiler";
+import { BlockFactory } from "../src/BlockParser";
 import { AttrValue, Block, BlockClass } from "../src/BlockTree";
 import { resolveConfiguration } from "../src/configuration";
 import { StyleMapping } from "../src/TemplateRewriter/StyleMapping";
@@ -93,7 +94,7 @@ export class TemplateAnalysisTests {
         };
       }
     }
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory(config));
     return analyzer.analyze().then(async (analyzer: TestAnalyzer) => {
       let compiler = new BlockCompiler(postcss, config);
       let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });

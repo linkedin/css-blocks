@@ -13,4 +13,5 @@ export const SERVER_CAPABILITIES: ServerCapabilities = {
     resolveProvider: false,
     triggerCharacters: [ ":", '"', "=", "/" ],
   },
+  referencesProvider: true,
 };

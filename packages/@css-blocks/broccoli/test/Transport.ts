@@ -1,4 +1,4 @@
-import { Block, StyleMapping } from "@css-blocks/core";
+import { Block, BlockFactory, StyleMapping } from "@css-blocks/core";
 import { GlimmerAnalyzer } from "@css-blocks/glimmer";
 import * as assert from "assert";
 
@@ -14,7 +14,10 @@ describe("Broccoli Transport Test", () => {
     assert.equal(transport.mapping, undefined);
 
     transport.css = "foobar";
-    transport.analyzer = new GlimmerAnalyzer({}, {}, { types: {}, collections: {} });
+    transport.analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, {
+      types: {},
+      collections: {},
+    });
     transport.blocks.add(new Block("foo", "bar"));
     transport.mapping = {} as StyleMapping<"GlimmerTemplates.ResolvedFile">;
 

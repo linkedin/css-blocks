@@ -1,4 +1,4 @@
-import { BlockCompiler, StyleMapping } from "@css-blocks/core";
+import { BlockCompiler, BlockFactory, StyleMapping } from "@css-blocks/core";
 import { ASTPluginEnvironment, preprocess, print } from "@glimmer/syntax";
 import { assert } from "chai";
 import fs = require("fs");
@@ -61,7 +61,7 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles from dynamic attributes", async function() {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-states/template.hbs");
     let result = await pipeline(projectDir, analyzer, "with-dynamic-states", templatePath);
 
@@ -84,7 +84,7 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles from dynamic classes", async function() {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-dynamic-classes/template.hbs");
     let result = await pipeline(projectDir, analyzer, "with-dynamic-classes", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
@@ -99,7 +99,7 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles with block aliases", async function() {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-block-aliases/template.hbs");
     let result = await pipeline(projectDir, analyzer, "with-block-aliases", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
@@ -111,7 +111,7 @@ describe("Template Rewriting", function() {
 
   it("rewrites styles from dynamic attributes from readme", async function() {
     let projectDir = fixture("readme-app");
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     let templatePath = fixture("readme-app/src/ui/components/page-layout/template.hbs");
     let result = await pipeline(projectDir, analyzer, "page-layout", templatePath);
     assert.deepEqual(minify(result.css.toString()), minify(`
@@ -136,7 +136,7 @@ describe("Template Rewriting", function() {
 
   it("rewrites link-to helpers", async function() {
     let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer({}, {}, moduleConfig);
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     let templatePath = fixture("styled-app/src/ui/components/with-link-to/template.hbs");
     let result = await pipeline(projectDir, analyzer, "with-link-to", templatePath);
 

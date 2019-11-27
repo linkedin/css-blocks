@@ -8,11 +8,7 @@ import * as debugGenerator from "debug";
 
 import { BlockFactory } from "../BlockParser";
 import { Block, Style } from "../BlockTree";
-import {
-  Options,
-  ResolvedConfiguration,
-  resolveConfiguration,
-} from "../configuration";
+import { ResolvedConfiguration } from "../configuration";
 
 import { Analysis, SerializedAnalysis } from "./Analysis";
 import { TemplateValidatorOptions } from "./validations";
@@ -39,7 +35,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   protected dynamicStyles: MultiMap<Style, Analysis<K>>;
 
   constructor (
-    options?: Options,
+    blockFactory: BlockFactory,
     analysisOpts?: AnalysisOptions,
   ) {
 
@@ -47,14 +43,13 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     if (parseInt(process.versions.node) <= 6) {
       throw new Error("CSS Blocks does not support Node.js <= 6");
     }
-
-    this.cssBlocksOptions = resolveConfiguration(options);
+    this.blockFactory = blockFactory;
+    this.cssBlocksOptions = blockFactory.configuration;
     this.validatorOptions = analysisOpts && analysisOpts.validations || {};
-    this.blockFactory = new BlockFactory(this.cssBlocksOptions);
     this.analysisMap = new Map();
     this.staticStyles = new MultiMap();
     this.dynamicStyles = new MultiMap();
-  }
+}
 
   abstract analyze(dir: string, entryPoints: string[]): Promise<Analyzer<K>>;
   abstract get optimizationOptions(): TemplateIntegrationOptions;

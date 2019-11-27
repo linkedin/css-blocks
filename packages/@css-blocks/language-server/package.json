@@ -14,7 +14,7 @@
   "dependencies": {
     "@css-blocks/config": "^1.0.0-alpha.0",
     "@css-blocks/core": "^1.0.0-alpha.0",
-    "@glimmer/syntax": "^0.42.1",
+    "@css-blocks/glimmer": "^1.0.0-alpha.0",
     "glob": "^7.1.6",
     "glob-escape": "^0.0.2",
     "opticss": "^0.6.2",

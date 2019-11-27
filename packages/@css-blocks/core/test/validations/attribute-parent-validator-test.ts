@@ -26,7 +26,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when states are applied without their parent root"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
@@ -48,7 +48,7 @@ export class TemplateAnalysisTests {
 
   @test "throws when states are applied without their parent BlockClass"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { config } = setupImporting();
 
@@ -73,7 +73,7 @@ export class TemplateAnalysisTests {
 
   @test "Throws when inherited states are applied without their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 
@@ -116,7 +116,7 @@ export class TemplateAnalysisTests {
 
   @test "Inherited states pass validation when applied with their root"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
+    let analyzer = new TestAnalyzer(new BlockFactory({}));
     let analysis = analyzer.newAnalysis(info);
     let { imports, config } = setupImporting();
 

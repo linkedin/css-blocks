@@ -24,10 +24,9 @@ export class TemplateAnalysisTests {
 
   @test "correlating two classes from the same block on the same element throws an error"() {
     let info = new Template("templates/my-template.hbs");
-    let analyzer = new TestAnalyzer();
-    let analysis = analyzer.newAnalysis(info);
-
     let config = resolveConfiguration({});
+    let analyzer = new TestAnalyzer(new BlockFactory(config));
+    let analysis = analyzer.newAnalysis(info);
 
     let css = `
       :scope { color: blue; }

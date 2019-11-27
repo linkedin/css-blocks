@@ -1,3 +1,4 @@
+import { BlockFactory } from "@css-blocks/core";
 import { GlimmerAnalyzer } from "@css-blocks/glimmer";
 import * as assert from "assert";
 import { TempDir, createBuilder, createTempDir } from "broccoli-test-helper";
@@ -37,14 +38,14 @@ describe("Broccoli Analyze Plugin Test", function () {
       });
 
       let transport = new Transport("test-transport");
-      let analyzer = new GlimmerAnalyzer({}, {}, {
+      let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, {
         app: { name: "test" },
         types: {
           stylesheet: { definitiveCollection: "components" },
           template: { definitiveCollection: "components" },
         },
         collections: {
-          components: { group: "ui", types: [ "template", "stylesheet" ] },
+          components: { group: "ui", types: ["template", "stylesheet"] },
         },
       });
       let output = createBuilder(new CSSBlocksAnalyze(
@@ -82,9 +83,15 @@ describe("Broccoli Analyze Plugin Test", function () {
       // Accidental modification of output directory does not make the plugin explode.
       fs.unlinkSync(output.path("src/ui/components/Chrisrng/template.hbs"));
       input.write({
-        src: { ui: { components: { [entryComponentName]: {
-          "stylesheet.css": `:scope { color: blue; } .foo { color: yellow; }`,
-        }}}},
+        src: {
+          ui: {
+            components: {
+              [entryComponentName]: {
+                "stylesheet.css": `:scope { color: blue; } .foo { color: yellow; }`,
+              },
+            },
+          },
+        },
       });
       await output.build();
       assert.equal(preDiff.calculatePatch(postDiff).length, 0, "Input directory unchanged after rebuild.");
@@ -93,9 +100,15 @@ describe("Broccoli Analyze Plugin Test", function () {
 
       // Removal of block files trigger build but result in no tree changes.
       input.write({
-        src: { ui: { components: { [entryComponentName]: {
-          "stylesheet.css": null,
-        }}}},
+        src: {
+          ui: {
+            components: {
+              [entryComponentName]: {
+                "stylesheet.css": null,
+              },
+            },
+          },
+        },
       });
       await output.build();
       assert.equal(transport["css"], "", "Removal of block files trigger build but result in no output tree changes.");
@@ -103,9 +116,15 @@ describe("Broccoli Analyze Plugin Test", function () {
 
       // Addition of block files trigger build but result in no output tree changes.
       input.write({
-        src: { ui: { components: { [entryComponentName]: {
-          "stylesheet.css": `:scope { color: red; } .foo { color: green; }`,
-        }}}},
+        src: {
+          ui: {
+            components: {
+              [entryComponentName]: {
+                "stylesheet.css": `:scope { color: red; } .foo { color: green; }`,
+              },
+            },
+          },
+        },
       });
       await output.build();
       assert.equal(transport["css"], ".a { color: red; } .b { color: green; }", "Addition of block files trigger build but result in no output tree changes.");
@@ -113,9 +132,15 @@ describe("Broccoli Analyze Plugin Test", function () {
 
       // Modifications to non-block files are funneled through to output.
       input.write({
-        src: { ui: { components: { [entryComponentName]: {
-          "template.hbs": `<div><h1>Welcome to Glimmer!</h1></div>`,
-        }}}},
+        src: {
+          ui: {
+            components: {
+              [entryComponentName]: {
+                "template.hbs": `<div><h1>Welcome to Glimmer!</h1></div>`,
+              },
+            },
+          },
+        },
       });
       await output.build();
       assert.equal(transport["css"], ".a { color: red; }");
