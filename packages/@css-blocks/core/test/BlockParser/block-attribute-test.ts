@@ -1,7 +1,7 @@
 // import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { assertError } from "../util/assertError";
+import { assertMultipleErrors } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
 import { MockImportRegistry } from "../util/MockImportRegistry";
 
@@ -16,9 +16,9 @@ export class BlockAttributesTest extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `:scope[scope] { color: red; }`;
 
-    return assertError(
-      InvalidBlockSyntax,
-      `A state cannot be named 'scope'. (foo/bar/test-block.css:1:7)`,
-      this.process(filename, inputCSS, {importer: imports.importer()}));
+    return assertMultipleErrors([{
+        type: InvalidBlockSyntax,
+        message: `A state cannot be named 'scope'. (foo/bar/test-block.css:1:7)`,
+      }],                       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 }

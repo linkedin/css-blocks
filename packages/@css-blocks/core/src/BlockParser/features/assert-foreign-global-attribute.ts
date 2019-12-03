@@ -1,10 +1,10 @@
-import { postcss, postcssSelectorParser as selectorParser } from "opticss";
+import { ParsedSelector, postcss, postcssSelectorParser as selectorParser } from "opticss";
 
 import { ROOT_CLASS } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
-import { selectorSourceRange as range } from "../../SourceLocation";
+import { selectorSourceRange as range, sourceRange } from "../../SourceLocation";
 import { isAttributeNode, toAttrToken } from "../block-intermediates";
 
 /**
@@ -17,8 +17,13 @@ import { isAttributeNode, toAttrToken } from "../block-intermediates";
 export async function assertForeignGlobalAttribute(configuration: Configuration, root: postcss.Root, block: Block, file: string) {
 
   root.walkRules((rule) => {
-
-    let parsedSelectors = block.getParsedSelectors(rule);
+    let parsedSelectors: ParsedSelector[];
+    try {
+      parsedSelectors = block.getParsedSelectors(rule);
+    } catch (e) {
+      block.addError(new errors.InvalidBlockSyntax(e.message, sourceRange(configuration, block.stylesheet, file, rule)));
+      parsedSelectors =  [];
+    }
 
     parsedSelectors.forEach((iSel) => {
 
@@ -57,18 +62,17 @@ export async function assertForeignGlobalAttribute(configuration: Configuration,
           // If state referenced does not exist on external block, throw
           let otherAttr = otherBlock.rootClass.getAttributeValue(toAttrToken(node));
           if (!otherAttr) {
-            throw new errors.InvalidBlockSyntax(
+            block.addError(new errors.InvalidBlockSyntax(
               `No state ${node.toString()} found in : ${rule.selector}`,
-              range(configuration, block.stylesheet, file, rule, node));
+              range(configuration, block.stylesheet, file, rule, node)));
           }
 
           // If external state is not set as global, throw.
-          if (!otherAttr.isGlobal) {
+          else if (!otherAttr.isGlobal) {
             throw new errors.InvalidBlockSyntax(
               `${node.toString()} is not global: ${rule.selector}`,
               range(configuration, block.stylesheet, file, rule, node));
           }
-
         }
       });
     });

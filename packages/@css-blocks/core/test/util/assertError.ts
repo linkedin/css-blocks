@@ -40,6 +40,7 @@ export function assertMultipleErrors(errors: ErrorTypeMessage[], promise: postcs
 }
 
 export function assertMultipleErrorsWithoutPromise(multipleErrorsError: MultipleCssBlockErrors, errors: ErrorTypeMessage[]) {
+  console.log(multipleErrorsError);
   if (multipleErrorsError.errors.length !== errors.length) {
     console.log(multipleErrorsError.errors.length, errors.length);
     console.log(multipleErrorsError.errors);

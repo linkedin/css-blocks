@@ -104,6 +104,7 @@ export class BlockParser {
 
     // Return our fully constructed block.
     debug(` - Complete`);
+
     return block;
   }
 

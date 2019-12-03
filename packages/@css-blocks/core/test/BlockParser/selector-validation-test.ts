@@ -40,10 +40,13 @@ export class StraightJacket extends BEMProcessor {
     let filename = "foo/bar/test-state.css";
     let inputCSS = `:scope {color: #111;}
                     :scope[state:asdf=foo] { transform: scale(2); }`;
-    return assertError(
-      InvalidBlockSyntax,
-      'Unexpected ":" found. (foo/bar/test-state.css:2:21)',
-      this.process(filename, inputCSS));
+    return assertMultipleErrors([{
+        type: InvalidBlockSyntax,
+        message: 'Unexpected ":" found. (foo/bar/test-state.css:2:21)',
+      },                         {
+          type: InvalidBlockSyntax,
+          message: 'Unexpected ":" found. (foo/bar/test-state.css:2:21)'}],
+                                this.process(filename, inputCSS));
   }
 
   @test "cannot combine two different states"() {
@@ -142,30 +145,28 @@ export class StraightJacket extends BEMProcessor {
     let inputCSS = `div[foo] { display: block; }`;
     return assertMultipleErrors([{
       type: InvalidBlockSyntax,
-      message: "Tag name selectors are not allowed: div[foo] (foo/bar/illegal.css:1:1)"
+      message: "Tag name selectors are not allowed: div[foo] (foo/bar/illegal.css:1:1)",
     },
-    {
+                                 {
       type: InvalidBlockSyntax,
       message: "States without an explicit :scope or class selector are not supported: div[foo] (foo/bar/illegal.css:1:4)"},
-    {
+                                 {
       type: InvalidBlockSyntax,
-      message: "Missing block object in selector component 'div[foo]': div[foo] (foo/bar/illegal.css:1:1)"
-    }], this.process(filename, inputCSS));
+      message: "Missing block object in selector component 'div[foo]': div[foo] (foo/bar/illegal.css:1:1)",
+    }],                         this.process(filename, inputCSS));
   }
 
   @test "disallows stand-alone attribute selectors except for states."() {
     let filename = "foo/bar/illegal-class-combinator.css";
     let inputCSS = `:scope [href] { display: block; }`;
-    return assertMultipleErrors(
-      [{
+    return assertMultipleErrors([{
         type: InvalidBlockSyntax,
         message: "States without an explicit :scope or class selector are not supported: " +
           ":scope [href] (foo/bar/illegal-class-combinator.css:1:8)",
-      }, {
+      },                         {
         type: InvalidBlockSyntax,
         message: "Missing block object in selector component '[href]': :scope [href] (foo/bar/illegal-class-combinator.css:1:8)",
-      }],
-      this.process(filename, inputCSS));
+      }],                       this.process(filename, inputCSS));
   }
 
   // It's possible we can relax this constraint, but I want to see
@@ -178,7 +179,7 @@ export class StraightJacket extends BEMProcessor {
         type: InvalidBlockSyntax,
         message: "Cannot select attributes in the `html` namespace: :scope[html|href] " +
           "(foo/bar/illegal-class-combinator.css:1:7)"}],
-      this.process(filename, inputCSS));
+                                this.process(filename, inputCSS));
   }
 
   @test "disallows a state before a class for the same element."() {

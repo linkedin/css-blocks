@@ -42,9 +42,13 @@ function shouldBeParsedAsBlockSelector(rule: postcss.Rule): boolean {
  **/
 function getParsedSelectors(configuration: Configuration, block: Block, rule: postcss.Rule, file: string): ParsedSelector[] {
   let res;
-  try { res = block.getParsedSelectors(rule); }
-  catch (e) { throw new errors.InvalidBlockSyntax(e.message, sourceRange(configuration, block.stylesheet, file, rule)); }
-  return res;
+  try {
+    res =  block.getParsedSelectors(rule);
+  }
+  catch (e) {
+    block.addError(new errors.InvalidBlockSyntax(e.message, sourceRange(configuration, block.stylesheet, file, rule)));
+  }
+  return res || [];
 }
 
 export async function constructBlock(configuration: Configuration, root: postcss.Root, block: Block, file: string): Promise<Block> {
@@ -114,10 +118,10 @@ function addStyleRules(configuration: Configuration, block: Block, rule: postcss
     decl.value.split(/\s+/).map(alias => {
       let cleanedAlias = stripQuotes(alias);
       if (!CLASS_NAME_IDENT.test(cleanedAlias)) {
-        throw new errors.InvalidBlockSyntax(
+        block.addError(new errors.InvalidBlockSyntax(
           `Illegal block-alias. "${alias}" is not a legal CSS identifier.`,
           sourceRange(configuration, block.stylesheet, file, rule),
-        );
+        ));
       }
       aliases.add(cleanedAlias);
     });
@@ -297,10 +301,10 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
           };
         } else {
           if (found.blockType === BlockType.class || found.blockType === BlockType.classAttribute) {
-            throw new errors.InvalidBlockSyntax(
+            block.addError(new errors.InvalidBlockSyntax(
               `${n} cannot be on the same element as ${found.node}: ${rule.selector}`,
               range(configuration, block.stylesheet, file, rule, sel.nodes[0]),
-            );
+            ));
           }
         }
       }
@@ -316,10 +320,10 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
           ));
         }
         if (n.attribute === "scope") {
-          throw new errors.InvalidBlockSyntax(
+          block.addError(new errors.InvalidBlockSyntax(
             `A state cannot be named 'scope'.`,
             range(configuration, block.stylesheet, file, rule, n),
-          );
+          ));
         }
         if (!found) {
           block.addError(new errors.InvalidBlockSyntax(
@@ -330,14 +334,15 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
           found = { node: n, blockType: BlockType.classAttribute };
         } else if (found.blockType === BlockType.root || found.blockType === BlockType.attribute) {
           if (n.namespace === true) {
-            throw new errors.InvalidBlockSyntax(
+            block.addError(new errors.InvalidBlockSyntax(
               `The "any namespace" selector is not supported: ${rule.selector}`,
               range(configuration, block.stylesheet, file, rule, n),
-            );
+            ));
+          } else {
+            // XXX this is where we drop the ref to the other attribute nodes,
+            // XXX potentially causing the interface to not be fully discovered
+            found = { node: n, blockType: BlockType.attribute, blockName: n.namespace };
           }
-          // XXX this is where we drop the ref to the other attribute nodes,
-          // XXX potentially causing the interface to not be fully discovered
-          found = { node: n, blockType: BlockType.attribute, blockName: n.namespace };
         }
       }
 
@@ -389,19 +394,20 @@ function assertBlockObject(configuration: Configuration, block: Block, sel: Comp
     }
     let external = block.getReferencedBlock(blockName);
     if (!external) {
-      throw new errors.InvalidBlockSyntax(`A block named "${blockName}" does not exist in this context.`,
-                                          range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
-    }
-    let globalStates = external.rootClass.allAttributeValues().filter((a) => a.isGlobal);
-    if (!globalStates.length) {
-      throw new errors.InvalidBlockSyntax(
-        `External Block '${blockName}' has no global states.`,
-        range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
-    }
-    if (result.blockType !== BlockType.attribute) {
-      throw new errors.InvalidBlockSyntax(
-        `Missing global state selector on external Block '${blockName}'. Did you mean one of: ${globalStates.map((s) => s.asSource()).join(" ")}`,
-        range(configuration, block.stylesheet, file, rule, sel.nodes[0]));
+      block.addError(new errors.InvalidBlockSyntax(`A block named "${blockName}" does not exist in this context.`,
+                                                   range(configuration, block.stylesheet, file, rule, sel.nodes[0])));
+    } else {
+      let globalStates = external.rootClass.allAttributeValues().filter((a) => a.isGlobal);
+      if (!globalStates.length) {
+        block.addError(new errors.InvalidBlockSyntax(
+          `External Block '${blockName}' has no global states.`,
+          range(configuration, block.stylesheet, file, rule, sel.nodes[0])));
+      }
+      if (result.blockType !== BlockType.attribute) {
+        block.addError(new errors.InvalidBlockSyntax(
+          `Missing global state selector on external Block '${blockName}'. Did you mean one of: ${globalStates.map((s) => s.asSource()).join(" ")}`,
+          range(configuration, block.stylesheet, file, rule, sel.nodes[0])));
+      }
     }
     return result;
   }

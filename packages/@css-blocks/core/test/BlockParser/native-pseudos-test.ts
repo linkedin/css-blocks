@@ -17,7 +17,7 @@ export class DisallowedPseudos extends BEMProcessor {
         message: "The :not() pseudoclass cannot be used: .another-class:not([foo])" +
           " (foo/bar/illegal-not-pseudoclass.css:2:35)",
       }],
-      this.process(filename, inputCSS));
+                                this.process(filename, inputCSS));
   }
 
   @test "disallows the :matches() pseudoclass."() {
@@ -28,7 +28,7 @@ export class DisallowedPseudos extends BEMProcessor {
         type: InvalidBlockSyntax,
         message: "The :matches() pseudoclass cannot be used: .another-class:matches([foo])" +
           " (foo/bar/illegal-not-pseudoclass.css:2:35)"}],
-      this.process(filename, inputCSS));
+                                this.process(filename, inputCSS));
   }
 
   @test "disallows pseudos not attached to a block object."() {
@@ -38,6 +38,6 @@ export class DisallowedPseudos extends BEMProcessor {
         type: InvalidBlockSyntax,
         message: "Missing block object in selector component ':hover': :scope :hover" +
           " (foo/bar/illegal-class-combinator.css:1:8)"}],
-      this.process(filename, inputCSS));
+                                this.process(filename, inputCSS));
   }
 }

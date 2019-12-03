@@ -77,7 +77,8 @@ export class BlockFactory {
    * @returns The Block object promise.
    */
   parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    // this function is referenced only in tests. Use parseSync if we need to catch errors
+    // this function is referenced only in tests. Use parseSync if we need to
+    // catch errors
     return this.promises[identifier] = this.parser.parse(root, identifier, name);
   }
 
