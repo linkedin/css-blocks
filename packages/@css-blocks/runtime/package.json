@@ -37,5 +37,9 @@
   },
   "devDependencies": {
     "@css-blocks/code-style": "^0.24.0"
+  },
+  "volta": {
+    "node": "12.2.0",
+    "yarn": "1.21.0"
   }
 }

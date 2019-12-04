@@ -42,5 +42,9 @@
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
   },
-  "engineStrict": true
+  "engineStrict": true,
+  "volta": {
+    "node": "12.2.0",
+    "yarn": "1.21.0"
+  }
 }

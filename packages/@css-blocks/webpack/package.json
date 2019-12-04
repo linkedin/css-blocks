@@ -69,5 +69,9 @@
     "source-map": "^0.7.3",
     "tapable": "^0.2.5",
     "webpack-sources": "^1.0.1"
+  },
+  "volta": {
+    "node": "12.2.0",
+    "yarn": "1.21.0"
   }
 }

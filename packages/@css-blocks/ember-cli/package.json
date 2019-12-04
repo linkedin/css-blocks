@@ -78,5 +78,9 @@
       "tests/dummy/lib/in-repo-engine",
       "tests/dummy/lib/in-repo-lazy-engine"
     ]
+  },
+  "volta": {
+    "node": "12.2.0",
+    "yarn": "1.21.0"
   }
 }

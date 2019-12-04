@@ -53,5 +53,9 @@
     "opticss": "^0.6.3",
     "symlink-or-copy": "^1.2.0",
     "walk-sync": "^2.0.0"
+  },
+  "volta": {
+    "node": "12.2.0",
+    "yarn": "1.21.0"
   }
 }

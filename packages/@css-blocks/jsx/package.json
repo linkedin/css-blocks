@@ -63,5 +63,9 @@
     "minimatch": "^3.0.4",
     "object.values": "^1.0.4",
     "opticss": "^0.6.3"
+  },
+  "volta": {
+    "node": "12.2.0",
+    "yarn": "1.21.0"
   }
 }
