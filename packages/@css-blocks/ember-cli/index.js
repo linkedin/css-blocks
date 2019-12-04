@@ -1,5 +1,6 @@
 'use strict';
 const path = require("path");
+const process = require("process");
 
 const { CSSBlocksAggregate, CSSBlocksAnalyze, Transport } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
@@ -294,6 +295,7 @@ module.exports = {
   },
 
   optionsForCacheInvalidation() {
+    let pid = process.pid; // Because of the per-process randomization of css block names.
     let aliases = this._options.aliases;
     let analysisOpts = this._options.analysisOpts;
     let optimization = this._options.optimization;
@@ -307,6 +309,7 @@ module.exports = {
     }
 
     return {
+      pid,
       aliases,
       analysisOpts,
       optimization,
