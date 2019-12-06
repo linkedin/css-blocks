@@ -1,12 +1,13 @@
 'use strict';
 const path = require("path");
-const process = require("process");
 
 const { CSSBlocksAggregate, CSSBlocksAnalyze, Transport } = require("@css-blocks/broccoli");
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
 const { NodeJsImporter, BlockFactory } = require("@css-blocks/core");
+const config = require('@css-blocks/config');
 
 const BroccoliConcat = require("broccoli-concat");
+const BroccoliFunnel = require("broccoli-funnel");
 const BroccoliMerge = require("broccoli-merge-trees");
 
 const debugGenerator = require("debug");
@@ -142,6 +143,8 @@ module.exports = {
     // Fetch and validate user-provided options.
     let options = this._options = this.getOptions(env);
 
+    let isApp = env.app === parent;
+
     // If the consuming app has explicitly disabled CSS Blocks, exit.
     if (options.disabled) { return; }
 
@@ -153,7 +156,7 @@ module.exports = {
     // the top level addon. `app.import` is not a thing in Glimmer.
     // TODO: Pull in as CJS so we don't need to build @css-blocks/glimmer to CJS *and* AMD.
     //       Blocked by: https://github.com/rwjblue/ember-cli-cjs-transform/issues/72
-    if (env.isEmber && env.app === parent) {
+    if (env.isEmber && isApp) {
       this.outputFile = env.app.options.outputPaths.app.css.app.slice(1);
 
       env.app.import('node_modules/@css-blocks/glimmer/dist/amd/src/helpers/classnames.js', {
@@ -170,12 +173,18 @@ module.exports = {
     // TODO: Would like to get rid of this, is now only used in `this.astPlugin`.
     this.isEmber = env.isEmber;
 
-    // Addons sacrifice the ability to deliver styles in any other way when they
-    // opt-in to CSS Blocks. This is in part because of a bug(?) in Ember CLI
-    // where the Styles tree is automagically included in vendor.css, without
-    // respecting CSS files pruned out during the `treeForAddon` hook.
-    // TODO: Fix that. https://github.com/ember-cli/ember-cli/blob/18af95f93f224961ee4f4a35af461683059b194f/lib/models/addon.js#L856
-    parent.treeForAddonStyles = () => undefined;
+    let origTreeForAddonStyles = parent.treeForAddonStyles || ((tree) => tree);
+    parent.treeForAddonStyles = (tree) => origTreeForAddonStyles(withoutCssBlockFiles(tree));
+
+    let origTreeForAppStyles = parent.treeForAppStyles || ((tree) => tree);
+    parent.treeForAppStyles = (tree) => origTreeForAppStyles(withoutCssBlockFiles(tree));
+
+    // Remove all CSS Block files before preprocessing occurs. We assume the
+    // preprocessing they're doing is for any non-css-block css files they might
+    // have. There is a CSS Blocks configuration for adding css preprocessing
+    // before css blocks parsing occurs.
+    let origPreprocessTree = parent.preprocessTree || ((type, tree) => tree);
+    parent.preprocessTree = (type, tree) => origPreprocessTree(type, type === "css" ? withoutCssBlockFiles(tree) : tree);
 
     // Analyze all templates and block files from `/app` in addons.
     parent.treeForApp = this.genTreeWrapper(env, options, parent.treeForApp);
@@ -359,3 +368,10 @@ module.exports = {
     };
   }
 };
+
+function withoutCssBlockFiles(tree) {
+  if (!tree) return tree;
+  return BroccoliFunnel(tree, {
+    exclude: ["**/*.block.{css,scss,sass,less,styl}"]
+  });
+}
