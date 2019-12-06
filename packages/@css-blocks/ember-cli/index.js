@@ -268,16 +268,14 @@ module.exports = {
     // Get CSS Blocks options provided by the application, if present.
     const options = app.options["css-blocks"]
       ? app.options["css-blocks"] // Do not clone! Contains non-json-safe data.
-      : {
-        aliases: {},
-        parserOpts: {},
-        analysisOpts: {},
-        optimization: {},
-      };
+      : {};
     options.aliases      || (options.aliases = {});
     options.analysisOpts || (options.analysisOpts = {});
     options.optimization || (options.optimization = {});
-    options.parserOpts   || (options.parserOpts = {});
+
+    if (!options.parserOpts) {
+      options.parserOpts = config.search(rootDir) || {};
+    }
 
     // Use the node importer by default.
     options.parserOpts.importer = options.parserOpts.importer || new NodeJsImporter(options.aliases);
@@ -286,7 +284,9 @@ module.exports = {
     options.optimization.enabled = false;
 
     // Update parserOpts to include the absolute path to our application code directory.
-    options.parserOpts.rootDir = rootDir;
+    if (!options.parserOpts.rootDir) {
+      options.parserOpts.rootDir = rootDir;
+    }
     options.parserOpts.outputMode = "BEM_UNIQUE";
 
 
