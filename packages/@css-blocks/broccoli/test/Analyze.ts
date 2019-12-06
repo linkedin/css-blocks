@@ -2,7 +2,6 @@ import { BlockFactory } from "@css-blocks/core";
 import { GlimmerAnalyzer } from "@css-blocks/glimmer";
 import * as assert from "assert";
 import { TempDir, createBuilder, createTempDir } from "broccoli-test-helper";
-import * as fs from "fs";
 import * as FSTree from "fs-tree-diff";
 import * as walkSync from "walk-sync";
 
@@ -80,8 +79,6 @@ describe("Broccoli Analyze Plugin Test", function () {
       });
 
       // Modifications to block files trigger build but result in no output tree changes.
-      // Accidental modification of output directory does not make the plugin explode.
-      fs.unlinkSync(output.path("src/ui/components/Chrisrng/template.hbs"));
       input.write({
         src: {
           ui: {

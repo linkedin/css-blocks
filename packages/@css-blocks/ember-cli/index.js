@@ -196,7 +196,15 @@ module.exports = {
     // Analyze all templates and block files from `/src` in Glimmer apps.
     if (parent.trees) {
       let treeName = env.isEmber ? "app" : "src";
-      parent.trees[treeName] = this.genTreeWrapper(env, options)(parent.trees[treeName]);
+      let tree = parent.trees[treeName];
+      if (!env.isEmber) {
+        // Glimmer apps use the glimmer dependency analyzer which expects to find
+        // the package.json file for the project in the tree that also includes the app's
+        // src directory
+        let packageJsonTree = BroccoliFunnel(env.rootDir, {include: ["package.json"]});
+        tree = BroccoliMerge([tree, packageJsonTree]);
+      }
+      parent.trees[treeName] = this.genTreeWrapper(env, options)(tree);
     }
 
   },
@@ -304,7 +312,6 @@ module.exports = {
   },
 
   optionsForCacheInvalidation() {
-    let pid = process.pid; // Because of the per-process randomization of css block names.
     let aliases = this._options.aliases;
     let analysisOpts = this._options.analysisOpts;
     let optimization = this._options.optimization;
@@ -318,7 +325,6 @@ module.exports = {
     }
 
     return {
-      pid,
       aliases,
       analysisOpts,
       optimization,

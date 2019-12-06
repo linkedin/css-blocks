@@ -82,6 +82,8 @@ export class Resolver {
    * @return The DependencyAnalyzer, or undefined.
    */
   private dependencyAnalyzerFor(base: string): DependencyAnalyzer | undefined {
+    DEBUG("Base directory for dependency analysis is %s", base);
+
     if (!this.moduleConfig) { return undefined; }
     if (this.depAnalyzers.has(base)) {
       return this.depAnalyzers.get(base)!;

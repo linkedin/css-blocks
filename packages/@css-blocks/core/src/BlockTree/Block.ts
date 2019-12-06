@@ -1,5 +1,6 @@
 import { MultiMap, ObjectDictionary } from "@opticss/util";
 import * as crypto from "crypto";
+import * as debugGenerator from "debug";
 import {
   CompoundSelector,
   ParsedSelector,
@@ -7,6 +8,7 @@ import {
   postcss,
   postcssSelectorParser as selectorParser,
 } from "opticss";
+import * as process from "process";
 
 import { isAttributeNode, isClassNode } from "../BlockParser";
 import { isRootNode, toAttrToken } from "../BlockParser";
@@ -20,22 +22,24 @@ import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";
 import { Styles } from "./Styles";
 
-// Random seed for `get_guid`. Consistent for life of process.
-const RAND_SEED = Math.floor(Math.random() * 1000);
+const DEBUG = debugGenerator("css-blocks:caching");
 
 /**
- * Generates a 5 digit, process-wide globally unique
- * identifier from a given input identifier. This
- * generated identifier hash will remain consistent
- * for the life of the process that spawned it.
- * @prop  identifier  string  Input Block identifier.
+ * Generates a 5 digit, unique identifier from a given input identifier. This
+ * generated identifier hash will remain consistent for the tuple of (machine,
+ * user, css blocks installation location).
+ * @param  identifier Input Block identifier.
  * @returns This Block's guid hash.
  */
 function gen_guid(identifier: string): string {
-  return crypto.createHash("md5")
-    .update(identifier + RAND_SEED)
+  let hash = crypto.createHash("md5")
+    .update(process.getuid().toString())
+    .update(__filename)
+    .update(identifier)
     .digest("hex")
     .slice(0, 5);
+  DEBUG("guid is %s for %s", hash, identifier);
+  return hash;
 }
 
 export class Block

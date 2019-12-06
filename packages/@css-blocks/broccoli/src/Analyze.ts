@@ -1,15 +1,16 @@
 import { Analyzer, BlockCompiler, StyleMapping } from "@css-blocks/core";
 import { TemplateTypes } from "@opticss/template-api";
 import * as debugGenerator from "debug";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as FSTree from "fs-tree-diff";
 import * as glob from "glob";
+import * as minimatch from "minimatch";
 import { OptiCSSOptions, Optimizer, postcss } from "opticss";
 import * as path from "path";
 import * as walkSync from "walk-sync";
 
 import { Transport } from "./Transport";
-import { BroccoliPlugin, symlinkOrCopy } from "./utils";
+import { BroccoliPlugin } from "./utils";
 
 const debug = debugGenerator("css-blocks:broccoli");
 
@@ -32,11 +33,9 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
   private analyzer: Analyzer<keyof TemplateTypes>;
   private entries: string[];
   private output: string;
-  private root: string;
   private transport: Transport;
   private optimizationOptions: Partial<OptiCSSOptions>;
   private previousInput: FSTree = new FSTree();
-  private previousOutput: FSTree = new FSTree();
 
   /**
    * Initialize this new instance with the app tree, transport, and analysis options.
@@ -55,7 +54,6 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     this.output = options.output || "css-blocks.css";
     this.optimizationOptions = options.optimization || {};
     this.analyzer = options.analyzer;
-    this.root = options.root || process.cwd();
     this.transport.css = this.transport.css ? this.transport.css : "";
   }
 
@@ -63,40 +61,45 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
    * Re-run the broccoli build over supplied inputs.
    */
   async build() {
-    let input = this.inputPaths[0];
+    // We currently rely on the fact that the input path is a source directory
+    // and not a temp directory from a previous build step.
+    // When the input directory is a temp directory, the block guid
+    // becomes unstable across brocolli build processes which can cause
+    // persistent cache incoherence within the templates.
+    let input = path.resolve(this.inputPaths[0]);
     let output = this.outputPath;
     let options = this.analyzer.cssBlocksOptions;
     let blockCompiler = new BlockCompiler(postcss, options);
     let optimizer = new Optimizer(this.optimizationOptions, this.analyzer.optimizationOptions);
 
+    let isBlockFile = minimatch.makeRe("**/*.block.*");
+
     // Test if anything has changed since last time. If not, skip all analysis work.
     let newFsTree = FSTree.fromEntries(walkSync.entries(input));
     let diff = this.previousInput.calculatePatch(newFsTree);
+    this.previousInput = newFsTree;
     if (!diff.length) { return; }
 
-    // Save the current state of our output dir for future diffs.
-    this.previousOutput = FSTree.fromEntries(walkSync.entries(output));
-    FSTree.applyPatch(input, output, this.previousOutput.calculatePatch(newFsTree));
-    this.previousInput = newFsTree;
+    // Get all the operations for files that aren't related to CSS Block files
+    // So they can be performed on the output directory.
+    let nonBlockFileChanges = new Array<FSTree.Operation>();
+    for (let op of diff) {
+      let entry = op[2];
+      if (entry && entry.relativePath.match(isBlockFile)) {
+        continue;
+      }
+      nonBlockFileChanges.push(op);
+    }
+
+    FSTree.applyPatch(input, output, nonBlockFileChanges);
 
     // When no entry points are passed, we treat *every* template as an entry point.
-    this.entries = this.entries.length ? this.entries : glob.sync("**/*.hbs", { cwd: output });
-
-    // The glimmer-analyzer package tries to require() package.json
-    // in the root of the directory it is passed. We pass it our broccoli
-    // tree, so it needs to contain package.json too.
-    // TODO: Ideally this is configurable in glimmer-analyzer. We can
-    //       contribute that option back to the project. However,
-    //       other template integrations may want this available too...
-    let pjsonLink = path.join(output, "package.json");
-    if (!fs.existsSync(pjsonLink)) {
-      symlinkOrCopy(path.join(this.root, "package.json"), pjsonLink);
-    }
+    this.entries = this.entries.length ? this.entries : glob.sync("**/*.hbs", { cwd: input });
 
     // Oh hey look, we're analyzing.
     this.analyzer.reset();
     this.transport.reset();
-    await this.analyzer.analyze(output, this.entries);
+    await this.analyzer.analyze(input, this.entries);
 
     // Compile all Blocks and add them as sources to the Optimizer.
     // TODO: handle a sourcemap from compiling the block file via a preprocessor.
@@ -108,10 +111,14 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
         let filesystemPath = options.importer.filesystemPath(block.identifier, options);
         let filename = filesystemPath || options.importer.debugIdentifier(block.identifier, options);
 
-        // If this Block has a representation on disk, remove it from our output tree.
-        if (filesystemPath && !!~filesystemPath.indexOf(output)) {
-          debug(`Removing block file ${filesystemPath} from output.`);
-          if (fs.existsSync(filesystemPath)) { fs.removeSync(filesystemPath); }
+        if (filesystemPath && filesystemPath.startsWith(input)) {
+          let relativePath = path.relative(input, filesystemPath);
+          let outputPath = path.resolve(output, relativePath);
+          try {
+            fs.unlinkSync(outputPath);
+          } catch (e) {
+            // ignore
+          }
         }
 
         // Add the compiled Block file to the optimizer.
@@ -122,9 +129,6 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
         });
       }
     }
-
-    // Save the current state of our output dir for future diffs.
-    this.previousOutput = FSTree.fromEntries(walkSync.entries(output));
 
     // Add each Analysis to the Optimizer.
     this.analyzer.eachAnalysis((a) => optimizer.addAnalysis(a.forOptimizer(options)));

@@ -28,7 +28,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   constructor(
     blockFactory: BlockFactory,
     analysisOpts: AnalysisOptions,
-    moduleConfig: ResolverConfiguration,
+    moduleConfig?: ResolverConfiguration | undefined,
   ) {
     super(blockFactory, analysisOpts);
     this.blockFactory = blockFactory;
