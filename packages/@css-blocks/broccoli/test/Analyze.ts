@@ -148,6 +148,51 @@ describe("Broccoli Analyze Plugin Test", function () {
       await output.build();
       assert.equal(transport["css"], "Transport Not Modified On NO-OP");
       assert.deepEqual(output.changes(), {});
+
+      // Adding a template & block is safe
+      input.write({
+        src: {
+          ui: {
+            components: {
+              [entryComponentName]: {
+                "template.hbs": `<div><h1>Welcome to Glimmer!</h1><AnotherComponent /></div>`,
+              },
+              AnotherComponent: {
+                "template.hbs": `<div block:scope><h1 block:class="bar">Another Component</h1></div>`,
+                "stylesheet.css": `:scope { border: 1px solid black; } .bar { border-left: 0px; }`,
+              },
+            },
+          },
+        },
+      });
+      await output.build();
+      assert.equal(transport["css"],
+                   `.a { color: red; }\n` +
+                   `.b { border: 1px solid black; } .c { border-left: 0px; }`,
+                   "Addition of new component compiles it.");
+      assert.deepEqual(output.changes(), {
+        "src/ui/components/Chrisrng/template.hbs": "change",
+        "src/ui/components/AnotherComponent/": "mkdir",
+        "src/ui/components/AnotherComponent/template.hbs": "create",
+      });
+
+      // Removing a template is safe
+      input.write({
+        src: {
+          ui: {
+            components: {
+              AnotherComponent: {
+                "template.hbs": null,
+                "stylesheet.css": null,
+              },
+            },
+          },
+        },
+      });
+      await output.build();
+      assert.deepEqual(output.changes(),
+                       { "src/ui/components/AnotherComponent/template.hbs": "unlink" },
+                       "output directory is cleaned up.");
     });
   });
 });

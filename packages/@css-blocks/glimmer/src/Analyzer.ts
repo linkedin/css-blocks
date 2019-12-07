@@ -24,6 +24,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   blockFactory: BlockFactory;
   resolver: Resolver;
   debug: debugGenerator.IDebugger;
+  private moduleConfig: ResolverConfiguration | undefined;
 
   constructor(
     blockFactory: BlockFactory,
@@ -32,11 +33,13 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   ) {
     super(blockFactory, analysisOpts);
     this.blockFactory = blockFactory;
+    this.moduleConfig = moduleConfig;
     this.resolver = new Resolver(blockFactory.configuration, moduleConfig);
     this.debug = debugGenerator("css-blocks:glimmer:analyzer");
   }
 
   reset() {
+    this.resolver = new Resolver(this.blockFactory.configuration, this.moduleConfig);
     super.reset();
     this.blockFactory.reset();
   }
@@ -86,7 +89,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
       }
       return await this.blockFactory.getBlockFromPath(blockFile.path);
     } catch (e) {
-      console.error(e);
+      this.debug(e);
       this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
       return undefined;
     }

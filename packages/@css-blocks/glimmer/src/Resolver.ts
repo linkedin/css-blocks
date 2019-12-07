@@ -146,7 +146,9 @@ export class Resolver {
   recursiveDependenciesForTemplate(base: string, identifier: string): string[] {
     let depAnalyzer = this.dependencyAnalyzerFor(base);
     if (!depAnalyzer) { return [identifier]; }
-    return depAnalyzer.recursiveDependenciesForTemplate(identifier).components;
+    let results = depAnalyzer.recursiveDependenciesForTemplate(identifier).components;
+    DEBUG("Recursively discovered components: %s", results);
+    return results;
   }
 
   /**
