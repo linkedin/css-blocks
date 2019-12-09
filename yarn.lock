@@ -13734,10 +13734,10 @@ opn@^5.1.0, opn@^5.5.0:
   dependencies:
     is-wsl "^1.1.0"
 
-opticss@^0.6.2, opticss@^0.6.3:
-  version "0.6.3"
-  resolved "https://registry.npmjs.org/opticss/-/opticss-0.6.3.tgz#f6141e707cdb7b7b1619b3bbd576dc21cd3f0c59"
-  integrity sha512-CCcIh0wcOUo300XsioG7NYvI9Q3y7suhmENpXRw1e68us4tQgPjP22pEJnPET6EkO742a7/y+0qoSGzGA2lRlg==
+opticss@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.npmjs.org/opticss/-/opticss-0.7.0.tgz#631f540444975457ef077145374d4afaf64fb7e6"
+  integrity sha512-HXo8b3DrLLCX2GWI8m1UAJtXCbl2Ny4ZWdRMFy+2SL2JnuTApFnjaQiiQXitfrnwjNPB8UO9M5547Mm0Yik8aA==
   dependencies:
     "@opticss/element-analysis" "^0.6.2"
     "@opticss/template-api" "^0.6.3"
