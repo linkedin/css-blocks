@@ -47,7 +47,7 @@
     "@css-blocks/test-utils": "^0.24.0",
     "babel-core": "^6.25.0",
     "obj-str": "^1.0.0",
-    "preact": "^8.2.1"
+    "preact": "^10.1.0"
   },
   "peerDependencies": {
     "@css-blocks/runtime": "^0.23.0"
