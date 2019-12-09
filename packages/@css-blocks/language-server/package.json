@@ -17,7 +17,7 @@
     "@css-blocks/glimmer": "^1.0.0-alpha.0",
     "glob": "^7.1.6",
     "glob-escape": "^0.0.2",
-    "opticss": "^0.6.2",
+    "opticss": "^0.7.0",
     "vscode-languageserver": "^5.2.1",
     "vscode-uri": "^2.0.3"
   },
