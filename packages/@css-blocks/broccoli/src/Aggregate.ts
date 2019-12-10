@@ -50,10 +50,6 @@ export class CSSBlocksAggregate extends BroccoliPlugin {
     // Test if anything has changed since last time. If not, skip trying to update tree.
     let newFsTree = FSTree.fromEntries(walkSync.entries(input));
     let diff = this.previous.calculatePatch(newFsTree);
-    if (diff.length) {
-      this.previous = newFsTree;
-      FSTree.applyPatch(input, output, diff);
-    }
 
     // Auto-discover common preprocessor extensions.
     if (!this._out) {
@@ -69,6 +65,19 @@ export class CSSBlocksAggregate extends BroccoliPlugin {
       out.base = ""; // Needed for path.format to register ext change
       out.ext = prev.ext;
       this._out = path.format(out);
+    }
+
+    if (diff.length) {
+      this.previous = newFsTree;
+      let newDiff = new Array<FSTree.Operation>();
+      for (let change of diff) {
+        let file = change[1];
+        if (file === this._out) {
+          continue;
+        }
+        newDiff.push(change);
+      }
+      FSTree.applyPatch(input, output, newDiff);
     }
 
     let outHasChanged = !!diff.find((o) => o[1] === this._out);
