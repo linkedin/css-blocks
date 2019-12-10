@@ -11,6 +11,7 @@ import { ResolverConfiguration } from "@glimmer/resolver";
 import {  AST, preprocess, traverse } from "@glimmer/syntax";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as debugGenerator from "debug";
+import * as fs from "fs";
 
 import { ElementAnalyzer } from "./ElementAnalyzer";
 import { isEmberBuiltIn } from "./EmberBuiltins";
@@ -81,15 +82,14 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   }
 
   private async resolveBlock(dir: string, componentName: string): Promise<Block | undefined> {
-    try {
-      let blockFile = await this.resolver.stylesheetFor(dir, componentName);
-      if (!blockFile) {
-        this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
-        return undefined;
-      }
-      return await this.blockFactory.getBlockFromPath(blockFile.path);
-    } catch (e) {
-      this.debug(e);
+    let blockFile = await this.resolver.stylesheetFor(dir, componentName);
+    if (!blockFile) {
+      this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
+      return undefined;
+    }
+    if (fs.existsSync(blockFile.path)) {
+      return this.blockFactory.getBlockFromPath(blockFile.path);
+    } else {
       this.debug(`Analyzing ${componentName}. No block for component. Returning empty analysis.`);
       return undefined;
     }
