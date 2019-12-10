@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.0.0-alpha.1...v1.0.0-alpha.2) (2019-12-10)
+
+
+### Bug Fixes
+
+* A block compilation error would cause the template to be skipped. ([9f6c57d](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/9f6c57d5d775cfce99b7e58fea3554cbc6ee4890))
+* Handle missing block files in glimmer apps. ([4e984d4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/4e984d4f924906676aac807b9767ad3c2b0a6d35))
+
+
+
+
+
 # [1.0.0-alpha.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2019-12-10)
 
 

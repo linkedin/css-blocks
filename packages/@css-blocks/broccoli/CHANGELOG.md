@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.0.0-alpha.1...v1.0.0-alpha.2) (2019-12-10)
+
+
+### Bug Fixes
+
+* Handle aggregation filename collision. ([a501bcd](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/commit/a501bcdde8428e15b975e822ebc25cda6f32192d))
+
+
+
+
+
 # [1.0.0-alpha.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2019-12-10)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/glimmer",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Statically analyze & rewrite the css-block styles in Handlebars templates.",
   "main": "dist/cjs/src/index.js",
   "types": "dist/cjs/src/index.d.ts",

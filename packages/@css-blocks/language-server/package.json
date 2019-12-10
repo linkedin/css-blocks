@@ -1,7 +1,7 @@
 {
   "name": "@css-blocks/language-server",
   "description": "CSS Blocks Language Server",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "author": "LinkedIn Corporation",
   "license": "BSD-2-Clause",
   "engines": {
@@ -14,7 +14,7 @@
   "dependencies": {
     "@css-blocks/config": "^1.0.0-alpha.1",
     "@css-blocks/core": "^1.0.0-alpha.1",
-    "@css-blocks/glimmer": "^1.0.0-alpha.1",
+    "@css-blocks/glimmer": "^1.0.0-alpha.2",
     "glob": "^7.1.6",
     "glob-escape": "^0.0.2",
     "opticss": "^0.7.0",

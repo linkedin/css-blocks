@@ -5,7 +5,7 @@
   "description": "VSCode Extension for CSS Blocks + Ember",
   "author": "LinkedIn",
   "license": "BSD-2-Clause",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/LinkedIn/css-blocks"
@@ -35,7 +35,7 @@
     "package": "rm -rf node_modules && npm install --only=production && npx vsce package"
   },
   "dependencies": {
-    "@css-blocks/language-server": "^1.0.0-alpha.1",
+    "@css-blocks/language-server": "^1.0.0-alpha.2",
     "vscode-languageclient": "^5.2.1"
   },
   "devDependencies": {

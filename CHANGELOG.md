@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.2](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.1...v1.0.0-alpha.2) (2019-12-10)
+
+
+### Bug Fixes
+
+* A block compilation error would cause the template to be skipped. ([9f6c57d](https://github.com/linkedin/css-blocks/commit/9f6c57d5d775cfce99b7e58fea3554cbc6ee4890))
+* Add missing dependency. ([c4dc125](https://github.com/linkedin/css-blocks/commit/c4dc125792ce1fe382005d520276f8b5d355d7c0))
+* Handle aggregation filename collision. ([a501bcd](https://github.com/linkedin/css-blocks/commit/a501bcdde8428e15b975e822ebc25cda6f32192d))
+* Handle missing block files in glimmer apps. ([4e984d4](https://github.com/linkedin/css-blocks/commit/4e984d4f924906676aac807b9767ad3c2b0a6d35))
+
+
+
+
+
 # [1.0.0-alpha.1](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2019-12-10)
 
 
