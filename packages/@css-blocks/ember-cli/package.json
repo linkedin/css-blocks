@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@css-blocks/broccoli": "^1.0.0-alpha.1",
+    "@css-blocks/config": "^1.0.0-alpha.1",
     "@css-blocks/glimmer": "^1.0.0-alpha.1",
     "@glimmer/application-pipeline": "^0.15.0",
     "broccoli-concat": "^3.7.3",
