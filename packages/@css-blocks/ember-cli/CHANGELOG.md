@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2019-12-10)
+
+
+### Bug Fixes
+
+* Fix dev build performance issue. ([bf9bd06](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/bf9bd069e96bc47fbc6229f60625fe5ebbe82d28)), closes [#357](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/issues/357)
+* Must invalidate the handlebars template cache across processes. ([2afd213](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/2afd21332d0d0cb30a5203ec1c5a08fd3d746c2f))
+* Properly prune unprocessed CSS Block files from build output. ([076973d](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/076973dc8ae1f25dbd94163d03ab1bdd021932c3))
+
+
+### Features
+
+* Load the css-blocks configuration file. ([6dc7397](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/6dc7397102b95a1570015f32424940e27c208d16))
+
+
+
+
+
 # [1.0.0-alpha.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v0.24.0...v1.0.0-alpha.0) (2019-11-22)
 
 

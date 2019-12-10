@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/config",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "Standardized access to css-blocks configuration files.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -42,13 +42,13 @@
     "access": "public"
   },
   "devDependencies": {
-    "@css-blocks/code-style": "^0.24.0",
+    "@css-blocks/code-style": "^1.0.0-alpha.1",
     "@types/lodash.merge": "^4.6.6",
     "typescript": "~3.5",
     "watch": "^1.0.2"
   },
   "dependencies": {
-    "@css-blocks/core": "^1.0.0-alpha.0",
+    "@css-blocks/core": "^1.0.0-alpha.1",
     "cosmiconfig": "^6.0.0",
     "debug": "^4.1.1",
     "lodash.merge": "^4.6.2"

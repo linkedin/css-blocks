@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.1](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2019-12-10)
+
+
+### Bug Fixes
+
+* Discover new glimmer components when they are added while watching. ([f3386ac](https://github.com/linkedin/css-blocks/commit/f3386ac1ca2ce13142310f2ad7f7f1b81b3fee4c))
+* Fix dev build performance issue. ([bf9bd06](https://github.com/linkedin/css-blocks/commit/bf9bd069e96bc47fbc6229f60625fe5ebbe82d28)), closes [#357](https://github.com/linkedin/css-blocks/issues/357)
+* Must invalidate the handlebars template cache across processes. ([2afd213](https://github.com/linkedin/css-blocks/commit/2afd21332d0d0cb30a5203ec1c5a08fd3d746c2f))
+* Properly prune unprocessed CSS Block files from build output. ([076973d](https://github.com/linkedin/css-blocks/commit/076973dc8ae1f25dbd94163d03ab1bdd021932c3))
+* The API for queue.drain changed in async@3.0. ([cc3da9c](https://github.com/linkedin/css-blocks/commit/cc3da9cac6370d00b3489c88ea8756fe72631e82))
+* Work-around because node-sass doesn't run in a vscode context. ([b10f34e](https://github.com/linkedin/css-blocks/commit/b10f34e1fb3c8e1c147de3802fd5e04ede458d1c))
+
+
+### Features
+
+* Adds find references capability to language server. ([fbef5a8](https://github.com/linkedin/css-blocks/commit/fbef5a89df706f4d422dc23404ba437da34fa27c))
+* Load the css-blocks configuration file. ([6dc7397](https://github.com/linkedin/css-blocks/commit/6dc7397102b95a1570015f32424940e27c208d16))
+
+
+
+
+
 # [1.0.0-alpha.0](https://github.com/LinkedIn/css-blocks/compare/v0.24.0...v1.0.0-alpha.0) (2019-11-22)
 
 

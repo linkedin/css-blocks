@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2019-12-10)
+
+
+### Bug Fixes
+
+* Fix dev build performance issue. ([bf9bd06](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/bf9bd069e96bc47fbc6229f60625fe5ebbe82d28)), closes [#357](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/issues/357)
+* The API for queue.drain changed in async@3.0. ([cc3da9c](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/cc3da9cac6370d00b3489c88ea8756fe72631e82))
+
+
+
+
+
 # [1.0.0-alpha.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v0.24.0...v1.0.0-alpha.0) (2019-11-22)
 
 

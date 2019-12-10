@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/code-style/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2019-12-10)
+
+**Note:** Version bump only for package @css-blocks/code-style
+
+
+
+
+
 # [0.24.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/code-style/compare/v0.23.2...v0.24.0) (2019-09-16)
 
 **Note:** Version bump only for package @css-blocks/code-style

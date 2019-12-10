@@ -1,7 +1,7 @@
 {
   "name": "@css-blocks/test-utils",
   "private": true,
-  "version": "0.24.0",
+  "version": "1.0.0-alpha.1",
   "description": "Shared test utilities for @css-blocks/*.",
   "main": "dist/src",
   "scripts": {
@@ -36,7 +36,7 @@
   "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/build",
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/build#readme",
   "devDependencies": {
-    "@css-blocks/code-style": "^0.24.0",
+    "@css-blocks/code-style": "^1.0.0-alpha.1",
     "watch": "^1.0.2"
   },
   "engines": {

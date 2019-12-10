@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.1](https://github.com/LinkedIn/css-blocks/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2019-12-10)
+
+
+### Bug Fixes
+
+* Work-around because node-sass doesn't run in a vscode context. ([b10f34e](https://github.com/LinkedIn/css-blocks/commit/b10f34e1fb3c8e1c147de3802fd5e04ede458d1c))
+
+
+### Features
+
+* Adds find references capability to language server. ([fbef5a8](https://github.com/LinkedIn/css-blocks/commit/fbef5a89df706f4d422dc23404ba437da34fa27c))
+
+
+
+
+
 # [1.0.0-alpha.0](https://github.com/LinkedIn/css-blocks/compare/v0.24.0...v1.0.0-alpha.0) (2019-11-22)
 
 

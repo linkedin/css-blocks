@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2019-12-10)
+
+
+### Bug Fixes
+
+* Discover new glimmer components when they are added while watching. ([f3386ac](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/commit/f3386ac1ca2ce13142310f2ad7f7f1b81b3fee4c))
+* Fix dev build performance issue. ([bf9bd06](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/commit/bf9bd069e96bc47fbc6229f60625fe5ebbe82d28)), closes [#357](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/issues/357)
+
+
+
+
+
 # [1.0.0-alpha.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v0.24.0...v1.0.0-alpha.0) (2019-11-22)
 
 
