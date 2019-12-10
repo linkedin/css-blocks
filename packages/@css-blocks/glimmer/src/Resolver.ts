@@ -174,7 +174,8 @@ export class Resolver {
 
     // TODO: We need to automatically discover the file ending here – its not guaranteed to be a css file.
     identifier = depAnalyzer.project.resolver.identify(`stylesheet:${identifier}`);
-    let file: string = depAnalyzer.project.resolver.resolve(identifier);
+    if (!identifier) { return undefined; }
+    let file: string = depAnalyzer.project.resolver.retrieve(identifier);
     if (!file) { return undefined; }
     file = path.join(base, depAnalyzer.project.paths.src, file);
     if (!fs.existsSync(file)) { return undefined; }
