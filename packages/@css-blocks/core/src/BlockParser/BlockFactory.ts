@@ -106,7 +106,13 @@ export class BlockFactory {
   }
 
   getBlock(identifier: FileIdentifier): Promise<Block> {
-    if (this.promises[identifier]) { return this.promises[identifier]; }
+    if (this.promises[identifier]) {
+      return this.promises[identifier].catch(() => {
+        // If we got an error last time, try again.
+        // Also this makes sure that the error object gives a correct import stack trace.
+        return this._getBlockPromise(identifier);
+      });
+    }
     return this._getBlockPromise(identifier);
   }
 
