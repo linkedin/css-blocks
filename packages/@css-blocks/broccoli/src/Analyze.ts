@@ -32,7 +32,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
 
   private analyzer: Analyzer<keyof TemplateTypes>;
   private entries: string[];
-  private output: string;
+  private outputFileName: string;
   private transport: Transport;
   private optimizationOptions: Partial<OptiCSSOptions>;
   private previousInput: FSTree = new FSTree();
@@ -51,7 +51,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     });
     this.transport = transport;
     this.entries = options.entry.slice(0);
-    this.output = options.output || "css-blocks.css";
+    this.outputFileName = options.output || "css-blocks.css";
     this.optimizationOptions = options.optimization || {};
     this.analyzer = options.analyzer;
     this.transport.css = this.transport.css ? this.transport.css : "";
@@ -107,7 +107,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     for (let block of blocks) {
       if (block.stylesheet) {
         let root = blockCompiler.compile(block, block.stylesheet, this.analyzer);
-        let result = root.toResult({ to: this.output, map: { inline: false, annotation: false } });
+        let result = root.toResult({ to: this.outputFileName, map: { inline: false, annotation: false } });
         let filesystemPath = options.importer.filesystemPath(block.identifier, options);
         let filename = filesystemPath || options.importer.debugIdentifier(block.identifier, options);
 
@@ -134,7 +134,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     this.analyzer.eachAnalysis((a) => optimizer.addAnalysis(a.forOptimizer(options)));
 
     // Run optimization and compute StyleMapping.
-    let optimized = await optimizer.optimize(this.output);
+    let optimized = await optimizer.optimize(this.outputFileName);
     let styleMapping = new StyleMapping<keyof TemplateTypes>(optimized.styleMapping, blocks, options, this.analyzer.analyses());
 
     // Attach all computed data to our magic shared memory transport object...
