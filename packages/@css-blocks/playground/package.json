@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/playground",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "The CSS Blocks in-browser playground.",
   "directories": {
     "doc": "doc",
@@ -13,7 +13,7 @@
     "test:runner": "ember test"
   },
   "devDependencies": {
-    "@css-blocks/ember-cli": "^1.0.0-alpha.2",
+    "@css-blocks/ember-cli": "^1.0.0-alpha.3",
     "@glimmer/application": "^0.13.0",
     "@glimmer/application-pipeline": "^0.15.0",
     "@glimmer/blueprint": "~0.13.0",

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.0.0-alpha.2...v1.0.0-alpha.3) (2019-12-11)
+
+
+### Bug Fixes
+
+* Use the AST builders provided by to the plugin. ([f0d6387](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/f0d6387643d16a59003e43026ba7c0f622665407))
+
+
+
+
+
 # [1.0.0-alpha.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.0.0-alpha.1...v1.0.0-alpha.2) (2019-12-10)
 
 

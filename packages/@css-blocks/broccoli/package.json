@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/broccoli",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "CSS Blocks Broccoli Addon",
   "main": "dist/src/index.js",
   "author": "Adam Miller <ammiller@linkedin.com>",
@@ -31,14 +31,14 @@
   },
   "devDependencies": {
     "@css-blocks/code-style": "^1.0.0-alpha.1",
-    "@css-blocks/glimmer": "^1.0.0-alpha.2",
+    "@css-blocks/glimmer": "^1.0.0-alpha.3",
     "@types/fs-extra": "^8.0.0",
     "@types/glob": "^7.1.1",
     "broccoli-test-helper": "^2.0.0",
     "watch": "^1.0.2"
   },
   "dependencies": {
-    "@css-blocks/core": "^1.0.0-alpha.1",
+    "@css-blocks/core": "^1.0.0-alpha.3",
     "@glimmer/compiler": "^0.42.0",
     "@glimmer/syntax": "^0.42.0",
     "@opticss/template-api": "^0.6.3",

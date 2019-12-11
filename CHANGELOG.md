@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.3](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.2...v1.0.0-alpha.3) (2019-12-11)
+
+
+### Bug Fixes
+
+* Don't cache block errors in the factory. ([e931e63](https://github.com/linkedin/css-blocks/commit/e931e63cf8b33c448f6f6bfbc0aeafc0451166fd))
+* New release of broccoli-plugin added a conflicting property. ([c090750](https://github.com/linkedin/css-blocks/commit/c090750606e269e7f7afe4332671715117d319ee)), closes [#358](https://github.com/linkedin/css-blocks/issues/358)
+* Use the AST builders provided by to the plugin. ([f0d6387](https://github.com/linkedin/css-blocks/commit/f0d6387643d16a59003e43026ba7c0f622665407))
+
+
+
+
+
 # [1.0.0-alpha.2](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.1...v1.0.0-alpha.2) (2019-12-10)
 
 

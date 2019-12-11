@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.0.0-alpha.2...v1.0.0-alpha.3) (2019-12-11)
+
+
+### Bug Fixes
+
+* New release of broccoli-plugin added a conflicting property. ([c090750](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/commit/c090750606e269e7f7afe4332671715117d319ee)), closes [#358](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/issues/358)
+
+
+
+
+
 # [1.0.0-alpha.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.0.0-alpha.1...v1.0.0-alpha.2) (2019-12-10)
 
 
