@@ -146,7 +146,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
 
       // Set a dynamic classes AST node if needed.
       if (rewrite.dynamicClasses.length) {
-        dynamicValue = classnamesSubexpr(rewrite, element);
+        dynamicValue = classnamesSubexpr(this.syntax.builders, rewrite, element);
       }
 
       // If no classes, return.
@@ -184,7 +184,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
 
       // Set a dynamic classes AST node if needed.
       if (rewrite.dynamicClasses.length) {
-        dynamicValue = classnamesHelper(rewrite, element);
+        dynamicValue = classnamesHelper(this.syntax.builders, rewrite, element);
       }
 
       // If no classes, return.

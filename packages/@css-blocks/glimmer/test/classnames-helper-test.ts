@@ -1,5 +1,5 @@
 import {
-  Block, ElementAnalysis, IndexedClassMapping, Style,
+  Block, ElementAnalysis, IndexedClassMapping, IndexedClassRewrite, Style,
 } from "@css-blocks/core";
 import {
   AST,
@@ -15,14 +15,19 @@ import {
 import { expect } from "chai";
 import { inspect } from "util";
 
-import { classnamesHelper as helperGenerator } from "../src/ClassnamesHelperGenerator";
+import { classnamesHelper } from "../src/ClassnamesHelperGenerator";
 import {
   BooleanExpression as BooleanAST,
   StringExpression as StringAST,
+  TemplateElement,
   TernaryExpression as TernaryAST,
 } from "../src/ElementAnalyzer";
 import { CLASSNAMES_HELPER_NAME } from "../src/helpers";
 import { classnames } from "../src/helpers/classnames";
+
+function helperGenerator(rewrite: IndexedClassRewrite<Style>, element: TemplateElement) {
+  return classnamesHelper(builders, rewrite, element);
+}
 
 function run(ast: AST.MustacheStatement, helper?: (name: string, params: unknown[]) => unknown) {
   let args = ast.params.map(p => astToLiterals(p, helper));
