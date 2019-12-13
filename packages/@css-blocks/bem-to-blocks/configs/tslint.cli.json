@@ -1,0 +1,4 @@
+{
+  "$schema": "http://json.schemastore.org/tslint",
+  "extends": "@opticss/code-style/configs/tslint.cli.json"
+}

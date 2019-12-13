@@ -12,6 +12,9 @@ import {
   errorHasRange,
   hasMappedPosition,
 } from "@css-blocks/core";
+import {
+  convertBemToBlocks
+} from "@css-blocks/bem-to-blocks";
 import chalk = require("chalk");
 import fse = require("fs-extra");
 import path = require("path");
@@ -37,6 +40,14 @@ interface GlobalArgs {
 interface ValidateArgs extends GlobalArgs {
   blocks: unknown;
 }
+
+/**
+ * Typecast for result of command line argument parsing.
+ */
+interface ConvertArgs extends GlobalArgs {
+  files: unknown;
+}
+
 
 interface ValidateOptions {
   /**
@@ -111,6 +122,16 @@ export class CLI {
             alias,
             npm,
           });
+        },
+      )
+      .command<ConvertArgs>(
+        "convert <files..>",
+        "Convert BEM syntax to block file syntax.", (y) =>
+          y.positional("files", {
+            description: "files or directories containing css blocks.",
+          }),
+        (argv: ConvertArgs) => {
+          argv.promise = convertBemToBlocks(argv.files as Array<string>);
         },
       )
       .wrap(yargs.terminalWidth())

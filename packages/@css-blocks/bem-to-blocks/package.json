@@ -1,15 +1,22 @@
 {
-  "name": "@css-blocks/cli",
+  "name": "@css-blocks/bem-to-blocks",
+  "author": "Ramitha Chitloor",
+  "description": "Tools to convert BEM files to CSS block files.",
+  "license": "BSD-2-Clause",
   "version": "1.0.0-alpha.4",
-  "description": "Command line interface to css-blocks.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "files": [
     "bin",
     "dist",
     "src",
     "README.md",
     "CHANGELOG.md"
+  ],
+  "readme": "README.md",
+  "keywords": [
+    "tslint",
+    "tslint-plugin"
   ],
   "scripts": {
     "test": "yarn run test:runner",
@@ -25,44 +32,21 @@
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "watch": "watch 'yarn run test' src test --wait=1"
   },
-  "bin": {
-    "css-blocks": "./bin/css-blocks"
-  },
-  "keywords": [
-    "css-blocks",
-    "css",
-    "cli"
-  ],
-  "author": "Chris Eppstein <chris@eppsteins.net>",
-  "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/linkedin/css-blocks/issues"
   },
-  "engines": {
-    "node": "6.* || 8.* || >= 10.*"
-  },
-  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli",
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/@css-blocks/cli#readme",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/bem-to-blocks",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/bem-to-blocks#readme",
   "publishConfig": {
     "access": "public"
   },
-  "devDependencies": {
-    "@css-blocks/code-style": "^1.0.0-alpha.1",
-    "@types/fs-extra": "^8.0.0",
-    "@types/node-sass": "^4.11.0",
-    "@types/yargs": "^13.0.0",
-    "node-sass": "^4.12.0",
-    "typescript": "~3.5",
-    "watch": "^1.0.2"
-  },
   "dependencies": {
-    "@css-blocks/bem-to-blocks": "^1.0.0-alpha.4",
-    "@css-blocks/config": "^1.0.0-alpha.4",
-    "@css-blocks/core": "^1.0.0-alpha.4",
-    "chalk": "^2.4.2",
-    "debug": "^4.1.1",
-    "fs-extra": "^8.0.0",
-    "yargs": "^13.2.2"
+    "@css-blocks/code-style": "^1.0.0-alpha.1",
+    "opticss": "^0.7.0",
+    "postcss": "^7.0.14"
+  },
+  "engines": {
+    "node": "6.* || 8.* || >= 10.*"
   },
   "volta": {
     "node": "12.2.0",

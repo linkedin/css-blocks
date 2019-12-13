@@ -48,6 +48,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/config"
+		},
+		{
+			"path": "packages/@css-blocks/bem-to-blocks"
 		}
 	],
 	"settings": {
