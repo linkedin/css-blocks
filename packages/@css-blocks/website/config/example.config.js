@@ -15,7 +15,7 @@ const paths = {
 const jsxCompilationOptions = {
     baseDir: appDirectory,
     types: "typescript", // sets the parser mode to allow typescript, can also be "flow", or "none" if using es6.
-    aliases: {}, // pass any webpack aliases mapped to real directory so @block-reference can use them.
+    aliases: {}, // pass any webpack aliases mapped to real directory so @block and @export can use them.
     compilationOptions: cssBlocksConfig({ // options for css blocks
         rootDir: appDirectory,
     }),
