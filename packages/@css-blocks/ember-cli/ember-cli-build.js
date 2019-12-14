@@ -12,8 +12,6 @@ module.exports = function(defaults) {
         rewriteIdents: true,
         mergeDeclarations: true,
         removeUnusedStyles: true,
-        conflictResolution: true,
-        enabled: false //process.env.EMBER_ENV !== 'development',
       },
     }
   });

@@ -5,6 +5,7 @@ const { CSSBlocksAggregate, CSSBlocksAnalyze, Transport } = require("@css-blocks
 const { GlimmerAnalyzer, GlimmerRewriter } = require("@css-blocks/glimmer");
 const { NodeJsImporter, BlockFactory } = require("@css-blocks/core");
 const config = require('@css-blocks/config');
+const merge = require("lodash.merge");
 
 const BroccoliConcat = require("broccoli-concat");
 const BroccoliFunnel = require("broccoli-funnel");
@@ -30,6 +31,30 @@ const NOOP_PLUGIN = {
   visitor: {},
   cacheKey: () => { return 1; }
 };
+
+class IDAllocator {
+  constructor(startValue, defaultMaxCount) {
+    this.modules = new Map();
+    this.startValue = startValue;
+    this.defaultMaxCount = defaultMaxCount;
+  }
+  allocateRange(maxCount = undefined) {
+    maxCount = maxCount || this.defaultMaxCount;
+    let startValue = this.startValue;
+    this.startValue += maxCount;
+    return {startValue, maxCount};
+  }
+  getRangeForModuleAndType(mod, type) {
+    if (!this.modules.has(mod)) {
+      this.modules.set(mod, new Map());
+    }
+    let ranges = this.modules.get(mod);
+    if (!ranges.has(type)) {
+      ranges.set(type, this.allocateRange());
+    }
+    return ranges.get(type);
+  }
+}
 
 module.exports = {
   name: '@css-blocks/ember-cli',
@@ -187,10 +212,10 @@ module.exports = {
     parent.preprocessTree = (type, tree) => origPreprocessTree(type, type === "css" ? withoutCssBlockFiles(tree) : tree);
 
     // Analyze all templates and block files from `/app` in addons.
-    parent.treeForApp = this.genTreeWrapper(env, options, parent.treeForApp);
+    parent.treeForApp = this.genTreeWrapper(env, options, 'addonApp', parent.treeForApp);
 
     // Analyze all templates and block files from `/addon` in addons.
-    parent.treeForAddon = this.genTreeWrapper(env, options, parent.treeForAddon);
+    parent.treeForAddon = this.genTreeWrapper(env, options, 'addon', parent.treeForAddon);
 
     // Analyze all templates and block files from `/app` in Ember apps.
     // Analyze all templates and block files from `/src` in Glimmer apps.
@@ -204,7 +229,7 @@ module.exports = {
         let packageJsonTree = BroccoliFunnel(env.rootDir, {include: ["package.json"]});
         tree = BroccoliMerge([tree, packageJsonTree]);
       }
-      parent.trees[treeName] = this.genTreeWrapper(env, options)(tree);
+      parent.trees[treeName] = this.genTreeWrapper(env, options, 'app')(tree);
     }
 
   },
@@ -271,12 +296,14 @@ module.exports = {
 
   getOptions(env) {
 
-    let { isEmber, app, rootDir } = env;
+    let { isEmber, app, rootDir, modulePrefix } = env;
+
+    if (!app.options["css-blocks"]) {
+      app.options["css-blocks"] = {};
+    }
 
     // Get CSS Blocks options provided by the application, if present.
-    const options = app.options["css-blocks"]
-      ? app.options["css-blocks"] // Do not clone! Contains non-json-safe data.
-      : {};
+    const options = app.options["css-blocks"] // Do not clone! Contains non-json-safe data.
     options.aliases      || (options.aliases = {});
     options.analysisOpts || (options.analysisOpts = {});
     options.optimization || (options.optimization = {});
@@ -289,7 +316,9 @@ module.exports = {
     options.parserOpts.importer = options.parserOpts.importer || new NodeJsImporter(options.aliases);
 
     // Optimization is always disabled for now, until we get project-wide analysis working.
-    options.optimization.enabled = false;
+    if (typeof options.optimization.enabled === "undefined") {
+      options.optimization.enabled = app.isProduction;
+    }
 
     // Update parserOpts to include the absolute path to our application code directory.
     if (!options.parserOpts.rootDir) {
@@ -332,7 +361,7 @@ module.exports = {
     };
   },
 
-  genTreeWrapper(env, options, prev = NOOP) {
+  genTreeWrapper(env, options, type, prev = NOOP) {
     const { isEmber, app, parent, rootDir, moduleConfig, modulePrefix } = env;
 
     // In Ember, we treat every template as an entry point. `BroccoliCSSBlocks` will
@@ -347,11 +376,18 @@ module.exports = {
     let analyzer = new GlimmerAnalyzer(new BlockFactory(options.parserOpts), options.analysisOpts, moduleConfig);
     analyzer.transport = transport;
 
+    if (!this.idAllocator) {
+      let identifiers = options.optimization.identifiers || {};
+      this.idAllocator = new IDAllocator(identifiers.startValue || 1, identifiers.maxCount || 500);
+    }
+    let identifiers = this.idAllocator.getRangeForModuleAndType(this.parent, type);
+    let optimizationOptions = merge({}, options.optimization, {identifiers});
+    DEBUG(`Optimization is ${optimizationOptions.enabled ? 'enabled' : 'disabled'}. Identifier allocation for ${modulePrefix}/${type} is ${identifiers.startValue} - ${identifiers.startValue + identifiers.maxCount - 1}`);
     const broccoliOptions = {
       analyzer,
       entry,
       output: options.output,
-      optimization: options.optimization,
+      optimization: optimizationOptions,
       root: rootDir,
     };
 
