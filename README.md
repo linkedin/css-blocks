@@ -3,7 +3,7 @@
 </p>
 <h2 align="center">Blazing fast CSS for your Design Systems and App Components </h2>
 
-[![Build Status](https://travis-ci.com/linkedin/css-blocks.svg?token=StHPTowsdWydAGro7djA&branch=master)](https://travis-ci.com/linkedin/css-blocks) [![Greenkeeper badge](https://badges.greenkeeper.io/linkedin/css-blocks.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/linkedin/css-blocks.svg?branch=master)](https://travis-ci.com/linkedin/css-blocks) [![Greenkeeper badge](https://badges.greenkeeper.io/linkedin/css-blocks.svg)](https://greenkeeper.io/)
 
 ---
 
