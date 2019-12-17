@@ -210,6 +210,7 @@ export class ConflictResolver {
       }
 
       // Crawl up inheritance tree of the other block and attempt to resolve the conflict at each level.
+      // XXX Should this really abort when it finds the first conflict?
       let foundConflict = ConflictType.noConflict;
       do {
         foundConflict = this.resolveConflictWith(resolution.path, other, res);
@@ -244,7 +245,6 @@ export class ConflictResolver {
 
     // Something to consider: when resolving against a sub-block that has overridden a property, do we need
     // to include the base object selector(s) in the key selector as well?
-    const resolvedSelectors = new Set<string>();
     const query = new QueryKeySelector(other);
     const result = query.execute(root, other.block);
     let foundConflict: ConflictType = ConflictType.noConflict;
@@ -261,9 +261,8 @@ export class ConflictResolver {
 
         // avoid duplicate selector via permutation
         let newSelStr = newSelectors.join(",\n");
-        if (resolvedSelectors.has(newSelStr)) { continue; }
-        resolvedSelectors.add(newSelStr);
         let newRule = postcss.rule({ selector: newSelStr });
+        let newRuleContext = reproduceContext(s.rule, newRule);
 
         // For every declaration in the other ruleset,
         const remoteDecls: SimpleDecl[] = [];
@@ -311,7 +310,7 @@ export class ConflictResolver {
           let parent = decl.parent.parent;
           if (parent) {
             let rule = decl.parent as postcss.Rule;
-            parent.insertAfter(rule, newRule);
+            parent.insertAfter(rule, newRuleContext);
           }
         }
       }
@@ -439,4 +438,43 @@ export class ConflictResolver {
     let blockPath = this.config.importer.debugIdentifier(block.identifier, this.config);
     return sourceRange(this.config, block.stylesheet, blockPath, node);
   }
+}
+
+interface InstanceOf<T> {
+  constructor: { new (): T };
+}
+
+function shallowClone(node: InstanceOf<postcss.Container>) {
+  let cloned = new node.constructor();
+
+  for (let i in node) {
+    if (!node.hasOwnProperty(i)) continue;
+    let value = node[i];
+    let type = typeof value;
+
+    if (i === "parent" && type === "object") {
+      // skip it
+    } else if (i === "source") {
+      cloned[i] = value;
+    } else if (value instanceof Array) {
+      // skip it
+    } else if (type === "object" && value !== null) {
+      // skip it
+    } else {
+      cloned[i] = value;
+    }
+  }
+
+  return cloned;
+}
+
+function reproduceContext(hasContext: postcss.Node, needsContext: postcss.Node): postcss.Node {
+  if (!hasContext.parent || hasContext.parent.type === "root") {
+    return needsContext;
+  }
+  let parent = hasContext.parent;
+  // The typings for postcss don't model the nodes as classes so we have to cast through unknown.
+  let newParent = shallowClone(<InstanceOf<postcss.Container>><unknown>parent);
+  newParent.append(needsContext);
+  return reproduceContext(parent, newParent);
 }

@@ -430,6 +430,74 @@ export class BlockInheritance extends BEMProcessor {
     });
   }
 
+  @test "resolves block roots in media queries"() {
+    let { imports, config } = setupImporting();
+    imports.registerSource(
+      "grid.block.css",
+      `:scope {
+        width: 1128px;
+        box-sizing: content-box;
+        padding: 0 30px;
+        display: block;
+        margin: auto;
+        position: relative;
+      }
+      @media (max-width: 1208px) {
+        :scope {
+          display: inline-block;
+          width: calc(100vw - 20px);
+          box-sizing: border-box;
+        }
+      }
+      @media (max-width: 976px) {
+        :scope {
+          padding: 0 18px;
+        }
+      }
+      `,
+    );
+
+    let filename = "header.css";
+    let inputCSS = `
+      @block grid from "./grid.block.css";
+
+      :scope {
+        background: blue;
+      }
+
+      .content {
+        display: flex;
+        display: resolve("grid");
+        height: 100%;
+      }
+
+      .content[width="fixed"] {
+        composes: grid;
+      }
+
+      .content[width="full"] {
+        margin: resolve("grid");
+        margin: 0 24px;
+      }
+    `;
+
+    return this.process(filename, inputCSS, config).then((result) => {
+      imports.assertImported("grid.block.css");
+      assert.deepEqual(
+        result.css.toString(),
+        ".header { background: blue; }\n" +
+        ".header__content { display: flex; height: 100%; }\n" +
+        ".grid.header__content { display: block; }\n" +
+        "@media (max-width: 1208px) {\n" +
+        " .grid.header__content { display: inline-block; }\n" +
+        "}\n" +
+        ".header__content--width-fixed { }\n" +
+        ".header__content--width-full { margin: 0 24px; }\n" +
+        ".grid.header__content--width-full { margin: 0 24px; }\n",
+      );
+    });
+  }
+
   @test "resolves root states"() {
     let { imports, config } = setupImporting();
     imports.registerSource(

@@ -186,7 +186,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    *
    * @param optionalRoot The root class is optional on root-level
    *   Attributes. So when these attributes are being used in conjunction
-   *   with a Attributes, this value is set to true.
+   *   with attributes, this value is set to true.
    */
   public asSourceAttributes(optionalRoot = false): Attr[] {
     if (!this._sourceAttribute) {
