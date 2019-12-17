@@ -1,6 +1,9 @@
 module.exports = {
-  test_page: 'tests/index.html?hidepassed',
+  test_page: 'tests/index.html?hidepassed&nolint',
   disable_watching: true,
+  // only emit logs for failed tests
+  // https://github.com/testem/testem#tap-options
+  tap_quiet_logs: true,
   launch_in_ci: [
     'Chrome'
   ],
