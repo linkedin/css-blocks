@@ -211,7 +211,7 @@ interface NamespacedAttr {
   value?: string;
 }
 
-interface ItemAtCursor {
+export interface ItemAtCursor {
   attribute: BlockAttribute;
   siblingAttributes: ClassAttribute[];
 }

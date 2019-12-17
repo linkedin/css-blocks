@@ -59,9 +59,11 @@ export class ElementAnalyzer {
   }
 
   analyze(node: AnalyzableNodes, atRootElement: boolean): AttrRewriteMap {
-    return this._analyze(node, atRootElement, false);
+    // TODO: get rid of the boolean flag argument
+    return this._analyze(node, atRootElement, true);
   }
 
+  // TODO: replace this with analyze
   analyzeForRewrite(node: AnalyzableNodes, atRootElement: boolean): AttrRewriteMap {
     return this._analyze(node, atRootElement, true);
   }
