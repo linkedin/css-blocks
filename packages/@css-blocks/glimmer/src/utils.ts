@@ -35,3 +35,25 @@ export function cssBlockError(message: string, node: AST.Node, template: Templat
     end: node.loc.end,
   });
 }
+
+export function isStringLiteral(value: AST.Node | undefined): value is AST.StringLiteral {
+  return value !== undefined && value.type === "StringLiteral";
+}
+export function isConcatStatement(value: AST.Node | undefined): value is AST.ConcatStatement {
+  return !!value && value.type === "ConcatStatement";
+}
+export function isTextNode(value: AST.Node | undefined): value is AST.TextNode {
+  return !!value && value.type === "TextNode";
+}
+export function isBooleanLiteral(value: AST.Node | undefined): value is AST.BooleanLiteral {
+  return !!value && value.type === "BooleanLiteral";
+}
+export function isMustacheStatement(value: AST.Node | undefined): value is AST.MustacheStatement {
+  return !!value && value.type === "MustacheStatement";
+}
+export function isSubExpression(value: AST.Node | undefined): value is AST.SubExpression {
+  return !!value && value.type === "SubExpression";
+}
+export function isElementNode(value: AST.Node | undefined): value is AST.ElementNode {
+  return !!value && value.type === "ElementNode";
+}

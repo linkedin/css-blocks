@@ -775,6 +775,13 @@ describe("Stylesheet analysis", function () {
           dynamicAttributes: [],
           sourceLocation: { start: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 5, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
         },
+        g: {
+          tagName: "h2",
+          staticStyles: [],
+          dynamicClasses: [{ condition: true, whenTrue: [7] }],
+          dynamicAttributes: [],
+          sourceLocation: { start: { line: 6, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" }, end: { line: 6, column: 2, "filename": "template:/styled-app/components/with-dynamic-classes" } },
+        },
       });
     }).catch((error) => {
       console.error(error);

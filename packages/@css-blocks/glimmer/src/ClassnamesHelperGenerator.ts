@@ -41,6 +41,7 @@ import {
   TernaryExpression as TernaryAST,
 } from "./ElementAnalyzer";
 import { CLASSNAMES_HELPER_NAME, CONCAT_HELPER_NAME } from "./helpers";
+import { isMustacheStatement } from "./utils";
 
 const enum SourceExpression {
   ternary,
@@ -140,7 +141,11 @@ function constructSourceArgs(builders: Builders, rewrite: IndexedClassRewrite<an
 function constructTernary(builders: Builders, classes: DynamicClasses<TernaryAST>, rewrite: IndexedClassRewrite<Style>): AST.Expression[] {
   let expr = new Array<AST.Expression>();
   // The boolean expression
-  expr.push(classes.condition!);
+  if (isMustacheStatement(classes.condition!)) {
+    expr.push(moustacheToExpression(builders, classes.condition));
+  } else {
+    expr.push(classes.condition!);
+  }
   // The true styles
   if (isTrueCondition(classes)) {
     let trueClasses = resolveInheritance(classes.whenTrue, rewrite);

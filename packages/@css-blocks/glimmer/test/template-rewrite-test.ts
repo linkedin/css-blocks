@@ -93,6 +93,7 @@ describe("Template Rewriting", function() {
         <div class={{-css-blocks-classnames 1 2 0 isWorld 1 1 1 0 "d" 0 "b" 1}}>World</div>
         <div class={{-css-blocks-classnames 1 2 0 isWorld 1 0 1 1 "d" 0 "b" 1}}>World</div>
         <div class={{-css-blocks-classnames 1 1 0 isWorld 0 1 0 "b" 0}}>World</div>
+        <h2 class={{-css-blocks-classnames 1 1 0 isWorld 1 0 0 "e" 0}}>Dynamic Scope</h2>
       </div>
     `));
   });

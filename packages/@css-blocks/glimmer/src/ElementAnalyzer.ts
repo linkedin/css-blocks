@@ -14,11 +14,20 @@ import * as debugGenerator from "debug";
 import { GlimmerAnalysis } from "./Analyzer";
 import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
 import { ResolvedFile } from "./Template";
-import { cssBlockError } from "./utils";
+import {
+  cssBlockError,
+  isBooleanLiteral,
+  isConcatStatement,
+  isElementNode,
+  isMustacheStatement,
+  isStringLiteral,
+  isSubExpression,
+  isTextNode,
+} from "./utils";
 
 // Expressions may be null when ElementAnalyzer is used in the second pass analysis
 // to re-acquire analysis data for rewrites without storing AST nodes.
-export type TernaryExpression = AST.Expression | null;
+export type TernaryExpression = AST.Expression | AST.MustacheStatement | null;
 export type StringExpression = AST.MustacheStatement | AST.ConcatStatement | null;
 export type BooleanExpression = AST.Expression | AST.MustacheStatement;
 export type TemplateElement  = ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>;
@@ -309,6 +318,14 @@ export class ElementAnalyzer {
       if (value.value) {
         element.addStaticClass(block.rootClass);
       }
+    } else if (isMustacheStatement(value) || isSubExpression(value)) {
+      // We don't have a way to represent a simple boolean conditional for classes like we do for states.
+      // The rewrite might be slightly simpler if we add that.
+      element.addDynamicClasses({
+        condition: value,
+        whenTrue: [block.rootClass],
+        whenFalse: [],
+      });
     }
   }
 
@@ -391,28 +408,6 @@ export class ElementAnalyzer {
       throw cssBlockError(...errors[0]);
     }
   }
-}
-
-function isStringLiteral(value: AST.Node | undefined): value is AST.StringLiteral {
-  return value !== undefined && value.type === "StringLiteral";
-}
-function isConcatStatement(value: AST.Node | undefined): value is AST.ConcatStatement {
-  return !!value && value.type === "ConcatStatement";
-}
-function isTextNode(value: AST.Node | undefined): value is AST.TextNode {
-  return !!value && value.type === "TextNode";
-}
-function isBooleanLiteral(value: AST.Node | undefined): value is AST.BooleanLiteral {
-  return !!value && value.type === "BooleanLiteral";
-}
-function isMustacheStatement(value: AST.Node | undefined): value is AST.MustacheStatement {
-  return !!value && value.type === "MustacheStatement";
-}
-function isSubExpression(value: AST.Node | undefined): value is AST.SubExpression {
-  return !!value && value.type === "SubExpression";
-}
-function isElementNode(value: AST.Node | undefined): value is AST.ElementNode {
-  return !!value && value.type === "ElementNode";
 }
 
 function isStyleIfHelper(node: AST.MustacheStatement | AST.SubExpression): "style-if" | "style-unless" | undefined {
