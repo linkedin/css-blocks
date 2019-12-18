@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2019-12-18)
+
+
+### Bug Fixes
+
+* Conflict Resolutions with Media Queries. ([c189613](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/c1896131eb8844d098a5526d95f68fceb8ba584f)), closes [#372](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/issues/372)
+
+
+
+
+
 # [1.0.0-alpha.3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.0.0-alpha.2...v1.0.0-alpha.3) (2019-12-11)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2019-12-18)
+
+
+### Features
+
+* Enable optimization for production builds by default. ([8b2d595](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/8b2d59509cb80b5d107a27eba90b96b81a75ed4c))
+
+
+
+
+
 # [1.0.0-alpha.3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v1.0.0-alpha.2...v1.0.0-alpha.3) (2019-12-11)
 
 **Note:** Version bump only for package @css-blocks/ember-cli
