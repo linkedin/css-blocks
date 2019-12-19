@@ -1,4 +1,5 @@
 import * as fs from "fs-extra";
+import * as path from "path";
 import * as postcss from "postcss";
 import * as parser from "postcss-selector-parser";
 
@@ -20,7 +21,9 @@ export function convertBemToBlocks(files: Array<string>): Promise<void>[] {
       let output = postcss([bemToBlocksPlugin])
         .process(css, { from: file });
       // rewrite the file with the processed output
-      promises.push(fs.writeFile(file, output.toString()));
+      const parsedFilePath = path.parse(file);
+      const blockFilePath = Object.assign(parsedFilePath, {ext: `.block${parsedFilePath.ext}`, base: parsedFilePath.base.replace(parsedFilePath.ext, `.block${parsedFilePath.ext}`)} );
+      promises.push(fs.writeFile(path.format(blockFilePath), output.toString()));
     });
   });
   return promises;
@@ -116,7 +119,6 @@ export function constructBlocksMap(bemSelectorCache: BemSelectorMap): BemToBlock
   return resultMap;
 }
 
-
 /**
  * PostCSS plugin for transforming BEM to CSS blocks
  */
@@ -126,20 +128,24 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
   return (root, result) => {
     const bemSelectorCache: BemSelectorMap = new Map();
 
-
     const buildCache: parser.ProcessorFn = (selectors) => {
       selectors.walk((selector) => {
-          // only iterate through classes
-          if (parser.isClassName(selector)) {
+        // only iterate through classes
+        if (parser.isClassName(selector)) {
+          try {
             let bemSelector = new BemSelector(selector.value);
-            if (bemSelector) {
+            if (bemSelector.block) {
               // add it to the cache so it's available for the next pass
               bemSelectorCache.set(selector.value, bemSelector);
-            } else {
-              console.error(`${selector} does not comply with BEM standards. Consider a refactor`);
+            }
+          } catch (e) {
+            if (selector.parent) {
+              selector.parent.insertBefore(selector, parser.comment({value: `ERROR: ${e.message}`, spaces: {before: "/* ", after: " */\n"}}));
             }
           }
+        }
       });
+      return selectors.toString();
     };
 
     const rewriteSelectors: parser.ProcessorFn = (selectors) => {
@@ -173,15 +179,15 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
             if (blockClassName.state) {
               let newAttrNode = parser.attribute({
                 attribute: blockClassName.state,
-                quoteMark: null,
+                quoteMark: blockClassName.subState ? '"' : undefined,
                 operator: blockClassName.subState ? "=" : undefined,
                 value: blockClassName.subState,
-                raws: {},
+                raws: {value: blockClassName.subState ? `"${blockClassName.subState}"` : undefined},
               });
 
               // insert this new node after the current node
               if (selector.parent) {
-                selector.parent.insertAfter(selector, newAttrNode)
+                selector.parent.insertAfter(selector, newAttrNode);
               }
 
               // strip the selector in the end if we replaced it with a pseudo
@@ -198,7 +204,7 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
 
     // in this pass, we collect all the selectors
     root.walkRules(rule => {
-      parser(buildCache).processSync(rule.selector);
+      rule.selector = parser(buildCache).processSync(rule);
     });
 
     // convert selectors to block selectors
@@ -206,7 +212,6 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
 
     // rewrite into a CSS block
     root.walkRules(rule => {
-      // iterate through each rule
       rule.selector = parser(rewriteSelectors).processSync(rule.selector);
     });
 

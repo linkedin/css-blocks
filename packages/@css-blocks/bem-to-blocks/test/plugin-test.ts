@@ -95,8 +95,8 @@ describe("converts BEM to blocks", () => {
         .process(`.jobs-entry__image--size-big {color: blue}
         .jobs-entry__image--size-small {color: red}`);
 
-    assert.equal(output.toString(), `.image[size=big] {color: blue}
-        .image[size=small] {color: red}`);
+    assert.equal(output.toString(), `.image[size="big"] {color: blue}
+        .image[size="small"] {color: red}`);
   });
 
   it("replaces substates correctly when the modifier is on the block", async () => {
@@ -104,7 +104,14 @@ describe("converts BEM to blocks", () => {
         .process(`.jobs-entry--size-big {color: blue}
         .jobs-entry--size-small {color: red}`);
 
-    assert.equal(output.toString(), `:scope[size=big] {color: blue}
-        :scope[size=small] {color: red}`);
+    assert.equal(output.toString(), `:scope[size="big"] {color: blue}
+        :scope[size="small"] {color: red}`);
+  });
+
+  it("adds a comment if there was an error during processing", async() => {
+    let output = postcss([bemToBlocksPlugin])
+        .process(`.CLASSINCAPSTHATISNOTBEM {color: blue}`);
+
+    assert.equal(output.toString(), `/* ERROR: CLASSINCAPSTHATISNOTBEM does not have a block */\n.CLASSINCAPSTHATISNOTBEM {color: blue}`);
   });
 });
