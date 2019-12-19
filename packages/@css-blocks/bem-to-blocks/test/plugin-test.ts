@@ -98,4 +98,13 @@ describe("converts BEM to blocks", () => {
     assert.equal(output.toString(), `.image[size=big] {color: blue}
         .image[size=small] {color: red}`);
   });
+
+  it("replaces substates correctly when the modifier is on the block", async () => {
+    let output = postcss([bemToBlocksPlugin])
+        .process(`.jobs-entry--size-big {color: blue}
+        .jobs-entry--size-small {color: red}`);
+
+    assert.equal(output.toString(), `:scope[size=big] {color: blue}
+        :scope[size=small] {color: red}`);
+  });
 });

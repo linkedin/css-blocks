@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
-import { ParsedSelector, SelectorCache } from "opticss";
 import * as postcss from "postcss";
+import * as parser from "postcss-selector-parser";
 
 import { BemSelector, BlockClassSelector } from "./interface";
 import { findLcs } from "./utils";
@@ -116,6 +116,7 @@ export function constructBlocksMap(bemSelectorCache: BemSelectorMap): BemToBlock
   return resultMap;
 }
 
+
 /**
  * PostCSS plugin for transforming BEM to CSS blocks
  */
@@ -123,25 +124,81 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
   options = options || {};
 
   return (root, result) => {
-    const cache = new SelectorCache();
     const bemSelectorCache: BemSelectorMap = new Map();
+
+
+    const buildCache: parser.ProcessorFn = (selectors) => {
+      selectors.walk((selector) => {
+          // only iterate through classes
+          if (parser.isClassName(selector)) {
+            let bemSelector = new BemSelector(selector.value);
+            if (bemSelector) {
+              // add it to the cache so it's available for the next pass
+              bemSelectorCache.set(selector.value, bemSelector);
+            } else {
+              console.error(`${selector} does not comply with BEM standards. Consider a refactor`);
+            }
+          }
+      });
+    };
+
+    const rewriteSelectors: parser.ProcessorFn = (selectors) => {
+      selectors.walk((selector) => {
+        // we only need to modify class names. We can ignore everything else,
+        // like existing attributes, pseudo selectors, comments, imports,
+        // exports, etc
+        if (parser.isClassName(selector)) {
+
+          let bemSelector = bemSelectorCache.get(selector.value);
+          // get the block class from the bemSelector
+          let blockClassName = bemSelector && bemToBlockClassMap.get(bemSelector);
+
+          // if the selector was previously cached
+          if (blockClassName) {
+            let stripSelector = false;
+
+            if (blockClassName.class) {
+              selector.value =  blockClassName.class;
+            } else {
+              //prepend a :scope node before this and remove this node later
+              let newScopeNode = parser.pseudo({
+                value: ":scope",
+              });
+              if (selector.parent) {
+                selector.parent.insertBefore(selector, newScopeNode);
+              }
+              stripSelector = true;
+            }
+
+            if (blockClassName.state) {
+              let newAttrNode = parser.attribute({
+                attribute: blockClassName.state,
+                quoteMark: null,
+                operator: blockClassName.subState ? "=" : undefined,
+                value: blockClassName.subState,
+                raws: {},
+              });
+
+              // insert this new node after the current node
+              if (selector.parent) {
+                selector.parent.insertAfter(selector, newAttrNode)
+              }
+
+              // strip the selector in the end if we replaced it with a pseudo
+              // class
+              if (stripSelector) {
+                selector.remove();
+              }
+            }
+          }
+        }
+      });
+      return selectors.toString();
+    };
 
     // in this pass, we collect all the selectors
     root.walkRules(rule => {
-      let parsedSelList = cache.getParsedSelectors(rule);
-      parsedSelList.forEach(parsedSel => {
-        parsedSel.eachSelectorNode(node => {
-          if (node.value) {
-            let bemSelector = new BemSelector(node.value);
-            if (bemSelector) {
-              // add it to the cache so it's available for the next pass
-              bemSelectorCache.set(node.value, bemSelector);
-            } else {
-              console.error(`${parsedSel} does not comply with BEM standards. Consider a refactor`);
-            }
-          }
-        });
-      });
+      parser(buildCache).processSync(rule.selector);
     });
 
     // convert selectors to block selectors
@@ -150,40 +207,9 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
     // rewrite into a CSS block
     root.walkRules(rule => {
       // iterate through each rule
-      let parsedSelList = cache.getParsedSelectors(rule);
-      let modifiedSelList: ParsedSelector[] = new Array();
-      parsedSelList.forEach(sel => {
-        // this contains the selector combinators
-        let modifiedCompoundSelector = sel.clone();
-
-        modifiedCompoundSelector.eachSelectorNode(node => {
-          // we only need to modify class names. We can ignore everything else,
-          // like existing attributes, pseudo selectors, comments, imports,
-          // exports, etc
-          if (node.type === "class" && node.value) {
-            let bemSelector = bemSelectorCache.get(node.value);
-            // get the block class from the bemSelector
-            let blockClassName = bemSelector && bemToBlockClassMap.get(bemSelector);
-
-            // if the selector was previously cached
-            if (blockClassName) {
-              // we need to use the below method instead of node.value as the
-              // attributes brackets get escaped when doing node.value = blockClassName.toString()
-              node.setPropertyWithoutEscape("value", blockClassName.toString());
-            }
-          }
-        });
-
-        modifiedSelList.push(modifiedCompoundSelector);
-      });
-
-      // if the selector nodes were modified, then create a new rule for it
-      if (modifiedSelList.toString()) {
-        let newRule = rule.clone();
-        newRule.selector = modifiedSelList.toString();
-        rule.replaceWith(newRule);
-      }
+      rule.selector = parser(rewriteSelectors).processSync(rule.selector);
     });
+
     result.root = root;
   };
 });

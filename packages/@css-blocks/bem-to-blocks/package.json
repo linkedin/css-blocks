@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@css-blocks/code-style": "^1.0.0-alpha.1",
-    "opticss": "^0.7.0",
-    "postcss": "^7.0.14"
+    "postcss": "^7.0.14",
+    "postcss-selector-parser": "^6.0.2"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
