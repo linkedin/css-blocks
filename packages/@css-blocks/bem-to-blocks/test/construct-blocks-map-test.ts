@@ -71,4 +71,55 @@ describe("construct-blocks", () => {
     assert.deepEqual(result.get(sel2), new BlockClassSelector({ class: "image-container", state: "inverse-black" }));
     assert.deepEqual(result.get(sel3), new BlockClassSelector({ class: "image", state: "inverse-blue" }));
   });
+
+  it("calculates substates correctly when some of them have a common selector, not all", async () => {
+    let sel1 = new BemSelector(".jobs-hero--disabled");
+    let sel2  = new BemSelector(".jobs-hero--size-small");
+    let sel3 =  new BemSelector(".jobs-hero--size-large");
+    let sel4 =  new BemSelector(".jobs-hero--tilted");
+
+    let mockMap = new Map(Object.entries({
+      ".jobs-hero--disabled": sel1,
+      ".jobs-hero--size-small": sel2,
+      ".jobs-hero--size-large": sel3,
+      ".jobs-hero--tilted": sel4,
+    }));
+
+    let result = constructBlocksMap(mockMap);
+    assert.deepEqual(result.get(sel1), new BlockClassSelector({ class: undefined, state: "disabled" }));
+    assert.deepEqual(result.get(sel2), new BlockClassSelector({ state: "size", subState: "small" }));
+    assert.deepEqual(result.get(sel3), new BlockClassSelector({ state: "size", subState: "large" }));
+    assert.deepEqual(result.get(sel4), new BlockClassSelector({ state: "tilted", subState: undefined }));
+  });
+
+  it("calculates substates correctly without a clearly defined separator at the state/substate boundary.", async () => {
+    let sel1 = new BemSelector(".myblock__myelement--gross");
+    let sel2  = new BemSelector(".myblock__myelement--great");
+
+    let mockMap = new Map(Object.entries({
+      ".myblock__myelement--gross": sel1,
+      ".myblock__myelement--great": sel2,
+
+    }));
+
+    let result = constructBlocksMap(mockMap);
+    assert.deepEqual(result.get(sel1), new BlockClassSelector({ class: "myelement", state: "gross" }));
+    assert.deepEqual(result.get(sel2), new BlockClassSelector({ class: "myelement", state: "great" }));
+  });
+
+  it("calculates substates correctly when the states have a modifier is-", async () => {
+    let sel1 = new BemSelector(".myblock__myelement--is-disabled");
+    let sel2  = new BemSelector(".myblock__myelement--is-animating");
+
+    let mockMap = new Map(Object.entries({
+      ".myblock__myelement--is-disabled": sel1,
+      ".myblock__myelement--is-animating": sel2,
+
+    }));
+
+    let result = constructBlocksMap(mockMap);
+    assert.deepEqual(result.get(sel1), new BlockClassSelector({ class: "myelement", state: "is-disabled" }));
+    assert.deepEqual(result.get(sel2), new BlockClassSelector({ class: "myelement", state: "is-animating" }));
+  });
+
 });

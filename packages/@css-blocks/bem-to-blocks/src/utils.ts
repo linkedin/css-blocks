@@ -5,17 +5,41 @@ export const R_BEM_REGEX = /^.(?:((?:[a-z0-9]+-)*[a-z0-9]+)(__(?:[a-z0-9]+-)*[a-
 // regex that matches block--modifier__element pattern
 export const R_BME_REGEX = /^.(?:((?:[a-z0-9]+-)*[a-z0-9]+)(--(?:[a-z0-9]+-)*[a-z0-9]+)?(__(?:[a-z0-9]+-)*[a-z0-9]+)?)$/;
 
+const COMMON_PREFIXES_FOR_MODIFIERS = ["is"];
+
 /**
  * function to find the LCS (longest common substring) from a string array
+ *
  */
-export function findLcs(arr1: string[]): string {
-  const arr = arr1.concat().sort();
-  const a1 = arr[0];
-  const a2 = arr[arr.length - 1];
-  const L = a1.length;
-  let i = 0;
-  while (i < L && a1.charAt(i) === a2.charAt(i)) i++;
-  return a1.substring(0, i);
+export function findLcsMap(arr: string[]): {[key: string]: string} {
+  // we split the string assuming BEM conventions of "-" and then group by the
+  // first item in each string
+  let wordMap: {[key: string]: string[]} = {};
+  // since we're assuming BEM, we can assume that the separators on the
+  // modifiers are '-'
+  let splitArr = arr.map(item => item.split("-"));
+  splitArr.forEach(word => {
+    // Here, we key on the first item in the split array. Ideally, we should
+    // find the longest common separators between all the items and prompt the
+    // user for input
+    if (wordMap[word[0]]) {
+      wordMap[word[0]].push(word.join("-"));
+    } else {
+      wordMap[word[0]] = new Array(word.join("-"));
+    }
+  });
+  // return only those values who have a count of greater than 1 and whose key
+  // is not present in COMMON_PREFIXES_FOR_MODIFIERS
+  let reducedWordMap = {};
+  for (let [key, value] of Object.entries(wordMap)) {
+    if (value.length > 1 && COMMON_PREFIXES_FOR_MODIFIERS.indexOf(key) < 0) {
+      value.forEach(item => {
+        // create a reverser mapping of the string to the key
+        reducedWordMap[item] = key;
+      });
+    }
+  }
+  return reducedWordMap;
 }
 
 /**

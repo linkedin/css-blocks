@@ -4,7 +4,7 @@ import * as postcss from "postcss";
 import * as parser from "postcss-selector-parser";
 
 import { BemSelector, BlockClassSelector } from "./interface";
-import { findLcs } from "./utils";
+import { findLcsMap } from "./utils";
 export declare type PostcssAny = unknown;
 
 type BemSelectorMap = Map<string, BemSelector>;
@@ -97,21 +97,23 @@ export function constructBlocksMap(bemSelectorCache: BemSelectorMap): BemToBlock
   for (let elementListMap of blockListMap.values()) {
     // iterate through the elements
     for (let selList of elementListMap.values()) {
-      let lcs: string;
+      let lcsMap: {[key: string]: string};
       // find the longest common substring(LCS) in the list of selectors
       let modifiers = selList.length && selList.filter(sel => sel.modifier !== undefined);
       if (modifiers) {
         if (modifiers.length > 1) {
-          lcs = findLcs(modifiers.map(sel => sel.modifier as string));
+          lcsMap = findLcsMap(modifiers.map(sel => sel.modifier as string));
+
+          // update the states and substates with the LCS
+          modifiers.forEach(sel => {
+            let blockClass = resultMap.get(sel);
+            let lcs = blockClass && blockClass.state && lcsMap[blockClass.state];
+            if (blockClass && blockClass.state && lcs) {
+              blockClass.subState = blockClass.state.replace(`${lcs}-`, "");
+              blockClass.state = lcs.replace(/-$/, "");
+            }
+          });
         }
-        // update the states and substates with the LCS
-        modifiers.forEach(sel => {
-          let blockClass = resultMap.get(sel);
-          if (blockClass && lcs) {
-            blockClass.subState = (blockClass.state as string).replace(lcs, "");
-            blockClass.state = lcs.replace(/-$/, "");
-          }
-        });
       }
     }
   }
