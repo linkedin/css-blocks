@@ -51,13 +51,16 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                     }`;
 
-    return assertMultipleErrors([{
-      type: cssBlocks.InvalidBlockSyntax,
-      message: "External Block 'app' has no global states. (widget.block.css:2:21)",
-    },                           {
+    return assertMultipleErrors(
+      [{
         type: cssBlocks.InvalidBlockSyntax,
-        message: "No state [app|is-not-loading] found in : :scope[app|is-not-loading] .b (widget.block.css:2:27)",
-    }],                         this.process(filename, inputCSS, config));
+        message: "External Block 'app' has no global states. (widget.block.css:2:21)",
+      },
+       {
+          type: cssBlocks.InvalidBlockSyntax,
+          message: "No state [app|is-not-loading] found in : :scope[app|is-not-loading] .b (widget.block.css:2:27)",
+      }],
+      this.process(filename, inputCSS, config));
   }
   @test "Can't use non-global states"() {
     let { imports, config } = setupImporting();

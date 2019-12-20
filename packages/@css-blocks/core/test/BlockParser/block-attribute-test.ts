@@ -16,9 +16,11 @@ export class BlockAttributesTest extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `:scope[scope] { color: red; }`;
 
-    return assertMultipleErrors([{
+    return assertMultipleErrors(
+      [{
         type: InvalidBlockSyntax,
         message: `A state cannot be named 'scope'. (foo/bar/test-block.css:1:7)`,
-      }],                       this.process(filename, inputCSS, {importer: imports.importer()}));
+      }],
+      this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 }

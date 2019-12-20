@@ -1,4 +1,4 @@
-import { postcss } from "opticss";
+import { ParsedSelector, postcss } from "opticss";
 import { isRule } from "opticss/dist/src/util/cssIntrospection";
 
 import { COMPOSES } from "../../BlockSyntax";
@@ -18,7 +18,7 @@ import { stripQuotes } from "../utils";
  */
 export async function composeBlock(configuration: Configuration, root: postcss.Root, block: Block, sourceFile: string) {
   root.walkDecls(COMPOSES, (decl) => {
-    if (!isRule(decl.parent)) { throw new errors.InvalidBlockSyntax(`The "composes" property may only be used in a rule set.`, sourceRange(configuration, root, sourceFile, decl)); }
+    if (!isRule(decl.parent)) { block.addError(new errors.InvalidBlockSyntax(`The "composes" property may only be used in a rule set.`, sourceRange(configuration, root, sourceFile, decl))); }
     let rule = decl.parent;
 
     // TODO: Move to Block Syntax as parseBlockRefList().
@@ -26,20 +26,27 @@ export async function composeBlock(configuration: Configuration, root: postcss.R
     for (let refName of refNames) {
       let refStyle = block.lookup(refName);
       if (!refStyle) {
-        throw new errors.InvalidBlockSyntax(`No style "${refName}" found.`, sourceRange(configuration, root, sourceFile, decl));
+        block.addError(new errors.InvalidBlockSyntax(`No style "${refName}" found.`, sourceRange(configuration, root, sourceFile, decl)));
       }
-      if (refStyle.block === block) {
-        throw new errors.InvalidBlockSyntax(`Styles from the same Block may not be composed together.`, sourceRange(configuration, root, sourceFile, decl));
-      }
-
-      const parsedSel = block.getParsedSelectors(rule);
-      for (let sel of parsedSel) {
-        if (sel.selector.next) {
-          throw new errors.InvalidBlockSyntax(`Style composition is not allowed in rule sets with a scope selector.`, sourceRange(configuration, root, sourceFile, decl));
+      else {
+        if (refStyle.block === block) {
+          block.addError(new errors.InvalidBlockSyntax(`Styles from the same Block may not be composed together.`, sourceRange(configuration, root, sourceFile, decl)));
         }
-        let foundStyles = getStyleTargets(block, sel.selector);
-        for (let blockClass of foundStyles.blockClasses) {
-          blockClass.addComposedStyle(refStyle, foundStyles.blockAttrs);
+        let parsedSel: ParsedSelector[] = [];
+        try {
+          parsedSel = block.getParsedSelectors(rule as postcss.Rule);
+        } catch (e) {
+          block.addError(new errors.InvalidBlockSyntax(e.message, sourceRange(configuration, block.stylesheet, sourceFile, rule)));
+        }
+
+        for (let sel of parsedSel) {
+          if (sel.selector.next) {
+            block.addError(new errors.InvalidBlockSyntax(`Style composition is not allowed in rule sets with a scope selector.`, sourceRange(configuration, root, sourceFile, decl)));
+          }
+          let foundStyles = getStyleTargets(block, sel.selector);
+          for (let blockClass of foundStyles.blockClasses) {
+            blockClass.addComposedStyle(refStyle, foundStyles.blockAttrs);
+          }
         }
       }
     }
