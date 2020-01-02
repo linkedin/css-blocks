@@ -57,16 +57,12 @@
     "ember-try": "^1.1.0",
     "eslint-plugin-ember": "^7.0.0",
     "eslint-plugin-node": "^9.0.0",
-    "in-repo-addon": "link:./tests/dummy/lib/in-repo-addon",
-    "in-repo-engine": "link:./tests/dummy/lib/in-repo-engine",
-    "in-repo-lazy-engine": "link:./tests/dummy/lib/in-repo-lazy-engine",
     "loader.js": "^4.7.0"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
   },
   "ember-addon": {
-    "configPath": "tests/dummy/config",
     "before": [
       "ember-cli-babel",
       "ember-cli-htmlbars"
@@ -74,15 +70,11 @@
     "after": [
       "ember-cli-sass",
       "ember-cli-eyeglass"
-    ],
-    "paths": [
-      "tests/dummy/lib/in-repo-addon",
-      "tests/dummy/lib/in-repo-engine",
-      "tests/dummy/lib/in-repo-lazy-engine"
     ]
   },
   "volta": {
     "node": "12.2.0",
     "yarn": "1.21.0"
-  }
+  },
+  "gitHead": "6a11d601b835030f7c14a71507c2b7442d83c0db"
 }
