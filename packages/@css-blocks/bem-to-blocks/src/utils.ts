@@ -5,8 +5,6 @@ export const R_BEM_REGEX = /^.(?:((?:[a-z0-9]+-)*[a-z0-9]+)(__(?:[a-z0-9]+-)*[a-
 // regex that matches block--modifier__element pattern
 export const R_BME_REGEX = /^.(?:((?:[a-z0-9]+-)*[a-z0-9]+)(--(?:[a-z0-9]+-)*[a-z0-9]+)?(__(?:[a-z0-9]+-)*[a-z0-9]+)?)$/;
 
-const COMMON_PREFIXES_FOR_MODIFIERS = ["is"];
-
 /**
  * function to find the LCS (longest common substring) from a string array
  *
@@ -28,11 +26,10 @@ export function findLcsMap(arr: string[]): {[key: string]: string} {
       wordMap[word[0]] = new Array(word.join("-"));
     }
   });
-  // return only those values who have a count of greater than 1 and whose key
-  // is not present in COMMON_PREFIXES_FOR_MODIFIERS
+  // return only those values who have a count of greater than 1
   let reducedWordMap = {};
   for (let [key, value] of Object.entries(wordMap)) {
-    if (value.length > 1 && COMMON_PREFIXES_FOR_MODIFIERS.indexOf(key) < 0) {
+    if (value.length > 1) {
       value.forEach(item => {
         // create a reverser mapping of the string to the key
         reducedWordMap[item] = key;

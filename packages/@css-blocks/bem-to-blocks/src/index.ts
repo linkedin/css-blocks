@@ -13,6 +13,7 @@ type BlockToBemSelectorMap  = Map<string, ElementToBemSelectorMap>;
 type BemToBlockClassMap  = WeakMap<BemSelector, BlockClassSelector>;
 
 const EMPTY_ELEMENT_PLACEHOLDER = "EMPTY-ELEMENT-PLACEHOLDER";
+const COMMON_PREFIXES_FOR_MODIFIERS = ["is"];
 
 export function convertBemToBlocks(files: Array<string>): Promise<void>[] {
   let promises: Promise<void>[] = [];
@@ -22,7 +23,7 @@ export function convertBemToBlocks(files: Array<string>): Promise<void>[] {
         .process(css, { from: file });
       // rewrite the file with the processed output
       const parsedFilePath = path.parse(file);
-      const blockFilePath = Object.assign(parsedFilePath, {ext: `.block${parsedFilePath.ext}`, base: parsedFilePath.base.replace(parsedFilePath.ext, `.block${parsedFilePath.ext}`)} );
+      const blockFilePath = Object.assign(parsedFilePath, {ext: `.block${parsedFilePath.ext}`, base: undefined} );
       promises.push(fs.writeFile(path.format(blockFilePath), output.toString()));
     });
   });
@@ -109,8 +110,14 @@ export function constructBlocksMap(bemSelectorCache: BemSelectorMap): BemToBlock
             let blockClass = resultMap.get(sel);
             let lcs = blockClass && blockClass.state && lcsMap[blockClass.state];
             if (blockClass && blockClass.state && lcs) {
-              blockClass.subState = blockClass.state.replace(`${lcs}-`, "");
-              blockClass.state = lcs.replace(/-$/, "");
+              if (COMMON_PREFIXES_FOR_MODIFIERS.indexOf(lcs) > -1) {
+                // if we find that the state contains a common prefix, we strip
+                // it of that prefix
+                blockClass.state = blockClass.state.replace(`${lcs}-`, "");;
+              } else {
+                blockClass.subState = blockClass.state.replace(`${lcs}-`, "");
+                blockClass.state = lcs.replace(/-$/, "");
+              }
             }
           });
         }
@@ -184,6 +191,9 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
                 quoteMark: blockClassName.subState ? '"' : undefined,
                 operator: blockClassName.subState ? "=" : undefined,
                 value: blockClassName.subState,
+                // the API for postcss-selector-parser mentions raws to be
+                // deprecated when used with quoteMark but that didn't work as
+                // expected. Keeping quoteMark and raws until it is fixed.
                 raws: {value: blockClassName.subState ? `"${blockClassName.subState}"` : undefined},
               });
 

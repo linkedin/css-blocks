@@ -114,12 +114,11 @@ describe("construct-blocks", () => {
     let mockMap = new Map(Object.entries({
       ".myblock__myelement--is-disabled": sel1,
       ".myblock__myelement--is-animating": sel2,
-
     }));
 
     let result = constructBlocksMap(mockMap);
-    assert.deepEqual(result.get(sel1), new BlockClassSelector({ class: "myelement", state: "is-disabled" }));
-    assert.deepEqual(result.get(sel2), new BlockClassSelector({ class: "myelement", state: "is-animating" }));
+    assert.deepEqual(result.get(sel1), new BlockClassSelector({ class: "myelement", state: "disabled" }));
+    assert.deepEqual(result.get(sel2), new BlockClassSelector({ class: "myelement", state: "animating" }));
   });
 
 });
