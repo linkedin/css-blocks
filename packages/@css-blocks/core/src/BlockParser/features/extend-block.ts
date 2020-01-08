@@ -16,12 +16,13 @@ import { sourceRange } from "../../SourceLocation";
 export async function extendBlock(configuration: Configuration, root: postcss.Root, block: Block, sourceFile: string) {
   root.walkDecls(EXTENDS, (decl) => {
     if (block.base) {
-      throw new errors.InvalidBlockSyntax(`A block can only be extended once.`, sourceRange(configuration, root, sourceFile, decl));
+      block.addError(new errors.InvalidBlockSyntax(`A block can only be extended once.`, sourceRange(configuration, root, sourceFile, decl)));
     }
     let baseBlock = block.getReferencedBlock(decl.value);
     if (!baseBlock) {
-      throw new errors.InvalidBlockSyntax(`No Block named "${decl.value}" found in scope.`, sourceRange(configuration, root, sourceFile, decl));
+      block.addError(new errors.InvalidBlockSyntax(`No Block named "${decl.value}" found in scope.`, sourceRange(configuration, root, sourceFile, decl)));
+    } else {
+      block.setBase(baseBlock);
     }
-    block.setBase(baseBlock);
   });
 }

@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { assertError } from "../util/assertError";
+import { assertError, assertMultipleErrors } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
 import { indented } from "../util/indented";
 import { MockImportRegistry } from "../util/MockImportRegistry";
@@ -540,9 +540,11 @@ export class BlockImportExport extends BEMProcessor {
       :scope { block-name: imported-block; extends: a; }
     `;
 
-    return assertError(
-      InvalidBlockSyntax,
-      `No Block named "a" found in scope. (test.css:3:44)`,
+    return assertMultipleErrors(
+      [{
+        type: InvalidBlockSyntax,
+        message: `No Block named "a" found in scope. (test.css:3:44)`,
+      }],
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }

@@ -19,9 +19,10 @@ export async function implementBlock(configuration: Configuration, rule: postcss
     refNames.forEach((refName) => {
       let refBlock = block.getReferencedBlock(refName);
       if (!refBlock) {
-        throw new errors.InvalidBlockSyntax(`No Block named "${refName}" found in scope.`, sourceRange(configuration, block.stylesheet, sourceFile, decl));
+        block.addError(new errors.InvalidBlockSyntax(`No Block named "${refName}" found in scope.`, sourceRange(configuration, block.stylesheet, sourceFile, decl)));
+      } else {
+        block.addImplementation(refBlock);
       }
-      block.addImplementation(refBlock);
     });
   });
 

@@ -21,10 +21,10 @@ export async function globalAttributes(configuration: Configuration, root: postc
         let attr = block.rootClass.ensureAttributeValue(toAttrToken(firstNode));
         attr.isGlobal = true;
       } else {
-        throw new errors.InvalidBlockSyntax(
+        block.addError(new errors.InvalidBlockSyntax(
           `Illegal global attribute declaration: ${atRule.toString()}`,
           range(configuration, root, file, atRule),
-        );
+        ));
       }
     }
 

@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 
-import { assertError, assertMultipleErrors } from "../util/assertError";
+import { assertMultipleErrors } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
 
 const { InvalidBlockSyntax } = require("../util/postcss-helper");
@@ -250,9 +250,11 @@ export class StraightJacket extends BEMProcessor {
   @test "disallows !important"() {
     let filename = "foo/bar/no-important.css";
     let inputCSS = `:scope {color: #111 !important;}`;
-    return assertError(
-      InvalidBlockSyntax,
-      "!important is not allowed for `color` in `:scope` (foo/bar/no-important.css:1:9)",
+    return assertMultipleErrors(
+      [{
+        type: InvalidBlockSyntax,
+        message: "!important is not allowed for `color` in `:scope` (foo/bar/no-important.css:1:9)",
+      }],
       this.process(filename, inputCSS));
   }
 }

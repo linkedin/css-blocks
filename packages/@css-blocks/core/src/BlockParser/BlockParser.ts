@@ -74,7 +74,7 @@ export class BlockParser {
 
     // Throw if we encounter any `!important` decls.
     debug(` - Disallow Important`);
-    await disallowImportant(configuration, root, sourceFile);
+    await disallowImportant(configuration, root, block, sourceFile);
     // Discover and parse all block references included by this block.
     debug(` - Import Blocks`);
     await importBlocks(block, this.factory, sourceFile);
