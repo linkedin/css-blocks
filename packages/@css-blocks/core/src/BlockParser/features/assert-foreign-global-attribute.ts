@@ -46,32 +46,32 @@ export async function assertForeignGlobalAttribute(configuration: Configuration,
 
           // If selecting something other than an attribute on external attribute, throw.
           if (!isAttributeNode(node)) {
-            throw new errors.InvalidBlockSyntax(
-              `Illegal global state selector: ${rule.selector}`,
-              range(configuration, block.stylesheet, file, rule, node));
-          }
-
-          // If referenced block does not exist, throw.
-          let otherBlock = block.getReferencedBlock(blockName.namespace);
-          if (!otherBlock) {
-            throw new errors.InvalidBlockSyntax(
-              `No Block named "${blockName.value}" found in scope: ${rule.selector}`,
-              range(configuration, block.stylesheet, file, rule, node));
-          }
-
-          // If state referenced does not exist on external block, throw
-          let otherAttr = otherBlock.rootClass.getAttributeValue(toAttrToken(node));
-          if (!otherAttr) {
             block.addError(new errors.InvalidBlockSyntax(
-              `No state ${node.toString()} found in : ${rule.selector}`,
+              `Illegal global state selector: ${rule.selector}`,
               range(configuration, block.stylesheet, file, rule, node)));
-          }
+          } else {
+            // If referenced block does not exist, throw.
+            let otherBlock = block.getReferencedBlock(blockName.namespace);
+            if (!otherBlock) {
+              block.addError(new errors.InvalidBlockSyntax(
+                `No Block named "${blockName.value}" found in scope: ${rule.selector}`,
+                range(configuration, block.stylesheet, file, rule, node)));
+            } else {
+              // If state referenced does not exist on external block, throw
+              let otherAttr = otherBlock.rootClass.getAttributeValue(toAttrToken(node));
+              if (!otherAttr) {
+                block.addError(new errors.InvalidBlockSyntax(
+                  `No state ${node.toString()} found in : ${rule.selector}`,
+                  range(configuration, block.stylesheet, file, rule, node)));
+              }
 
-          // If external state is not set as global, throw.
-          else if (!otherAttr.isGlobal) {
-            throw new errors.InvalidBlockSyntax(
-              `${node.toString()} is not global: ${rule.selector}`,
-              range(configuration, block.stylesheet, file, rule, node));
+              // If external state is not set as global, throw.
+              else if (!otherAttr.isGlobal) {
+                block.addError(new errors.InvalidBlockSyntax(
+                  `${node.toString()} is not global: ${rule.selector}`,
+                  range(configuration, block.stylesheet, file, rule, node)));
+              }
+            }
           }
         }
       });

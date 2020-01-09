@@ -26,9 +26,10 @@ export function parseBlockDebug(configuration: Configuration, root: postcss.Root
   }
 
   if (!block) {
-    throw new errors.InvalidBlockSyntax(
+    scope.addError(new errors.InvalidBlockSyntax(
       `Invalid block debug: No Block named "${localName}" found in scope.`,
-      sourceRange(configuration, root, sourceFile, atRule));
+      sourceRange(configuration, root, sourceFile, atRule)));
+    block = scope;
   }
 
   return { block, channel };

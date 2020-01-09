@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
-import { assertError } from "../util/assertError";
+import { assertMultipleErrors } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
 import { indented } from "../util/indented";
 import { MockImportRegistry } from "../util/MockImportRegistry";
@@ -23,9 +23,16 @@ export class BlockNames extends BEMProcessor {
     let inputCSS = `@block a-block from "./imported.css";
                     @block-debug a-block to comment;`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).catch((err) => {
-      assert.equal(err.message, "[css-blocks] BlockSyntaxError: Illegal block name. '\"snow-flake\"' is not a legal CSS identifier. (foo/bar/imported.css:1:10)");
-    });
+    return assertMultipleErrors(
+      [{
+        type: InvalidBlockSyntax,
+        message: "Illegal block name. '\"snow-flake\"' is not a legal CSS identifier. (foo/bar/imported.css:1:10)",
+      },
+       {
+        type: InvalidBlockSyntax,
+        message: `Invalid block debug: No Block named "a-block" found in scope. (foo/bar/test-block.css:2:21)`,
+      }],
+      this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 
   @test "block names in single quotes fail parse with helpful error"(): Promise<postcss.Result | void> {
@@ -39,9 +46,16 @@ export class BlockNames extends BEMProcessor {
     let inputCSS = `@block imported from "./imported.css";
                     @block-debug snow-flake to comment;`;
 
-    return this.process(filename, inputCSS, {importer: imports.importer()}).catch((err) => {
-      assert.equal(err.message, "[css-blocks] BlockSyntaxError: Illegal block name. ''snow-flake'' is not a legal CSS identifier. (foo/bar/imported.css:1:10)");
-    });
+    return assertMultipleErrors(
+      [{
+        type: InvalidBlockSyntax,
+        message: `Illegal block name. \'\'snow-flake\'\' is not a legal CSS identifier. (foo/bar/imported.css:1:10)`,
+      },
+       {
+        type: InvalidBlockSyntax,
+        message: `Invalid block debug: No Block named "snow-flake" found in scope. (foo/bar/test-block.css:2:21)`,
+      }],
+      this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 
   @test "block-name property only works in the root ruleset"() {
@@ -86,9 +100,11 @@ export class BlockNames extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block a-block from "./imported.css";`;
 
-    return assertError(
-      InvalidBlockSyntax,
-      "Illegal block name. '123' is not a legal CSS identifier. (foo/bar/imported.css:1:10)",
+    return assertMultipleErrors(
+      [{
+        type: InvalidBlockSyntax,
+        message: "Illegal block name. '123' is not a legal CSS identifier. (foo/bar/imported.css:1:10)",
+      }],
       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 

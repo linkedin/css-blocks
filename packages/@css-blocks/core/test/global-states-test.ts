@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { assertError, assertMultipleErrors } from "./util/assertError";
+import { assertMultipleErrors } from "./util/assertError";
 import { BEMProcessor } from "./util/BEMProcessor";
 import cssBlocks = require("./util/postcss-helper");
 import { setupImporting } from "./util/setupImporting";
@@ -81,9 +81,11 @@ export class BlockInheritance extends BEMProcessor {
                       border: none;
                     }`;
 
-    return assertError(
-      cssBlocks.InvalidBlockSyntax,
-      "[app|is-loading] is not global: :scope[app|is-loading] .b (widget.block.css:2:27)",
+    return assertMultipleErrors(
+      [{
+        type: cssBlocks.InvalidBlockSyntax,
+        message: "[app|is-loading] is not global: :scope[app|is-loading] .b (widget.block.css:2:27)",
+      }],
       this.process(filename, inputCSS, config));
   }
 }
