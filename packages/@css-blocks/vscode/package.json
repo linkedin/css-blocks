@@ -27,16 +27,17 @@
   },
   "main": "./dist/extension",
   "scripts": {
-    "vscode:prepublish": "tsc",
+    "vscode:prepublish": "npx -p typescript@~3.6 tsc",
     "update-vscode": "vscode-install",
-    "postinstall": "vscode-install",
+    "postinstall": "vscode-install || echo 'failed to install vscode for local development.'",
     "compile": "tsc --build",
     "watch": "tsc --build --watch",
     "package": "rm -rf node_modules && npm install --only=production && npx vsce package"
   },
   "dependencies": {
     "@css-blocks/language-server": "^1.0.0-alpha.4",
-    "vscode-languageclient": "^5.2.1"
+    "vscode-languageclient": "^5.2.1",
+    "regjsparser": "0.6.0"
   },
   "devDependencies": {
     "vscode": "^1.1.35"
