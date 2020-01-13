@@ -138,7 +138,17 @@ export class MultipleCssBlockErrors extends CssBlockError {
 
   constructor(errors: CssBlockError[], location?: ErrorLocation, details?: string) {
     super(MultipleCssBlockErrors.prefix, location);
-    this._errors = errors;
+    for (let err of errors) {
+      if (err instanceof MultipleCssBlockErrors) {
+        // flatten all MultpleCssBlockErrors
+        // This normally happens if there is a transtive error
+        for (let e of err.errors) {
+          this._errors.push(e);
+        }
+      } else {
+        this._errors.push(err);
+      }
+    }
     if (details) { this.message += `\n${details}`; }
   }
 

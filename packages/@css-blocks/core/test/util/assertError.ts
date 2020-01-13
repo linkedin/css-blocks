@@ -41,8 +41,6 @@ export function assertMultipleErrors(errors: ErrorTypeMessage[], promise: postcs
 
 export function assertMultipleErrorsWithoutPromise(multipleErrorsError: MultipleCssBlockErrors, errors: ErrorTypeMessage[]) {
   if (multipleErrorsError.errors.length !== errors.length) {
-    console.log(multipleErrorsError.errors.length, errors.length);
-    console.log(multipleErrorsError.errors);
     assert(false, "The number of errors thrown and expected does not match");
   }
   return errors.forEach((error, idx) => {

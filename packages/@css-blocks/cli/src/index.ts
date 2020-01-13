@@ -5,6 +5,7 @@ import {
   CssBlockError,
   ErrorWithPosition,
   Importer,
+  MultipleCssBlockErrors,
   NodeJsImporter,
   Preprocessors,
   charInFile,
@@ -161,8 +162,22 @@ export class CLI {
         // if the above line doesn't throw then there wasn't a syntax error.
         this.println(`${this.chalk.green("ok")}\t${this.chalk.whiteBright(blockFileRelative)}`);
       } catch (e) {
-        errorCount++;
-        if (e instanceof CssBlockError) {
+        if (e instanceof MultipleCssBlockErrors) {
+          for (let err of e.errors) {
+            errorCount++;
+            let loc = err.location;
+            let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFileRelative)}`;
+            if (!errorHasRange(loc)) {
+              this.println(message, err.origMessage);
+              continue;
+            } else {
+              this.println(message);
+              this.displayError(blockFileRelative, err);
+            }
+          }
+        } else if (e instanceof CssBlockError) {
+          console.log("GETTING HERE 3");
+          errorCount++;
           let loc = e.location;
           let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFileRelative)}`;
           if (!errorHasRange(loc)) {
@@ -173,6 +188,8 @@ export class CLI {
             this.displayError(blockFileRelative, e);
           }
         } else {
+          console.log("GETTING HERE 4");
+          errorCount++;
           console.error(e);
         }
       }

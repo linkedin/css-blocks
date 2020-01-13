@@ -29,6 +29,7 @@ describe("validate", () => {
   it("can check syntax for a bad block file", async () => {
     let cli = new CLI();
     await cli.run(["validate", fixture("basic/error.block.css")]);
+    console.log(cli.output);
     assert.equal(cli.output,
                  `error\t${relFixture("basic/error.block.css")}
 \tTwo distinct classes cannot be selected on the same element: .foo.bar
@@ -42,17 +43,24 @@ Found 1 error in 1 file.
   it("correctly displays errors in referenced blocks.", async () => {
     let cli = new CLI();
     await cli.run(["validate", fixture("basic/transitive-error.block.css")]);
+
     assert.equal(cli.output,
                  `error\t${relFixture("basic/transitive-error.block.css")}
 \tTwo distinct classes cannot be selected on the same element: .foo.bar
-\tIn block referenced at test/fixtures/basic/transitive-error.block.css:1:1
 \tAt ${relFixture("basic/error.block.css")}:1:5
 \t1: .foo.bar {
 \t2:   color: red;
-Found 1 error in 1 file.
+error\t${relFixture("basic/transitive-error.block.css")}
+\tNo Block named "error" found in scope.
+\tAt ${relFixture("basic/transitive-error.block.css")}:4:3
+\t3: :scope {
+\t4:   extends: error;
+\t5: }
+Found 2 errors in 1 file.
 `);
-    assert.equal(cli.exitCode, 1);
-  });
+    assert.equal(cli.exitCode, 2);
+});
+
   it("can import from node_modules", async () => {
     chdir(fixture("importing"));
     let cli = new CLI();
