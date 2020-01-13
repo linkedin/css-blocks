@@ -2,6 +2,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as postcss from "postcss";
 import * as parser from "postcss-selector-parser";
+import * as vars from "postcss-simple-vars";
 
 import { BemSelector, BlockClassSelector } from "./interface";
 import { findLcsMap } from "./utils";
@@ -19,7 +20,13 @@ export function convertBemToBlocks(files: Array<string>): Promise<void>[] {
   let promises: Promise<void>[] = [];
   files.forEach(file => {
     fs.readFile(file, (_err, css) => {
-      let output = postcss([bemToBlocksPlugin])
+      let output = postcss([
+          // Using postcss-simple-vars to pass the fileName to the plugin
+          vars({
+            variables: () => {return {fileName: path.relative(process.cwd(), file)};
+          }),
+          bemToBlocksPlugin,
+        ])
         .process(css, { from: file });
       // rewrite the file with the processed output
       const parsedFilePath = path.parse(file);
@@ -113,7 +120,7 @@ export function constructBlocksMap(bemSelectorCache: BemSelectorMap): BemToBlock
               if (COMMON_PREFIXES_FOR_MODIFIERS.indexOf(lcs) > -1) {
                 // if we find that the state contains a common prefix, we strip
                 // it of that prefix
-                blockClass.state = blockClass.state.replace(`${lcs}-`, "");;
+                blockClass.state = blockClass.state.replace(`${lcs}-`, "");
               } else {
                 blockClass.subState = blockClass.state.replace(`${lcs}-`, "");
                 blockClass.state = lcs.replace(/-$/, "");
@@ -135,6 +142,8 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
   options = options || {};
 
   return (root, result) => {
+    let fileName = result.messages.filter(varObj => {return varObj.name === "fileName"; })[0].value;
+
     const bemSelectorCache: BemSelectorMap = new Map();
 
     const buildCache: parser.ProcessorFn = (selectors) => {
@@ -142,7 +151,7 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
         // only iterate through classes
         if (parser.isClassName(selector)) {
           try {
-            let bemSelector = new BemSelector(selector.value);
+            let bemSelector = new BemSelector(selector.value, fileName);
             if (bemSelector.block) {
               // add it to the cache so it's available for the next pass
               bemSelectorCache.set(selector.value, bemSelector);

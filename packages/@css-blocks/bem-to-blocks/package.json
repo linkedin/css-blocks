@@ -42,8 +42,10 @@
   },
   "dependencies": {
     "@css-blocks/code-style": "^1.0.0-alpha.1",
+    "inquirer": "^7.0.3",
     "postcss": "^7.0.14",
-    "postcss-selector-parser": "^6.0.2"
+    "postcss-selector-parser": "^6.0.2",
+    "postcss-simple-vars": "^5.0.2"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
@@ -51,5 +53,8 @@
   "volta": {
     "node": "12.2.0",
     "yarn": "1.21.0"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^6.5.0"
   }
 }
