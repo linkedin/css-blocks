@@ -1,9 +1,6 @@
 'use strict';
 
 const EmberAddon = require('ember-cli/lib/broccoli/ember-addon');
-const Funnel = require('broccoli-funnel');
-const MergeTrees = require('broccoli-merge-trees');
-const path = require('path');
 
 module.exports = function(defaults) {
 
@@ -19,8 +16,6 @@ module.exports = function(defaults) {
     }
   });
 
-  let addonTree = new Funnel(path.resolve(__dirname, './tests/dummy/lib/in-repo-addon'));
-
   /*
     This build file specifies the options for the dummy test app of this
     addon, located in `/tests/dummy`
@@ -28,5 +23,5 @@ module.exports = function(defaults) {
     behave. You most likely want to be modifying `./index.js` or app's build file
   */
 
-  return new MergeTrees([app.toTree(), addonTree]);
+  return app.toTree();
 };
