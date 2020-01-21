@@ -4,7 +4,8 @@ import * as postcss from "postcss";
 import * as parser from "postcss-selector-parser";
 import * as vars from "postcss-simple-vars";
 
-import { BemSelector, BlockClassSelector } from "./interface";
+import { BemSelector, BlockClassSelector, SelectorBemObject } from "./interface";
+import { getBemNamesFromUser } from "./userInput";
 import { findLcsMap } from "./utils";
 export declare type PostcssAny = unknown;
 
@@ -19,19 +20,22 @@ const COMMON_PREFIXES_FOR_MODIFIERS = ["is"];
 export function convertBemToBlocks(files: Array<string>): Promise<void>[] {
   let promises: Promise<void>[] = [];
   files.forEach(file => {
-    fs.readFile(file, (_err, css) => {
-      let output = postcss([
+    fs.readFile(file, async (_err, css) => {
+      postcss([
           // Using postcss-simple-vars to pass the fileName to the plugin
           vars({
-            variables: () => {return {fileName: path.relative(process.cwd(), file)};
+            variables: () => {return {fileName: path.relative(process.cwd(), file)}; },
           }),
           bemToBlocksPlugin,
         ])
-        .process(css, { from: file });
-      // rewrite the file with the processed output
-      const parsedFilePath = path.parse(file);
-      const blockFilePath = Object.assign(parsedFilePath, {ext: `.block${parsedFilePath.ext}`, base: undefined} );
-      promises.push(fs.writeFile(path.format(blockFilePath), output.toString()));
+        .process(css, { from: file })
+        .then(output => {
+          // rewrite the file with the processed output
+          const parsedFilePath = path.parse(file);
+          const blockFilePath = Object.assign(parsedFilePath, {ext: `.block${parsedFilePath.ext}`, base: undefined} );
+          promises.push(fs.writeFile(path.format(blockFilePath), output.toString()));
+        }).catch(e => {throw (e); });
+
     });
   });
   return promises;
@@ -141,32 +145,46 @@ export function constructBlocksMap(bemSelectorCache: BemSelectorMap): BemToBlock
 export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem-to-blocks-plugin", (options) => {
   options = options || {};
 
-  return (root, result) => {
-    let fileName = result.messages.filter(varObj => {return varObj.name === "fileName"; })[0].value;
+  return async (root, result) => {
+    let fileNameObject = result.messages.find(varObj => {return varObj.name === "fileName"; });
+    let fileName = fileNameObject ? fileNameObject.value : undefined;
 
     const bemSelectorCache: BemSelectorMap = new Map();
 
-    const buildCache: parser.ProcessorFn = (selectors) => {
+    const buildCache: parser.ProcessorFn = async (selectors) => {
+      let promises: Promise<SelectorBemObject>[] = [];
+
       selectors.walk((selector) => {
         // only iterate through classes
         if (parser.isClassName(selector)) {
           try {
-            let bemSelector = new BemSelector(selector.value, fileName);
+            let bemSelector = new BemSelector(selector.value);
             if (bemSelector.block) {
               // add it to the cache so it's available for the next pass
               bemSelectorCache.set(selector.value, bemSelector);
             }
           } catch (e) {
-            if (selector.parent) {
-              selector.parent.insertBefore(selector, parser.comment({value: `ERROR: ${e.message}`, spaces: {before: "/* ", after: " */\n"}}));
-            }
+            // if the selector does not have a block value, get it from the user
+            promises.push(getBemNamesFromUser(selector.value, fileName));
+            // if (selector.parent) {
+            //   selector.parent.insertBefore(selector, parser.comment({value: `ERROR: ${e.message}`, spaces: {before: "/* ", after: " */\n"}}));
+            // }
           }
         }
       });
-      return selectors.toString();
+
+      // wait for all the user input
+      let answers = await Promise.all(promises);
+
+      // add all the user defined blocks to the cache
+      for (let userBem of answers) {
+        let selector = userBem.selector;
+        bemSelectorCache.set(selector, new BemSelector(selector, userBem.bemObj));
+      }
     };
 
     const rewriteSelectors: parser.ProcessorFn = (selectors) => {
+
       selectors.walk((selector) => {
         // we only need to modify class names. We can ignore everything else,
         // like existing attributes, pseudo selectors, comments, imports,
@@ -224,12 +242,16 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
     };
 
     // in this pass, we collect all the selectors
-    root.walkRules(rule => {
-      rule.selector = parser(buildCache).processSync(rule);
+    let bemToBlockClassMap: BemToBlockClassMap;
+
+    let buildCachePromises: unknown[] = [];
+    root.walkRules(async (rule) => {
+      buildCachePromises.push(parser(buildCache).process(rule));
     });
+    await Promise.all(buildCachePromises);
 
     // convert selectors to block selectors
-    let bemToBlockClassMap: BemToBlockClassMap = constructBlocksMap(bemSelectorCache);
+    bemToBlockClassMap = constructBlocksMap(bemSelectorCache);
 
     // rewrite into a CSS block
     root.walkRules(rule => {

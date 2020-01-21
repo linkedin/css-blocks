@@ -1,11 +1,14 @@
-import * as inquirer from "inquirer";
-
 import { parseBemSelector } from "./utils";
 
 export interface BemObject {
   block?: string;
   element?: string;
   modifier?: string;
+}
+
+export interface SelectorBemObject {
+  selector: string;
+  bemObj: BemObject;
 }
 
 interface BlockClassName {
@@ -18,32 +21,17 @@ export class BemSelector {
   block: string;
   element?: string;
   modifier?: string;
-  constructor(selector: string, fileName?: string) {
-    let bemObject = parseBemSelector(selector);
+  constructor(selector: string, bemObject?: BemObject) {
+    if (!bemObject) {
+      bemObject = parseBemSelector(selector) || undefined;
+    }
     if (bemObject && bemObject.block) {
       this.block = bemObject.block;
       // strip the syntax elements
       this.element = bemObject.element ? bemObject.element.replace(/^__/, "") : undefined;
       this.modifier = bemObject.modifier ? bemObject.modifier.replace(/^--/, "") : undefined;
     } else {
-      inquirer.prompt({
-        message: `.${selector}${fileName ? ` in ${fileName} ` : ""} does not follow BEM conventions. Enter the block name for this class`,
-        name: "block",
-      }).then(blockAns => {
-        if (blockAns.block) {
-          inquirer.prompt({
-            message: `Enter the element name for .${selector}`,
-            name: "element",
-          });
-        }
-      }).then(elemAns => {
-        inquirer.prompt({
-          message: `Enter the modifier for .${selector}`,
-          name: "modifier",
-        });
-      }).catch(err => console.log(err));
-
-      return ();
+      throw new Error(`${selector} does not follow BEM`);
     }
   }
 }

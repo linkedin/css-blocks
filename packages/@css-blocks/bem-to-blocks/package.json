@@ -55,6 +55,8 @@
     "yarn": "1.21.0"
   },
   "devDependencies": {
-    "@types/inquirer": "^6.5.0"
+    "@types/inquirer": "^6.5.0",
+    "@types/sinon": "^7.5.1",
+    "sinon": "^8.0.4"
   }
 }
