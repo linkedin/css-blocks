@@ -152,7 +152,7 @@ module.exports = {
     delete this.addonPackages["in-repo-lazy-engine"];
   },
 
-  included(parent) {
+  async included(parent) {
     this._super.included.apply(this, arguments);
 
     // Engines' children are initialized twice, once by
@@ -166,7 +166,7 @@ module.exports = {
     let env = this.env = this.getEnv(parent);
 
     // Fetch and validate user-provided options.
-    let options = this._options = this.getOptions(env);
+    let options = this._options = await this.getOptions(env);
 
     let isApp = env.app === parent;
 
@@ -294,7 +294,7 @@ module.exports = {
     };
   },
 
-  getOptions(env) {
+  async getOptions(env) {
 
     let { isEmber, app, rootDir, modulePrefix } = env;
 
