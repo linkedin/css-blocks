@@ -309,7 +309,12 @@ module.exports = {
     options.optimization || (options.optimization = {});
 
     if (!options.parserOpts) {
-      options.parserOpts = config.search(rootDir) || {};
+      // await the search
+      // if opts is blank/falsey or on error
+      // will default to empty object
+      options.parserOpts = await config.search(rootDir)
+      .catch(e => ({}))
+      .then(opts => opts || {});
     }
 
     // Use the node importer by default.
