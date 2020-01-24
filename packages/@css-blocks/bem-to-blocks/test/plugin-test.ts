@@ -63,11 +63,11 @@ describe("converts BEM to blocks", () => {
       });
   });
 
-  it("respects scss nesting", async () => {
+  it.skip("respects scss nesting", async () => {
     return postcss([bemToBlocksPlugin])
-      .process(`@import "restyle"; .jobs-entry__image--big[state=red] {color: blue}`)
+      .process(`.jobs-entry__image { &--big {color: blue} }`)
       .then(output => {
-        assert.equal(output.toString(), `@import "restyle"; .image[big][state=red] {color: blue}`);
+        assert.equal(output.toString(), `.image { &[big] {color: blue} }`);
       });
   });
 
