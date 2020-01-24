@@ -1,4 +1,4 @@
-import { BlockFactory, CssBlockError } from "@css-blocks/core";
+import { BlockFactory, CssBlockError, MultipleCssBlockErrors } from "@css-blocks/core";
 import { TextDocumentChangeEvent } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
@@ -14,7 +14,13 @@ export async function documentContentChange(e: TextDocumentChangeEvent, blockFac
       // the block file is opened
       await blockFactory.getBlockFromPath(URI.parse(uri).fsPath);
     } catch (error) {
-      return error instanceof CssBlockError ? [error] : [];
+      if (error instanceof MultipleCssBlockErrors) {
+        return error.errors;
+      } else if (error instanceof CssBlockError) {
+        return [error];
+      } else {
+        return [];
+      }
     }
   }
   return [];
