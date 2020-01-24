@@ -162,33 +162,9 @@ export class CLI {
         // if the above line doesn't throw then there wasn't a syntax error.
         this.println(`${this.chalk.green("ok")}\t${this.chalk.whiteBright(blockFileRelative)}`);
       } catch (e) {
-        if (e instanceof MultipleCssBlockErrors) {
-          for (let err of e.errors) {
-            errorCount++;
-            let loc = err.location;
-            let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFileRelative)}`;
-            if (!errorHasRange(loc)) {
-              this.println(message, err.origMessage);
-              continue;
-            } else {
-              this.println(message);
-              this.displayError(blockFileRelative, err);
-            }
-          }
-        } else if (e instanceof CssBlockError) {
-          console.log("GETTING HERE 3");
-          errorCount++;
-          let loc = e.location;
-          let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFileRelative)}`;
-          if (!errorHasRange(loc)) {
-            this.println(message, e.origMessage);
-            continue;
-          } else {
-            this.println(message);
-            this.displayError(blockFileRelative, e);
-          }
+        if (e instanceof CssBlockError) {
+          errorCount += this.handleCssBlockError(blockFileRelative, e);
         } else {
-          console.log("GETTING HERE 4");
           errorCount++;
           console.error(e);
         }
@@ -198,6 +174,25 @@ export class CLI {
       this.println(`Found ${this.chalk.redBright(`${errorCount} error${errorCount > 1 ? "s" : ""}`)} in ${blockFiles.length} file${blockFiles.length > 1 ? "s" : ""}.`);
     }
     this.exit(errorCount);
+  }
+
+  handleCssBlockError(blockFileRelative: string, error: CssBlockError): number {
+    if (error instanceof MultipleCssBlockErrors) {
+      let count = 0;
+      for (let e of error.errors) {
+        count += this.handleCssBlockError(blockFileRelative, e);
+      }
+      return count;
+    }
+    let loc = error.location;
+    let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFileRelative)}`;
+    if (!errorHasRange(loc)) {
+      this.println(message, error.origMessage);
+    } else {
+      this.println(message);
+      this.displayError(blockFileRelative, error);
+    }
+    return 1;
   }
 
   displayError(blockFileRelative: string, e: CssBlockError) {
