@@ -135,38 +135,39 @@ export class BlockFactory {
     return this._getBlockPromise(identifier);
   }
 
-  async _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
+  _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
+    return this.promises[identifier] = this._getBlockPromiseAsync(identifier);
+  }
 
-    return this.promises[identifier] = this.importer.import(identifier, this.configuration)
-      .then(file => this._importAndPreprocessBlock(file))
-      .then(block => {
-        debug(`Finalizing Block object for "${block.identifier}"`);
+  async _getBlockPromiseAsync(identifier: FileIdentifier): Promise<Block> {
+    try {
+      let file = await this.importer.import(identifier, this.configuration);
+      let block = await this._importAndPreprocessBlock(file);
+      debug(`Finalizing Block object for "${block.identifier}"`);
 
-        // last check  to make sure we don't return a new instance
-        if (this.blocks[block.identifier]) {
-          return this.blocks[block.identifier];
-        }
+      // last check to make sure we don't return a new instance
+      if (this.blocks[block.identifier]) {
+        return this.blocks[block.identifier];
+      }
 
-        // Ensure this block name is unique.
-        block.setName(this.getUniqueBlockName(block.name));
+      // Ensure this block name is unique.
+      block.setName(this.getUniqueBlockName(block.name));
 
-        // if the block has any errors, surface them here
-        this._surfaceBlockErrors(block);
-
-        return this.blocks[block.identifier] = block;
-      })
-      .catch((error) => {
-        if (this.preprocessQueue.activeJobCount > 0) {
-          debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
-          return this.preprocessQueue.drain().then(() => {
-            debug(`Drain complete. Raising error.`);
-            throw error;
-          });
-        } else {
-          debug(`Block error. There are no preprocessing jobs. raising.`);
-          throw error;
-        }
-      });
+      // if the block has any errors, surface them here unless we're in fault tolerant mode.
+      this._surfaceBlockErrors(block);
+      this.blocks[block.identifier] = block;
+      return block;
+    } catch (error) {
+      if (this.preprocessQueue.activeJobCount > 0) {
+        debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
+        await this.preprocessQueue.drain();
+        debug(`Drain complete. Raising error.`);
+        throw error;
+      } else {
+        debug(`Block error. There are no preprocessing jobs. raising.`);
+        throw error;
+      }
+    }
   }
 
   /**
