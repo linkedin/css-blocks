@@ -42,7 +42,7 @@ class Plugin {
     let defaultName: string = this.config.importer.defaultName(identifier, this.config);
     let factory = new BlockFactory(this.config, this.postcss);
 
-    await factory.parseSync(root, sourceFile, defaultName).then((block) => {
+    await factory.parseRoot(root, sourceFile, defaultName).then((block) => {
       let compiler = new BlockCompiler(postcss, this.config);
       compiler.compile(block, root);
     });

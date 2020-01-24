@@ -67,7 +67,7 @@ export class TemplateAnalysisTests {
         let analysis = this.newAnalysis(info);
         let root = postcss.parse(css, { from: filename });
 
-        return this.blockFactory.parse(root, filename, "optimized").then((block: Block) => {
+        return this.blockFactory.parseRootFaultTolerant(root, filename, "optimized").then((block: Block) => {
           self.useBlockStyles(analysis, block, "", (container, el) => {
             if (container.asSource() === ".asdf") {
               el.addDynamicAttr(container, block.find(".asdf[larger]") as AttrValue, true);

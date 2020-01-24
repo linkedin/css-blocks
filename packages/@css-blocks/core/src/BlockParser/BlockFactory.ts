@@ -70,30 +70,32 @@ export class BlockFactory {
   }
 
   /**
-   * Parse a `postcss.Root` into a Block object. Save the Block promise and return it.
+   * Parse a `postcss.Root` into a Block object. Save the Block promise and
+   * return it. Use parseRoot if we need to catch errors.
+   *
+   * This function is referenced only in tests.
    * @param root The postcss.Root to parse.
    * @param identifier A unique identifier for this Block file.
    * @param name Default name for the block.
    * @returns The Block object promise.
    */
-  parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    // this function is referenced only in tests. Use parseSync if we need to
-    // catch errors
+  parseRootFaultTolerant(root: postcss.Root, identifier: string, name: string): Promise<Block> {
     return this.promises[identifier] = this.parser.parse(root, identifier, name);
   }
 
   /**
    * Parse a `postcss.Root` into a Block object. Save the Block promise and return it.
    * Also assert that the block is valid so that we can catch any errors that
-   * the block contains
+   * the block contains.
+   *
    * This function is only used in tests
    * @param root The postcss.Root to parse.
    * @param identifier A unique identifier for this Block file.
    * @param name Default name for the block.
    * @returns The Block object promise.
    */
-  async parseSync(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    const block = await this.parser.parse(root, identifier, name);
+  async parseRoot(root: postcss.Root, identifier: string, name: string): Promise<Block> {
+    const block = await this.parseRootFaultTolerant(root, identifier, name);
     return this._surfaceBlockErrors(block);
   }
 

@@ -29,7 +29,6 @@ describe("validate", () => {
   it("can check syntax for a bad block file", async () => {
     let cli = new CLI();
     await cli.run(["validate", fixture("basic/error.block.css")]);
-    console.log(cli.output);
     assert.equal(cli.output,
                  `error\t${relFixture("basic/error.block.css")}
 \tTwo distinct classes cannot be selected on the same element: .foo.bar

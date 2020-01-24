@@ -15,7 +15,7 @@ export class KeyQueryTests {
     let config = resolveConfiguration(opts);
     let factory = new BlockFactory(config, postcss);
     let root = postcss.parse(css, {from: filename});
-    return factory.parse(root, filename, "query-test").then((block) => {
+    return factory.parseRootFaultTolerant(root, filename, "query-test").then((block) => {
       return <BlockAndRoot>[block, root];
     });
   }
