@@ -137,11 +137,11 @@ export class BlockFactory {
     return this._getBlockPromise(identifier);
   }
 
-  _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
+  private _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
     return this.promises[identifier] = this._getBlockPromiseAsync(identifier);
   }
 
-  async _getBlockPromiseAsync(identifier: FileIdentifier): Promise<Block> {
+  private async _getBlockPromiseAsync(identifier: FileIdentifier): Promise<Block> {
     try {
       let file = await this.importer.import(identifier, this.configuration);
       let block = await this._importAndPreprocessBlock(file);
@@ -177,7 +177,7 @@ export class BlockFactory {
    * surfaces the errors or swallows them and reexports the block interface
    * @param block the block to check for errors
    */
-  _surfaceBlockErrors(block: Block): Block {
+  private _surfaceBlockErrors(block: Block): Block {
     if (this.faultTolerant) {
       return block;
     } else {
@@ -188,7 +188,7 @@ export class BlockFactory {
   /**
    * Parse the file into a `Block`.
    **/
-  async _importAndPreprocessBlock(file: ImportedFile): Promise<Block> {
+  private async _importAndPreprocessBlock(file: ImportedFile): Promise<Block> {
     // If the file identifier maps back to a real filename, ensure it is actually unique.
     let realFilename = this.importer.filesystemPath(file.identifier, this.configuration);
     if (realFilename) {
