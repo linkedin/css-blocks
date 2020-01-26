@@ -2,8 +2,6 @@ import { BemObject } from "./interface";
 
 // regex that matches block__element--modifier pattern
 export const R_BEM_REGEX = /^.(?:((?:[a-z0-9]+-)*[a-z0-9]+)(__(?:[a-z0-9]+-)*[a-z0-9]+)?(--(?:[a-z0-9]+-)*[a-z0-9]+)?)$/;
-// regex that matches block--modifier__element pattern
-export const R_BME_REGEX = /^.(?:((?:[a-z0-9]+-)*[a-z0-9]+)(--(?:[a-z0-9]+-)*[a-z0-9]+)?(__(?:[a-z0-9]+-)*[a-z0-9]+)?)$/;
 
 /**
  * function to find the LCS (longest common substring) from a string array
@@ -48,11 +46,6 @@ export function findLcsMap(arr: string[]): {[key: string]: string} {
 export function parseBemSelector(selector: string): BemObject | null {
   if (R_BEM_REGEX.test(selector)) {
     const [, block, element, modifier] = R_BEM_REGEX.exec(selector) || [undefined, undefined, undefined, undefined];
-    if (block || element || modifier) {
-      return { block, element, modifier };
-    }
-  } else if (R_BME_REGEX.test(selector)) {
-    const [, block, modifier, element] = R_BME_REGEX.exec(selector) || [undefined, undefined, undefined, undefined];
     if (block || element || modifier) {
       return { block, element, modifier };
     }
