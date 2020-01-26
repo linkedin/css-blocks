@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as postcss from "postcss";
-import * as parser from "postcss-selector-parser";
+import * as selectorParser from "postcss-selector-parser";
 import * as vars from "postcss-simple-vars";
 
 import { BemSelector, BlockClassSelector, SelectorBemObject } from "./interface";
@@ -145,12 +145,12 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
 
     const bemSelectorCache: BemSelectorMap = new Map();
 
-    const buildCache: parser.ProcessorFn = async (selectors) => {
+    const buildCache: selectorParser.ProcessorFn = async (selectors) => {
       let promises: Promise<SelectorBemObject>[] = [];
 
       selectors.walk((selector) => {
         // only iterate through classes
-        if (parser.isClassName(selector)) {
+        if (selectorParser.isClassName(selector)) {
           try {
             let bemSelector = new BemSelector(selector.value);
             if (bemSelector.block) {
@@ -177,13 +177,13 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
       }
     };
 
-    const rewriteSelectors: parser.ProcessorFn = (selectors) => {
+    const rewriteSelectors: selectorParser.ProcessorFn = (selectors) => {
 
       selectors.walk((selector) => {
         // we only need to modify class names. We can ignore everything else,
         // like existing attributes, pseudo selectors, comments, imports,
         // exports, etc
-        if (parser.isClassName(selector)) {
+        if (selectorParser.isClassName(selector)) {
 
           let bemSelector = bemSelectorCache.get(selector.value);
           // get the block class from the bemSelector
@@ -197,7 +197,7 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
               selector.value =  blockClassName.class;
             } else {
               //prepend a :scope node before this and remove this node later
-              let newScopeNode = parser.pseudo({
+              let newScopeNode = selectorParser.pseudo({
                 value: ":scope",
               });
               if (selector.parent) {
@@ -207,7 +207,7 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
             }
 
             if (blockClassName.state) {
-              let newAttrNode = parser.attribute({
+              let newAttrNode = selectorParser.attribute({
                 attribute: blockClassName.state,
                 quoteMark: blockClassName.subState ? '"' : undefined,
                 operator: blockClassName.subState ? "=" : undefined,
@@ -240,7 +240,7 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
 
     let buildCachePromises: unknown[] = [];
     root.walkRules(async (rule) => {
-      buildCachePromises.push(parser(buildCache).process(rule));
+      buildCachePromises.push(selectorParser(buildCache).process(rule));
     });
     await Promise.all(buildCachePromises);
 
@@ -249,7 +249,7 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
 
     // rewrite into a CSS block
     root.walkRules(rule => {
-      rule.selector = parser(rewriteSelectors).processSync(rule.selector);
+      rule.selector = selectorParser(rewriteSelectors).processSync(rule.selector);
     });
 
     result.root = root;
