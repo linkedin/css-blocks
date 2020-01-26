@@ -17,28 +17,22 @@ type BemToBlockClassMap  = WeakMap<BemSelector, BlockClassSelector>;
 const EMPTY_ELEMENT_PLACEHOLDER = "EMPTY-ELEMENT-PLACEHOLDER";
 const COMMON_PREFIXES_FOR_MODIFIERS = ["is"];
 
-export function convertBemToBlocks(files: Array<string>): Promise<void>[] {
-  let promises: Promise<void>[] = [];
-  files.forEach(file => {
-    fs.readFile(file, async (_err, css) => {
-      postcss([
-          // Using postcss-simple-vars to pass the fileName to the plugin
-          vars({
-            variables: () => {return {fileName: path.relative(process.cwd(), file)}; },
-          }),
-          bemToBlocksPlugin,
-        ])
-        .process(css, { from: file })
-        .then(output => {
-          // rewrite the file with the processed output
-          const parsedFilePath = path.parse(file);
-          const blockFilePath = Object.assign(parsedFilePath, {ext: `.block${parsedFilePath.ext}`, base: undefined} );
-          promises.push(fs.writeFile(path.format(blockFilePath), output.toString()));
-        }).catch(e => {throw (e); });
-
-    });
-  });
-  return promises;
+export async function convertBemToBlocks(files: Array<string>): Promise<void> {
+  for (let file of files) {
+    let fileName = path.relative(process.cwd(), file);
+    let processor = postcss([
+      // Using postcss-simple-vars to pass the fileName to the plugin
+      vars({
+        variables: () => { return { fileName }; },
+      }),
+      bemToBlocksPlugin,
+    ]);
+    let css = fs.readFileSync(file, "utf-8");
+    let result = await processor.process(css, { from: fileName});
+    const parsedFilePath = path.parse(file);
+    const blockFilePath = Object.assign(parsedFilePath, {ext: `.block${parsedFilePath.ext}`, base: undefined} );
+    await fs.writeFile(path.format(blockFilePath), result.toString());
+  }
 }
 
 /**
