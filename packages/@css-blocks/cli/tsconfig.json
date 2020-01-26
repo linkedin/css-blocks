@@ -9,6 +9,7 @@
     }
   },
   "references": [
+    {"path": "../bem-to-blocks"},
     {"path": "../core"},
     {"path": "../config"}
   ],

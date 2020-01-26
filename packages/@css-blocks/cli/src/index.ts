@@ -45,7 +45,7 @@ interface ValidateArgs extends GlobalArgs {
  * Typecast for result of command line argument parsing.
  */
 interface ConvertArgs extends GlobalArgs {
-  files: unknown;
+  files: Array<string>;
 }
 
 interface ValidateOptions {
@@ -130,7 +130,14 @@ export class CLI {
             description: "files or directories containing css blocks.",
           }),
         (argv: ConvertArgs) => {
-          argv.promise = convertBemToBlocks(argv.files as Array<string>);
+          argv.promise = convertBemToBlocks(argv.files).then(
+            () => {
+              this.exit(0);
+            },
+            () => {
+              this.exit(1);
+            },
+          );
         },
       )
       .wrap(yargs.terminalWidth())
