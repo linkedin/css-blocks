@@ -1,139 +1,151 @@
-
 import { assert } from "chai";
 import * as inquirer from "inquirer";
-import * as postcss from "postcss";
 import * as sinon from "sinon";
 
-import { bemToBlocksPlugin } from "../src/index";
+import { processBEMContents } from "../src";
 
 describe("converts BEM to blocks", () => {
 
   it("converts simple classes to blocks", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(".jobs-entry__image--inverse-red {color: blue}").then((output) => {
-        assert.equal(output.toString(), ".image[inverse-red] {color: blue}");
-      });
+    let result = await processBEMContents(
+      "jobs-entry.css",
+      ".jobs-entry__image--inverse-red {color: blue}",
+    );
+
+    assert.equal(result, ".image[inverse-red] {color: blue}");
   });
 
   it("existing attributes remain unchanged", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(".jobs-entry__image[state=red] {color: blue}")
-      .then(output => {
-        assert.equal(output.toString(), ".image[state=red] {color: blue}");
-      });
+    let output = await processBEMContents(
+      "test-existing-attributes.css",
+      ".jobs-entry__image[state=red] {color: blue}",
+    );
+
+    assert.equal(output, ".image[state=red] {color: blue}");
   });
 
   it("selector has attributes and a modifier", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(".jobs-entry__image--big[state=red] {color: blue}")
-      .then(output => {
-        assert.equal(output.toString(), ".image[big][state=red] {color: blue}");
-      });
+    let output = await processBEMContents(
+      "attributes-with-modifier.css",
+      ".jobs-entry__image--big[state=red] {color: blue}",
+    );
+
+    assert.equal(output, ".image[big][state=red] {color: blue}");
   });
 
   it("comments are left as is", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(`/* adding a comment here */.jobs-entry__image--big[state=red] {color: blue}`)
-      .then(output => {
-        assert.equal(output.toString(), `/* adding a comment here */.image[big][state=red] {color: blue}`);
-      });
+    let output = await processBEMContents(
+      "comments-test.css",
+      "/* adding a comment here */.jobs-entry__image--big[state=red] {color: blue}",
+    );
+
+    assert.equal(output, `/* adding a comment here */.image[big][state=red] {color: blue}`);
   });
 
   it("respects pseudo selectors", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(".jobs-entry__image--big::before {color: blue}")
-      .then(output => {
-        assert.equal(output.toString(), ".image[big]::before {color: blue}");
-      });
+    let output = await processBEMContents(
+      "pseudo-selectors.css",
+      ".jobs-entry__image--big::before {color: blue}",
+    );
+
+    assert.equal(output, ".image[big]::before {color: blue}");
   });
 
-  it("respects sibling selectors", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(".jobs-entry__image--big>.jobs-entry__image--small {color: blue}")
-      .then(output => {
-        assert.equal(output.toString(), ".image[big]>.image[small] {color: blue}");
-      });
+  it("respects child selectors", async () => {
+    let output = await processBEMContents(
+      "sibling-selectors.css",
+      ".jobs-entry__image--big > .jobs-entry__image--small {color: blue}",
+    );
+
+    assert.equal(output, ".image[big] > .image[small] {color: blue}");
   });
 
   it("respects scss imports", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(`@import "restyle"; .jobs-entry__image--big[state=red] {color: blue}`)
-      .then(output => {
-        assert.equal(output.toString(), `@import "restyle"; .image[big][state=red] {color: blue}`);
-      });
+    let output = await processBEMContents(
+      "imports.scss",
+      `@import "restyle"; .jobs-entry__image--big[state=red] {color: blue}`,
+    );
+
+    assert.equal(output, `@import "restyle"; .image[big][state=red] {color: blue}`);
   });
 
   it.skip("respects scss nesting", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(`.jobs-entry__image { &--big {color: blue} }`)
-      .then(output => {
-        assert.equal(output.toString(), `.image { &[big] {color: blue} }`);
-      });
+    let output = await processBEMContents(
+      "nesting.scss",
+      `.jobs-entry__image { &--big {color: blue} }`,
+    );
+
+    assert.equal(output, `.image { &[big] {color: blue} }`);
   });
 
   it("other scss syntax", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(`
-      @mixin artdeco-badge(){
-        @keyframes artdecoBadgeAnimationIn1 {
+    let output = await processBEMContents(
+      "misc.scss",
+      `
+      @mixin animations() {
+        @keyframes animation1 {
           from { transform: scale(0);}
           to { transform: scale(1.15); }
         }
 
-        @keyframes artdecoBadgeAnimationIn2 {
+        @keyframes animation2 {
           from { transform: scale(1.15);}
           to { transform: scale(1); }
         }
-      }`).then(output => {
-        assert.equal(output.toString().trim(), `
-      @mixin artdeco-badge(){
-        @keyframes artdecoBadgeAnimationIn1 {
+      }`,
+    );
+
+    assert.equal(
+      output.trim(),
+      `@mixin animations() {
+        @keyframes animation1 {
           from { transform: scale(0);}
           to { transform: scale(1.15); }
         }
 
-        @keyframes artdecoBadgeAnimationIn2 {
+        @keyframes animation2 {
           from { transform: scale(1.15);}
           to { transform: scale(1); }
         }
-      }`.trim());
-      });
+      }`.trim(),
+    );
   });
 
   it("replaces substates correctly", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(`.jobs-entry__image--size-big {color: blue}
-      .jobs-entry__image--size-small {color: red}`)
-      .then(output => {
-        assert.equal(output.toString(), `.image[size="big"] {color: blue}
+    let output = await processBEMContents(
+      "substates.scss",
+      `.jobs-entry__image--size-big {color: blue}
+      .jobs-entry__image--size-small {color: red}`,
+    );
+
+    assert.equal(output, `.image[size="big"] {color: blue}
       .image[size="small"] {color: red}`);
-      });
   });
 
   it("replaces substates correctly when the modifier is on the block", async () => {
-    return postcss([bemToBlocksPlugin])
-      .process(`.jobs-entry--size-big {color: blue}
-      .jobs-entry--size-small {color: red}`)
-      .then(output => {
-        assert.equal(output.toString(), `:scope[size="big"] {color: blue}
+    let output = await processBEMContents(
+      "substates.scss",
+      `.jobs-entry--size-big {color: blue}
+      .jobs-entry--size-small {color: red}`,
+    );
+
+    assert.equal(output, `:scope[size="big"] {color: blue}
       :scope[size="small"] {color: red}`);
-      });
   });
 
   it("calls inquirer for user input", async() => {
-
     let stub = sinon.stub(inquirer, "prompt");
     // disabling the rule as it expects a Promise<unknown> & {ui:PromptUI}
     /* tslint:disable:prefer-unknown-to-any */
     stub.onCall(0).returns({block: "my-block"} as any);
     stub.onCall(1).returns({element: "my-elem"} as any);
     stub.onCall(2).returns({modifier: "my-mod"} as any);
-    return postcss([bemToBlocksPlugin])
-      .process(`.CLASSINCAPSTHATISNOTBEM {color: blue}`)
-      .then((output) => {
-        assert.equal(output.css, ".my-elem[my-mod] {color: blue}");
-        assert.equal(stub.calledThrice, true);
+    let output = await processBEMContents(
+      "interactive-feedback.scss",
+      `.CLASSINCAPSTHATISNOTBEM {color: blue}`,
+    );
 
-      });
+    assert.equal(output, `.my-elem[my-mod] {color: blue}`);
+    assert.equal(stub.calledThrice, true);
   });
 });

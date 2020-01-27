@@ -15,11 +15,19 @@ type BlockToBemSelectorMap  = Map<string, ElementToBemSelectorMap>;
 type BemToBlockClassMap  = WeakMap<BemSelector, BlockClassSelector>;
 
 const EMPTY_ELEMENT_PLACEHOLDER = "EMPTY-ELEMENT-PLACEHOLDER";
-const COMMON_PREFIXES_FOR_MODIFIERS = ["is"];
 
 export async function convertBemToBlocks(files: Array<string>): Promise<void> {
   for (let file of files) {
     let fileName = path.relative(process.cwd(), file);
+    let css = fs.readFileSync(file, "utf-8");
+    let result = await processBEMContents(fileName, css);
+    const parsedFilePath = path.parse(file);
+    const blockFilePath = Object.assign(parsedFilePath, {ext: `.block${parsedFilePath.ext}`, base: undefined} );
+    await fs.writeFile(path.format(blockFilePath), result);
+  }
+}
+
+export async function processBEMContents(fileName: string, css: string): Promise<string> {
     let processor = postcss([
       // Using postcss-simple-vars to pass the fileName to the plugin
       vars({
@@ -27,12 +35,8 @@ export async function convertBemToBlocks(files: Array<string>): Promise<void> {
       }),
       bemToBlocksPlugin,
     ]);
-    let css = fs.readFileSync(file, "utf-8");
     let result = await processor.process(css, { from: fileName});
-    const parsedFilePath = path.parse(file);
-    const blockFilePath = Object.assign(parsedFilePath, {ext: `.block${parsedFilePath.ext}`, base: undefined} );
-    await fs.writeFile(path.format(blockFilePath), result.toString());
-  }
+    return result.toString();
 }
 
 /**
