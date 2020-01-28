@@ -15,6 +15,27 @@ describe("converts BEM to blocks", () => {
     assert.equal(result, ".image[inverse-red] {color: blue}");
   });
 
+  it("converts a simple block", async () => {
+    let output = await processBEMContents(
+      "nav.css",
+      `
+        .nav { }
+        .nav--open { }
+        .nav__item { }
+        .nav__item--is-selected { }
+      `,
+    );
+    assert.equal(
+      output.trim(),
+      `
+        :scope { }
+        :scope[open] { }
+        .item { }
+        .item[selected] { }
+      `.trim(),
+    );
+  });
+
   it("existing attributes remain unchanged", async () => {
     let output = await processBEMContents(
       "test-existing-attributes.css",

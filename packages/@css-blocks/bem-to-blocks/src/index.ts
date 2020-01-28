@@ -68,6 +68,9 @@ export function constructBlocksMap(bemSelectorCache: BemSelectorMap): BemToBlock
     }
     if (bemSelector.modifier) {
       blockClass.state = bemSelector.modifier;
+      if (blockClass.state.match(/^is-/)) {
+        blockClass.state = blockClass.state.substring(3);
+      }
     }
     // add this blockClass to the resultMap
     resultMap.set(bemSelector, blockClass);
@@ -119,14 +122,8 @@ export function constructBlocksMap(bemSelectorCache: BemSelectorMap): BemToBlock
             let blockClass = resultMap.get(sel);
             let lcs = blockClass && blockClass.state && lcsMap[blockClass.state];
             if (blockClass && blockClass.state && lcs) {
-              if (COMMON_PREFIXES_FOR_MODIFIERS.indexOf(lcs) > -1) {
-                // if we find that the state contains a common prefix, we strip
-                // it of that prefix
-                blockClass.state = blockClass.state.replace(`${lcs}-`, "");
-              } else {
-                blockClass.subState = blockClass.state.replace(`${lcs}-`, "");
-                blockClass.state = lcs.replace(/-$/, "");
-              }
+              blockClass.subState = blockClass.state.replace(`${lcs}-`, "");
+              blockClass.state = lcs.replace(/-$/, "");
             }
           });
         }
@@ -204,9 +201,7 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
               let newScopeNode = selectorParser.pseudo({
                 value: ":scope",
               });
-              if (selector.parent) {
-                selector.parent.insertBefore(selector, newScopeNode);
-              }
+              selector.parent!.insertBefore(selector, newScopeNode);
               stripSelector = true;
             }
 
@@ -223,15 +218,12 @@ export const bemToBlocksPlugin: postcss.Plugin<PostcssAny> = postcss.plugin("bem
               });
 
               // insert this new node after the current node
-              if (selector.parent) {
-                selector.parent.insertAfter(selector, newAttrNode);
-              }
+              selector.parent!.insertAfter(selector, newAttrNode);
+            }
 
-              // strip the selector in the end if we replaced it with a pseudo
-              // class
-              if (stripSelector) {
-                selector.remove();
-              }
+            // strip the selector in the end if we replaced it with a pseudoclass
+            if (stripSelector) {
+              selector.remove();
             }
           }
         }

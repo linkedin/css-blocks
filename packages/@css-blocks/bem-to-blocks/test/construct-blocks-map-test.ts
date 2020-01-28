@@ -24,6 +24,25 @@ describe("construct-blocks", () => {
     assert.deepEqual(result.get(sel4), new BlockClassSelector({ class: "image" }));
   });
 
+  it("converts another simple block", async () => {
+    let sel1 = new BemSelector(".nav");
+    let sel2  = new BemSelector(".nav--open");
+    let sel3 =  new BemSelector(".nav__item");
+    let sel4 = new BemSelector(".nav__item--is-selected");
+    let mockMap = new Map(Object.entries({
+      ".nav": sel1,
+      ".nav--open": sel2,
+      ".nav__item": sel3,
+      ".nav__item--is-selected": sel4,
+    }));
+
+    let result = constructBlocksMap(mockMap);
+    assert.deepEqual(result.get(sel1), new BlockClassSelector());
+    assert.deepEqual(result.get(sel2), new BlockClassSelector({ state: "open" }));
+    assert.deepEqual(result.get(sel3), new BlockClassSelector({ class: "item" }));
+    assert.deepEqual(result.get(sel4), new BlockClassSelector({ class: "item", state: "selected"}));
+  });
+
   it("calculates substates correctly", async () => {
     let sel1 = new BemSelector(".jobs-hero__image--inverse-red");
     let sel2  = new BemSelector(".jobs-hero__image--inverse-black");

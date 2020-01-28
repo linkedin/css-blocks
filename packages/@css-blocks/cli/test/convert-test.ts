@@ -33,12 +33,5 @@ describe("BEM converter", () => {
     let result = tempDir.read();
     let convertedFileContents = result["nav.block.css"];
     assert.ok(typeof convertedFileContents === "string" && convertedFileContents.match(/:scope/));
-    // XXX The output isn't correct so we need to add a test case for this.
-    // `
-    //     :scope { }
-    //     :scope[open] { }
-    //     .item { }
-    //     .item[selected] { }
-    // `
   });
 });
