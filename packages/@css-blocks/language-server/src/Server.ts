@@ -1,5 +1,8 @@
 import { search as searchForConfig } from "@css-blocks/config";
 import { BlockFactory, Configuration, CssBlockError, Syntax, resolveConfiguration } from "@css-blocks/core";
+import { GlimmerAnalyzer } from "@css-blocks/glimmer";
+import * as glob from "glob";
+import * as path from "path";
 import { CompletionItem, Definition, DidChangeConfigurationNotification, DocumentLink, DocumentLinkParams, IConnection, InitializeParams, InitializeResult, Location, ReferenceParams, TextDocumentChangeEvent, TextDocumentPositionParams, TextDocuments } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
@@ -14,7 +17,8 @@ import { PathTransformer } from "./pathTransformers/PathTransformer";
 import { SERVER_CAPABILITIES } from "./serverCapabilities";
 import { isBlockFile } from "./util/blockUtils";
 import { convertErrorsToDiagnostics } from "./util/diagnosticsUtils";
-import { isTemplateFile, validateTemplates } from "./util/hbsUtils";
+import { findStyleSheetSourceLocation } from "./util/hbsDefinitionProvider";
+import { ClassAttribute, getItemAtCursor, isTemplateFile, validateTemplates } from "./util/hbsUtils";
 
 export class Server {
   _blockFactory: BlockFactory | undefined;
@@ -70,25 +74,25 @@ export class Server {
   }
 
   async validateTemplates() {
-      this.blockFactory.reset();
-      let templateUriToErrors = await validateTemplates(this.documents, this.blockFactory, this.pathTransformer);
-      this.distributeDiagnostics(templateUriToErrors);
+    this.blockFactory.reset();
+    let templateUriToErrors = await validateTemplates(this.documents, this.blockFactory, this.pathTransformer);
+    this.distributeDiagnostics(templateUriToErrors);
   }
 
   async onDidChangeContent(e: TextDocumentChangeEvent) {
-      // only track incremental changes within block files
-      this.blockFactory.reset();
-      if (isBlockFile(e.document.uri, this.config)) {
-        const cssBlockErrors = await documentContentChange(e, this.blockFactory);
-        this.sendDiagnostics(cssBlockErrors, e.document.uri);
+    // only track incremental changes within block files
+    this.blockFactory.reset();
+    if (isBlockFile(e.document.uri, this.config)) {
+      const cssBlockErrors = await documentContentChange(e, this.blockFactory);
+      this.sendDiagnostics(cssBlockErrors, e.document.uri);
 
-      } else if (isTemplateFile(e.document.uri)) {
-        // Validate template
-        // NOTE: this does seem to cause a little bit of weirdness when editing a
-        // template with errors since the error locations do not get updated until
-        // saving the file. We may want to validate the open template files on
-        // every change?
-      }
+    } else if (isTemplateFile(e.document.uri)) {
+      // Validate template
+      // NOTE: this does seem to cause a little bit of weirdness when editing a
+      // template with errors since the error locations do not get updated until
+      // saving the file. We may want to validate the open template files on
+      // every change?
+    }
 
   }
 
@@ -114,14 +118,82 @@ export class Server {
     this.connection.onReferences(async (params: ReferenceParams): Promise<Location[]> => {
       let uri = params.textDocument.uri;
       let locations: Location[] = [];
+      const workspaceFolders = await this.connection.workspace.getWorkspaceFolders();
 
-      // TODO: construct glimmer analyzer and see what information we currently
-      // have to work with.
+      if (!workspaceFolders) {
+        return locations;
+      }
+
       if (isTemplateFile(uri)) {
         let document = this.documents.get(params.textDocument.uri);
         if (!document) {
           return locations;
         }
+
+        let itemAtCursor = getItemAtCursor(document.getText(), params.position);
+        if (!itemAtCursor) {
+          return locations;
+        }
+
+        const localBlockName = (uri.split("templates/components/").pop() || "").split(".").shift();
+        const blockName = itemAtCursor.attribute.referencedBlock || localBlockName;
+        const attributeValue = (itemAtCursor.attribute as ClassAttribute).name;
+
+        let analyzer = new GlimmerAnalyzer(this.blockFactory, {});
+
+        // TODO: for v1 we are assuming a single directory workspace where the root
+        // represents the path to an ember application. In a follow up we should handle
+        // multi-root workspaces and workspaces that may contain the ember app in a nested
+        // directory.
+        const rootDir = URI.parse(workspaceFolders[0].uri).fsPath;
+        const templates = glob.sync("**/*.hbs", { ignore: ["**/node_modules/**"], cwd: rootDir });
+        let references: Location[] = [];
+        let analyses;
+
+        try {
+          analyses = await analyzer.analyze(rootDir, templates);
+        } catch (e) {
+          console.log(e);
+          return references;
+        }
+
+        // first lets resolve the stylesheet reference. NOTE: This is currently
+        // naive in that it doesn't account for extensions in other block files.
+        const blockPath = this.pathTransformer.templateToBlock(URI.parse(uri).fsPath);
+        if (blockPath) {
+          const stylesheetLocation = await findStyleSheetSourceLocation(blockPath, this.blockFactory, itemAtCursor);
+          if (stylesheetLocation) {
+            locations.push(stylesheetLocation);
+          }
+        }
+
+        // next we'll find all of the template references
+        analyses.eachAnalysis(templateAnalysis => {
+          templateAnalysis.elements.forEach(elementAnalysis => {
+            const staticStyles = elementAnalysis.getAllStaticStyles();
+
+            for (let staticStyle of staticStyles) {
+              if (staticStyle.name === attributeValue && staticStyle.block.name === blockName) {
+                // TODO: Right now this is pushing the location of the element that has the attribute.
+                // In a follow up we should capture more granular source locations for attribute nodes
+                // in order to make the search results displayed in the UI more accurate.
+                locations.push({
+                  uri: URI.file(path.resolve(rootDir, templateAnalysis.template.identifier)).toString(),
+                  range: {
+                    start: {
+                      line: elementAnalysis.sourceLocation.start.line - 1,
+                      character: elementAnalysis.sourceLocation.start.column || 0,
+                    },
+                    end: {
+                      line: elementAnalysis.sourceLocation.end!.line - 1,
+                      character: elementAnalysis.sourceLocation.end!.column || 0,
+                    },
+                  },
+                });
+              }
+            }
+          });
+        });
       }
 
       return locations;
@@ -157,7 +229,7 @@ export class Server {
       rootDir = params.rootPath;
       result = await searchForConfig(params.rootPath);
     }
-    options = result || (rootDir ? {rootDir} : {});
+    options = result || (rootDir ? { rootDir } : {});
     options.importer = new LSImporter(this.documents, options.importer);
     // We set both of these explicitly here just in case they were accessed
     // before initialization.
