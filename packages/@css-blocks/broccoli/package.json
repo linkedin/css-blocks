@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@css-blocks/core": "^1.0.0-alpha.4",
-    "@glimmer/compiler": "^0.42.0",
+    "@glimmer/compiler": "^0.47.5",
     "@glimmer/syntax": "^0.42.0",
     "@opticss/template-api": "^0.6.3",
     "broccoli-funnel": "^2.0.1",
