@@ -34,7 +34,7 @@
     "@types/prettier": "^1.8.0",
     "@types/tapable": "1.0.4",
     "chai": "^4.2.0",
-    "husky": "^3.0.4",
+    "husky": "^4.2.3",
     "istanbul": "^0.4.5",
     "lerna": "^3.16.4",
     "loader-utils": "^1.1.0",
