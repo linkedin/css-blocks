@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "ember build -prod",
+    "compile": "echo 'nothing to build'",
     "start": "ember server",
     "test": "ember test",
     "test:runner": "ember test"

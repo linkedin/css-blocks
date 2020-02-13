@@ -10,11 +10,12 @@ and the open source community subject to the BSD 2-Clause license.
 Getting Started
 ===============
 
-Install required global dependencies:
+Make sure you have `yarn` installed, if you don't then you can simply install it like so:
 
 ```
-$ npm install -g lerna yarn
+$ npm install -g yarn
 ```
+Optionally you may install `lerna` the same way. Lerna is a tool that uses Yarn workspaces under the hood to manage monorepos like CSS Blocks uses.
 
 Check out the code:
 
@@ -22,36 +23,31 @@ Check out the code:
 $ git clone https://github.com/linkedin/css-blocks.git
 ```
 
-Go into the css-blocks directory and run some commands:
+Go into the css-blocks directory and install any dependancies:
 
 ```
 $ cd css-blocks
-$ ./scripts/checkout-opticss-and-link.sh
+$ yarn
 ```
+Running `yarn` in the root is all that is required to install the dependancies for _all_ of the sub-packages in the repo (and they are deduplicated and/or linked as required.
 
-Note: if you already have OptiCSS checked out, you can run
-`./scripts/link-to-opticss.js ../opticss` instead of the script above (change
-the path you pass it according to your needs).
+Optionally you can run the _compile_ script across all packages, this will
+transpile the TypeScript files within each repo to JavaScript in their respective output locations.
 
-You may want to ensure that the tests for OptiCSS are all passing:
+You can do this with `lerna run compile` or `yarn workspaces run compile`. Either is fine.
 
-```
-$ cd ../opticss
-$ lerna run test
-$ cd - # to return to the css-blocks directory
-```
-
-Install dependencies and run tests:
+The code for individual packages of the monorepo are in `packages/*`.
+Within any of the packages in this monorepo you'll generally use the
+package scripts to manage the project. Most, not all, packages have some common scripts:
 
 ```
-$ lerna bootstrap
-$ lerna run test
-```
+yarn run start    // starts a test webapp in those packages that have one
+yarn run test     // runs the tests for a projectscripts or
+yarn run lint     // runs a linter on the code (usually eslint and tslint)
+yarn run compile // compiles (if required) the package from TypeScript to JS
+``` 
 
-The code for individual packages of this monorepo are in `packages/*`.
-Within any of the packages in this monorepo you'll generally use the npm
-package scripts to manage the project, E.g. `yarn run test` or
-`yarn run lintfix`. Run `yarn run` for a list of available commands.
+Run `yarn run` for a list of available commands in each project.
 
 Running Existing Integrations
 ==================================================

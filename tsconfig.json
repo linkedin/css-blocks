@@ -1,6 +1,6 @@
 {
   "include": [ "packages/**/*" ],
-  "exclude": [ "node_modules" ],
+  "exclude": [ "node_modules", "node_modules/**/*" ],
   "compilerOptions": {
     // Compilation Configuration
     "target": "es2017",

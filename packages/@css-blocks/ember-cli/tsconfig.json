@@ -1,0 +1,16 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "composite": true
+  },
+  "include": [
+    "index.ts",
+    "src/**/*",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}

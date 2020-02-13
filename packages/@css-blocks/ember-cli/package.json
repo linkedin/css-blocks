@@ -3,10 +3,16 @@
   "name": "@css-blocks/ember-cli",
   "description": "Use CSS Blocks with your Ember and Glimmer projects.",
   "keywords": [
-    "ember-addon"
+    "ember-addon",
+    "css",
+    "css-blocks",
+    "blocks",
+    "ember",
+    "handlebars",
+    "glimmer"
   ],
   "license": "MIT",
-  "author": "Adam Miller <ammiller@linkedin.com>",
+  "author": "Gregory Wild-Smith <gwildsmith@linkedin.com>",
   "directories": {
     "doc": "doc",
     "test": "tests"
@@ -14,12 +20,22 @@
   "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli",
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli#readme",
   "scripts": {
+    "compile": "tsc --version && tsc --build",
     "build": "ember build",
     "lint:js": "eslint ./*.js addon addon-test-support app blueprints config lib server test-support tests",
     "start": "ember serve",
     "test": "ember test",
     "test:runner": "ember test",
-    "test:all": "ember try:each"
+    "test:all": "ember try:each",
+    "prebuild": "yarn run compile",
+    "prestart": "yarn run compile",
+    "pretest": "yarn run compile",
+    "prepublishOnly": "ember ts:precompile",
+    "postpublish": "ember ts:clean",
+    "lint": "tslint -t msbuild --project . -c tslint.cli.json",
+    "lint:all": "tslint -t msbuild --project . -c tslint.release.json",
+    "lint:fix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
+    "watch": "watch 'yarn run test' src tests --wait=1"
   },
   "dependencies": {
     "@css-blocks/broccoli": "^1.0.0-alpha.6",
@@ -31,15 +47,20 @@
     "broccoli-merge-trees": "^3.0.2",
     "debug": "^4.1.1",
     "ember-cli-babel": "7.11.0",
+    "ember-source-channel-url": "^2.0.1",
     "fs-extra": "^8.0.0",
-    "lodash.merge": "^4.6.2",
     "symlink-or-copy": "^1.2.0"
   },
   "devDependencies": {
     "@ember/jquery": "^0.6.1",
+    "@types/ember": "^3.1.1",
+    "@types/ember-qunit": "^3.4.7",
+    "@types/ember__test-helpers": "^0.7.9",
+    "@types/qunit": "^2.9.0",
+    "@types/rsvp": "^4.0.3",
     "broccoli-asset-rev": "^3.0.0",
     "ember-ajax": "^5.0.0",
-    "ember-cli": "~3.11",
+    "ember-cli": "^3.15",
     "ember-cli-eslint": "^5.1.0",
     "ember-cli-htmlbars": "^3.1.0",
     "ember-cli-htmlbars-inline-precompile": "^2.1.0",
@@ -57,10 +78,11 @@
     "ember-try": "^1.1.0",
     "eslint-plugin-ember": "^7.0.0",
     "eslint-plugin-node": "^9.0.0",
-    "loader.js": "^4.7.0"
+    "loader.js": "^4.7.0",
+    "typescript": "^3.7.5"
   },
   "engines": {
-    "node": "6.* || 8.* || >= 10.*"
+    "node": "8.* || >= 10.*"
   },
   "ember-addon": {
     "configPath": "tests/dummy/config",
