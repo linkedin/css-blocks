@@ -98,6 +98,18 @@ describe("Template Rewriting", function() {
     `));
   });
 
+  it("rewrites styles with the style-of helper", async function() {
+    let projectDir = fixture("styled-app");
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
+    let templatePath = fixture("styled-app/src/ui/components/with-style-helper/template.hbs");
+    let result = await pipeline(projectDir, analyzer, "with-style-helper", templatePath);
+    assert.deepEqual(minify(print(result.ast)), minify(`
+      <div class="b">
+        <h1 class="e">Hello, <World cssClass={{-css-blocks-concat (-css-blocks-concat "c f" " " (-css-blocks-classnames 2 3 2 isThick 1 2 4 2 1 (textStyle) "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2))}} />!</h1>
+      </div>
+    `));
+  });
+
   it("rewrites styles with block aliases", async function() {
     let projectDir = fixture("styled-app");
     let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);

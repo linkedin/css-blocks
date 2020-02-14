@@ -13,8 +13,7 @@ import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as debugGenerator from "debug";
 import * as fs from "fs";
 
-import { ElementAnalyzer } from "./ElementAnalyzer";
-import { isEmberBuiltIn } from "./EmberBuiltins";
+import { ElementAnalyzer, isAnalyzedHelper } from "./ElementAnalyzer";
 import { Resolver } from "./Resolver";
 import { TEMPLATE_TYPE } from "./Template";
 
@@ -124,8 +123,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     let elementAnalyzer = new ElementAnalyzer(analysis, this.cssBlocksOptions);
     traverse(ast, {
       MustacheStatement(node: AST.MustacheStatement) {
-        const name = node.path.original;
-        if (!isEmberBuiltIn(name)) { return; }
+        if (!isAnalyzedHelper(node)) { return; }
         elementCount++;
         const atRootElement = (elementCount === 1);
         const element = elementAnalyzer.analyze(node, atRootElement);
@@ -133,8 +131,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
       },
 
       BlockStatement(node: AST.BlockStatement) {
-        const name = node.path.original;
-        if (!isEmberBuiltIn(name)) { return; }
+        if (!isAnalyzedHelper(node)) { return; }
         elementCount++;
         const atRootElement = (elementCount === 1);
         const element = elementAnalyzer.analyze(node, atRootElement);

@@ -10,9 +10,9 @@
       "request": "launch",
       "name": "Launch Program",
       "preLaunchTask": "compile",
-      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "program": "${workspaceRoot}/../../../node_modules/.bin/_mocha",
       "args": [
-        "dist/test",
+        "dist/cjs/test",
         "--opts",
         "test/mocha.opts"
       ],

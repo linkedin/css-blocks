@@ -51,9 +51,24 @@ export function isBooleanLiteral(value: AST.Node | undefined): value is AST.Bool
 export function isMustacheStatement(value: AST.Node | undefined): value is AST.MustacheStatement {
   return !!value && value.type === "MustacheStatement";
 }
+export function isBlockStatement(value: AST.Node | undefined): value is AST.BlockStatement {
+  return !!value && value.type === "BlockStatement";
+}
 export function isSubExpression(value: AST.Node | undefined): value is AST.SubExpression {
   return !!value && value.type === "SubExpression";
 }
 export function isElementNode(value: AST.Node | undefined): value is AST.ElementNode {
   return !!value && value.type === "ElementNode";
+}
+export function isNumberLiteral(value: AST.Node | undefined): value is AST.NumberLiteral {
+  return !!value && value.type === "NumberLiteral";
+}
+export function isNullLiteral(value: AST.Node | undefined): value is AST.NullLiteral {
+  return !!value && value.type === "NullLiteral";
+}
+export function isUndefinedLiteral(value: AST.Node | undefined): value is AST.UndefinedLiteral {
+  return !!value && value.type === "UndefinedLiteral";
+}
+export function isPathExpression(value: AST.Node | undefined): value is AST.PathExpression {
+  return !!value && value.type === "PathExpression";
 }

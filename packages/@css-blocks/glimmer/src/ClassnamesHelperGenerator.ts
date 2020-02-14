@@ -41,7 +41,7 @@ import {
   TernaryExpression as TernaryAST,
 } from "./ElementAnalyzer";
 import { CLASSNAMES_HELPER_NAME, CONCAT_HELPER_NAME } from "./helpers";
-import { isMustacheStatement } from "./utils";
+import { isConcatStatement, isMustacheStatement, isPathExpression, isSubExpression } from "./utils";
 
 const enum SourceExpression {
   ternary,
@@ -228,7 +228,7 @@ function constructSwitch(builders: Builders, stateExpr: Switch<StringAST> & HasG
   } else {
     expr.push(builders.number(FalsySwitchBehavior.unset));
   }
-  expr.push(moustacheToStringExpression(builders, stateExpr.stringExpression));
+  expr.push(moustacheToStringExpression(builders, stateExpr.stringExpression!));
   for (let value of values) {
     let obj = stateExpr.group[value];
     expr.push(builders.string(value));
@@ -271,11 +271,11 @@ function moustacheToExpression(builders: Builders, expr: AST.MustacheStatement):
   }
 }
 
-function moustacheToStringExpression(builders: Builders, stringExpression: StringAST): AST.Expression {
-  if (stringExpression!.type === "ConcatStatement") {
+function moustacheToStringExpression(builders: Builders, stringExpression: Exclude<StringAST, null>): AST.Expression {
+  if (isConcatStatement(stringExpression)) {
     return builders.sexpr(
       builders.path(CONCAT_HELPER_NAME),
-      (stringExpression as AST.ConcatStatement).parts.reduce(
+      stringExpression.parts.reduce(
         (arr, val) => {
           if (val.type === "TextNode") {
             arr.push(builders.string(val.chars));
@@ -285,8 +285,14 @@ function moustacheToStringExpression(builders: Builders, stringExpression: Strin
           return arr;
         },
         new Array<AST.Expression>()));
+  } else if (isSubExpression(stringExpression)) {
+    return stringExpression;
+  } else if (isPathExpression(stringExpression)) {
+    return builders.sexpr(stringExpression);
+  } else if (isMustacheStatement(stringExpression)) {
+    return moustacheToExpression(builders, stringExpression);
   } else {
-    return moustacheToExpression(builders, stringExpression as AST.MustacheStatement);
+    return assertNever(stringExpression);
   }
 }
 

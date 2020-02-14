@@ -16,10 +16,11 @@ import * as debugGenerator from "debug";
 
 import { GlimmerAnalysis } from "./Analyzer";
 import { classnamesHelper, classnamesSubexpr } from "./ClassnamesHelperGenerator";
-import { ElementAnalyzer } from "./ElementAnalyzer";
-import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
+import { ElementAnalyzer, TemplateElement, isStyleOfHelper } from "./ElementAnalyzer";
+import { getEmberBuiltInStates, isEmberBuiltIn, isEmberBuiltInNode } from "./EmberBuiltins";
 import { CONCAT_HELPER_NAME } from "./helpers";
 import { ResolvedFile, TEMPLATE_TYPE } from "./Template";
+import { isTextNode } from "./utils";
 
 const DEBUG = debugGenerator("css-blocks:glimmer:rewriter");
 
@@ -73,8 +74,9 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     if (this.block) {
       this.visitor = {
         ElementNode: this.ElementNode.bind(this),
-        MustacheStatement: this.BuiltinStatement.bind(this),
-        BlockStatement: this.BuiltinStatement.bind(this),
+        SubExpression: this.HelperStatement.bind(this),
+        MustacheStatement: this.HelperStatement.bind(this),
+        BlockStatement: this.HelperStatement.bind(this),
       };
     } else {
       this.visitor = {};
@@ -114,13 +116,22 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     return depArray;
   }
 
-  BuiltinStatement(node: AST.MustacheStatement | AST.BlockStatement) {
-    if (!isEmberBuiltIn(node.path.original)) { return; }
+  HelperStatement(node: AST.MustacheStatement | AST.BlockStatement | AST.SubExpression) {
+    if (isEmberBuiltInNode(node)) {
+      this.BuiltInStatement(node);
+    } else if (isStyleOfHelper(node)) {
+      this.StyleOfHelper(node);
+    }
+  }
+
+  BuiltInStatement(node: AST.MustacheStatement | AST.BlockStatement) {
     this.elementCount++;
 
+    let name = node.path.original;
+    if (!isEmberBuiltIn(name)) return;
     // Simple single space AST node to reuse.
     const space: AST.Literal = this.syntax.builders.string(" ");
-    const attrToStateMap = getEmberBuiltInStates(node.path.original);
+    const attrToStateMap = getEmberBuiltInStates(name);
     let atRootElement = (this.elementCount === 1);
 
     // TODO: We use this to re-analyze elements in the rewriter.
@@ -161,41 +172,118 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     }
   }
 
+  buildStringValue(subexpression: false, value: string): AST.TextNode;
+  buildStringValue(subexpression: true, value: string): AST.StringLiteral;
+  buildStringValue(subexpression: boolean, value: string): AST.StringLiteral | AST.TextNode;
+  buildStringValue(subexpression: boolean, value: string): AST.StringLiteral | AST.TextNode {
+    if (subexpression) {
+      return this.syntax.builders.string(value);
+    } else {
+      return this.syntax.builders.text(value);
+    }
+  }
+
+  buildStringConcatExpr(strings: Array<string | AST.SubExpression | AST.StringLiteral>): AST.SubExpression {
+    return this.syntax.builders.sexpr(
+      this.syntax.builders.path("-css-blocks-concat"),
+      strings.map(s => {
+        if (typeof s === "string") {
+          return this.syntax.builders.string(s);
+        } else {
+          return s;
+        }
+      }),
+    );
+  }
+
+  buildStringConcatStmnt(strings: Array<string | AST.MustacheStatement | AST.TextNode>): AST.ConcatStatement {
+    return this.syntax.builders.concat(
+      strings.map(s => {
+        if (typeof s === "string") {
+          return this.syntax.builders.text(s);
+        } else {
+          return s;
+        }
+      }),
+    );
+  }
+
+  buildClassValue(subexpression: false, analysis: TemplateElement): AST.TextNode | AST.MustacheStatement | AST.ConcatStatement | null;
+  buildClassValue(subexpression: true, analysis: TemplateElement): AST.StringLiteral | AST.SubExpression | null;
+  buildClassValue(subexpression: boolean, analysis: TemplateElement): AST.StringLiteral | AST.SubExpression | AST.TextNode | AST.MustacheStatement | AST.ConcatStatement | null {
+    let sExp: AST.StringLiteral | AST.SubExpression | null = null;
+    let stmnt: AST.TextNode | AST.MustacheStatement | AST.ConcatStatement | null = null;
+    let rewrite = this.styleMapping.simpleRewriteMapping(analysis);
+    this.debug(analysis.forOptimizer(this.cssBlocksOpts)[0].toString());
+
+    // Set a static class AST node if needed.
+    if (rewrite.staticClasses.length) {
+      if (subexpression) {
+        sExp = this.buildStringValue(true, rewrite.staticClasses.join(" "));
+      } else {
+        stmnt = this.buildStringValue(false, rewrite.staticClasses.join(" "));
+      }
+    }
+
+    // Set a dynamic classes AST node if needed.
+    if (rewrite.dynamicClasses.length) {
+      if (subexpression) {
+        let dynamicValue = classnamesSubexpr(this.syntax.builders, rewrite, analysis);
+        if (sExp) {
+          sExp = this.buildStringConcatExpr([sExp, " ", dynamicValue]);
+        } else {
+          sExp = dynamicValue;
+        }
+      } else {
+        let dynamicValue = classnamesHelper(this.syntax.builders, rewrite, analysis);
+        if (stmnt) {
+          stmnt = this.buildStringConcatStmnt([stmnt, " ", dynamicValue]);
+        } else {
+          stmnt = dynamicValue;
+        }
+      }
+    }
+
+    return subexpression ? sExp : stmnt;
+  }
+
+  StyleOfHelper(node: AST.MustacheStatement | AST.SubExpression): void {
+    this.elementCount++;
+    let atRootElement = (this.elementCount === 1);
+    let attrMap = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
+    let attrNames = Object.keys(attrMap);
+    if (attrNames.length !== 1 || attrNames[0] !== "class") {
+      console.error("Error: unexpected attributes in rewrite for style-of helper", attrNames);
+    }
+    node.path = this.syntax.builders.path("-css-blocks-concat");
+    let attrValue = this.buildClassValue(true, attrMap["class"]);
+    if (attrValue) {
+      node.params = [attrValue];
+    } else {
+      node.params = [];
+    }
+    node.hash.pairs = [];
+  }
+
   ElementNode(node: AST.ElementNode): void {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
-    const space: AST.TextNode = this.syntax.builders.text(" ");
     let attrMap = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
 
     // Remove all the source attributes for styles.
     node.attributes = node.attributes.filter(a => this.elementAnalyzer.isAttributeAnalyzed(a.name)[0] === null);
 
-    for (let attr of Object.keys(attrMap)) {
-      let element = attrMap[attr];
-      let rewrite = this.styleMapping.simpleRewriteMapping(element);
-      this.debug(element.forOptimizer(this.cssBlocksOpts)[0].toString());
-      let staticValue: AST.TextNode | null = null;
-      let dynamicValue: AST.MustacheStatement | null = null;
-
-      // Set a static class AST node if needed.
-      if (rewrite.staticClasses.length) {
-        staticValue = this.syntax.builders.text(rewrite.staticClasses.join(" "));
-      }
-
-      // Set a dynamic classes AST node if needed.
-      if (rewrite.dynamicClasses.length) {
-        dynamicValue = classnamesHelper(this.syntax.builders, rewrite, element);
-      }
-
-      // If no classes, return.
-      if (!staticValue && !dynamicValue) { return; }
-
-      // If both static and dynamic, concat them together, otherwise use one or the other.
-      const attrValue = (staticValue && dynamicValue) ? this.syntax.builders.concat([staticValue, space, dynamicValue]) : (staticValue || dynamicValue);
+    for (let attrName of Object.keys(attrMap)) {
+      let analysis: TemplateElement = attrMap[attrName];
+      let attrValue = this.buildClassValue(false, analysis);
+      if (!attrValue) continue;
+      if (isTextNode(attrValue) && attrValue.chars === "") continue;
 
       // Add the new attribute.
-      let hash = this.syntax.builders.attr(attr, attrValue!);
-      node.attributes.push(hash);
+      // This assumes the class attribute was forbidden. If we ever change
+      // that assumption, we must merge with that attribute instead.
+      let attr = this.syntax.builders.attr(attrName, attrValue);
+      node.attributes.push(attr);
     }
   }
 }

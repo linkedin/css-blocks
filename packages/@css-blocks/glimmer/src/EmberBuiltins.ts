@@ -1,3 +1,7 @@
+import { AST } from "@glimmer/syntax";
+
+import { isBlockStatement, isMustacheStatement } from "./utils";
+
 /**
  * Ember Built-Ins are components that should be analyzed like regular
  * elements. The Analyzer and Rewriter will process components defined
@@ -21,6 +25,15 @@ const BUILT_INS: IBuiltIns = {
 
 export type BuiltIns = keyof IBuiltIns;
 
+export function isEmberBuiltInNode(node: AST.Node): node is AST.BlockStatement | AST.MustacheStatement {
+  if (isBlockStatement(node) || isMustacheStatement(node)) {
+    let name = node.path.original;
+    if (typeof name === "string" && BUILT_INS[name]) {
+      return true;
+    }
+  }
+  return false;
+}
 export function isEmberBuiltIn(name: unknown): name is keyof IBuiltIns {
   if (typeof name === "string" && BUILT_INS[name]) { return true; }
   return false;

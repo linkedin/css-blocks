@@ -1,0 +1,14 @@
+@export h from "./header.css";
+
+:scope {
+    color: red;
+}
+
+.world {
+    border: 1px solid black;
+}
+
+.world[thick] {
+    border-width: 3px;
+}
+

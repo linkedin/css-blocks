@@ -9,6 +9,7 @@ import {
 } from "@css-blocks/core";
 import { AST, print } from "@glimmer/syntax";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
+import { assertNever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
 import { GlimmerAnalysis } from "./Analyzer";
@@ -20,15 +21,19 @@ import {
   isConcatStatement,
   isElementNode,
   isMustacheStatement,
+  isNullLiteral,
+  isNumberLiteral,
+  isPathExpression,
   isStringLiteral,
   isSubExpression,
   isTextNode,
+  isUndefinedLiteral,
 } from "./utils";
 
 // Expressions may be null when ElementAnalyzer is used in the second pass analysis
 // to re-acquire analysis data for rewrites without storing AST nodes.
 export type TernaryExpression = AST.Expression | AST.MustacheStatement | null;
-export type StringExpression = AST.MustacheStatement | AST.ConcatStatement | null;
+export type StringExpression = AST.MustacheStatement | AST.ConcatStatement | AST.SubExpression | AST.PathExpression | null;
 export type BooleanExpression = AST.Expression | AST.MustacheStatement;
 export type TemplateElement  = ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>;
 export type AttrRewriteMap = { [key: string]: TemplateElement };
@@ -41,7 +46,18 @@ const DEFAULT_BLOCK_NS = "block";
 
 const debug = debugGenerator("css-blocks:glimmer:element-analyzer");
 
-type AnalyzableNodes = AST.ElementNode | AST.BlockStatement | AST.MustacheStatement;
+type AnalyzableNode = AST.ElementNode | AST.BlockStatement | AST.MustacheStatement | AST.SubExpression;
+
+export function isStyleOfHelper(node: AnalyzableNode): node is AST.MustacheStatement | AST.SubExpression {
+  if (!isMustacheStatement(node)) return false;
+  let name = node.path.original;
+  return typeof name === "string" && name === "style-of";
+}
+
+export function isAnalyzedHelper(node: AnalyzableNode): node is AST.MustacheStatement | AST.BlockStatement {
+  if (isElementNode(node)) return false;
+  return isEmberBuiltIn(node.path.original) || isStyleOfHelper(node);
+}
 
 export class ElementAnalyzer {
   analysis: GlimmerAnalysis;
@@ -58,15 +74,15 @@ export class ElementAnalyzer {
     this.reservedClassNames = analysis.reservedClassNames();
   }
 
-  analyze(node: AnalyzableNodes, atRootElement: boolean): AttrRewriteMap {
+  analyze(node: AnalyzableNode, atRootElement: boolean): AttrRewriteMap {
     return this._analyze(node, atRootElement, false);
   }
 
-  analyzeForRewrite(node: AnalyzableNodes, atRootElement: boolean): AttrRewriteMap {
+  analyzeForRewrite(node: AnalyzableNode, atRootElement: boolean): AttrRewriteMap {
     return this._analyze(node, atRootElement, true);
   }
 
-  private debugAnalysis(node: AnalyzableNodes, atRootElement: boolean, element: TemplateElement) {
+  private debugAnalysis(node: AnalyzableNode, atRootElement: boolean, element: TemplateElement) {
     if (!debug.enabled) return;
     let startTag = "";
     if (isElementNode(node)) {
@@ -80,7 +96,7 @@ export class ElementAnalyzer {
     debug(`↳ Analyzed as: ${element.forOptimizer(this.cssBlocksOpts)[0].toString()}`);
   }
 
-  private debugTemplateLocation(node: AnalyzableNodes) {
+  private debugTemplateLocation(node: AnalyzableNode) {
     let templatePath = this.cssBlocksOpts.importer.debugIdentifier(this.template.identifier, this.cssBlocksOpts);
     return charInFile(templatePath, node.loc.start);
   }
@@ -88,7 +104,7 @@ export class ElementAnalyzer {
     return this.cssBlocksOpts.importer.debugIdentifier((block || this.block).identifier, this.cssBlocksOpts);
   }
 
-  private newElement(node: AnalyzableNodes, forRewrite: boolean): TemplateElement {
+  private newElement(node: AnalyzableNode, forRewrite: boolean): TemplateElement {
     let label = isElementNode(node) ? node.tag : node.path.original as string;
     if (forRewrite) {
       return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), this.reservedClassNames, label);
@@ -117,8 +133,26 @@ export class ElementAnalyzer {
     }
   }
 
+  *eachAnalyzedAttribute(node: AnalyzableNode): Iterable<[string, string, AST.AttrNode | AST.HashPair]> {
+    if (isElementNode(node)) {
+      for (let attribute of node.attributes) {
+        let [namespace, attrName] = this.isAttributeAnalyzed(attribute.name);
+        if (namespace && attrName) {
+          yield [namespace, attrName, attribute];
+        }
+      }
+    } else {
+      for (let pair of node.hash.pairs) {
+        let [namespace, attrName] = this.isAttributeAnalyzed(pair.key);
+        if (namespace && attrName) {
+          yield [namespace, attrName, pair];
+        }
+      }
+    }
+  }
+
   private _analyze(
-    node: AnalyzableNodes,
+    node: AnalyzableNode,
     atRootElement: boolean,
     forRewrite: boolean,
   ): AttrRewriteMap {
@@ -131,53 +165,34 @@ export class ElementAnalyzer {
       element.addStaticClass(this.block.rootClass);
     }
 
-    // Find the class attribute and process.
-    if (isElementNode(node)) {
-      for (let attribute of node.attributes) {
-        let [namespace, attrName] = this.isAttributeAnalyzed(attribute.name);
-        if (namespace && attrName) {
-          if (attrName === "class") {
-            this.processClass(namespace, attribute, element, forRewrite);
-          } else if (attrName === "scope") {
-            this.processScope(namespace, attribute, element, forRewrite);
-          }
-        }
-      }
-    }
-    else {
-      for (let pair of node.hash.pairs) {
-        if (pair.key === "class") {
-          throw cssBlockError(`The class attribute is forbidden. Did you mean block:class?`, node, this.template);
-        }
-        let [namespace, attrName] = this.isAttributeAnalyzed(pair.key);
-        if (namespace && attrName) {
-          if (attrName === "class") {
-            this.processClass(namespace, pair, element, forRewrite);
-          } else if (attrName === "scope") {
-            this.processScope(namespace, pair, element, forRewrite);
-          }
-        }
+    // Find the class or scope attribute and process it
+    for (let [namespace, attrName, attribute] of this.eachAnalyzedAttribute(node)) {
+      if (attrName === "class") {
+        this.processClass(namespace, attribute, element, forRewrite);
+      } else if (attrName === "scope") {
+        this.processScope(namespace, attribute, element, forRewrite);
       }
     }
 
-    // Only ElementNodes may use states right now.
+    // validate that html elements aren't using the class attribute.
     if (isElementNode(node)) {
       for (let attribute of node.attributes) {
         if (attribute.name === "class") {
           throw cssBlockError(`The class attribute is forbidden. Did you mean block:class?`, node, this.template);
         }
-        let [namespace, attrName] = this.isAttributeAnalyzed(attribute.name);
-        if (namespace && attrName) {
-          if (attrName !== "class" && attrName !== "scope") {
-            this.processState(namespace, attrName, attribute, element, forRewrite);
-          }
-        }
+      }
+    }
+
+    for (let [namespace, attrName, attribute] of this.eachAnalyzedAttribute(node)) {
+      if (namespace && attrName) {
+        if (attrName === "class" || attrName === "scope") continue;
+        this.processState(namespace, attrName, attribute, element, forRewrite);
       }
     }
 
     this.finishElement(element, forRewrite);
 
-    // If this is an Ember Build-In...
+    // If this is an Ember Built-In...
     if (!isElementNode(node) && isEmberBuiltIn(node.path.original)) {
       this.debugAnalysis(node, atRootElement, element);
 
@@ -335,7 +350,7 @@ export class ElementAnalyzer {
   private processState(
     blockName: string,
     stateName: string,
-    node: AST.AttrNode,
+    node: AST.AttrNode | AST.HashPair,
     element: TemplateElement,
     forRewrite: boolean,
   ): void {
@@ -345,17 +360,44 @@ export class ElementAnalyzer {
       throw cssBlockError(`No block or class from ${blockName || "the default block"} is assigned to the element so a state from that block cannot be used.`, node, this.template);
     }
     let staticSubStateName: string | undefined = undefined;
-    let dynamicSubState: AST.MustacheStatement | AST.ConcatStatement | undefined = undefined;
-    if (isTextNode(node.value)) {
-      staticSubStateName = node.value.chars;
+    let dynamicSubState: AST.MustacheStatement | AST.ConcatStatement | AST.SubExpression | AST.PathExpression | undefined = undefined;
+    let value = node.value;
+    if (isTextNode(value)) {
+      staticSubStateName = value.chars;
       if (staticSubStateName === "") {
         staticSubStateName = undefined;
       }
+    } else if (isStringLiteral(value)) {
+      staticSubStateName = value.value;
+      if (staticSubStateName === "") {
+        staticSubStateName = undefined;
+      }
+    } else if (isNumberLiteral(value)) {
+      staticSubStateName = value.value.toString();
+      if (staticSubStateName === "") {
+        staticSubStateName = undefined;
+      }
+    } else if (isBooleanLiteral(value)) {
+      if (!value.value) {
+        // Setting the state explicitly to false is the same as not having the state on the element.
+        // So we just skip analysis of it. In the future we might want to partially analyze it to validate
+        // that the state name exists
+        return;
+        // Setting it to true is the simplest way to set the state having no substates on an element when using the style-of helper.
+      }
+    } else if (isMustacheStatement(value) || isConcatStatement(value) || isSubExpression(value) || isPathExpression(value)) {
+      dynamicSubState = value;
+    } else if (isNullLiteral(value) || isUndefinedLiteral(value)) {
+      // Setting the state explicitly to null or undefined is the same as not having the state on the element.
+      // So we just skip analysis of it. In the future we might want to partially analyze it to validate
+      // that the state name exists
+      return;
     } else {
-      dynamicSubState = node.value;
+      assertNever(value);
     }
+
     let found = false;
-    const errors: [string, AST.AttrNode, ResolvedFile][] = [];
+    const errors: [string, AST.AttrNode | AST.HashPair, ResolvedFile][] = [];
     for (let container of containers) {
       let stateGroup = container.resolveAttribute({
         namespace: "state",
