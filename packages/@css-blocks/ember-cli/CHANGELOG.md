@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
+
+
+### Bug Fixes
+
+* Removing invalid paths from the package.json. ([#381](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/issues/381)) ([e600514](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/e600514c93cd4c35092862f0461f374779155e60))
+
+
+
+
+
 # [1.0.0-alpha.4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2019-12-18)
 
 

@@ -3,7 +3,7 @@
   "author": "Ramitha Chitloor",
   "description": "Tools to convert BEM files to CSS block files.",
   "license": "BSD-2-Clause",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "files": [

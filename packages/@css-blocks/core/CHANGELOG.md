@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
+
+
+### Bug Fixes
+
+* Capture block parsing errors in the promise. ([35c3991](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/35c39914c505d9a3abd58b67c7ae48a49d87793b))
+* Fixing the CLI test failures. ([5ff37a1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/5ff37a1fadbd360edb2c9fb7d80968e2975f0c9b))
+* Getting rid of duplicate assertions. ([a3eee56](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/a3eee567c37b80111635d03e56a47d5b210c2e92))
+* Rename parseSync to parseRoot. ([f4c95c4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/f4c95c4eb459ddf11be5b31a06e5d06cba466f53))
+
+
+### Features
+
+* Adding a new class of errors - MultipleCssBlockErrors. ([14c1d31](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/14c1d314c1135d7b09ceaa96a87840b8b6e4cb78))
+* Convert methods to start recording multiple errors. ([c2a3271](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/c2a3271374eb41e99018013d2777d6b73a5264d9))
+* Converting composes block errors. ([5455597](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/5455597125c7f164651e89e57ef99c58369e4fb6))
+* Converting export and import blocks to use multple errors. ([6b3e3f7](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/6b3e3f7b0795e898f5600de6dd95e8972d6a70c8))
+* Converting to multiple errors for a few more features. ([c9c790e](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/c9c790e93005f7c377a33a0b42aa6ade00313db8))
+* Getting rid of more thrown errors. ([29cc368](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/29cc368d20196c9dd31bbeacd0f20d987131a07c))
+
+
+
+
+
 # [1.0.0-alpha.4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2019-12-18)
 
 

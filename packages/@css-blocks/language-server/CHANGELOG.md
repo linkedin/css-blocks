@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/LinkedIn/css-blocks/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
+
+
+### Features
+
+* Pass multiple errors to the language server. ([2bcc249](https://github.com/LinkedIn/css-blocks/commit/2bcc2494af5814aeb94b3dda794a344a8265c8da))
+
+
+
+
+
 # [1.0.0-alpha.4](https://github.com/LinkedIn/css-blocks/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2019-12-18)
 
 **Note:** Version bump only for package @css-blocks/language-server

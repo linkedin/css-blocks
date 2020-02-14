@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
+
+**Note:** Version bump only for package @css-blocks/webpack
+
+
+
+
+
 # [1.0.0-alpha.4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/webpack/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2019-12-18)
 
 **Note:** Version bump only for package @css-blocks/webpack

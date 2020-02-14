@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
+
+
+### Features
+
+* Add style-of helper for glimmer. ([afcc846](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/afcc8464f3afc67fa2a2bd39f5d129c040f2170b)), closes [#383](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/issues/383)
+
+
+
+
+
 # [1.0.0-alpha.4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2019-12-18)
 
 

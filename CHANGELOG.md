@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
+
+
+### Bug Fixes
+
+* Add CLI test case for BEM conversion. ([07ecaf1](https://github.com/linkedin/css-blocks/commit/07ecaf12183656b46b2948b91d29be96abac8e24))
+* Add pending test case for scss nesting. ([48396b2](https://github.com/linkedin/css-blocks/commit/48396b2f6e26beb6d7614f061dfe1ef83cf1b81a))
+* Address race condition by simplifying main loop for BEM conversion. ([8116c7d](https://github.com/linkedin/css-blocks/commit/8116c7d652d7a4f242ea54329f3d8d9da25c45a8))
+* Addressing Chris' comments. ([5df20f9](https://github.com/linkedin/css-blocks/commit/5df20f98c5e3b99273658d0ef99cd22a745769ed))
+* Capture block parsing errors in the promise. ([35c3991](https://github.com/linkedin/css-blocks/commit/35c39914c505d9a3abd58b67c7ae48a49d87793b))
+* Don't swallow any potential errors from postcss processing. ([7c5c15c](https://github.com/linkedin/css-blocks/commit/7c5c15c20d7fb8726e29695cd643a0d51d02b9e8))
+* Fixing the CLI test failures. ([5ff37a1](https://github.com/linkedin/css-blocks/commit/5ff37a1fadbd360edb2c9fb7d80968e2975f0c9b))
+* Getting rid of duplicate assertions. ([a3eee56](https://github.com/linkedin/css-blocks/commit/a3eee567c37b80111635d03e56a47d5b210c2e92))
+* Incorrect :scope selector and state output. ([a11d572](https://github.com/linkedin/css-blocks/commit/a11d5720095a07dd72896f075d92891ac3c47196))
+* Remove support for 'BME' selectors. ([db25c26](https://github.com/linkedin/css-blocks/commit/db25c2612a55a8df666389e3cc7b223261885a2f))
+* Removing invalid paths from the package.json. ([#381](https://github.com/linkedin/css-blocks/issues/381)) ([e600514](https://github.com/linkedin/css-blocks/commit/e600514c93cd4c35092862f0461f374779155e60))
+* Rename parseSync to parseRoot. ([f4c95c4](https://github.com/linkedin/css-blocks/commit/f4c95c4eb459ddf11be5b31a06e5d06cba466f53))
+* update Travis CI badge URL ([8a5a130](https://github.com/linkedin/css-blocks/commit/8a5a130b67dcff5793b746b7a9e4688ec1de1ca6))
+
+
+### Features
+
+* Add style-of helper for glimmer. ([afcc846](https://github.com/linkedin/css-blocks/commit/afcc8464f3afc67fa2a2bd39f5d129c040f2170b)), closes [#383](https://github.com/linkedin/css-blocks/issues/383)
+* Adding a new class of errors - MultipleCssBlockErrors. ([14c1d31](https://github.com/linkedin/css-blocks/commit/14c1d314c1135d7b09ceaa96a87840b8b6e4cb78))
+* Convert methods to start recording multiple errors. ([c2a3271](https://github.com/linkedin/css-blocks/commit/c2a3271374eb41e99018013d2777d6b73a5264d9))
+* Converting composes block errors. ([5455597](https://github.com/linkedin/css-blocks/commit/5455597125c7f164651e89e57ef99c58369e4fb6))
+* Converting export and import blocks to use multple errors. ([6b3e3f7](https://github.com/linkedin/css-blocks/commit/6b3e3f7b0795e898f5600de6dd95e8972d6a70c8))
+* Converting to multiple errors for a few more features. ([c9c790e](https://github.com/linkedin/css-blocks/commit/c9c790e93005f7c377a33a0b42aa6ade00313db8))
+* Creating a new package for bem to css-blocks conversion. ([d62b204](https://github.com/linkedin/css-blocks/commit/d62b2042423d822c3b09526b145a354c4d7e6bd2))
+* Getting rid of more thrown errors. ([29cc368](https://github.com/linkedin/css-blocks/commit/29cc368d20196c9dd31bbeacd0f20d987131a07c))
+* Making bem-to-blocks asynchronous. ([5319687](https://github.com/linkedin/css-blocks/commit/5319687ea72c2c90e5236ae7246654d9164433ad))
+* Making the CLI interactive using inquirer.js. ([20c1f10](https://github.com/linkedin/css-blocks/commit/20c1f108b0c5c39adb84b821dfe7343e7b148765))
+* Pass multiple errors to the language server. ([2bcc249](https://github.com/linkedin/css-blocks/commit/2bcc2494af5814aeb94b3dda794a344a8265c8da))
+* Removing common prefixes from states, like, is. ([abdb3b1](https://github.com/linkedin/css-blocks/commit/abdb3b1336751904906a950d61091bef04b4eeec))
+
+
+
+
+
 # [1.0.0-alpha.4](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2019-12-18)
 
 

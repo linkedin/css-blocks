@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
+
+
+### Bug Fixes
+
+* Add CLI test case for BEM conversion. ([07ecaf1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/07ecaf12183656b46b2948b91d29be96abac8e24))
+* Addressing Chris' comments. ([5df20f9](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/5df20f98c5e3b99273658d0ef99cd22a745769ed))
+* Fixing the CLI test failures. ([5ff37a1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/5ff37a1fadbd360edb2c9fb7d80968e2975f0c9b))
+* Incorrect :scope selector and state output. ([a11d572](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/a11d5720095a07dd72896f075d92891ac3c47196))
+* Rename parseSync to parseRoot. ([f4c95c4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/f4c95c4eb459ddf11be5b31a06e5d06cba466f53))
+
+
+### Features
+
+* Creating a new package for bem to css-blocks conversion. ([d62b204](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/d62b2042423d822c3b09526b145a354c4d7e6bd2))
+
+
+
+
+
 # [1.0.0-alpha.4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2019-12-18)
 
 **Note:** Version bump only for package @css-blocks/cli
