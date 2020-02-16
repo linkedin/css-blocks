@@ -133,15 +133,15 @@ export class BlockPathError extends CssBlockError {
  * clear errors
  */
 export class MultipleCssBlockErrors extends CssBlockError {
-  static prefix = "MultipleCssBlocksError";
+  static prefix = "MultipleCssBlockErrors";
   private _errors: CssBlockError[] = [];
 
   constructor(errors: CssBlockError[], location?: ErrorLocation, details?: string) {
     super(MultipleCssBlockErrors.prefix, location);
     for (let err of errors) {
       if (err instanceof MultipleCssBlockErrors) {
-        // flatten all MultpleCssBlockErrors
-        // This normally happens if there is a transtive error
+        // flatten all MultipleCssBlockErrors
+        // This normally happens if there is a transitive error
         for (let e of err.errors) {
           this._errors.push(e);
         }
@@ -149,7 +149,14 @@ export class MultipleCssBlockErrors extends CssBlockError {
         this._errors.push(err);
       }
     }
-    if (details) { this.message += `\n${details}`; }
+    if (!details) {
+      details = ":";
+      let i = 0;
+      for (let err of this._errors) {
+        details += `\n\t${++i}. ${err}`;
+      }
+    }
+    this.message += details;
   }
 
   add(error: CssBlockError) {

@@ -199,8 +199,10 @@ export class Block
    * @returns true if the block is valid else throws the errors on the block
    */
   assertValid(): Block {
-    if (this._blockErrors.length) {
+    if (this._blockErrors.length > 1) {
       throw new MultipleCssBlockErrors(this._blockErrors);
+    } else if (this._blockErrors.length === 1) {
+      throw this._blockErrors[0];
     }
     return this;
   }
