@@ -253,7 +253,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     let attrMap = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
     let attrNames = Object.keys(attrMap);
     if (attrNames.length !== 1 || attrNames[0] !== "class") {
-      console.error("Error: unexpected attributes in rewrite for style-of helper", attrNames);
+      console.error("Internal Error: unexpected attributes in rewrite for style-of helper", attrNames);
     }
     node.path = this.syntax.builders.path("-css-blocks-concat");
     let attrValue = this.buildClassValue(true, attrMap["class"]);
