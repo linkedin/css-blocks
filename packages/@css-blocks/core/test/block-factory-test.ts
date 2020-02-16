@@ -45,6 +45,34 @@ export class BlockFactoryTests extends BEMProcessor {
     });
   }
 
+  @test async "cannot import a block with errors"() {
+    let { imports, importer, config, factory } = setupImporting();
+    let baseFilename = "foo/bar/base.css";
+    imports.registerSource(
+      baseFilename,
+      `:scope { color: purple; }
+       :scope[large] div { font-size: 20px; } /* Error: div is not allowed */
+       .foo   { float: left;   }
+       .foo[small] { font-size: 5px; }`,
+    );
+
+    let extendsFilename = "foo/bar/extends.css";
+    imports.registerSource(
+      extendsFilename,
+      `@block base from "./base.css";
+       :scope { extends: base; color: red; }`,
+    );
+    try {
+      await factory.getBlock(importer.identifier(null, extendsFilename, config));
+      assert.fail("Exception wasn't raised.");
+    } catch (e) {
+      assert.equal(e.message, `MultipleCssBlockErrors:
+\t1. Error: [css-blocks] BlockSyntaxError: Tag name selectors are not allowed: :scope[large] div (foo/bar/base.css:2:22)
+\t2. Error: [css-blocks] BlockSyntaxError: Missing block object in selector component 'div': :scope[large] div (foo/bar/base.css:2:22)
+\t3. Error: [css-blocks] BlockSyntaxError: No Block named "base" found in scope. (foo/bar/extends.css:2:17)`);
+    }
+  }
+
   @test async "handles blocks with the same name"() {
     let { imports, importer, config, factory } = setupImporting();
 
