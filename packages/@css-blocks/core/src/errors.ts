@@ -162,3 +162,11 @@ export class MultipleCssBlockErrors extends CssBlockError {
     this._errors = [];
   }
 }
+
+export class CascadingError extends CssBlockError {
+  cause: CssBlockError;
+  constructor(message: string, rootCause: CssBlockError, location?: ErrorLocation) {
+    super(message, location);
+    this.cause = rootCause;
+  }
+}
