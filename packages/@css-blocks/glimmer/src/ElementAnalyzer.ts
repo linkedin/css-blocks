@@ -86,7 +86,7 @@ export class ElementAnalyzer {
     if (!debug.enabled) return;
     let startTag = "";
     if (isElementNode(node)) {
-      startTag = `<${node.tag} ${node.attributes.map(a => print(a)).join(" ")}>`;
+      startTag = `<${node.tag} ${node.attributes.map(a => a.name).join(" ")}>`;
       debug(`Element ${startTag} is ${atRootElement ? "the root " : "a sub"}element at ${this.debugTemplateLocation(node)}`);
     }
     else {

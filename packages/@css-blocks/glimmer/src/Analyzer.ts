@@ -105,6 +105,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
 
     // Fetch the block associated with this template. If no block file for this
     // component exists, does not exist, stop.
+    this.debug("Analyzing template... resolving block ", dir, componentName);
     let block: Block | undefined = await this.resolveBlock(dir, componentName);
     if (!block) { return analysis; }
 
@@ -125,7 +126,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         elementCount++;
         const atRootElement = (elementCount === 1);
         const element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug(`{{${name}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug(`{{${node.path.original}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       BlockStatement(node: AST.BlockStatement) {
@@ -133,7 +134,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         elementCount++;
         const atRootElement = (elementCount === 1);
         const element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug(`{{#${name}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug(`{{#${node.path.original}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       ElementNode(node) {
