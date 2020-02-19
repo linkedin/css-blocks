@@ -5,6 +5,7 @@ import { BLOCK_IMPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT, isBlockNameReserved } f
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
+import { allDone } from "../../util";
 import { BlockFactory } from "../index";
 import { parseBlockNames, stripQuotes } from "../utils";
 
@@ -96,9 +97,9 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
 
     // When all import promises have resolved, save the block references and
     // resolve.
-    let results;
+    let results: Array<[string, string, postcss.AtRule, Block]>;
     try {
-      results = await Promise.all(namedBlockReferences);
+      results = await allDone(namedBlockReferences);
       let localNames: ObjectDictionary<string> = {};
       results.forEach(([localName, importPath, atRule, otherBlock]) => {
         if (localNames[localName]) {

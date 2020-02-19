@@ -3,6 +3,7 @@ import { postcss } from "opticss";
 import { BLOCK_EXPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT, RESERVED_BLOCK_NAMES } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
+import { allDone } from "../../util";
 import { sourceRange } from "../../SourceLocation";
 import { BlockFactory } from "../index";
 import { parseBlockNames, stripQuotes } from "../utils";
@@ -114,6 +115,6 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
   }
 
   // After all export promises have resolved, resolve the decorated Block.
-  await Promise.all(exportPromises);
+  await allDone(exportPromises);
   return block;
 }

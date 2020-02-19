@@ -15,3 +15,4 @@ export * from "./importing";
 export * from "./Analyzer";
 export * from "./TemplateRewriter";
 export * from "./configuration";
+export * from "./util";

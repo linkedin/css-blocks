@@ -61,7 +61,6 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
 
   async analyze(dir: string, componentNames: string[]): Promise<GlimmerAnalyzer> {
     let components = new Set<string>(componentNames);
-    let analysisPromises: Promise<GlimmerAnalysis>[] = [];
     this.debug(`Analyzing all templates starting with: ${componentNames}`);
 
     for (let component of components) {
@@ -73,10 +72,9 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
     this.debug(`Analyzing all components: ${[...components].join(", ")}`);
 
     for (let component of components) {
-      analysisPromises.push(this.analyzeTemplate(dir, component));
+      await this.analyzeTemplate(dir, component);
     }
 
-    await Promise.all(analysisPromises);
     return this;
   }
 

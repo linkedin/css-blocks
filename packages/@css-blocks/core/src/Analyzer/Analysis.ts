@@ -14,6 +14,7 @@ import {
 import { ObjectDictionary, objectValues } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
+import { allDone } from "../util";
 import { BlockFactory } from "../BlockParser";
 import { DEFAULT_EXPORT } from "../BlockSyntax";
 import { Block, Style } from "../BlockTree";
@@ -354,7 +355,7 @@ export class Analysis<K extends keyof TemplateTypes> {
       });
       blockPromises.push(promise);
     });
-    let values = await Promise.all(blockPromises);
+    let values = await allDone(blockPromises);
 
     // Create a temporary block so we can take advantage of `Block.lookup`
     // to easily resolve all BlockPaths referenced in the serialized analysis.
