@@ -1,4 +1,4 @@
-import { BlockFactory } from "@css-blocks/core";
+import { BlockFactory, CascadingError, InvalidBlockSyntax, MultipleCssBlockErrors } from "@css-blocks/core";
 import { GlimmerAnalyzer } from "@css-blocks/glimmer";
 import * as assert from "assert";
 import { TempDir, createBuilder, createTempDir } from "broccoli-test-helper";
@@ -193,6 +193,64 @@ describe("Broccoli Analyze Plugin Test", function () {
       assert.deepEqual(output.changes(),
                        { "src/ui/components/AnotherComponent/template.hbs": "unlink" },
                        "output directory is cleaned up.");
+    });
+    it.only("Handles errors in block files", async () => {
+      const entryComponentName = "HasError";
+
+      input.write({
+        "package.json": `{ "name": "has-error-test" }`,
+        src: {
+          ui: {
+            components: {
+              [entryComponentName]: {
+                "template.hbs": `<div><AnotherComponent /><h1 foo:scope>Welcome to Glimmer!</h1></div>`,
+                "stylesheet.css": `@export foo from "../../../../blocks/foo.block.css";`,
+              },
+              "AnotherComponent": {
+                "template.hbs": `<div foo:scope>Hello, World!</div>`,
+                "stylesheet.css": `@export foo from "../../../../blocks/foo.block.css";`,
+              },
+            },
+          },
+        },
+        blocks: {
+          "foo.block.css": `:scope div { color: red; }`, // this has an error in it on purpose.
+        },
+      });
+
+      let transport = new Transport("test-transport");
+      let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, {
+        app: { name: "test" },
+        types: {
+          stylesheet: { definitiveCollection: "components" },
+          template: { definitiveCollection: "components" },
+        },
+        collections: {
+          components: { group: "ui", types: ["template", "stylesheet"] },
+        },
+      });
+      let output = createBuilder(new CSSBlocksAnalyze(
+        input.path(),
+        transport,
+        {
+          entry: [entryComponentName, "AnotherComponent"],
+          root: input.path(),
+          output: "css-blocks.css",
+          analyzer,
+        },
+      ));
+
+      // First pass does full compile and copies all files except block files to output.
+      try {
+        await output.build();
+        assert.fail("Error was expected but not raised.");
+      } catch (e) {
+        let origError = e.broccoliPayload.originalError;
+        assert(origError instanceof CascadingError);
+        assert(origError.message.startsWith(`[css-blocks] CascadingError: Error in exported block "../../../../blocks/foo.block.css"`));
+        assert(origError.cause instanceof MultipleCssBlockErrors);
+        assert(origError.cause.errors[0] instanceof InvalidBlockSyntax);
+      }
     });
   });
 });
