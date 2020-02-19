@@ -113,17 +113,15 @@ export class BlockFactory {
       return Promise.resolve();
     }
   }
+
   getBlockFromPath(filePath: string): Promise<Block> {
     if (!path.isAbsolute(filePath)) {
       throw new Error(`An absolute path is required. Got: ${filePath}.`);
     }
     filePath = path.resolve(filePath);
 
-    let identifier: FileIdentifier | undefined = this.paths[filePath];
-    if (identifier && this.promises[identifier]) { return this.promises[identifier]; }
-
-    identifier = identifier || this.importer.identifier(null, filePath, this.configuration);
-    return this._getBlockPromise(identifier);
+    let identifier: FileIdentifier = this.paths[filePath] || this.importer.identifier(null, filePath, this.configuration);
+    return this.getBlock(identifier);
   }
 
   getBlock(identifier: FileIdentifier): Promise<Block> {
