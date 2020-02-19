@@ -1,0 +1,9 @@
+<div>
+  <h1 h:scope>Hello,
+    {{yield (hash
+      classnames=(hash
+        action=(style-of block:class="world" h:class="emphasis" block:thick=isThick h:style=textStyle)
+      )
+    )}}
+  </h1>
+</div>

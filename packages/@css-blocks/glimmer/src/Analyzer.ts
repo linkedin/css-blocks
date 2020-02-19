@@ -13,7 +13,7 @@ import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as debugGenerator from "debug";
 import * as fs from "fs";
 
-import { ElementAnalyzer, isAnalyzedHelper } from "./ElementAnalyzer";
+import { ElementAnalyzer, isAnalyzedHelper, isStyleOfHelper } from "./ElementAnalyzer";
 import { Resolver } from "./Resolver";
 import { TEMPLATE_TYPE } from "./Template";
 
@@ -126,7 +126,15 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         elementCount++;
         const atRootElement = (elementCount === 1);
         const element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug(`{{${node.path.original}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug(`MustacheStatement {{${node.path.original}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+      },
+
+      SubExpression(node: AST.SubExpression) {
+        if (!isStyleOfHelper(node)) { return; }
+        elementCount++;
+        const atRootElement = (elementCount === 1);
+        const element = elementAnalyzer.analyze(node, atRootElement);
+        if (self.debug.enabled) self.debug(`SubExpression (${node.path.original}) analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       BlockStatement(node: AST.BlockStatement) {
@@ -134,14 +142,14 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         elementCount++;
         const atRootElement = (elementCount === 1);
         const element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug(`{{#${node.path.original}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug(`BlockStatement {{#${node.path.original}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       ElementNode(node) {
         elementCount++;
         let atRootElement = (elementCount === 1);
         let element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug("Element analyzed:", element.class.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug("Element/Component analyzed:", element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
     });
     return analysis;

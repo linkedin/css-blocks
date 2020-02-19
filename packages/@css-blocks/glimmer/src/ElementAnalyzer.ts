@@ -49,7 +49,7 @@ const debug = debugGenerator("css-blocks:glimmer:element-analyzer");
 type AnalyzableNode = AST.ElementNode | AST.BlockStatement | AST.MustacheStatement | AST.SubExpression;
 
 export function isStyleOfHelper(node: AnalyzableNode): node is AST.MustacheStatement | AST.SubExpression {
-  if (!isMustacheStatement(node)) return false;
+  if (!(isMustacheStatement(node) || isSubExpression(node))) return false;
   let name = node.path.original;
   return typeof name === "string" && name === "style-of";
 }
