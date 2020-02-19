@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { assertMultipleErrors } from "../util/assertError";
+import { assertMultipleErrorsRejection } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
 import { indented } from "../util/indented";
 import { MockImportRegistry } from "../util/MockImportRegistry";
@@ -22,7 +22,7 @@ export class BlockNames extends BEMProcessor {
     let inputCSS = `@block biz from "./biz.css";
                     @media(max-width: 200px) { composes: biz.baz; }`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `The "composes" property may only be used in a rule set. (foo/bar/test-block.css:2:48)`,
@@ -45,7 +45,7 @@ export class BlockNames extends BEMProcessor {
     let inputCSS = `@block biz from "./biz.css";
                     .bar { composes: biz.buz; }`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `No style "biz.buz" found. (foo/bar/test-block.css:2:28)`,
@@ -65,7 +65,7 @@ export class BlockNames extends BEMProcessor {
                     .buz { color: green; }
                     .bar { composes: .buz; }`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Styles from the same Block may not be composed together. (foo/bar/test-block.css:3:28)`,
@@ -84,7 +84,7 @@ export class BlockNames extends BEMProcessor {
     let inputCSS = `@block biz from "./biz.css";
                     :scope[awesome] .bar { composes: biz.baz; }`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
       type: InvalidBlockSyntax,
       message: `Style composition is not allowed in rule sets with a scope selector. (foo/bar/test-block.css:2:44)`}],

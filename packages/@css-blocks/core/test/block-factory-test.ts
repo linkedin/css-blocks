@@ -66,10 +66,12 @@ export class BlockFactoryTests extends BEMProcessor {
       await factory.getBlock(importer.identifier(null, extendsFilename, config));
       assert.fail("Exception wasn't raised.");
     } catch (e) {
-      assert.equal(e.message, `MultipleCssBlockErrors:
+      assert.equal(e.message, `Caused by multiple errors:
+1. Error: [css-blocks] CascadingError: Error in imported block. (foo/bar/extends.css:1:1)
+   Caused by multiple errors:
 \t1. Error: [css-blocks] BlockSyntaxError: Tag name selectors are not allowed: :scope[large] div (foo/bar/base.css:2:22)
 \t2. Error: [css-blocks] BlockSyntaxError: Missing block object in selector component 'div': :scope[large] div (foo/bar/base.css:2:22)
-\t3. Error: [css-blocks] BlockSyntaxError: No Block named "base" found in scope. (foo/bar/extends.css:2:17)`);
+2. Error: [css-blocks] BlockSyntaxError: No Block named "base" found in scope. (foo/bar/extends.css:2:17)`);
     }
   }
 

@@ -4,6 +4,7 @@ import {
 import { search as searchForConfiguration } from "@css-blocks/config";
 import {
   BlockFactory,
+  CascadingError,
   Configuration,
   CssBlockError,
   ErrorWithPosition,
@@ -203,16 +204,27 @@ export class CLI {
     this.exit(errorCount);
   }
 
+  fileForError(e: CssBlockError): string | undefined {
+    let loc = e.location;
+    if (!loc) return;
+    if (!errorHasRange(loc)) return;
+    if (!loc.filename) return;
+    return path.relative(process.cwd(), path.resolve(loc.filename));
+  }
+
   handleCssBlockError(blockFileRelative: string, error: CssBlockError): number {
-    if (error instanceof MultipleCssBlockErrors) {
+    if (error instanceof CascadingError) {
+      this.handleCssBlockError(this.fileForError(error.cause) || blockFileRelative, error.cause);
+    } else if (error instanceof MultipleCssBlockErrors) {
       let count = 0;
       for (let e of error.errors) {
-        count += this.handleCssBlockError(blockFileRelative, e);
+        count += this.handleCssBlockError(this.fileForError(e) || blockFileRelative, e);
+        this.println();
       }
       return count;
     }
     let loc = error.location;
-    let message = `${this.chalk.red("error")}\t${this.chalk.whiteBright(blockFileRelative)}`;
+    let message = `${this.chalk.red(error instanceof CascadingError ? "caused" : "error")}\t${this.chalk.whiteBright(this.fileForError(error) || blockFileRelative)}`;
     if (!errorHasRange(loc)) {
       this.println(message, error.origMessage);
     } else {
@@ -228,15 +240,6 @@ export class CLI {
     if (!errorHasRange(loc)) return;
     let filename = path.relative(process.cwd(), path.resolve(loc && loc.filename || blockFileRelative));
     this.println("\t" + this.chalk.bold.redBright(e.origMessage));
-    for (let referenceLocation of e.importStack.reverse()) {
-      if (referenceLocation.filename) {
-        referenceLocation.filename = path.relative(process.cwd(), path.resolve(referenceLocation.filename));
-      }
-      this.println(
-        this.chalk.bold.white("\tIn block referenced at"),
-        this.chalk.bold.whiteBright(charInFile(referenceLocation)),
-      );
-    }
     if (hasMappedPosition(loc)) {
       this.println(
         this.chalk.bold.white("\tAt compiled output of"),

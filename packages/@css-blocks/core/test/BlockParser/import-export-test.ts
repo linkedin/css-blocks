@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { assertMultipleErrors } from "../util/assertError";
+import { assertMultipleErrorsRejection } from "../util/assertError";
 import { BEMProcessor } from "../util/BEMProcessor";
 import { indented } from "../util/indented";
 import { MockImportRegistry } from "../util/MockImportRegistry";
@@ -106,7 +106,7 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block "snow-flake" from "./imported.css";
                     @block-debug block to comment;`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Illegal block name in import. ""snow-flake"" is not a legal CSS identifier. (foo/bar/test-block.css:1:1)`,
@@ -130,7 +130,7 @@ export class BlockImportExport extends BEMProcessor {
     let inputCSS = `@block 'snow-flake' from "./imported.css";
                     @block-debug snow-flake to comment;`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Illegal block name in import. "'snow-flake'" is not a legal CSS identifier. (foo/bar/test-block.css:1:1)`,
@@ -153,7 +153,7 @@ export class BlockImportExport extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block 123 from "./imported.css";`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Illegal block name in import. "123" is not a legal CSS identifier. (foo/bar/test-block.css:1:1)`,
@@ -171,7 +171,7 @@ export class BlockImportExport extends BEMProcessor {
     let filename = "foo/bar/test-block.css";
     let inputCSS = `@block "./imported.css";`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: 'Malformed block reference: `@block "./imported.css"` (foo/bar/test-block.css:1:1)',
@@ -536,7 +536,7 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@block default from "./a.css";`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Default Block from "./a.css" must be aliased to a unique local identifier. (test.css:1:1)`,
@@ -561,7 +561,7 @@ export class BlockImportExport extends BEMProcessor {
       :scope { block-name: imported-block; extends: a; }
     `;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `No Block named "a" found in scope. (test.css:3:44)`,
@@ -579,15 +579,13 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@block ( a as default ) from "./a.css";`;
 
-    return assertMultipleErrors(
-      [{
-        type: InvalidBlockSyntax,
-        message: `Cannot import "a" as reserved word "default" (test.css:1:1)`,
-      },
-       {
-        type: InvalidBlockSyntax,
-        message: 'Cannot import Block "a". No Block named "a" exported by "./a.css". (test.css:1:1)',
-      }],
+    return assertMultipleErrorsRejection(
+      [
+        {
+          type: InvalidBlockSyntax,
+          message: `Cannot import "a" as reserved word "default" (test.css:1:1)`,
+        },
+      ],
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }
@@ -601,15 +599,13 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@block ( a as html ) from "./a.css";`;
 
-    return assertMultipleErrors(
-      [{
-        type: InvalidBlockSyntax,
-        message: `Cannot import "a" as reserved word "html" (test.css:1:1)`,
-      },
-       {
-        type: InvalidBlockSyntax,
-        message: 'Cannot import Block "a". No Block named "a" exported by "./a.css". (test.css:1:1)',
-      }],
+    return assertMultipleErrorsRejection(
+      [
+        {
+          type: InvalidBlockSyntax,
+          message: `Cannot import "a" as reserved word "html" (test.css:1:1)`,
+        },
+      ],
       this.process("test.css", inputCSS, {importer: imports.importer()}),
     );
   }
@@ -623,7 +619,7 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@block html from "./html.block.css";`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Cannot import "default" as reserved word "html" (test.css:1:1)`,
@@ -642,7 +638,7 @@ export class BlockImportExport extends BEMProcessor {
       @export default;
     `;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Unnecessary re-export of default Block. (test.css:5:7)`,
@@ -662,7 +658,7 @@ export class BlockImportExport extends BEMProcessor {
       @export (default as svg) from "./images.block.css";
     `;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Cannot export "default" as reserved word "svg" (test.css:2:7)`,
@@ -683,7 +679,7 @@ export class BlockImportExport extends BEMProcessor {
       @export ( a as default );
     `;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Cannot export "a" as reserved word "default" (test.css:3:7)`,
@@ -704,7 +700,7 @@ export class BlockImportExport extends BEMProcessor {
       @export ( a as 123 );
     `;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Illegal block name in import. "123" is not a legal CSS identifier. (test.css:3:7)`,
@@ -722,7 +718,7 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@export nonexistant;`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Cannot export Block "nonexistant". No Block named "nonexistant" in "test.css". (test.css:1:1)`,
@@ -740,7 +736,7 @@ export class BlockImportExport extends BEMProcessor {
 
     let inputCSS = `@block ( nonexistant ) from "./a.css";`;
 
-    return assertMultipleErrors(
+    return assertMultipleErrorsRejection(
       [{
         type: InvalidBlockSyntax,
         message: `Cannot import Block "nonexistant". No Block named "nonexistant" exported by "./a.css". (test.css:1:1)`,

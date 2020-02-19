@@ -43,18 +43,26 @@ Found 1 error in 1 file.
     let cli = new CLI();
     await cli.run(["validate", fixture("basic/transitive-error.block.css")]);
 
-    assert.equal(cli.output,
-                 `error\t${relFixture("basic/transitive-error.block.css")}
+    assert.equal(
+      cli.output,
+      `error\ttest/fixtures/basic/error.block.css
 \tTwo distinct classes cannot be selected on the same element: .foo.bar
-\tAt ${relFixture("basic/error.block.css")}:1:5
+\tAt test/fixtures/basic/error.block.css:1:5
 \t1: .foo.bar {
 \t2:   color: red;
-error\t${relFixture("basic/transitive-error.block.css")}
+caused\ttest/fixtures/basic/transitive-error.block.css
+\tError in imported block.
+\tAt test/fixtures/basic/transitive-error.block.css:1:1
+\t1: @block error from "./error.block.css";
+\t2:
+
+error\ttest/fixtures/basic/transitive-error.block.css
 \tNo Block named "error" found in scope.
-\tAt ${relFixture("basic/transitive-error.block.css")}:4:3
+\tAt test/fixtures/basic/transitive-error.block.css:4:3
 \t3: :scope {
 \t4:   extends: error;
 \t5: }
+
 Found 2 errors in 1 file.
 `);
     assert.equal(cli.exitCode, 2);

@@ -1,15 +1,17 @@
 import { assert } from "chai";
 import { postcss } from "opticss";
 
-import { CssBlockError, MultipleCssBlockErrors } from "../../src";
-import cssBlocks from ".././util/postcss-helper";
+import { CascadingError, CssBlockError, MultipleCssBlockErrors } from "../../src";
+
+type ErrorConstructors = typeof CssBlockError | typeof CascadingError;
 
 export interface ErrorTypeMessage {
-  type: typeof cssBlocks.CssBlockError;
+  type: ErrorConstructors;
   message: string;
+  cause?: ErrorTypeMessage | Array<ErrorTypeMessage>;
 }
 
-export function assertError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: postcss.LazyResult) {
+export function assertError(errorType: ErrorConstructors, message: string, promise: postcss.LazyResult) {
   return promise.then(
     () => {
       assert(false, `Error ${errorType.name} was not raised.`);
@@ -20,7 +22,7 @@ export function assertError(errorType: typeof cssBlocks.CssBlockError, message: 
     });
 }
 
-export function assertParseError(errorType: typeof cssBlocks.CssBlockError, message: string, promise: Promise<unknown>) {
+export function assertParseError(errorType: ErrorConstructors, message: string, promise: Promise<unknown>) {
   return promise.then(
     () => {
       assert(false, `Error ${errorType.name} was not raised.`);
@@ -31,24 +33,39 @@ export function assertParseError(errorType: typeof cssBlocks.CssBlockError, mess
     });
 }
 
-export function assertMultipleErrors(errors: ErrorTypeMessage[], promise: postcss.LazyResult) {
+export function assertMultipleErrorsRejection(errors: ErrorTypeMessage[], promise: postcss.LazyResult) {
   return promise.then(
     () => {
       assert(false, `Error MultpleCssBlockErrors was not raised.`);
     },
-    (multipleErrorsError: MultipleCssBlockErrors) => assertMultipleErrorsWithoutPromise(multipleErrorsError, errors));
+    (multipleErrorsError: MultipleCssBlockErrors) => assertMultipleErrors(multipleErrorsError, errors));
 }
 
-export function assertMultipleErrorsWithoutPromise(mainError: CssBlockError, errors: ErrorTypeMessage[]) {
+export function assertMultipleErrors(mainError: CssBlockError, errorDescriptions: ErrorTypeMessage[]) {
   if (mainError instanceof MultipleCssBlockErrors) {
-    assert.equal(mainError.errors.length, errors.length, "The number of errors thrown and expected does not match");
-    errors.forEach((error, idx) => {
-      assert(mainError.errors[idx] instanceof error.type, "Error raised was not of the type expected.");
-      assert.deepEqual(mainError.errors[idx].message.split(error.type.prefix + ":")[1].trim(), error.message);
+    assert.equal(mainError.errors.length, errorDescriptions.length, "The number of errors thrown and expected does not match");
+    errorDescriptions.forEach((errorDescription, idx) => {
+      let actualError = mainError.errors[idx];
+      assertErrorOccurred(actualError, errorDescription);
     });
   } else {
-    assert.equal(1, errors.length, "The number of errors thrown and expected does not match");
-    assert(mainError instanceof errors[0].type, "Error raised was not of the type expected.");
-    assert.deepEqual(mainError.message.split(errors[0].type.prefix + ":")[1].trim(), errors[0].message);
+    assert.equal(1, errorDescriptions.length, "The number of errors thrown and expected does not match");
+    assertErrorOccurred(mainError, errorDescriptions[0]);
+  }
+}
+
+export function assertErrorOccurred(mainError: CssBlockError, errorDescription: ErrorTypeMessage) {
+  assert.instanceOf(mainError, errorDescription.type, `Error raised (${mainError.constructor.name}) was not of the type expected.`);
+  assert.deepEqual(mainError.message.split(errorDescription.type.prefix + ":")[1].trim(), errorDescription.message);
+  if (errorDescription.cause) {
+    let cause = (<CascadingError>mainError).cause;
+    if (!cause) {
+      assert.fail("A cause for the error was expected");
+    }
+    if (Array.isArray(errorDescription.cause)) {
+      assertMultipleErrors(cause, errorDescription.cause);
+    } else {
+      assertErrorOccurred(cause, errorDescription.cause);
+    }
   }
 }

@@ -26,13 +26,11 @@ interface HasPrefix {
 export class CssBlockError extends Error {
   static prefix = "Error";
   origMessage: string;
-  importStack: Array<SourceLocation.SourceRange | SourceLocation.MappedSourceRange | SourceLocation.SourceFile>;
   private _location?: ErrorLocation;
   constructor(message: string, location?: ErrorLocation) {
     super(message);
     this.origMessage = message;
     this._location = location;
-    this.importStack = new Array();
     super.message = this.annotatedMessage();
   }
 
@@ -133,7 +131,7 @@ export class BlockPathError extends CssBlockError {
  * clear errors
  */
 export class MultipleCssBlockErrors extends CssBlockError {
-  static prefix = "MultipleCssBlockErrors";
+  static prefix = "Caused by multiple errors";
   private _errors: CssBlockError[] = [];
 
   constructor(errors: CssBlockError[], location?: ErrorLocation, details?: string) {
@@ -151,10 +149,7 @@ export class MultipleCssBlockErrors extends CssBlockError {
     }
     if (!details) {
       details = ":";
-      let i = 0;
-      for (let err of this._errors) {
-        details += `\n\t${++i}. ${err}`;
-      }
+      details += errorDetails(this);
     }
     this.message += details;
   }
@@ -177,4 +172,23 @@ export class CascadingError extends CssBlockError {
     super(message, location);
     this.cause = rootCause;
   }
+}
+
+function errorDetails(error: MultipleCssBlockErrors, indent = ""): string {
+  let details = "";
+  let i = 0;
+  for (let err of error.errors) {
+    details += `\n${indent}${++i}. ${err}`;
+    if (err instanceof CascadingError) {
+      if (err.cause instanceof MultipleCssBlockErrors && err.cause.errors.length > 1) {
+        details += `\n${indent}   ${i > 9 ? " " : ""}Caused by multiple errors:`;
+        details += errorDetails(err.cause, indent + "\t");
+      } else {
+        let cause = err.cause instanceof MultipleCssBlockErrors ? err.cause.errors[0] : err.cause;
+        details += `\n${indent}    ${i > 9 ? " " : ""}Caused by:`;
+        details += `\n${indent} ${cause}`;
+      }
+    }
+  }
+  return details;
 }
