@@ -3,8 +3,8 @@ import { postcss } from "opticss";
 import { BLOCK_EXPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT, RESERVED_BLOCK_NAMES } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
-import { allDone } from "../../util";
 import { sourceRange } from "../../SourceLocation";
+import { allDone } from "../../util";
 import { BlockFactory } from "../index";
 import { parseBlockNames, stripQuotes } from "../utils";
 
@@ -106,7 +106,7 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
             error,
             sourceRange(factory.configuration, block.stylesheet, file, atRule),
           ));
-        }
+        },
       );
 
       exportPromises.push(exportPromise);

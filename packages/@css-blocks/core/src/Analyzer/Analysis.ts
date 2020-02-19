@@ -14,11 +14,11 @@ import {
 import { ObjectDictionary, objectValues } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
-import { allDone } from "../util";
 import { BlockFactory } from "../BlockParser";
 import { DEFAULT_EXPORT } from "../BlockSyntax";
 import { Block, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
+import { allDone } from "../util";
 
 import { Analyzer } from "./Analyzer";
 import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
