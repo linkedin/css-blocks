@@ -171,6 +171,7 @@ export class MultipleCssBlockErrors extends CssBlockError {
 }
 
 export class CascadingError extends CssBlockError {
+  static prefix = "CascadingError";
   cause: CssBlockError;
   constructor(message: string, rootCause: CssBlockError, location?: ErrorLocation) {
     super(message, location);
