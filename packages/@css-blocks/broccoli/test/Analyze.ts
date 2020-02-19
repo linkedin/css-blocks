@@ -194,7 +194,7 @@ describe("Broccoli Analyze Plugin Test", function () {
                        { "src/ui/components/AnotherComponent/template.hbs": "unlink" },
                        "output directory is cleaned up.");
     });
-    it.only("Handles errors in block files", async () => {
+    it("Handles errors in block files", async () => {
       const entryComponentName = "HasError";
 
       input.write({
