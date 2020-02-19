@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.6](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.0.0-alpha.5...v1.0.0-alpha.6) (2020-02-19)
+
+
+### Bug Fixes
+
+* Some tests were disabled during development. ([1ea91ee](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/commit/1ea91ee45c84712a945c8473d0fad0585af0e42f))
+
+
+
+
+
 # [1.0.0-alpha.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
 
 **Note:** Version bump only for package @css-blocks/broccoli

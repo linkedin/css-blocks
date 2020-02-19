@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.6](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v1.0.0-alpha.5...v1.0.0-alpha.6) (2020-02-19)
+
+
+### Bug Fixes
+
+* More robust importing. ([37dcdfb](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/37dcdfb77c1882743a6f8d50ca716b75c97c7950))
+
+
+
+
+
 # [1.0.0-alpha.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
 
 

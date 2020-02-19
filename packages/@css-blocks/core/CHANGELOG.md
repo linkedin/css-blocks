@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.6](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.0.0-alpha.5...v1.0.0-alpha.6) (2020-02-19)
+
+
+### Bug Fixes
+
+* Avoid Promise.all() because of possible race conditions. ([61d0e54](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/61d0e548dd13086421c01f7969d82cac0e65cad8))
+* More robust importing. ([37dcdfb](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/37dcdfb77c1882743a6f8d50ca716b75c97c7950))
+* Only raise MultipleCssBlockErrors if there's more than one. ([96fdd29](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/96fdd29662a233abeb4df57c09b46a5633618f1f))
+
+
+
+
+
 # [1.0.0-alpha.5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2020-02-14)
 
 
