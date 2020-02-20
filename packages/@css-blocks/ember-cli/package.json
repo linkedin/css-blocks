@@ -26,7 +26,7 @@
     "@css-blocks/config": "^1.0.0-alpha.6",
     "@css-blocks/glimmer": "^1.0.0-alpha.6",
     "@glimmer/application-pipeline": "^0.15.0",
-    "broccoli-concat": "^3.7.3",
+    "broccoli-concat": "^4.2.3",
     "broccoli-funnel": "^2.0.1",
     "broccoli-merge-trees": "^3.0.2",
     "debug": "^4.1.1",
