@@ -51,6 +51,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/bem-to-blocks"
+		},
+		{
+			"path": "packages/@css-blocks/eyeglass"
 		}
 	],
 	"settings": {
