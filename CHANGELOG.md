@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.7](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.6...v1.0.0-alpha.7) (2020-02-23)
+
+
+### Bug Fixes
+
+* Don't cache the template entry points. ([df0a536](https://github.com/linkedin/css-blocks/commit/df0a536dd646084ef3e8b5daa17247df93cc5e91))
+
+
+
+
+
 # [1.0.0-alpha.6](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.5...v1.0.0-alpha.6) (2020-02-19)
 
 
