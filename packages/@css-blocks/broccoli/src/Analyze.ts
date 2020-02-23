@@ -94,12 +94,12 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     FSTree.applyPatch(input, output, nonBlockFileChanges);
 
     // When no entry points are passed, we treat *every* template as an entry point.
-    this.entries = this.entries.length ? this.entries : glob.sync("**/*.hbs", { cwd: input });
+    let entries = this.entries.length ? this.entries : glob.sync("**/*.hbs", { cwd: input });
 
     // Oh hey look, we're analyzing.
     this.analyzer.reset();
     this.transport.reset();
-    await this.analyzer.analyze(input, this.entries);
+    await this.analyzer.analyze(input, entries);
 
     // Compile all Blocks and add them as sources to the Optimizer.
     // TODO: handle a sourcemap from compiling the block file via a preprocessor.
