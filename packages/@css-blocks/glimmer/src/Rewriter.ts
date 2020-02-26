@@ -20,7 +20,7 @@ import { ElementAnalyzer, TemplateElement, isStyleOfHelper } from "./ElementAnal
 import { getEmberBuiltInStates, isEmberBuiltIn, isEmberBuiltInNode } from "./EmberBuiltins";
 import { CONCAT_HELPER_NAME } from "./helpers";
 import { ResolvedFile, TEMPLATE_TYPE } from "./Template";
-import { isTextNode } from "./utils";
+import { cssBlockError, isTextNode } from "./utils";
 
 const DEBUG = debugGenerator("css-blocks:glimmer:rewriter");
 
@@ -253,7 +253,8 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     let attrMap = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
     let attrNames = Object.keys(attrMap);
     if (attrNames.length !== 1 || attrNames[0] !== "class") {
-      console.error("Internal Error: unexpected attributes in rewrite for style-of helper", attrNames);
+      const names = attrNames.filter(name => name !== "class");
+      throw cssBlockError(`Unexpected attribute(s) [${names.join(", ")}] in rewrite for style-of helper.`, node, this.template);
     }
     node.path = this.syntax.builders.path("-css-blocks-concat");
     let attrValue = this.buildClassValue(true, attrMap["class"]);

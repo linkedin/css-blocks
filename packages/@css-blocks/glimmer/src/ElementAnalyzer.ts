@@ -98,8 +98,8 @@ export class ElementAnalyzer {
     this.reservedClassNames = analysis.reservedClassNames();
   }
 
-  analyze(node: AnalyzableNode, atRootElement: boolean): AttrRewriteMap {
-    return this._analyze(node, atRootElement, false);
+  analyze(node: AnalyzableNode, atRootElement: boolean, forbidNonBlockAttributes = false): AttrRewriteMap {
+    return this._analyze(node, atRootElement, false, forbidNonBlockAttributes);
   }
 
   analyzeForRewrite(node: AnalyzableNode, atRootElement: boolean): AttrRewriteMap {
@@ -177,7 +177,7 @@ export class ElementAnalyzer {
     }
   }
 
-  *eachAnalyzedAttribute(node: AnalyzableNode): Iterable<AnalyzableAttribute> {
+  *eachAnalyzedAttribute(node: AnalyzableNode, forbidNonBlockAttributes = false): Iterable<AnalyzableAttribute> {
     // Intital list may also contain general Expressions, we filter that later
     const propertyList: (AnalyzableProperty[] | AST.Expression[])[] = [];
     // set up the list of attributes (or multiple lists!) that we want to check
@@ -210,6 +210,11 @@ export class ElementAnalyzer {
               } else {
                 yield { type: "state", namespace, name: attrName, property };
               }
+            } else {
+              if (forbidNonBlockAttributes) {
+                // We shouldn't have any properties that aren't namespaced!
+                throw cssBlockError(`An attribute without a block namespace is forbidden in this context: ${name}`, node, this.template);
+              }
             }
           }
         }
@@ -221,6 +226,7 @@ export class ElementAnalyzer {
     node: AnalyzableNode,
     atRootElement: boolean,
     forRewrite: boolean,
+    forbidNonBlockAttributes = false,
   ): AttrRewriteMap {
 
     const attrRewrites = {};
@@ -232,7 +238,7 @@ export class ElementAnalyzer {
     }
 
     // Find the class or scope attribute and process it
-    for (let analyzableAttr of this.eachAnalyzedAttribute(node)) {
+    for (let analyzableAttr of this.eachAnalyzedAttribute(node, forbidNonBlockAttributes)) {
       if (analyzableAttr.type === "class") {
         this.processClass(analyzableAttr.namespace, analyzableAttr.property, element, forRewrite);
       } else if (analyzableAttr.type === "scope") {
@@ -248,7 +254,6 @@ export class ElementAnalyzer {
         }
       }
     }
-
     for (let analyzableAttr of this.eachAnalyzedAttribute(node)) {
       if (analyzableAttr.type === "state") {
         this.processState(analyzableAttr.namespace, analyzableAttr.name, analyzableAttr.property, element, forRewrite);

@@ -144,10 +144,30 @@ describe("Template Rewriting", function() {
     const projectDir = fixture("styled-app");
     const analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
     const template = fixture("styled-app/src/ui/components/with-style-helper/templateInvalid.hbs");
-    const expectedMessage = '[css-blocks] Error: The block:class attribute must contain a value and is not allowed to be purely positional. Did you mean block:class="foo"? (template:/styled-app/components/with-style-helper:2:37)';
+    const expectedMessage = '[css-blocks] Error: The block:class attribute must contain a value and is not allowed to be purely positional. Did you mean block:class="foo"? (ui/components/with-style-helper/template.hbs:2:37)';
+
     let didError = false;
     try {
       await pipeline(projectDir, analyzer, "with-style-helper", template);
+    } catch (err) {
+      // have to do this in catches to get type-checking...
+      const typed: CssBlockError = err;
+      didError = true;
+      assert.ok(err instanceof CssBlockError);
+      assert.equal(typed.message, expectedMessage);
+    }
+    assert.ok(didError);
+  });
+
+  it("errors if style-of helper is provided unsupported arguments.", async function() {
+    // assert.expect(2);
+    const projectDir = fixture("styled-app");
+    const analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
+    const template = fixture("styled-app/src/ui/components/style-of-unsupported/template.hbs");
+    const expectedMessage = "[css-blocks] Error: An attribute without a block namespace is forbidden in this context: foo (ui/components/style-of-unsupported/template.hbs:2:37)";
+    let didError = false;
+    try {
+      await pipeline(projectDir, analyzer, "style-of-unsupported", template);
     } catch (err) {
       // have to do this in catches to get type-checking...
       const typed: CssBlockError = err;
