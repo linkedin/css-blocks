@@ -16,10 +16,15 @@ import { GlimmerAnalysis } from "./Analyzer";
 import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
 import { ResolvedFile } from "./Template";
 import {
+  AnalyzableNode,
+  AnalyzableProperty,
   cssBlockError,
+  isAnalyzableProperty,
+  isAttrNode,
   isBooleanLiteral,
   isConcatStatement,
   isElementNode,
+  isHashPair,
   isMustacheStatement,
   isNullLiteral,
   isNumberLiteral,
@@ -46,8 +51,6 @@ const DEFAULT_BLOCK_NS = "block";
 
 const debug = debugGenerator("css-blocks:glimmer:element-analyzer");
 
-type AnalyzableNode = AST.ElementNode | AST.BlockStatement | AST.MustacheStatement | AST.SubExpression;
-
 export function isStyleOfHelper(node: AnalyzableNode): node is AST.MustacheStatement | AST.SubExpression {
   if (!(isMustacheStatement(node) || isSubExpression(node))) return false;
   let name = node.path.original;
@@ -58,6 +61,27 @@ export function isAnalyzedHelper(node: AnalyzableNode): node is AST.MustacheStat
   if (isElementNode(node)) return false;
   return isEmberBuiltIn(node.path.original) || isStyleOfHelper(node);
 }
+
+interface AnalyzableScope {
+  type: "scope";
+  namespace: string;
+  property: AnalyzableProperty;
+}
+
+interface AnalyzableClass {
+  type: "class";
+  namespace: string;
+  property: Exclude<AnalyzableProperty, AST.PathExpression>;
+}
+
+interface AnalyzableState {
+  type: "state";
+  namespace: string;
+  name: string;
+  property: AnalyzableProperty;
+}
+
+type AnalyzableAttribute = AnalyzableScope | AnalyzableClass | AnalyzableState;
 
 export class ElementAnalyzer {
   analysis: GlimmerAnalysis;
@@ -133,19 +157,61 @@ export class ElementAnalyzer {
     }
   }
 
-  *eachAnalyzedAttribute(node: AnalyzableNode): Iterable<[string, string, AST.AttrNode | AST.HashPair]> {
-    if (isElementNode(node)) {
-      for (let attribute of node.attributes) {
-        let [namespace, attrName] = this.isAttributeAnalyzed(attribute.name);
-        if (namespace && attrName) {
-          yield [namespace, attrName, attribute];
-        }
-      }
+  private _assertClassAttributeValue(node: AnalyzableNode, property: AnalyzableProperty): property is Exclude<AnalyzableProperty, AST.PathExpression> {
+    if (isPathExpression(property)) {
+      const name = this._getAnalyzableAttributeName(property);
+      throw cssBlockError(`The ${name} attribute must contain a value and is not allowed to be purely positional. Did you mean ${name}="foo"?`, node, this.template);
+    }
+    return true;
+  }
+
+  private _getAnalyzableAttributeName(attribute: AnalyzableProperty): string | void {
+    if (isAttrNode(attribute)) {
+      return attribute.name;
+    } else if (isHashPair(attribute)) {
+      return attribute.key;
+    } else if (isPathExpression(attribute)) {
+      return attribute.original;
     } else {
-      for (let pair of node.hash.pairs) {
-        let [namespace, attrName] = this.isAttributeAnalyzed(pair.key);
-        if (namespace && attrName) {
-          yield [namespace, attrName, pair];
+      assertNever(attribute);
+    }
+  }
+
+  *eachAnalyzedAttribute(node: AnalyzableNode): Iterable<AnalyzableAttribute> {
+    // Intital list may also contain general Expressions, we filter that later
+    const propertyList: (AnalyzableProperty[] | AST.Expression[])[] = [];
+    // set up the list of attributes (or multiple lists!) that we want to check
+    // attributes for Element nodes, hash pairs and params for Handlebars nodes.
+    if (isElementNode(node)) {
+      propertyList.push(node.attributes);
+    } else {
+      propertyList.push(node.params, node.hash.pairs); // listed in order they'd need to be in Handlebars code
+    }
+    // looping through like this means the lists will be checked in order - eg, all hash pairs then all params
+    // this isn't strictly needed, but helps with debugging.
+    for (let list of propertyList) {
+      // get each attribute, check it is analyzable, yield it if it parses.
+      // will throw if the attribute name is not allowed
+      // (ie - it's a positional prop but attribute requires data, like block:class)
+      for (let property of list) {
+        if (isAnalyzableProperty(property)) {
+          const name = this._getAnalyzableAttributeName(property);
+          if (name) {
+            const [namespace, attrName] = this.isAttributeAnalyzed(name);
+            if (namespace && attrName) {
+              if (attrName === "class") {
+                // When we upgrade to TS 3.7 we don't have to model this as
+                // a type guard, we can use an assertion function signature.
+                if (this._assertClassAttributeValue(node, property)) {
+                  yield { type: "class", namespace, property };
+                }
+              } else if (attrName === "scope") {
+                yield { type: "scope", namespace, property };
+              } else {
+                yield { type: "state", namespace, name: attrName, property };
+              }
+            }
+          }
         }
       }
     }
@@ -166,11 +232,11 @@ export class ElementAnalyzer {
     }
 
     // Find the class or scope attribute and process it
-    for (let [namespace, attrName, attribute] of this.eachAnalyzedAttribute(node)) {
-      if (attrName === "class") {
-        this.processClass(namespace, attribute, element, forRewrite);
-      } else if (attrName === "scope") {
-        this.processScope(namespace, attribute, element, forRewrite);
+    for (let analyzableAttr of this.eachAnalyzedAttribute(node)) {
+      if (analyzableAttr.type === "class") {
+        this.processClass(analyzableAttr.namespace, analyzableAttr.property, element, forRewrite);
+      } else if (analyzableAttr.type === "scope") {
+        this.processScope(analyzableAttr.namespace, analyzableAttr.property, element, forRewrite);
       }
     }
 
@@ -183,10 +249,9 @@ export class ElementAnalyzer {
       }
     }
 
-    for (let [namespace, attrName, attribute] of this.eachAnalyzedAttribute(node)) {
-      if (namespace && attrName) {
-        if (attrName === "class" || attrName === "scope") continue;
-        this.processState(namespace, attrName, attribute, element, forRewrite);
+    for (let analyzableAttr of this.eachAnalyzedAttribute(node)) {
+      if (analyzableAttr.type === "state") {
+        this.processState(analyzableAttr.namespace, analyzableAttr.name, analyzableAttr.property, element, forRewrite);
       }
     }
 
@@ -250,14 +315,14 @@ export class ElementAnalyzer {
 
   /**
    * Adds blocks and block classes to the current node from the class attribute.
+   * As class is not allowed to be positional it will never be a PathExpression
+   * so we exclude that from the node type
    */
-  private processClass(namespace: string, node: AST.AttrNode | AST.HashPair, element: TemplateElement, forRewrite: boolean): void {
+  private processClass(namespace: string, node: Exclude<AnalyzableProperty, AST.PathExpression>, element: TemplateElement, forRewrite: boolean): void {
     let statements: AST.Node[];
 
-    let value = node.value;
-
-    if (isConcatStatement(value)) {
-      statements = value.parts;
+    if (isConcatStatement(node.value)) {
+      statements = node.value.parts;
     } else {
       statements = [node.value];
     }
@@ -319,25 +384,28 @@ export class ElementAnalyzer {
       }
     }
   }
-  private processScope(namespace: string, node: AST.AttrNode | AST.HashPair, element: TemplateElement, _forRewrite: boolean): void {
-    let value = node.value;
+  private processScope(namespace: string, node: AnalyzableProperty, element: TemplateElement, _forRewrite: boolean): void {
     let block = this.lookupBlock(namespace, node);
 
-    if (isTextNode(value)) {
-      if (value.chars === "") {
+    if (isPathExpression(node)) {
+      // if we're a path expression then we're implicitly true.
+      // ie - block:scope is the same as block:scope="true"
+      element.addStaticClass(block.rootClass);
+    } else if (isTextNode(node.value)) {
+      if (node.value.chars === "") {
         element.addStaticClass(block.rootClass);
       } else {
         throw cssBlockError("String literal values are not allowed for the scope attribute", node, this.template);
       }
-    } else if (isBooleanLiteral(value)) {
-      if (value.value) {
+    } else if (isBooleanLiteral(node.value)) {
+      if (node.value.value) {
         element.addStaticClass(block.rootClass);
       }
-    } else if (isMustacheStatement(value) || isSubExpression(value)) {
+    } else if (isMustacheStatement(node.value) || isSubExpression(node.value)) {
       // We don't have a way to represent a simple boolean conditional for classes like we do for states.
       // The rewrite might be slightly simpler if we add that.
       element.addDynamicClasses({
-        condition: value,
+        condition: node.value,
         whenTrue: [block.rootClass],
         whenFalse: [],
       });
@@ -350,7 +418,7 @@ export class ElementAnalyzer {
   private processState(
     blockName: string,
     stateName: string,
-    node: AST.AttrNode | AST.HashPair,
+    node: AnalyzableProperty,
     element: TemplateElement,
     forRewrite: boolean,
   ): void {
@@ -361,43 +429,45 @@ export class ElementAnalyzer {
     }
     let staticSubStateName: string | undefined = undefined;
     let dynamicSubState: AST.MustacheStatement | AST.ConcatStatement | AST.SubExpression | AST.PathExpression | undefined = undefined;
-    let value = node.value;
-    if (isTextNode(value)) {
-      staticSubStateName = value.chars;
+
+    if (isPathExpression(node)) {
+      // treat it like a boolean value true and do nothing
+    } else if (isTextNode(node.value)) {
+      staticSubStateName = node.value.chars;
       if (staticSubStateName === "") {
         staticSubStateName = undefined;
       }
-    } else if (isStringLiteral(value)) {
-      staticSubStateName = value.value;
+    } else if (isStringLiteral(node.value)) {
+      staticSubStateName = node.value.value;
       if (staticSubStateName === "") {
         staticSubStateName = undefined;
       }
-    } else if (isNumberLiteral(value)) {
-      staticSubStateName = value.value.toString();
+    } else if (isNumberLiteral(node.value)) {
+      staticSubStateName = node.value.value.toString();
       if (staticSubStateName === "") {
         staticSubStateName = undefined;
       }
-    } else if (isBooleanLiteral(value)) {
-      if (!value.value) {
+    } else if (isBooleanLiteral(node.value)) {
+      if (!node.value.value) {
         // Setting the state explicitly to false is the same as not having the state on the element.
         // So we just skip analysis of it. In the future we might want to partially analyze it to validate
         // that the state name exists
         return;
         // Setting it to true is the simplest way to set the state having no substates on an element when using the style-of helper.
       }
-    } else if (isMustacheStatement(value) || isConcatStatement(value) || isSubExpression(value) || isPathExpression(value)) {
-      dynamicSubState = value;
-    } else if (isNullLiteral(value) || isUndefinedLiteral(value)) {
+    } else if (isMustacheStatement(node.value) || isConcatStatement(node.value) || isSubExpression(node.value) || isPathExpression(node.value)) {
+      dynamicSubState = node.value;
+    } else if (isNullLiteral(node.value) || isUndefinedLiteral(node.value)) {
       // Setting the state explicitly to null or undefined is the same as not having the state on the element.
       // So we just skip analysis of it. In the future we might want to partially analyze it to validate
       // that the state name exists
       return;
     } else {
-      assertNever(value);
+      assertNever(node.value);
     }
 
     let found = false;
-    const errors: [string, AST.AttrNode | AST.HashPair, ResolvedFile][] = [];
+    const errors: [string, AnalyzableProperty, ResolvedFile][] = [];
     for (let container of containers) {
       let stateGroup = container.resolveAttribute({
         namespace: "state",

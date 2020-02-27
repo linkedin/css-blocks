@@ -1,4 +1,4 @@
-import { BlockCompiler, BlockFactory, StyleMapping } from "@css-blocks/core";
+import { BlockCompiler, BlockFactory, CssBlockError, StyleMapping } from "@css-blocks/core";
 import { ASTPluginEnvironment, preprocess, print } from "@glimmer/syntax";
 import { assert } from "chai";
 import fs = require("fs");
@@ -105,7 +105,7 @@ describe("Template Rewriting", function() {
     let result = await pipeline(projectDir, analyzer, "with-style-helper", templatePath);
     assert.deepEqual(minify(print(result.ast)), minify(`
       <div class="b">
-        <h1 class="e">Hello, <World cssClass={{-css-blocks-concat (-css-blocks-concat "c f" " " (-css-blocks-classnames 2 3 2 isThick 1 2 4 2 1 (textStyle) "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2))}} />!</h1>
+        <h1 class="e">Hello, <World cssClass={{-css-blocks-concat (-css-blocks-concat "c d f" " " (-css-blocks-classnames 1 2 4 2 1 (textStyle) "bold" 1 0 "italic" 1 1 "g" 0 "f" 1))}} />!</h1>
       </div>
     `));
   });
@@ -124,6 +124,38 @@ describe("Template Rewriting", function() {
         </h1>
       </div>
     `));
+  });
+
+  it("supports positional styles with style-of helper", async function() {
+    const projectDir = fixture("styled-app");
+    const analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
+    const templatePositionalPath = fixture("styled-app/src/ui/components/with-style-helper/template.hbs");
+    const templateHashPath = fixture("styled-app/src/ui/components/with-style-helper/templateHash.hbs");
+    // now we run the optimizer and rewriter against each temlpate
+    const resultPositional = await pipeline(projectDir, analyzer, "with-style-helper", templatePositionalPath);
+    analyzer.reset(); // need to reset the analyser otherwise it will change/advance class names.
+    const resultHash = await pipeline(projectDir, analyzer, "with-style-helper", templateHashPath);
+
+    assert.deepEqual(minify(print(resultPositional.ast)), minify(print(resultHash.ast)));
+  });
+
+  it("errors if positional argument is a block:class.", async function() {
+    // assert.expect(2);
+    const projectDir = fixture("styled-app");
+    const analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
+    const template = fixture("styled-app/src/ui/components/with-style-helper/templateInvalid.hbs");
+    const expectedMessage = '[css-blocks] Error: The block:class attribute must contain a value and is not allowed to be purely positional. Did you mean block:class="foo"? (template:/styled-app/components/with-style-helper:2:37)';
+    let didError = false;
+    try {
+      await pipeline(projectDir, analyzer, "with-style-helper", template);
+    } catch (err) {
+      // have to do this in catches to get type-checking...
+      const typed: CssBlockError = err;
+      didError = true;
+      assert.ok(err instanceof CssBlockError);
+      assert.equal(typed.message, expectedMessage);
+    }
+    assert.ok(didError);
   });
 
   it("rewrites styles with block aliases", async function() {
