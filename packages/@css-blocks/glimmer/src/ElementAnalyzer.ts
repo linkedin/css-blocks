@@ -62,6 +62,27 @@ export function isAnalyzedHelper(node: AnalyzableNode): node is AST.MustacheStat
   return isEmberBuiltIn(node.path.original) || isStyleOfHelper(node);
 }
 
+interface AnalyzableScope {
+  type: "scope";
+  namespace: string;
+  property: AnalyzableProperty;
+}
+
+interface AnalyzableClass {
+  type: "class";
+  namespace: string;
+  property: Exclude<AnalyzableProperty, AST.PathExpression>;
+}
+
+interface AnalyzableState {
+  type: "state";
+  namespace: string;
+  name: string;
+  property: AnalyzableProperty;
+}
+
+type AnalyzableAttribute = AnalyzableScope | AnalyzableClass | AnalyzableState;
+
 export class ElementAnalyzer {
   analysis: GlimmerAnalysis;
   block: Block;
@@ -136,11 +157,12 @@ export class ElementAnalyzer {
     }
   }
 
-  private _throwIfInvalidAttribute(node: AnalyzableNode, property: AnalyzableProperty, name: string): void {
-    if (isPathExpression(property) && name === "class") {
+  private _assertClassAttributeValue(node: AnalyzableNode, property: AnalyzableProperty): property is Exclude<AnalyzableProperty, AST.PathExpression> {
+    if (isPathExpression(property)) {
       const name = this._getAnalyzableAttributeName(property);
       throw cssBlockError(`The ${name} attribute must contain a value and is not allowed to be purely positional. Did you mean ${name}="foo"?`, node, this.template);
     }
+    return true;
   }
 
   private _getAnalyzableAttributeName(attribute: AnalyzableProperty): string | void {
@@ -155,7 +177,7 @@ export class ElementAnalyzer {
     }
   }
 
-  *eachAnalyzedAttribute(node: AnalyzableNode): Iterable<[string, string, AnalyzableProperty]> {
+  *eachAnalyzedAttribute(node: AnalyzableNode): Iterable<AnalyzableAttribute> {
     // Intital list may also contain general Expressions, we filter that later
     const propertyList: (AnalyzableProperty[] | AST.Expression[])[] = [];
     // set up the list of attributes (or multiple lists!) that we want to check
@@ -177,8 +199,17 @@ export class ElementAnalyzer {
           if (name) {
             const [namespace, attrName] = this.isAttributeAnalyzed(name);
             if (namespace && attrName) {
-              this._throwIfInvalidAttribute(node, property, attrName);
-              yield [namespace, attrName, property];
+              if (attrName === "class") {
+                // When we upgrade to TS 3.7 we don't have to model this as
+                // a type guard, we can use an assertion function signature.
+                if (this._assertClassAttributeValue(node, property)) {
+                  yield { type: "class", namespace, property };
+                }
+              } else if (attrName === "scope") {
+                yield { type: "scope", namespace, property };
+              } else {
+                yield { type: "state", namespace, name: attrName, property };
+              }
             }
           }
         }
@@ -201,13 +232,11 @@ export class ElementAnalyzer {
     }
 
     // Find the class or scope attribute and process it
-    for (let [namespace, attrName, attribute] of this.eachAnalyzedAttribute(node)) {
-      // should never be a path expression and "class" as that will throw an error before
-      // guard here is a) to get TS to agree b) just in case something, somehow, slips through.
-      if (attrName === "class" && !isPathExpression(attribute)) {
-        this.processClass(namespace, attribute, element, forRewrite);
-      } else if (attrName === "scope") {
-        this.processScope(namespace, attribute, element, forRewrite);
+    for (let analyzableAttr of this.eachAnalyzedAttribute(node)) {
+      if (analyzableAttr.type === "class") {
+        this.processClass(analyzableAttr.namespace, analyzableAttr.property, element, forRewrite);
+      } else if (analyzableAttr.type === "scope") {
+        this.processScope(analyzableAttr.namespace, analyzableAttr.property, element, forRewrite);
       }
     }
 
@@ -220,10 +249,9 @@ export class ElementAnalyzer {
       }
     }
 
-    for (let [namespace, attrName, attribute] of this.eachAnalyzedAttribute(node)) {
-      if (namespace && attrName) {
-        if (attrName === "class" || attrName === "scope") continue;
-        this.processState(namespace, attrName, attribute, element, forRewrite);
+    for (let analyzableAttr of this.eachAnalyzedAttribute(node)) {
+      if (analyzableAttr.type === "state") {
+        this.processState(analyzableAttr.namespace, analyzableAttr.name, analyzableAttr.property, element, forRewrite);
       }
     }
 
