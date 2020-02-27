@@ -224,7 +224,7 @@ export class ExpressionReader {
       let state = stateGroup.presenceRule;
 
       if (!state) {
-        if (stateGroup.hasResolvedValues) {
+        if (stateGroup.hasResolvedValues()) {
           let message = `State "${this.block}${blockClass.asSource()}[${this.stateName}]" expects a value.`;
           throw new MalformedBlockPath(message, this.loc);
         } else {

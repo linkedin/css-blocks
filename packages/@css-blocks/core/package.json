@@ -41,7 +41,7 @@
     "@css-blocks/code-style": "^1.0.0-alpha.1",
     "@types/async": "^3.0.3",
     "@types/debug": "4.1.5",
-    "typescript": "~3.6"
+    "typescript": "~3.7"
   },
   "dependencies": {
     "@opticss/element-analysis": "^0.6.2",

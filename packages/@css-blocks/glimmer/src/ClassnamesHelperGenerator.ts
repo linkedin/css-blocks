@@ -319,7 +319,6 @@ function constructBoolean(builders: Builders, bool: ConditionalArg): AST.Express
     return constructNotExpression(builders, bool);
   } else {
     assertNever(bool);
-    return [builders.null()];
   }
 }
 

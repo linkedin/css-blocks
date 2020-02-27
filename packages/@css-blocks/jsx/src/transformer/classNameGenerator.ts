@@ -263,7 +263,6 @@ function constructBoolean(bool: ConditionalArg): Array<Expression> {
     return constructNotExpression(bool);
   } else {
     assertNever(bool);
-    return [builders.null()];
   }
 }
 
