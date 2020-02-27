@@ -5,6 +5,9 @@ import { ClassifiedParsedSelectors } from "opticss";
 
 import { TEMPLATE_TYPE } from "./Template";
 
+export type AnalyzableNode = AST.ElementNode | AST.BlockStatement | AST.MustacheStatement | AST.SubExpression;
+export type AnalyzableProperty = AST.AttrNode | AST.HashPair | AST.PathExpression;
+
 export function pathFromSpecifier(specifier: string) {
   return specifier.split(":")[1];
 }
@@ -71,4 +74,13 @@ export function isUndefinedLiteral(value: AST.Node | undefined): value is AST.Un
 }
 export function isPathExpression(value: AST.Node | undefined): value is AST.PathExpression {
   return !!value && value.type === "PathExpression";
+}
+export function isHashPair(value: AST.Node | undefined): value is AST.HashPair {
+  return !!value && value.type === "HashPair";
+}
+export function isAttrNode(value: AST.Node | undefined): value is AST.AttrNode {
+  return !!value && value.type === "AttrNode";
+}
+export function isAnalyzableProperty(value: AST.Node | undefined): value is AnalyzableProperty {
+  return !!value && (isAttrNode(value) || isHashPair(value) || isPathExpression(value));
 }
