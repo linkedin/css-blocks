@@ -1,5 +1,5 @@
-export { default as classnames } from "./classnames";
-export { default as concat } from "./concat";
+export { classnames } from "./classnames";
+export { concat } from "./concat";
 
 export const CONCAT_HELPER_NAME = "-css-blocks-concat";
 export const CLASSNAMES_HELPER_NAME = "-css-blocks-classnames";

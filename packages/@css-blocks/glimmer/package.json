@@ -52,7 +52,7 @@
     "@css-blocks/code-style": "^1.0.0-alpha.1",
     "@types/fs-extra": "^8.0.0",
     "@types/glob": "^7.1.1",
-    "typescript": "~3.7",
+    "typescript": "~3.8",
     "watch": "^1.0.2"
   },
   "dependencies": {
