@@ -29,7 +29,7 @@ export class PromiseQueue<WorkItem, Result> {
     this.draining = false;
   }
 
-  private processWork(work: PendingWork<WorkItem, Result>, callback: (err?: unknown) => void) {
+  private processWork(work: PendingWork<WorkItem, Result>, callback: (err?: Error | null | undefined) => void) {
     this.debug(`[Job:${work.id}] Starting job.`);
     this.promiseProcessor(work.item).then(
       (result: Result) => {
@@ -37,7 +37,7 @@ export class PromiseQueue<WorkItem, Result> {
         work.result = result;
         callback();
       },
-      (error: unknown) => {
+      (error: Error | null | undefined) => {
         this.debug(`[Job:${work.id}] Errored.`);
         callback(error);
       });

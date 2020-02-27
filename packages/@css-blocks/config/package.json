@@ -44,7 +44,7 @@
   "devDependencies": {
     "@css-blocks/code-style": "^1.0.0-alpha.1",
     "@types/lodash.merge": "^4.6.6",
-    "typescript": "~3.5",
+    "typescript": "~3.8",
     "watch": "^1.0.2"
   },
   "dependencies": {

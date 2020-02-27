@@ -3,15 +3,17 @@
   "references": [
     {"path": "@css-blocks/bem-to-blocks"},
     {"path": "@css-blocks/broccoli"},
-    {"path": "@css-blocks/core"},
     {"path": "@css-blocks/cli"},
+    {"path": "@css-blocks/config"},
+    {"path": "@css-blocks/core"},
+    {"path": "@css-blocks/eyeglass"},
     {"path": "@css-blocks/glimmer"},
     {"path": "@css-blocks/glimmer/tsconfig.amd.json"},
     {"path": "@css-blocks/jsx"},
+    {"path": "@css-blocks/language-server"},
     {"path": "@css-blocks/runtime"},
     {"path": "@css-blocks/test-utils"},
-    {"path": "@css-blocks/webpack"},
-    {"path": "@css-blocks/language-server"},
-    {"path": "@css-blocks/vscode"}
+    {"path": "@css-blocks/vscode"},
+    {"path": "@css-blocks/webpack"}
   ]
 }

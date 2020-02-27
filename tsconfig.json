@@ -27,6 +27,7 @@
     "strictFunctionTypes": true,
     "alwaysStrict": true,
     "strictPropertyInitialization": true,
+    "strict": true,
 
     // output options
     "preserveConstEnums": false,
