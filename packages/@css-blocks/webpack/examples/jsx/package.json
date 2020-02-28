@@ -15,7 +15,7 @@
     "babel-preset-stage-2": "^6.24.1",
     "file-loader": "3.0.1",
     "obj-str": "^1.0.0",
-    "react": "^16.3.2",
+    "react": "^16.13.0",
     "react-dom": "^16.3.2",
     "typescript": "~3.5",
     "webpack": "4.30.0"
