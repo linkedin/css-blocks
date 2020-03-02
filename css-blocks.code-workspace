@@ -1,6 +1,10 @@
 {
 	"folders": [
 		{
+			"path": "documentation",
+			"name": "Documentation"
+		},
+		{
 			"path": "packages/@css-blocks/broccoli"
 		},
 		{
