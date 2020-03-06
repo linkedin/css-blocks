@@ -5,21 +5,12 @@
   "keywords": [
     "ember-addon"
   ],
-  "license": "MIT",
+  "license": "BSD-2-Clause",
   "author": "Adam Miller <ammiller@linkedin.com>",
-  "directories": {
-    "doc": "doc",
-    "test": "tests"
-  },
   "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli",
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli#readme",
   "scripts": {
-    "build": "ember build",
-    "lint:js": "eslint ./*.js addon addon-test-support app blueprints config lib server test-support tests",
-    "start": "ember serve",
-    "test": "ember test",
-    "test:runner": "ember test",
-    "test:all": "ember try:each"
+    "test": "echo 'To test this package: cd ../../../private-packages/fixtures/ember-app && yarn test'"
   },
   "dependencies": {
     "@css-blocks/broccoli": "^1.0.0-alpha.7",
@@ -35,35 +26,10 @@
     "lodash.merge": "^4.6.2",
     "symlink-or-copy": "^1.2.0"
   },
-  "devDependencies": {
-    "@ember/jquery": "^0.6.1",
-    "broccoli-asset-rev": "^3.0.0",
-    "ember-ajax": "^5.0.0",
-    "ember-cli": "~3.11",
-    "ember-cli-eslint": "^5.1.0",
-    "ember-cli-htmlbars": "^3.1.0",
-    "ember-cli-htmlbars-inline-precompile": "^2.1.0",
-    "ember-cli-inject-live-reload": "^2.0.1",
-    "ember-cli-qunit": "^4.3.2",
-    "ember-cli-sri": "^2.1.1",
-    "ember-cli-uglify": "^3.0.0",
-    "ember-disable-prototype-extensions": "^1.1.2",
-    "ember-engines": "0.8.2",
-    "ember-export-application-global": "^2.0.0",
-    "ember-load-initializers": "^2.0.0",
-    "ember-maybe-import-regenerator": "^0.1.6",
-    "ember-resolver": "^5.0.0",
-    "ember-source": "~3.11.0",
-    "ember-try": "^1.1.0",
-    "eslint-plugin-ember": "^7.0.0",
-    "eslint-plugin-node": "^9.0.0",
-    "loader.js": "^4.7.0"
-  },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
   },
   "ember-addon": {
-    "configPath": "tests/dummy/config",
     "before": [
       "ember-cli-babel",
       "ember-cli-htmlbars"
@@ -71,11 +37,6 @@
     "after": [
       "ember-cli-sass",
       "ember-cli-eyeglass"
-    ],
-    "paths": [
-      "tests/dummy/lib/in-repo-addon",
-      "tests/dummy/lib/in-repo-engine",
-      "tests/dummy/lib/in-repo-lazy-engine"
     ]
   },
   "volta": {

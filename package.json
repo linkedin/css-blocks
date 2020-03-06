@@ -2,7 +2,8 @@
   "name": "css-blocks-monorepo",
   "private": true,
   "workspaces": [
-    "packages/@css-blocks/*"
+    "packages/@css-blocks/*",
+    "private-packages/fixtures/*"
   ],
   "scripts": {
     "ci": "lerna run test",

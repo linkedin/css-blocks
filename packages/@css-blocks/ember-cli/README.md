@@ -41,13 +41,13 @@ In the Ember + CSS Blocks build, the built-in `{{link-to}}` component receives s
 
 ```css
 /* stylesheet.block.css */
-.link                 { color: gray; }
+.link           { color: blue; }
 .link[loading]  { color: yellow; }
 .link[active]   { color: green; }
-.link[disabled] { color: red; }
+.link[disabled] { color: gray; }
 ```
 
 ```hbs
 {{!-- template.hbs --}}
-{{link-to "route-name" class="link"}}
+{{link-to "route-name" block:class="link"}}
 ```

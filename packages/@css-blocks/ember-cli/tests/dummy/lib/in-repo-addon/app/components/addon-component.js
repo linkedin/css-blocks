@@ -1,1 +1,0 @@
-export { default } from 'in-repo-addon/components/addon-component';

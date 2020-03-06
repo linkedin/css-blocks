@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "version": "0.0.0",
+  "name": "@css-blocks-fixtures/ember-engine",
+  "keywords": [
+    "ember-addon",
+    "ember-engine"
+  ],
+  "dependencies": {
+    "@css-blocks-fixtures/ember-addon": "*",
+    "@css-blocks/ember-cli": "^1.0.0-alpha.7",
+    "ember-cli-htmlbars": "^4.2.3",
+    "ember-cli-babel": "^7.7.3"
+  },
+  "devDependencies": {
+    "ember-cli": "~3.16.0"
+  }
+}
