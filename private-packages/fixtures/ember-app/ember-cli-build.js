@@ -4,7 +4,15 @@ const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
-    // Add options here
+    'css-blocks': {
+      parserOpts: {},
+      analysisOpts: {},
+      optimization: {
+        rewriteIdents: true,
+        mergeDeclarations: true,
+        removeUnusedStyles: true,
+      },
+    }
   });
 
   // Use `app.import` to add additional libraries to the generated

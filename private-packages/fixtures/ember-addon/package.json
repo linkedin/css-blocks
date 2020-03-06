@@ -9,10 +9,6 @@
   "repository": "",
   "license": "BSD-2-Clause",
   "author": "",
-  "scripts": {
-    "build": "ember build --environment=production",
-    "start": "ember serve"
-  },
   "dependencies": {
     "@css-blocks/ember-cli": "^1.0.0-alpha.7",
     "ember-cli-babel": "^7.17.2",
