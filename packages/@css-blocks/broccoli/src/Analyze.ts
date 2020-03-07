@@ -72,7 +72,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     let blockCompiler = new BlockCompiler(postcss, options);
     let optimizer = new Optimizer(this.optimizationOptions, this.analyzer.optimizationOptions);
 
-    let isBlockFile = minimatch.makeRe("**/*.block.*");
+    let isBlockFile = minimatch.makeRe("**/{*.block.*,stylesheet.*}");
 
     // Test if anything has changed since last time. If not, skip all analysis work.
     let newFsTree = FSTree.fromEntries(walkSync.entries(input));
