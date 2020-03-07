@@ -13,6 +13,7 @@
   "scripts": {
     "build": "ember build",
     "start": "ember serve",
+    "pretest": "cd ../../../packages/@css-blocks/broccoli && yarn compile",
     "test": "ember test"
   },
   "dependencies": {
