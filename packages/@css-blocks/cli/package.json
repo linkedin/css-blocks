@@ -39,7 +39,7 @@
     "url": "https://github.com/linkedin/css-blocks/issues"
   },
   "engines": {
-    "node": "6.* || 8.* || >= 10.*"
+    "node": "10.* || >= 12.*"
   },
   "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli",
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/@css-blocks/cli#readme",

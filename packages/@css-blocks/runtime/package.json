@@ -23,7 +23,7 @@
     "@css-blocks/core"
   ],
   "engines": {
-    "node": "6.* || 8.* || >= 10.*"
+    "node": "10.* || >= 12.*"
   },
   "author": "Chris Eppstein <chris@eppsteins.net>",
   "license": "BSD-2-Clause",

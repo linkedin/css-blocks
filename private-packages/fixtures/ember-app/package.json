@@ -48,7 +48,7 @@
     "qunit-dom": "^0.8.4"
   },
   "engines": {
-    "node": "8.* || >= 10.*"
+    "node": "10.* || >= 12.*"
   },
   "ember": {
     "edition": "octane"

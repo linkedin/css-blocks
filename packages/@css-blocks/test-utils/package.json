@@ -40,7 +40,7 @@
     "watch": "^1.0.2"
   },
   "engines": {
-    "node": "6.* || 8.* || >= 10.*"
+    "node": "10.* || >= 12.*"
   },
   "engineStrict": true,
   "volta": {
