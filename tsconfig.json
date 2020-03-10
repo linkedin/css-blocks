@@ -3,7 +3,8 @@
   "exclude": [ "node_modules" ],
   "compilerOptions": {
     // Compilation Configuration
-    "target": "es2017",
+    "lib": ["es2018"],
+    "target": "es2018",
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,

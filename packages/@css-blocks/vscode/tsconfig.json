@@ -3,10 +3,8 @@
   "compilerOptions": {
     "composite": true,
     "baseUrl": "dist",
-    "target": "es2018",
     "outDir": "dist",
     "rootDir": "src",
-    "lib": ["es2018"]
   },
   "include": ["src", "test"],
   "exclude": ["dist", "node_modules", ".vscode-test"],

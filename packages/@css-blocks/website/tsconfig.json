@@ -6,7 +6,7 @@
         "noImplicitAny": true,
         "module": "es6",
         "moduleResolution": "Node",
-        "target": "es2017",
+        "target": "es2018",
         "jsx": "preserve",
         "jsxFactory": "React.createElement",
         "experimentalDecorators": true,

@@ -27,7 +27,7 @@ const jsxCompilationOptions = {
 const CssBlocks = require("@css-blocks/jsx");
 const CssBlocksPlugin = require("@css-blocks/webpack").CssBlocksPlugin;
 const CssBlockRewriter = new CssBlocks.Rewriter();
-const CssBlockAnalyzer = new CssBlocks.Analyzer(paths.appIndexJs, jsxCompilationOptions);
+const CssBlockAnalyzer = new CssBlocks.Analyzer(jsxCompilationOptions);
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
@@ -209,7 +209,7 @@ module.exports = {
                 options: {
                   babelrc: false,
                   plugins: [
-                    require("@css-blocks/jsx/dist/src/transformer/babel").makePlugin({ rewriter: CssBlockRewriter }),
+                    require("@css-blocks/jsx/dist/src/transformer/babel").babelPlugin({ rewriter: CssBlockRewriter }),
                   ],
                   cacheDirectory: true,
                   compact: true,

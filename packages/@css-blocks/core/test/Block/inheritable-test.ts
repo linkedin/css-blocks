@@ -2,7 +2,7 @@ import { assertNeverCalled } from "@opticss/util";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { Block, BlockClass, ResolvedConfiguration, RulesetContainer, SourceLocation } from "../../src";
+import { Block, BlockClass, RulesetContainer } from "../../src";
 import { Inheritable } from "../../src/BlockTree/Inheritable";
 
 type RootNode = Inheritable<
@@ -91,23 +91,10 @@ class TestSink extends Inheritable<
   get parent(): SinkNode["parent"] { return this._parent!; }
   get root(): SinkNode["root"] { return this.parent.root; }
   // tslint:disable-next-line:prefer-unknown-to-any
-  public lookup(_path: string, _errLoc?: SourceLocation | undefined): Inheritable<any, any, any, any> | undefined {
-    throw new Error("Method not implemented.");
-  }
   public rulesets: RulesetContainer<BlockClass>;
   constructor(name: string, parent: TestNode) {
     super(name, parent);
     this.rulesets = new RulesetContainer(new BlockClass(name, TEST_BLOCK));
-  }
-
-  public cssClass(_opts: ResolvedConfiguration): string {
-    throw new Error("Method not implemented.");
-  }
-  public asSource(): string {
-    throw new Error("Method not implemented.");
-  }
-  public asSourceAttributes(): Attr[] {
-    throw new Error("Method not implemented.");
   }
 }
 

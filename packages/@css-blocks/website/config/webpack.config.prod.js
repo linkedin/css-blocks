@@ -28,7 +28,7 @@ const jsxCompilationOptions = {
   aliases: {}
 };
 const CssBlockRewriter = new CssBlocks.Rewriter(jsxCompilationOptions);
-const CssBlockAnalyzer = new CssBlocks.Analyzer(paths.appIndexJs, jsxCompilationOptions);
+const CssBlockAnalyzer = new CssBlocks.Analyzer(jsxCompilationOptions);
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -230,7 +230,7 @@ module.exports = {
                 options: {
                   babelrc: false,
                   plugins: [
-                    require("@css-blocks/jsx/dist/src/transformer/babel").makePlugin({ rewriter: CssBlockRewriter }),
+                    require("@css-blocks/jsx/dist/src/transformer/babel").babelPlugin({ rewriter: CssBlockRewriter }),
                   ],
                   cacheDirectory: false,
                   compact: true,

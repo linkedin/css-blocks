@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     // Compilation Configuration
+    "lib": ["ES5"],
     "target": "es5",
     "inlineSources": false,
     "inlineSourceMap": false,
