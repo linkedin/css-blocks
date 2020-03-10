@@ -1,8 +1,7 @@
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
-    // Composite is false due to https://github.com/Microsoft/TypeScript/issues/31181
-    "composite": false,
+    "composite": true,
     "outDir": "dist",
     "baseUrl": "dist"
   },
