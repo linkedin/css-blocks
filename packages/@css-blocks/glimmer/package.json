@@ -36,7 +36,7 @@
   "contributors": [
     "Tom Dale <tom@tomdale.net>"
   ],
-  "license": "MIT",
+  "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/linkedin/css-blocks/issues"
   },

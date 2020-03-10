@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "main": "index.js",
-  "license": "MIT",
+  "license": "BSD-2-Clause",
   "dependencies": {
     "@css-blocks/jsx": "file:../../../jsx",
     "@css-blocks/runtime": "file:../../../runtime",

@@ -29,7 +29,7 @@
     "CSS Blocks"
   ],
   "author": "Adam Miller <ammiller@linkedin.com>",
-  "license": "MIT",
+  "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/linkedin/css-blocks/issues"
   },
