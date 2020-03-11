@@ -22,7 +22,7 @@
     "vscode-uri": "^2.0.3"
   },
   "devDependencies": {
-    "mocha": "^6.1.4",
+    "mocha": "^7.0.1",
     "sass": "^1.23.7",
     "tslint": "^5.9.1",
     "typescript": "~3.8",
