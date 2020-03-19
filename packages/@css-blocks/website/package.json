@@ -29,7 +29,7 @@
     "express": "^4.16.3",
     "extract-text-webpack-plugin": "3.0.2",
     "file-loader": "1.1.5",
-    "fs-extra": "^8.0.0",
+    "fs-extra": "^9.0.0",
     "html-webpack-plugin": "2.29.0",
     "jest": "20.0.4",
     "object-assign": "4.1.1",
