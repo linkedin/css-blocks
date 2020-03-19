@@ -37,7 +37,7 @@
     "postcss-loader": "2.0.8",
     "promise": "^8.0.3",
     "raf": "^3.4.1",
-    "react": "^16.9.0",
+    "react": "^16.13.1",
     "react-dev-utils": "^4.2.2",
     "react-dom": "^16.1.2",
     "react-ga": "^2.5.0",
