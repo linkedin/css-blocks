@@ -66,7 +66,7 @@
     "@opticss/template-api": "^0.6.3",
     "@opticss/util": "^0.7.0",
     "debug": "^4.1.1",
-    "fs-extra": "^8.0.0",
+    "fs-extra": "^9.0.0",
     "glob": "^7.1.2",
     "global": "^4.3.2",
     "object.values": "^1.0.4"
