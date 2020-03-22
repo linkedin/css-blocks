@@ -45,7 +45,7 @@
     "mock-require": "^3.0.3",
     "outdent": "^0.7.0",
     "perfectionist": "^2.4.0",
-    "prettier": "^1.18.2",
+    "prettier": "^2.0.1",
     "remap-istanbul": "^0.13.0",
     "source-map-support": "^0.5.12",
     "test-console": "^1.1.0",
