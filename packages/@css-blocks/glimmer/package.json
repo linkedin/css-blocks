@@ -58,7 +58,7 @@
   "dependencies": {
     "@amiller-gh/glimmer-analyzer": "^0.4.0",
     "@css-blocks/core": "^1.0.0-alpha.6",
-    "@glimmer/compiler": "^0.42.0",
+    "@glimmer/compiler": "^0.49.0",
     "@glimmer/resolution-map-builder": "0.5.1",
     "@glimmer/resolver": "^0.4.3",
     "@glimmer/syntax": "^0.42.0",
