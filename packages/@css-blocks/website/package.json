@@ -101,7 +101,7 @@
     "extends": "react-app"
   },
   "devDependencies": {
-    "@types/react": "^16.9.1",
+    "@types/react": "^16.9.31",
     "@types/react-dom": "^16.0.3",
     "clean-css": "^4.1.11",
     "obj-str": "^1.0.0"
