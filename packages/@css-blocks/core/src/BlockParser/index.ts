@@ -11,6 +11,8 @@ export { BlockFactory } from "./BlockFactory";
 
 export {
   Syntax,
+  Preprocessor,
+  OptionalPreprocessor,
   Preprocessors,
   ProcessedFile,
 } from "./preprocessing";

@@ -42,7 +42,8 @@ export interface ProcessedFile {
 }
 
 // export type ContentPreprocessor = (content: string) => Promise<ProcessedFile>;
-export type Preprocessor = (fullPath: string, content: string, configuration: ResolvedConfiguration, sourceMap?: RawSourceMap | string) => Promise<ProcessedFile>;
+export type Preprocessor<R extends ProcessedFile | null = ProcessedFile> = (fullPath: string, content: string, configuration: ResolvedConfiguration, sourceMap?: RawSourceMap | string) => Promise<R>;
+export type OptionalPreprocessor = Preprocessor<ProcessedFile | null>;
 
 /**
  * A map of supported syntaxes to the preprocessor function for that syntax.

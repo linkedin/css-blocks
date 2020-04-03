@@ -1,0 +1,7 @@
+@mixin block($name) {
+  :root {
+    name: $name;
+  }
+}
+
+@include block("uno");

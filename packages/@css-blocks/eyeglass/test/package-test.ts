@@ -1,25 +1,23 @@
 
-import { expect } from "chai";
-import Eyeglass from "eyeglass";
+import { resolveConfiguration } from "@css-blocks/core";
+import { assert, expect } from "chai";
+import { EyeglassOptions } from "eyeglass";
+import Eyeglass = require("eyeglass");
+import * as fs from "fs";
 import { Result } from "node-sass";
 import SassImplementation = require("node-sass");
+import * as path from "path";
 import * as sinon from "sinon";
 
-import { adaptor } from "../src/";
+import { DirectoryScopedPreprocessor, adaptAll, adaptor } from "../src/";
 
 const fakeSass = {
     render: sinon.spy(),
 } as unknown as typeof SassImplementation;
 const fakeEyeglass = sinon.spy() as unknown as typeof Eyeglass;
 
-// this is used later to generate test data.
-function string2buffer(str: string): ArrayBuffer {
-  const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-  const view = new Uint16Array(buf);
-  for (let i = 0, strLen = str.length; i < strLen; i++) {
-    view[i] = str.charCodeAt(i);
-  }
-  return buf;
+function fixture(relativePath: string): string {
+  return path.resolve(__dirname, "..", "..", "test", "fixtures", relativePath);
 }
 
 describe("@css-blocks/eyeglass", async () => {
@@ -31,19 +29,19 @@ describe("@css-blocks/eyeglass", async () => {
 
   it("exports a function named adaptor that returns a function", async () => {
     expect(adaptor).to.be.a("function");
-    expect(adaptor(fakeSass, fakeEyeglass)).to.be.a("function");
+    expect(adaptor(fakeSass, fakeEyeglass, {})).to.be.a("function");
   });
 
   it("returned function returns a Promise when called", async () => {
-    const injector = adaptor(fakeSass, fakeEyeglass);
-    const result = injector("file", "data");
+    const injector = adaptor(fakeSass, fakeEyeglass, {});
+    const result = injector("file", "data", resolveConfiguration({}));
 
     expect(result).to.be.a("promise");
   });
 
   it("calls the correct Eyeglass and Sass APIs", async () => {
-    const injector = adaptor(fakeSass, fakeEyeglass);
-    const result = injector("file", "data");
+    const injector = adaptor(fakeSass, fakeEyeglass, {});
+    const result = injector("file", "data", resolveConfiguration({}));
 
     expect(result).to.be.a("promise");
     sinon.assert.calledOnce(fakeSass.render as unknown as sinon.SinonSpy);
@@ -59,7 +57,7 @@ describe("@css-blocks/eyeglass", async () => {
       precision: 42,
     };
     const injector = adaptor(fakeSass, fakeEyeglass, dummyOptions);
-    const result = injector("correct.scss", "correct");
+    const result = injector("correct.scss", "correct", resolveConfiguration({}));
 
     expect(result).to.be.a("promise");
     const spiedEyeglass = fakeEyeglass as unknown as sinon.SinonSpy;
@@ -70,8 +68,8 @@ describe("@css-blocks/eyeglass", async () => {
   });
 
   it("returns the correct data from the render callback", async () => {
-    const css = Buffer.from(string2buffer("css-data"));
-    const map = Buffer.from(string2buffer("map-data"));
+    const css = Buffer.from("css-data", "utf8");
+    const map = Buffer.from("map-data", "utf8");
     const fakeResult: Result = {
       css,
       map,
@@ -83,8 +81,8 @@ describe("@css-blocks/eyeglass", async () => {
         includedFiles: ["files"],
       },
     };
-    const injector = adaptor(fakeSass, fakeEyeglass);
-    const result = injector("correct.scss", "correct");
+    const injector = adaptor(fakeSass, fakeEyeglass, {});
+    const result = injector("correct.scss", "correct", resolveConfiguration({}));
     const callback = (fakeSass.render as unknown as sinon.SinonSpy).args[0][1];
     callback(undefined, fakeResult);
 
@@ -97,9 +95,10 @@ describe("@css-blocks/eyeglass", async () => {
     expect(output.dependencies).to.be.an("array");
     expect(output.dependencies && output.dependencies[0]).to.equal("files");
   });
+
   it("throws on error passed to render callback", async () => {
-    const injector = adaptor(fakeSass, fakeEyeglass);
-    const result = injector("correct.scss", "correct");
+    const injector = adaptor(fakeSass, fakeEyeglass, {});
+    const result = injector("correct.scss", "correct", resolveConfiguration({}));
     const callback = (fakeSass.render as unknown as sinon.SinonSpy).args[0][1];
     callback("test error");
     let output;
@@ -110,4 +109,51 @@ describe("@css-blocks/eyeglass", async () => {
     }
     expect(output).to.be.an("undefined");
   });
+
+  it("can adapt from several optional adaptors", async () => {
+    let package1Dir = fixture("package-1");
+    let package1File = fixture("package-1/one.block.scss");
+    let package2Dir = fixture("package-2");
+    let package2File = fixture("package-2/two.block.scss");
+    class Adaptor1 extends DirectoryScopedPreprocessor {
+      setupOptions(options: EyeglassOptions): EyeglassOptions {
+        return Object.assign({}, options, {outputStyle: "compact"});
+      }
+    }
+    class Adaptor2 extends DirectoryScopedPreprocessor {
+      setupOptions(options: EyeglassOptions): EyeglassOptions {
+        return Object.assign({}, options, {outputStyle: "expanded"});
+      }
+    }
+    let adaptor1 = new Adaptor1(package1Dir);
+    let adaptor2 = new Adaptor2(package2Dir);
+    let processor = adaptAll([adaptor1, adaptor2], SassImplementation, Eyeglass, {});
+    let result1 = await processor(package1File, fs.readFileSync(package1File, "utf-8"), resolveConfiguration({}));
+    assert.equal(result1.content, dedent(`
+      :root { name: "uno"; }
+
+      /*# sourceMappingURL=one.block.css.map */`));
+    let result2 = await processor(package2File, fs.readFileSync(package2File, "utf-8"), resolveConfiguration({}));
+    assert.equal(result2.content, dedent(`
+      :root {
+        name: "dos";
+      }
+
+      /*# sourceMappingURL=two.block.css.map */`));
+  });
 });
+
+function dedent(s: string): string {
+  if (s.startsWith("\n")) {
+    s = s.substring(1);
+  }
+  let lines = s.split("\n");
+  let m = lines[0].match(/^\s*/);
+  if (!m) return s;
+  let indent = m[0].length;
+  if (indent === 0) return s;
+  for (let i = 0; i < lines.length; i++) {
+    lines[i] = lines[i].substring(indent);
+  }
+  return lines.join("\n");
+}
