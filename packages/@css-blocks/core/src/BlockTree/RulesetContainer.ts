@@ -100,6 +100,8 @@ export class RulesetContainer<S extends Styles> {
     let style = this.parent;
     let selectors: ParsedSelector[] = style.getParsedSelectors(rule);
 
+    // XXX I think this is wrong. if the selectors target different styles it
+    // will get confused. Need to add tests for that.
     selectors.forEach((selector) => {
       let ruleSet = new Ruleset(file, rule, style);
       let key = selector.key;

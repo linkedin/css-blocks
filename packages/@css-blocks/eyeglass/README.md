@@ -7,7 +7,7 @@ This package provides an easy way to integrate your CSS Blocks code with the Sas
 
 ## Usage
 
-Here's an example `css-blocks.config.js` file using this package. 
+Here's an example `css-blocks.config.js` file using this package.
 
 ```js
 import sass from "node-sass";
@@ -25,4 +25,69 @@ module.exports = {
 };
 ```
 
-An important thing to notice here is that this adapter _does not provide Eyeglass for you_. Instead we use the module instance you pass into the adaptor. This means you're not tied whatever version of Eyeglass (or Sass) this package would include!
+## Building npm libraries that provide css-blocks written in Sass
+
+If your addon provides CSS Block files that are written with Sass it will
+require the application that uses your addon to include Sass preprocessing in
+its configuration.
+
+In turn, so the addon can maintain control over the preprocessing configuration
+that is used we recommend that your addon ship an "optional adaptor" that
+looks like this:
+
+```ts
+import { DirectoryScopedPreprocessor } from "@css-blocks/eyeglass";
+
+// a path to where your block files live
+const ADDON_DIR = path.resolve(__dirname, "..", "..") + "/";
+class MyModulesPreprocessor extends DirectoryScopedPreprocessor {
+  setupOptions(options: EyeglassOptions): EyeglassOptions {
+    // Don't manipulate the options passed in.
+    return Object.assign({}, options, {precision: 20});
+  }
+}
+
+export const adaptor = new MyModulesPreprocessor(ADDON_DIR);
+```
+
+## Building applications that consume Sass-preprocessed css-blocks
+
+If your application consumes CSS Block files that are written with Sass
+you'll need to work with any adaptors provided by the extensions you're
+using. This css-blocks/eyeglass integration provides a helper function that
+will select the correct processor for the block file being processed or
+fall back to a default sass processor.
+
+This css-blocks configuration file is an example of how to consume the
+eyeglass adaptors from other libraries that use this integration.
+
+```ts
+// css-blocks.config.js
+
+const sass = require("node-sass");
+const Eyeglass = require("eyeglass");
+import { adaptAll } from "@css-blocks/eyeglass";
+
+// See the documentation for your module to know how to import
+// its adaptors.
+import { adaptor as fancyAdaptor } from "fancy-module";
+import { adaptor as anotherAdaptor } from "another-package";
+
+const sassOptions = {
+  // The default sass and eyeglass options for your application.
+  // Where important, these options might be overridden by the module itself.
+};
+
+// While it's probably irrelevant, the order of the adaptors here
+// does matter, the first one that wants to process a file will win.
+const eyeglassAdaptors = [
+  fancyAdaptor,
+  anotherAdaptor,
+];
+
+export default {
+  preprocesors: {
+    scss: adaptAll(eyeglassAdaptors, sass, eyeglass, sassOptions),
+  }
+};
+```
