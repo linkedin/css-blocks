@@ -3,7 +3,7 @@
   "author": "Gregory Wild-Smith <gwildsmith@linkedin.com>",
   "description": "Tool to provide easy interoperation with the Eyeglass SASS module manager",
   "license": "BSD-2-Clause",
-  "version": "1.0.0-alpha.7",
+  "version": "1.0.0",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "files": [
@@ -42,7 +42,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {},
   "engines": {
     "node": "10.* || >= 12.*"
   },

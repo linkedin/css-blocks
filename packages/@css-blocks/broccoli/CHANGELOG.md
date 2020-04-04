@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.0.0-alpha.7...v1.0.0) (2020-04-04)
+
+
+### Bug Fixes
+
+* Glimmer apps have a different naming system. ([9b8f73c](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/commit/9b8f73cd30b4d0dbd77401caa7488f1f81f4608d))
+* Some packages were erroneously marked as MIT license. ([6ba8462](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/commit/6ba84624ac5908e4454b4db9e821f12d04d6ab29))
+
+
+
+
+
 # [1.0.0-alpha.7](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.0.0-alpha.6...v1.0.0-alpha.7) (2020-02-23)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/core",
-  "version": "1.0.0-alpha.6",
+  "version": "1.0.0",
   "description": "Fast, maintainable, optimal, component-oriented CSS.",
   "main": "dist/src/index.js",
   "scripts": {
@@ -38,7 +38,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@css-blocks/code-style": "^1.0.0-alpha.1",
+    "@css-blocks/code-style": "^1.0.0",
     "@types/async": "^3.0.3",
     "@types/debug": "4.1.5",
     "typescript": "~3.8"

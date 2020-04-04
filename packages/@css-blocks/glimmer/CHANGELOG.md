@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.0.0-alpha.7...v1.0.0) (2020-04-04)
+
+
+### Bug Fixes
+
+* Some packages were erroneously marked as MIT license. ([6ba8462](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/6ba84624ac5908e4454b4db9e821f12d04d6ab29))
+
+
+### chore
+
+* Drop support for node 6, 8, and 11. ([3806e82](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/3806e82124814fbea99aa47353cd2c171b1f55ec))
+
+
+### Features
+
+* **style-of:** Allows positional arguements to be passed. ([2eb25a8](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/2eb25a81a32d1d7cfceac7d05bc57fd04001dc15))
+* **style-of:** Errors if unsupported params have been passed. ([cbee078](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/cbee078b08008bceef4fe45f09d32eed9d7b4a15))
+
+
+### BREAKING CHANGES
+
+* Node 8 is now out of maintainence so we have dropped support for node 6
+and 8. Node 11 is no longer needed because node 12 was released.
+
+
+
+
+
 # [1.0.0-alpha.6](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.0.0-alpha.5...v1.0.0-alpha.6) (2020-02-19)
 
 

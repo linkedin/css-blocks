@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.7...v1.0.0) (2020-04-04)
+
+
+### Bug Fixes
+
+* Glimmer apps have a different naming system. ([9b8f73c](https://github.com/linkedin/css-blocks/commit/9b8f73cd30b4d0dbd77401caa7488f1f81f4608d))
+* Some packages were erroneously marked as MIT license. ([6ba8462](https://github.com/linkedin/css-blocks/commit/6ba84624ac5908e4454b4db9e821f12d04d6ab29))
+* Work around for husky regression. ([1783a7e](https://github.com/linkedin/css-blocks/commit/1783a7e93c4fa615a51bfc245265de9a7a3df418))
+
+
+### chore
+
+* Drop support for node 6, 8, and 11. ([3806e82](https://github.com/linkedin/css-blocks/commit/3806e82124814fbea99aa47353cd2c171b1f55ec))
+
+
+### Features
+
+* Optional Preprocessors & library/application API contract. ([80aba33](https://github.com/linkedin/css-blocks/commit/80aba33c818c1285e35840929bf1fbbb80698c36))
+* **eyeglass:** Adds new package that enables simple Eyeglass support. ([6f92d19](https://github.com/linkedin/css-blocks/commit/6f92d19c4362ca5e0b3971977d645eda5682c928))
+* **style-of:** Allows positional arguements to be passed. ([2eb25a8](https://github.com/linkedin/css-blocks/commit/2eb25a81a32d1d7cfceac7d05bc57fd04001dc15))
+* **style-of:** Errors if unsupported params have been passed. ([cbee078](https://github.com/linkedin/css-blocks/commit/cbee078b08008bceef4fe45f09d32eed9d7b4a15))
+
+
+### BREAKING CHANGES
+
+* Node 8 is now out of maintainence so we have dropped support for node 6
+and 8. Node 11 is no longer needed because node 12 was released.
+
+
+
+
+
 # [1.0.0-alpha.7](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.6...v1.0.0-alpha.7) (2020-02-23)
 
 
