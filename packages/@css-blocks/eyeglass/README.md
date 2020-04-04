@@ -27,19 +27,20 @@ module.exports = {
 
 ## Building npm libraries that provide css-blocks written in Sass
 
-If your addon provides CSS Block files that are written with Sass it will
-require the application that uses your addon to include Sass preprocessing in
+If your library provides CSS Block files that are written with Sass it will
+require the application that uses your library to include Sass preprocessing in
 its configuration.
 
-In turn, so the addon can maintain control over the preprocessing configuration
-that is used we recommend that your addon ship an "optional adaptor" that
+In turn, so the library can maintain control over the preprocessing configuration
+that is used we recommend that your library ship an "optional adaptor" that
 looks like this:
 
 ```ts
 import { DirectoryScopedPreprocessor } from "@css-blocks/eyeglass";
 
 // a path to where your block files live
-const ADDON_DIR = path.resolve(__dirname, "..", "..") + "/";
+const PACKAGE_DIR = path.resolve(__dirname, "..", "..") + "/";
+
 class MyModulesPreprocessor extends DirectoryScopedPreprocessor {
   setupOptions(options: EyeglassOptions): EyeglassOptions {
     // Don't manipulate the options passed in.
@@ -47,7 +48,7 @@ class MyModulesPreprocessor extends DirectoryScopedPreprocessor {
   }
 }
 
-export const adaptor = new MyModulesPreprocessor(ADDON_DIR);
+export const adaptor = new MyModulesPreprocessor(PACKAGE_DIR);
 ```
 
 ## Building applications that consume Sass-preprocessed css-blocks
