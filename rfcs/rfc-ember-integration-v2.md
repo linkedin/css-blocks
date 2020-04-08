@@ -302,18 +302,18 @@ Returning to our example above, the rewrite looks like this:
 Let's break that down:
 
 1. `2 "nav" null "dropdown" null` - There are two blocks. "nav" is block #0. It is not substituted. "dropdown" is block #1; it is not substituted.
-2. `6 0 5 0 9 0 10 0 11 1 4 1 7` - The first number means there are `6` styles that might be applied.
-  1. `0 0` - The `"nav"` block's `:scope` style has the id 0. This is style definition 0.
-  2. `0 9` - The `"nav"` block's `:scope[type="side"]` style has the id 9. This is style definition 1.
-  3. `0 10` - The `"nav"` block's `:scope[type="top"]` style has the id 10. This is style definition 2.
-  4. `0 11` - The `"nav"` block's `:scope[type="hamburger"]` style has the id 11. This is style definition 3.
-  5. `1 4` - The `"dropdown"` block's `.trigger` style has the id of 4. This is style definition 4.
-  6. `1 7` - The `"dropdown"` block's `.trigger[disabled]` style has the id of 7. This is style definition 5.
+2. `6 0 0 0 9 0 10 0 11 1 4 1 7` - The first number means there are `6` styles that might be applied.
+    1. `0 0` - The `"nav"` block's `:scope` style has the id 0. This is style definition 0.
+    2. `0 9` - The `"nav"` block's `:scope[type="side"]` style has the id 9. This is style definition 1.
+    3. `0 10` - The `"nav"` block's `:scope[type="top"]` style has the id 10. This is style definition 2.
+    4. `0 11` - The `"nav"` block's `:scope[type="hamburger"]` style has the id 11. This is style definition 3.
+    5. `1 4` - The `"dropdown"` block's `.trigger` style has the id of 4. This is style definition 4.
+    6. `1 7` - The `"dropdown"` block's `.trigger[disabled]` style has the id of 7. This is style definition 5.
 3. `4 1 0 1 4 2 5 @isNavDisabled 3 3 @navType "side" 1 "top" 2 "hamburger" 3` - There are `4` conditions specified.
-  1. `1 0` - The style definition `0` is always applied.
-  2. `1 4` - The style definition `4` is always applied.
-  3. `2 5 @isNavDisabled` - The style definition `5` is applied if the result of `@isNavDisabled` is truthy.
-  4. `3 3 @navType "side" 1 "top" 2 "hamburger" 3`. The first `3` means his is a style selector. There are `3` values to select from. The value returned by `@navTap` is a string. If the value is `"side"` then style 1 is applied. If the value is `"top"` then style 2 is applied.If the value is `"hamburger"` then style 3 is applied.
+    1. `1 0` - The style definition `0` is always applied.
+    2. `1 4` - The style definition `4` is always applied.
+    3. `2 5 @isNavDisabled` - The style definition `5` is applied if the result of `@isNavDisabled` is truthy.
+    4. `3 3 @navType "side" 1 "top" 2 "hamburger" 3`. The first `3` means his is a style selector. There are `3` values to select from. The value returned by `@navTap` is a string. If the value is `"side"` then style 1 is applied. If the value is `"top"` then style 2 is applied.If the value is `"hamburger"` then style 3 is applied.
 
 Implementation Note:
 
