@@ -257,32 +257,39 @@ Block stylesheets and templates are both compiled during the template processing
 of an ember build target (could be an app, engine or addon). This is accomplished by
 providing the following hooks:
 
-1. `preprocessTree(type, tree)`
-  1. `type` = `'template'` the tree returned monitors the input tree for the deletion of handlebars templates so we can delete corresponding analysis files from the post template tree during template postprocessing.
-  2. `type` = `'css'` the tree returned is a broccoli-funnel that filters out any css block stylesheets from the addon's CSS output. This is because blocks are compiled during template processing and their built output is placed in the tree containing compiled template.
-2. `setupPreprocessorRegistry(type, registry)` - For `type` of `"htmlbars-ast-plugin"`, we register an AST plugin that rewrites the template so that css-blocks syntax is removed and is replaced by helper function invocations for the value of the html class attribute.
-3. `postprocessTree(type, tree)` - For `type` of `"template"`, the tree returned emits a serialized analysis for each handlebars file that is processed by the ast plugin. It also emits compiled css block files that were used by the templates that were rewritten. The CSS Block files that are compiled should include an inline block definition file.
+1. `preprocessTree(type, tree)` - For `type` of `'css'`, the tree returned is a broccoli-funnel that filters out any css block stylesheets from the addon's CSS output. This is because blocks are compiled during template processing and their built output is placed in the tree containing compiled template.
+2. `setupPreprocessorRegistry(type, registry)` - For `type` of `"template"`, we register our own template processor for handlebars and remove `ember-cli-htmlbars` from the addon. The broccoli plugin that we create will inherit from `ember-cli-htmlbars` and have access to the input and output trees as well as being able to inject our AST plugin that rewrites the template so that css-blocks syntax is removed and is replaced by helper function invocations for the value of the html class attribute. After template processing has occurred, our plugin will add compiled blocks and analysis data to the output tree. If a handlebars file is removed, the corresponding analysis data should be removed from the output tree. We also need to devise a way to safely remove compiled CSS Blocks from the output tree if they stop being used by the existing templates. (this is hard because several templates in the tree may use the css block but not all of them are compiled on each rebuild. perhaps the analysis data in the output tree can be of help to determine this situation?)
 
-Because these trees operate sequentially, we're guaranteed to have the template preprocessTree run before the htmlbars AST plugin which will run before the postprocessTree. In order to make these three steps work together a `CompilationManager` object will be created for each "leaf" and to which all three components hold a reference. While this sounds like the thing we were trying to get away from, the out-of-band communication that occurs here will be very well behaved because the trees involved don't cross any software package boundaries and share rebuild input events with each other.
+Note: Inheriting from `ember-cli-htmlbars` will require getting a patch accepted that makes part of that library's API public.
 
 #### `@css-blocks/ember-app`
 
 This ember-cli addon is responsible for bringing together the output from from `@css-blocks/ember` into a single location within the application, deduplicating files, running the optimizer, and ensuring the rewrite data is accessible to the runtime css-blocks helper.
 
-This addon will use the `preprocessTree('css', tree)` hook for the application. This tree is special because it contains a subdirectory named `addon-tree-output` where each subdirectory is the build results per addon. It also includes the application's css that is about to be compiled. However, because the `@css-blocks/ember` addon does its work during the template phase, the blocks and templates of the application will have already been analyzed and compiled allowing them to be treated just like
-the files from the addons.
+This broccoli plugin will take as input two trees:
 
-This addon will install a broccoli plugin that performs the following actions:
+  1. The tree passed to `preprocessTree('js', tree)` which contains the application's build output for CSS Blocks from the `@css-blocks/ember` plugin.
+  2. The tree returned from `app.addonTree()`. The addon tree is special because it contains a subdirectory named `addon-tree-output` where each subdirectory is the build results per addon.
+
+This broccoli plugin will produce two files as output:
+
+  1. `app/styles/css-blocks.css`
+  2. `location/tbd/css-blocks-data.js`
+
+Then this tree is filtered to remove the css file and merged with the `app.preprocessTree('js')` tree which is then returned as the tree for `app.preprocessTree('js')`.
+
+This plugin's output tree is also filtered to remove the json file and merged with the tree for `app.preprocessTree('css', tree)`.
+
+Note: wiring this up correctly requires ember-cli to guarantee that `app.preprocessTree('css', tree)` is always called after `app.preprocessTree('js', tree)`;
+
+To produce the output files, this broccoli plugin will perform the following actions:
 
 1. Find CSS files that contain `/*#css-blocks <block-id>*/` on the first line (because the block-id has a max length, we need only read the first 144 bytes of the file). If the magic comment is present and the block-id has not been encountered, read the whole file and it to the optimizer. If the block-id has been seen already, discard it. Don't transfer any files that were compiled from css-blocks to the output tree. (Note: We probably need to parse these compiled block files back into blocks, but we might be able to avoid it in the future.)
 2. Find all the serialized template analysis files, deserialize them and add them to the optimizer. Don't transfer the template analysis files to the output tree.
 3. Run the optimizer and write the optimized stylesheet to a single CSS file in the application's styles directory (css-blocks.css). (Note: This file should be concatenated with the applications' other stylesheets. It should come after any resets and before any non-css-blocks styles.)
-4. Produce the data file that the css-blocks runtime helper will use to rewrite styles for each element. TODO: Figure out how to best get that file into the application bundle. We might need use the `app.postProcessTree('all')` hook to inject a "define" into the file into the application's JS bundle.
+4. Produce the data file that the css-blocks runtime helper will use to rewrite styles for each element. We might need to inject this data file into a location that makes it appear as if it is in the same directory as the css-blocks helper. How to get this file to imported by the css-blocks helper without producing any warnings is something that we will have to discover through some experimentation.
 
-A few things to note:
-
-* Because we inject the `css-blocks.css` file during `app.preprocessTree('css')`, it means the css-blocks file will be processed like other css files in the application. It will be minified. It will be language optimized and rtl-flipped. It will be autoprefixed, etc. This is desired.
-* This approach means that blocks are parsed at least twice for each build. As an optimization, it's possible that we can find a way to share a block factory for each build/rebuild that will allow us to skip re-parsing the blocks, but we need to plan for the general case where the blocks come to use from cache or from having been precompiled in an embroider build. It's also possible that some addons will be built with different versions of `@css-blocks/ember` and cannot share a factory. In cases like these, the blocks will need to be restored from a compiled css block file.
+Note: This approach means that blocks are parsed at least twice for each build. As an optimization, it's possible that we can find a way to share a block factory for each build/rebuild that will allow us to skip re-parsing the blocks, but we need to plan for the general case where the blocks come to use from cache or from having been precompiled in an embroider build. It's also possible that some addons will be built with different versions of `@css-blocks/ember` and cannot share a factory. In cases like these, the blocks will need to be restored from a compiled css block file.
 
 ### Design for Rewrite Helper Invocations
 
