@@ -33,6 +33,7 @@ This project will be successful if it meets the following criteria:
 * Works well with addons that are using `yarn link` to develop in tandem with an application.
 * Unblock the planned "Block Passing" capability.
 * Both lazy and eager engines are working.
+* Ember integration v1 remains functional and releasable from the trunk branch.
 
 # Summary of Architectural Changes
 
@@ -513,6 +514,7 @@ It should be noted that when the optimizer is disabled the CSS Blocks integratio
 ## Open Questions
 
 1. If a block inherits from a block and adds a substate to an existing state, should that state be reachable from a template that only holds a reference to the to the base block? It seems possible that the new substate value could be passed as an argument to the component thereby allowing the new substate to be selected. This proposed rewrite strategy prevents this from happening, but we could move substate selection to the rewrite helper, and that would make it possible for the new substate to be reachable. But... is it a good idea to allow it?
+2. Does v2 need to interoperate with v1?
 
 ## How do we teach this?
 
