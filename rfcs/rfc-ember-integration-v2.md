@@ -28,6 +28,7 @@ This project will be successful if it meets the following criteria:
   templates that depend on them change.
 * Have an architecture that is amenable to aggressive, persistent caching.
 * Unblocks Embroider Support (Pre-built addons and engines).
+* Global stylesheet optimization can be enabled.
 * Has a clear, testable contract between addon output and application inputs, including support and test matrices for older instances of CSS Blocks code.
 * Works well with addons that are using `yarn link` to develop in tandem with an application.
 * Unblock the planned "Block Passing" capability.
