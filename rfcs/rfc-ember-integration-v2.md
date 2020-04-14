@@ -233,12 +233,12 @@ Once the block definition file is parsed, the compiled output is parsed to load 
 
 For each selector in each rule:
 
-    1. Find the key selector
-    2. Find all the classnames in the key selector
-    3. If there is more than one classname, it is a resolution selector: skip it because the definition file will have addressed that.
-    4. If there is no classname, it is an error.
-    5. Use the classname to reverse lookup the block style associated with it, if not found, it is an error.
-    6. Add the ruleset (`RulesetContainer.addRuleset`) to that style.
+  1. Find the key selector
+  2. Find all the classnames in the key selector
+  3. If there is more than one classname, it is a resolution selector: skip it because the definition file will have addressed that.
+  4. If there is no classname, it is an error.
+  5. Use the classname to reverse lookup the block style associated with it, if not found, it is an error.
+  6. Add the ruleset (`RulesetContainer.addRuleset`) to that style.
 
 
 ## Detailed Design of Single Pass Template Rewriting
@@ -467,11 +467,26 @@ interface BlockInfo {
 
 ### Resolving runtime styles
 
-There are three steps required to resolve the runtime styles of from CSS Blocks into optimized CSS classes:
+There are four steps required to resolve the runtime styles of from CSS Blocks into optimized CSS classes:
 
-1. **Concrete Block Resolution** &mdash; Resolves references to a block's style interface into the blocks that are specified at runtime.
-2. **Resolving Implied Styles** and Style Requirements &mdash; Resolves the styles that are specified into the styles that are implied by the specified styles.
-3. **Optimization Transformation** &mdash; Transforms styles from the styles specified by the input CSS into the styles emitted by OptiCSS.
+1. **Evaluate Current Style** &mdash; Converts the helper invocation arguments into references to the element's current runtime styles.
+2. **Concrete Block Resolution** &mdash; Resolves references to a block's style interface into the blocks that are specified at runtime.
+3. **Resolving Implied Styles** and Style Requirements &mdash; Resolves the styles that are specified into the styles that are implied by the specified styles.
+4. **Optimization Transformation** &mdash; Transforms styles from the styles specified by the input CSS into the styles emitted by OptiCSS.
+
+#### Evaluate Current Style
+
+The arguments to the helper are a stack of values. Once the stack is processed, the authored runtime style of the element is known.
+
+The meaning of the helper invocation arguments is specified above in the section "Design for Rewrite Helper Invocations".
+
+The first section uses block IDs to look up blocks and, if a runtime block is passed, get the concrete style view of the interface block. Once processed there is an array with length `numBlocks`, where each element is an array of GlobalStyleIndex values.
+
+The style definitions are then processed by popping two values off the stack for each style definition. these are indexes into the two-dimensional array that we created in the previous paragraph. We accumulate these values into an array that represents possible styles that might apply to this element.
+
+The remaining arguments specify the conditions that result in the styles being selected to be part of our current state. The description of the conditions above should be sufficient to properly determine the current styles from the stack.
+
+It is recommended that we represent the current styles with a `Set` for the best performance.
 
 #### Concrete Block Resolution
 
