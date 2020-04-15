@@ -1,0 +1,24 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "baseUrl": "dist",
+    "paths": {
+      "*": ["types/*"],
+    }
+  },
+  "references": [
+    {"path": "../glimmer"},
+    {"path": "../core"}
+  ],
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "sanity",
+    "dist",
+    "node_modules"
+  ]
+}

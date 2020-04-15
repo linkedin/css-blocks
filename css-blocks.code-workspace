@@ -54,6 +54,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/eyeglass"
+		},
+		{
+			"path": "packages/@css-blocks/ember"
 		}
 	],
 	"settings": {
