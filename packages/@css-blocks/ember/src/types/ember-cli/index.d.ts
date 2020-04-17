@@ -1,8 +1,12 @@
 declare module 'ember-cli/lib/broccoli/ember-app' {
   import CoreObject from 'core-object';
+  import Project from 'ember-cli/lib/models/project';
 
   export default class EmberApp extends CoreObject {
     options: Record<string, unknown>;
+    name: string;
+    project: Project;
+    isProduction: boolean;
   }
 }
 
@@ -51,7 +55,7 @@ declare module 'ember-cli/lib/models/addon' {
     /**
      * Find an addon of the current addon.
      */
-    findOwnAddonByName?(this: ThisAddon<A>): EmberAddon;
+    findOwnAddonByName?(this: ThisAddon<A>, name: string): EmberAddon;
     /**
      * Check if the current addon intends to be hinted. Typically this is for hinting/linting libraries such as eslint or jshint.
      */
@@ -137,11 +141,10 @@ declare module 'ember-cli/lib/models/addon' {
      * Can be used to exclude addons from being added as a child addon.
      */
     shouldIncludeChildAddon?(this: ThisAddon<A>, addon: Addon): boolean;
-
     /**
      * This method is called when the addon is included in a build. You would typically use this hook to perform additional imports.
      */
-    included?(this: ThisAddon<A>, includer: EmberApp | Project): void;
+    included?(this: ThisAddon<A>, includer: EmberApp | Addon): void;
     /**
      * Allows the specification of custom addon commands. Expects you to return an object whose key is the name of the command and value is the command instance.
      */
@@ -205,7 +208,7 @@ declare module 'ember-cli/lib/models/addon' {
     name: string;
     root: string;
     app?: EmberApp;
-    parent: Addon | Project;
+    parent: Addon | EmberApp;
     project: Project;
     addons: Addon[];
     ui: UI;
@@ -243,7 +246,7 @@ declare module 'ember-cli/lib/models/addon' {
     /**
      * Find an addon of the current addon.
      */
-    findOwnAddonByName(): EmberAddon;
+    findOwnAddonByName(name: string): EmberAddon;
     /**
      * Check if the current addon intends to be hinted. Typically this is for hinting/linting libraries such as eslint or jshint.
      */
@@ -336,7 +339,7 @@ declare module 'ember-cli/lib/models/addon' {
     /**
      * This method is called when the addon is included in a build. You would typically use this hook to perform additional imports.
      */
-    included(includer: EmberApp | Project): void;
+    included(includer: EmberApp | Addon): void;
   }
 }
 
@@ -394,5 +397,6 @@ declare module 'ember-cli/lib/models/project' {
     name(): string;
     isEmberCLIAddon(): boolean;
     require(module: string): unknown;
+    findAddonByName(name): Addon;
   }
 }

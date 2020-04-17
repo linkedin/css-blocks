@@ -38,14 +38,20 @@
     "@types/glob": "^7.1.1",
     "broccoli-node-api": "^1.7.0",
     "broccoli-test-helper": "^2.0.0",
+    "ember-cli-htmlbars": "^4.3.1",
     "typescript": "~3.8.3",
     "watch": "^1.0.2"
   },
+  "peerDependencies": {
+    "ember-cli-htmlbars": "^4.3.1"
+  },
   "dependencies": {
+    "@css-blocks/config": "^1.0.0",
     "@css-blocks/core": "^1.0.0",
     "@glimmer/compiler": "^0.43.0",
     "@glimmer/syntax": "^0.43.0",
     "@opticss/template-api": "^0.6.3",
+    "@opticss/util": "^0.7.0",
     "broccoli-funnel": "^3.0.0",
     "broccoli-merge-trees": "^4.0.0",
     "broccoli-plugin": "^4.0.0",
