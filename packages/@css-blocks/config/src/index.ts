@@ -1,7 +1,7 @@
 import {
   Configuration,
 } from "@css-blocks/core";
-import { Transform, cosmiconfig } from "cosmiconfig";
+import { cosmiconfigSync as cosmiconfig, TransformSync } from "cosmiconfig";
 import * as debugGenerator from "debug";
 import merge = require("lodash.merge");
 import { dirname, resolve } from "path";
@@ -16,7 +16,7 @@ type UnknownObject = {[k: string]: unknown};
  *
  * If preprocessors is a string, attempts to load a javascript file from that location.
  */
-const transform: Transform = async (result) => {
+const transform: TransformSync = (result) => {
   if (!result) return null;
   debug(`Processing raw configuration loaded from ${result.filepath}`);
   let dir = dirname(result.filepath);
@@ -30,14 +30,14 @@ const transform: Transform = async (result) => {
   if (typeof config.preprocessors === "string") {
     let file = resolve(dir, config.preprocessors);
     debug(`Loading preprocessors from ${file}`);
-    config.preprocessors = await import(file) as UnknownObject;
+    config.preprocessors = require(file) as UnknownObject;
   }
 
   // if it's a string, load a file that exports an importer and optionally some data.
   if (typeof config.importer === "string") {
     let file = resolve(dir, config.importer);
     debug(`Loading importer from ${file}`);
-    let {importer, data} = await import(file) as UnknownObject;
+    let {importer, data} = require(file) as UnknownObject;
     config.importer = importer;
     if (data) {
       config.importerData = data;
@@ -51,7 +51,7 @@ const transform: Transform = async (result) => {
     let baseConfigFile = resolve(dir, config.extends);
     delete config.extends;
     debug(`Extending configuration found at: ${baseConfigFile}`);
-    let baseConfig = await _load(baseConfigFile, transform);
+    let baseConfig = _load(baseConfigFile, transform);
     // we don't want to merge or copy the importer object or the importer data object.
     let importer = config.importer || baseConfig.importer;
     let importerData = config.importerData || baseConfig.importerData;
@@ -71,10 +71,10 @@ const transform: Transform = async (result) => {
  * This transform only runs on the final configuration file. It does not run on
  * any configuration file that is being extended.
  */
-const transformFinal: Transform = async (result) => {
+const transformFinal: TransformSync = (result) => {
   if (!result) return null;
   debug(`Using configuration file found at ${result.filepath}`);
-  result = await transform(result);
+  result = transform(result);
   if (!result) return null;
   if (!result.config.rootDir) {
     let dir = dirname(result.filepath);
@@ -83,6 +83,12 @@ const transformFinal: Transform = async (result) => {
   }
   return result;
 };
+
+const SEARCH_PLACES = [
+  "package.json",
+  "css-blocks.config.json",
+  "css-blocks.config.js",
+];
 
 /**
  * Starting in the directory provided, work up the directory hierarchy looking
@@ -94,17 +100,25 @@ const transformFinal: Transform = async (result) => {
  * @param [searchDirectory] (optional) The directory to start looking in.
  *   Defaults to the current working directory.
  */
-export async function search(searchDirectory?: string): Promise<Partial<Configuration> | null> {
+export function searchSync(searchDirectory?: string): Partial<Configuration> | null {
   let loader = cosmiconfig("css-blocks", {
     transform: transformFinal,
-    searchPlaces: [
-      "package.json",
-      "css-blocks.config.json",
-      "css-blocks.config.js",
-    ],
+    searchPlaces: SEARCH_PLACES,
   });
-  let result = await loader.search(searchDirectory);
+  let result = loader.search(searchDirectory);
   return result && result.config as Partial<Configuration>;
+}
+
+/**
+ * Async wrapper for searchSync for backwards compatibility.
+ * @see {searchSync}
+ */
+export function search(searchDirectory?: string) {
+  try {
+    return Promise.resolve(searchSync(searchDirectory));
+  } catch (e) {
+    return Promise.reject(e);
+  }
 }
 
 /**
@@ -121,10 +135,10 @@ export async function load(configPath: string): Promise<Partial<Configuration>> 
   return _load(configPath, transformFinal);
 }
 
-async function _load(configPath: string, transform: Transform): Promise<Partial<Configuration>> {
+function _load(configPath: string, transform: TransformSync): Partial<Configuration> {
   let loader = cosmiconfig("css-blocks", {
     transform,
   });
-  let result = await loader.load(configPath);
+  let result = loader.load(configPath);
   return result!.config as Partial<Configuration>;
 }
