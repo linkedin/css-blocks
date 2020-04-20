@@ -6,3 +6,4 @@ export {
 export { GlimmerRewriter, GlimmerStyleMapping } from "./Rewriter";
 export { ResolvedFile, TEMPLATE_TYPE } from "./Template";
 export { cssBlocksHelpers } from "./helpers";
+export { ElementAnalyzer } from "./ElementAnalyzer";

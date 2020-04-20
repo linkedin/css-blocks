@@ -16,6 +16,7 @@ import * as fs from "fs";
 import { ElementAnalyzer, isAnalyzedHelper, isStyleOfHelper } from "./ElementAnalyzer";
 import { Resolver } from "./Resolver";
 import { TEMPLATE_TYPE } from "./Template";
+import { pathString } from "./utils";
 
 export type AttributeContainer = Block | BlockClass;
 export type GlimmerAnalysis = Analysis<TEMPLATE_TYPE>;
@@ -125,7 +126,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         const forbidNonBlockAttributes = isStyleOfHelper(node);
         const atRootElement = (elementCount === 1);
         const element = elementAnalyzer.analyze(node, atRootElement, forbidNonBlockAttributes);
-        if (self.debug.enabled) self.debug(`MustacheStatement {{${node.path.original}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug(`MustacheStatement {{${pathString(node)}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       SubExpression(node: AST.SubExpression) {
@@ -134,7 +135,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         const forbidNonBlockAttributes = true;
         const atRootElement = (elementCount === 1);
         const element = elementAnalyzer.analyze(node, atRootElement, forbidNonBlockAttributes);
-        if (self.debug.enabled) self.debug(`SubExpression (${node.path.original}) analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug(`SubExpression (${pathString(node)}) analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       BlockStatement(node: AST.BlockStatement) {
@@ -142,7 +143,7 @@ export class GlimmerAnalyzer extends Analyzer<TEMPLATE_TYPE> {
         elementCount++;
         const atRootElement = (elementCount === 1);
         const element = elementAnalyzer.analyze(node, atRootElement);
-        if (self.debug.enabled) self.debug(`BlockStatement {{#${node.path.original}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
+        if (self.debug.enabled) self.debug(`BlockStatement {{#${pathString(node)}}} analyzed:`, element.class.forOptimizer(self.cssBlocksOptions).toString());
       },
 
       ElementNode(node) {

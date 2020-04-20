@@ -39,6 +39,8 @@
     "broccoli-node-api": "^1.7.0",
     "broccoli-test-helper": "^2.0.0",
     "ember-cli-htmlbars": "^4.3.1",
+    "fs-merger": "^3.0.2",
+    "broccoli-output-wrapper": "^3.2.1",
     "typescript": "~3.8.3",
     "watch": "^1.0.2"
   },

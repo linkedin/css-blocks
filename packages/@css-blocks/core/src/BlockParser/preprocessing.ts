@@ -22,6 +22,15 @@ export function syntaxName(syntax: Syntax): string {
   return Object.keys(Syntax).find(s => Syntax[s] === syntax) || "other";
 }
 
+export function syntaxFromExtension(extname: string): Syntax {
+  extname = extname.startsWith(".") ? extname.substring(1) : extname;
+  if (extname === "styl") {
+    return Syntax.stylus;
+  } else {
+    return Syntax[extname] || Syntax.other;
+  }
+}
+
 export interface ProcessedFile {
     /**
      * The result of processing the file.

@@ -262,7 +262,7 @@ export class CssBlocksPlugin
       if (block.stylesheet && block.identifier) {
         blocks.add(block);
         this.trace(`compiling ${block.identifier}.`);
-        let root = blockCompiler.compile(block, block.stylesheet, analyzer);
+        let root = blockCompiler.compile(block, block.stylesheet, analyzer.reservedClassNames());
         let result = root.toResult({to: cssOutputName, map: { inline: false, annotation: false }});
         // TODO: handle a sourcemap from compiling the block file via a preprocessor.
         let filename = options.importer.filesystemPath(block.identifier, options) || options.importer.debugIdentifier(block.identifier, options);

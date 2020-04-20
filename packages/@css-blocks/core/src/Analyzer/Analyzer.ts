@@ -65,17 +65,16 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   }
 
   newAnalysis(info: TemplateTypes[K]): Analysis<K> {
-    let analysis = new Analysis<K>(this, info, this.validatorOptions);
+    let analysis = new Analysis<K>(info, this.validatorOptions, (element) => {
+      for (let s of [...element.classesFound(false), ...element.attributesFound(false)]) {
+        this.staticStyles.set(s, analysis);
+      }
+      for (let s of [...element.classesFound(true), ...element.attributesFound(true)]) {
+        this.dynamicStyles.set(s, analysis);
+      }
+    });
     this.analysisMap.set(info.identifier, analysis);
     return analysis;
-  }
-
-  saveStaticStyle(style: Style, analysis: Analysis<K>) {
-    this.staticStyles.set(style, analysis);
-  }
-
-  saveDynamicStyle(style: Style, analysis: Analysis<K>) {
-    this.dynamicStyles.set(style, analysis);
   }
 
   getAnalysis(idx: number): Analysis<K> { return this.analyses()[idx]; }
@@ -113,9 +112,10 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   }
 
   /**
-   * Iterates through all the analyses objects for all the templates and creates
-   * a set of reservedClassNames here. This is what the block compiler calls to
-   * get the list of reservedClassNames.
+   * Iterates through all the analyses objects for all the templates and
+   * creates a set of reservedClassNames here. These are used by the block
+   * compiler to ensure the classnames that are output don't collide with user
+   * specified style aliases.
    */
   reservedClassNames(): Set<string> {
     let allReservedClassNames = new Set<string>();

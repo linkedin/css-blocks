@@ -106,7 +106,7 @@ export class CSSBlocksAnalyze extends BroccoliPlugin {
     let blocks = this.analyzer.transitiveBlockDependencies();
     for (let block of blocks) {
       if (block.stylesheet) {
-        let root = blockCompiler.compile(block, block.stylesheet, this.analyzer);
+        let root = blockCompiler.compile(block, block.stylesheet, this.analyzer.reservedClassNames());
         let result = root.toResult({ to: this.outputFileName, map: { inline: false, annotation: false } });
         let filesystemPath = options.importer.filesystemPath(block.identifier, options);
         let filename = filesystemPath || options.importer.debugIdentifier(block.identifier, options);

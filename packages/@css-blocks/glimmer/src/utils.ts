@@ -2,8 +2,6 @@ import { CssBlockError } from "@css-blocks/core";
 import { AST } from "@glimmer/syntax";
 import { ClassifiedParsedSelectors } from "opticss";
 
-import { ResolvedFile } from "./Template";
-
 export type AnalyzableNode = AST.ElementNode | AST.BlockStatement | AST.MustacheStatement | AST.SubExpression;
 export type AnalyzableProperty = AST.AttrNode | AST.HashPair | AST.PathExpression;
 
@@ -30,9 +28,17 @@ export function parseSpecifier(specifier: string): { componentType: string; comp
   }
 }
 
-export function cssBlockError(message: string, node: AST.Node, template: ResolvedFile) {
+export function pathString(node: AST.MustacheStatement | AST.BlockStatement | AST.SubExpression): string | null {
+  if (isStringLiteral(node.path) || isPathExpression(node.path)) {
+    return node.path.original;
+  } else {
+    return null;
+  }
+}
+
+export function cssBlockError(message: string, node: AST.Node, templatePath: string) {
   return new CssBlockError(message, {
-    filename: node.loc.source || template.path || template.identifier,
+    filename: node.loc.source || templatePath,
     start: node.loc.start,
     end: node.loc.end,
   });

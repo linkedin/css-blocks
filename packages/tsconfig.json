@@ -7,6 +7,7 @@
     {"path": "@css-blocks/config"},
     {"path": "@css-blocks/core"},
     {"path": "@css-blocks/eyeglass"},
+    {"path": "@css-blocks/ember"},
     {"path": "@css-blocks/glimmer"},
     {"path": "@css-blocks/glimmer/tsconfig.amd.json"},
     {"path": "@css-blocks/jsx"},

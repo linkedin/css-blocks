@@ -44,7 +44,7 @@ class Plugin {
 
     await factory.parseRoot(root, sourceFile, defaultName).then((block) => {
       let compiler = new BlockCompiler(postcss, this.config);
-      compiler.compile(block, root);
+      compiler.compile(block, root, new Set());
     });
   }
 }

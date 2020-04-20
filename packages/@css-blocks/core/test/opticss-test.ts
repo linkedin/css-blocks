@@ -99,7 +99,7 @@ export class TemplateAnalysisTests {
       let compiler = new BlockCompiler(postcss, config);
       let optimizer = new Optimizer({}, { rewriteIdents: { id: false, class: true} });
       let block = await analyzer.blockFactory.getBlock(filename);
-      let compiled = compiler.compile(block, block.stylesheet!, analyzer);
+      let compiled = compiler.compile(block, block.stylesheet!, analyzer.reservedClassNames());
       for (let analysis of analyzer.analyses()) {
         let optimizerAnalysis = analysis.forOptimizer(config);
         optimizer.addSource({

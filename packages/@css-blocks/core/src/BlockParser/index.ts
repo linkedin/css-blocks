@@ -15,4 +15,5 @@ export {
   OptionalPreprocessor,
   Preprocessors,
   ProcessedFile,
+  syntaxFromExtension,
 } from "./preprocessing";

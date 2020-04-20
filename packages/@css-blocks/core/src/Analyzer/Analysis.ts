@@ -36,6 +36,9 @@ export interface SerializedAnalysis<K extends keyof TemplateTypes> {
   elements: ObjectDictionary<SerializedElementAnalysis>;
 }
 
+// tslint:disable-next-line:prefer-unknown-to-any
+type ElementAnalyzedCallback<BooleanExpression, StringExpression, TernaryExpression> = (element: ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>) => void;
+
 /**
  * An Analysis performs book keeping and ensures internal consistency of the block objects referenced
  * within a single template. It is designed to be used as part of an AST walk over a template.
@@ -48,7 +51,6 @@ export interface SerializedAnalysis<K extends keyof TemplateTypes> {
 export class Analysis<K extends keyof TemplateTypes> {
 
   idGenerator: IdentGenerator;
-  parent?: Analyzer<K>;
   template: TemplateTypes[K];
 
   /**
@@ -78,15 +80,21 @@ export class Analysis<K extends keyof TemplateTypes> {
   private validator: TemplateValidator;
 
   /**
+   * Callback when an element is done being analyzed.
+   * The element analysis will be sealed.
+   */
+  onElementAnalyzed?: ElementAnalyzedCallback<any, any, any>;
+
+  /**
    * @param template The template being analyzed.
    */
-  constructor(parent: Analyzer<K>, template: TemplateTypes[K], options?: TemplateValidatorOptions) {
+  constructor(template: TemplateTypes[K], options?: TemplateValidatorOptions, onElementAnalyzed?: ElementAnalyzedCallback<any, any, any>) {
     this.idGenerator = new IdentGenerator();
-    this.parent = parent;
     this.template = template;
     this.blocks = {};
     this.elements = new Map();
     this.validator = new TemplateValidator(options);
+    this.onElementAnalyzed = onElementAnalyzed;
   }
 
   /**
@@ -205,13 +213,8 @@ export class Analysis<K extends keyof TemplateTypes> {
     if (!element.sealed) { element.seal(); }
     this.validator.validate(this, element);
     this.elements.set(element.id, element);
-    if (this.parent) {
-      for (let s of [...element.classesFound(false), ...element.attributesFound(false)]) {
-        this.parent.saveStaticStyle(s, this);
-      }
-      for (let s of [...element.classesFound(true), ...element.attributesFound(true)]) {
-        this.parent.saveDynamicStyle(s, this);
-      }
+    if (this.onElementAnalyzed) {
+      this.onElementAnalyzed(element);
     }
     this.currentElement = undefined;
   }
@@ -295,7 +298,7 @@ export class Analysis<K extends keyof TemplateTypes> {
   /**
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
    */
-  serialize(): SerializedAnalysis<K> {
+  serialize(blockPaths?: Map<Block, string>): SerializedAnalysis<K> {
     let blocks = {};
     let stylesFound: string[] = [];
     let elements: ObjectDictionary<SerializedElementAnalysis> = {};
@@ -321,7 +324,8 @@ export class Analysis<K extends keyof TemplateTypes> {
 
     // Serialize our blocks to a map of their local names.
     Object.keys(this.blocks).forEach((localName) => {
-      blocks[localName] = this.blocks[localName].identifier;
+      let block = this.blocks[localName];
+      blocks[localName] = blockPaths && blockPaths.get(block) || block.identifier;
     });
 
     // Serialize all discovered Elements.

@@ -26,6 +26,7 @@
         "rulesets",
         "shorthands",
         "stateful",
+        "Stmnt",
         "truthy",
         "Validators"
     ],

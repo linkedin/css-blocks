@@ -1,7 +1,5 @@
-import { TemplateTypes } from "@opticss/template-api";
 import { postcss } from "opticss";
 
-import { Analyzer } from "../Analyzer";
 import {
   BLOCK_ALIAS,
   BLOCK_AT_RULES,
@@ -31,11 +29,9 @@ export class BlockCompiler {
     this.postcss = postcssImpl;
   }
 
-  compile(block: Block, root: postcss.Root, analyzer?: Analyzer<keyof TemplateTypes>): postcss.Root {
-    let resolver = new ConflictResolver(this.config, analyzer ? analyzer.reservedClassNames() : new Set());
+  compile(block: Block, root: postcss.Root, reservedClassNames: Set<string>): postcss.Root {
+    let resolver = new ConflictResolver(this.config, reservedClassNames);
     let filename = this.config.importer.debugIdentifier(block.identifier, this.config);
-
-    if (analyzer) { /* Do something smart with the Analyzer here */ }
 
     // Process all debug statements for this block.
     this.processDebugStatements(filename, root, block);
@@ -61,7 +57,7 @@ export class BlockCompiler {
     resolver.resolveInheritance(root, block);
     root.walkRules((rule) => {
       let parsedSelectors = block.getParsedSelectors(rule);
-      rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config, analyzer ? analyzer.reservedClassNames() : new Set())).join(",\n");
+      rule.selector = parsedSelectors.map(s => block.rewriteSelectorToString(s, this.config, reservedClassNames)).join(",\n");
     });
 
     resolver.resolve(root, block);

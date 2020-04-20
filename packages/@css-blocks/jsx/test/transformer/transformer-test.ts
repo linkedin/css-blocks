@@ -30,7 +30,7 @@ function transform(code: string, analysis: Analysis<"Opticss.JSXTemplate">, cssB
   let compiler = new BlockCompiler(postcss, blockOpts);
   for (let block of blocks) {
     optimizer.addSource({
-      content: compiler.compile(block, block.stylesheet!).toResult({to: blockOpts.importer.filesystemPath(block.identifier, blockOpts) || undefined}),
+      content: compiler.compile(block, block.stylesheet!, new Set()).toResult({to: blockOpts.importer.filesystemPath(block.identifier, blockOpts) || undefined}),
     });
   }
   return optimizer.optimize("optimized.css").then(result => {

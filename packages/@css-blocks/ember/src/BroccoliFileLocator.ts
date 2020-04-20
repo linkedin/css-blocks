@@ -1,0 +1,26 @@
+import type { FS as MergedFS } from "fs-merger";
+
+import { FileLocator } from "./FileLocator";
+
+export type FS = Pick<MergedFS, "existsSync" | "entries">;
+
+export class BroccoliFileLocator implements FileLocator {
+  fs: FS;
+  constructor(fs: FS) {
+    this.fs = fs;
+  }
+  findStylesheetForTemplate(relativePathToTemplate: string, extensions: Array<string>): string | null {
+    let possibleStylesheets = this.possibleStylesheetPathsForTemplate(relativePathToTemplate, extensions);
+    return possibleStylesheets.find((s) => this.fs.existsSync(s)) || null;
+  }
+  blockIdentifier(relativePathToStylesheet: string): string {
+    return `broccoli-tree:${relativePathToStylesheet}`;
+  }
+  possibleTemplatePaths(): Array<string> {
+    return this.fs.entries(".", ["**/*.hbs"]).map(e => e.basePath);
+  }
+  possibleStylesheetPathsForTemplate(templatePath: string, extensions: Array<string>): Array<string> {
+    let path = templatePath.replace("/templates/", "/styles/");
+    return extensions.map(ext => path.replace(/\.hbs$/, `.block.${ext}`));
+  }
+}

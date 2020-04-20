@@ -41,7 +41,7 @@ import {
   TernaryExpression as TernaryAST,
 } from "./ElementAnalyzer";
 import { CLASSNAMES_HELPER_NAME, CONCAT_HELPER_NAME } from "./helpers";
-import { isConcatStatement, isMustacheStatement, isPathExpression, isSubExpression } from "./utils";
+import { isConcatStatement, isMustacheStatement, isPathExpression, isStringLiteral, isSubExpression } from "./utils";
 
 const enum SourceExpression {
   ternary,
@@ -257,7 +257,7 @@ function moustacheToBooleanExpression(builders: Builders, booleanExpression: Boo
 }
 
 function moustacheToExpression(builders: Builders, expr: AST.MustacheStatement): AST.Expression {
-  if (expr.path.type === "PathExpression") {
+  if (isPathExpression(expr.path)) {
     if (expr.params.length === 0 && expr.hash.pairs.length === 0) {
       debug("converting", expr.path.original, "to path");
       return expr.path;
@@ -265,8 +265,11 @@ function moustacheToExpression(builders: Builders, expr: AST.MustacheStatement):
       debug("converting", expr.path.original, "to sexpr");
       return builders.sexpr(expr.path, expr.params, expr.hash);
     }
-  } else {
+  } else if (isStringLiteral(expr.path)) {
     debug("preserving literal", expr.path.original, "as literal");
+    return expr.path;
+  } else {
+    debug("preserving unknown path expression");
     return expr.path;
   }
 }

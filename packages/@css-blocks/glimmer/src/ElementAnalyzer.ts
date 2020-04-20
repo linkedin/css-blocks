@@ -1,4 +1,5 @@
 import {
+  AnalysisImpl as Analysis,
   AttrValue,
   Block,
   BlockClass,
@@ -9,12 +10,11 @@ import {
 } from "@css-blocks/core";
 import { AST, print } from "@glimmer/syntax";
 import { SourceLocation, SourcePosition } from "@opticss/element-analysis";
+import { TemplateTypes } from "@opticss/template-api";
 import { assertNever } from "@opticss/util";
 import * as debugGenerator from "debug";
 
-import { GlimmerAnalysis } from "./Analyzer";
-import { getEmberBuiltInStates, isEmberBuiltIn } from "./EmberBuiltins";
-import { ResolvedFile } from "./Template";
+import { getEmberBuiltInStates, isEmberBuiltIn, isEmberBuiltInNode } from "./EmberBuiltins";
 import {
   AnalyzableNode,
   AnalyzableProperty,
@@ -33,6 +33,7 @@ import {
   isSubExpression,
   isTextNode,
   isUndefinedLiteral,
+  pathString,
 } from "./utils";
 
 // Expressions may be null when ElementAnalyzer is used in the second pass analysis
@@ -53,13 +54,16 @@ const debug = debugGenerator("css-blocks:glimmer:element-analyzer");
 
 export function isStyleOfHelper(node: AnalyzableNode): node is AST.MustacheStatement | AST.SubExpression {
   if (!(isMustacheStatement(node) || isSubExpression(node))) return false;
-  let name = node.path.original;
-  return typeof name === "string" && name === "style-of";
+  if (isPathExpression(node.path) || isStringLiteral(node.path)) {
+    return node.path.original === "style-of";
+  } else {
+    return false;
+  }
 }
 
 export function isAnalyzedHelper(node: AnalyzableNode): node is AST.MustacheStatement | AST.BlockStatement {
   if (isElementNode(node)) return false;
-  return isEmberBuiltIn(node.path.original) || isStyleOfHelper(node);
+  return isEmberBuiltInNode(node) || isStyleOfHelper(node);
 }
 
 interface AnalyzableScope {
@@ -83,17 +87,21 @@ interface AnalyzableState {
 
 type AnalyzableAttribute = AnalyzableScope | AnalyzableClass | AnalyzableState;
 
-export class ElementAnalyzer {
-  analysis: GlimmerAnalysis;
+export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
+  analysis: Analysis<TemplateType>;
   block: Block;
-  template: ResolvedFile;
+  // The type for this is a duck-typing hack to get access to possible path
+  // information from this and other template types
+  template: TemplateTypes[TemplateType] & { identifier: string; path?: string; relativePath?: string; fullPath?: string};
   cssBlocksOpts: CSSBlocksConfiguration;
   reservedClassNames: Set<string>;
+  templatePath: string;
 
-  constructor(analysis: GlimmerAnalysis, cssBlocksOpts: CSSBlocksConfiguration) {
+  constructor(analysis: Analysis<TemplateType>, cssBlocksOpts: CSSBlocksConfiguration) {
     this.analysis = analysis;
     this.block = analysis.getBlock(DEFAULT_BLOCK_NAME)!; // Local block check done elsewhere
     this.template = analysis.template;
+    this.templatePath = this.template.path || this.template.relativePath || this.template.fullPath || this.template.identifier;
     this.cssBlocksOpts = cssBlocksOpts;
     this.reservedClassNames = analysis.reservedClassNames();
   }
@@ -114,7 +122,8 @@ export class ElementAnalyzer {
       debug(`Element ${startTag} is ${atRootElement ? "the root " : "a sub"}element at ${this.debugTemplateLocation(node)}`);
     }
     else {
-      startTag = `{{${node.path.original} ${node.params.map(a => print(a)).join(" ")} ${node.hash.pairs.map((h) => print(h)).join(" ")}}}`;
+      let pathName = (isPathExpression(node.path) || isStringLiteral(node.path)) ? node.path.original : "???";
+      startTag = `{{${pathName} ${node.params.map(a => print(a)).join(" ")} ${node.hash.pairs.map((h) => print(h)).join(" ")}}}`;
       debug(`Component ${startTag} is ${atRootElement ? "the root " : "a sub"}element at ${this.debugTemplateLocation(node)}`);
     }
     debug(`↳ Analyzed as: ${element.forOptimizer(this.cssBlocksOpts)[0].toString()}`);
@@ -129,7 +138,7 @@ export class ElementAnalyzer {
   }
 
   private newElement(node: AnalyzableNode, forRewrite: boolean): TemplateElement {
-    let label = isElementNode(node) ? node.tag : node.path.original as string;
+    let label = isElementNode(node) ? node.tag : pathString(node) || undefined;
     if (forRewrite) {
       return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), this.reservedClassNames, label);
     }
@@ -160,7 +169,7 @@ export class ElementAnalyzer {
   private _assertClassAttributeValue(node: AnalyzableNode, property: AnalyzableProperty): property is Exclude<AnalyzableProperty, AST.PathExpression> {
     if (isPathExpression(property)) {
       const name = this._getAnalyzableAttributeName(property);
-      throw cssBlockError(`The ${name} attribute must contain a value and is not allowed to be purely positional. Did you mean ${name}="foo"?`, node, this.template);
+      throw cssBlockError(`The ${name} attribute must contain a value and is not allowed to be purely positional. Did you mean ${name}="foo"?`, node, this.templatePath);
     }
     return true;
   }
@@ -213,7 +222,7 @@ export class ElementAnalyzer {
             } else {
               if (forbidNonBlockAttributes) {
                 // We shouldn't have any properties that aren't namespaced!
-                throw cssBlockError(`An attribute without a block namespace is forbidden in this context: ${name}`, node, this.template);
+                throw cssBlockError(`An attribute without a block namespace is forbidden in this context: ${name}`, node, this.templatePath);
               }
             }
           }
@@ -250,7 +259,7 @@ export class ElementAnalyzer {
     if (isElementNode(node)) {
       for (let attribute of node.attributes) {
         if (attribute.name === "class") {
-          throw cssBlockError(`The class attribute is forbidden. Did you mean block:class?`, node, this.template);
+          throw cssBlockError(`The class attribute is forbidden. Did you mean block:class?`, node, this.templatePath);
         }
       }
     }
@@ -263,12 +272,14 @@ export class ElementAnalyzer {
     this.finishElement(element, forRewrite);
 
     // If this is an Ember Built-In...
-    if (!isElementNode(node) && isEmberBuiltIn(node.path.original)) {
+    if (!isElementNode(node) && isEmberBuiltInNode(node)) {
       this.debugAnalysis(node, atRootElement, element);
+      let builtInName = pathString(node);
+      if (!isEmberBuiltIn(builtInName)) throw cssBlockError("[internal error]", node, this.templatePath);
 
       // Discover component state style attributes we need to add to the component invocation.
       let klasses = [...element.classesFound()];
-      const attrToState = getEmberBuiltInStates(node.path.original);
+      const attrToState = getEmberBuiltInStates(builtInName);
       for (let attrName of Object.keys(attrToState)) {
         const stateName = attrToState[attrName];
         let element: ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression> | undefined;
@@ -304,7 +315,7 @@ export class ElementAnalyzer {
   private lookupBlock(namespace: string, node: AST.Node): Block {
     let block = (namespace === DEFAULT_BLOCK_NS) ? this.block : this.block.getExportedBlock(namespace);
     if (block === null) {
-      throw cssBlockError(`No block '${namespace}' is exported from ${this.debugBlockPath()}`, node, this.template);
+      throw cssBlockError(`No block '${namespace}' is exported from ${this.debugBlockPath()}`, node, this.templatePath);
     }
     return block;
   }
@@ -313,7 +324,7 @@ export class ElementAnalyzer {
     let block = this.lookupBlock(namespace, node);
     let found = block.resolveClass(name);
     if (found === null) {
-      throw cssBlockError(`No class '${name}' was found in block at ${this.debugBlockPath(block)}`, node, this.template);
+      throw cssBlockError(`No class '${name}' was found in block at ${this.debugBlockPath(block)}`, node, this.templatePath);
     }
     return found;
   }
@@ -359,7 +370,7 @@ export class ElementAnalyzer {
               whenFalse = containers;
             }
           } else {
-            throw cssBlockError(`{{${helperType}}} expects a string literal as its second argument.`, mainBranch, this.template);
+            throw cssBlockError(`{{${helperType}}} expects a string literal as its second argument.`, mainBranch, this.templatePath);
           }
 
           // Calculate the classes in the else branch of the style helper, if it exists.
@@ -372,7 +383,7 @@ export class ElementAnalyzer {
                 whenTrue = containers;
               }
             } else {
-              throw cssBlockError(`{{${helperType}}} expects a string literal as its third argument.`, elseBranch, this.template);
+              throw cssBlockError(`{{${helperType}}} expects a string literal as its third argument.`, elseBranch, this.templatePath);
             }
           }
           if (forRewrite) {
@@ -382,10 +393,10 @@ export class ElementAnalyzer {
           }
 
         } else {
-          throw cssBlockError(`Only {{style-if}} or {{style-unless}} helpers are allowed in class attributes.`, node, this.template);
+          throw cssBlockError(`Only {{style-if}} or {{style-unless}} helpers are allowed in class attributes.`, node, this.templatePath);
         }
       } else {
-        throw cssBlockError(`Only string literals, {{style-if}} or {{style-unless}} are allowed in class attributes.`, node, this.template);
+        throw cssBlockError(`Only string literals, {{style-if}} or {{style-unless}} are allowed in class attributes.`, node, this.templatePath);
       }
     }
   }
@@ -400,7 +411,7 @@ export class ElementAnalyzer {
       if (node.value.chars === "") {
         element.addStaticClass(block.rootClass);
       } else {
-        throw cssBlockError("String literal values are not allowed for the scope attribute", node, this.template);
+        throw cssBlockError("String literal values are not allowed for the scope attribute", node, this.templatePath);
       }
     } else if (isBooleanLiteral(node.value)) {
       if (node.value.value) {
@@ -430,7 +441,7 @@ export class ElementAnalyzer {
     let stateBlock = this.lookupBlock(blockName, node);
     let containers = element.classesForBlock(stateBlock);
     if (containers.length === 0) {
-      throw cssBlockError(`No block or class from ${blockName || "the default block"} is assigned to the element so a state from that block cannot be used.`, node, this.template);
+      throw cssBlockError(`No block or class from ${blockName || "the default block"} is assigned to the element so a state from that block cannot be used.`, node, this.templatePath);
     }
     let staticSubStateName: string | undefined = undefined;
     let dynamicSubState: AST.MustacheStatement | AST.ConcatStatement | AST.SubExpression | AST.PathExpression | undefined = undefined;
@@ -472,7 +483,7 @@ export class ElementAnalyzer {
     }
 
     let found = false;
-    const errors: [string, AnalyzableProperty, ResolvedFile][] = [];
+    const errors: [string, AnalyzableProperty, string][] = [];
     for (let container of containers) {
       let stateGroup = container.resolveAttribute({
         namespace: "state",
@@ -485,7 +496,7 @@ export class ElementAnalyzer {
         if (state) {
           element.addStaticAttr(container, state);
         } else {
-          throw cssBlockError(`No sub-state found named ${staticSubStateName} in state ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
+          throw cssBlockError(`No sub-state found named ${staticSubStateName} in state ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.templatePath);
         }
       } else if (stateGroup) {
         if (stateGroup.hasResolvedValues()) {
@@ -498,13 +509,13 @@ export class ElementAnalyzer {
             }
           } else {
             // TODO: when we add default sub states this is where that will go.
-            throw cssBlockError(`No sub-state specified for ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template);
+            throw cssBlockError(`No sub-state specified for ${stateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.templatePath);
           }
         } else {
           found = true;
           if (dynamicSubState) {
             if (dynamicSubState.type === "ConcatStatement") {
-              throw cssBlockError(`The dynamic statement for a boolean state must be set to a mustache statement with no additional text surrounding it.`, dynamicSubState, this.template);
+              throw cssBlockError(`The dynamic statement for a boolean state must be set to a mustache statement with no additional text surrounding it.`, dynamicSubState, this.templatePath);
             }
             let state = stateGroup.presenceRule;
             element.addDynamicAttr(container, state!, dynamicSubState);
@@ -515,9 +526,9 @@ export class ElementAnalyzer {
       }
       else {
         if (staticSubStateName) {
-          errors.push([`No state found named ${stateName} with a sub-state of ${staticSubStateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.template]);
+          errors.push([`No state found named ${stateName} with a sub-state of ${staticSubStateName} for ${container.asSource()} in ${blockName || "the default block"}.`, node, this.templatePath]);
         } else {
-          errors.push([`No state(s) found named ${stateName} for ${container.asSource()} in ${blockName === "block" && "the default block" || blockName}.`, node, this.template]);
+          errors.push([`No state(s) found named ${stateName} for ${container.asSource()} in ${blockName === "block" && "the default block" || blockName}.`, node, this.templatePath]);
         }
       }
     }

@@ -28,7 +28,7 @@ async function optimize(analyzer: GlimmerAnalyzer): Promise<CSSAndMapping> {
 
   optimizer.addAnalysis(optimizerAnalysis);
   for (let block of blocks) {
-    let compiled = compiler.compile(block, block.stylesheet!, analyzer);
+    let compiled = compiler.compile(block, block.stylesheet!, analyzer.reservedClassNames());
     optimizer.addSource({
       content: compiled.toResult({to: blockOpts.importer.filesystemPath(block.identifier, blockOpts)!}),
     });

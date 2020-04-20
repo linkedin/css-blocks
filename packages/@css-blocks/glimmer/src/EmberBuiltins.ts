@@ -1,6 +1,6 @@
 import { AST } from "@glimmer/syntax";
 
-import { isBlockStatement, isMustacheStatement } from "./utils";
+import { isBlockStatement, isMustacheStatement, isPathExpression, isStringLiteral } from "./utils";
 
 /**
  * Ember Built-Ins are components that should be analyzed like regular
@@ -27,9 +27,8 @@ export type BuiltIns = keyof IBuiltIns;
 
 export function isEmberBuiltInNode(node: AST.Node): node is AST.BlockStatement | AST.MustacheStatement {
   if (isBlockStatement(node) || isMustacheStatement(node)) {
-    let name = node.path.original;
-    if (typeof name === "string" && BUILT_INS[name]) {
-      return true;
+    if (isPathExpression(node.path) || isStringLiteral(node.path)) {
+      return isEmberBuiltIn(node.path.original);
     }
   }
   return false;

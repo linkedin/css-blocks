@@ -10,7 +10,7 @@
   ],
   "include": [
     "src",
-    "test"
+    "test",
   ],
   "exclude": [
     "sanity",

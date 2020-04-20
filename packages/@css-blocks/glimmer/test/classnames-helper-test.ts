@@ -24,6 +24,7 @@ import {
 } from "../src/ElementAnalyzer";
 import { CLASSNAMES_HELPER_NAME } from "../src/helpers";
 import { classnames } from "../src/helpers/classnames";
+import { pathString } from "../src/utils";
 
 function helperGenerator(rewrite: IndexedClassRewrite<Style>, element: TemplateElement) {
   return classnamesHelper(builders, rewrite, element);
@@ -37,7 +38,7 @@ function run(ast: AST.MustacheStatement, helper?: (name: string, params: unknown
 function astToLiterals(node: AST.Expression, helper?: (name: string, params: unknown[]) => unknown): unknown {
   switch (node.type) {
     case "SubExpression":
-      if (helper) return helper(node.path.original, node.params.map(p => astToLiterals(p, helper)));
+      if (helper) return helper(pathString(node) || "???", node.params.map(p => astToLiterals(p, helper)));
       throw new Error(`not handled ${inspect(node)}`);
     case "StringLiteral":
       return node.value;
