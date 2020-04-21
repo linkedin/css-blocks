@@ -47,7 +47,7 @@
     "perfectionist": "^2.4.0",
     "prettier": "^1.18.2",
     "remap-istanbul": "^0.13.0",
-    "source-map-support": "^0.5.12",
+    "source-map-support": "^0.5.18",
     "test-console": "^1.1.0",
     "tslint": "^5.9.1",
     "typedoc": "^0.14.2",
