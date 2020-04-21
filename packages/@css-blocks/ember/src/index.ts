@@ -15,7 +15,6 @@ import { AnalyzingRewriteManager } from "./AnalyzingRewriteManager";
 import { BroccoliTreeImporter, identToPath, isBroccoliTreeIdentifier } from "./BroccoliTreeImporter";
 import { EmberAnalysis } from "./EmberAnalysis";
 import { BroccoliFileLocator } from "./BroccoliFileLocator";
-import { mkdirpSync } from "./util/mkdirp";
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -114,7 +113,7 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     }
     for (let analysis of analyses) {
       let analysisOutputPath = analysisPath(analysis.template.relativePath);
-      mkdirpSync(this.output, analysisOutputPath);
+      this.output.mkdirSync(analysisOutputPath, { recursive: true });
       this.output.writeFileSync(
         analysisOutputPath,
         JSON.stringify(analysis.serialize(blockOutputPaths)),
