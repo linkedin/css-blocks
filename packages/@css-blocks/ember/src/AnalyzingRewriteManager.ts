@@ -84,7 +84,7 @@ export class AnalyzingRewriteManager {
     let block = this.templateBlocks[templatePath];
     let template = new HandlebarsTemplate(templatePath, templatePath);
     this.templates.set(templatePath, template);
-    let analysis = new EmberAnalysis(template, this.validationOptions);
+    let analysis = new EmberAnalysis(template, block, this.validationOptions);
     this.analyses.set(templatePath, analysis);
     return new TemplateAnalyzingRewriter(template, block, analysis, this.cssBlocksOpts, syntax);
   }
@@ -108,12 +108,9 @@ export class AnalyzingRewriteManager {
     for (let templatePath of templatePaths) {
       let block = this.templateBlocks[templatePath]!;
       let template = this.templates.get(templatePath);
-      if (!template) {
-        throw new CssBlockError(`Internal Error: Template at ${templatePath} was not yet analyzed.`);
-      }
       let analysis = this.analyses.get(templatePath);
-      if (!analysis) {
-        throw new CssBlockError(`Internal Error: Template at ${templatePath} was not yet analyzed.`);
+      if (!template || !analysis) {
+        continue; // this template didn't change so it didn't get compiled.
       }
       yield {
         template,

@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "packages/@css-blocks/*",
-    "private-packages/fixtures/*"
+    "private-packages/fixtures/*",
+    "private-packages/fixtures-ember-v2/*"
   ],
   "scripts": {
     "ci": "lerna run test",

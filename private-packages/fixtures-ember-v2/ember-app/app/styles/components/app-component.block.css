@@ -1,0 +1,19 @@
+:scope {
+  --app-component-block-scope: applied;
+  color: red;
+}
+
+.sub-class {
+  --app-component-block-class: applied;
+  color: orange;
+}
+
+:scope[enabled] {
+  --app-component-block-scope-state: applied;
+  color: green;
+}
+
+.sub-class[enabled] {
+  --app-component-block-class-state: applied;
+  color: blue;
+}

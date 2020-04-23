@@ -1,0 +1,1 @@
+export { default } from '@css-blocks-fixtures-v2/ember-addon/components/addon-component';

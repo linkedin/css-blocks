@@ -5343,7 +5343,7 @@ broccoli-funnel@^2.0.0, broccoli-funnel@^2.0.1, broccoli-funnel@^2.0.2:
     symlink-or-copy "^1.0.0"
     walk-sync "^0.3.1"
 
-broccoli-funnel@^3.0.0:
+broccoli-funnel@^3.0.0, broccoli-funnel@^3.0.2:
   version "3.0.2"
   resolved "https://registry.npmjs.org/broccoli-funnel/-/broccoli-funnel-3.0.2.tgz#25e1c9a512b3852d3c9dde19ebdf07880d619c73"
   integrity sha512-yRa7f0H/BtfqXNmL4eCYtAiVAQASI5b83//17MxAYp3I+w8XzGY8Tc3mwhdUrAgh6Zhb6LZwgvUZDZPTLmkK7w==
@@ -5464,7 +5464,7 @@ broccoli-output-wrapper@^2.0.0:
   dependencies:
     heimdalljs-logger "^0.1.10"
 
-broccoli-output-wrapper@^3.1.1:
+broccoli-output-wrapper@^3.1.1, broccoli-output-wrapper@^3.2.1:
   version "3.2.1"
   resolved "https://registry.npmjs.org/broccoli-output-wrapper/-/broccoli-output-wrapper-3.2.1.tgz#8f9d1092afe0c1a4b7a1b6f0d2c62f1c403e82ad"
   integrity sha512-mhOTy8AyzEsqgefR2ejbv5QTy3dbY2bvDfkARo55Xml52r2MU0CehQu4T/CH6oPcAXkdVYG/hGm9UpV1vU9Ohg==
@@ -5812,6 +5812,36 @@ broccoli@^3.2.0:
   version "3.3.3"
   resolved "https://registry.npmjs.org/broccoli/-/broccoli-3.3.3.tgz#f4034b2495b709e99dd7e7d8834bf4a01bb4d0d7"
   integrity sha512-MFyAk94I8XcSmfDZ0DtXlkgDvWL/U2lGbFpWiU1OPBGyUNC5WgWElC2U18SEFuDc0GncZfUaIxN+QAALrs4fAQ==
+  dependencies:
+    "@types/chai" "^4.2.9"
+    "@types/chai-as-promised" "^7.1.2"
+    "@types/express" "^4.17.2"
+    ansi-html "^0.0.7"
+    broccoli-node-info "^2.1.0"
+    broccoli-slow-trees "^3.0.1"
+    broccoli-source "^3.0.0"
+    commander "^4.1.1"
+    connect "^3.6.6"
+    console-ui "^3.0.4"
+    esm "^3.2.4"
+    findup-sync "^4.0.0"
+    handlebars "^4.7.3"
+    heimdalljs "^0.2.6"
+    heimdalljs-logger "^0.1.9"
+    https "^1.0.0"
+    mime-types "^2.1.26"
+    resolve-path "^1.4.0"
+    rimraf "^3.0.2"
+    sane "^4.0.0"
+    tmp "^0.0.33"
+    tree-sync "^2.0.0"
+    underscore.string "^3.2.2"
+    watch-detector "^1.0.0"
+
+broccoli@^3.3.3:
+  version "3.4.1"
+  resolved "https://registry.npmjs.org/broccoli/-/broccoli-3.4.1.tgz#3acf2c8d998ed57fb7a89dee1b1b5e8e956e285b"
+  integrity sha512-DTIHD4olRsXr+Y+6k/E6PqnnSKAAROwgM77qmCloojmJS19QiIAJq7Pq2w6qZx9tQZt1zByhYgLm3r1m73yTPQ==
   dependencies:
     "@types/chai" "^4.2.9"
     "@types/chai-as-promised" "^7.1.2"
@@ -6851,7 +6881,7 @@ configstore@^3.0.0:
     write-file-atomic "^2.0.0"
     xdg-basedir "^3.0.0"
 
-configstore@^5.0.0:
+configstore@^5.0.0, configstore@^5.0.1:
   version "5.0.1"
   resolved "https://registry.npmjs.org/configstore/-/configstore-5.0.1.tgz#d365021b5df4b98cdd187d6a3b0e3f6a7cc5ed96"
   integrity sha512-aMKprgk5YhBNyH25hj8wGt2+D52Sw1DRRIzqBwLp2Ya9mFmY8KPvvtvmna8SxVR9JMZ4kzMD68N22vlaRpkeFA==
@@ -8466,6 +8496,100 @@ ember-cli@~3.16, ember-cli@~3.16.0:
     watch-detector "^1.0.0"
     yam "^1.0.0"
 
+ember-cli@~3.17.0:
+  version "3.17.0"
+  resolved "https://registry.npmjs.org/ember-cli/-/ember-cli-3.17.0.tgz#d846027c01f1835c7903b6bff073c2a80885202e"
+  integrity sha512-0GVer7AyV/g8hclbD64FmsNkULQ0N1pEQytB+utuJl8c6NFU4EUMJL7NyM/NRd7rzupMMR1jwzhxYTCY50ZRcg==
+  dependencies:
+    "@babel/core" "^7.8.4"
+    "@babel/plugin-transform-modules-amd" "^7.7.5"
+    amd-name-resolver "^1.3.1"
+    babel-plugin-module-resolver "^4.0.0"
+    bower-config "^1.4.1"
+    bower-endpoint-parser "0.2.2"
+    broccoli "^3.3.3"
+    broccoli-amd-funnel "^2.0.1"
+    broccoli-babel-transpiler "^7.4.0"
+    broccoli-builder "^0.18.14"
+    broccoli-concat "^3.7.4"
+    broccoli-config-loader "^1.0.1"
+    broccoli-config-replace "^1.1.2"
+    broccoli-debug "^0.6.5"
+    broccoli-funnel "^2.0.2"
+    broccoli-funnel-reducer "^1.0.0"
+    broccoli-merge-trees "^3.0.2"
+    broccoli-middleware "^2.1.1"
+    broccoli-slow-trees "^3.0.1"
+    broccoli-source "^3.0.0"
+    broccoli-stew "^3.0.0"
+    calculate-cache-key-for-tree "^2.0.0"
+    capture-exit "^2.0.0"
+    chalk "^3.0.0"
+    ci-info "^2.0.0"
+    clean-base-url "^1.0.0"
+    compression "^1.7.4"
+    configstore "^5.0.1"
+    console-ui "^3.1.1"
+    core-object "^3.1.5"
+    dag-map "^2.0.2"
+    diff "^4.0.1"
+    ember-cli-is-package-missing "^1.0.0"
+    ember-cli-lodash-subset "^2.0.1"
+    ember-cli-normalize-entity-name "^1.0.0"
+    ember-cli-preprocess-registry "^3.3.0"
+    ember-cli-string-utils "^1.1.0"
+    ember-source-channel-url "^2.0.1"
+    ensure-posix-path "^1.0.2"
+    execa "^1.0.0"
+    exit "^0.1.2"
+    express "^4.16.4"
+    filesize "^4.2.0"
+    find-up "^4.1.0"
+    find-yarn-workspace-root "^1.2.1"
+    fs-extra "^8.1.0"
+    fs-tree-diff "^2.0.1"
+    get-caller-file "^2.0.5"
+    git-repo-info "^2.1.1"
+    glob "^7.1.4"
+    heimdalljs "^0.2.6"
+    heimdalljs-fs-monitor "^0.2.3"
+    heimdalljs-graph "^1.0.0"
+    heimdalljs-logger "^0.1.10"
+    http-proxy "^1.18.0"
+    inflection "^1.12.0"
+    is-git-url "^1.0.0"
+    isbinaryfile "^3.0.3"
+    js-yaml "^3.13.1"
+    json-stable-stringify "^1.0.1"
+    leek "0.0.24"
+    lodash.template "^4.5.0"
+    markdown-it "^10.0.0"
+    markdown-it-terminal "0.1.1"
+    minimatch "^3.0.4"
+    morgan "^1.9.1"
+    nopt "^3.0.6"
+    npm-package-arg "^8.0.0"
+    p-defer "^3.0.0"
+    portfinder "^1.0.25"
+    promise-map-series "^0.3.0"
+    promise.hash.helper "^1.0.2"
+    quick-temp "^0.1.8"
+    resolve "^1.15.1"
+    resolve-package-path "^2.0.0"
+    sane "^4.1.0"
+    semver "^6.3.0"
+    silent-error "^1.1.1"
+    sort-package-json "^1.39.1"
+    symlink-or-copy "^1.3.1"
+    temp "0.9.1"
+    testem "^3.0.1"
+    tiny-lr "^1.1.1"
+    tree-sync "^2.0.0"
+    uuid "^3.4.0"
+    walk-sync "^2.0.2"
+    watch-detector "^1.0.0"
+    yam "^1.0.0"
+
 ember-compatibility-helpers@^1.1.1, ember-compatibility-helpers@^1.1.2, ember-compatibility-helpers@^1.2.0:
   version "1.2.0"
   resolved "https://registry.npmjs.org/ember-compatibility-helpers/-/ember-compatibility-helpers-1.2.0.tgz#feee16c5e9ef1b1f1e53903b241740ad4b01097e"
@@ -8741,7 +8865,7 @@ entities@^1.1.1, entities@^1.1.2, entities@~1.1.1:
   resolved "https://registry.npmjs.org/entities/-/entities-1.1.2.tgz#bdfa735299664dfafd34529ed4f8522a275fea56"
   integrity sha512-f2LZMYl1Fzu7YSBKg+RoROelpOaNrcGmE9AZubeDfrCEia483oW4MI4VyFd5VNHIgQ/7qm1I0wUHK1eJnn2y2w==
 
-entities@^2.0.0:
+entities@^2.0.0, entities@~2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/entities/-/entities-2.0.0.tgz#68d6084cab1b079767540d80e56a39b423e4abf4"
   integrity sha512-D9f7V0JSRwIxlRI2mjMqufDrRDnx8p+eEOz7aUM9SuvF8gsBzra0/6tbjl1m8eQHrZlYj6PxqE00hZ1SAIKPLw==
@@ -9991,7 +10115,7 @@ fs-extra@^8.0.0, fs-extra@^8.0.1, fs-extra@^8.1.0:
     jsonfile "^4.0.0"
     universalify "^0.1.0"
 
-fs-merger@^3.0.1:
+fs-merger@^3.0.1, fs-merger@^3.0.2:
   version "3.0.2"
   resolved "https://registry.npmjs.org/fs-merger/-/fs-merger-3.0.2.tgz#bf111334b89b8d65b95580d33c587dc79620a4e3"
   integrity sha512-63wmgjPDClP5XcTSKdIXz66X5paYy/m2Ymq5c5YpGxRQEk1HFZ8rtti3LMNSOSw1ketbBMGbSFFcQeEnpnzDpQ==
@@ -10878,6 +11002,13 @@ hosted-git-info@^2.1.4, hosted-git-info@^2.7.1:
   version "2.8.8"
   resolved "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.8.tgz#7539bd4bc1e0e0a895815a2e0262420b12858488"
   integrity sha512-f/wzC2QaWBs7t9IYqB4T3sR1xviIViXJRJTWBlx2Gf3g0Xi5vI7Yy4koXQ1c9OYDGHN9sBy1DQ2AB8fqZBWhUg==
+
+hosted-git-info@^3.0.2:
+  version "3.0.4"
+  resolved "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-3.0.4.tgz#be4973eb1fd2737b11c9c7c19380739bb249f60d"
+  integrity sha512-4oT62d2jwSDBbLLFLZE+1vPuQ1h8p9wjrJ8Mqx5TjsyWmBMV5B13eJqn8pvluqubLf3cJPTfiYCIwNwDNmzScQ==
+  dependencies:
+    lru-cache "^5.1.1"
 
 hpack.js@^2.1.6:
   version "2.1.6"
@@ -13096,6 +13227,28 @@ markdown-it-terminal@0.1.0:
     lodash.merge "^4.6.0"
     markdown-it "^8.3.1"
 
+markdown-it-terminal@0.1.1:
+  version "0.1.1"
+  resolved "https://registry.npmjs.org/markdown-it-terminal/-/markdown-it-terminal-0.1.1.tgz#7665d28a97f6f7f61f8738304d409a8505620192"
+  integrity sha512-8v4pHGEh7eiw+UbD28PRyrpu+WrnRR/HefC6NRs+Ttbk1ZQoOY6ViMrkZcdO9Y+PoBsfxNsmiJZtG9BRHEGZ2A==
+  dependencies:
+    ansi-styles "^3.0.0"
+    cardinal "^1.0.0"
+    cli-table "^0.3.1"
+    lodash.merge "^4.6.2"
+    markdown-it "^8.3.1"
+
+markdown-it@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.npmjs.org/markdown-it/-/markdown-it-10.0.0.tgz#abfc64f141b1722d663402044e43927f1f50a8dc"
+  integrity sha512-YWOP1j7UbDNz+TumYP1kpwnP0aEa711cJjrAQrzd0UXlbJfc5aAq0F/PZHjiioqDC1NKgvIMX+o+9Bk7yuM2dg==
+  dependencies:
+    argparse "^1.0.7"
+    entities "~2.0.0"
+    linkify-it "^2.0.0"
+    mdurl "^1.0.1"
+    uc.micro "^1.0.5"
+
 markdown-it@^8.3.1:
   version "8.4.2"
   resolved "https://registry.npmjs.org/markdown-it/-/markdown-it-8.4.2.tgz#386f98998dc15a37722aa7722084f4020bdd9b54"
@@ -14090,6 +14243,15 @@ npm-normalize-package-bin@^1.0.0, npm-normalize-package-bin@^1.0.1:
     hosted-git-info "^2.7.1"
     osenv "^0.1.5"
     semver "^5.6.0"
+    validate-npm-package-name "^3.0.0"
+
+npm-package-arg@^8.0.0:
+  version "8.0.1"
+  resolved "https://registry.npmjs.org/npm-package-arg/-/npm-package-arg-8.0.1.tgz#9d76f8d7667b2373ffda60bb801a27ef71e3e270"
+  integrity sha512-/h5Fm6a/exByzFSTm7jAyHbgOqErl9qSNJDQF32Si/ZzgwT2TERVxRxn3Jurw1wflgyVVAxnFR4fRHPM7y1ClQ==
+  dependencies:
+    hosted-git-info "^3.0.2"
+    semver "^7.0.0"
     validate-npm-package-name "^3.0.0"
 
 npm-packlist@^1.4.4:
@@ -15458,6 +15620,11 @@ promise-retry@^1.1.1:
     err-code "^1.0.0"
     retry "^0.10.0"
 
+promise.hash.helper@^1.0.2:
+  version "1.0.7"
+  resolved "https://registry.npmjs.org/promise.hash.helper/-/promise.hash.helper-1.0.7.tgz#2f39d8495df40dcdfbc1d5be9e9e56efeae7f180"
+  integrity sha512-0qhWYyCV9TYDMSooYw1fShIb7R6hsWYja7JLqbeb1MvHqDTvP/uy/R1RsyVqDi6GCiHOI4G5p2Hpr3IA+/l/+Q==
+
 promise.prototype.finally@^3.1.0, promise.prototype.finally@^3.1.2:
   version "3.1.2"
   resolved "https://registry.npmjs.org/promise.prototype.finally/-/promise.prototype.finally-3.1.2.tgz#b8af89160c9c673cefe3b4c4435b53cfd0287067"
@@ -16484,6 +16651,13 @@ resolve@^1.1.6, resolve@^1.10.0, resolve@^1.10.1, resolve@^1.11.1, resolve@^1.12
   dependencies:
     path-parse "^1.0.6"
 
+resolve@^1.15.1:
+  version "1.16.1"
+  resolved "https://registry.npmjs.org/resolve/-/resolve-1.16.1.tgz#49fac5d8bacf1fd53f200fa51247ae736175832c"
+  integrity sha512-rmAglCSqWWMrrBv/XM6sW0NuRFiKViw/W4d9EbC4pt+49H8JwHy+mcGmALTEg504AUDcLTvb1T2q3E9AnmY+ig==
+  dependencies:
+    path-parse "^1.0.6"
+
 responselike@1.0.2:
   version "1.0.2"
   resolved "https://registry.npmjs.org/responselike/-/responselike-1.0.2.tgz#918720ef3b631c5642be068f15ade5a46f4ba1e7"
@@ -16836,6 +17010,11 @@ semver@7.0.0:
   version "7.0.0"
   resolved "https://registry.npmjs.org/semver/-/semver-7.0.0.tgz#5f3ca35761e47e05b206c6daff2cf814f0316b8e"
   integrity sha512-+GB6zVA9LWh6zovYQLALHwv5rb2PHGlJi3lfiqIHxR0uuwCgefcOJc59v9fv1w8GbStwxuuqqAjI9NMAOOgq1A==
+
+semver@^7.0.0:
+  version "7.3.2"
+  resolved "https://registry.npmjs.org/semver/-/semver-7.3.2.tgz#604962b052b81ed0786aae84389ffba70ffd3938"
+  integrity sha512-OrOb32TeeambH6UrhtShmF7CRDqhL6/5XpPNp2DuRH6+9QLw/orhp72j87v8Qa1ScDkvrrBNpZcDejAirJmfXQ==
 
 semver@~5.3.0:
   version "5.3.0"
@@ -18044,7 +18223,7 @@ symbol-tree@^3.2.1:
   resolved "https://registry.npmjs.org/symbol-tree/-/symbol-tree-3.2.4.tgz#430637d248ba77e078883951fb9aa0eed7c63fa2"
   integrity sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==
 
-symlink-or-copy@^1.0.0, symlink-or-copy@^1.0.1, symlink-or-copy@^1.1.8, symlink-or-copy@^1.2.0, symlink-or-copy@^1.3.0:
+symlink-or-copy@^1.0.0, symlink-or-copy@^1.0.1, symlink-or-copy@^1.1.8, symlink-or-copy@^1.2.0, symlink-or-copy@^1.3.0, symlink-or-copy@^1.3.1:
   version "1.3.1"
   resolved "https://registry.npmjs.org/symlink-or-copy/-/symlink-or-copy-1.3.1.tgz#9506dd64d8e98fa21dcbf4018d1eab23e77f71fe"
   integrity sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA==

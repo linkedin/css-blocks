@@ -1,0 +1,35 @@
+<section>
+  <p id="red-static" block:class="red">I'm red from a static class composition and bold from an inherited composition.</p>
+  <p id="green-static" block:class="green">I'm green from a static class composition.</p>
+
+  <p id="red-green-dynamic" block:class={{style-if enabled "green" "red"}}>I'm {{if enabled "green" "red"}} from a dynamic class composition.</p>
+
+  <p id="pink-static" block:class="pink">I'm pink from a static attribute composition and italic from the composition's parent class.</p>
+  <p id="purple-static" block:class="purple">I'm purple from a static attribute composition and italic from the composition's parent class.</p>
+
+  <p id="pink-purple-dynamic" block:class={{style-if enabled "pink" "purple"}}>I'm {{if enabled "pink" "purple"}} from a dynamic attribute composition and italic from the composition's parent class.</p>
+
+  <p id="blue-static" block:class="blue">I'm not blue from an attribute composition with boolean attribute condition.</p>
+  <p id="blue-active" block:class="blue" block:active>I'm blue from an attribute composition with boolean attribute condition.</p>
+  <p id="blue-dynamic" block:class="blue" block:active={{enabled}} >I'm toggled blue from an state composition with boolean attribute condition.</p>
+
+  <p id="orange-static" block:class="orange">I'm not orange from a class composition with boolean attribute condition.</p>
+  <p id="orange-active" block:class="orange" block:active>I'm orange from a class composition with boolean attribute condition.</p>
+  <p id="orange-dynamic" block:class="orange" block:active={{enabled}} >I'm toggled orange from a class with boolean attribute condition.</p>
+
+  <p id="yellow-static" block:class="yellow" block:color="none">I'm not yellow from a class composition with a switch class condition.</p>
+  <p id="yellow-active" block:class="yellow" block:color="yellow">I'm yellow from a class composition with a switch class condition.</p>
+  <p id="yellow-dynamic" block:class="yellow" block:color={{color}}>I'm toggled {{color}} from a class composition with a switch class condition.</p>
+
+  <p id="brown-static" block:class="brown" block:color="none">I'm not brown from an attribute composition with a switch attribute condition.</p>
+  <p id="brown-active" block:class="brown" block:color="yellow">I'm brown from an attribute composition with a switch attribute condition.</p>
+  <p id="brown-dynamic" block:class="brown" block:color={{color}}>I'm toggled brown from an state composition with a switch attribute condition.</p>
+
+  <p id="yellow-brown-dynamic" block:class={{style-if enabled "yellow" "brown"}} block:color={{color}}>I'm toggled {{if enabled "yellow" "brown"}} or unset from a dynamic {{if enabled "attribute" "class"}} composition.</p>
+
+  <p id="green-bold" block:class="green-bold">I'm green and bold from multiple class compositions.</p>
+
+  <button {{action "toggleEnabled"}} id="toggle-enabled">Toggle Enabled States</button>
+  <button {{action "toggleColor"}} id="toggle-color">Toggle Color States</button>
+
+</section>

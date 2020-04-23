@@ -1,0 +1,7 @@
+<div block:enabled={{enabled}} id="scope">
+  App Component Scope Styles State: {{enabled}}
+  <div block:class="sub-class" id="sub-class" block:enabled={{enabled}}>
+    App Component Sub-class Styles State: {{enabled}}
+  </div>
+  <button {{action "toggleEnabled"}} id="toggle-enabled">Toggle Enabled States</button>
+</div>

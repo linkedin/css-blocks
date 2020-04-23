@@ -1,0 +1,19 @@
+:scope {
+  --route-block-scope: applied;
+  color: red;
+}
+
+.sub-class {
+  --route-block-class: applied;
+  color: orange;
+}
+
+:scope[enabled] {
+  --route-block-scope-state: applied;
+  color: green;
+}
+
+.sub-class[enabled] {
+  --route-block-class-state: applied;
+  color: blue;
+}

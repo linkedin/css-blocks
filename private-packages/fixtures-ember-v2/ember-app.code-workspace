@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "../../packages/@css-blocks/ember"
+		},
+		{
+			"path": "ember-engine"
+		},
+		{
+			"path": "ember-addon"
+		},
+		{
+			"path": "ember-app"
+		},
+		{
+			"path": "ember-lazy-engine"
+		}
+	],
+	"settings": {}
+}

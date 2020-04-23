@@ -144,7 +144,7 @@ declare module 'ember-cli/lib/models/addon' {
     /**
      * This method is called when the addon is included in a build. You would typically use this hook to perform additional imports.
      */
-    included?(this: ThisAddon<A>, includer: EmberApp | Addon): void;
+    included?(this: ThisAddon<A>, includer: Project | Addon): void;
     /**
      * Allows the specification of custom addon commands. Expects you to return an object whose key is the name of the command and value is the command instance.
      */
@@ -193,7 +193,7 @@ declare module 'ember-cli/lib/models/addon' {
     /**
      * Post-process a tree.
      */
-    postprocessTree?(this: ThisAddon<A>, type: TreeTypes, tree: Tree): Tree
+    postprocessTree?(this: ThisAddon<A>, type: "css" | "template" | "js", tree: Tree): Tree
     /**
      * This hook is called before a build takes place.
      */
@@ -208,7 +208,7 @@ declare module 'ember-cli/lib/models/addon' {
     name: string;
     root: string;
     app?: EmberApp;
-    parent: Addon | EmberApp;
+    parent: Addon | Project;
     project: Project;
     addons: Addon[];
     ui: UI;
@@ -339,7 +339,7 @@ declare module 'ember-cli/lib/models/addon' {
     /**
      * This method is called when the addon is included in a build. You would typically use this hook to perform additional imports.
      */
-    included(includer: EmberApp | Addon): void;
+    included(includer: Project | Addon): void;
   }
 }
 

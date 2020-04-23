@@ -1,0 +1,1 @@
+export default Ember.HTMLBars.template({"id":"Zv8B0/+m","block":"{\"symbols\":[],\"statements\":[[7,\"div\",true],[10,\"id\",\"scope\"],[11,\"class\",null],[8],[0,\"\\n  IN THE LAZY ENGINE!\\n\"],[9],[0,\"\\n\"]],\"hasEval\":false}","meta":{"moduleName":"@css-blocks-fixtures-v2/ember-lazy-engine/templates/application.hbs"}});

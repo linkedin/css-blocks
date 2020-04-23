@@ -1,20 +1,26 @@
 import config from "@css-blocks/config";
 import { AnalysisOptions, Block, BlockCompiler, BlockFactory, Configuration, NodeJsImporter, Options as ParserOptions, OutputMode, resolveConfiguration } from "@css-blocks/core";
-import type { AST, ASTPlugin, ASTPluginEnvironment, NodeVisitor, Syntax } from "@glimmer/syntax";
+import type { ASTPlugin, ASTPluginEnvironment } from "@glimmer/syntax";
 import { ObjectDictionary } from "@opticss/util";
+import BroccoliDebug = require("broccoli-debug");
+import funnel = require("broccoli-funnel");
 import type { InputNode } from "broccoli-node-api";
-import TemplateCompilerPlugin, { HtmlBarsOptions } from "ember-cli-htmlbars/lib/template-compiler-plugin";
+import outputWrapper = require("broccoli-output-wrapper");
+import TemplateCompilerPlugin = require("ember-cli-htmlbars/lib/template-compiler-plugin");
 import type EmberApp from "ember-cli/lib/broccoli/ember-app";
 import type EmberAddon from "ember-cli/lib/models/addon";
 import type { AddonImplementation, ThisAddon, Tree } from "ember-cli/lib/models/addon";
+import type Project from "ember-cli/lib/models/project";
+import FSMerger = require("fs-merger");
 import * as FSTree from "fs-tree-diff";
 import { OptiCSSOptions, postcss } from "opticss";
 import * as path from "path";
 
 import { AnalyzingRewriteManager } from "./AnalyzingRewriteManager";
+import { BroccoliFileLocator } from "./BroccoliFileLocator";
 import { BroccoliTreeImporter, identToPath, isBroccoliTreeIdentifier } from "./BroccoliTreeImporter";
 import { EmberAnalysis } from "./EmberAnalysis";
-import { BroccoliFileLocator } from "./BroccoliFileLocator";
+import { ASTPluginWithDeps } from "./TemplateAnalyzingRewriter";
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -25,37 +31,33 @@ interface EmberASTPluginEnvironment extends ASTPluginEnvironment {
   };
 }
 
-class Visitor implements NodeVisitor {
-  moduleName: string;
-  syntax: Syntax;
-  constructor(moduleName: string, syntax: Syntax) {
-    this.moduleName = moduleName;
-    this.syntax = syntax;
-  }
-  ElementNode(node: AST.ElementNode) {
-    console.log(`visited ${this.syntax.print(node)}`);
-  }
+function withoutCssBlockFiles(tree: InputNode | undefined) {
+  if (!tree) return tree;
+  return funnel(tree, {
+    exclude: ["**/*.block.{css,scss,sass,less,styl}"],
+  });
 }
-const NOOP_VISITOR = {};
 
 class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
   previousSourceTree: FSTree;
   cssBlocksOptions: CSSBlocksEmberOptions;
   parserOpts: Readonly<Configuration>;
   analyzingRewriter: AnalyzingRewriteManager | undefined;
-  constructor(inputTree: InputNode, htmlbarsOptions: HtmlBarsOptions, cssBlocksOptions: CSSBlocksEmberOptions) {
-    htmlbarsOptions.plugins = htmlbarsOptions.plugins || {};
-    htmlbarsOptions.plugins.ast = htmlbarsOptions.plugins.ast || [];
-    htmlbarsOptions.plugins.ast.unshift((env) => this.astPluginBuilder(env));
+  input!: FSMerger.FS;
+  output!: outputWrapper.FSOutput;
+  constructor(inputTree: InputNode, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions, cssBlocksOptions: CSSBlocksEmberOptions) {
     super(inputTree, htmlbarsOptions);
     this.cssBlocksOptions = cssBlocksOptions;
     this.parserOpts = resolveConfiguration(cssBlocksOptions.parserOpts);
     this.previousSourceTree = new FSTree();
   }
-  astPluginBuilder(env: EmberASTPluginEnvironment) {
+  astPluginBuilder(env: EmberASTPluginEnvironment): ASTPluginWithDeps {
     let moduleName = env.meta?.["moduleName"];
     if (!moduleName) {
-      throw new Error("[internal error] moduleName expected.");
+      return {
+        name: "css-blocks-noop",
+        visitor: {},
+      };
     }
     if (!this.analyzingRewriter) {
       throw new Error("[internal error] analyzing rewriter expected.");
@@ -67,7 +69,14 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     // write additional output files to the output tree.
     return this.analyzingRewriter.templateAnalyzerAndRewriter(moduleName, env.syntax);
   }
+
   async build() {
+    if (!this.input) {
+      this.input = new FSMerger(this.inputPaths).fs;
+    }
+    if (!this.output) {
+      this.output = outputWrapper(this);
+    }
     let cssBlockEntries = this.input.entries(".", [BLOCK_GLOB]);
     let currentFSTree = FSTree.fromEntries(cssBlockEntries);
     let patch = this.previousSourceTree.calculatePatch(currentFSTree);
@@ -85,12 +94,22 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     // the blocks and associate them to their corresponding templates.
     await this.analyzingRewriter.discoverTemplatesWithBlocks();
     // Compiles the handlebars files, runs our plugin for each file
-    await super.build();
+    // we have to wrap this RSVP Promise that's returned in a native promise or
+    // else await won't work.
+    let builder = new Promise((resolve, reject) => {
+      try {
+        let buildResult = super.build() || Promise.resolve();
+        buildResult.then(resolve, reject);
+      } catch (e) {
+        reject(e);
+      }
+    });
+    await builder;
     // output compiled block files and template analyses
     let blocks = new Set<Block>();
     let blockOutputPaths = new Map<Block, string>();
     let analyses = new Array<EmberAnalysis>();
-    for (let analyzedTemplate of this.analyzingRewriter.analyzedTemplates()) {
+    for (let analyzedTemplate of this.analyzingRewriter!.analyzedTemplates()) {
       let { block, analysis } = analyzedTemplate;
       analyses.push(analysis);
       blocks.add(block);
@@ -105,15 +124,15 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
       if (!block.stylesheet) {
         throw new Error("[internal error] block stylesheet expected.");
       }
-      // TODO generate definition file too
-      let compiledAST = compiler.compile(block, block.stylesheet, this.analyzingRewriter.reservedClassNames());
+      // TODO generate definition file too1
+      let compiledAST = compiler.compile(block, block.stylesheet, this.analyzingRewriter!.reservedClassNames());
       // TODO disable source maps in production?
       let result = compiledAST.toResult({ to: outputPath, map: { inline: true } });
-      this.output.writeFileSync(outputPath, result.css, "utf8");
+      this.output.writeFileSync(outputPath, wrapCSSWithDelimiterComments(block.guid, result.css), "utf8");
     }
     for (let analysis of analyses) {
       let analysisOutputPath = analysisPath(analysis.template.relativePath);
-      this.output.mkdirSync(analysisOutputPath, { recursive: true });
+      this.output.mkdirSync(path.dirname(analysisOutputPath), { recursive: true });
       this.output.writeFileSync(
         analysisOutputPath,
         JSON.stringify(analysis.serialize(blockOutputPaths)),
@@ -122,6 +141,12 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     }
   }
 }
+
+// This is a placeholder, eventually the block compiler should add this.
+function wrapCSSWithDelimiterComments(guid: string, css: string) {
+  return `/*#css-blocks ${guid}*/\n${css}\n/*#css-blocks end*/\n`;
+}
+
 
 function analysisPath(templatePath: string): string {
   let analysisPath = path.parse(templatePath);
@@ -132,7 +157,7 @@ function analysisPath(templatePath: string): string {
 
 function getOutputPath(block: Block): string {
   if (isBroccoliTreeIdentifier(block.identifier)) {
-    return identToPath(block.identifier);
+    return identToPath(block.identifier).replace(".block", "");
   } else {
     throw new Error("Implement me!");
   }
@@ -154,6 +179,7 @@ export interface CSSBlocksEmberOptions {
 }
 
 interface CSSBlocksAddon {
+  templateCompiler?: CSSBlocksTemplateCompilerPlugin;
   findSiblingAddon<AddonType>(this: ThisAddon<CSSBlocksAddon>, name: string): ThisAddon<AddonType> | undefined;
   getOptions(this: ThisAddon<CSSBlocksAddon>): CSSBlocksEmberOptions;
   optionsForCacheInvalidation(this: ThisAddon<CSSBlocksAddon>): ObjectDictionary<unknown>;
@@ -161,10 +187,10 @@ interface CSSBlocksAddon {
   _options?: CSSBlocksEmberOptions;
 }
 interface HTMLBarsAddon {
-  getTemplateCompiler(inputTree: Tree, htmlbarsOptions: HtmlBarsOptions): TemplateCompilerPlugin;
+  getTemplateCompiler(inputTree: Tree, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions): TemplateCompilerPlugin;
 }
 
-function isAddon(parent: EmberAddon | EmberApp): parent is EmberAddon {
+function isAddon(parent: EmberAddon | EmberApp | Project): parent is EmberAddon {
   return !!parent["findOwnAddonByName"];
 }
 
@@ -173,36 +199,52 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
 
   init(parent, project) {
     this._super.init.call(this, parent, project);
-    this.app = this._findHost();
   },
 
   findSiblingAddon(name) {
     if (isAddon(this.parent)) {
       return this.parent.findOwnAddonByName(name);
     } else {
-      this.project.findAddonByName(name);
+      return this.project.findAddonByName(name);
     }
   },
 
   included(parent) {
     this._super.included.apply(this, [parent]);
+    this.app = this._findHost();
+    let parentName = typeof parent.name === "string" ? parent.name : parent.name();
     this._options = this.getOptions();
     let htmlBarsAddon = this.findSiblingAddon<HTMLBarsAddon>("ember-cli-htmlbars");
     if (!htmlBarsAddon) {
-      throw new Error(`Using @css-blocks/ember on ${this.parent.name} also requires ember-cli-htmlbars to be an addon for ${this.parent.name}`);
+      throw new Error(`Using @css-blocks/ember on ${parentName} also requires ember-cli-htmlbars to be an addon for ${parentName} (ember-cli-htmlbars should be a dependency in package.json, not a devDependency)`);
     }
-    htmlBarsAddon.getTemplateCompiler = (inputTree: Tree, htmlbarsOptions: HtmlBarsOptions) => {
-      return new CSSBlocksTemplateCompilerPlugin(inputTree, htmlbarsOptions, this._options!);
+    if (!htmlBarsAddon.getTemplateCompiler) {
+      throw new Error("This version of ember-cli-htmlbars is not compatible with @css-blocks/ember. Please upgrade.");
+    }
+    htmlBarsAddon.getTemplateCompiler = (inputTree: Tree, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions) => {
+      this.templateCompiler = new CSSBlocksTemplateCompilerPlugin(inputTree, htmlbarsOptions, this._options!);
+      return this.templateCompiler;
     };
   },
 
-  astPluginBuilder(env: EmberASTPluginEnvironment): ASTPlugin {
-    let {meta, syntax } = env;
-    let moduleName = meta?.moduleName;
-    return {
-      name: `CSS Blocks AST Plugin for ${moduleName}`,
-      visitor: moduleName ? new Visitor(moduleName, syntax) : NOOP_VISITOR,
-    };
+  astPluginBuilder(env) {
+    return this.templateCompiler!.astPluginBuilder(env);
+  },
+
+  preprocessTree(type, tree) {
+    if (type !== "css") return tree;
+    // We compile CSS Block files in the template tree, so in the CSS Tree all
+    // we need to do is prune them out of the build before the tree gets
+    // built.
+    return withoutCssBlockFiles(tree);
+  },
+
+  postprocessTree(type, tree) {
+    if (type !== "template") return tree;
+    tree = withoutCssBlockFiles(tree);
+    let parentName = typeof this.parent.name === "string" ? this.parent.name : this.parent.name();
+    let isAddon = typeof this.parent.name === "string";
+    return new BroccoliDebug(tree, `css-blocks:template-output:${parentName}:${isAddon ? "addon" : "app"}`);
   },
 
   setupPreprocessorRegistry(type, registry) {
@@ -250,7 +292,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
     }
     options.parserOpts.outputMode = OutputMode.BEM_UNIQUE;
 
-    if (typeof options.output !== "string") {
+    if (options.output !== undefined && typeof options.output !== "string") {
       throw new Error(`Invalid css-blocks options in 'ember-cli-build.js': Output must be a string. Instead received ${options.output}.`);
     }
     return options;

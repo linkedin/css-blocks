@@ -22,7 +22,7 @@ import { HandlebarsTemplate, TEMPLATE_TYPE } from "./HandlebarsTemplate";
 const NOOP_VISITOR = {};
 const DEBUG = debugGenerator("css-blocks:glimmer:analyzing-rewriter");
 
-interface ASTPluginWithDeps extends ASTPlugin {
+export interface ASTPluginWithDeps extends ASTPlugin {
   /**
    * If this method exists, it is called with the relative path to the current
    * file just before processing starts. Use this method to reset the
@@ -37,7 +37,7 @@ interface ASTPluginWithDeps extends ASTPlugin {
    * file. Any relative paths returned by this method are taken to be relative
    * to the file that was processed.
    */
-  dependencies(relativePath: string): string[];
+  dependencies?(relativePath: string): string[];
 }
 
 export class TemplateAnalyzingRewriter implements ASTPluginWithDeps {

@@ -33,7 +33,13 @@ export class BroccoliTreeImporter implements Importer {
   identifier(fromIdentifier: string | null, importPath: string, config: Readonly<Configuration>): string {
     if (isBroccoliTreeIdentifier(fromIdentifier)) {
       if (importPath.startsWith("./") || importPath.startsWith("../")) {
-        return pathToIdent(path.resolve(path.dirname(identToPath(fromIdentifier)), importPath));
+        let parsedPath = path.parse(identToPath(fromIdentifier));
+        // We have to make resolve think the path is absolute or else it will
+        // prepend the current working directory.
+        let dir = "/" + parsedPath.dir;
+        // then we take the `/` off again to make it relative to the broccoli tree.
+        let relativePath = path.resolve(dir, importPath).substring(1);
+        return pathToIdent(relativePath);
       } else {
         return this.fallbackImporter.identifier(null, importPath, config);
       }
@@ -47,7 +53,7 @@ export class BroccoliTreeImporter implements Importer {
       let relativePath = identToPath(identifier);
       let contents = this.input.readFileSync(relativePath, "utf8");
       let syntax = syntaxFromExtension(path.extname(relativePath));
-      let defaultName = path.basename(relativePath);
+      let defaultName = path.parse(relativePath).name;
       defaultName = defaultName.replace(/.block$/, "");
       return {
         identifier,
