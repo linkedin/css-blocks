@@ -6,7 +6,8 @@ import * as path from "path";
 import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 
-import { FileIdentifier, ImportedFile, Importer } from "./Importer";
+import { FileIdentifier, ImportedFile } from "./Importer";
+import { BaseImporter } from "./BaseImporter";
 
 const debug = debugGenerator("css-blocks:importer");
 
@@ -27,9 +28,11 @@ export interface Alias {
   path: string;
 }
 
-export class NodeJsImporter implements Importer {
+export class NodeJsImporter extends BaseImporter {
   aliases: Alias[];
   constructor(aliases: Alias[] | ObjectDictionary<string> = []) {
+    super();
+
     // Normalize aliases input.
     this.aliases = Array.isArray(aliases)
       ? aliases.slice()
