@@ -10,7 +10,9 @@
   "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli",
   "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli#readme",
   "scripts": {
-    "test": "echo 'To test this package: cd ../../../private-packages/fixtures/ember-app && yarn test'"
+    "test": "echo 'To test this package: cd ../../../private-packages/fixtures/ember-app && yarn test'",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "@css-blocks/broccoli": "^1.0.0",
@@ -24,7 +26,8 @@
     "ember-cli-babel": "7.11.0",
     "fs-extra": "^8.0.0",
     "lodash.merge": "^4.6.2",
-    "symlink-or-copy": "^1.2.0"
+    "symlink-or-copy": "^1.2.0",
+    "snyk": "^1.316.1"
   },
   "engines": {
     "node": "10.* || >= 12.*"
@@ -42,5 +45,6 @@
   "volta": {
     "node": "12.2.0",
     "yarn": "1.21.0"
-  }
+  },
+  "snyk": true
 }
