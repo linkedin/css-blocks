@@ -42,7 +42,7 @@
     "react-dom": "^16.1.2",
     "react-ga": "^2.5.0",
     "react-router-dom": "^4.2.2",
-    "snyk": "^1.198.0",
+    "snyk": "^1.316.1",
     "style-loader": "0.19.0",
     "sw-precache-webpack-plugin": "0.11.4",
     "ts-loader": "^3.1.1",
@@ -61,7 +61,7 @@
     "serve": "node server.js",
     "snyk-protect": "snyk protect",
     "test:runner": "echo 'nothing to test'",
-    "prepublish": "npm run snyk-protect"
+    "prepublish": "yarn run snyk-protect"
   },
   "jest": {
     "collectCoverageFrom": [
