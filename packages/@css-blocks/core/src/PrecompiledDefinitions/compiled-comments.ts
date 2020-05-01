@@ -32,12 +32,10 @@ export const REGEXP_COMMENT_FOOTER = /\/\*#css-blocks end*\\/m;
  */
 export function isDefinitionUrlValid(urlOrPath: string): boolean {
   // Try to parse as a URL first.
-  try {
-    const parsedUrl = url.parse(urlOrPath);
-    if (parsedUrl.protocol) {
-      return parsedUrl.protocol === 'data:';
-    }
-  } catch (e) {}
+  const parsedUrl = url.parse(urlOrPath);
+  if (parsedUrl.protocol) {
+    return parsedUrl.protocol === 'data:';
+  }
 
   // If we can't parse as a URL with a protocol, it's a path.
   return !path.isAbsolute(urlOrPath);
