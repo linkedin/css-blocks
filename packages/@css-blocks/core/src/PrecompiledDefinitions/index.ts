@@ -1,0 +1,5 @@
+export {
+  REGEXP_COMMENT_HEADER,
+  REGEXP_COMMENT_DEFINITION_REF,
+  REGEXP_COMMENT_FOOTER
+} from './compiled-comments';

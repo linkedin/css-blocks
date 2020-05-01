@@ -183,21 +183,26 @@ export class BlockFactory {
   private async _getBlockPromiseAsync(identifier: FileIdentifier): Promise<Block> {
     try {
       let file = await this.importer.import(identifier, this.configuration);
-      let block = await this._importAndPreprocessBlock(file);
-      debug(`Finalizing Block object for "${block.identifier}"`);
+      if (file.type === 'ImportedFile') {
+        let block = await this._importAndPreprocessBlock(file);
+        debug(`Finalizing Block object for "${block.identifier}"`);
 
-      // last check to make sure we don't return a new instance
-      if (this.blocks[block.identifier]) {
-        return this.blocks[block.identifier];
+        // last check to make sure we don't return a new instance
+        if (this.blocks[block.identifier]) {
+          return this.blocks[block.identifier];
+        }
+
+        // Ensure this block name is unique.
+        block.setName(this.getUniqueBlockName(block.name));
+
+        // if the block has any errors, surface them here unless we're in fault tolerant mode.
+        this._surfaceBlockErrors(block);
+        this.blocks[block.identifier] = block;
+        return block;
+      } else {
+        // TODO: Process CompiledImportedFile type.
+        return new Block('foo', 'bar');
       }
-
-      // Ensure this block name is unique.
-      block.setName(this.getUniqueBlockName(block.name));
-
-      // if the block has any errors, surface them here unless we're in fault tolerant mode.
-      this._surfaceBlockErrors(block);
-      this.blocks[block.identifier] = block;
-      return block;
     } catch (error) {
       if (this.preprocessQueue.activeJobCount > 0) {
         debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
