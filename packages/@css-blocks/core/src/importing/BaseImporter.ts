@@ -1,6 +1,7 @@
 import { Syntax } from '../BlockParser';
 import { ResolvedConfiguration } from '../configuration';
-import { Importer, FileIdentifier, ImportedFile } from './Importer';
+import { Importer, FileIdentifier, ImportedFile, CompiledImportedFileCssContents, CompiledImportedFile } from './Importer';
+import { REGEXP_COMMENT_HEADER, REGEXP_COMMENT_DEFINITION_REF, REGEXP_COMMENT_FOOTER } from '../PrecompiledDefinitions/compiled-comments';
 
 /**
  * The BaseImporter is an abstract class that Importer implementations may extend from.
@@ -17,7 +18,7 @@ export abstract class BaseImporter implements Importer {
   /**
    * Import the file with the given metadata and return a string and meta data for it.
    */
-  abstract import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile>;
+  abstract import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | CompiledImportedFile>;
   /**
    * The default name of the block used unless the block specifies one itself.
    */
@@ -36,4 +37,75 @@ export abstract class BaseImporter implements Importer {
    * Returns the syntax the contents are written in.
    */
   abstract syntax(identifier: FileIdentifier, config: ResolvedConfiguration): Syntax;
+
+  /**
+   * Determines if given file contents is a compiled CSS Blocks file.
+   * We determine this by looking for special auto-generated CSS Blocks
+   * comments in the file. We don't validate at this point that the data
+   * included in these comments is valid.
+   *
+   * @param contents - A string of the imported file contents to check.
+   * @returns True if this represents previously-compiled CSS, false otheerwise.
+   */
+  protected isCompiledBlockCSS(contents: string): boolean {
+    return REGEXP_COMMENT_HEADER.test(contents) &&
+           REGEXP_COMMENT_DEFINITION_REF.test(contents) &&
+           REGEXP_COMMENT_FOOTER.test(contents);
+  }
+
+  /**
+   * Break apart a compiled CSS file that was previously generated from a block file
+   * into segments, based on the CSS Blocks comments that are present. If given a file
+   * that's missing expected auto-generated CSS Blocks comments, this will error.
+   * You should call isCompiledBlockCSS() first to determine if the file should be
+   * processed as a compiled CSS Block file.
+   *
+   * @param contents - A string of the imported file contents to check.
+   * @returns The segmented information from the compiled CSS file.
+   */
+  protected segmentizeCompiledBlockCSS(contents: string): CompiledImportedFileCssContents {
+    // Use our regexps to find the start and end of the compiled content in the CSS file.
+    const headerRegexpResult = contents.match(REGEXP_COMMENT_HEADER);
+    const footerRegexpResult = contents.match(REGEXP_COMMENT_FOOTER);
+    if (!headerRegexpResult || !footerRegexpResult) {
+      throw new Error("Unable to parse compiled CSS file into segments. Expected comments are missing.");
+    }
+
+    // Determine start/end indexes based on the regexp results above.
+    const [headerFullMatch, blockIdFromComment] = headerRegexpResult;
+    const { index: headerStartIndex } = headerRegexpResult;
+    if (!headerStartIndex) {
+      throw new Error("Unable to determine start location of regexp result.");
+    }
+    const headerEndIndex = headerStartIndex + headerFullMatch.length;
+    const [footerFullMatch] = footerRegexpResult;
+    const { index: footerStartIndex } = footerRegexpResult;
+    if (!footerStartIndex) {
+      throw new Error("Unable to determine start location of regexp result.");
+    }
+    const footerEndIndex = footerStartIndex + footerFullMatch.length;
+
+    // Break the file into segments.
+    const pre = contents.slice(0, headerStartIndex);
+    const post = contents.slice(footerEndIndex + 1);
+    const fullBlockContents = contents.slice(headerEndIndex + 1, footerStartIndex);
+
+    // Parse out the URL, or embedded data, for the block definition.
+    // The definition comment should be removed from the block's CSS contents.
+    const definitionRegexpResult = fullBlockContents.match(REGEXP_COMMENT_DEFINITION_REF);
+    if (!definitionRegexpResult) {
+      throw new Error("Unable to find definition URL in compiled CSS. This comment must be declared between the header and footer CSS Blocks comments.");
+    }
+    const [definitionFullMatch, definitionUrl] = definitionRegexpResult;
+    const blockCssContents = fullBlockContents.replace(definitionFullMatch, '');
+
+    return {
+      type: 'CompiledImportedFileCssContents',
+      pre,
+      blockIdFromComment,
+      blockCssContents,
+      definitionUrl,
+      post
+    };
+  }
 }
