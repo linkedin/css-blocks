@@ -1,6 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-import { ImportedFile, CompiledImportedFile, Syntax } from "../../src";
+
+import { CompiledImportedFile, ImportedFile, Syntax } from "../../src";
 import { BaseImporter } from "../../src/importing/BaseImporter";
 import { CompiledImportedFileCssContents } from "../../src/importing/Importer";
 
@@ -67,12 +68,12 @@ export class CompiledCommentsTests {
     const importer = new FakeImporter();
     const result = importer.callSegmentizeCompiledBlockCSS(compiledSourceContents);
 
-    assert.equal(result.type, 'CompiledImportedFileCssContents', 'Object type matches');
-    assert.equal(result.pre.trim(), '// Pre-block content!', 'Pre-block content matches');
-    assert.equal(result.blockIdFromComment, 'test-block', 'Block ID matches');
-    assert.equal(result.blockCssContents.trim(), plainCssContents.trim(), 'Block contents matches');
-    assert.equal(result.definitionUrl, 'test-block.block', 'Definition URL matches');
-    assert.equal(result.post.trim(), '// Post-block content!', 'Post-block content matches');
+    assert.equal(result.type, "CompiledImportedFileCssContents", "Object type matches");
+    assert.equal(result.pre.trim(), "// Pre-block content!", "Pre-block content matches");
+    assert.equal(result.blockIdFromComment, "test-block", "Block ID matches");
+    assert.equal(result.blockCssContents.trim(), plainCssContents.trim(), "Block contents matches");
+    assert.equal(result.definitionUrl, "test-block.block", "Definition URL matches");
+    assert.equal(result.post.trim(), "// Post-block content!", "Post-block content matches");
   }
 
   @test "segmentizeCompiledBlockCSS > Throws if the file contents aren't a compiled CSS source"() {

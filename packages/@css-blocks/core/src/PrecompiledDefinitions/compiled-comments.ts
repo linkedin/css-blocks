@@ -34,7 +34,7 @@ export function isDefinitionUrlValid(urlOrPath: string): boolean {
   // Try to parse as a URL first.
   const parsedUrl = url.parse(urlOrPath);
   if (parsedUrl.protocol) {
-    return parsedUrl.protocol === 'data:';
+    return parsedUrl.protocol === "data:";
   }
 
   // If we can't parse as a URL with a protocol, it's a path.

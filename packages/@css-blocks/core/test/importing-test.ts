@@ -10,10 +10,10 @@ import {
   resolveConfiguration,
 } from "../src/configuration";
 import {
+  ImportedFile,
   Importer,
   NodeJsImporter,
   defaultImporter,
-  ImportedFile,
 } from "../src/importing";
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");

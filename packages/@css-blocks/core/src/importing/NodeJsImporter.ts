@@ -6,8 +6,8 @@ import * as path from "path";
 import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 
-import { FileIdentifier, ImportedFile, CompiledImportedFile } from "./Importer";
 import { BaseImporter } from "./BaseImporter";
+import { CompiledImportedFile, FileIdentifier, ImportedFile } from "./Importer";
 
 const debug = debugGenerator("css-blocks:importer");
 
@@ -137,7 +137,7 @@ export class NodeJsImporter extends BaseImporter {
   async import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | CompiledImportedFile> {
     let contents = await readFile(identifier, "utf-8");
     return {
-      type: 'ImportedFile',
+      type: "ImportedFile",
       syntax: this.syntax(identifier, config),
       identifier,
       defaultName: this.defaultName(identifier, config),
