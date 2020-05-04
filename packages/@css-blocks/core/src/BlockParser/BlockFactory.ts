@@ -183,7 +183,10 @@ export class BlockFactory {
   private async _getBlockPromiseAsync(identifier: FileIdentifier): Promise<Block> {
     try {
       let file = await this.importer.import(identifier, this.configuration);
-      if (file.type === "ImportedFile") {
+      if (file.type === "ImportedCompiledCssFile") {
+        // TODO: Process ImportedCompiledCssFile type.
+        return new Block("foo", "bar");
+      } else {
         let block = await this._importAndPreprocessBlock(file);
         debug(`Finalizing Block object for "${block.identifier}"`);
 
@@ -199,9 +202,6 @@ export class BlockFactory {
         this._surfaceBlockErrors(block);
         this.blocks[block.identifier] = block;
         return block;
-      } else {
-        // TODO: Process CompiledImportedFile type.
-        return new Block("foo", "bar");
       }
     } catch (error) {
       if (this.preprocessQueue.activeJobCount > 0) {
@@ -239,9 +239,7 @@ export class BlockFactory {
    * using the Importer.
    *
    * @param file - The file information that has been previously imported by the Importer, for
-   *               a single block identifier. Can be an ImportedFile (for standard block files)
-   *               or CompiledImportedFile (a paired compiled CSS file and its related
-   *               block definition file).
+   *               a single block identifier.
    * @returns A promise that resolves to a parsed block.
    **/
   private async _importAndPreprocessBlock(file: ImportedFile): Promise<Block> {

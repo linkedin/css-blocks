@@ -1,15 +1,15 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { CompiledImportedFile, ImportedFile, Syntax } from "../../src";
+import { ImportedFile, Syntax } from "../../src";
 import { BaseImporter } from "../../src/importing/BaseImporter";
-import { CompiledImportedFileCssContents } from "../../src/importing/Importer";
+import { ImportedCompiledCssFileContents } from "../../src/importing/Importer";
 
 class FakeImporter extends BaseImporter {
   identifier(): string {
     throw new Error("Method not implemented.");
   }
-  import(): Promise<ImportedFile | CompiledImportedFile> {
+  import(): Promise<ImportedFile> {
     throw new Error("Method not implemented.");
   }
   defaultName(): string {
@@ -27,7 +27,7 @@ class FakeImporter extends BaseImporter {
   callIsCompiledBlockCSS(contents: string): boolean {
     return this.isCompiledBlockCSS(contents);
   }
-  callSegmentizeCompiledBlockCSS(contents: string): CompiledImportedFileCssContents {
+  callSegmentizeCompiledBlockCSS(contents: string): ImportedCompiledCssFileContents {
     return this.segmentizeCompiledBlockCSS(contents);
   }
 }
@@ -68,7 +68,7 @@ export class CompiledCommentsTests {
     const importer = new FakeImporter();
     const result = importer.callSegmentizeCompiledBlockCSS(compiledSourceContents);
 
-    assert.equal(result.type, "CompiledImportedFileCssContents", "Object type matches");
+    assert.equal(result.type, "ImportedCompiledCssFileContents", "Object type matches");
     assert.equal(result.pre.trim(), "// Pre-block content!", "Pre-block content matches");
     assert.equal(result.blockIdFromComment, "test-block", "Block ID matches");
     assert.equal(result.blockCssContents.trim(), plainCssContents.trim(), "Block contents matches");

@@ -2,7 +2,7 @@ import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 import { REGEXP_COMMENT_DEFINITION_REF, REGEXP_COMMENT_FOOTER, REGEXP_COMMENT_HEADER } from "../PrecompiledDefinitions/compiled-comments";
 
-import { CompiledImportedFile, CompiledImportedFileCssContents, FileIdentifier, ImportedFile, Importer } from "./Importer";
+import { FileIdentifier, ImportedCompiledCssFileContents, ImportedFile, Importer } from "./Importer";
 
 /**
  * The BaseImporter is an abstract class that Importer implementations may extend from.
@@ -19,7 +19,7 @@ export abstract class BaseImporter implements Importer {
   /**
    * Import the file with the given metadata and return a string and meta data for it.
    */
-  abstract import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | CompiledImportedFile>;
+  abstract import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile>;
   /**
    * The default name of the block used unless the block specifies one itself.
    */
@@ -64,7 +64,7 @@ export abstract class BaseImporter implements Importer {
    * @param contents - A string of the imported file contents to check.
    * @returns The segmented information from the compiled CSS file.
    */
-  protected segmentizeCompiledBlockCSS(contents: string): CompiledImportedFileCssContents {
+  protected segmentizeCompiledBlockCSS(contents: string): ImportedCompiledCssFileContents {
     // Use our regexps to find the start and end of the compiled content in the CSS file.
     const headerRegexpResult = contents.match(REGEXP_COMMENT_HEADER);
     const footerRegexpResult = contents.match(REGEXP_COMMENT_FOOTER);
@@ -101,7 +101,7 @@ export abstract class BaseImporter implements Importer {
     const blockCssContents = fullBlockContents.replace(definitionFullMatch, "");
 
     return {
-      type: "CompiledImportedFileCssContents",
+      type: "ImportedCompiledCssFileContents",
       pre,
       blockIdFromComment,
       blockCssContents,

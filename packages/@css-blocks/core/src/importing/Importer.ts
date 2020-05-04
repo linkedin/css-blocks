@@ -26,10 +26,14 @@ export type ImporterData = ObjectDictionary<unknown>;
 export type FileIdentifier = string;
 
 /**
- * Structure that CSS Blocks uses to represent a single file.
+ * Structure that CSS Blocks uses to represent an imported file.
  */
 export interface ImportedFile {
-  type: "ImportedFile";
+  /**
+   * The interface this object implements. If this is omitted, process as if
+   * the file is an ImportedBlockFile.
+   */
+  type?: "ImportedBlockFile" | "ImportedCompiledCssFile";
   /**
    * A unique identifier (probably an absolute filesystem path) that describes
    * the block and can be used for caching.
@@ -50,10 +54,18 @@ export interface ImportedFile {
 }
 
 /**
+ * Structure that represents an imported Block file. The only differentiating
+ * item between this and compiled source files is the type identifier.
+ */
+export interface ImportedBlockFile {
+  type: "ImportedBlockFile";
+}
+
+/**
  * Represents the parsed contents from an imported pre-compiled CSS file.
  */
-export interface CompiledImportedFileCssContents {
-  type: "CompiledImportedFileCssContents";
+export interface ImportedCompiledCssFileContents {
+  type: "ImportedCompiledCssFileContents";
 
   /**
    * File contents prior to the CSS Blocks header comment.
@@ -91,14 +103,8 @@ export interface CompiledImportedFileCssContents {
  * definitions for that file. The definitions may be a separate file
  * altogether or inlined with the compiled contents.
  */
-export interface CompiledImportedFile {
-  type: "CompiledImportedFile";
-
-  /**
-   * A unique identifier (probably an absolute filesystem path) that describes
-   * the block and can be used for caching.
-   */
-  identifier: FileIdentifier;
+export interface ImportedCompiledCssFile extends ImportedFile {
+  type: "ImportedCompiledCssFile";
 
   /**
    * The syntax of the source contents. For pre-compiled files, this is always CSS.
@@ -109,7 +115,7 @@ export interface CompiledImportedFile {
    * The contents of the imported pre-compiled CSS file, sliced into segments based
    * on the presence and location of CSS Blocks comments.
    */
-  cssContents: CompiledImportedFileCssContents;
+  cssContents: ImportedCompiledCssFileContents;
 
   /**
    * The contents of the block definition. If this was embedded base64 data, it will
@@ -117,6 +123,16 @@ export interface CompiledImportedFile {
    * contents will be included here.
    */
   definitionContents: string;
+
+  /**
+   * An alias for `cssContents.blockIdFromComment`, for backwards compatibility.
+   */
+  defaultName: string;
+
+  /**
+   * An alias for `definitionContents`, for backwards compatibility.
+   */
+  contents: string;
 }
 
 /**
@@ -136,7 +152,7 @@ export interface Importer {
   /**
    * import the file with the given metadata and return a string and meta data for it.
    */
-  import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | CompiledImportedFile>;
+  import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile>;
   /**
    * the default name of the block used unless the block specifies one itself.
    */
