@@ -183,7 +183,7 @@ export class BlockFactory {
   private async _getBlockPromiseAsync(identifier: FileIdentifier): Promise<Block> {
     try {
       let file = await this.importer.import(identifier, this.configuration);
-      if (file.type === 'ImportedFile') {
+      if (file.type === "ImportedFile") {
         let block = await this._importAndPreprocessBlock(file);
         debug(`Finalizing Block object for "${block.identifier}"`);
 
@@ -201,7 +201,7 @@ export class BlockFactory {
         return block;
       } else {
         // TODO: Process CompiledImportedFile type.
-        return new Block('foo', 'bar');
+        return new Block("foo", "bar");
       }
     } catch (error) {
       if (this.preprocessQueue.activeJobCount > 0) {

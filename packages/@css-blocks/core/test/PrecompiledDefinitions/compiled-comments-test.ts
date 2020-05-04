@@ -1,5 +1,6 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
+
 import { isDefinitionUrlValid } from "../../src/PrecompiledDefinitions/compiled-comments";
 
 @suite("PrecompiledDefinitions/compiled-comments")

@@ -1,7 +1,8 @@
-import { Syntax } from '../BlockParser';
-import { ResolvedConfiguration } from '../configuration';
-import { Importer, FileIdentifier, ImportedFile, CompiledImportedFileCssContents, CompiledImportedFile } from './Importer';
-import { REGEXP_COMMENT_HEADER, REGEXP_COMMENT_DEFINITION_REF, REGEXP_COMMENT_FOOTER } from '../PrecompiledDefinitions/compiled-comments';
+import { Syntax } from "../BlockParser";
+import { ResolvedConfiguration } from "../configuration";
+import { REGEXP_COMMENT_DEFINITION_REF, REGEXP_COMMENT_FOOTER, REGEXP_COMMENT_HEADER } from "../PrecompiledDefinitions/compiled-comments";
+
+import { CompiledImportedFile, CompiledImportedFileCssContents, FileIdentifier, ImportedFile, Importer } from "./Importer";
 
 /**
  * The BaseImporter is an abstract class that Importer implementations may extend from.
@@ -97,15 +98,15 @@ export abstract class BaseImporter implements Importer {
       throw new Error("Unable to find definition URL in compiled CSS. This comment must be declared between the header and footer CSS Blocks comments.");
     }
     const [definitionFullMatch, definitionUrl] = definitionRegexpResult;
-    const blockCssContents = fullBlockContents.replace(definitionFullMatch, '');
+    const blockCssContents = fullBlockContents.replace(definitionFullMatch, "");
 
     return {
-      type: 'CompiledImportedFileCssContents',
+      type: "CompiledImportedFileCssContents",
       pre,
       blockIdFromComment,
       blockCssContents,
       definitionUrl,
-      post
+      post,
     };
   }
 }
