@@ -4,7 +4,7 @@ import * as url from "url";
 /**
  * A regular expression that can be used to test for the header comment in a compiled CSS file.
  */
-export const REGEXP_COMMENT_HEADER = /\/\*#css-blocks (?!end)([A-Za-z0-9]+)\*\//m;
+export const REGEXP_COMMENT_HEADER = /\/\*#css-blocks (?!end)([A-Za-z0-9-]+)\*\//m;
 
 /**
  * A regular expression that can be used to test for the definition URL in a compiled CSS file.
@@ -14,7 +14,7 @@ export const REGEXP_COMMENT_DEFINITION_REF = /\/\*#blockDefinitionURL=([\S]+?)\*
 /**
  * A regular expression that can be used to test for the footer comment in a compiled CSS file.
  */
-export const REGEXP_COMMENT_FOOTER = /\/\*#css-blocks end*\\/m;
+export const REGEXP_COMMENT_FOOTER = /\/\*#css-blocks end\*\//m;
 
 /**
  * Determines if the given URL for a definition is valid.
