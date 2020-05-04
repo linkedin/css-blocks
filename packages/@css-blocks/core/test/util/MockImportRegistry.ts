@@ -40,7 +40,7 @@ export class MockImporter extends NodeJsImporter {
     }
     this.registry.imported[resolvedPath] = true;
     return {
-      type: "ImportedFile",
+      type: "ImportedBlockFile",
       syntax: source.syntax,
       identifier: resolvedPath,
       defaultName: this.defaultName(resolvedPath, configuration),

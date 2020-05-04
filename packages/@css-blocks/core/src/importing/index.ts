@@ -4,7 +4,9 @@ export {
   ImporterData,
   FileIdentifier,
   ImportedFile,
-  CompiledImportedFile,
+  ImportedBlockFile,
+  ImportedCompiledCssFile,
+  ImportedCompiledCssFileContents,
   Importer,
 } from "./Importer";
 export { NodeJsImporter } from "./NodeJsImporter";

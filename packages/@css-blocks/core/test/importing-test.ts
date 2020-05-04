@@ -10,7 +10,6 @@ import {
   resolveConfiguration,
 } from "../src/configuration";
 import {
-  ImportedFile,
   Importer,
   NodeJsImporter,
   defaultImporter,
@@ -83,7 +82,7 @@ function testFSImporter(name: string, importer: Importer) {
     it("imports a file", async () => {
       let options = getConfiguration(FSI_FIXTURES);
       let ident = importer.identifier(null, "a.block.css", options);
-      let importedFile = await importer.import(ident, options) as ImportedFile;
+      let importedFile = await importer.import(ident, options);
       assert.deepEqual(importedFile.contents, fs.readFileSync(path.join(FSI_FIXTURES, "a.block.css"), "utf-8"));
       assert.equal(importedFile.defaultName, "a");
       assert.equal(importedFile.identifier, ident);
@@ -197,7 +196,7 @@ describe("PathAliasImporter", () => {
     let options = getConfiguration(FSI_FIXTURES);
     let importer: Importer = this.importer;
     let ident = importer.identifier(null, "sub/sub.block.css", options);
-    let importedFile = await importer.import(ident, options) as ImportedFile;
+    let importedFile = await importer.import(ident, options);
     let expectedContents = fs.readFileSync(path.join(ALIAS_FIXTURES, "alias_subdirectory", "sub.block.css"), "utf-8");
     assert.deepEqual(importedFile.contents, expectedContents);
     assert.equal(importedFile.defaultName, "sub");

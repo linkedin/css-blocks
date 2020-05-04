@@ -7,7 +7,7 @@ import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 
 import { BaseImporter } from "./BaseImporter";
-import { CompiledImportedFile, FileIdentifier, ImportedFile } from "./Importer";
+import { FileIdentifier, ImportedFile } from "./Importer";
 
 const debug = debugGenerator("css-blocks:importer");
 
@@ -134,10 +134,11 @@ export class NodeJsImporter extends BaseImporter {
     return path.relative(config.rootDir, identifier);
   }
 
-  async import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | CompiledImportedFile> {
+  async import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile> {
     let contents = await readFile(identifier, "utf-8");
+    // TODO: Add support for CompiledCSS files.
     return {
-      type: "ImportedFile",
+      type: "ImportedBlockFile",
       syntax: this.syntax(identifier, config),
       identifier,
       defaultName: this.defaultName(identifier, config),
