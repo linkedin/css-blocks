@@ -74,13 +74,13 @@ export abstract class BaseImporter implements Importer {
 
     // Determine start/end indexes based on the regexp results above.
     const [headerFullMatch, blockIdFromComment] = headerRegexpResult;
-    const { index: headerStartIndex } = headerRegexpResult;
+    const headerStartIndex = headerRegexpResult.index;
     if (!headerStartIndex) {
       throw new Error("Unable to determine start location of regexp result.");
     }
     const headerEndIndex = headerStartIndex + headerFullMatch.length;
     const [footerFullMatch] = footerRegexpResult;
-    const { index: footerStartIndex } = footerRegexpResult;
+    const footerStartIndex = footerRegexpResult.index;
     if (!footerStartIndex) {
       throw new Error("Unable to determine start location of regexp result.");
     }
