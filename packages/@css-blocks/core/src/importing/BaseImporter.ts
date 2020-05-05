@@ -73,7 +73,7 @@ export abstract class BaseImporter implements Importer {
     }
 
     // Determine start/end indexes based on the regexp results above.
-    const [headerFullMatch, blockIdFromComment] = headerRegexpResult;
+    const [headerFullMatch, blockId] = headerRegexpResult;
     const headerStartIndex = headerRegexpResult.index;
     if (!headerStartIndex) {
       throw new Error("Unable to determine start location of regexp result.");
@@ -92,8 +92,8 @@ export abstract class BaseImporter implements Importer {
 
     // Break the file into segments.
     const pre = contents.slice(0, headerStartIndex);
-    const post = contents.slice(footerEndIndex + 1);
-    const fullBlockContents = contents.slice(headerEndIndex + 1, footerStartIndex);
+    const post = contents.slice(footerEndIndex);
+    const fullBlockContents = contents.slice(headerEndIndex, footerStartIndex);
 
     // Parse out the URL, or embedded data, for the block definition.
     // The definition comment should be removed from the block's CSS contents.
@@ -106,7 +106,7 @@ export abstract class BaseImporter implements Importer {
 
     return {
       pre,
-      blockId: blockIdFromComment,
+      blockId,
       blockCssContents,
       definitionUrl,
       post,
