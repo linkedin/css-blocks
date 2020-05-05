@@ -185,7 +185,7 @@ export class BlockFactory {
       let file = await this.importer.import(identifier, this.configuration);
       if (file.type === "ImportedCompiledCssFile") {
         // TODO: Process ImportedCompiledCssFile type.
-        return new Block("foo", "bar");
+        throw new Error("Imported Compiled CSS files aren't supported yet.");
       } else {
         let block = await this._importAndPreprocessBlock(file);
         debug(`Finalizing Block object for "${block.identifier}"`);
