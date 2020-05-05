@@ -83,10 +83,15 @@ function testFSImporter(name: string, importer: Importer) {
       let options = getConfiguration(FSI_FIXTURES);
       let ident = importer.identifier(null, "a.block.css", options);
       let importedFile = await importer.import(ident, options);
-      assert.deepEqual(importedFile.contents, fs.readFileSync(path.join(FSI_FIXTURES, "a.block.css"), "utf-8"));
-      assert.equal(importedFile.defaultName, "a");
-      assert.equal(importedFile.identifier, ident);
-      assert.equal(importedFile.syntax, Syntax.css);
+
+      if (importedFile.type === "ImportedFile") {
+        assert.deepEqual(importedFile.contents, fs.readFileSync(path.join(FSI_FIXTURES, "a.block.css"), "utf-8"));
+        assert.equal(importedFile.defaultName, "a");
+        assert.equal(importedFile.identifier, ident);
+        assert.equal(importedFile.syntax, Syntax.css);
+      } else {
+        assert.fail(importedFile.type, "ImportedFile", "Mismatched type given");
+      }
     });
   });
 }
@@ -198,9 +203,13 @@ describe("PathAliasImporter", () => {
     let ident = importer.identifier(null, "sub/sub.block.css", options);
     let importedFile = await importer.import(ident, options);
     let expectedContents = fs.readFileSync(path.join(ALIAS_FIXTURES, "alias_subdirectory", "sub.block.css"), "utf-8");
-    assert.deepEqual(importedFile.contents, expectedContents);
-    assert.equal(importedFile.defaultName, "sub");
-    assert.equal(importedFile.identifier, ident);
-    assert.equal(importedFile.syntax, Syntax.css);
+    if (importedFile.type === "ImportedFile") {
+      assert.deepEqual(importedFile.contents, expectedContents);
+      assert.equal(importedFile.defaultName, "sub");
+      assert.equal(importedFile.identifier, ident);
+      assert.equal(importedFile.syntax, Syntax.css);
+    } else {
+      assert.fail(importedFile.type, "ImportedFile", "Mismatched type given");
+    }
   });
 });

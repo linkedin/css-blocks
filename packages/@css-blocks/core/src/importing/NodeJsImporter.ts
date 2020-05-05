@@ -138,7 +138,7 @@ export class NodeJsImporter extends BaseImporter {
     let contents = await readFile(identifier, "utf-8");
     // TODO: Add support for CompiledCSS files.
     return {
-      type: "ImportedBlockFile",
+      type: "ImportedFile",
       syntax: this.syntax(identifier, config),
       identifier,
       defaultName: this.defaultName(identifier, config),
