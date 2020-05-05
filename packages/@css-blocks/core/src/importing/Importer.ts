@@ -57,8 +57,6 @@ export interface ImportedFile {
  * Represents the parsed contents from an imported pre-compiled CSS file.
  */
 export interface ImportedCompiledCssFileContents {
-  type: "ImportedCompiledCssFileContents";
-
   /**
    * File contents prior to the CSS Blocks header comment.
    */
@@ -69,7 +67,7 @@ export interface ImportedCompiledCssFileContents {
    * to match the `block-id` declaration for the `:scope` selector
    * in the definition.
    */
-  blockIdFromComment: string;
+  blockId: string;
 
   /**
    * The CSS rules that are present in this file. Only captures any CSS
