@@ -108,10 +108,16 @@ export interface ImportedCompiledCssFile {
   syntax: Syntax.css;
 
   /**
-   * The contents of the imported pre-compiled CSS file, sliced into segments based
-   * on the presence and location of CSS Blocks comments.
+   * The CSS rules imported from the pre-compiled CSS file.
    */
-  cssContents: ImportedCompiledCssFileContents;
+  cssContents: string;
+
+  /**
+   * The Block ID as declared in the header comment. This is expected
+   * to match the `block-id` declaration for the `:scope` selector
+   * in the definition.
+   */
+  blockId: string;
 
   /**
    * The contents of the block definition. If this was embedded base64 data, it will

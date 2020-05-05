@@ -86,6 +86,10 @@ export abstract class BaseImporter implements Importer {
     }
     const footerEndIndex = footerStartIndex + footerFullMatch.length;
 
+    if (headerStartIndex > footerStartIndex) {
+      throw new Error("Header must exist before footer in imported content.");
+    }
+
     // Break the file into segments.
     const pre = contents.slice(0, headerStartIndex);
     const post = contents.slice(footerEndIndex + 1);
