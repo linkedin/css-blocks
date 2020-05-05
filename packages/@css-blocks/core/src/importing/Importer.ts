@@ -31,9 +31,9 @@ export type FileIdentifier = string;
 export interface ImportedFile {
   /**
    * The interface this object implements. If this is omitted, process as if
-   * the file is an ImportedBlockFile.
+   * the file is an ImportedFile.
    */
-  type?: "ImportedBlockFile" | "ImportedCompiledCssFile";
+  type?: "ImportedFile";
   /**
    * A unique identifier (probably an absolute filesystem path) that describes
    * the block and can be used for caching.
@@ -51,14 +51,6 @@ export interface ImportedFile {
    * The contents of the imported file.
    */
   contents: string;
-}
-
-/**
- * Structure that represents an imported Block file. The only differentiating
- * item between this and compiled source files is the type identifier.
- */
-export interface ImportedBlockFile {
-  type: "ImportedBlockFile";
 }
 
 /**
@@ -103,8 +95,14 @@ export interface ImportedCompiledCssFileContents {
  * definitions for that file. The definitions may be a separate file
  * altogether or inlined with the compiled contents.
  */
-export interface ImportedCompiledCssFile extends ImportedFile {
+export interface ImportedCompiledCssFile {
   type: "ImportedCompiledCssFile";
+
+  /**
+   * A unique identifier (probably an absolute filesystem path) that describes
+   * the block and can be used for caching.
+   */
+  identifier: FileIdentifier;
 
   /**
    * The syntax of the source contents. For pre-compiled files, this is always CSS.
@@ -123,16 +121,6 @@ export interface ImportedCompiledCssFile extends ImportedFile {
    * contents will be included here.
    */
   definitionContents: string;
-
-  /**
-   * An alias for `cssContents.blockIdFromComment`, for backwards compatibility.
-   */
-  defaultName: string;
-
-  /**
-   * An alias for `definitionContents`, for backwards compatibility.
-   */
-  contents: string;
 }
 
 /**
@@ -152,7 +140,7 @@ export interface Importer {
   /**
    * import the file with the given metadata and return a string and meta data for it.
    */
-  import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile>;
+  import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | ImportedCompiledCssFile>;
   /**
    * the default name of the block used unless the block specifies one itself.
    */

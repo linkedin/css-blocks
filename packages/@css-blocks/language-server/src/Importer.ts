@@ -1,4 +1,4 @@
-import { Configuration, ImportedFile, Importer, NodeJsImporter, Syntax } from "@css-blocks/core";
+import { Configuration, ImportedCompiledCssFile, ImportedFile, Importer, NodeJsImporter, Syntax } from "@css-blocks/core";
 import { TextDocuments } from "vscode-languageserver";
 import { URI } from "vscode-uri";
 
@@ -15,7 +15,7 @@ export class LSImporter implements Importer {
     this.documents = documents;
   }
 
-  async import(identifier: string, config: Configuration): Promise<ImportedFile> {
+  async import(identifier: string, config: Configuration): Promise<ImportedFile | ImportedCompiledCssFile> {
     // the uri expected is that of a file
     let path = this.filesystemPath(identifier, config);
     let clientDocument = path && this.documents.get(URI.file(path).toString());

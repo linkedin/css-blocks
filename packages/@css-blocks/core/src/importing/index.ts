@@ -4,7 +4,6 @@ export {
   ImporterData,
   FileIdentifier,
   ImportedFile,
-  ImportedBlockFile,
   ImportedCompiledCssFile,
   ImportedCompiledCssFileContents,
   Importer,
