@@ -101,9 +101,8 @@ export abstract class BaseImporter implements Importer {
     const blockCssContents = fullBlockContents.replace(definitionFullMatch, "");
 
     return {
-      type: "ImportedCompiledCssFileContents",
       pre,
-      blockIdFromComment,
+      blockId: blockIdFromComment,
       blockCssContents,
       definitionUrl,
       post,
