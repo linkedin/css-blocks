@@ -109,7 +109,7 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     let blocks = new Set<Block>();
     let blockOutputPaths = new Map<Block, string>();
     let analyses = new Array<EmberAnalysis>();
-    for (let analyzedTemplate of this.analyzingRewriter!.analyzedTemplates()) {
+    for (let analyzedTemplate of this.analyzingRewriter.analyzedTemplates()) {
       let { block, analysis } = analyzedTemplate;
       analyses.push(analysis);
       blocks.add(block);
@@ -125,7 +125,7 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
         throw new Error("[internal error] block stylesheet expected.");
       }
       // TODO generate definition file too1
-      let compiledAST = compiler.compile(block, block.stylesheet, this.analyzingRewriter!.reservedClassNames());
+      let compiledAST = compiler.compile(block, block.stylesheet, this.analyzingRewriter.reservedClassNames());
       // TODO disable source maps in production?
       let result = compiledAST.toResult({ to: outputPath, map: { inline: true } });
       this.output.writeFileSync(outputPath, wrapCSSWithDelimiterComments(block.guid, result.css), "utf8");
@@ -146,7 +146,6 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
 function wrapCSSWithDelimiterComments(guid: string, css: string) {
   return `/*#css-blocks ${guid}*/\n${css}\n/*#css-blocks end*/\n`;
 }
-
 
 function analysisPath(templatePath: string): string {
   let analysisPath = path.parse(templatePath);
