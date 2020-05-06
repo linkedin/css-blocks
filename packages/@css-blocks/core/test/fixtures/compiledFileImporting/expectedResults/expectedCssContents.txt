@@ -1,0 +1,15 @@
+.nav-7d97e {
+  display: flex;
+}
+.nav-7d97e__entry {
+  flex: 1;
+}
+.nav-7d97e__entry--active {
+  font-weight: bold;
+}
+.nav-7d97e__entry--active.link-3c287 {
+  font-weight: bold;
+}
+.nav-7d97e__entry:hover {
+  text-shadow: 2px 2px 1px;
+}

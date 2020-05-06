@@ -17,6 +17,7 @@ import {
 
 const FIXTURES = path.resolve(__dirname, "..", "..", "test", "fixtures");
 const FSI_FIXTURES = path.join(FIXTURES, "filesystemImporter");
+const COMPILED_CSS_FIXTURES = path.join(FIXTURES, "compiledFileImporting");
 const ALIAS_FIXTURES = path.join(FIXTURES, "pathAliasImporter");
 const NODE_MODULE_FIXTURES = path.join(FIXTURES, "nodeModuleImporter");
 
@@ -91,6 +92,60 @@ function testFSImporter(name: string, importer: Importer) {
         assert.equal(importedFile.syntax, Syntax.css);
       } else {
         assert.fail(importedFile.type, "ImportedFile", "Mismatched type given");
+      }
+    });
+    it("Can import Compiled CSS file with embedded definition data", async () => {
+      const EMBEDDED_DFN_FIXTURES = path.join(COMPILED_CSS_FIXTURES, "embedded");
+      const options = getConfiguration(EMBEDDED_DFN_FIXTURES);
+      const ident = importer.identifier(null, "nav.css", options);
+      const importedFile = await importer.import(ident, options);
+      if (importedFile.type === "ImportedCompiledCssFile") {
+        assert.equal(importedFile.identifier, ident);
+        assert.equal(importedFile.syntax, Syntax.css);
+        assert.equal(importedFile.blockId, "7d97e");
+        assert.deepEqual(
+          importedFile.cssContents.trim(),
+          fs.readFileSync(
+            path.join(COMPILED_CSS_FIXTURES, "expectedResults", "expectedCssContents.txt"),
+            "utf-8",
+          ).trim(),
+        );
+        assert.deepEqual(
+          importedFile.definitionContents.trim(),
+          fs.readFileSync(
+            path.join(COMPILED_CSS_FIXTURES, "expectedResults", "expectedDfnContents.txt"),
+            "utf-8",
+          ).trim(),
+        );
+      } else {
+        assert.fail(importedFile.type, "ImportedCompiledCssFile", "Mismatched type given");
+      }
+    });
+    it("Can import Compiled CSS file with external definition path", async () => {
+      const EXTERNAL_DFN_FIXTURES = path.join(COMPILED_CSS_FIXTURES, "externaldef");
+      const options = getConfiguration(EXTERNAL_DFN_FIXTURES);
+      const ident = importer.identifier(null, "nav.css", options);
+      const importedFile = await importer.import(ident, options);
+      if (importedFile.type === "ImportedCompiledCssFile") {
+        assert.equal(importedFile.identifier, ident);
+        assert.equal(importedFile.syntax, Syntax.css);
+        assert.equal(importedFile.blockId, "7d97e");
+        assert.deepEqual(
+          importedFile.cssContents.trim(),
+          fs.readFileSync(
+            path.join(COMPILED_CSS_FIXTURES, "expectedResults", "expectedCssContents.txt"),
+            "utf-8",
+          ).trim(),
+        );
+        assert.deepEqual(
+          importedFile.definitionContents.trim(),
+          fs.readFileSync(
+            path.join(COMPILED_CSS_FIXTURES, "expectedResults", "expectedDfnContents.txt"),
+            "utf-8",
+          ).trim(),
+        );
+      } else {
+        assert.fail(importedFile.type, "ImportedCompiledCssFile", "Mismatched type given");
       }
     });
   });

@@ -2,7 +2,7 @@ import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
 import { REGEXP_COMMENT_DEFINITION_REF, REGEXP_COMMENT_FOOTER, REGEXP_COMMENT_HEADER } from "../PrecompiledDefinitions/compiled-comments";
 
-import { FileIdentifier, ImportedCompiledCssFileContents, ImportedFile, Importer } from "./Importer";
+import { FileIdentifier, ImportedCompiledCssFile, ImportedCompiledCssFileContents, ImportedFile, Importer } from "./Importer";
 
 /**
  * The BaseImporter is an abstract class that Importer implementations may extend from.
@@ -19,7 +19,7 @@ export abstract class BaseImporter implements Importer {
   /**
    * Import the file with the given metadata and return a string and meta data for it.
    */
-  abstract import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile>;
+  abstract import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | ImportedCompiledCssFile>;
   /**
    * The default name of the block used unless the block specifies one itself.
    */
