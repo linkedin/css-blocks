@@ -147,9 +147,9 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
     }
   }
 
-  private finishElement(element: TemplateElement, forRewrite: boolean): void {
+  private finishElement(node: AnalyzableNode, element: TemplateElement, forRewrite: boolean): void {
     element.seal();
-    if (!forRewrite) { this.analysis.endElement(element); }
+    if (!forRewrite) { this.analysis.endElement(element, node.loc.end); }
   }
 
   isAttributeAnalyzed(attributeName: string): [string, string] | [null, null] {
@@ -269,7 +269,7 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
       }
     }
 
-    this.finishElement(element, forRewrite);
+    this.finishElement(node, element, forRewrite);
 
     // If this is an Ember Built-In...
     if (!isElementNode(node) && isEmberBuiltInNode(node)) {
@@ -294,7 +294,7 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
           element.addStaticAttr(style, attr.presenceRule);
         }
         if (element) {
-          this.finishElement(element, forRewrite);
+          this.finishElement(node, element, forRewrite);
         }
       }
     }

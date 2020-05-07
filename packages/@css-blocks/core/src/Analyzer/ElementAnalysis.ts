@@ -727,7 +727,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       serialization.sourceLocation = {
         start: { line: this.sourceLocation.start.line },
       };
-      if (this.sourceLocation.start.column) {
+      if (typeof this.sourceLocation.start.column === "number") {
         serialization.sourceLocation.start.column = this.sourceLocation.start.column;
       }
       if (this.sourceLocation.start.filename) {
@@ -737,7 +737,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
         serialization.sourceLocation.end = {
           line: this.sourceLocation.end.line,
         };
-        if (this.sourceLocation.end.column) {
+        if (typeof this.sourceLocation.end.column === "number") {
           serialization.sourceLocation.end.column = this.sourceLocation.end.column;
         }
         if (this.sourceLocation.end.filename) {
