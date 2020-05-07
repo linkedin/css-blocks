@@ -141,7 +141,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
     //       We've already done this work and should be able to
     //       re-use the data! Unfortunately, there are problems...
     //       See: https://github.com/linkedin/css-blocks/issues/84
-    const attrMap = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
+    const attrMap = this.elementAnalyzer.reanalyze(node, atRootElement);
 
     // Remove all the source attributes for styles.
     node.hash.pairs = node.hash.pairs.filter(a => this.elementAnalyzer.isAttributeAnalyzed(a.key)[0] === null).filter(a => !attrToStateMap[a.key]);
@@ -253,7 +253,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
   StyleOfHelper(node: AST.MustacheStatement | AST.SubExpression): void {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
-    let attrMap = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
+    let attrMap = this.elementAnalyzer.reanalyze(node, atRootElement);
     let attrNames = Object.keys(attrMap);
     if (attrNames.length !== 1 || attrNames[0] !== "class") {
       const names = attrNames.filter(name => name !== "class");
@@ -272,7 +272,7 @@ export class GlimmerRewriter implements ASTPluginWithDeps {
   ElementNode(node: AST.ElementNode): void {
     this.elementCount++;
     let atRootElement = (this.elementCount === 1);
-    let attrMap = this.elementAnalyzer.analyzeForRewrite(node, atRootElement);
+    let attrMap = this.elementAnalyzer.reanalyze(node, atRootElement);
 
     // Remove all the source attributes for styles.
     node.attributes = node.attributes.filter(a => this.elementAnalyzer.isAttributeAnalyzed(a.name)[0] === null);

@@ -87,6 +87,12 @@ interface AnalyzableState {
 
 type AnalyzableAttribute = AnalyzableScope | AnalyzableClass | AnalyzableState;
 
+enum AnalysisMode {
+  ANALYZE = 1,
+  REWRITE = 2,
+  ANALYZE_AND_REWRITE = ANALYZE | REWRITE,
+}
+
 export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
   analysis: Analysis<TemplateType>;
   block: Block;
@@ -107,11 +113,15 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
   }
 
   analyze(node: AnalyzableNode, atRootElement: boolean, forbidNonBlockAttributes = false): AttrRewriteMap {
-    return this._analyze(node, atRootElement, false, forbidNonBlockAttributes);
+    return this._analyze(node, atRootElement, AnalysisMode.ANALYZE, forbidNonBlockAttributes);
+  }
+
+  reanalyze(node: AnalyzableNode, atRootElement: boolean): AttrRewriteMap {
+    return this._analyze(node, atRootElement, AnalysisMode.REWRITE);
   }
 
   analyzeForRewrite(node: AnalyzableNode, atRootElement: boolean): AttrRewriteMap {
-    return this._analyze(node, atRootElement, true);
+    return this._analyze(node, atRootElement, AnalysisMode.ANALYZE_AND_REWRITE);
   }
 
   private debugAnalysis(node: AnalyzableNode, atRootElement: boolean, element: TemplateElement) {
@@ -137,19 +147,18 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
     return this.cssBlocksOpts.importer.debugIdentifier((block || this.block).identifier, this.cssBlocksOpts);
   }
 
-  private newElement(node: AnalyzableNode, forRewrite: boolean): TemplateElement {
+  private newElement(node: AnalyzableNode, mode: AnalysisMode): TemplateElement {
     let label = isElementNode(node) ? node.tag : pathString(node) || undefined;
-    if (forRewrite) {
-      return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), this.reservedClassNames, label);
-    }
-    else {
+    if (mode & AnalysisMode.ANALYZE) {
       return this.analysis.startElement<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), label);
+    } else {
+      return new ElementAnalysis<BooleanExpression, StringExpression, TernaryExpression>(nodeLocation(node), this.reservedClassNames, label);
     }
   }
 
-  private finishElement(node: AnalyzableNode, element: TemplateElement, forRewrite: boolean): void {
+  private finishElement(node: AnalyzableNode, element: TemplateElement, mode: AnalysisMode): void {
     element.seal();
-    if (!forRewrite) { this.analysis.endElement(element, node.loc.end); }
+    if (mode & AnalysisMode.ANALYZE) { this.analysis.endElement(element, node.loc.end); }
   }
 
   isAttributeAnalyzed(attributeName: string): [string, string] | [null, null] {
@@ -234,12 +243,12 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
   private _analyze(
     node: AnalyzableNode,
     atRootElement: boolean,
-    forRewrite: boolean,
+    mode: AnalysisMode,
     forbidNonBlockAttributes = false,
   ): AttrRewriteMap {
 
     const attrRewrites = {};
-    let element = attrRewrites["class"] = this.newElement(node, forRewrite);
+    let element = attrRewrites["class"] = this.newElement(node, mode);
 
     // The root element gets the block"s root class automatically.
     if (atRootElement) {
@@ -249,9 +258,9 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
     // Find the class or scope attribute and process it
     for (let analyzableAttr of this.eachAnalyzedAttribute(node, forbidNonBlockAttributes)) {
       if (analyzableAttr.type === "class") {
-        this.processClass(analyzableAttr.namespace, analyzableAttr.property, element, forRewrite);
+        this.processClass(analyzableAttr.namespace, analyzableAttr.property, element, mode);
       } else if (analyzableAttr.type === "scope") {
-        this.processScope(analyzableAttr.namespace, analyzableAttr.property, element, forRewrite);
+        this.processScope(analyzableAttr.namespace, analyzableAttr.property, element, mode);
       }
     }
 
@@ -265,11 +274,11 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
     }
     for (let analyzableAttr of this.eachAnalyzedAttribute(node)) {
       if (analyzableAttr.type === "state") {
-        this.processState(analyzableAttr.namespace, analyzableAttr.name, analyzableAttr.property, element, forRewrite);
+        this.processState(analyzableAttr.namespace, analyzableAttr.name, analyzableAttr.property, element, mode);
       }
     }
 
-    this.finishElement(node, element, forRewrite);
+    this.finishElement(node, element, mode);
 
     // If this is an Ember Built-In...
     if (!isElementNode(node) && isEmberBuiltInNode(node)) {
@@ -287,14 +296,14 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
           let attr = style.resolveAttribute(stateName);
           if (!attr || !attr.presenceRule) { continue; }
           if (!element) {
-            element = this.newElement(node, forRewrite);
+            element = this.newElement(node, mode);
           }
           attrRewrites[attrName] = element; // Only save this element on output if a state is found.
-          if (!forRewrite) { element.addStaticClass(style); } // In rewrite mode we only want the states.
+          if (mode & AnalysisMode.ANALYZE) { element.addStaticClass(style); } // In rewrite mode we only want the states.
           element.addStaticAttr(style, attr.presenceRule);
         }
         if (element) {
-          this.finishElement(node, element, forRewrite);
+          this.finishElement(node, element, mode);
         }
       }
     }
@@ -334,7 +343,7 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
    * As class is not allowed to be positional it will never be a PathExpression
    * so we exclude that from the node type
    */
-  private processClass(namespace: string, node: Exclude<AnalyzableProperty, AST.PathExpression>, element: TemplateElement, forRewrite: boolean): void {
+  private processClass(namespace: string, node: Exclude<AnalyzableProperty, AST.PathExpression>, element: TemplateElement, mode: AnalysisMode): void {
     let statements: AST.Node[];
 
     if (isConcatStatement(node.value)) {
@@ -386,7 +395,7 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
               throw cssBlockError(`{{${helperType}}} expects a string literal as its third argument.`, elseBranch, this.templatePath);
             }
           }
-          if (forRewrite) {
+          if (mode & AnalysisMode.REWRITE) {
             element.addDynamicClasses({ condition, whenTrue, whenFalse });
           } else {
             element.addDynamicClasses({ condition: null, whenTrue, whenFalse });
@@ -400,7 +409,7 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
       }
     }
   }
-  private processScope(namespace: string, node: AnalyzableProperty, element: TemplateElement, _forRewrite: boolean): void {
+  private processScope(namespace: string, node: AnalyzableProperty, element: TemplateElement, _mode: AnalysisMode): void {
     let block = this.lookupBlock(namespace, node);
 
     if (isPathExpression(node)) {
@@ -436,7 +445,7 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
     stateName: string,
     node: AnalyzableProperty,
     element: TemplateElement,
-    forRewrite: boolean,
+    mode: AnalysisMode,
   ): void {
     let stateBlock = this.lookupBlock(blockName, node);
     let containers = element.classesForBlock(stateBlock);
@@ -502,7 +511,7 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
         if (stateGroup.hasResolvedValues()) {
           found = true;
           if (dynamicSubState) {
-            if (forRewrite) {
+            if (mode & AnalysisMode.REWRITE) {
               element.addDynamicGroup(container, stateGroup, dynamicSubState);
             } else {
               element.addDynamicGroup(container, stateGroup, null);

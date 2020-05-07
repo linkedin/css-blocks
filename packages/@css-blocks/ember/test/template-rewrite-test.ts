@@ -60,7 +60,9 @@ describe("Template Rewriting", function() {
   });
   it("rewrites styles", async function() {
     let result = await analyzeAndRewrite(factory, projectDir, "templates/hello.hbs", "styles/hello.block.css");
-    assert.deepEqual(result.rewrittenTemplate, minify(`<div class="TODO">Hello World!</div>`));
+    assert.deepEqual(
+      result.rewrittenTemplate,
+      minify(`<div class="TODO">Hello World!</div>`));
     assert.deepEqual(result.analysis.serialize(), {
       template: {
         type: TEMPLATE_NAME,
@@ -72,8 +74,27 @@ describe("Template Rewriting", function() {
       blocks: {
         default: fixtures.path("styles/hello.block.css"),
       },
-      stylesFound: new Array<string>(),
-      elements: {},
+      stylesFound: [":scope"],
+      elements: {
+        a: {
+          tagName: "div",
+          dynamicAttributes: [],
+          dynamicClasses: [],
+          staticStyles: [0],
+          sourceLocation: {
+            start: {
+              filename: fixtures.path("templates/hello.hbs"),
+              line: 1,
+              column: 0,
+            },
+            end: {
+              filename: fixtures.path("templates/hello.hbs"),
+              line: 1,
+              column: 35,
+            },
+          },
+        },
+      },
     });
   });
 
