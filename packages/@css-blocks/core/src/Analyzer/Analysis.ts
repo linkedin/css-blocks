@@ -83,11 +83,13 @@ export class Analysis<K extends keyof TemplateTypes> {
    * Callback when an element is done being analyzed.
    * The element analysis will be sealed.
    */
+  // tslint:disable-next-line:prefer-unknown-to-any
   onElementAnalyzed?: ElementAnalyzedCallback<any, any, any>;
 
   /**
    * @param template The template being analyzed.
    */
+  // tslint:disable-next-line:prefer-unknown-to-any
   constructor(template: TemplateTypes[K], options?: TemplateValidatorOptions, onElementAnalyzed?: ElementAnalyzedCallback<any, any, any>) {
     this.idGenerator = new IdentGenerator();
     this.template = template;
