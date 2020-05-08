@@ -6,7 +6,7 @@ import { RawSourceMap } from "source-map";
 
 import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
-import { FileIdentifier, ImportedFile, Importer } from "../importing";
+import { FileIdentifier, ImportedCompiledCssFile, ImportedFile, Importer } from "../importing";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";
@@ -183,26 +183,31 @@ export class BlockFactory {
   private async _getBlockPromiseAsync(identifier: FileIdentifier): Promise<Block> {
     try {
       let file = await this.importer.import(identifier, this.configuration);
+
+      let block;
       if (file.type === "ImportedCompiledCssFile") {
-        // TODO: Process ImportedCompiledCssFile type.
-        throw new Error("Imported Compiled CSS files aren't supported yet.");
+        block = await this._reconstituteCompiledCssSource(file);
       } else {
-        let block = await this._importAndPreprocessBlock(file);
-        debug(`Finalizing Block object for "${block.identifier}"`);
-
-        // last check to make sure we don't return a new instance
-        if (this.blocks[block.identifier]) {
-          return this.blocks[block.identifier];
-        }
-
-        // Ensure this block name is unique.
-        block.setName(this.getUniqueBlockName(block.name));
-
-        // if the block has any errors, surface them here unless we're in fault tolerant mode.
-        this._surfaceBlockErrors(block);
-        this.blocks[block.identifier] = block;
-        return block;
+        block = await this._importAndPreprocessBlock(file);
       }
+
+      debug(`Finalizing Block object for "${block.identifier}"`);
+
+      // last check to make sure we don't return a new instance
+      if (this.blocks[block.identifier]) {
+        return this.blocks[block.identifier];
+      }
+
+      // Ensure this block name is unique.
+      // Only need to run this on ImportedFile types.
+      if (!file.type || file.type === "ImportedFile") {
+        block.setName(this.getUniqueBlockName(block.name));
+      }
+
+      // if the block has any errors, surface them here unless we're in fault tolerant mode.
+      this._surfaceBlockErrors(block);
+      this.blocks[block.identifier] = block;
+      return block;
     } catch (error) {
       if (this.preprocessQueue.activeJobCount > 0) {
         debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
@@ -293,6 +298,44 @@ export class BlockFactory {
     };
 
     return this.parser.parseSource(source);
+  }
+
+  private async _reconstituteCompiledCssSource(file: ImportedCompiledCssFile): Promise<Block> {
+    // Maybe we already have this block in cache?
+    if (this.blocks[file.identifier]) {
+      debug(`Using pre-compiled Block for "${file.identifier}"`);
+      return this.blocks[file.identifier];
+    }
+
+    // NOTE: If we had to upgrade the syntax version of a definition file, here's where'd we do that.
+    //       But this isn't a thing we need to do until we have multiple syntax versions.
+
+    // NOTE: No need to run preprocessor - we assume that Compiled CSS has already been preprocessed.
+    // Parse the definition file into an AST
+    const definitionAst = this.postcssImpl.parse(file.definitionContents);
+
+    // Parse the CSS contents into an AST
+    const cssContentsAst = this.postcssImpl.parse(file.cssContents);
+
+    // TODO: Sourcemaps?
+
+    // Sanity check! Did we actually get contents for both ASTs?
+    if (!definitionAst || !definitionAst.nodes) {
+      throw new Error(`Unable to parse definition file into AST!\nIdentifier: ${file.identifier}`);
+    }
+
+    if (!cssContentsAst || !cssContentsAst.nodes) {
+      throw new Error(`Unable to parse CSS contents into AST!\nIdentifier: ${file.identifier}`);
+    }
+
+    // Construct a Block out of the definition file.
+    const block = this.parser.parseDefinitionSource(definitionAst, file.identifier, file.blockId);
+
+    // Merge the rules from the CSS contents into the Block.
+    // TODO: Actually merge the CSS rules in. (^_^")
+
+    // And we're done!
+    return block;
   }
 
   /**

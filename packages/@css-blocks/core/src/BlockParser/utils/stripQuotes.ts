@@ -4,5 +4,5 @@
  * @return Result
  */
 export function stripQuotes(str: string): string {
-  return str.replace(/^(["'])(.+)\1$/, "$2");
+  return str.replace(/^(["']?)(.+)\1$/, "$2");
 }

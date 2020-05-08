@@ -5,9 +5,12 @@ import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
 import { FileIdentifier } from "../importing";
 
+import { assertBlockClassDeclared } from "./features/assert-block-class-declared";
+import { assertBlockIdsMatch } from "./features/assert-block-ids-match";
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { composeBlock } from "./features/composes-block";
 import { constructBlock } from "./features/construct-block";
+import { disallowDefinitionRules } from "./features/disallow-dfn-rules";
 import { disallowImportant } from "./features/disallow-important";
 import { discoverName } from "./features/discover-name";
 import { exportBlocks } from "./features/export-blocks";
@@ -52,6 +55,10 @@ export class BlockParser {
     return block;
   }
 
+  public async parseDefinitionSource(root: postcss.Root, identifier: string, expectedId: string) {
+    return await this.parse(root, identifier, undefined, true, expectedId);
+  }
+
   /**
    * Main public interface of `BlockParser`. Given a PostCSS AST, returns a promise
    * for the new `Block` object.
@@ -59,7 +66,7 @@ export class BlockParser {
    * @param sourceFile  Source file name
    * @param defaultName Name of block
    */
-  public async parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
+  public async parse(root: postcss.Root, identifier: string, name?: string, isDfnFile = false, expectedId?: string): Promise<Block> {
     let importer = this.config.importer;
     let debugIdent = importer.debugIdentifier(identifier, this.config);
     let sourceFile = importer.filesystemPath(identifier, this.config) || debugIdent;
@@ -67,11 +74,25 @@ export class BlockParser {
     debug(`Begin parse: "${debugIdent}"`);
 
     // Discover the block's preferred name.
-    name = await discoverName(configuration, root, name, sourceFile);
+    name = await discoverName(configuration, root, sourceFile, isDfnFile, name);
 
     // Create our new Block object and save reference to the raw AST.
     let block = new Block(name, identifier, root);
 
+    if (isDfnFile) {
+      // Rules only checked when parsing definition files...
+      // Assert that the block-id rule in :scope is declared and matches
+      // header comment in Compiled CSS.
+      debug(" - Assert Block IDs Match");
+      await assertBlockIdsMatch(root, debugIdent, expectedId);
+      debug(" - Assert Block Class Declared");
+      await assertBlockClassDeclared(root, debugIdent);
+    } else {
+      // If not a definition file, it shouldn't have rules that can
+      // only be in definition files.
+      debug(" - Disallow Definition-Only Declarations");
+      await disallowDefinitionRules(configuration, root, sourceFile);
+    }
     // Throw if we encounter any `!important` decls.
     debug(` - Disallow Important`);
     await disallowImportant(configuration, root, block, sourceFile);
