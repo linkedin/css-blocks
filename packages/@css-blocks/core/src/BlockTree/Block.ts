@@ -65,14 +65,16 @@ export class Block
 
   public readonly rootClass: BlockClass;
   public stylesheet: postcss.Root | undefined;
+  private _nextIndex: number;
 
   constructor(name: string, identifier: FileIdentifier, stylesheet?: postcss.Root) {
     super(name);
     this._identifier = identifier;
     this._dependencies = new Set<string>();
-    this.rootClass = new BlockClass(ROOT_CLASS, this);
+    this.rootClass = new BlockClass(ROOT_CLASS, this, 0);
     this.stylesheet = stylesheet;
     this.guid = gen_guid(identifier);
+    this._nextIndex = 1;
     this.addClass(this.rootClass);
   }
 
@@ -239,6 +241,10 @@ export class Block
 
   addImplementation(b: Block) {
     return this._implements.push(b);
+  }
+
+  nextIndex(): number {
+    return this._nextIndex++;
   }
 
   /**

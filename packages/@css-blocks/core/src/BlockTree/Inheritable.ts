@@ -15,15 +15,19 @@ import { ParsedSelector, SelectorFactory, parseSelector, postcss } from "opticss
 /* tslint:disable:prefer-unknown-to-any */
 export type AnyNode = Inheritable<any, any, any, any, any>;
 
+export interface IndexGenerator {
+  nextIndex(): number;
+}
+
 export abstract class Inheritable<
   Self extends Inheritable<Self, Root, Parent, Child, Token>,
-  Root extends Inheritable<any, Root, never, AnyNode, any> | Self,
+  Root extends Inheritable<any, Root, never, AnyNode, any> & IndexGenerator,
   Parent extends Inheritable<any, Root, AnyNode | null, Self, any> | null,
   Child extends Inheritable<any, Root, Self, AnyNode | never, any> | never,
   Token extends any = string,
 > implements SelectorFactory {
 
-  protected abstract get ChildConstructor(): { new(token: any, parent: Self): Child } | never;
+  protected abstract get ChildConstructor(): { new(token: any, parent: Self, index: number): Child } | never;
 
 /* tslint:enable:prefer-unknown-to-any */
 
@@ -31,7 +35,7 @@ export abstract class Inheritable<
 
   protected _token: Token;
   protected _base: Self | undefined;
-  protected _root: Root | Self;
+  protected _root: Root;
   protected _parent: Parent | null;
   protected _children: Map<string, Child> = new Map();
 
@@ -44,7 +48,7 @@ export abstract class Inheritable<
     this._token = name;
     this._parent = parent || null;
     // `Root` is only set to `Self` for `Source` nodes.
-    this._root = parent ? parent.root : this.asSelf();
+    this._root = parent ? parent.root : this.asRoot();
     // `parsedRuleSelectors cache is only created if this is a root node.
     this.parsedRuleSelectors = this.isRootNode ? new WeakMap() : null;
   }
@@ -67,7 +71,7 @@ export abstract class Inheritable<
    * @returns The new child object created from `token`
    */
   protected newChild(token: Child["token"]): Child {
-    return new this.ChildConstructor(token, this.asSelf());
+    return new this.ChildConstructor(token, this.asSelf(), this._root.nextIndex());
   }
 
   /**
@@ -88,10 +92,10 @@ export abstract class Inheritable<
   protected get parent(): Parent { return this._parent as Parent; }
 
   /** @returns The root node in this tree. */
-  protected get root(): Root { return this._root as Root; }
+  protected get root(): Root { return this._root; }
 
   /** @returns A boolean indicating if this is the root node in the Inheritable tree or not. */
-  private get isRootNode(): boolean { return this._root === this.asSelf(); }
+  private get isRootNode(): boolean { return this._root === this.asRoot(); }
 
   /**
    * Get the style that this style inherits from, if any.
@@ -290,6 +294,14 @@ export abstract class Inheritable<
    */
   protected asSelf(): Self {
     return <Self><object>this;
+  }
+
+  /**
+   * TypeScript can't figure out that `this` is the `Self` so this private
+   * method casts it in a few places where it's needed.
+   */
+  protected asRoot(): Root {
+    return <Root><object>this;
   }
 
 }

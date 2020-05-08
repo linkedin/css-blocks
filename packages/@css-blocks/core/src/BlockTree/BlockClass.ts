@@ -38,8 +38,8 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
 
   public readonly rulesets: RulesetContainer<BlockClass>;
 
-  constructor(name: string, parent: Block) {
-    super(name, parent);
+  constructor(name: string, parent: Block, index: number) {
+    super(name, parent, index);
     this.rulesets = new RulesetContainer(this);
   }
 

@@ -18,8 +18,12 @@ class TestSource extends Inheritable<
   never,      // Parent
   TestNode    // Children
 > {
+  _nextIndex = 0;
   protected get ChildConstructor(): typeof TestNode { return TestNode; }
   lookup(): undefined { return undefined; }
+  nextIndex(): number {
+    return this._nextIndex++;
+  }
   setBase(base: TestSource) {
     this._base = base;
   }
@@ -94,7 +98,7 @@ class TestSink extends Inheritable<
   public rulesets: RulesetContainer<BlockClass>;
   constructor(name: string, parent: TestNode) {
     super(name, parent);
-    this.rulesets = new RulesetContainer(new BlockClass(name, TEST_BLOCK));
+    this.rulesets = new RulesetContainer(new BlockClass(name, TEST_BLOCK, TEST_BLOCK.nextIndex()));
   }
 }
 

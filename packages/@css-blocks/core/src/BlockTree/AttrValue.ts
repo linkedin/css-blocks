@@ -34,8 +34,8 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
    * @param name The local name for this AttrValue.
    * @param parent The parent Attribute of this AttrValue.
    */
-  constructor(name: string, parent: Attribute) {
-    super(name, parent);
+  constructor(name: string, parent: Attribute, index: number) {
+    super(name, parent, index);
     this.rulesets = new RulesetContainer(this);
   }
 
