@@ -42,7 +42,7 @@
     "@glimmer/compiler": "^0.43.0",
     "@glimmer/syntax": "^0.43.0",
     "@opticss/template-api": "^0.6.3",
-    "broccoli-funnel": "^3.0.0",
+    "broccoli-funnel": "^3.0.3",
     "broccoli-merge-trees": "^4.0.0",
     "broccoli-plugin": "^4.0.0",
     "colors": "^1.2.1",
