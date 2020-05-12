@@ -120,8 +120,8 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
     return this._analyze(node, atRootElement, AnalysisMode.REWRITE);
   }
 
-  analyzeForRewrite(node: AnalyzableNode, atRootElement: boolean): AttrRewriteMap {
-    return this._analyze(node, atRootElement, AnalysisMode.ANALYZE_AND_REWRITE);
+  analyzeForRewrite(node: AnalyzableNode, atRootElement: boolean, forbidNonBlockAttributes = false): AttrRewriteMap {
+    return this._analyze(node, atRootElement, AnalysisMode.ANALYZE_AND_REWRITE, forbidNonBlockAttributes);
   }
 
   private debugAnalysis(node: AnalyzableNode, atRootElement: boolean, element: TemplateElement) {
@@ -249,19 +249,22 @@ export class ElementAnalyzer<TemplateType extends keyof TemplateTypes>  {
 
     const attrRewrites = {};
     let element = attrRewrites["class"] = this.newElement(node, mode);
-
-    // The root element gets the block"s root class automatically.
-    if (atRootElement) {
-      element.addStaticClass(this.block.rootClass);
-    }
+    let explicitScope = false;
 
     // Find the class or scope attribute and process it
     for (let analyzableAttr of this.eachAnalyzedAttribute(node, forbidNonBlockAttributes)) {
       if (analyzableAttr.type === "class") {
         this.processClass(analyzableAttr.namespace, analyzableAttr.property, element, mode);
       } else if (analyzableAttr.type === "scope") {
+        explicitScope = analyzableAttr.namespace === DEFAULT_BLOCK_NS;
         this.processScope(analyzableAttr.namespace, analyzableAttr.property, element, mode);
       }
+    }
+
+    // The root element gets the block"s root class automatically.
+    if (atRootElement && !explicitScope) {
+      // TODO: Deprecate this.
+      element.addStaticClass(this.block.rootClass);
     }
 
     // validate that html elements aren't using the class attribute.
