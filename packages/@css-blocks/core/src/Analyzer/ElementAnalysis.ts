@@ -17,6 +17,7 @@ import {
   MultiMap,
   ObjectDictionary,
   objectValues,
+  assertNever,
 } from "@opticss/util";
 
 import {
@@ -169,6 +170,13 @@ export interface SerializedElementAnalysis {
   dynamicAttributes: Array<SerializedDynamicAttrs>;
 }
 
+type AnalyzedStyle<BooleanExpression, StringExpression, TernaryExpression> =
+  DependentAttr
+  | ConditionalDependentAttr<BooleanExpression>
+  | ConditionalDependentAttrGroup<StringExpression>
+  | StaticClass
+  | DynamicClasses<TernaryExpression>;
+
 /**
  * This class is used to track the styles and dynamic expressions on an element
  * and produce a runtime class expression in conjunction with a style mapping.
@@ -208,11 +216,8 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
   /** attributes set dynamically or depending on a dynamic class */
   dynamicAttributes: Array<DynamicAttrs<BooleanExpression, StringExpression>>;
 
-  private addedStyles: Array<DependentAttr
-                             | ConditionalDependentAttr<BooleanExpression>
-                             | ConditionalDependentAttrGroup<StringExpression>
-                             | StaticClass
-                             | DynamicClasses<TernaryExpression>>;
+  private explicitlyAddedStyles: Array<AnalyzedStyle<BooleanExpression, StringExpression, TernaryExpression>>;
+  private addedStyles: Array<AnalyzedStyle<BooleanExpression, StringExpression, TernaryExpression>>;
 
   /** classes declared explicitly and found in at least one dynamic class expression. */
   private dynamicClassExpressions: Map<BlockClass, DynamicClasses<TernaryExpression>>;
@@ -250,6 +255,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     this.allStaticStyles = new Set();
     this.allAttributes = new Set();
     this.addedStyles = new Array();
+    this.explicitlyAddedStyles = new Array();
     this._sealed = false;
     this._reservedClassNames = reservedClassNames;
   }
@@ -266,6 +272,17 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
    */
   classesForBlock(block: Block): Array<BlockClass> {
     return this.allClasses.get(block);
+  }
+
+  blocksFound(): Array<Block> {
+    return new Array(...this.allClasses.keys());
+  }
+
+  stylesFound(): Array<Style> {
+    let styles = new Array<Style>();
+    styles.push(...this.classesFound());
+    styles.push(...this.attributesFound());
+    return styles;
   }
 
   /**
@@ -419,12 +436,18 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     return false;
   }
 
+  getSourceAnalysis(): ElementSourceAnalysis<BooleanExpression, StringExpression, TernaryExpression> {
+    this.assertSealed(true);
+    return new ElementSourceAnalysis(this.explicitlyAddedStyles);
+  }
+
   /**
    * This method indicates that all styles have been added
    * and can be analyzed and validated.
    */
   seal() {
     this.assertSealed(false);
+    this.explicitlyAddedStyles = [...this.addedStyles];
 
     // After template analysis is done, we need to add all composed styles.
     // Conflict validation is done at Block construction time for these.
@@ -509,20 +532,15 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       }
     }
 
-    let styles: [
-      Array<StaticClass | DynamicClasses<TernaryExpression>>,
-      Array<DependentAttr | ConditionalDependentAttr<BooleanExpression> | ConditionalDependentAttrGroup<StringExpression>>
-    ] = [[], []];
-    let [classStyles, attrStyles] = this.addedStyles.reduce(
-      (res, style) => {
-        if (isStaticClass(style) || isTrueCondition(style) || isFalseCondition(style)) {
-          res[0].push(style);
-        } else {
-          res[1].push(style);
-        }
-        return res;
-      },
-      styles);
+    let classStyles = new Array<StaticClass | DynamicClasses<TernaryExpression>>();
+    let attrStyles = new Array<DependentAttr | ConditionalDependentAttr<BooleanExpression> | ConditionalDependentAttrGroup<StringExpression>>();
+    for (let style of this.addedStyles) {
+      if (isStaticClass(style) || isTrueCondition(style) || isFalseCondition(style)) {
+        classStyles.push(style);
+      } else {
+        attrStyles.push(style);
+      }
+    }
 
     for (let classStyle of classStyles) {
       if (isStaticClass(classStyle)) {
@@ -935,7 +953,89 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       delete classes[condition];
     }
   }
+}
 
+/**
+ * The source analysis is useful when the code wants an exact view of what styles
+ * were explicitly set on an element.
+ */
+export class ElementSourceAnalysis<BooleanExpression, StringExpression, TernaryExpression> {
+  addedStyles: AnalyzedStyle<BooleanExpression, StringExpression, TernaryExpression>[];
+  blocksFound: Set<Block>;
+  stylesFound: Set<Style>;
+  /**
+   * Styles that are always applied by the author.
+   * This includes styles that are disabled if a dynamic dependency isn't present. */
+  staticStyles: Array<Style>;
+  ternaryStyles: Array<DynamicClasses<TernaryExpression>>;
+  booleanStyles: Array<ConditionalAttr<BooleanExpression>>;
+  switchStyles: Array<DynamicAttrGroup<StringExpression>>;
+
+  constructor(addedStyles: Array<AnalyzedStyle<BooleanExpression, StringExpression, TernaryExpression>>) {
+    this.addedStyles = addedStyles;
+    this.blocksFound = new Set();
+    this.stylesFound = new Set<Style>();
+    this.staticStyles = [];
+    this.ternaryStyles = [];
+    this.booleanStyles = [];
+    this.switchStyles = [];
+    for (let s of addedStyles) {
+      if (isStaticClass(s)) {
+        this.staticStyles.push(s.klass);
+        this.stylesFound.add(s.klass);
+        this.blocksFound.add(s.klass.block);
+      } else if (isSwitch(s)) {
+        this.switchStyles.push(s);
+        for (let k of Object.keys(s.group)) {
+          this.stylesFound.add(s.group[k]);
+          this.blocksFound.add(s.group[k].block);
+        }
+      } else if (isTrueCondition(s) || isFalseCondition(s)) {
+        this.ternaryStyles.push(s);
+        if (isTrueCondition(s)) {
+          for (let c of s.whenTrue) {
+            this.stylesFound.add(c);
+            this.blocksFound.add(c.block);
+          }
+        }
+        if (isFalseCondition(s)) {
+          for (let c of s.whenFalse) {
+            this.stylesFound.add(c);
+            this.blocksFound.add(c.block);
+          }
+        }
+      } else if (isConditional(s)) {
+        this.booleanStyles.push(s);
+        for (let style of s.value) {
+          this.stylesFound.add(style);
+          this.blocksFound.add(style.block);
+        }
+      } else if (hasDependency(s)) {
+        // we don't need to track dependencies in the source view because it's a
+        // dynamic behavior that is decided by the style relationships and not
+        // based on what was authored for the dependent style. Since it wasn't
+        // also one of the dynamic types it must be static.
+        for (let style of s.value) {
+          this.staticStyles.push(style);
+          this.stylesFound.add(style);
+          this.blocksFound.add(style.block);
+        }
+      } else {
+        assertNever(s);
+      }
+    }
+    for (let b1 of this.blocksFound) {
+      for (let b2 of this.blocksFound) {
+        if (b1.isAncestorOf(b2)) {
+          this.blocksFound.delete(b1);
+        }
+      }
+    }
+  }
+
+  size(): number {
+    return this.addedStyles.length;
+  }
 }
 
 function dynamicClassAndDependentAttrs<BooleanExpression, StringExpression>(

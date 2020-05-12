@@ -9,8 +9,9 @@
     }
   },
   "references": [
-    {"path": "../glimmer"},
-    {"path": "../core"}
+    {"path": "../config"},
+    {"path": "../core"},
+    {"path": "../glimmer"}
   ],
   "include": [
     "src",

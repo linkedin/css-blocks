@@ -31,6 +31,7 @@
   "devDependencies": {
     "@css-blocks/code-style": "^1.0.0",
     "@css-blocks/glimmer": "^1.0.0",
+    "@types/chai-as-promised": "^7.1.2",
     "@types/console-ui": "^2.2.3",
     "@types/core-object": "^3.0.1",
     "@types/express": "^4.17.6",
@@ -38,6 +39,7 @@
     "@types/glob": "^7.1.1",
     "broccoli-node-api": "^1.7.0",
     "broccoli-test-helper": "^2.0.0",
+    "chai-as-promised": "^7.1.1",
     "ember-cli-htmlbars": "^4.3.1",
     "typescript": "~3.8.3",
     "watch": "^1.0.2"
@@ -48,6 +50,7 @@
   "dependencies": {
     "@css-blocks/config": "^1.0.0",
     "@css-blocks/core": "^1.0.0",
+    "@css-blocks/glimmer": "^1.0.0",
     "@glimmer/compiler": "^0.43.0",
     "@glimmer/syntax": "^0.43.0",
     "@opticss/template-api": "^0.6.3",

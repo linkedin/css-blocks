@@ -1,13 +1,17 @@
 import { BlockFactory, Options } from "@css-blocks/core";
 import { ASTPluginEnvironment, Syntax, Walker, builders, preprocess as parse, print, traverse } from "@glimmer/syntax";
 import { TempDir, createTempDir } from "broccoli-test-helper";
-import { assert } from "chai";
+import chai = require("chai");
+import chaiAsPromised = require("chai-as-promised");
 import * as fs from "fs";
 import * as path from "path";
 
 import { EmberAnalysis } from "../src/EmberAnalysis";
 import { HandlebarsTemplate, TEMPLATE_NAME } from "../src/HandlebarsTemplate";
 import { TemplateAnalyzingRewriter } from "../src/TemplateAnalyzingRewriter";
+
+chai.use(chaiAsPromised);
+const assert = chai.assert;
 
 const syntax: Syntax = { parse, print, traverse, builders, Walker };
 
@@ -45,6 +49,7 @@ describe("Template Rewriting", function() {
   let projectDir: string;
   let factory: BlockFactory;
   let options: Options | undefined;
+
   before(async () => {
     fixtures = await createTempDir();
     projectDir = fixtures.path();
@@ -54,15 +59,40 @@ describe("Template Rewriting", function() {
         "hello.hbs": "<div block:scope>Hello World!</div>",
       },
       "styles": {
+        "shared": {
+          "header.block.css": `
+            :scope {
+                font-size: 18px;
+            }
+            .emphasis {
+                color: black;
+            }
+            .emphasis[style=bold] {
+                font-weight: bold;
+            }
+            .emphasis[style=italic] {
+                font-style: italic;
+            }
+          `,
+          "typography.block.css": `
+            .underline {
+                text-decoration: underline;
+            }
+          `,
+        },
         "hello.block.css": ":scope {color: red; }",
       },
     });
+  });
+
+  after(async () => {
+    await fixtures.dispose();
   });
   it("rewrites styles", async function() {
     let result = await analyzeAndRewrite(factory, projectDir, "templates/hello.hbs", "styles/hello.block.css");
     assert.deepEqual(
       result.rewrittenTemplate,
-      minify(`<div class="TODO">Hello World!</div>`));
+      minify(`<div class={{-cssblocks- 0 1 "${result.block.guid}" null 1 0 0 1 1 0}}>Hello World!</div>`));
     assert.deepEqual(result.analysis.serialize(), {
       template: {
         type: TEMPLATE_NAME,
@@ -98,114 +128,490 @@ describe("Template Rewriting", function() {
     });
   });
 
-  /* ** DISABLED
+  it("has a test boilerplate", async function() {
+    let result = await analyzeAndRewrite(factory, projectDir, "templates/hello.hbs", "styles/hello.block.css");
+    assert.deepEqual(
+      minify(result.rewrittenTemplate),
+      minify(`<div class={{-cssblocks- 0 1 "${result.block.guid}" null 1 0 0 1 1 0}}>Hello World!</div>`));
+    let analysis = result.analysis.serialize();
+    assert.deepEqual(Object.keys(analysis.blocks).length, 1);
+    assert.deepEqual(analysis.stylesFound, [":scope"]);
+    assert.deepEqual(Object.keys(analysis.elements).length, 1);
+    assert.deepEqual(analysis.elements.a.staticStyles, [0]);
+    assert.deepEqual(analysis.elements.a.dynamicClasses, []);
+    assert.deepEqual(analysis.elements.a.dynamicAttributes, []);
+  });
+
   it("rewrites styles from dynamic classes", async function() {
-    let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
-    let templatePath = fixture("styled-app/src/ui/components/with-dynamic-classes/template.hbs");
-    let result = await pipeline(projectDir, analyzer, "with-dynamic-classes", templatePath);
-    assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="a">
-        <h1 class="e">Hello, <span class="f i {{-css-blocks-classnames 3 4 0 isWorld 1 2 0 3 1 2 (eq isThick 1) 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "h" 1 "b" 2 "c" 3}}">World</span>!</h1>
-        <div class={{-css-blocks-classnames 1 2 0 isWorld 1 1 1 0 "d" 0 "b" 1}}>World</div>
-        <div class={{-css-blocks-classnames 1 2 0 isWorld 1 0 1 1 "d" 0 "b" 1}}>World</div>
-        <div class={{-css-blocks-classnames 1 1 0 isWorld 0 1 0 "b" 0}}>World</div>
-        <h2 class={{-css-blocks-classnames 1 1 0 isWorld 1 0 0 "e" 0}}>Dynamic Scope</h2>
-      </div>
-    `));
+    fixtures.write({
+      templates: {
+        components: {
+          "with-dynamic-classes.hbs": `
+            <div>
+              <h1 h:scope>Hello, <span block:class={{style-if isWorld 'world'}} h:class="emphasis" t:class="underline" block:thick={{eq isThick 1}} h:style={{textStyle}}>World</span>!</h1>
+              <div block:class={{style-if isWorld 'world' 'planet'}}>World</div>
+              <div block:class={{style-unless isWorld 'world' 'planet'}}>World</div>
+              <div block:class={{style-unless isWorld 'world'}}>World</div>
+              <h2 h:scope={{isWorld}}>Dynamic Scope</h2>
+            </div>
+          `,
+        },
+      },
+      styles: {
+        components: {
+          "with-dynamic-classes.block.css": `
+            @block h from "../shared/header.block.css";
+            @block t from "../shared/typography.block.css";
+            :scope {
+                color: red;
+            }
+            .world {
+                border: 1px solid black;
+            }
+            .world[thick] {
+                border-width: 3px;
+            }
+            .planet {
+                border: 3px groove gray;
+            }
+            @export (h, t);
+          `,
+        },
+      },
+    });
+    let result = await analyzeAndRewrite(factory, projectDir, "templates/components/with-dynamic-classes.hbs", "styles/components/with-dynamic-classes.block.css");
+    let defaultBlock = result.block;
+    let headerBlock = result.block.getReferencedBlock("h")!;
+    let typographyBlock = result.block.getReferencedBlock("t")!;
+    assert.deepEqual(
+      minify(result.rewrittenTemplate),
+      minify(`
+        <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 0 1 1 0}}>
+          <h1 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 0 1 1 0}}>Hello,
+          <span class={{-cssblocks- 0 3 "${defaultBlock.guid}" null "${headerBlock.guid}" null "${typographyBlock.guid}" null 6 0 1 1 1 2 1 0 3 1 3 1 4 5 1 1 1 2 3 isWorld 1 0 0 2 (eq isThick 1) 1 3 4 1 textStyle "bold" 1 4 "italic" 1 5}}>World</span>!</h1>
+          <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 2 0 1 0 4 1 3 isWorld 1 0 1 1}}>World</div>
+          <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 2 0 4 0 1 1 3 isWorld 1 0 1 1}}>World</div>
+          <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 1 1 3 isWorld 0 1 0}}>World</div>
+          <h2 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 0 1 3 isWorld 1 0 0}}>Dynamic Scope</h2>
+        </div>
+      `));
+    let analysis = result.analysis.serialize();
+    assert.deepEqual(Object.keys(analysis.blocks).length, 3);
+    assert.deepEqual(analysis.stylesFound, [
+      ".planet",
+      ".world",
+      ".world[thick]",
+      ":scope",
+      "h.emphasis",
+      "h.emphasis[style=bold]",
+      "h.emphasis[style=italic]",
+      "h:scope",
+      "t.underline",
+    ]);
+    assert.deepEqual(Object.keys(analysis.elements).length, 7);
+    assert.deepEqual(analysis.elements.a.staticStyles, [analysis.stylesFound.indexOf(":scope")]);
+    assert.deepEqual(analysis.elements.a.dynamicClasses, []);
+    assert.deepEqual(analysis.elements.a.dynamicAttributes, []);
+
+    assert.deepEqual(analysis.elements.c.tagName, "span");
+    assert.deepEqual(analysis.elements.c.staticStyles, [analysis.stylesFound.indexOf("h.emphasis"), analysis.stylesFound.indexOf("t.underline")]);
+    assert.deepEqual(analysis.elements.c.dynamicClasses, [{
+      condition: true, whenTrue: [analysis.stylesFound.indexOf(".world")],
+    }]);
+    assert.deepEqual(analysis.elements.c.dynamicAttributes, [
+      {
+        condition: true,
+        container: analysis.stylesFound.indexOf(".world"),
+        value: [analysis.stylesFound.indexOf(".world[thick]")],
+      },
+      {
+        group: {
+          bold: analysis.stylesFound.indexOf("h.emphasis[style=bold]"),
+          italic: analysis.stylesFound.indexOf("h.emphasis[style=italic]"),
+        },
+        stringExpression: true,
+        value: [],
+      },
+    ]);
   });
 
   it("rewrites styles with the style-of helper", async function() {
-    let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
-    let templatePath = fixture("styled-app/src/ui/components/with-style-helper/template.hbs");
-    let result = await pipeline(projectDir, analyzer, "with-style-helper", templatePath);
-    assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="b">
-        <h1 class="e">Hello, <World cssClass={{-css-blocks-concat (-css-blocks-concat "c d f" " " (-css-blocks-classnames 1 2 4 2 1 (textStyle) "bold" 1 0 "italic" 1 1 "g" 0 "f" 1))}} />!</h1>
-      </div>
-    `));
+    fixtures.write({
+      templates: {
+        components: {
+          "with-style-of-helper.hbs": `
+            <div>
+              <h1 h:scope>Hello, <World cssClass={{style-of block:thick block:class="world" h:class="emphasis" h:style=textStyle}} />!</h1>
+            </div>
+          `,
+        },
+      },
+      styles: {
+        components: {
+          "with-style-of-helper.block.css": `
+            @block h from "../shared/header.block.css";
+            @block t from "../shared/typography.block.css";
+            :scope {
+                color: red;
+            }
+            .world {
+                border: 1px solid black;
+            }
+            .world[thick] {
+                border-width: 3px;
+            }
+            .planet {
+                border: 3px groove gray;
+            }
+            @export (h, t);
+          `,
+        },
+      },
+    });
+    let result = await analyzeAndRewrite(factory, projectDir, "templates/components/with-style-of-helper.hbs", "styles/components/with-style-of-helper.block.css");
+    let defaultBlock = result.block;
+    let headerBlock = result.block.getReferencedBlock("h")!;
+    assert.deepEqual(
+      minify(result.rewrittenTemplate),
+      minify(`
+        <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 0 1 1 0}}>
+          <h1 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 0 1 1 0}}>Hello,
+          <World cssClass={{-cssblocks- 0 2 "${defaultBlock.guid}" null "${headerBlock.guid}" null 5 0 1 1 1 0 3 1 3 1 4 4 1 0 1 1 1 2 4 1 (textStyle) "bold" 1 3 "italic" 1 4}} />!</h1>
+        </div>
+      `));
+    let analysis = result.analysis.serialize();
+    assert.deepEqual(Object.keys(analysis.blocks).length, 3);
+    assert.deepEqual(analysis.stylesFound, [
+      ".world",
+      ".world[thick]",
+      ":scope",
+      "h.emphasis",
+      "h.emphasis[style=bold]",
+      "h.emphasis[style=italic]",
+      "h:scope",
+    ]);
+    assert.deepEqual(Object.keys(analysis.elements).length, 4);
   });
 
-  it("rewrites styles with the style-of subexpressions", async function() {
-    let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
-    let templatePath = fixture("styled-app/src/ui/components/with-style-of-subexpression/template.hbs");
-    let result = await pipeline(projectDir, analyzer, "with-style-of-subexpression", templatePath);
-    assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="b">
-        <h1 class="e">Hello,
+  it("rewrites styles with style-of subexpressions", async function() {
+    fixtures.write({
+      templates: {
+        components: {
+          "with-style-of-subexpression.hbs": `
+            <div>
+              <h1 h:scope>Hello,
+                {{yield (hash
+                  classnames=(hash
+                    action=(style-of block:class="world" h:class="emphasis" block:thick=isThick h:style=textStyle)
+                  )
+                )}}
+              </h1>
+            </div>
+          `,
+        },
+      },
+      styles: {
+        components: {
+          "with-style-of-subexpression.block.css": `
+            @block h from "../shared/header.block.css";
+            @block t from "../shared/typography.block.css";
+            :scope {
+                color: red;
+            }
+            .world {
+                border: 1px solid black;
+            }
+            .world[thick] {
+                border-width: 3px;
+            }
+            .planet {
+                border: 3px groove gray;
+            }
+            @export (h, t);
+          `,
+        },
+      },
+    });
+    let result = await analyzeAndRewrite(factory, projectDir, "templates/components/with-style-of-subexpression.hbs", "styles/components/with-style-of-subexpression.block.css");
+    let defaultBlock = result.block;
+    let headerBlock = result.block.getReferencedBlock("h")!;
+    assert.deepEqual(
+      minify(result.rewrittenTemplate),
+      minify(`
+      <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 0 1 1 0}}>
+        <h1 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 0 1 1 0}}>Hello,
           {{yield (hash
             classnames=(hash
-              action=(-css-blocks-concat (-css-blocks-concat "c f" " " (-css-blocks-classnames 2 3 2 isThick 1 2 4 2 1 (textStyle) "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "d" 2)))))}}
+              action=(-cssblocks- 0 2 "${defaultBlock.guid}" null "${headerBlock.guid}" null 5 0 1 1 1 0 3 1 3 1 4 4 1 0 1 1 2 isThick 1 2 4 1 (textStyle) "bold" 1 3 "italic" 1 4)))}}
         </h1>
       </div>
-    `));
+      `));
+    let analysis = result.analysis.serialize();
+    assert.deepEqual(Object.keys(analysis.blocks).length, 3);
+    assert.deepEqual(analysis.stylesFound, [
+      ".world",
+      ".world[thick]",
+      ":scope",
+      "h.emphasis",
+      "h.emphasis[style=bold]",
+      "h.emphasis[style=italic]",
+      "h:scope",
+    ]);
+    assert.deepEqual(Object.keys(analysis.elements).length, 3);
   });
 
-  it("supports positional styles with style-of helper", async function() {
-    const projectDir = fixture("styled-app");
-    const analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
-    const templatePositionalPath = fixture("styled-app/src/ui/components/with-style-helper/template.hbs");
-    const templateHashPath = fixture("styled-app/src/ui/components/with-style-helper/templateHash.hbs");
-    // now we run the optimizer and rewriter against each temlpate
-    const resultPositional = await pipeline(projectDir, analyzer, "with-style-helper", templatePositionalPath);
-    analyzer.reset(); // need to reset the analyser otherwise it will change/advance class names.
-    const resultHash = await pipeline(projectDir, analyzer, "with-style-helper", templateHashPath);
+  it("rewrites link-to component", async function() {
+    fixtures.write({
+      templates: {
+        components: {
+          "with-link-to.hbs": `
+            <div>
+              {{link-to "Inline Form" "inline-form" block:class="link-1"}}
+              {{#link-to "block-form" block:class="link-1" util:class="util"}}Block Form{{/link-to}}
 
-    assert.deepEqual(minify(print(resultPositional.ast)), minify(print(resultHash.ast)));
+              {{link-to "Inline Form" "inline-form-active" block:class="link-2"}}
+              {{#link-to "block-form-active" block:class="link-2"}}Block Form{{/link-to}}
+
+              {{link-to "Dynamic Inline Form" "inline-form-active" block:class=(style-if foo "link-2") activeClass="whatever"}}
+              {{#link-to "block-form-active" block:class=(style-if foo "link-2")}}Dynamic Block Form{{/link-to}}
+
+              {{link-to "Inline Form, Inherited State" "inline-form-active" block:class="link-3" activeClass="whatever"}}
+              {{#link-to "block-form-active" block:class="link-3"}}Block Form, Inherited State{{/link-to}}
+
+              {{link-to "Inline Form, External State" "inline-form-active" external:class="link-3" activeClass="whatever"}}
+              {{#link-to "block-form-active" external:class="link-3"}}Block Form, External State{{/link-to}}
+
+              {{link-to "Inline Form, All States" "inline-form-active" block:class="link-4" loadingClass="whatever"}}
+              {{#link-to "block-form-active" block:class="link-4" disabledClass="whatever"}}Block Form, All States{{/link-to}}
+            </div>
+          `,
+        },
+      },
+      styles: {
+        components: {
+          "with-link-to.block.css": `
+            @block external from "./external.block.css";
+            @export external;
+            @export util from "./util.block.css";
+            :scope {
+              extends: external;
+              color: red;
+            }
+            .link-1 {
+              color: yellow;
+            }
+            .link-2 {
+              color: green;
+            }
+            .link-2[active] {
+              color: blue;
+            }
+            .link-4 {
+              color: gray;
+            }
+            .link-4[active] {
+              color: green;
+            }
+            .link-4[loading] {
+              color: yellow;
+            }
+            .link-4[disabled] {
+              color: red;
+            }
+          `,
+          "external.block.css": `
+            :scope {
+              block-name: external;
+              background: #ccc;
+            }
+            .link-1 {
+              background: blue;
+            }
+            .link-3 {
+              color: pink;
+            }
+            .link-3[active] {
+              color: purple
+            }
+          `,
+          "util.block.css": `
+            .util {
+              border: 1px solid blue;
+            }
+          `,
+        },
+      },
+    });
+    let result = await analyzeAndRewrite(factory, projectDir, "templates/components/with-link-to.hbs", "styles/components/with-link-to.block.css");
+    let defaultBlock = result.block;
+    let externalBlock = result.block.getExportedBlock("external")!;
+    let utilBlock = result.block.getExportedBlock("util")!;
+    assert.deepEqual(
+      minify(result.rewrittenTemplate),
+      minify(`
+        <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 0 1 1 0}}>
+          {{link-to "Inline Form" "inline-form" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 1 1 1 0)}}
+          {{#link-to "block-form" class=(-cssblocks- 0 2 "${defaultBlock.guid}" null "${utilBlock.guid}" null 2 0 1 1 1 2 1 0 1 1)}}Block Form{{/link-to}}
+
+          {{link-to "Inline Form" "inline-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 2 1 1 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 2 1 1 0)}}Block Form{{/link-to}}
+
+          {{link-to "Dynamic Inline Form" "inline-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 2 1 3 foo 1 0 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 2 1 3 foo 1 0 0)}}Dynamic Block Form{{/link-to}}
+
+          {{link-to "Inline Form, Inherited State" "inline-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 2 1 1 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 2 1 1 0)}}Block Form, Inherited State{{/link-to}}
+
+          {{link-to "Inline Form, External State" "inline-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 2 1 1 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 2 1 1 0)}}Block Form, External State{{/link-to}}
+
+          {{link-to "Inline Form, All States" "inline-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 5 1 1 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 5 1 1 0)}}Block Form, All States{{/link-to}}
+        </div>
+      `));
+    let analysis = result.analysis.serialize();
+    assert.deepEqual(Object.keys(analysis.blocks).length, 3);
+    assert.deepEqual(analysis.stylesFound, [
+      ".link-1",
+      ".link-2",
+      ".link-2[active]",
+      ".link-4",
+      ".link-4[active]",
+      ".link-4[disabled]",
+      ".link-4[loading]",
+      ":scope",
+      "external.link-3",
+      "external.link-3[active]",
+      "util.util",
+    ]);
+    assert.deepEqual(Object.keys(analysis.elements).length, 27);
   });
 
-  it("errors if positional argument is a block:class.", async function() {
-    // assert.expect(2);
-    const projectDir = fixture("styled-app");
-    const analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
-    const template = fixture("styled-app/src/ui/components/with-style-helper/templateInvalid.hbs");
-    const expectedMessage = '[css-blocks] Error: The block:class attribute must contain a value and is not allowed to be purely positional. Did you mean block:class="foo"? (ui/components/with-style-helper/template.hbs:2:37)';
+  it("rewrites positional and hash-based params to the style-of helper the same way", async function() {
+    fixtures.write({
+      templates: {
+        components: {
+          "with-style-of-helper.hbs": `
+            <div>
+              <h1 h:scope>Hello, <World cssClass={{style-of block:thick block:class="world" h:class="emphasis" h:style=textStyle}} />!</h1>
+            </div>
+          `,
+          "with-style-of-hash-params.hbs": `
+            <div>
+              <h1 h:scope>Hello, <World cssClass={{style-of block:thick=true block:class="world" h:class="emphasis" h:style=textStyle}} />!</h1>
+            </div>
+          `,
+        },
+      },
+      styles: {
+        components: {
+          "with-style-of-helper.block.css": `
+            @block h from "../shared/header.block.css";
+            @block t from "../shared/typography.block.css";
+            :scope {
+                color: red;
+            }
+            .world {
+                border: 1px solid black;
+            }
+            .world[thick] {
+                border-width: 3px;
+            }
+            .planet {
+                border: 3px groove gray;
+            }
+            @export (h, t);
+          `,
+        },
+      },
+    });
+    let resultPositional = await analyzeAndRewrite(factory, projectDir, "templates/components/with-style-of-helper.hbs", "styles/components/with-style-of-helper.block.css");
+    let resultHash = await analyzeAndRewrite(factory, projectDir, "templates/components/with-style-of-hash-params.hbs", "styles/components/with-style-of-helper.block.css");
+    assert.deepEqual(resultPositional.rewrittenTemplate, resultHash.rewrittenTemplate);
+  });
 
-    let didError = false;
-    try {
-      await pipeline(projectDir, analyzer, "with-style-helper", template);
-    } catch (err) {
-      // have to do this in catches to get type-checking...
-      const typed: CssBlockError = err;
-      didError = true;
-      assert.ok(err instanceof CssBlockError);
-      assert.equal(typed.message, expectedMessage);
-    }
-    assert.ok(didError);
+  it("errors if positional argument is a block:class", async function() {
+    fixtures.write({
+      templates: {
+        components: {
+          "invalid-positional-param.hbs": `
+            <div>
+              <h1 h:scope>Hello, <World cssClass={{style-of block:thick block:class h:class="emphasis" h:style=textStyle}} />!</h1>
+            </div>
+          `,
+        },
+      },
+      styles: {
+        components: {
+          "with-style-of-helper.block.css": `
+            @block h from "../shared/header.block.css";
+            @block t from "../shared/typography.block.css";
+            :scope {
+                color: red;
+            }
+            .world {
+                border: 1px solid black;
+            }
+            .world[thick] {
+                border-width: 3px;
+            }
+            .planet {
+                border: 3px groove gray;
+            }
+            @export (h, t);
+          `,
+        },
+      },
+    });
+    return assert.isRejected(
+      analyzeAndRewrite(factory, projectDir, "templates/components/invalid-positional-param.hbs", "styles/components/with-style-of-helper.block.css"),
+      `[css-blocks] Error: The block:class attribute must contain a value and is not allowed to be purely positional. Did you mean block:class="foo"? (templates/components/invalid-positional-param.hbs:3:49)`,
+    );
   });
 
   it("errors if style-of helper is provided unsupported arguments.", async function() {
-    // assert.expect(2);
-    const projectDir = fixture("styled-app");
-    const analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
-    const template = fixture("styled-app/src/ui/components/style-of-unsupported/template.hbs");
-    const expectedMessage = "[css-blocks] Error: An attribute without a block namespace is forbidden in this context: foo (ui/components/style-of-unsupported/template.hbs:2:37)";
-    let didError = false;
-    try {
-      await pipeline(projectDir, analyzer, "style-of-unsupported", template);
-    } catch (err) {
-      // have to do this in catches to get type-checking...
-      const typed: CssBlockError = err;
-      didError = true;
-      assert.ok(err instanceof CssBlockError);
-      assert.equal(typed.message, expectedMessage);
-    }
-    assert.ok(didError);
+    fixtures.write({
+      templates: {
+        components: {
+          "invalid-param.hbs": `
+            <div>
+              <h1 h:scope>Hello, <World cssClass={{style-of block:thick foo bar="something" baz=true block:class="world" h:class="emphasis" h:style=textStyle}} />!</h1>
+            </div>
+          `,
+        },
+      },
+      styles: {
+        components: {
+          "with-style-of-helper.block.css": `
+            @block h from "../shared/header.block.css";
+            @block t from "../shared/typography.block.css";
+            :scope {
+                color: red;
+            }
+            .world {
+                border: 1px solid black;
+            }
+            .world[thick] {
+                border-width: 3px;
+            }
+            .planet {
+                border: 3px groove gray;
+            }
+            @export (h, t);
+          `,
+        },
+      },
+    });
+    return assert.isRejected(
+      analyzeAndRewrite(factory, projectDir, "templates/components/invalid-param.hbs", "styles/components/with-style-of-helper.block.css"),
+      `[css-blocks] `,
+    );
+  });
+  it.skip("rewrites styles with block aliases", async function() {
+    // TODO: we can test this when we have the runtime implementation working.
   });
 
-  it("rewrites styles with block aliases", async function() {
-    let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
-    let templatePath = fixture("styled-app/src/ui/components/with-block-aliases/template.hbs");
-    let result = await pipeline(projectDir, analyzer, "with-block-aliases", templatePath);
-    assert.deepEqual(minify(print(result.ast)), minify(`
-    <div class="b my-scope-alias stylesheet__world">
-      <h1 class="e my-header-alias">Hello, <span class="c f stylesheet__world stylesheet__world--thick {{-css-blocks-classnames 2 4 2 isThick 1 3 4 2 1 textStyle "bold" 1 0 "italic" 1 1 "g" 0 "f" 1 "my-alias-for-state" 2 "d" 3}}">World</span>!</h1>
-    </div>
-    `));
-  });
+  /* ** DISABLED
 
   it("rewrites styles from dynamic attributes from readme", async function() {
     let projectDir = fixture("readme-app");
@@ -225,9 +631,9 @@ describe("Template Rewriting", function() {
     `),
     );
     assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="a {{-css-blocks-classnames 1 1 2 isLoading 1 0 "b" 0}}">
+      <div class="a {{-cssblocks- 1 1 2 isLoading 1 0 "b" 0}}">
         <aside class="c d g h"> </aside>
-        <article class="i {{-css-blocks-classnames 1 2 0 isRecommended 1 1 1 0 "e" 0 "f" 1}}"> </article>
+        <article class="i {{-cssblocks- 1 2 0 isRecommended 1 1 1 0 "e" 0 "f" 1}}"> </article>
       </div>
     `));
   });
@@ -247,8 +653,8 @@ describe("Template Rewriting", function() {
       {{link-to "Inline Form" "inline-form-active" class="c" activeClass="d"}}
       {{#link-to "block-form-active" class="c" activeClass="d"}}Block Form{{/link-to}}
 
-      {{link-to "Dynamic Inline Form" "inline-form-active" class=(-css-blocks-classnames 1 1 0 foo 1 0 0 "c" 0) activeClass="d"}}
-      {{#link-to "block-form-active" class=(-css-blocks-classnames 1 1 0 foo 1 0 0 "c" 0) activeClass="d"}}Dynamic Block Form{{/link-to}}
+      {{link-to "Dynamic Inline Form" "inline-form-active" class=(-cssblocks- 1 1 0 foo 1 0 0 "c" 0) activeClass="d"}}
+      {{#link-to "block-form-active" class=(-cssblocks- 1 1 0 foo 1 0 0 "c" 0) activeClass="d"}}Dynamic Block Form{{/link-to}}
 
       {{link-to "Inline Form, Inherited State" "inline-form-active" class="k" activeClass="l"}}
       {{#link-to "block-form-active" class="k" activeClass="l"}}Block Form, Inherited State{{/link-to}}
