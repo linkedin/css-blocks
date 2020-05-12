@@ -44,48 +44,48 @@ export function cssBlockError(message: string, node: AST.Node, templatePath: str
   });
 }
 
-export function isStringLiteral(value: AST.Node | undefined): value is AST.StringLiteral {
-  return value !== undefined && value.type === "StringLiteral";
+export function isStringLiteral(value: AST.Node | undefined | null): value is AST.StringLiteral {
+  return value !== undefined && value !== null && value.type === "StringLiteral";
 }
-export function isConcatStatement(value: AST.Node | undefined): value is AST.ConcatStatement {
+export function isConcatStatement(value: AST.Node | undefined | null): value is AST.ConcatStatement {
   return !!value && value.type === "ConcatStatement";
 }
-export function isTextNode(value: AST.Node | undefined): value is AST.TextNode {
+export function isTextNode(value: AST.Node | undefined | null): value is AST.TextNode {
   return !!value && value.type === "TextNode";
 }
-export function isBooleanLiteral(value: AST.Node | undefined): value is AST.BooleanLiteral {
+export function isBooleanLiteral(value: AST.Node | undefined | null): value is AST.BooleanLiteral {
   return !!value && value.type === "BooleanLiteral";
 }
-export function isMustacheStatement(value: AST.Node | undefined): value is AST.MustacheStatement {
+export function isMustacheStatement(value: AST.Node | undefined | null): value is AST.MustacheStatement {
   return !!value && value.type === "MustacheStatement";
 }
-export function isBlockStatement(value: AST.Node | undefined): value is AST.BlockStatement {
+export function isBlockStatement(value: AST.Node | undefined | null): value is AST.BlockStatement {
   return !!value && value.type === "BlockStatement";
 }
-export function isSubExpression(value: AST.Node | undefined): value is AST.SubExpression {
+export function isSubExpression(value: AST.Node | undefined | null): value is AST.SubExpression {
   return !!value && value.type === "SubExpression";
 }
-export function isElementNode(value: AST.Node | undefined): value is AST.ElementNode {
+export function isElementNode(value: AST.Node | undefined | null): value is AST.ElementNode {
   return !!value && value.type === "ElementNode";
 }
-export function isNumberLiteral(value: AST.Node | undefined): value is AST.NumberLiteral {
+export function isNumberLiteral(value: AST.Node | undefined | null): value is AST.NumberLiteral {
   return !!value && value.type === "NumberLiteral";
 }
-export function isNullLiteral(value: AST.Node | undefined): value is AST.NullLiteral {
+export function isNullLiteral(value: AST.Node | undefined | null): value is AST.NullLiteral {
   return !!value && value.type === "NullLiteral";
 }
-export function isUndefinedLiteral(value: AST.Node | undefined): value is AST.UndefinedLiteral {
+export function isUndefinedLiteral(value: AST.Node | undefined | null): value is AST.UndefinedLiteral {
   return !!value && value.type === "UndefinedLiteral";
 }
-export function isPathExpression(value: AST.Node | undefined): value is AST.PathExpression {
+export function isPathExpression(value: AST.Node | undefined | null): value is AST.PathExpression {
   return !!value && value.type === "PathExpression";
 }
-export function isHashPair(value: AST.Node | undefined): value is AST.HashPair {
+export function isHashPair(value: AST.Node | undefined | null): value is AST.HashPair {
   return !!value && value.type === "HashPair";
 }
-export function isAttrNode(value: AST.Node | undefined): value is AST.AttrNode {
+export function isAttrNode(value: AST.Node | undefined | null): value is AST.AttrNode {
   return !!value && value.type === "AttrNode";
 }
-export function isAnalyzableProperty(value: AST.Node | undefined): value is AnalyzableProperty {
+export function isAnalyzableProperty(value: AST.Node | undefined | null): value is AnalyzableProperty {
   return !!value && (isAttrNode(value) || isHashPair(value) || isPathExpression(value));
 }
