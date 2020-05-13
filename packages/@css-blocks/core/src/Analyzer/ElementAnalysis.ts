@@ -16,8 +16,8 @@ import {
 import {
   MultiMap,
   ObjectDictionary,
-  objectValues,
   assertNever,
+  objectValues,
 } from "@opticss/util";
 
 import {
