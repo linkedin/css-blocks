@@ -604,85 +604,11 @@ describe("Template Rewriting", function() {
     });
     return assert.isRejected(
       analyzeAndRewrite(factory, projectDir, "templates/components/invalid-param.hbs", "styles/components/with-style-of-helper.block.css"),
-      `[css-blocks] `,
+      `[css-blocks] Error: An attribute without a block namespace is forbidden in this context: foo (templates/components/invalid-param.hbs:3:49)`,
     );
   });
+
   it.skip("rewrites styles with block aliases", async function() {
     // TODO: we can test this when we have the runtime implementation working.
   });
-
-  /* ** DISABLED
-
-  it("rewrites styles from dynamic attributes from readme", async function() {
-    let projectDir = fixture("readme-app");
-    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
-    let templatePath = fixture("readme-app/src/ui/components/page-layout/template.hbs");
-    let result = await pipeline(projectDir, analyzer, "page-layout", templatePath);
-    assert.deepEqual(minify(result.css.toString()), minify(`
-      .a { color: red; width: 100vw; }
-      .b { color: blue }
-      .c { float: left; }
-      .d { display: none; }
-      .e { border-right: 2px groove gray; }
-      .f { background-color: orange }
-      .g { width: 20%; }
-      .h { width: calc(20% - 20px); margin-right: 20px; }
-      .i { width: 80%; }
-    `),
-    );
-    assert.deepEqual(minify(print(result.ast)), minify(`
-      <div class="a {{-cssblocks- 1 1 2 isLoading 1 0 "b" 0}}">
-        <aside class="c d g h"> </aside>
-        <article class="i {{-cssblocks- 1 2 0 isRecommended 1 1 1 0 "e" 0 "f" 1}}"> </article>
-      </div>
-    `));
-  });
-
-  it("rewrites link-to helpers", async function() {
-    let projectDir = fixture("styled-app");
-    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
-    let templatePath = fixture("styled-app/src/ui/components/with-link-to/template.hbs");
-    let result = await pipeline(projectDir, analyzer, "with-link-to", templatePath);
-
-    // TODO why is `f` class both static and dynamic?
-    assert.deepEqual(minify(print(result.ast)), minify(`
-    <div class="a i">
-      {{link-to "Inline Form" "inline-form" class="b j"}}
-      {{#link-to "block-form" class="b j m"}}Block Form{{/link-to}}
-
-      {{link-to "Inline Form" "inline-form-active" class="c" activeClass="d"}}
-      {{#link-to "block-form-active" class="c" activeClass="d"}}Block Form{{/link-to}}
-
-      {{link-to "Dynamic Inline Form" "inline-form-active" class=(-cssblocks- 1 1 0 foo 1 0 0 "c" 0) activeClass="d"}}
-      {{#link-to "block-form-active" class=(-cssblocks- 1 1 0 foo 1 0 0 "c" 0) activeClass="d"}}Dynamic Block Form{{/link-to}}
-
-      {{link-to "Inline Form, Inherited State" "inline-form-active" class="k" activeClass="l"}}
-      {{#link-to "block-form-active" class="k" activeClass="l"}}Block Form, Inherited State{{/link-to}}
-
-      {{link-to "Inline Form, External State" "inline-form-active" class="k" activeClass="l"}}
-      {{#link-to "block-form-active" class="k" activeClass="l"}}Block Form, External State{{/link-to}}
-
-      {{link-to "Inline Form, All States" "inline-form-active" class="e" activeClass="f" loadingClass="g" disabledClass="h"}}
-      {{#link-to "block-form-active" class="e" activeClass="f" loadingClass="g" disabledClass="h"}}Block Form, All States{{/link-to}}
-    </div>
-    `));
-
-    assert.deepEqual(minify(result.css.toString()), minify(`
-      .a { color: red; }
-      .b { color: yellow; }
-      .c { color: green; }
-      .d { color: blue; }
-      .e { color: gray; }
-      .f { color: green; }
-      .g { color: yellow; }
-      .h { color: red; }
-      .i { background: #ccc; }
-      .j { background: blue; }
-      .k { color: pink; }
-      .l { color: purple }
-      .m { border: 1px solid blue; }
-    `),
-    );
-  });
-  ** END DISABLED */
 });
