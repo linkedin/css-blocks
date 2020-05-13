@@ -88,6 +88,7 @@ describe("Template Rewriting", function() {
   after(async () => {
     await fixtures.dispose();
   });
+
   it("rewrites styles", async function() {
     let result = await analyzeAndRewrite(factory, projectDir, "templates/hello.hbs", "styles/hello.block.css");
     assert.deepEqual(
@@ -528,6 +529,35 @@ describe("Template Rewriting", function() {
     let resultPositional = await analyzeAndRewrite(factory, projectDir, "templates/components/with-style-of-helper.hbs", "styles/components/with-style-of-helper.block.css");
     let resultHash = await analyzeAndRewrite(factory, projectDir, "templates/components/with-style-of-hash-params.hbs", "styles/components/with-style-of-helper.block.css");
     assert.deepEqual(resultPositional.rewrittenTemplate, resultHash.rewrittenTemplate);
+  });
+
+  it("errors if styles conflict.", async function() {
+    fixtures.write({
+      templates: {
+        components: {
+          "has-style-conflict.hbs": `
+            <div>
+              <h1 h:scope block:class="h1">Hello, World!</h1>
+            </div>
+          `,
+        },
+      },
+      styles: {
+        components: {
+          "has-style-conflict.block.css": `
+            @block h from "../shared/header.block.css";
+            .h1 {
+              font-size: 22px;
+            }
+            @export (h);
+          `,
+        },
+      },
+    });
+    return assert.isRejected(
+      analyzeAndRewrite(factory, projectDir, "templates/components/has-style-conflict.hbs", "styles/components/has-style-conflict.block.css"),
+      `[css-blocks] TemplateError: The following property conflicts must be resolved for these composed Styles:`,
+    );
   });
 
   it("errors if positional argument is a block:class", async function() {
