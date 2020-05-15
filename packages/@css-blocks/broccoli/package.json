@@ -32,7 +32,7 @@
   "devDependencies": {
     "@css-blocks/code-style": "^1.0.0",
     "@css-blocks/glimmer": "^1.0.0",
-    "@types/fs-extra": "^8.0.0",
+    "@types/fs-extra": "^9.0.0",
     "@types/glob": "^7.1.1",
     "broccoli-test-helper": "^2.0.0",
     "watch": "^1.0.2"
