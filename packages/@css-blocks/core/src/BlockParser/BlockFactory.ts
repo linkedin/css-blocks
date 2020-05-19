@@ -6,6 +6,7 @@ import { RawSourceMap } from "source-map";
 
 import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
+import { CssBlockError } from "../errors";
 import { FileIdentifier, ImportedCompiledCssFile, ImportedFile, Importer } from "../importing";
 import { PromiseQueue } from "../util/PromiseQueue";
 
@@ -313,23 +314,29 @@ export class BlockFactory {
     // NOTE: No need to run preprocessor - we assume that Compiled CSS has already been preprocessed.
     // Parse the definition file into an AST
     const definitionAst = this.postcssImpl.parse(file.definitionContents);
+    const definitionFilepath = this.importer.filesystemPath(file.definitionIdentifier, this.configuration) || "<unknown filepath>";
 
     // Parse the CSS contents into an AST
     const cssContentsAst = this.postcssImpl.parse(file.cssContents);
+    const cssContentsFilepath = this.importer.filesystemPath(file.identifier, this.configuration) || "<unknown filepath>";
 
     // TODO: Sourcemaps?
 
     // Sanity check! Did we actually get contents for both ASTs?
     if (!definitionAst || !definitionAst.nodes) {
-      throw new Error(`Unable to parse definition file into AST!\nIdentifier: ${file.identifier}`);
+      throw new CssBlockError(`Unable to parse definition file into AST!`, {
+        filename: definitionFilepath,
+      });
     }
 
     if (!cssContentsAst || !cssContentsAst.nodes) {
-      throw new Error(`Unable to parse CSS contents into AST!\nIdentifier: ${file.identifier}`);
+      throw new CssBlockError(`Unable to parse CSS contents into AST!`, {
+        filename: cssContentsFilepath,
+      });
     }
 
     // Construct a Block out of the definition file.
-    const block = this.parser.parseDefinitionSource(definitionAst, file.identifier, file.blockId);
+    const block = this.parser.parseDefinitionSource(definitionAst, file.definitionIdentifier, file.blockId);
 
     // Merge the rules from the CSS contents into the Block.
     // TODO: Actually merge the CSS rules in. (^_^")

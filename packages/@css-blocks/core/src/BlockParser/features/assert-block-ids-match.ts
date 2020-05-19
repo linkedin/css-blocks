@@ -1,21 +1,25 @@
 import { postcss } from "opticss";
 
+import { Block } from "../../BlockTree";
+import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { FileIdentifier } from "../../importing";
+import { sourceRange } from "../../SourceLocation";
 import { stripQuotes } from "../utils";
 
-export async function assertBlockIdsMatch(root: postcss.Root, identifier: FileIdentifier, expected?: string): Promise<postcss.Root> {
+export async function assertBlockIdsMatch(block: Block, configuration: Configuration, root: postcss.Root, identifier: FileIdentifier, expected?: string): Promise<postcss.Root> {
   let foundIdDecl = false;
-
-  if (!expected) {
-    throw new Error(`No expected ID provided.\nIdentifier: ${identifier}`);
-  }
+  let scopeNode;
 
   root.walkRules(":scope", (rule) => {
+    scopeNode = rule;
     rule.walkDecls("block-id", (decl) => {
-      if (stripQuotes(decl.value) !== expected) {
-        throw new errors.InvalidBlockSyntax(
-          `Expected block-id property in definition data to match header in Compiled CSS.\nIdentifier: ${identifier}`,
+      if (expected && stripQuotes(decl.value) !== expected) {
+        block.addError(
+          new errors.InvalidBlockSyntax(
+            `Expected block-id property in definition data to match header in Compiled CSS.`,
+            sourceRange(configuration, root, identifier, decl),
+          ),
         );
       }
       foundIdDecl = true;
@@ -23,9 +27,23 @@ export async function assertBlockIdsMatch(root: postcss.Root, identifier: FileId
   });
 
   if (!foundIdDecl) {
-    throw new errors.InvalidBlockSyntax(
-      `Expected block-id to be declared in definition data.\nIdentifier: ${identifier}`,
-    );
+    if (scopeNode) {
+      block.addError(
+        new errors.InvalidBlockSyntax(
+          `Expected block-id to be declared in definition's :scope rule.`,
+          sourceRange(configuration, root, identifier, scopeNode),
+        ),
+      );
+    } else {
+      block.addError(
+        new errors.InvalidBlockSyntax(
+          `Expected block-id to be declared in definition's :scope rule.`,
+          {
+            filename: identifier,
+          },
+        ),
+      );
+    }
   }
 
   return root;

@@ -17,18 +17,22 @@ export async function discoverName(configuration: Configuration, root: postcss.R
         );
       }
 
-      defaultName = decl.value;
+      defaultName = decl.value.trim();
 
     });
   });
 
   // We expect to have a block name by this point. Either we should have found one in the source
-  // or inferred one from the filename. Definition files must include a blokc-name.
-  if (!defaultName || defaultName.trim() === "") {
+  // or inferred one from the filename. Definition files must include a block-name.
+  if (!defaultName) {
     if (isDfnFile) {
-      throw new errors.InvalidBlockSyntax(`block-name is expected to be declared in definition file's :scope rule.\nIdentifier: ${file}`);
+      throw new errors.InvalidBlockSyntax(`block-name is expected to be declared in definition file's :scope rule.`, {
+        filename: file,
+      });
     } else {
-      throw new errors.CssBlockError(`Unable to find or infer a block name.\nIdentifier: ${file}`);
+      throw new errors.CssBlockError(`Unable to find or infer a block name.`, {
+        filename: file,
+      });
     }
   }
   return defaultName;

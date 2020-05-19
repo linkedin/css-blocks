@@ -84,14 +84,14 @@ export class BlockParser {
       // Assert that the block-id rule in :scope is declared and matches
       // header comment in Compiled CSS.
       debug(" - Assert Block IDs Match");
-      await assertBlockIdsMatch(root, debugIdent, expectedId);
+      await assertBlockIdsMatch(block, configuration, root, sourceFile, expectedId);
       debug(" - Assert Block Class Declared");
-      await assertBlockClassDeclared(root, debugIdent);
+      await assertBlockClassDeclared(block, configuration, root, sourceFile);
     } else {
       // If not a definition file, it shouldn't have rules that can
       // only be in definition files.
       debug(" - Disallow Definition-Only Declarations");
-      await disallowDefinitionRules(configuration, root, sourceFile);
+      await disallowDefinitionRules(block, configuration, root, sourceFile);
     }
     // Throw if we encounter any `!important` decls.
     debug(` - Disallow Important`);

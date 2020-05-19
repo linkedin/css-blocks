@@ -14,6 +14,8 @@ const debug = debugGenerator("css-blocks:importer");
 
 const DEFAULT_MAIN = "blocks/index.block.css";
 
+const EMBEDDED_DEFINITION_TAG = "#blockDefinitionURL";
+
 export interface CSSBlocksPackageMetadata {
   "css-blocks"?: {
     main?: string;
@@ -110,6 +112,10 @@ export class NodeJsImporter extends BaseImporter {
   }
 
   filesystemPath(identifier: FileIdentifier, _options: ResolvedConfiguration): string | null {
+    if (identifier.endsWith(EMBEDDED_DEFINITION_TAG)) {
+      const amendedId = identifier.replace(EMBEDDED_DEFINITION_TAG, "");
+      return path.isAbsolute(amendedId) && existsSync(amendedId) ? `${amendedId}${EMBEDDED_DEFINITION_TAG}` : null;
+    }
     return path.isAbsolute(identifier) && existsSync(identifier) ? identifier : null;
   }
 
@@ -132,6 +138,9 @@ export class NodeJsImporter extends BaseImporter {
     if (alias) {
       return path.join(alias.alias, path.relative(alias.path, identifier));
     }
+    if (identifier.endsWith(EMBEDDED_DEFINITION_TAG)) {
+      return `path.relative(config.rootDir, identifier.replace(EMBEDDED_DEFINITION_TAG, ""))${EMBEDDED_DEFINITION_TAG}`;
+    }
     return path.relative(config.rootDir, identifier);
   }
 
@@ -145,28 +154,34 @@ export class NodeJsImporter extends BaseImporter {
       // follow, or embedded data.
       const dfnUrl = segmentedContents.definitionUrl;
       let dfnData: string | null = null;
+      let definitionIdentifier: FileIdentifier  | null = null;
       if (!isDefinitionUrlValid(dfnUrl)) {
         throw new Error(`Definition URL in Compiled CSS file is invalid.\nFile Identifier: ${identifier}\nDefinition URL: ${dfnUrl}`);
       }
       if (dfnUrl.startsWith("data:")) {
         // Parse this as embedded data.
         const [dfnHeader, dfnEncodedData] = dfnUrl.split(",");
+        definitionIdentifier = `${identifier}${EMBEDDED_DEFINITION_TAG}`;
         if (dfnHeader === "data:text/css;base64") {
           dfnData = Buffer.from(dfnEncodedData, "base64").toString("utf-8");
         } else {
-          throw new Error(`Definition data is in unsupported encoding or format. Embedded data must be in text/css;base64 format.\nFormat given: ${dfnHeader}`);
+          throw new Error(`Definition data is in unsupported encoding or format. Embedded data must be in text/css;base64 format.\nFile Identifier: ${identifier}\nFormat given: ${dfnHeader}`);
         }
       } else {
         // Read in the definition data from the given path.
-        const dfnIdentifier = this.identifier(identifier, dfnUrl, config);
+        definitionIdentifier = this.identifier(identifier, dfnUrl, config);
         try {
-          dfnData = await readFile(dfnIdentifier, "utf-8");
+          dfnData = await readFile(definitionIdentifier, "utf-8");
         } catch (e) {
           throw new Error(`Definition URL in Compiled CSS file is invalid.\nFile Identifier: ${identifier}\nDefinition URL: ${dfnUrl}\nThrown error: ${e.message}`);
         }
       }
 
-      if (!dfnData || dfnData.trim() === "") {
+      // Clean up definition data and location.
+      dfnData = dfnData.trim();
+      definitionIdentifier = definitionIdentifier.trim();
+
+      if (!dfnData) {
         throw new Error("Could not parse or read definition data.");
       }
 
@@ -177,6 +192,7 @@ export class NodeJsImporter extends BaseImporter {
         cssContents: segmentedContents.blockCssContents,
         blockId: segmentedContents.blockId,
         definitionContents: dfnData,
+        definitionIdentifier,
       };
     } else {
       return {

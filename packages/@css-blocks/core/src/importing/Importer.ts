@@ -120,6 +120,13 @@ export interface ImportedCompiledCssFile {
   blockId: string;
 
   /**
+   * A unique identifier (probably an absolute filesystem path) for the block's definition
+   * data. Even if the data is embedded in the same file as the Compiled CSS, this should
+   * be distinct from the Compiled CSS identifier.
+   */
+  definitionIdentifier: string;
+
+  /**
    * The contents of the block definition. If this was embedded base64 data, it will
    * have been decoded into a string. If this was an external file, the file's
    * contents will be included here.
