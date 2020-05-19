@@ -10,6 +10,7 @@ export const CLASS_NAME_IDENT = new RegExp(regexpu("^(-?(?:\\\\.|[A-Za-z_\\u{008
 export const EXTENDS = "extends";
 export const IMPLEMENTS = "implements";
 export const BLOCK_NAME = "block-name";
+export const BLOCK_ID = "block-id";
 export const BLOCK_ALIAS = "block-alias";
 export const COMPOSES = "composes";
 export const BLOCK_PROP_NAMES = new Set([BLOCK_NAME, BLOCK_ALIAS, EXTENDS, IMPLEMENTS, COMPOSES]);

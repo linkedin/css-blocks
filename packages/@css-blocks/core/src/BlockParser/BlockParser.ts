@@ -6,12 +6,12 @@ import { Options, ResolvedConfiguration, resolveConfiguration } from "../configu
 import { FileIdentifier } from "../importing";
 
 import { assertBlockClassDeclared } from "./features/assert-block-class-declared";
-import { assertBlockIdsMatch } from "./features/assert-block-ids-match";
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { composeBlock } from "./features/composes-block";
 import { constructBlock } from "./features/construct-block";
 import { disallowDefinitionRules } from "./features/disallow-dfn-rules";
 import { disallowImportant } from "./features/disallow-important";
+import { discoverGuid } from "./features/discover-guid";
 import { discoverName } from "./features/discover-name";
 import { exportBlocks } from "./features/export-blocks";
 import { extendBlock } from "./features/extend-block";
@@ -76,15 +76,14 @@ export class BlockParser {
     // Discover the block's preferred name.
     name = await discoverName(configuration, root, sourceFile, isDfnFile, name);
 
+    // Discover the block's GUID, if it's a definition file.
+    const guid = await discoverGuid(configuration, root, sourceFile, isDfnFile, expectedId);
+
     // Create our new Block object and save reference to the raw AST.
-    let block = new Block(name, identifier, root);
+    let block = new Block(name, identifier, root, guid);
 
     if (isDfnFile) {
       // Rules only checked when parsing definition files...
-      // Assert that the block-id rule in :scope is declared and matches
-      // header comment in Compiled CSS.
-      debug(" - Assert Block IDs Match");
-      await assertBlockIdsMatch(block, configuration, root, sourceFile, expectedId);
       debug(" - Assert Block Class Declared");
       await assertBlockClassDeclared(block, configuration, root, sourceFile);
     } else {
