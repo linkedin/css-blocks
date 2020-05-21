@@ -32,7 +32,7 @@
     "@types/minimatch": "^3.0.3",
     "@types/mocha": "^7.0.2",
     "@types/node": "^10.0.0",
-    "@types/prettier": "^1.8.0",
+    "@types/prettier": "^2.0.1",
     "@types/tapable": "1.0.4",
     "chai": "^4.2.0",
     "husky": "4.2.1",
