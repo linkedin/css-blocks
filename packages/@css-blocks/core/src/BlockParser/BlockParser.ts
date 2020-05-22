@@ -5,7 +5,7 @@ import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
 import { FileIdentifier } from "../importing";
 
-import { assertBlockClassDeclared } from "./features/assert-block-class-declared";
+import { addPresetSelectors } from "./features/add-preset-selectors";
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { composeBlock } from "./features/composes-block";
 import { constructBlock } from "./features/construct-block";
@@ -83,18 +83,15 @@ export class BlockParser {
     // Discover the block's preferred name.
     name = await discoverName(configuration, root, sourceFile, isDfnFile, name);
 
-    // Discover the block's GUID, if it's a definition file.
+    // Discover, or generate, the block's GUID.
+    // Then, register it with the factory (to avoid duplicates).
     const guid = await discoverGuid(configuration, root, sourceFile, isDfnFile, expectedGuid) || gen_guid(identifier, configuration.guidAutogenCharacters);
     this.factory.registerGuid(guid, identifier);
 
     // Create our new Block object and save reference to the raw AST.
     let block = new Block(name, identifier, guid, root);
 
-    if (isDfnFile) {
-      // Rules only checked when parsing definition files...
-      debug(" - Assert Block Class Declared");
-      await assertBlockClassDeclared(block, configuration, root, sourceFile);
-    } else {
+    if (!isDfnFile) {
       // If not a definition file, it shouldn't have rules that can
       // only be in definition files.
       debug(" - Disallow Definition-Only Declarations");
@@ -129,6 +126,15 @@ export class BlockParser {
     // Log any debug statements discovered.
     debug(` - Process Debugs`);
     await processDebugStatements(root, block, debugIdent, this.config);
+
+    // These rules are only relevant to definition files. We run these after we're
+    // basically done reconstituting the block.
+    if (isDfnFile) {
+      // Find any block-class rules and override the class name of the block with its value.
+      debug(" - Process Preset Block Classes");
+      await addPresetSelectors(configuration, root, block, debugIdent);
+      // TODO: Process block-interface-index declarations. (And inherited-styles???)
+    }
 
     // Return our fully constructed block.
     debug(` - Complete`);

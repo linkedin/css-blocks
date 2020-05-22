@@ -96,6 +96,9 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   }
 
   public cssClass(config: ResolvedConfiguration, reservedClassNames: Set<string>): string {
+    if (this.presetSelector) {
+      return this.presetSelector;
+    }
     switch (config.outputMode) {
       case OutputMode.BEM:
         return `${this.parent.cssClass(config, reservedClassNames)}${ this.isPresenceRule ? "" : `-${this.value}`}`;
