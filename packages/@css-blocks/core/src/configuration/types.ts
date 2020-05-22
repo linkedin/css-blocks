@@ -31,6 +31,21 @@ export interface Configuration {
    * this can be disabled by setting `disablePreprocessChaining` to true.
    */
   disablePreprocessChaining: boolean;
+
+  /**
+   * Determines the number of significant characters used when generating GUIDs for blocks.
+   * These GUIDs are build using a hash based on the file's unique identifier (usually an
+   * absolute file path).
+   *
+   * The default value used is 5 characters. Normally you shouldn't need to change this,
+   * but you can increase the number of significant characters in the exceedingly rare event
+   * you run into GUID conflicts.
+   *
+   * This value does not affect GUIDs from pre-compiled blocks imported from other dependencies.
+   * In these cases, the Block ID is pre-determined using the GUID value in the block's
+   * definition file.
+   */
+  guidAutogenCharacters: number;
 }
 
 /**
@@ -50,4 +65,5 @@ export type ConfigurationSimpleKeys = "outputMode"
                                     | "importer"
                                     | "rootDir"
                                     | "disablePreprocessChaining"
-                                    | "maxConcurrentCompiles";
+                                    | "maxConcurrentCompiles"
+                                    | "guidAutogenCharacters";

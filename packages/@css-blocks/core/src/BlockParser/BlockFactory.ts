@@ -47,6 +47,8 @@ export class BlockFactory {
   private paths: ObjectDictionary<string>;
   private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
+  private guids = new Set<string>();
+
   constructor(options: Options, postcssImpl = postcss, faultTolerant = false) {
     this.postcssImpl = postcssImpl;
     this.configuration = resolveConfiguration(options);
@@ -72,6 +74,7 @@ export class BlockFactory {
     this.paths = {};
     this.promises = {};
     this.blockNames = {};
+    this.guids.clear();
   }
 
   /**
@@ -412,6 +415,21 @@ export class BlockFactory {
 
     }
     return preprocessor;
+  }
+
+  /**
+   * Registers a new GUID with the BlockFactory. If the given GUID has already been used, this
+   * method will throw an error.
+   * @param guid - The guid to register.
+   * @param identifier  - A reference to the file this block was generated from, for error reporting.
+   */
+  registerGuid(guid: string, identifier: FileIdentifier) {
+    if (this.guids.has(guid)) {
+      throw new CssBlockError("Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs.", {
+        filename: identifier,
+      });
+    }
+    this.guids.add(guid);
   }
 }
 

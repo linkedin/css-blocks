@@ -360,7 +360,7 @@ export class Analysis<K extends keyof TemplateTypes> {
     // Create a temporary block so we can take advantage of `Block.lookup`
     // to easily resolve all BlockPaths referenced in the serialized analysis.
     // TODO: We may want to abstract this so we're not making a temporary block.
-    let localScope = new Block("analysis-block", "tmp");
+    let localScope = new Block("analysis-block", "tmp", "analysis-block");
     values.forEach(o => {
       analysis.blocks[o.name] = o.block;
       localScope.addBlockReference(o.name, o.block);

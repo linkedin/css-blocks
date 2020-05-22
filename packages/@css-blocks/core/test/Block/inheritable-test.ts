@@ -60,7 +60,7 @@ class TestSource extends Inheritable<
 
 type ContainerNode = Inheritable<TestNode, TestSource, TestSource, TestSink>;
 
-const TEST_BLOCK = new Block("test", "tree");
+const TEST_BLOCK = new Block("test", "tree", "test");
 class TestNode extends Inheritable<
   TestNode,   // Self
   TestSource, // Root

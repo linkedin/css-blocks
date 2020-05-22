@@ -9,7 +9,7 @@ import { resolveConfiguration } from "../../src/configuration";
 export class RulesetContainerTests {
   @test "addRuleset saves property concerns for multiple rulesets"() {
     let config = resolveConfiguration({});
-    let b = new Block("name", "filepath");
+    let b = new Block("name", "filepath", "test");
     let c = b.ensureClass("test");
     let rulesets = c.rulesets;
     postcss.parse(`
