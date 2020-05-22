@@ -8,6 +8,7 @@ import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
 import { CssBlockError } from "../errors";
 import { FileIdentifier, ImportedCompiledCssFile, ImportedFile, Importer } from "../importing";
+import { sourceRange } from "../SourceLocation";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";
@@ -313,6 +314,7 @@ export class BlockFactory {
 
     // NOTE: If we had to upgrade the syntax version of a definition file, here's where'd we do that.
     //       But this isn't a thing we need to do until we have multiple syntax versions.
+    // TODO: Actually look at the declared version - error if it's greater than 1.
 
     // NOTE: No need to run preprocessor - we assume that Compiled CSS has already been preprocessed.
     // Parse the definition file into an AST
@@ -339,10 +341,31 @@ export class BlockFactory {
     }
 
     // Construct a Block out of the definition file.
-    const block = this.parser.parseDefinitionSource(definitionAst, file.definitionIdentifier, file.blockId);
+    const block = await this.parser.parseDefinitionSource(definitionAst, file.definitionIdentifier, file.blockId);
 
     // Merge the rules from the CSS contents into the Block.
-    // TODO: Actually merge the CSS rules in. (^_^")
+    const styleNodesMap = block.compiledClassesMap(true);
+    cssContentsAst.walkRules(rule => {
+      rule.selectors.forEach(sel => {
+        if (sel.split(".").length !== 1 || !sel.startsWith(".")) {
+          // Skip it, we only care about selectors with only one class.
+          return;
+        }
+        const styleNode = styleNodesMap[sel];
+        if (!styleNode) {
+          block.addError(
+            new CssBlockError(
+              `Selector ${sel} exists in Compiled CSS file but doesn't match any rules in definition file.`,
+              sourceRange(this.configuration, cssContentsAst.root(), file.identifier, rule),
+            ),
+          );
+          return;
+        }
+        styleNode.rulesets.addRuleset(this.configuration, file.identifier, rule);
+      });
+    });
+
+    // TODO: Set the block's name from the block-name rule. (We skip this later for definition files.)
 
     // And we're done!
     return block;

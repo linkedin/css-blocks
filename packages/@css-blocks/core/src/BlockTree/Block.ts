@@ -434,6 +434,28 @@ export class Block
     return result;
   }
 
+  /**
+   * Fetch a dictionary of styles associated with this block, using any preset
+   * selector as the key. If a given style doesn't have a preset selector, it
+   * will be excluded from this dictionary.
+   *
+   * @param shallow - Pass true to exclude inherited objects.
+   * @returns Collection of Styles objects, organized by preset selector value.
+   */
+  compiledClassesMap(shallow?: boolean): ObjectDictionary<Styles> {
+    const result = {};
+    const all = this.all(shallow);
+
+    all.forEach(el => {
+      const presetCssClass = el.presetCssClass;
+      if (presetCssClass) {
+        result[presetCssClass] = el;
+      }
+    });
+
+    return result;
+  }
+
   merged(): MultiMap<string, Styles> {
     let map = new MultiMap<string, Styles>(false);
     for (let obj of this.all()) {
