@@ -1,11 +1,11 @@
 import { postcss } from "opticss";
 
+import { CLASS_NAME_IDENT } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
 import { Configuration } from "../../configuration";
 import { CssBlockError } from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 import { stripQuotes } from "../utils";
-import { CLASS_NAME_IDENT } from "../../BlockSyntax";
 
 /**
  * Traverse a definition file's rules and define a preset block-class for each
@@ -38,8 +38,8 @@ export function addPresetSelectors(configuration: Configuration, root: postcss.R
         block.addError(
           new CssBlockError(
             `${val} isn't a valid class name.`,
-            sourceRange(configuration, root, file, decl)
-          )
+            sourceRange(configuration, root, file, decl),
+          ),
         );
       }
 
