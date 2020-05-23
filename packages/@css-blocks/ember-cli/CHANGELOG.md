@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v1.0.0...v1.1.0) (2020-05-23)
+
+
+### Bug Fixes
+
+* Use sync interface for config in ember-cli. ([b16d433](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/commit/b16d4333ede5fd5872fd61674310a5af69dae880))
+
+
+
+
+
 # [1.0.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-cli/compare/v1.0.0-alpha.7...v1.0.0) (2020-04-04)
 
 
