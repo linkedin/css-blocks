@@ -98,9 +98,9 @@ export async function search(searchDirectory?: string): Promise<Partial<Configur
   let loader = cosmiconfig("css-blocks", {
     transform: transformFinal,
     searchPlaces: [
-      "package.json",
       "css-blocks.config.json",
       "css-blocks.config.js",
+      "package.json",
     ],
   });
   let result = await loader.search(searchDirectory);
