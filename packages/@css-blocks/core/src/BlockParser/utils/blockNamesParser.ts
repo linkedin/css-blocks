@@ -1,4 +1,5 @@
 import { DEFAULT_EXPORT } from "../../BlockSyntax";
+import { BlockReference } from "../ast";
 
 /**
  * Map of `aliasName` to `blockName`. Used to store data from `@block`
@@ -99,4 +100,27 @@ export function parseBlockNames(str: string, useDefault: boolean): BlockNames {
   commit(state);
   mapping[state.alias] = state.block;
   return mapping;
+}
+
+export function parseBlockNamesAST(blockList: string, useDefault: boolean) {
+  let defaultName: string | undefined;
+  let blockNames = parseBlockNames(blockList, useDefault);
+  let names: BlockReference["references"];
+  for (let asName of Object.keys(blockNames)) {
+    let name = blockNames[asName];
+    if (name === DEFAULT_EXPORT) {
+      defaultName = asName;
+    } else {
+      names = names || [];
+      if (name === asName) {
+        names.push({name});
+      } else {
+        names.push({name, asName});
+      }
+    }
+  }
+  return {
+    defaultName,
+    names,
+  };
 }

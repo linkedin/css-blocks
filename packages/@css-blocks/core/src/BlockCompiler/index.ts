@@ -15,7 +15,7 @@ import {
   resolveConfiguration,
 } from "../configuration";
 
-import { BlockDefinitionCompiler, INLINE_DEFINITION_FILE } from "./BlockDefinitionCompiler";
+import { BlockDefinitionCompiler, INLINE_DEFINITION_FILE, PathResolver, filesystemPathResolver } from "./BlockDefinitionCompiler";
 import { ConflictResolver } from "./ConflictResolver";
 
 export { INLINE_DEFINITION_FILE } from "./BlockDefinitionCompiler";
@@ -46,11 +46,11 @@ export class BlockCompiler {
     this.definitionCompiler = new BlockDefinitionCompiler(postcssImpl, this.config);
   }
 
-  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: typeof INLINE_DEFINITION_FILE): CompiledBlockAndInlineDefinition;
-  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string): CompiledBlockAndDefinition;
-  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string | typeof INLINE_DEFINITION_FILE): CompiledBlockAndDefinition | CompiledBlockAndInlineDefinition {
+  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: typeof INLINE_DEFINITION_FILE, pathResolver: PathResolver): CompiledBlockAndInlineDefinition;
+  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string, pathResolver: PathResolver): CompiledBlockAndDefinition;
+  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string | typeof INLINE_DEFINITION_FILE, pathResolver: PathResolver = filesystemPathResolver): CompiledBlockAndDefinition | CompiledBlockAndInlineDefinition {
     let css = this.compile(block, root, reservedClassNames);
-    let definition = this.definitionCompiler.compile(block);
+    let definition = this.definitionCompiler.compile(block, root, pathResolver);
     let result: CompiledBlockAndDefinition | CompiledBlockAndInlineDefinition;
 
     if (definitionPath === INLINE_DEFINITION_FILE) {

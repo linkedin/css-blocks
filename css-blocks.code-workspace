@@ -57,6 +57,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/ember"
+		},
+		{
+			"path": "packages/@css-blocks/ember-app"
 		}
 	],
 	"settings": {

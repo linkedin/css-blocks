@@ -6,9 +6,30 @@ import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 import { allDone } from "../../util";
 import { BlockFactory } from "../index";
-import { parseBlockNames, stripQuotes } from "../utils";
+import { parseBlockNamesAST, stripQuotes } from "../utils";
+import { LocalBlockExport, BlockExport, builders, typeguards } from "../ast";
 
 const FROM_EXPR = /\s+from\s+/;
+
+function parseExport(atRule: postcss.AtRule): LocalBlockExport | BlockExport | null {
+  let exports = atRule.params;
+
+  let [exportList = "", fromPath = ""] = exports.split(FROM_EXPR);
+  fromPath = stripQuotes(fromPath);
+  if (!exportList) {
+    return null;
+  }
+  let {defaultName, names} = parseBlockNamesAST(exportList, !!fromPath);
+  names = names || [];
+  if (defaultName) {
+    names.unshift({name: DEFAULT_EXPORT, asName: defaultName});
+  }
+  if (fromPath) {
+    return builders.blockExport(fromPath, names);
+  } else {
+    return builders.localBlockExport(names);
+  }
+}
 
 /**
  * Resolve all block references for a given block.
@@ -31,12 +52,8 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
     // For each `@block` expression, read in the block file, parse and
     // push to block references Promise array.
     root.walkAtRules(BLOCK_EXPORT, (atRule: postcss.AtRule) => {
-      let exports = atRule.params;
-
-      let [exportList = "", blockPath = ""] = exports.split(FROM_EXPR);
-      blockPath = stripQuotes(blockPath);
-
-      if (!exportList) {
+      let exports = parseExport(atRule);
+      if (!exports) {
         block.addError(new errors.InvalidBlockSyntax(
           `Malformed block export: \`@export ${atRule.params}\``,
           sourceRange(factory.configuration, block.stylesheet, file, atRule),
@@ -45,22 +62,22 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
 
       // Import file, then parse file, then save block reference.
       let srcBlockPromise: Promise<Block> = Promise.resolve(block);
-      if (blockPath) {
-        srcBlockPromise = factory.getBlockRelative(block.identifier, blockPath);
+      if (typeguards.isBlockExport(exports)) {
+        srcBlockPromise = factory.getBlockRelative(block.identifier, exports.fromPath);
       }
 
       // Validate our imported block name is a valid CSS identifier.
-      const blockNames = parseBlockNames(exportList, !!blockPath);
       const exportPromise = srcBlockPromise.then(
         (srcBlock) => {
-          for (let remoteName of Object.keys(blockNames)) {
+          for (let {name: localName, asName: remoteName} of exports?.exports!) {
+            remoteName = remoteName || localName;
             if (remoteNames.has(remoteName)) {
               block.addError(new errors.InvalidBlockSyntax(
                 `Cannot have duplicate Block export of same name: "${remoteName}".`,
                 sourceRange(factory.configuration, block.stylesheet, file, atRule),
               ));
             } else {
-              let localName = blockNames[remoteName];
+              remoteNames.add(remoteName);
               if (!CLASS_NAME_IDENT.test(localName)) {
                 block.addError(new errors.InvalidBlockSyntax(
                   `Illegal block name in export. "${localName}" is not a legal CSS identifier.`,
@@ -102,7 +119,7 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
         },
         (error) => {
           block.addError(new errors.CascadingError(
-            `Error in exported block "${blockPath}"`,
+            `Error in exported block "${(<BlockExport>exports).fromPath}"`,
             error,
             sourceRange(factory.configuration, block.stylesheet, file, atRule),
           ));

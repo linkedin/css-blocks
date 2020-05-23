@@ -36,7 +36,7 @@ class Plugin {
    * @param  root  PostCSS AST
    * @param  result  Provides the result of the PostCSS transformations
    */
-  public async process(root: postcss.Root, result: postcss.Result) {
+  public process(root: postcss.Root, result: postcss.Result): Promise<postcss.Root> {
 
     // Fetch the CSS source file path. Throw if not present.
     let sourceFile: string;
@@ -52,9 +52,9 @@ class Plugin {
     let factory = new BlockFactory(this.config, this.postcss);
     const isDfnFile = this.mockConfigOpts.dfnFiles ? this.mockConfigOpts.dfnFiles.includes(identifier) : false;
 
-    await factory.parseRoot(root, sourceFile, defaultName, isDfnFile).then((block) => {
+    return factory.parseRoot(root, sourceFile, defaultName, isDfnFile).then((block) => {
       let compiler = new BlockCompiler(postcss, this.config);
-      compiler.compile(block, root, new Set());
+      return compiler.compile(block, root, new Set());
     });
   }
 }

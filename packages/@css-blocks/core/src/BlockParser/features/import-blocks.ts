@@ -5,8 +5,9 @@ import { BLOCK_IMPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT, isBlockNameReserved } f
 import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
+import { BlockReference, builders } from "../ast";
 import { BlockFactory } from "../index";
-import { parseBlockNames, stripQuotes } from "../utils";
+import { parseBlockNamesAST, stripQuotes } from "../utils";
 
 const FROM_EXPR = /\s+from\s+/;
 
@@ -14,6 +15,22 @@ interface ParsedImport {
   blockPath: string;
   atRule: postcss.AtRule;
   names: Array<{localName: string; remoteName: string}>;
+}
+
+// imports: `<blocks-list> from <block-path>`
+// blockList: `<default-block> | <named-blocks> | <default-block> " , " <named-blocks> | <named-blocks> " , " <default-block>`
+// blockPath: `' " ' <any-value> ' " ' | " ' " <any-value> " ' "`
+function parseBlockReference(atRule: postcss.AtRule): BlockReference | null {
+  let imports = atRule.params;
+  let [blockList = "", blockPath = ""] = imports.split(FROM_EXPR);
+  blockPath = stripQuotes(blockPath);
+
+  if (!blockList || !blockPath) {
+    return null;
+  } else {
+    let {defaultName, names} = parseBlockNamesAST(blockList, true);
+    return builders.blockReference(blockPath, defaultName, names);
+  }
 }
 
 /**
@@ -34,29 +51,33 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
   // For each `@block` expression, read in the block file, parse and
   // push to block references Promise array.
   root.walkAtRules(BLOCK_IMPORT, (atRule: postcss.AtRule) => {
-    // imports: `<blocks-list> from <block-path>`
-    // blockList: `<default-block> | <named-blocks> | <default-block> " , " <named-blocks> | <named-blocks> " , " <default-block>`
-    // blockPath: `' " ' <any-value> ' " ' | " ' " <any-value> " ' "`
-    let imports = atRule.params;
-    let [blockList = "", blockPath = ""] = imports.split(FROM_EXPR);
-    blockPath = stripQuotes(blockPath);
-
-    if (!blockList || !blockPath) {
+    let blockReference = parseBlockReference(atRule);
+    if (!blockReference) {
       block.addError(new errors.InvalidBlockSyntax(
         `Malformed block reference: \`@block ${atRule.params}\``,
         sourceRange(factory.configuration, block.stylesheet, file, atRule),
-        ));
+      ));
     } else {
+      block.blockAST!.children.push(blockReference);
+      let hasInvalidNames = false;
       let names: ParsedImport["names"] = [];
-      let blockNames = parseBlockNames(blockList, true);
-      for (let localName of Object.keys(blockNames)) {
-        let remoteName = blockNames[localName];
-        let hasInvalidNames = validateBlockNames(factory.configuration, block, blockPath, localName, remoteName, file, atRule);
+      if (blockReference.defaultName) {
+        hasInvalidNames = validateBlockNames(factory.configuration, block, blockReference.fromPath, blockReference.defaultName, DEFAULT_EXPORT, file, atRule);
         if (!hasInvalidNames) {
-          names.push({ localName, remoteName });
+          names.push({localName: blockReference.defaultName, remoteName: DEFAULT_EXPORT});
         }
       }
-      parsedImports.push({ blockPath, atRule, names });
+      if (blockReference.references) {
+        for (let {name: remoteName, asName: localName} of blockReference.references) {
+          if (!localName) localName = remoteName;
+          let isInvalid = validateBlockNames(factory.configuration, block, blockReference.fromPath, localName, remoteName, file, atRule);
+          if (!isInvalid) {
+            names.push({localName, remoteName});
+          }
+          hasInvalidNames = hasInvalidNames || isInvalid;
+        }
+      }
+      parsedImports.push({ blockPath: blockReference?.fromPath, atRule, names });
     }
   });
 

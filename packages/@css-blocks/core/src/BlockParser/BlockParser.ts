@@ -8,6 +8,7 @@ import { FileIdentifier } from "../importing";
 
 import { addInterfaceIndexes } from "./features/add-interface-indexes";
 import { addPresetSelectors } from "./features/add-preset-selectors";
+import { builders } from "./ast";
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { composeBlock } from "./features/composes-block";
 import { constructBlock } from "./features/construct-block";
@@ -102,6 +103,7 @@ export class BlockParser {
 
     // Create our new Block object and save reference to the raw AST.
     let block = new Block(name, identifier, guid, root);
+    block.blockAST = builders.root();
 
     // Add any errors that surfaced during name and GUID discovery.
     if (nameDiscoveryError) {
