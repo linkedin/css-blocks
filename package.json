@@ -40,7 +40,7 @@
     "lerna": "^3.16.4",
     "loader-utils": "^1.1.0",
     "markdown-toc": "^1.2.0",
-    "mocha": "^7.0.1",
+    "mocha": "^7.2.0",
     "mocha-typescript": "^1.0.23",
     "mock-require": "^3.0.3",
     "outdent": "^0.7.0",
