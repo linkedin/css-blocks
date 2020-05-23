@@ -1,7 +1,7 @@
 import {
   Configuration,
 } from "@css-blocks/core";
-import { cosmiconfigSync as cosmiconfig, TransformSync } from "cosmiconfig";
+import { TransformSync, cosmiconfigSync as cosmiconfig } from "cosmiconfig";
 import * as debugGenerator from "debug";
 import merge = require("lodash.merge");
 import { dirname, resolve } from "path";
