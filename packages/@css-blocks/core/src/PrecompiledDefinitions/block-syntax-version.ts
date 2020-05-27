@@ -1,5 +1,5 @@
-import { ImportedCompiledCssFile } from "../importing";
 import { CssBlockError } from "../errors";
+import { ImportedCompiledCssFile } from "../importing";
 
 /**
  * A regex to find the block-syntax-version annotation in a definition file.
@@ -34,7 +34,7 @@ export function determineBlockSyntaxVersion(file: ImportedCompiledCssFile): numb
 
   if (!versionLookupResult) {
     throw new CssBlockError("Unable to process definition file because the file is missing a block-syntax-version declaration.", {
-      filename: dfnId
+      filename: dfnId,
     });
   }
 
@@ -43,7 +43,7 @@ export function determineBlockSyntaxVersion(file: ImportedCompiledCssFile): numb
     return version;
   } catch {
     throw new CssBlockError("Unable to process definition file because the declared block-syntax version isn't a number.", {
-      filename: dfnId
+      filename: dfnId,
     });
   }
 }
@@ -72,12 +72,12 @@ export function upgradeDefinitionFileSyntax(file: ImportedCompiledCssFile): Impo
 
   if (version > MAX_SUPPORTED_VERSION) {
     throw new CssBlockError("Unable to process definition file because the syntax version of the definition file is greater than supported by CSS Blocks. You can fix this issue by upgrading CSS Blocks to the latest version.", {
-      filename: file.definitionIdentifier
+      filename: file.definitionIdentifier,
     });
   }
   if (version < MIN_SUPPORTED_VERSION) {
     throw new CssBlockError("Unable to process definition file because the syntax of the definition can't be automatically upgraded to the latest version supported by CSS Blocks. You may be able to fix this issue by upgrading the dependency or origin file this definition file was generated from. Otherwise, you'll need to use an earlier version of CSS Blocks.", {
-      filename: file.definitionIdentifier
+      filename: file.definitionIdentifier,
     });
   }
 
