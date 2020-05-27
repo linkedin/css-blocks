@@ -8,6 +8,7 @@ import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
 import { CssBlockError } from "../errors";
 import { FileIdentifier, ImportedCompiledCssFile, ImportedFile, Importer } from "../importing";
+import { upgradeDefinitionFileSyntax } from "../PrecompiledDefinitions/block-syntax-version";
 import { sourceRange } from "../SourceLocation";
 import { PromiseQueue } from "../util/PromiseQueue";
 
@@ -312,9 +313,8 @@ export class BlockFactory {
       return this.blocks[file.identifier];
     }
 
-    // NOTE: If we had to upgrade the syntax version of a definition file, here's where'd we do that.
-    //       But this isn't a thing we need to do until we have multiple syntax versions.
-    // TODO: Actually look at the declared version - error if it's greater than 1.
+    // Update definition data to use latest block syntax.
+    file = upgradeDefinitionFileSyntax(file);
 
     // NOTE: No need to run preprocessor - we assume that Compiled CSS has already been preprocessed.
     // Parse the definition file into an AST
