@@ -193,6 +193,7 @@ export class NodeJsImporter extends BaseImporter {
         blockId: segmentedContents.blockId,
         definitionContents: dfnData,
         definitionIdentifier,
+        defaultName: this.defaultName(identifier, config),
       };
     } else {
       return {

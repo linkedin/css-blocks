@@ -3,6 +3,7 @@ import { postcss } from "opticss";
 
 import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
+import { CssBlockError } from "../errors";
 import { FileIdentifier } from "../importing";
 
 import { addPresetSelectors } from "./features/add-preset-selectors";
@@ -56,8 +57,8 @@ export class BlockParser {
     return block;
   }
 
-  public async parseDefinitionSource(root: postcss.Root, identifier: string, expectedId: string) {
-    return await this.parse(root, identifier, undefined, true, expectedId);
+  public async parseDefinitionSource(root: postcss.Root, identifier: string, expectedId: string, defaultName: string) {
+    return await this.parse(root, identifier, defaultName, true, expectedId);
   }
 
   /**
@@ -73,7 +74,7 @@ export class BlockParser {
    *                       relevant to definition files, where the definition file is linked to Compiled CSS and
    *                       both files may declare a GUID.
    */
-  public async parse(root: postcss.Root, identifier: string, name?: string, isDfnFile = false, expectedGuid?: string): Promise<Block> {
+  public async parse(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Promise<Block> {
     let importer = this.config.importer;
     let debugIdent = importer.debugIdentifier(identifier, this.config);
     let sourceFile = importer.filesystemPath(identifier, this.config) || debugIdent;
@@ -81,15 +82,33 @@ export class BlockParser {
     debug(`Begin parse: "${debugIdent}"`);
 
     // Discover the block's preferred name.
-    name = await discoverName(configuration, root, sourceFile, isDfnFile, name);
+    let nameDiscoveryError: CssBlockError | undefined;
+    try {
+      name = await discoverName(configuration, root, sourceFile, isDfnFile, name);
+    } catch (e) {
+      nameDiscoveryError = e;
+    }
 
     // Discover, or generate, the block's GUID.
-    // Then, register it with the factory (to avoid duplicates).
-    const guid = await discoverGuid(configuration, root, sourceFile, isDfnFile, expectedGuid) || gen_guid(identifier, configuration.guidAutogenCharacters);
-    this.factory.registerGuid(guid, identifier);
+    let guid: string;
+    let guidDiscoveryError: CssBlockError | undefined;
+    try {
+      guid = await discoverGuid(configuration, root, sourceFile, isDfnFile, expectedGuid) || gen_guid(identifier, configuration.guidAutogenCharacters);
+    } catch (e) {
+      guidDiscoveryError = e;
+      guid = gen_guid(identifier, configuration.guidAutogenCharacters);
+    }
 
     // Create our new Block object and save reference to the raw AST.
     let block = new Block(name, identifier, guid, root);
+
+    // Add any errors that surfaced during name and GUID discovery.
+    if (nameDiscoveryError) {
+      block.addError(nameDiscoveryError);
+    }
+    if (guidDiscoveryError) {
+      block.addError(guidDiscoveryError);
+    }
 
     if (!isDfnFile) {
       // If not a definition file, it shouldn't have rules that can

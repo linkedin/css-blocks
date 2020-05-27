@@ -132,6 +132,15 @@ export interface ImportedCompiledCssFile {
    * contents will be included here.
    */
   definitionContents: string;
+
+  /**
+   * The default name for the block based on its identifier. This is used
+   * when a block doesn't specify a name for itself.
+   * A successful build should never fall back to this... having to use this
+   * value instead of being able to find it in the definition data is
+   * an error.
+   */
+  defaultName: string;
 }
 
 /**

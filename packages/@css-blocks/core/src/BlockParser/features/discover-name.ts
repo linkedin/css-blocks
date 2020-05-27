@@ -5,10 +5,13 @@ import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 
-export async function discoverName(configuration: Configuration, root: postcss.Root, file: string, isDfnFile: boolean, defaultName?: string): Promise<string> {
+export async function discoverName(configuration: Configuration, root: postcss.Root, file: string, isDfnFile: boolean, defaultName: string): Promise<string> {
+  let foundName: string | undefined;
+  let scopeRule: postcss.Rule | undefined;
 
   // Eagerly fetch custom `block-name` from the root block rule.
   root.walkRules(":scope", (rule) => {
+    scopeRule = rule;
     rule.walkDecls(BLOCK_NAME, (decl) => {
       if (!CLASS_NAME_IDENT.test(decl.value)) {
         throw new errors.InvalidBlockSyntax(
@@ -17,23 +20,27 @@ export async function discoverName(configuration: Configuration, root: postcss.R
         );
       }
 
-      defaultName = decl.value.trim();
+      foundName = decl.value.trim();
 
     });
   });
 
-  // We expect to have a block name by this point. Either we should have found one in the source
-  // or inferred one from the filename. Definition files must include a block-name.
-  if (!defaultName) {
-    if (isDfnFile) {
-      throw new errors.InvalidBlockSyntax(`block-name is expected to be declared in definition file's :scope rule.`, {
-        filename: file,
-      });
+  // Definition files must include a block-name. We have an inferred one we can fall
+  // back to for recovery purposes, but it should be fixed in the definition file.
+  // (Else, there may be a mismatch with the Compiled CSS.)
+  if (!foundName && isDfnFile) {
+    if (scopeRule) {
+      throw new errors.InvalidBlockSyntax(
+        `block-name is expected to be declared in definition file's :scope rule.`,
+        sourceRange(configuration, root, file, scopeRule),
+      );
     } else {
-      throw new errors.CssBlockError(`Unable to find or infer a block name.`, {
-        filename: file,
-      });
+      throw new errors.InvalidBlockSyntax(
+        `block-name is expected to be declared in definition file's :scope rule.`, {
+          filename: file,
+        },
+      );
     }
   }
-  return defaultName;
+  return foundName || defaultName;
 }

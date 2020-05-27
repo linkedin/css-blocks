@@ -190,7 +190,7 @@ export class BlockFactory {
     try {
       let file = await this.importer.import(identifier, this.configuration);
 
-      let block;
+      let block: Block;
       if (file.type === "ImportedCompiledCssFile") {
         block = await this._reconstituteCompiledCssSource(file);
       } else {
@@ -205,9 +205,28 @@ export class BlockFactory {
       }
 
       // Ensure this block name is unique.
-      // Only need to run this on ImportedFile types.
-      if (!file.type || file.type === "ImportedFile") {
-        block.setName(this.getUniqueBlockName(block.name));
+      const uniqueName = this.getUniqueBlockName(block.name, file.type === "ImportedCompiledCssFile");
+      if (uniqueName === false) {
+        // For ImportedCompiledCssFiles, leave the name alone and add an error.
+        block.addError(
+          new CssBlockError("Block uses a name that has already been used! Check dependencies for conflicting block names.", {
+            filename: block.identifier,
+          }),
+        );
+        block.setName(block.name);
+      } else {
+        block.setName(uniqueName);
+      }
+
+      // Ensure the GUID is unique.
+      const guidRegResult = this.registerGuid(block.guid);
+      if (!guidRegResult) {
+        block.addError(
+            new CssBlockError("Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs.", {
+              filename: block.identifier,
+            },
+          ),
+        );
       }
 
       // if the block has any errors, surface them here unless we're in fault tolerant mode.
@@ -341,7 +360,7 @@ export class BlockFactory {
     }
 
     // Construct a Block out of the definition file.
-    const block = await this.parser.parseDefinitionSource(definitionAst, file.definitionIdentifier, file.blockId);
+    const block = await this.parser.parseDefinitionSource(definitionAst, file.definitionIdentifier, file.blockId, file.defaultName);
 
     // Merge the rules from the CSS contents into the Block.
     const styleNodesMap = block.compiledClassesMap(true);
@@ -393,14 +412,20 @@ export class BlockFactory {
   }
 
   /**
-   * Register a new block name with the BlockFactory. Return true true if successful, false if already exists.
+   * Register a new block name with the BlockFactory.
    * @param name The new block name to register.
-   * @return True or false depending on success status.
+   * @param doNotOverride If true, will not attempt to provide a new block name if the given
+   *                      name has already been registered.
+   * @return The unique block name that is now registered with the BlockFactory, or false if
+   *         the name has already been registered and should not be overridden.
    */
-  getUniqueBlockName(name: string): string {
+  getUniqueBlockName(name: string, doNotOverride = false): string | false {
     if (!this.blockNames[name]) {
       this.blockNames[name] = 1;
       return name;
+    }
+    if (doNotOverride) {
+      return false;
     }
     return `${name}-${++this.blockNames[name]}`;
   }
@@ -441,18 +466,17 @@ export class BlockFactory {
   }
 
   /**
-   * Registers a new GUID with the BlockFactory. If the given GUID has already been used, this
-   * method will throw an error.
+   * Registers a new GUID with the BlockFactory.
    * @param guid - The guid to register.
    * @param identifier  - A reference to the file this block was generated from, for error reporting.
+   * @return True if registration is successful, false otherwise.
    */
-  registerGuid(guid: string, identifier: FileIdentifier) {
+  registerGuid(guid: string): boolean {
     if (this.guids.has(guid)) {
-      throw new CssBlockError("Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs.", {
-        filename: identifier,
-      });
+      return false;
     }
     this.guids.add(guid);
+    return true;
   }
 }
 
