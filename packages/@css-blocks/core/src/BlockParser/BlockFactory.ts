@@ -87,10 +87,11 @@ export class BlockFactory {
    * @param root The postcss.Root to parse.
    * @param identifier A unique identifier for this Block file.
    * @param name Default name for the block.
+   * @param isDfnFile Whether to treat this as a definition file.
    * @returns The Block object promise.
    */
-  parseRootFaultTolerant(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    return this.promises[identifier] = this.parser.parse(root, identifier, name);
+  parseRootFaultTolerant(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Promise<Block> {
+    return this.promises[identifier] = this.parser.parse(root, identifier, name, isDfnFile, expectedGuid);
   }
 
   /**
@@ -102,10 +103,11 @@ export class BlockFactory {
    * @param root The postcss.Root to parse.
    * @param identifier A unique identifier for this Block file.
    * @param name Default name for the block.
+   * @param isDfnFile Whether to treat this as a definition file.
    * @returns The Block object promise.
    */
-  async parseRoot(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    const block = await this.parseRootFaultTolerant(root, identifier, name);
+  async parseRoot(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Promise<Block> {
+    const block = await this.parseRootFaultTolerant(root, identifier, name, isDfnFile, expectedGuid);
     return this._surfaceBlockErrors(block);
   }
 
