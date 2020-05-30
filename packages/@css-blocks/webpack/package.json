@@ -46,7 +46,7 @@
     "@types/extract-text-webpack-plugin": "^2.1.0",
     "@types/glob": "^7.1.1",
     "@types/tapable": "^0.2.4",
-    "@types/webpack": "^4.0.0",
+    "@types/webpack": "^4.41.15",
     "@types/webpack-merge": "4.1.5",
     "@types/webpack-sources": "^0.1.5",
     "css-loader": "^0.28.4",
