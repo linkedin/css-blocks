@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { only, suite, test } from "mocha-typescript";
+import { suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
 
 import * as cssBlocks from "../src";
@@ -45,7 +45,6 @@ export class BlockFactoryTests extends BEMProcessor {
       });
   }
 
-  @only
   @test async "can generate a definition"() {
     let { imports, factory } = setupImporting();
     let filename = "test-block.block.css";
@@ -77,7 +76,6 @@ export class BlockFactoryTests extends BEMProcessor {
       `));
   }
 
-  @only
   @test async "can generate a definition with block-global declarations."() {
     let { imports, factory } = setupImporting();
     let filename = "test-block.block.css";
@@ -98,7 +96,6 @@ export class BlockFactoryTests extends BEMProcessor {
       `));
   }
 
-  @only
   @test async "can generate a definition with a block reference"() {
     let { imports, factory } = setupImporting();
     imports.registerSource(
@@ -140,5 +137,66 @@ export class BlockFactoryTests extends BEMProcessor {
        @block foo from "./foo.css";
        @block bar, (bip, baz as zab) from "./bar.css";
        :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block; block-interface-index: 0 }`));
+  }
+
+  @test async "can generate a definition with style composition"() {
+    let { imports, factory } = setupImporting();
+    imports.registerSource(
+      "foo.block.css",
+      `:scope[oceanic] { color: blue; }
+       :scope[forrest] { color: green; }
+      `,
+    );
+    imports.registerSource(
+      "bar/bip.block.css",
+      `.orange { color: orange; }`,
+    );
+    imports.registerSource(
+      "bar/baz.block.css",
+      `:scope { color: red; }`,
+    );
+    imports.registerSource(
+      "bar.block.css",
+      `@block bip from "./bar/bip.block.css";
+       @export (default as bip) from "./bar/bip.block.css";
+       @export (default as baz) from "./bar/baz.block.css";
+       .lemon {
+         color: yellow;
+       }`,
+    );
+    let filename = "test-block.block.css";
+    imports.registerSource(
+      filename,
+      `@block foo from "./foo.block.css";
+       @block bar, (bip, baz as zab) from "./bar.block.css";
+       :scope {
+         composes: foo[oceanic];
+       }
+       .nav {
+         composes: foo, bip.orange;
+       }
+       .nav[open] {
+         composes: bar.lemon;
+       }
+       .nav[position=top] {
+         composes: foo[forrest];
+       }
+       .nav[position=top][open] {
+         composes: foo[oceanic], foo[forrest];
+       }
+       `,
+    );
+    let {block, definitionResult} = await compileBlockWithDefinition(factory, filename);
+    assert.deepEqual(
+      clean(definitionResult.css),
+      clean(`@block-syntax-version 1;
+       @block foo from "./foo.css";
+       @block bar, (bip, baz as zab) from "./bar.css";
+       :scope { block-id: "${block.guid}"; block-name: "test-block"; composes: foo[oceanic]; block-class: test-block; block-interface-index: 0 }
+       .nav { composes: foo, bip.orange; block-class: test-block__nav; block-interface-index: 1 }
+       .nav[open] { composes: bar.lemon; block-class: test-block__nav--open; block-interface-index: 3 }
+       .nav[position="top"] { composes: foo[forrest]; block-class: test-block__nav--position-top; block-interface-index: 5 }
+       .nav[position="top"][open] { composes: foo[oceanic], foo[forrest] }
+       `));
   }
 }

@@ -1,8 +1,9 @@
+import { Dictionary } from "async";
 import { postcss } from "opticss";
 
-import { AttributeSelector, BlockExport, BlockReference, BlockSyntaxVersion, ClassSelector, Declaration, DefinitionAST, DefinitionRoot, ForeignAttributeSelector, GlobalDeclaration, LocalBlockExport, Mapper, Name, Rename, Rule, ScopeSelector, Selector, Visitor, builders, map as mapToDefinition, visit } from "../BlockParser/ast";
+import { AttributeSelector, BlockExport, BlockReference, BlockSyntaxVersion, ClassSelector, Declaration, DefinitionAST, DefinitionRoot, ForeignAttributeSelector, GlobalDeclaration, KeyCompoundSelector, LocalBlockExport, Mapper, Name, Rename, Rule, ScopeSelector, Selector, Visitor, builders, map as mapToDefinition, visit } from "../BlockParser/ast";
 import { BLOCK_GLOBAL } from "../BlockSyntax";
-import { Block, BlockClass, Style, isAttrValue, isBlockClass } from "../BlockTree";
+import { AttrValue, Block, BlockClass, Style, isAttrValue, isBlockClass } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 
 export const INLINE_DEFINITION_FILE = Symbol("Inline Definition");
@@ -191,33 +192,34 @@ export class BlockDefinitionCompiler {
     for (let style of block.all(true)) {
       definitionRoot.children.push(this.styleToRule(style, reservedClassNames));
     }
+    definitionRoot.children.push(...this.complexCompositions(block));
     return definitionRoot;
   }
 
   styleToRule(style: Style, reservedClassNames: Set<string>): Rule<DefinitionAST> {
     let selectors = new Array<Selector<DefinitionAST>>();
     let blockClass: BlockClass = isAttrValue(style) ? style.blockClass : style;
-    let elementSelector: ClassSelector | ScopeSelector;
-    if (blockClass.isRoot) {
-      elementSelector = builders.scopeSelector();
-    } else {
-      elementSelector = builders.classSelector(blockClass.name);
-    }
     if (isAttrValue(style)) {
-      let attributeSelector: AttributeSelector;
-      if (style.isPresenceRule) {
-        attributeSelector = builders.attributeSelector(style.attribute.name);
-      } else {
-        attributeSelector = builders.attributeSelector(style.attribute.name, style.value);
-      }
-      selectors.push(builders.keyCompoundSelector(elementSelector, [attributeSelector]));
+      selectors.push(attributeSelectors(blockClass, [style]));
     } else {
-      selectors.push(elementSelector);
+      selectors.push(elementSelector(blockClass));
     }
     let declarations = new Array<Declaration>();
     if (isBlockClass(style) && style.isRoot) {
       declarations.push(builders.declaration("block-id", `"${style.block.guid}"`));
       declarations.push(builders.declaration("block-name", `"${style.block.name}"`));
+    }
+
+    let compositions = new Array<string>();
+    for (let composition of blockClass.composedStyles()) {
+      if (composition.conditions.length === 0 && blockClass === style) {
+        compositions.push(composition.path);
+      } else if (composition.conditions.length === 1 && composition.conditions[0] === style) {
+        compositions.push(composition.path);
+      }
+    }
+    if (compositions.length > 0) {
+      declarations.push(builders.declaration("composes", compositions.join(", ")));
     }
     declarations.push(builders.declaration("block-class", style.cssClass(this.config, reservedClassNames)));
     declarations.push(builders.declaration("block-interface-index", style.index.toString()));
@@ -226,6 +228,48 @@ export class BlockDefinitionCompiler {
       declarations.push(builders.declaration("block-alias", aliasValues.join(" ")));
     }
     return builders.rule(selectors, declarations);
+  }
+  /**
+   * Simple compositions (which apply to a single block class or attribute) are
+   * processed when we generate the rule for that style. The complex
+   * compositions which apply to the intersection of more than one attribute
+   * require the generation of ruleset that targets all of those attributes
+   * together.
+   */
+  complexCompositions(block: Block): Array<Rule<DefinitionAST>> {
+    let complexCompositions: Dictionary<{ blockClass: BlockClass; attributes: AttrValue[]; paths: Array<string> }> = {};
+    for (let blockClass of block.classes) {
+      // Compositions can have any number of attributes and we need to collate the
+      // styles being composed for each unique set of attributes. To do this, we
+      // generate a unique key for each unique set of attributes and store the data
+      // we need against it.
+      for (let composition of blockClass.composedStyles()) {
+        if (composition.conditions.length > 1) {
+          let key = composition.conditions.map(c => c.index).sort().join(" ");
+          if (!complexCompositions[key]) {
+            complexCompositions[key] = {
+              blockClass,
+              attributes: composition.conditions,
+              paths: [composition.path],
+            };
+          } else {
+            complexCompositions[key].paths.push(composition.path);
+          }
+        }
+      }
+    }
+    // once we've collated all the compositions by the attributes we generate
+    // a rule for each distinct set of attributes and put a composes declaration
+    // in it.
+    let rules = new Array<Rule<DefinitionAST>>();
+    for (let key of Object.keys(complexCompositions)) {
+      let composition = complexCompositions[key];
+      let selector = attributeSelectors(composition.blockClass, composition.attributes);
+      let declarations = new Array<Declaration>();
+      declarations.push(builders.declaration("composes", composition.paths.join(", ")));
+      rules.push(builders.rule([selector], declarations));
+    }
+    return rules;
   }
 
   blockReferences(root: postcss.Root, block: Block): void {
@@ -243,4 +287,24 @@ export class BlockDefinitionCompiler {
   insertInlineReference(_css: postcss.Root, _definition: postcss.Root) {
     throw new Error("Method not implemented.");
   }
+}
+
+function elementSelector(blockClass: BlockClass): ClassSelector | ScopeSelector {
+  if (blockClass.isRoot) {
+    return builders.scopeSelector();
+  } else {
+    return builders.classSelector(blockClass.name);
+  }
+}
+
+function attributeSelectors(blockClass: BlockClass, attributes: Array<AttrValue>): KeyCompoundSelector<DefinitionAST> {
+  let attributeSelectors = new Array<AttributeSelector>();
+  for (let style of attributes) {
+    if (style.isPresenceRule) {
+      attributeSelectors.push(builders.attributeSelector(style.attribute.name));
+    } else {
+      attributeSelectors.push(builders.attributeSelector(style.attribute.name, style.value));
+    }
+  }
+  return builders.keyCompoundSelector(elementSelector(blockClass), attributeSelectors);
 }
