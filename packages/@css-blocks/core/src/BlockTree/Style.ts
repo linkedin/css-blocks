@@ -33,8 +33,8 @@ export abstract class Style<
   public abstract readonly rulesets: RulesetContainer<any>;
 
   /**
-   * The preset selector for this particular class node. Set this if you're
-   * loading in a definition file and `block-class` is set.
+   * The preset selector for this particular class node.
+   * This is set when definition files encounter the `block-class` declaration.
    */
   public presetCssClass: string | undefined;
 
