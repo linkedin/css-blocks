@@ -207,7 +207,7 @@ export class BlockFactory {
 
       // Ensure this block name is unique.
       const uniqueName = this.getUniqueBlockName(block.name, file.type === "ImportedCompiledCssFile");
-      if (uniqueName === false) {
+      if (uniqueName === null) {
         // For ImportedCompiledCssFiles, leave the name alone and add an error.
         block.addError(
           new CssBlockError("Block uses a name that has already been used! Check dependencies for conflicting block names.", {
@@ -427,16 +427,16 @@ export class BlockFactory {
    * @param name The new block name to register.
    * @param doNotOverride If true, will not attempt to provide a new block name if the given
    *                      name has already been registered.
-   * @return The unique block name that is now registered with the BlockFactory, or false if
+   * @return The unique block name that is now registered with the BlockFactory, or null if
    *         the name has already been registered and should not be overridden.
    */
-  getUniqueBlockName(name: string, doNotOverride = false): string | false {
+  getUniqueBlockName(name: string, doNotOverride = false): string | null {
     if (!this.blockNames[name]) {
       this.blockNames[name] = 1;
       return name;
     }
     if (doNotOverride) {
-      return false;
+      return null;
     }
     return `${name}-${++this.blockNames[name]}`;
   }
