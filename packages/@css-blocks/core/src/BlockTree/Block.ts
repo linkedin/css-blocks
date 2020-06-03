@@ -538,7 +538,15 @@ export class Block
         return [klass, 0];
       }
     } else if (isAttributeNode(node)) {
-      let attr = this.rootClass.ensureAttributeValue(toAttrToken(node));
+      let prevNode = node.prev();
+      while (prevNode && !(selectorParser.isClassName(prevNode) || isRootNode(prevNode))) {
+        prevNode = prevNode.prev();
+      }
+      if (!prevNode) {
+        throw new Error("internal error - illegal selector encountered after validation.");
+      }
+      let klass = this.getClass(prevNode.value);
+      let attr = klass?.getAttributeValue(toAttrToken(node));
       if (attr) {
         return [attr, 0];
       } else {
