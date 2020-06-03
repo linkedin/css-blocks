@@ -155,7 +155,7 @@ export class BlockNames extends BEMProcessor {
         indented`
           .test-block__bar { }
           .test-block__bar--active { }
-          .test-block__bar--color.test-block--inverse { background: blue; }
+          .test-block__bar--color.test-block__bar--inverse { background: blue; }
           /* Source: foo/bar/test-block.css
            * :scope (.test-block)
            *  composes:
