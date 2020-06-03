@@ -339,24 +339,24 @@ export class BlockFactory {
     // NOTE: No need to run preprocessor - we assume that Compiled CSS has already been preprocessed.
     // Parse the definition file into an AST
     const definitionAst = this.postcssImpl.parse(file.definitionContents);
-    const definitionFilepath = this.importer.filesystemPath(file.definitionIdentifier, this.configuration) || "<unknown filepath>";
+    const dfnDebugIdentifier = this.importer.debugIdentifier(file.definitionIdentifier, this.configuration);
 
     // Parse the CSS contents into an AST
     const cssContentsAst = this.postcssImpl.parse(file.cssContents);
-    const cssContentsFilepath = this.importer.filesystemPath(file.identifier, this.configuration) || "<unknown filepath>";
+    const cssDebugIdentifier = this.importer.debugIdentifier(file.identifier, this.configuration);
 
     // TODO: Sourcemaps?
 
     // Sanity check! Did we actually get contents for both ASTs?
     if (!definitionAst || !definitionAst.nodes) {
       throw new CssBlockError(`Unable to parse definition file into AST!`, {
-        filename: definitionFilepath,
+        filename: dfnDebugIdentifier,
       });
     }
 
     if (!cssContentsAst || !cssContentsAst.nodes) {
       throw new CssBlockError(`Unable to parse CSS contents into AST!`, {
-        filename: cssContentsFilepath,
+        filename: cssDebugIdentifier,
       });
     }
 
