@@ -41,7 +41,7 @@ export async function composeBlock(configuration: Configuration, root: postcss.R
 
         for (let sel of parsedSel) {
           if (sel.selector.next) {
-            block.addError(new errors.InvalidBlockSyntax(`Style composition is not allowed in rule sets with a scope selector.`, sourceRange(configuration, root, sourceFile, decl)));
+            block.addError(new errors.InvalidBlockSyntax(`Style composition is not allowed in rule sets with a context selector.`, sourceRange(configuration, root, sourceFile, decl)));
           }
           let foundStyles = getStyleTargets(block, sel.selector);
           for (let blockClass of foundStyles.blockClasses) {

@@ -87,7 +87,7 @@ export class BlockNames extends BEMProcessor {
     return assertMultipleErrorsRejection(
       [{
       type: InvalidBlockSyntax,
-      message: `Style composition is not allowed in rule sets with a scope selector. (foo/bar/test-block.css:2:44)`}],
+      message: `Style composition is not allowed in rule sets with a context selector. (foo/bar/test-block.css:2:44)`}],
       this.process(filename, inputCSS, {importer: imports.importer()}));
   }
 
