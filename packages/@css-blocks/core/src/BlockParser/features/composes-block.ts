@@ -45,7 +45,7 @@ export async function composeBlock(configuration: Configuration, root: postcss.R
           }
           let foundStyles = getStyleTargets(block, sel.selector);
           for (let blockClass of foundStyles.blockClasses) {
-            blockClass.addComposedStyle(refStyle, foundStyles.blockAttrs);
+            blockClass.addComposedStyle(refStyle, foundStyles.blockAttrs, refName);
           }
         }
       }

@@ -26,6 +26,7 @@ function ensureToken(input: AttrToken | string): AttrToken {
 export interface Composition {
   style: Styles;
   conditions: AttrValue[];
+  path: string;
 }
 
 /**
@@ -274,8 +275,8 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    *       of logic between css and template files and only resolve them to the
    *       requested language interface at rewrite time.
    */
-  addComposedStyle(style: Styles, conditions: AttrValue[]): void {
-    this._composedStyles.add({ style, conditions });
+  addComposedStyle(style: Styles, conditions: AttrValue[], path: string): void {
+    this._composedStyles.add({ style, conditions, path });
   }
 
   /**
