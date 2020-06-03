@@ -42,7 +42,7 @@ export function addPresetSelectors(configuration: Configuration, root: postcss.R
         );
       }
 
-      // And add its value to the corresponding BlockClass node.
+      // And add its value to the corresponding Style node.
       const parsedSelectors = block.getParsedSelectors(rule);
       parsedSelectors.forEach(sel => {
         const styleTarget = getStyleTargets(block, sel.key);
