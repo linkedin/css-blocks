@@ -96,8 +96,8 @@ export class AttrValue extends Style<AttrValue, Block, Attribute, never> {
   }
 
   public cssClass(config: ResolvedConfiguration, reservedClassNames: Set<string>): string {
-    if (this.presetSelector) {
-      return this.presetSelector;
+    if (this.presetCssClass) {
+      return this.presetCssClass;
     }
     switch (config.outputMode) {
       case OutputMode.BEM:

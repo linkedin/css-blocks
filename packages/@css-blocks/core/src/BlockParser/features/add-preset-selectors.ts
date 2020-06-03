@@ -5,6 +5,7 @@ import { Block } from "../../BlockTree";
 import { Configuration } from "../../configuration";
 import { CssBlockError } from "../../errors";
 import { sourceRange } from "../../SourceLocation";
+import { getStyleTargets } from "../block-intermediates";
 import { stripQuotes } from "../utils";
 
 /**
@@ -26,11 +27,9 @@ import { stripQuotes } from "../utils";
 export function addPresetSelectors(configuration: Configuration, root: postcss.Root, block: Block, file: string) {
   // For each rule declared in the file...
   root.walkRules(rule => {
-    let foundDecl = false;
 
     // Find the block-class declaration...
     rule.walkDecls("block-class", decl => {
-      foundDecl = true;
       const val = stripQuotes(decl.value);
 
       // Test that this actually could be a class name.
@@ -44,21 +43,29 @@ export function addPresetSelectors(configuration: Configuration, root: postcss.R
       }
 
       // And add its value to the corresponding BlockClass node.
-      rule.selectors.forEach(sel => {
-        const node = block.find(sel);
-        if (!node) {
+      const parsedSelectors = block.getParsedSelectors(rule);
+      parsedSelectors.forEach(sel => {
+        const styleTarget = getStyleTargets(block, sel.key);
+        if (styleTarget.blockAttrs.length > 0) {
+          styleTarget.blockAttrs[0].setPresetClassName(val);
+        } else if (styleTarget.blockClasses.length > 0) {
+          styleTarget.blockClasses[0].setPresetClassName(val);
+        } else {
           throw new Error(`Couldn\'t find block class corresponding to selector ${sel}. This shouldn't happen.`);
         }
-        node.setPresetClassName(val);
       });
     });
+  });
 
-    // If we didn't find block-class declared, we should error.
-    if (!foundDecl) {
+  // At this point, every style node should have a fixed block-class.
+  block.all(true).forEach(styleNode => {
+    if (!styleNode.presetCssClass) {
       block.addError(
         new CssBlockError(
-          `Definition file rule ${rule.selectors} is missing a 'block-class' declaration`,
-          sourceRange(configuration, root, file, rule),
+          `Style node ${styleNode.asSource()} doesn't have a preset block class after parsing definition file. You may need to declare this style node in the definition file.`,
+          {
+            filename: file,
+          },
         ),
       );
     }

@@ -93,7 +93,7 @@ export class BlockParser {
     let guid: string;
     let guidDiscoveryError: CssBlockError | undefined;
     try {
-      guid = await discoverGuid(configuration, root, sourceFile, isDfnFile, expectedGuid) || gen_guid(identifier, configuration.guidAutogenCharacters);
+      guid = discoverGuid(configuration, root, sourceFile, isDfnFile, expectedGuid) || gen_guid(identifier, configuration.guidAutogenCharacters);
     } catch (e) {
       guidDiscoveryError = e;
       guid = gen_guid(identifier, configuration.guidAutogenCharacters);

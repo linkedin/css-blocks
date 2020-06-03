@@ -442,7 +442,7 @@ export class Block
    * @param shallow - Pass true to exclude inherited objects.
    * @returns Collection of Styles objects, organized by preset selector value.
    */
-  compiledClassesMap(shallow?: boolean): ObjectDictionary<Styles> {
+  presetClassesMap(shallow?: boolean): ObjectDictionary<Styles> {
     const result = {};
     const all = this.all(shallow);
 

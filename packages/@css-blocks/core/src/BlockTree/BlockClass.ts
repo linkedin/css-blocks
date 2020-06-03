@@ -205,8 +205,8 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
    * @returns String representing output class.
    */
   public cssClass(config: ResolvedConfiguration, reservedClassNames: Set<string>): string {
-    if (this.presetSelector) {
-      return this.presetSelector;
+    if (this.presetCssClass) {
+      return this.presetCssClass;
     }
     switch (config.outputMode) {
       case OutputMode.BEM:

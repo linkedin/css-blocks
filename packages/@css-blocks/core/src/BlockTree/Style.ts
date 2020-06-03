@@ -36,7 +36,7 @@ export abstract class Style<
    * The preset selector for this particular class node. Set this if you're
    * loading in a definition file and `block-class` is set.
    */
-  protected presetSelector: string | undefined;
+  public presetCssClass: string | undefined;
 
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
@@ -51,15 +51,6 @@ export abstract class Style<
    * @returns The CSS class.
    */
   public abstract cssClass(config: ResolvedConfiguration, reservedClassNames: Set<string>): string;
-
-  /**
-   * The preset selector string for this style node. This is set if a specific
-   * class name was specified using a block-class declaration. This is only
-   * relevant to definition files.
-   */
-  get presetCssClass(): string | undefined {
-    return this.presetSelector;
-  }
 
   /**
    * Return the source selector this `Style` was read from.
@@ -118,7 +109,7 @@ export abstract class Style<
    * @param selector - The class name to set.
    */
   public setPresetClassName(selector: string): void {
-    this.presetSelector = selector;
+    this.presetCssClass = selector;
   }
 
   /**

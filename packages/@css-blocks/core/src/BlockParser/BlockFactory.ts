@@ -1,6 +1,6 @@
 import { ObjectDictionary, isString } from "@opticss/util";
 import * as debugGenerator from "debug";
-import { LegacyRawSourceMap, adaptFromLegacySourceMap, postcss } from "opticss";
+import { LegacyRawSourceMap, adaptFromLegacySourceMap, parseSelector, postcss } from "opticss";
 import * as path from "path";
 import { RawSourceMap } from "source-map";
 
@@ -9,7 +9,6 @@ import { Options, ResolvedConfiguration, resolveConfiguration } from "../configu
 import { CssBlockError } from "../errors";
 import { FileIdentifier, ImportedCompiledCssFile, ImportedFile, Importer } from "../importing";
 import { upgradeDefinitionFileSyntax } from "../PrecompiledDefinitions/block-syntax-version";
-import { sourceRange } from "../SourceLocation";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";
@@ -365,28 +364,38 @@ export class BlockFactory {
     const block = await this.parser.parseDefinitionSource(definitionAst, file.definitionIdentifier, file.blockId, file.defaultName);
 
     // Merge the rules from the CSS contents into the Block.
-    const styleNodesMap = block.compiledClassesMap(true);
+    const styleNodesMap = block.presetClassesMap(true);
     cssContentsAst.walkRules(rule => {
-      rule.selectors.forEach(sel => {
-        if (sel.split(".").length !== 1 || !sel.startsWith(".")) {
-          // Skip it, we only care about selectors with only one class.
-          return;
+      const parsedSelectors = parseSelector(rule);
+
+      parsedSelectors.forEach(sel => {
+        let doProcess = true;
+
+        // Check selector: do not process selectors with class names that
+        // aren't from this block. (aka: resolution selectors)
+        sel.eachSelectorNode(selNode => {
+          if (selNode.type !== "class") {
+            return;
+          }
+          if (!styleNodesMap[selNode.value]) {
+            doProcess = false;
+            return;
+          }
+        });
+        // If this node should be processed, add its declarations to each class
+        // in the key selector (the last part of the selector).
+        // We add the declarations so that later we can determine any conflicts
+        // between the imported CSS and any app CSS that relies on it.
+        if (doProcess) {
+          const keys = sel.key.nodes;
+          keys.forEach(key => {
+            if (key.value && key.type === "class") {
+              styleNodesMap[key.value].rulesets.addRuleset(this.configuration, file.identifier, rule);
+            }
+          });
         }
-        const styleNode = styleNodesMap[sel];
-        if (!styleNode) {
-          block.addError(
-            new CssBlockError(
-              `Selector ${sel} exists in Compiled CSS file but doesn't match any rules in definition file.`,
-              sourceRange(this.configuration, cssContentsAst.root(), file.identifier, rule),
-            ),
-          );
-          return;
-        }
-        styleNode.rulesets.addRuleset(this.configuration, file.identifier, rule);
       });
     });
-
-    // TODO: Set the block's name from the block-name rule. (We skip this later for definition files.)
 
     // And we're done!
     return block;

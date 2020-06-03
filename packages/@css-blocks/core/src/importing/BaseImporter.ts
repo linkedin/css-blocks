@@ -75,13 +75,13 @@ export abstract class BaseImporter implements Importer {
     // Determine start/end indexes based on the regexp results above.
     const [headerFullMatch, blockId] = headerRegexpResult;
     const headerStartIndex = headerRegexpResult.index;
-    if (!headerStartIndex) {
+    if (typeof headerStartIndex === "undefined") {
       throw new Error("Unable to determine start location of regexp result.");
     }
     const headerEndIndex = headerStartIndex + headerFullMatch.length;
     const [footerFullMatch] = footerRegexpResult;
     const footerStartIndex = footerRegexpResult.index;
-    if (!footerStartIndex) {
+    if (typeof footerStartIndex === "undefined") {
       throw new Error("Unable to determine start location of regexp result.");
     }
     const footerEndIndex = footerStartIndex + footerFullMatch.length;
@@ -98,7 +98,7 @@ export abstract class BaseImporter implements Importer {
     // Parse out the URL, or embedded data, for the block definition.
     // The definition comment should be removed from the block's CSS contents.
     const definitionRegexpResult = fullBlockContents.match(REGEXP_COMMENT_DEFINITION_REF);
-    if (!definitionRegexpResult) {
+    if (definitionRegexpResult === null) {
       throw new Error("Unable to find definition URL in compiled CSS. This comment must be declared between the header and footer CSS Blocks comments.");
     }
     const [definitionFullMatch, definitionUrl] = definitionRegexpResult;

@@ -6,7 +6,7 @@ import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 import { stripQuotes } from "../utils";
 
-export async function discoverGuid(configuration: Configuration, root: postcss.Root, file: string, isDfnFile = false, expectedId?: string): Promise<string | undefined> {
+export function discoverGuid(configuration: Configuration, root: postcss.Root, file: string, isDfnFile = false, expectedId?: string): string | undefined {
   let blockId: string | undefined;
   let scopeNode: postcss.Rule | undefined;
 
@@ -22,7 +22,7 @@ export async function discoverGuid(configuration: Configuration, root: postcss.R
       blockId = stripQuotes(decl.value.trim());
       // We don't have to expect an ID was declared in the header comment of the Compiled CSS
       // file, but we need to hard error if it's a mismatch.
-      if (expectedId && decl.value !== expectedId) {
+      if (expectedId && blockId !== expectedId) {
         throw new errors.InvalidBlockSyntax(
           `Expected block-id property in definition data to match header in Compiled CSS.`,
           sourceRange(configuration, root, file, decl),

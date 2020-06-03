@@ -1,7 +1,7 @@
 @block-syntax-version 1;
-@block link from "../shared/link.css";
-@block list from "../shared/list.css";
-@export item from "../shared/item.css";
+@block link from "../shared/link.block.css";
+@block list from "../shared/list.block.css";
+@export item from "../shared/item.block.css";
 
 :scope {
   block-id: "7d97e";

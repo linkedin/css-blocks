@@ -4,7 +4,7 @@ import { ImportedCompiledCssFile } from "../importing";
 /**
  * A regex to find the block-syntax-version annotation in a definition file.
  */
-const REGEXP_BLOCK_SYNTAX_VERSION = /^@block-syntax-version (\d+);/;
+const REGEXP_BLOCK_SYNTAX_VERSION = /^\s*@block-syntax-version ([^;]+);/m;
 
 /**
  * The earliest block-syntax-version supported by CSS Blocks. If this has been
@@ -33,19 +33,18 @@ export function determineBlockSyntaxVersion(file: ImportedCompiledCssFile): numb
   const versionLookupResult = dfnContents.match(REGEXP_BLOCK_SYNTAX_VERSION);
 
   if (!versionLookupResult) {
-    throw new CssBlockError("Unable to process definition file because the file is missing a block-syntax-version declaration.", {
+    throw new CssBlockError("Unable to process definition file because the file is missing a block-syntax-version declaration or it is malformed.", {
       filename: dfnId,
     });
   }
 
-  try {
-    const version = parseInt(versionLookupResult[1], 10);
-    return version;
-  } catch {
-    throw new CssBlockError("Unable to process definition file because the declared block-syntax version isn't a number.", {
+  const version = parseInt(versionLookupResult[1], 10);
+  if (isNaN(version)) {
+    throw new CssBlockError("Unable to process definition file because the declared block-syntax-version isn't a number.", {
       filename: dfnId,
     });
   }
+  return version;
 }
 
 /**
