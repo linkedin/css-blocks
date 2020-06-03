@@ -15,7 +15,7 @@ import {
   resolveConfiguration,
 } from "../configuration";
 
-import { BlockDefinitionCompiler, INLINE_DEFINITION_FILE, PathResolver, filesystemPathResolver } from "./BlockDefinitionCompiler";
+import { BlockDefinitionCompiler, INLINE_DEFINITION_FILE } from "./BlockDefinitionCompiler";
 import { ConflictResolver } from "./ConflictResolver";
 
 export { INLINE_DEFINITION_FILE } from "./BlockDefinitionCompiler";
@@ -38,19 +38,25 @@ export interface CompiledBlockAndInlineDefinition {
 export class BlockCompiler {
   private config: ResolvedConfiguration;
   private postcss: typeof postcss;
-  private definitionCompiler: BlockDefinitionCompiler;
+  private definitionCompiler?: BlockDefinitionCompiler;
 
   constructor(postcssImpl: typeof postcss, opts?: Options) {
     this.config = resolveConfiguration(opts);
     this.postcss = postcssImpl;
-    this.definitionCompiler = new BlockDefinitionCompiler(postcssImpl, this.config);
   }
 
-  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: typeof INLINE_DEFINITION_FILE, pathResolver: PathResolver): CompiledBlockAndInlineDefinition;
-  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string, pathResolver: PathResolver): CompiledBlockAndDefinition;
-  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string | typeof INLINE_DEFINITION_FILE, pathResolver: PathResolver = filesystemPathResolver): CompiledBlockAndDefinition | CompiledBlockAndInlineDefinition {
+  setDefinitionCompiler(definitionCompiler: BlockDefinitionCompiler) {
+    this.definitionCompiler = definitionCompiler;
+  }
+
+  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: typeof INLINE_DEFINITION_FILE): CompiledBlockAndInlineDefinition;
+  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string): CompiledBlockAndDefinition;
+  compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string | typeof INLINE_DEFINITION_FILE): CompiledBlockAndDefinition | CompiledBlockAndInlineDefinition {
+    if (!this.definitionCompiler) {
+      throw new Error("No block definition compiler was provided.");
+    }
     let css = this.compile(block, root, reservedClassNames);
-    let definition = this.definitionCompiler.compile(block, root, pathResolver);
+    let definition = this.definitionCompiler.compile(block, reservedClassNames);
     let result: CompiledBlockAndDefinition | CompiledBlockAndInlineDefinition;
 
     if (definitionPath === INLINE_DEFINITION_FILE) {

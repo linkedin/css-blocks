@@ -19,5 +19,6 @@ export function setupImporting(opts?: Partial<Readonly<Configuration>>) {
     importer,
     config,
     factory,
+    postcss,
   };
 }

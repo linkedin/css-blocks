@@ -5,9 +5,9 @@ import { Block } from "../../BlockTree";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 import { allDone } from "../../util";
+import { BlockExport, LocalBlockExport, builders, typeguards } from "../ast";
 import { BlockFactory } from "../index";
 import { parseBlockNamesAST, stripQuotes } from "../utils";
-import { LocalBlockExport, BlockExport, builders, typeguards } from "../ast";
 
 const FROM_EXPR = /\s+from\s+/;
 
