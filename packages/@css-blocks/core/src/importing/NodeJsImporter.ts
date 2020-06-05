@@ -5,12 +5,16 @@ import * as path from "path";
 
 import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
+import { isDefinitionUrlValid } from "../PrecompiledDefinitions/compiled-comments";
 
-import { FileIdentifier, ImportedFile, Importer } from "./Importer";
+import { BaseImporter } from "./BaseImporter";
+import { FileIdentifier, ImportedCompiledCssFile, ImportedFile } from "./Importer";
 
 const debug = debugGenerator("css-blocks:importer");
 
 const DEFAULT_MAIN = "blocks/index.block.css";
+
+const EMBEDDED_DEFINITION_TAG = "#blockDefinitionURL";
 
 export interface CSSBlocksPackageMetadata {
   "css-blocks"?: {
@@ -27,9 +31,11 @@ export interface Alias {
   path: string;
 }
 
-export class NodeJsImporter implements Importer {
+export class NodeJsImporter extends BaseImporter {
   aliases: Alias[];
   constructor(aliases: Alias[] | ObjectDictionary<string> = []) {
+    super();
+
     // Normalize aliases input.
     this.aliases = Array.isArray(aliases)
       ? aliases.slice()
@@ -106,6 +112,10 @@ export class NodeJsImporter implements Importer {
   }
 
   filesystemPath(identifier: FileIdentifier, _options: ResolvedConfiguration): string | null {
+    if (identifier.endsWith(EMBEDDED_DEFINITION_TAG)) {
+      const amendedId = identifier.replace(EMBEDDED_DEFINITION_TAG, "");
+      return path.isAbsolute(amendedId) && existsSync(amendedId) ? `${amendedId}${EMBEDDED_DEFINITION_TAG}` : null;
+    }
     return path.isAbsolute(identifier) && existsSync(identifier) ? identifier : null;
   }
 
@@ -128,16 +138,71 @@ export class NodeJsImporter implements Importer {
     if (alias) {
       return path.join(alias.alias, path.relative(alias.path, identifier));
     }
+    if (identifier.endsWith(EMBEDDED_DEFINITION_TAG)) {
+      return `path.relative(config.rootDir, identifier.replace(EMBEDDED_DEFINITION_TAG, ""))${EMBEDDED_DEFINITION_TAG}`;
+    }
     return path.relative(config.rootDir, identifier);
   }
 
-  async import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile> {
+  async import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | ImportedCompiledCssFile> {
     let contents = await readFile(identifier, "utf-8");
-    return {
-      syntax: this.syntax(identifier, config),
-      identifier,
-      defaultName: this.defaultName(identifier, config),
-      contents,
-    };
+
+    if (this.isCompiledBlockCSS(contents)) {
+      const segmentedContents = this.segmentizeCompiledBlockCSS(contents);
+
+      // Need to determine if the definition URL is an external URL we should
+      // follow, or embedded data.
+      const dfnUrl = segmentedContents.definitionUrl;
+      let dfnData: string | null = null;
+      let definitionIdentifier: FileIdentifier  | null = null;
+      if (!isDefinitionUrlValid(dfnUrl)) {
+        throw new Error(`Definition URL in Compiled CSS file is invalid.\nFile Identifier: ${identifier}\nDefinition URL: ${dfnUrl}`);
+      }
+      if (dfnUrl.startsWith("data:")) {
+        // Parse this as embedded data.
+        const [dfnHeader, dfnEncodedData] = dfnUrl.split(",");
+        definitionIdentifier = `${identifier}${EMBEDDED_DEFINITION_TAG}`;
+        if (dfnHeader === "data:text/css;base64") {
+          dfnData = Buffer.from(dfnEncodedData, "base64").toString("utf-8");
+        } else {
+          throw new Error(`Definition data is in unsupported encoding or format. Embedded data must be in text/css;base64 format.\nFile Identifier: ${identifier}\nFormat given: ${dfnHeader}`);
+        }
+      } else {
+        // Read in the definition data from the given path.
+        definitionIdentifier = this.identifier(identifier, dfnUrl, config);
+        try {
+          dfnData = await readFile(definitionIdentifier, "utf-8");
+        } catch (e) {
+          throw new Error(`Definition URL in Compiled CSS file is invalid.\nFile Identifier: ${identifier}\nDefinition URL: ${dfnUrl}\nThrown error: ${e.message}`);
+        }
+      }
+
+      // Clean up definition data and location.
+      dfnData = dfnData.trim();
+      definitionIdentifier = definitionIdentifier.trim();
+
+      if (!dfnData) {
+        throw new Error("Could not parse or read definition data.");
+      }
+
+      return {
+        type: "ImportedCompiledCssFile",
+        syntax: Syntax.css,
+        identifier,
+        cssContents: segmentedContents.blockCssContents,
+        blockId: segmentedContents.blockId,
+        definitionContents: dfnData,
+        definitionIdentifier,
+        defaultName: this.defaultName(identifier, config),
+      };
+    } else {
+      return {
+        type: "ImportedFile",
+        syntax: this.syntax(identifier, config),
+        identifier,
+        defaultName: this.defaultName(identifier, config),
+        contents,
+      };
+    }
   }
 }

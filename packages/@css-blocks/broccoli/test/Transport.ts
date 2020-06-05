@@ -18,7 +18,7 @@ describe("Broccoli Transport Test", () => {
       types: {},
       collections: {},
     });
-    transport.blocks.add(new Block("foo", "bar"));
+    transport.blocks.add(new Block("foo", "bar", "test"));
     transport.mapping = {} as StyleMapping<"GlimmerTemplates.ResolvedFile">;
 
     transport.reset();

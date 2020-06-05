@@ -1,0 +1,27 @@
+@block-syntax-version 1;
+@block link from "../shared/link.block.css";
+@block list from "../shared/list.block.css";
+@export item from "../shared/item.block.css";
+
+:scope {
+  block-id: "7d97e";
+  block-class: nav-7d97e;
+  block-interface-index: 0;
+  block-alias: top-nav;
+  block-name: nav;
+  extends: list;
+  inherited-styles: "list[type=ordered]" 1, "list[type=unordered]" 2, "list[type=inline]" 3, "list[type=horizontal]" 4, "list.item" 5, "list.item[last]" 6;
+}
+
+.entry {
+  block-interface-index: 7;
+  block-alias: top-nav-entry;
+  block-class: nav-7d97e__entry;
+}
+
+.entry[active] {
+  block-interface-index: 8;
+  block-class: nav-7d97e__entry--active;
+  font-weight: resolve("link");
+  font-weight: resolve-self();
+}

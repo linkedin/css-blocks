@@ -3,12 +3,16 @@ import { postcss } from "opticss";
 
 import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
+import { CssBlockError } from "../errors";
 import { FileIdentifier } from "../importing";
 
+import { addPresetSelectors } from "./features/add-preset-selectors";
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { composeBlock } from "./features/composes-block";
 import { constructBlock } from "./features/construct-block";
+import { disallowDefinitionRules } from "./features/disallow-dfn-rules";
 import { disallowImportant } from "./features/disallow-important";
+import { discoverGuid } from "./features/discover-guid";
 import { discoverName } from "./features/discover-name";
 import { exportBlocks } from "./features/export-blocks";
 import { extendBlock } from "./features/extend-block";
@@ -18,6 +22,7 @@ import { importBlocks } from "./features/import-blocks";
 import { processDebugStatements } from "./features/process-debug-statements";
 import { BlockFactory } from "./index";
 import { Syntax } from "./preprocessing";
+import { gen_guid } from "./utils/genGuid";
 
 const debug = debugGenerator("css-blocks:BlockParser");
 
@@ -52,14 +57,24 @@ export class BlockParser {
     return block;
   }
 
+  public async parseDefinitionSource(root: postcss.Root, identifier: string, expectedId: string, defaultName: string) {
+    return await this.parse(root, identifier, defaultName, true, expectedId);
+  }
+
   /**
    * Main public interface of `BlockParser`. Given a PostCSS AST, returns a promise
    * for the new `Block` object.
-   * @param root  PostCSS AST
-   * @param sourceFile  Source file name
-   * @param defaultName Name of block
+   * @param root - PostCSS AST
+   * @param sourceFile - Source file name
+   * @param name - Name of block
+   * @param isDfnFile - Whether the block being parsed is a definition file. Definition files are incomplete blocks
+   *                    that will need to merge in rules from its Compiled CSS later. They are also expected to declare
+   *                    additional properties that regular Blocks don't, such as `block-id` and `block-interface-index`.
+   * @param expectedGuid - If a GUID is defined in the file, it's expected to match this value. This argument is only
+   *                       relevant to definition files, where the definition file is linked to Compiled CSS and
+   *                       both files may declare a GUID.
    */
-  public async parse(root: postcss.Root, identifier: string, name: string): Promise<Block> {
+  public async parse(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Promise<Block> {
     let importer = this.config.importer;
     let debugIdent = importer.debugIdentifier(identifier, this.config);
     let sourceFile = importer.filesystemPath(identifier, this.config) || debugIdent;
@@ -67,11 +82,40 @@ export class BlockParser {
     debug(`Begin parse: "${debugIdent}"`);
 
     // Discover the block's preferred name.
-    name = await discoverName(configuration, root, name, sourceFile);
+    let nameDiscoveryError: CssBlockError | undefined;
+    try {
+      name = await discoverName(configuration, root, sourceFile, isDfnFile, name);
+    } catch (e) {
+      nameDiscoveryError = e;
+    }
+
+    // Discover, or generate, the block's GUID.
+    let guid: string;
+    let guidDiscoveryError: CssBlockError | undefined;
+    try {
+      guid = discoverGuid(configuration, root, sourceFile, isDfnFile, expectedGuid) || gen_guid(identifier, configuration.guidAutogenCharacters);
+    } catch (e) {
+      guidDiscoveryError = e;
+      guid = gen_guid(identifier, configuration.guidAutogenCharacters);
+    }
 
     // Create our new Block object and save reference to the raw AST.
-    let block = new Block(name, identifier, root);
+    let block = new Block(name, identifier, guid, root);
 
+    // Add any errors that surfaced during name and GUID discovery.
+    if (nameDiscoveryError) {
+      block.addError(nameDiscoveryError);
+    }
+    if (guidDiscoveryError) {
+      block.addError(guidDiscoveryError);
+    }
+
+    if (!isDfnFile) {
+      // If not a definition file, it shouldn't have rules that can
+      // only be in definition files.
+      debug(" - Disallow Definition-Only Declarations");
+      await disallowDefinitionRules(block, configuration, root, sourceFile);
+    }
     // Throw if we encounter any `!important` decls.
     debug(` - Disallow Important`);
     await disallowImportant(configuration, root, block, sourceFile);
@@ -101,6 +145,15 @@ export class BlockParser {
     // Log any debug statements discovered.
     debug(` - Process Debugs`);
     await processDebugStatements(root, block, debugIdent, this.config);
+
+    // These rules are only relevant to definition files. We run these after we're
+    // basically done reconstituting the block.
+    if (isDfnFile) {
+      // Find any block-class rules and override the class name of the block with its value.
+      debug(" - Process Preset Block Classes");
+      await addPresetSelectors(configuration, root, block, debugIdent);
+      // TODO: Process block-interface-index declarations. (And inherited-styles???)
+    }
 
     // Return our fully constructed block.
     debug(` - Complete`);

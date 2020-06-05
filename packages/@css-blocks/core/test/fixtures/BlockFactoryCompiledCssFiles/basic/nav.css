@@ -1,0 +1,69 @@
+/*#css-blocks 7d97e*/
+.nav-7d97e {
+  position: fixed;
+  display: flex;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.nav-7d97e--light {
+  background-color: #DDD;
+  color: #222;
+}
+
+.nav-7d97e--dark {
+  background-color: #222;
+  color: #DDD;
+}
+
+.nav-7d97e__item {
+  padding: 10px 20px;
+}
+
+.nav-7d97e__item + .nav-7d97e__item {
+  border-left: 1px solid #090;
+}
+
+.nav-7d97e__item--current.nav-7d97e__item--promo {
+  background-color: #66F;
+  font-weight: bold;
+}
+
+.nav-7d97e__item--current.nav-7d97e__item--promo::after {
+  width: 10px;
+  height: 10px;
+  background-color: #F00;
+  content: "!";
+  margin-left: 5px;
+}
+
+.nav-7d97e--light .nav-7d97e__item--current {
+  background-color: #BBF;
+}
+
+.nav-7d97e--dark .nav-7d97e__item--current {
+  background-color: #225;
+}
+
+.nav-7d97e__item:hover {
+  cursor: pointer;
+  font-style: italic;
+}
+
+.nav-7d97e--light .nav-7d97e__item:hover {
+  color: #000;
+  background-color: #AAA;
+}
+
+.nav-7d97e--dark .nav-7d97e__item:hover {
+  color: #FFF;
+  background-color: #666;
+}
+
+.nav-7d97e__item.important-3c287 {
+  color: #F00;
+  letter-spacing: 0.2em;
+}
+/*#blockDefinitionURL=nav.blockdef.css*/
+/*#css-blocks end*/

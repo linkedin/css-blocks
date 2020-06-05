@@ -59,7 +59,7 @@ function astToLiterals(node: AST.Expression, helper?: (name: string, params: unk
 
 describe("Classnames Helper", () => {
   it("generates an ast fragment for a dynamic class name expression", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
@@ -80,7 +80,7 @@ describe("Classnames Helper", () => {
     );
   });
   it("generates an ast fragment for a dependent style expression", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
@@ -101,7 +101,7 @@ describe("Classnames Helper", () => {
     );
   });
   it("generates an ast fragment for a dependent style expression", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
@@ -123,7 +123,7 @@ describe("Classnames Helper", () => {
   });
 
   it("generates an ast fragment for a state group", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let red = r.ensureAttributeValue("[theme=red]");
     let orange = r.ensureAttributeValue("[theme=orange]");
@@ -141,7 +141,7 @@ describe("Classnames Helper", () => {
   });
 
   it("generates an ast fragment for a dependent state group", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let red = r.ensureAttributeValue("[theme=red]");
     let orange = r.ensureAttributeValue("[theme=orange]");
@@ -162,7 +162,7 @@ describe("Classnames Helper", () => {
     );
   });
   it("generates an ast fragment for optimized classes", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
@@ -185,7 +185,7 @@ describe("Classnames Helper", () => {
     );
   });
   it('omits the boolean expression for single "and" and "or" values', () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
@@ -208,7 +208,7 @@ describe("Classnames Helper", () => {
     );
   });
   it("can negate boolean expressions", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
@@ -231,7 +231,7 @@ describe("Classnames Helper", () => {
     );
   });
   it('can "or" boolean expressions', () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
@@ -254,7 +254,7 @@ describe("Classnames Helper", () => {
     );
   });
   it("can run the generated helper expression", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
@@ -280,7 +280,7 @@ describe("Classnames Helper", () => {
     expect(run(ast)).deep.equals("a c");
   });
   it("false ternary picks the other branch", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");
@@ -306,7 +306,7 @@ describe("Classnames Helper", () => {
     expect(run(ast)).deep.equals("b");
   });
   it("dependent state group is allowed when class is set", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let red = r.ensureAttributeValue("[theme=red]");
     let orange = r.ensureAttributeValue("[theme=orange]");
@@ -333,7 +333,7 @@ describe("Classnames Helper", () => {
     expect(run(ast)).deep.equals("a d");
   });
   it("dependent state group is disabled when class is not set", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let red = r.ensureAttributeValue("[theme=red]");
     let orange = r.ensureAttributeValue("[theme=orange]");
@@ -360,7 +360,7 @@ describe("Classnames Helper", () => {
     expect(run(ast)).deep.equals("");
   });
   it("dependent state group is unset when falsy", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let red = r.ensureAttributeValue("[theme=red]");
     let orange = r.ensureAttributeValue("[theme=orange]");
@@ -387,7 +387,7 @@ describe("Classnames Helper", () => {
     expect(run(ast)).deep.equals("a");
   });
   it("dependent state group errors when falsy", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let red = r.ensureAttributeValue("[theme=red]");
     let orange = r.ensureAttributeValue("[theme=orange]");
@@ -413,7 +413,7 @@ describe("Classnames Helper", () => {
   });
 
   it("handles complex boolean expressions", () => {
-    let b = new Block("test", "test");
+    let b = new Block("test", "test", "test");
     let r = b.rootClass;
     let c1 = b.ensureClass("class-1");
     let c2 = b.ensureClass("class-2");

@@ -48,7 +48,7 @@ export class BEMOutputMode extends BEMProcessor {
 
       // Discover the generated GUID for this block.
       // It changes every time the process is killed.
-      let uid = (css.match(/test-block_(.....)/) || [])[1];
+      let uid = (css.match(/test-block_([^\s{]+)/) || [])[1];
 
       assert.deepEqual(
         minify(css),
