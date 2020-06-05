@@ -5,6 +5,7 @@ import * as path from "path";
 import { RawSourceMap } from "source-map";
 
 import { Block } from "../BlockTree";
+import { Styles } from "../BlockTree/Styles";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
 import { CssBlockError } from "../errors";
 import { FileIdentifier, ImportedCompiledCssFile, ImportedFile, Importer } from "../importing";
@@ -364,22 +365,39 @@ export class BlockFactory {
     const block = await this.parser.parseDefinitionSource(definitionAst, file.definitionIdentifier, file.blockId, file.defaultName);
 
     // Merge the rules from the CSS contents into the Block.
+    this._mergeCssRulesIntoDefinitionBlock(block, cssContentsAst, file);
+
+    // And we're done!
+    return block;
+  }
+
+  /**
+   * Merges the CSS rules from a Compiled CSS file into its associated block. The block
+   * will have been created previously from parsing the definition file using BlockParser.
+   * @param block - The block that was generated from a definition file.
+   * @param cssContentsAst - The parsed AST generated from the CSS file's contents.
+   * @param file - The CompiledCSSFile that this block and CSS file was parsed from.
+   */
+  private _mergeCssRulesIntoDefinitionBlock(block: Block, cssContentsAst: postcss.Root, file: ImportedCompiledCssFile) {
     const styleNodesMap = block.presetClassesMap(true);
     cssContentsAst.walkRules(rule => {
       const parsedSelectors = parseSelector(rule);
 
       parsedSelectors.forEach(sel => {
+        const keys = sel.key.nodes;
+        const keyStyleNodes: Styles[] = [];
         let doProcess = true;
 
         // Check selector: do not process selectors with class names that
         // aren't from this block. (aka: resolution selectors)
-        sel.eachSelectorNode(selNode => {
-          if (selNode.type !== "class") {
-            return;
-          }
-          if (!styleNodesMap[selNode.value]) {
-            doProcess = false;
-            return;
+        keys.forEach(key => {
+          if (key.type === "class") {
+            const foundStyleNode = styleNodesMap[key.value];
+            if (!foundStyleNode) {
+              doProcess = false;
+              return;
+            }
+            keyStyleNodes.push(foundStyleNode);
           }
         });
         // If this node should be processed, add its declarations to each class
@@ -387,18 +405,12 @@ export class BlockFactory {
         // We add the declarations so that later we can determine any conflicts
         // between the imported CSS and any app CSS that relies on it.
         if (doProcess) {
-          const keys = sel.key.nodes;
-          keys.forEach(key => {
-            if (key.type === "class") {
-              styleNodesMap[key.value].rulesets.addRuleset(this.configuration, file.identifier, rule);
-            }
+          keyStyleNodes.forEach(node => {
+            node.rulesets.addRuleset(this.configuration, file.identifier, rule);
           });
         }
       });
     });
-
-    // And we're done!
-    return block;
   }
 
   /**
