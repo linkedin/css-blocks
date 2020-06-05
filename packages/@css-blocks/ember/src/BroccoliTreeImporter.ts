@@ -1,4 +1,4 @@
-import { Configuration, ImportedFile, Importer, Syntax, syntaxFromExtension } from "@css-blocks/core";
+import { Configuration, ImportedCompiledCssFile, ImportedFile, Importer, Syntax, syntaxFromExtension } from "@css-blocks/core";
 import type { FS as MergedFileSystem } from "fs-merger";
 import * as path from "path";
 
@@ -48,7 +48,7 @@ export class BroccoliTreeImporter implements Importer {
     }
   }
 
-  async import(identifier: string, config: Readonly<Configuration>): Promise<ImportedFile> {
+  async import(identifier: string, config: Readonly<Configuration>): Promise<ImportedFile | ImportedCompiledCssFile> {
     if (isBroccoliTreeIdentifier(identifier)) {
       let relativePath = identToPath(identifier);
       let contents = this.input.readFileSync(relativePath, "utf8");
