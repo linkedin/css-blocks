@@ -389,7 +389,7 @@ export class BlockFactory {
         if (doProcess) {
           const keys = sel.key.nodes;
           keys.forEach(key => {
-            if (key.value && key.type === "class") {
+            if (key.type === "class") {
               styleNodesMap[key.value].rulesets.addRuleset(this.configuration, file.identifier, rule);
             }
           });
