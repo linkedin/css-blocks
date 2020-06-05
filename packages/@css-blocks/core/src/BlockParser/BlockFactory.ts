@@ -387,7 +387,8 @@ export class BlockFactory {
         // We add the declarations so that later we can determine any conflicts
         // between the imported CSS and any app CSS that relies on it.
         if (doProcess) {
-          sel.key.eachSelectorNode(key => {
+          const keys = sel.key.nodes;
+          keys.forEach(key => {
             if (key.value && key.type === "class") {
               styleNodesMap[key.value].rulesets.addRuleset(this.configuration, file.identifier, rule);
             }
