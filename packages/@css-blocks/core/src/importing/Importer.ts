@@ -120,11 +120,27 @@ export interface ImportedCompiledCssFile {
   blockId: string;
 
   /**
+   * A unique identifier (probably an absolute filesystem path) for the block's definition
+   * data. Even if the data is embedded in the same file as the Compiled CSS, this should
+   * be distinct from the Compiled CSS identifier.
+   */
+  definitionIdentifier: string;
+
+  /**
    * The contents of the block definition. If this was embedded base64 data, it will
    * have been decoded into a string. If this was an external file, the file's
    * contents will be included here.
    */
   definitionContents: string;
+
+  /**
+   * The default name for the block based on its identifier. This is used
+   * when a block doesn't specify a name for itself.
+   * A successful build should never fall back to this... having to use this
+   * value instead of being able to find it in the definition data is
+   * an error.
+   */
+  defaultName: string;
 }
 
 /**

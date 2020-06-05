@@ -1,0 +1,66 @@
+{
+  "nav-7d97e": {
+    "::self": [
+      "position",
+      "display",
+      "top",
+      "left",
+      "width"
+    ]
+  },
+  "nav-7d97e--light": {
+    "::self": [
+      "background-color",
+      "color"
+    ]
+  },
+  "nav-7d97e--dark": {
+    "::self": [
+      "background-color",
+      "color"
+    ]
+  },
+  "nav-7d97e__item": {
+    "::self": [
+      "padding",
+      "padding-left",
+      "padding-top",
+      "padding-right",
+      "padding-bottom",
+      "border-left",
+      "border-left-width",
+      "border-left-style",
+      "border-left-color",
+      "cursor",
+      "font-style",
+      "color",
+      "background-color"
+    ]
+  },
+  "nav-7d97e__item--current": {
+    "::self": [
+      "background-color",
+      "font-weight"
+    ],
+    "::after": [
+      "width",
+      "height",
+      "background-color",
+      "content",
+      "margin-left"
+    ]
+  },
+  "nav-7d97e__item--promo": {
+    "::self": [
+      "background-color",
+      "font-weight"
+    ],
+    "::after": [
+      "width",
+      "height",
+      "background-color",
+      "content",
+      "margin-left"
+    ]
+  }
+}

@@ -1,12 +1,15 @@
 import { ObjectDictionary, isString } from "@opticss/util";
 import * as debugGenerator from "debug";
-import { LegacyRawSourceMap, adaptFromLegacySourceMap, postcss } from "opticss";
+import { LegacyRawSourceMap, adaptFromLegacySourceMap, parseSelector, postcss } from "opticss";
 import * as path from "path";
 import { RawSourceMap } from "source-map";
 
 import { Block } from "../BlockTree";
+import { Styles } from "../BlockTree/Styles";
 import { Options, ResolvedConfiguration, resolveConfiguration } from "../configuration";
-import { FileIdentifier, ImportedFile, Importer } from "../importing";
+import { CssBlockError } from "../errors";
+import { FileIdentifier, ImportedCompiledCssFile, ImportedFile, Importer } from "../importing";
+import { upgradeDefinitionFileSyntax } from "../PrecompiledDefinitions/block-syntax-version";
 import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockParser, ParsedSource } from "./BlockParser";
@@ -46,6 +49,8 @@ export class BlockFactory {
   private paths: ObjectDictionary<string>;
   private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
+  private guids = new Set<string>();
+
   constructor(options: Options, postcssImpl = postcss, faultTolerant = false) {
     this.postcssImpl = postcssImpl;
     this.configuration = resolveConfiguration(options);
@@ -71,6 +76,7 @@ export class BlockFactory {
     this.paths = {};
     this.promises = {};
     this.blockNames = {};
+    this.guids.clear();
   }
 
   /**
@@ -81,10 +87,11 @@ export class BlockFactory {
    * @param root The postcss.Root to parse.
    * @param identifier A unique identifier for this Block file.
    * @param name Default name for the block.
+   * @param isDfnFile Whether to treat this as a definition file.
    * @returns The Block object promise.
    */
-  parseRootFaultTolerant(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    return this.promises[identifier] = this.parser.parse(root, identifier, name);
+  parseRootFaultTolerant(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Promise<Block> {
+    return this.promises[identifier] = this.parser.parse(root, identifier, name, isDfnFile, expectedGuid);
   }
 
   /**
@@ -96,10 +103,11 @@ export class BlockFactory {
    * @param root The postcss.Root to parse.
    * @param identifier A unique identifier for this Block file.
    * @param name Default name for the block.
+   * @param isDfnFile Whether to treat this as a definition file.
    * @returns The Block object promise.
    */
-  async parseRoot(root: postcss.Root, identifier: string, name: string): Promise<Block> {
-    const block = await this.parseRootFaultTolerant(root, identifier, name);
+  async parseRoot(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Promise<Block> {
+    const block = await this.parseRootFaultTolerant(root, identifier, name, isDfnFile, expectedGuid);
     return this._surfaceBlockErrors(block);
   }
 
@@ -183,26 +191,50 @@ export class BlockFactory {
   private async _getBlockPromiseAsync(identifier: FileIdentifier): Promise<Block> {
     try {
       let file = await this.importer.import(identifier, this.configuration);
+
+      let block: Block;
       if (file.type === "ImportedCompiledCssFile") {
-        // TODO: Process ImportedCompiledCssFile type.
-        throw new Error("Imported Compiled CSS files aren't supported yet.");
+        block = await this._reconstituteCompiledCssSource(file);
       } else {
-        let block = await this._importAndPreprocessBlock(file);
-        debug(`Finalizing Block object for "${block.identifier}"`);
-
-        // last check to make sure we don't return a new instance
-        if (this.blocks[block.identifier]) {
-          return this.blocks[block.identifier];
-        }
-
-        // Ensure this block name is unique.
-        block.setName(this.getUniqueBlockName(block.name));
-
-        // if the block has any errors, surface them here unless we're in fault tolerant mode.
-        this._surfaceBlockErrors(block);
-        this.blocks[block.identifier] = block;
-        return block;
+        block = await this._importAndPreprocessBlock(file);
       }
+
+      debug(`Finalizing Block object for "${block.identifier}"`);
+
+      // last check to make sure we don't return a new instance
+      if (this.blocks[block.identifier]) {
+        return this.blocks[block.identifier];
+      }
+
+      // Ensure this block name is unique.
+      const uniqueName = this.getUniqueBlockName(block.name, file.type === "ImportedCompiledCssFile");
+      if (uniqueName === null) {
+        // For ImportedCompiledCssFiles, leave the name alone and add an error.
+        block.addError(
+          new CssBlockError("Block uses a name that has already been used! Check dependencies for conflicting block names.", {
+            filename: block.identifier,
+          }),
+        );
+        block.setName(block.name);
+      } else {
+        block.setName(uniqueName);
+      }
+
+      // Ensure the GUID is unique.
+      const guidRegResult = this.registerGuid(block.guid);
+      if (!guidRegResult) {
+        block.addError(
+            new CssBlockError("Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs.", {
+              filename: block.identifier,
+            },
+          ),
+        );
+      }
+
+      // if the block has any errors, surface them here unless we're in fault tolerant mode.
+      this._surfaceBlockErrors(block);
+      this.blocks[block.identifier] = block;
+      return block;
     } catch (error) {
       if (this.preprocessQueue.activeJobCount > 0) {
         debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
@@ -295,6 +327,92 @@ export class BlockFactory {
     return this.parser.parseSource(source);
   }
 
+  private async _reconstituteCompiledCssSource(file: ImportedCompiledCssFile): Promise<Block> {
+    // Maybe we already have this block in cache?
+    if (this.blocks[file.identifier]) {
+      debug(`Using pre-compiled Block for "${file.identifier}"`);
+      return this.blocks[file.identifier];
+    }
+
+    // Update definition data to use latest block syntax.
+    file = upgradeDefinitionFileSyntax(file);
+
+    // NOTE: No need to run preprocessor - we assume that Compiled CSS has already been preprocessed.
+    // Parse the definition file into an AST
+    const definitionAst = this.postcssImpl.parse(file.definitionContents);
+    const dfnDebugIdentifier = this.importer.debugIdentifier(file.definitionIdentifier, this.configuration);
+
+    // Parse the CSS contents into an AST
+    const cssContentsAst = this.postcssImpl.parse(file.cssContents);
+    const cssDebugIdentifier = this.importer.debugIdentifier(file.identifier, this.configuration);
+
+    // TODO: Sourcemaps?
+
+    // Sanity check! Did we actually get contents for both ASTs?
+    if (!definitionAst || !definitionAst.nodes) {
+      throw new CssBlockError(`Unable to parse definition file into AST!`, {
+        filename: dfnDebugIdentifier,
+      });
+    }
+
+    if (!cssContentsAst || !cssContentsAst.nodes) {
+      throw new CssBlockError(`Unable to parse CSS contents into AST!`, {
+        filename: cssDebugIdentifier,
+      });
+    }
+
+    // Construct a Block out of the definition file.
+    const block = await this.parser.parseDefinitionSource(definitionAst, file.definitionIdentifier, file.blockId, file.defaultName);
+
+    // Merge the rules from the CSS contents into the Block.
+    this._mergeCssRulesIntoDefinitionBlock(block, cssContentsAst, file);
+
+    // And we're done!
+    return block;
+  }
+
+  /**
+   * Merges the CSS rules from a Compiled CSS file into its associated block. The block
+   * will have been created previously from parsing the definition file using BlockParser.
+   * @param block - The block that was generated from a definition file.
+   * @param cssContentsAst - The parsed AST generated from the CSS file's contents.
+   * @param file - The CompiledCSSFile that this block and CSS file was parsed from.
+   */
+  private _mergeCssRulesIntoDefinitionBlock(block: Block, cssContentsAst: postcss.Root, file: ImportedCompiledCssFile) {
+    const styleNodesMap = block.presetClassesMap(true);
+    cssContentsAst.walkRules(rule => {
+      const parsedSelectors = parseSelector(rule);
+
+      parsedSelectors.forEach(sel => {
+        const keys = sel.key.nodes;
+        const keyStyleNodes: Styles[] = [];
+        let doProcess = true;
+
+        // Check selector: do not process selectors with class names that
+        // aren't from this block. (aka: resolution selectors)
+        keys.forEach(key => {
+          if (key.type === "class") {
+            const foundStyleNode = styleNodesMap[key.value];
+            if (!foundStyleNode) {
+              doProcess = false;
+              return;
+            }
+            keyStyleNodes.push(foundStyleNode);
+          }
+        });
+        // If this node should be processed, add its declarations to each class
+        // in the key selector (the last part of the selector).
+        // We add the declarations so that later we can determine any conflicts
+        // between the imported CSS and any app CSS that relies on it.
+        if (doProcess) {
+          keyStyleNodes.forEach(node => {
+            node.rulesets.addRuleset(this.configuration, file.identifier, rule);
+          });
+        }
+      });
+    });
+  }
+
   /**
    * Similar to getBlock(), this imports and parses a block data file. However, this
    * method parses a block relative to another block.
@@ -317,14 +435,20 @@ export class BlockFactory {
   }
 
   /**
-   * Register a new block name with the BlockFactory. Return true true if successful, false if already exists.
+   * Register a new block name with the BlockFactory.
    * @param name The new block name to register.
-   * @return True or false depending on success status.
+   * @param doNotOverride If true, will not attempt to provide a new block name if the given
+   *                      name has already been registered.
+   * @return The unique block name that is now registered with the BlockFactory, or null if
+   *         the name has already been registered and should not be overridden.
    */
-  getUniqueBlockName(name: string): string {
+  getUniqueBlockName(name: string, doNotOverride = false): string | null {
     if (!this.blockNames[name]) {
       this.blockNames[name] = 1;
       return name;
+    }
+    if (doNotOverride) {
+      return null;
     }
     return `${name}-${++this.blockNames[name]}`;
   }
@@ -362,6 +486,20 @@ export class BlockFactory {
 
     }
     return preprocessor;
+  }
+
+  /**
+   * Registers a new GUID with the BlockFactory.
+   * @param guid - The guid to register.
+   * @param identifier  - A reference to the file this block was generated from, for error reporting.
+   * @return True if registration is successful, false otherwise.
+   */
+  registerGuid(guid: string): boolean {
+    if (this.guids.has(guid)) {
+      return false;
+    }
+    this.guids.add(guid);
+    return true;
   }
 }
 

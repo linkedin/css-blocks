@@ -33,6 +33,7 @@ const DEFAULTS: ResolvedConfiguration = {
   preprocessors: {},
   disablePreprocessChaining: false,
   maxConcurrentCompiles: 4,
+  guidAutogenCharacters: 5,
 };
 
 /**
@@ -85,6 +86,9 @@ class Resolver implements ResolvedConfiguration {
   }
   get maxConcurrentCompiles(): number {
     return this._opts.maxConcurrentCompiles;
+  }
+  get guidAutogenCharacters(): number {
+    return this._opts.guidAutogenCharacters;
   }
 }
 

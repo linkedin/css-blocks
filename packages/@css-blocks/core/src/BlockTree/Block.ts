@@ -1,6 +1,4 @@
 import { MultiMap, ObjectDictionary } from "@opticss/util";
-import * as crypto from "crypto";
-import * as debugGenerator from "debug";
 import {
   CompoundSelector,
   ParsedSelector,
@@ -8,7 +6,6 @@ import {
   postcss,
   postcssSelectorParser as selectorParser,
 } from "opticss";
-import * as process from "process";
 
 import { isAttributeNode, isClassNode } from "../BlockParser";
 import { isRootNode, toAttrToken } from "../BlockParser";
@@ -22,26 +19,22 @@ import { BlockClass } from "./BlockClass";
 import { Inheritable } from "./Inheritable";
 import { Styles } from "./Styles";
 
-const DEBUG = debugGenerator("css-blocks:caching");
-
 /**
- * Generates a 5 digit, unique identifier from a given input identifier. This
- * generated identifier hash will remain consistent for the tuple of (machine,
- * user, css blocks installation location).
- * @param  identifier Input Block identifier.
- * @returns This Block's guid hash.
+ * In-memory representation of a Block. If you're thinking of CSS Blocks
+ * in relation to the BEM architecture for CSS, this is the... well... "Block".
+ * Well, with a slight caveat....
+ *
+ * The Block is always the root node of a BlockTree. The Block may be the
+ * parent to any number of BlockClass nodes. Notably, the Block class only
+ * stores meta information about the block. Any CSS properties assigned to the
+ * `:scope` selector are stored on a special BlockClass node that is a child of
+ * the Block. You can access this node directly through the
+ * `rootClass` property.
+ *
+ * Block nodes store all data related to any `@block` imports, the
+ * `block-name`, implemented Blocks, the inherited Block, and any other
+ * metadata stored in the Block file.
  */
-function gen_guid(identifier: string): string {
-  let hash = crypto.createHash("md5")
-    .update(process.getuid().toString())
-    .update(__filename)
-    .update(identifier)
-    .digest("hex")
-    .slice(0, 5);
-  DEBUG("guid is %s for %s", hash, identifier);
-  return hash;
-}
-
 export class Block
   extends Inheritable<Block, Block, never, BlockClass> {
 
@@ -54,6 +47,14 @@ export class Block
   private _blockErrors: CssBlockError[] = [];
   private hasHadNameReset = false;
 
+  /**
+   * A unique identifier for this Block. Generally created from a hash
+   * of the FileIdentifier and other process information.
+   *
+   * For caching to work properly, this GUID must be unique to the block and
+   * shouldn't change between recompiles. You shouldn't use file contents to
+   * create this hash.
+   */
   public readonly guid: string;
 
   /**
@@ -63,16 +64,38 @@ export class Block
    */
   private _dependencies: Set<string>;
 
+  /**
+   * A direct reference to the BlockClass that holds style information for the
+   * `:scope` selector of this Block. The rootClass is also available through
+   * other traversal methods, as you would access any other BlockClass that
+   * belongs to this Block.
+   */
   public readonly rootClass: BlockClass;
+
+  /**
+   * The PostCSS AST of the stylesheet this Block was built from. Used
+   * primarily for error reporting, if present.
+   */
   public stylesheet: postcss.Root | undefined;
 
-  constructor(name: string, identifier: FileIdentifier, stylesheet?: postcss.Root) {
+  /**
+   * Creates a new Block.
+   *
+   * @param name - The default name for this block. This can be reset once (and only once)
+   *               using the `setName()` method.
+   * @param identifier - An unique ID referencing the file/blob this Block is created from.
+   * @param guid - The GUID for this block. This GUID should be unique. (BlockFactory is
+   *               responsible for enforcing uniqueness.)
+   * @param stylesheet - The PostCSS AST of the stylesheet this block is built from.
+   */
+  constructor(name: string, identifier: FileIdentifier, guid: string, stylesheet?: postcss.Root) {
     super(name);
     this._identifier = identifier;
     this._dependencies = new Set<string>();
     this.rootClass = new BlockClass(ROOT_CLASS, this);
     this.stylesheet = stylesheet;
-    this.guid = gen_guid(identifier);
+    this.guid = guid;
+
     this.addClass(this.rootClass);
   }
 
@@ -408,6 +431,28 @@ export class Block
     if (!shallow && this.base) {
       result.push(...this.base.all(shallow));
     }
+    return result;
+  }
+
+  /**
+   * Fetch a dictionary of styles associated with this block, using any preset
+   * selector as the key. If a given style doesn't have a preset selector, it
+   * will be excluded from this dictionary.
+   *
+   * @param shallow - Pass true to exclude inherited objects.
+   * @returns Collection of Styles objects, organized by preset selector value.
+   */
+  presetClassesMap(shallow?: boolean): ObjectDictionary<Styles> {
+    const result = {};
+    const all = this.all(shallow);
+
+    all.forEach(el => {
+      const presetCssClass = el.presetCssClass;
+      if (presetCssClass) {
+        result[presetCssClass] = el;
+      }
+    });
+
     return result;
   }
 

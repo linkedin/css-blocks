@@ -1,0 +1,33 @@
+@block-syntax-version 1;
+
+:scope {
+  block-id: "7d97e";
+  block-name: nav;
+  block-class: nav-7d97e;
+  block-interface-index: 1;
+}
+
+:scope[mode="light"] {
+  block-class: nav-7d97e--light;
+  block-interface-index: 2;
+}
+
+:scope[mode="dark"] {
+  block-class: nav-7d97e--dark;
+  block-interface-index: 3;
+}
+
+.item {
+  block-class: nav-7d97e__item;
+  block-interface-index: 4;
+}
+
+.item[current] {
+  block-class: nav-7d97e__item--current;
+  block-interface-index: 5;
+}
+
+.item[promo] {
+  block-class: nav-7d97e__item--promo;
+  block-interface-index: 6;
+}
