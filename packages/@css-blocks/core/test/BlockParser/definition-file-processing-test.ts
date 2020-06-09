@@ -225,6 +225,29 @@ export class DefinitionFileProcessing extends BEMProcessor {
     );
   }
 
+  @test "It errors out if duplicate interface indexes are present."() {
+    const registry = new MockImportRegistry();
+    registerReferencedSources(registry);
+
+    const filename = "foo/bar/nav.block.css";
+    const inputCss = `@block-syntax-version: 1;
+                      :scope { block-id: "7d97e"; block-class: nav-7d97e; block-name: nav; block-interface-index: 0; }
+                      .entry { block-interface-index: 1; block-class: nav-7d97e__entry; }
+                      .entry[active] { block-class: nav-7d97e__entry--active; block-interface-index: 0; }`;
+    const parseConfig = {
+      importer: registry.importer(),
+    };
+    const mockConfigOpts = {
+      dfnFiles: [filename],
+    };
+
+    return assertError(
+      CssBlockError,
+      "Each block-interface-index in a definition file must be unique. (foo/bar/nav.block.css:4:79)",
+      this.process(filename, inputCss, parseConfig, mockConfigOpts),
+    );
+  }
+
   @test "It errors out if a declared block-class isn't a valid class name"() {
     const registry = new MockImportRegistry();
     registerReferencedSources(registry);

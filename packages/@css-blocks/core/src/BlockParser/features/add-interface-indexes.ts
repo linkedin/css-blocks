@@ -8,11 +8,11 @@ import { getStyleTargets } from "../block-intermediates";
 import { stripQuotes } from "../utils";
 
 /**
- * Traverse a definition file's rules and define a preset block-class for each
- * rule present. This ensures the block uses the same CSS class as defined in
- * the linked Compiled CSS file associated with this definition file.
+ * Traverse a definition file's rules and define a preset block-inteface-index
+ * for each rule present. This ensures the block uses the same interface index
+ * as defined in compilation data.
  *
- * If a given rule does not have a block-class declared, an error is added to
+ * If a given rule does not have an index declared, an error is added to
  * the block for the user to correct.
  *
  * This should only be run on definition files! Standard block files aren't
@@ -24,10 +24,13 @@ import { stripQuotes } from "../utils";
  * @param file - The definition file this block was generated from.
  */
 export function addInterfaceIndexes(configuration: Configuration, root: postcss.Root, block: Block, file: string) {
+  // As we go along, track the indexes found. We expect each to be unique.
+  const foundIndexes: number[] = [];
+
   // For each rule declared in the file...
   root.walkRules(rule => {
 
-    // Find the block-class declaration...
+    // Find the block-interface-index declaration...
     rule.walkDecls("block-interface-index", decl => {
       const val = stripQuotes(decl.value);
 
@@ -40,6 +43,18 @@ export function addInterfaceIndexes(configuration: Configuration, root: postcss.
             sourceRange(configuration, root, file, decl),
           ),
         );
+      }
+
+      // And the block-interface-index should be unique.
+      if (foundIndexes.includes(parsedIndex)) {
+        block.addError(
+          new CssBlockError(
+            "Each block-interface-index in a definition file must be unique.",
+            sourceRange(configuration, root, file, decl),
+          ),
+        );
+      } else {
+        foundIndexes.push(parsedIndex);
       }
 
       // Set the index on the related style node.
@@ -57,7 +72,7 @@ export function addInterfaceIndexes(configuration: Configuration, root: postcss.
     });
   });
 
-  // At this point, every style node should have a fixed block-class.
+  // At this point, every style node should have a fixed interface-index.
   block.all(true).forEach(styleNode => {
     if (!styleNode.wasIndexReset) {
       block.addError(
