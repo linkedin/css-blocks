@@ -31,7 +31,45 @@ export abstract class Style<
 
   // tslint:disable-next-line:prefer-unknown-to-any
   public abstract readonly rulesets: RulesetContainer<any>;
-  public readonly index: number;
+
+  /**
+   * The interface index for this style node. A default one is provided
+   * when the style node is constructed, but may be reset to a specific
+   * value later (such as when reading the block-interface-index decl
+   * in definition files).
+   */
+  private _index: number;
+
+  /**
+   * Whether the interface index for this style node was set to a specific
+   * value after it was created. Used for error detection when parsing
+   * definition files.
+   */
+  private _wasIndexReset = false;
+
+  /**
+   * The interface index for this style node.
+   */
+  get index() {
+    return this._index;
+  }
+
+  /**
+   * Sets the interface index for this style node to a specific value.
+   */
+  set index(val: number) {
+    this._index = val;
+    this._wasIndexReset = true;
+  }
+
+  /**
+   * Whether the interface index for this style node has been reset from
+   * its original value (usually from a declared block-interface-index in
+   * a definition file).
+   */
+  get wasIndexReset() {
+    return this._wasIndexReset;
+  }
 
   /**
    * The preset selector for this particular class node.
@@ -44,7 +82,7 @@ export abstract class Style<
    */
   constructor(name: string, parent: Parent, index: number) {
     super(name, parent);
-    this.index = index;
+    this._index = index;
   }
 
   /**

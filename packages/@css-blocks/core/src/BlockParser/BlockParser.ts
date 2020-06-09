@@ -6,6 +6,7 @@ import { Options, ResolvedConfiguration, resolveConfiguration } from "../configu
 import { CssBlockError } from "../errors";
 import { FileIdentifier } from "../importing";
 
+import { addInterfaceIndexes } from "./features/add-interface-indexes";
 import { addPresetSelectors } from "./features/add-preset-selectors";
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { composeBlock } from "./features/composes-block";
@@ -152,7 +153,9 @@ export class BlockParser {
       // Find any block-class rules and override the class name of the block with its value.
       debug(" - Process Preset Block Classes");
       await addPresetSelectors(configuration, root, block, debugIdent);
-      // TODO: Process block-interface-index declarations. (And inherited-styles???)
+      debug(" - Process Preset Interface Indexes");
+      await addInterfaceIndexes(configuration, root, block, debugIdent);
+      // TODO: Process inherited-styles?
     }
 
     // Return our fully constructed block.
