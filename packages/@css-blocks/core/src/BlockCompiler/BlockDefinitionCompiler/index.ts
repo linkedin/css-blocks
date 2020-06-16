@@ -1,157 +1,16 @@
 import { Dictionary } from "async";
 import { postcss } from "opticss";
 
-import { AttributeSelector, BlockExport, BlockReference, BlockSyntaxVersion, ClassSelector, Declaration, DefinitionAST, DefinitionRoot, ForeignAttributeSelector, GlobalDeclaration, KeyCompoundSelector, LocalBlockExport, Mapper, Name, Rename, Rule, ScopeSelector, Selector, Visitor, builders, map as mapToDefinition, visit } from "../BlockParser/ast";
-import { BLOCK_GLOBAL } from "../BlockSyntax";
-import { AttrValue, Block, BlockClass, Style, isAttrValue, isBlockClass } from "../BlockTree";
-import { ResolvedConfiguration } from "../configuration";
+import { AttributeSelector, ClassSelector, Declaration, DefinitionAST, DefinitionRoot, GlobalDeclaration, KeyCompoundSelector, Mapper, Name, Rename, Rule, ScopeSelector, Selector, builders, map as mapToDefinition, visit } from "../../BlockParser/ast";
+import { AttrValue, Block, BlockClass, Style, isAttrValue, isBlockClass } from "../../BlockTree";
+import { ResolvedConfiguration } from "../../configuration";
+
+import { PostcssASTBuilder } from "./PostcssASTBuilder";
+import { CompiledDefinitionMapper, PathResolver } from "./CompiledDefinitionMapper";
+
+export { PathResolver } from "./CompiledDefinitionMapper";
 
 export const INLINE_DEFINITION_FILE = Symbol("Inline Definition");
-
-export type PathResolver = (block: Block, fromPath: string) => string;
-
-class CompiledDefinitionMapper implements Mapper<DefinitionAST> {
-  pathResolver: PathResolver;
-  block: Block;
-  constructor(block: Block, pathResolver: PathResolver) {
-    this.block = block;
-    this.pathResolver = pathResolver;
-  }
-  BlockExport(fromPath: string, exports: Array<Name | Rename>) {
-    fromPath = this.pathResolver(this.block, fromPath);
-    return builders.blockExport(fromPath, exports);
-  }
-  BlockReference(fromPath: string, defaultName: string, references: Array<Name | Rename>) {
-    fromPath = this.pathResolver(this.block, fromPath);
-    return builders.blockReference(fromPath, defaultName, references);
-  }
-}
-
-class SelectorASTBuilder implements Visitor<DefinitionAST> {
-  selector: string;
-  constructor() {
-    this.selector = "";
-  }
-  AttributeSelector(attr: AttributeSelector): void {
-    this.selector += `[${attr.attribute}`;
-    if (attr.matches) {
-      this.selector += attr.matches.matcher;
-      this.selector += `"${attr.matches.value}"`;
-    }
-    this.selector += "]";
-  }
-  ForeignAttributeSelector(attr: ForeignAttributeSelector): void {
-    this.selector += `[${attr.ns}|${attr.attribute}`;
-    if (attr.matches) {
-      this.selector += attr.matches.matcher;
-      this.selector += `"${attr.matches.value}"`;
-    }
-    this.selector += "]";
-  }
-  ScopeSelector(_scopeSelector: ScopeSelector): void {
-    this.selector += `:scope`;
-  }
-  ClassSelector(classSelector: ClassSelector): void {
-    this.selector += `.${classSelector.name}`;
-  }
-}
-
-class CompiledDefinitionPostcssASTBuilder implements Visitor<DefinitionAST> {
-  postcss: typeof postcss;
-  root: postcss.Root;
-  currentRule: postcss.Rule | undefined;
-  constructor(postcssImpl: typeof postcss) {
-    this.postcss = postcssImpl;
-    this.root = this.postcss.root();
-  }
-
-  namedReferences(references: Array<Name | Rename>): string {
-    let result = "";
-    result += "(";
-    let prevRef = false;
-    for (let ref of references) {
-      if (prevRef) {
-        result += ", ";
-      }
-      result += ref.name;
-      if (ref.asName) {
-        result += ` as ${ref.asName}`;
-      }
-      prevRef = true;
-    }
-    result += ")";
-    return result;
-  }
-
-  BlockSyntaxVersion(blockSyntaxVersion: BlockSyntaxVersion): void {
-    this.root.append(this.postcss.atRule({
-      name: "block-syntax-version",
-      params: blockSyntaxVersion.version.toString(),
-    }));
-  }
-
-  BlockReference(blockReference: BlockReference): void {
-    let params = "";
-    if (blockReference.defaultName) {
-      params += blockReference.defaultName;
-    }
-    if (blockReference.defaultName && blockReference.references) {
-      params += ", ";
-    }
-    if (blockReference.references) {
-      params += this.namedReferences(blockReference.references);
-    }
-    params += ` from "${blockReference.fromPath}"`;
-    let atRule = this.postcss.atRule({
-      name: "block",
-      params,
-    });
-    this.root.append(atRule);
-  }
-
-  LocalBlockExport(localBlockExport: LocalBlockExport): void {
-    let params = this.namedReferences(localBlockExport.exports);
-    let atRule = this.postcss.atRule({
-      name: "export",
-      params,
-    });
-    this.root.append(atRule);
-  }
-
-  BlockExport(blockExport: BlockExport): void {
-    let params = this.namedReferences(blockExport.exports);
-    params += ` from "${blockExport.fromPath}"`;
-    let atRule = this.postcss.atRule({
-      name: "export",
-      params,
-    });
-    this.root.append(atRule);
-  }
-
-  Rule(rule: Rule<DefinitionAST>): void | boolean {
-    let selectors = new Array<string>();
-    for (let sel of rule.selectors) {
-      let visitor = new SelectorASTBuilder();
-      visit(visitor, sel);
-      selectors.push(visitor.selector);
-    }
-    let currentRule = postcss.rule({selectors});
-    for (let declaration of rule.declarations) {
-      currentRule.append(
-        postcss.decl({prop: declaration.property, value: declaration.value}),
-      );
-    }
-    this.root.append(currentRule);
-    return false;
-  }
-  GlobalDeclaration(globalDeclaration: GlobalDeclaration): false {
-    let selectorBuilder = new SelectorASTBuilder();
-    visit(selectorBuilder, globalDeclaration.selector);
-    let atRule = postcss.atRule({name: BLOCK_GLOBAL, params: selectorBuilder.selector});
-    this.root.append(atRule);
-    return false;
-  }
-}
 
 export class BlockDefinitionCompiler {
   postcss: typeof postcss;
@@ -165,7 +24,7 @@ export class BlockDefinitionCompiler {
 
   compile(block: Block, reservedClassNames: Set<string>): postcss.Root {
     let ast = this.compileToAST(block, reservedClassNames);
-    let visitor = new CompiledDefinitionPostcssASTBuilder(this.postcss);
+    let visitor = new PostcssASTBuilder(this.postcss);
     visit(visitor, ast);
     return visitor.root;
   }
