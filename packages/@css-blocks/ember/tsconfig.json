@@ -4,6 +4,7 @@
     "composite": true,
     "outDir": "dist",
     "baseUrl": "dist",
+    "noImplicitAny": false,
     "paths": {
       "*": ["types/*"],
     }

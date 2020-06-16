@@ -1,4 +1,4 @@
-import config from "@css-blocks/config";
+import * as config from "@css-blocks/config";
 import { AnalysisOptions, Block, BlockCompiler, BlockFactory, Configuration, NodeJsImporter, Options as ParserOptions, OutputMode, resolveConfiguration } from "@css-blocks/core";
 import type { ASTPlugin, ASTPluginEnvironment } from "@glimmer/syntax";
 import { ObjectDictionary } from "@opticss/util";
@@ -77,7 +77,7 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     if (!this.output) {
       this.output = outputWrapper(this);
     }
-    let cssBlockEntries = this.input.entries(".", [BLOCK_GLOB]);
+    let cssBlockEntries = this.input.entries(".", {globs: [BLOCK_GLOB]});
     let currentFSTree = FSTree.fromEntries(cssBlockEntries);
     let patch = this.previousSourceTree.calculatePatch(currentFSTree);
     let removedFiles = patch.filter((change) => change[0] === "unlink");

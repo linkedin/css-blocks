@@ -17,7 +17,7 @@ export class BroccoliFileLocator implements FileLocator {
     return `broccoli-tree:${relativePathToStylesheet}`;
   }
   possibleTemplatePaths(): Array<string> {
-    return this.fs.entries(".", ["**/*.hbs"]).map(e => e.relativePath);
+    return this.fs.entries(".", {globs: ["**/*.hbs"]}).map(e => e.relativePath);
   }
   possibleStylesheetPathsForTemplate(templatePath: string, extensions: Array<string>): Array<string> {
     let path = templatePath.replace("/templates/", "/styles/");
