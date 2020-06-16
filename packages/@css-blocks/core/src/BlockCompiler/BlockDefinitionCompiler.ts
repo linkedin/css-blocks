@@ -208,6 +208,7 @@ export class BlockDefinitionCompiler {
     if (isBlockClass(style) && style.isRoot) {
       declarations.push(builders.declaration("block-id", `"${style.block.guid}"`));
       declarations.push(builders.declaration("block-name", `"${style.block.name}"`));
+      // TODO: inherited-styles
     }
 
     let compositions = new Array<string>();
@@ -229,12 +230,14 @@ export class BlockDefinitionCompiler {
     }
     return builders.rule(selectors, declarations);
   }
+
   /**
-   * Simple compositions (which apply to a single block class or attribute) are
-   * processed when we generate the rule for that style. The complex
-   * compositions which apply to the intersection of more than one attribute
-   * require the generation of ruleset that targets all of those attributes
-   * together.
+   * The complex compositions which apply to the intersection of more than one
+   * attribute require the generation of ruleset that targets all of those
+   * attributes together.
+   *
+   * Note: Simple compositions (which apply to a single block class or
+   * attribute) are processed when we generate the rule for that style.
    */
   complexCompositions(block: Block): Array<Rule<DefinitionAST>> {
     let complexCompositions: Dictionary<{ blockClass: BlockClass; attributes: AttrValue[]; paths: Array<string> }> = {};
