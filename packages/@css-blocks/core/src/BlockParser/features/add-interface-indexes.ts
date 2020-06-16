@@ -59,7 +59,16 @@ export function addInterfaceIndexes(configuration: Configuration, root: postcss.
 
       // Set the index on the related style node.
       const parsedSelectors = block.getParsedSelectors(rule);
-      parsedSelectors.forEach(sel => {
+      if (parsedSelectors.length > 1) {
+        // It's an error if there's more than one selector on a node that has block-interface-index.
+        block.addError(
+          new CssBlockError(
+            "A rule that has a defined block-interface-index can't have more than one selector.",
+            sourceRange(configuration, root, file, rule),
+          ),
+        );
+      } else {
+        const sel = parsedSelectors[0];
         const styleTarget = getStyleTargets(block, sel.key);
         if (styleTarget.blockAttrs.length > 0) {
           styleTarget.blockAttrs[0].index = parsedIndex;
@@ -68,7 +77,7 @@ export function addInterfaceIndexes(configuration: Configuration, root: postcss.
         } else {
           throw new Error(`Couldn\'t find style node corresponding to selector ${sel}. This shouldn't happen.`);
         }
-      });
+      }
     });
   });
 
