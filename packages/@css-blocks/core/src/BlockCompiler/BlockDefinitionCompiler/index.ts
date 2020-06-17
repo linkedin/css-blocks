@@ -1,7 +1,7 @@
 import { Dictionary } from "async";
 import { postcss } from "opticss";
 
-import { AttributeSelector, ClassSelector, Declaration, DefinitionAST, DefinitionRoot, GlobalDeclaration, KeyCompoundSelector, Mapper, Name, Rename, Rule, ScopeSelector, Selector, builders, map as mapToDefinition, visit } from "../../BlockParser/ast";
+import { AttributeSelector, ClassSelector, Declaration, DefinitionAST, DefinitionRoot, GlobalDeclaration, KeyCompoundSelector, Rule, ScopeSelector, Selector, builders, map as mapToDefinition, visit } from "../../BlockParser/ast";
 import { AttrValue, Block, BlockClass, Style, isAttrValue, isBlockClass } from "../../BlockTree";
 import { ResolvedConfiguration } from "../../configuration";
 
@@ -134,19 +134,13 @@ export class BlockDefinitionCompiler {
     return rules;
   }
 
-  blockReferences(root: postcss.Root, block: Block): void {
-    block.eachBlockReference((name, _block) => {
-      root.append(postcss.atRule({name: "block", params: `${name} from ""`}));
-    });
-  }
-
-  insertReference(css: postcss.Root, definitionPath: string) {
+  insertBlockDefinitionURLComment(css: postcss.Root, definitionPath: string) {
     let comment = this.postcss.comment({text: `#blockDefinitionURL=${definitionPath}`});
     Object.assign(comment.raws, {left: "", right: ""});
     css.append(comment);
   }
 
-  insertInlineReference(_css: postcss.Root, _definition: postcss.Root) {
+  insertInlineBlockDefinitionURLComment(_css: postcss.Root, _definition: postcss.Root) {
     throw new Error("Method not implemented.");
   }
 }

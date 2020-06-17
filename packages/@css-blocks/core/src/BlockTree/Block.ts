@@ -8,7 +8,7 @@ import {
 } from "opticss";
 
 import { isAttributeNode, isClassNode, isRootNode, toAttrToken } from "../BlockParser";
-import { DefinitionRoot as DefinitionAST, Root as BlockAST } from "../BlockParser/ast";
+import { Root as BlockAST } from "../BlockParser/ast";
 import { BlockPath, CLASS_NAME_IDENT, DEFAULT_EXPORT, ROOT_CLASS } from "../BlockSyntax";
 import { ResolvedConfiguration } from "../configuration";
 import { CssBlockError, InvalidBlockSyntax, MultipleCssBlockErrors } from "../errors";
@@ -39,7 +39,6 @@ export class Block
   extends Inheritable<Block, Block, never, BlockClass> {
 
   public blockAST?: BlockAST;
-  public definitionAST?: DefinitionAST;
   private _blockReferences: ObjectDictionary<Block> = {};
   private _blockReferencesReverseLookup: Map<Block, string> = new Map();
   private _blockExports: ObjectDictionary<Block> = {};

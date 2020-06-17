@@ -49,6 +49,14 @@ export class BlockCompiler {
     this.definitionCompiler = definitionCompiler;
   }
 
+  /**
+   * Compiles the block and also produces a corresponding block definition file.
+   *
+   * Note: the definition file is not actually written to any path; it is the
+   * responsibility of the caller to write the files to locations that allow
+   * definition file to be found at the path specified.
+   * @param definitionPath A relative path to the definition file from the block file. Pass the symbol INLINE_DEFINITION_FILE if you want the definition file to be inserted into the definition file.
+   */
   compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: typeof INLINE_DEFINITION_FILE): CompiledBlockAndInlineDefinition;
   compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string): CompiledBlockAndDefinition;
   compileWithDefinition(block: Block, root: postcss.Root, reservedClassNames: Set<string>, definitionPath: string | typeof INLINE_DEFINITION_FILE): CompiledBlockAndDefinition | CompiledBlockAndInlineDefinition {
@@ -60,13 +68,13 @@ export class BlockCompiler {
     let result: CompiledBlockAndDefinition | CompiledBlockAndInlineDefinition;
 
     if (definitionPath === INLINE_DEFINITION_FILE) {
-      this.definitionCompiler.insertInlineReference(css, definition);
+      this.definitionCompiler.insertInlineBlockDefinitionURLComment(css, definition);
       result = {
         definitionPath,
         css,
       };
     } else {
-      this.definitionCompiler.insertReference(css, definitionPath);
+      this.definitionCompiler.insertBlockDefinitionURLComment(css, definitionPath);
       result = {
         definitionPath,
         css,
@@ -85,6 +93,10 @@ export class BlockCompiler {
     return result;
   }
 
+  /**
+   * Compile the block to a postcss AST by walking the postcss AST from parsing
+   * and removing/replacing the css blocks' specific syntax with standard CSS.
+   */
   compile(block: Block, root: postcss.Root, reservedClassNames: Set<string>): postcss.Root {
     let resolver = new ConflictResolver(this.config, reservedClassNames);
     let filename = this.config.importer.debugIdentifier(block.identifier, this.config);
