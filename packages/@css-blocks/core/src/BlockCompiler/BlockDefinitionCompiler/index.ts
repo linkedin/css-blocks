@@ -5,8 +5,8 @@ import { AttributeSelector, ClassSelector, Declaration, DefinitionAST, Definitio
 import { AttrValue, Block, BlockClass, Style, isAttrValue, isBlockClass } from "../../BlockTree";
 import { ResolvedConfiguration } from "../../configuration";
 
-import { PostcssASTBuilder } from "./PostcssASTBuilder";
 import { CompiledDefinitionMapper, PathResolver } from "./CompiledDefinitionMapper";
+import { PostcssASTBuilder } from "./PostcssASTBuilder";
 
 export { PathResolver } from "./CompiledDefinitionMapper";
 
@@ -140,8 +140,11 @@ export class BlockDefinitionCompiler {
     css.append(comment);
   }
 
-  insertInlineBlockDefinitionURLComment(_css: postcss.Root, _definition: postcss.Root) {
-    throw new Error("Method not implemented.");
+  insertInlineBlockDefinitionURLComment(css: postcss.Root, definition: postcss.Root) {
+    let cssText = definition.toResult().css;
+    let base64EncodedText = Buffer.from(cssText).toString("base64");
+    let url = `data:text/css;base64,${base64EncodedText}`;
+    this.insertBlockDefinitionURLComment(css, url);
   }
 }
 

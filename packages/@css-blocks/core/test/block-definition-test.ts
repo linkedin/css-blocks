@@ -4,7 +4,7 @@ import { postcss } from "opticss";
 
 import * as cssBlocks from "../src";
 import { Block, BlockCompiler, BlockFactory } from "../src";
-import { BlockDefinitionCompiler } from "../src/BlockCompiler/BlockDefinitionCompiler";
+import { BlockDefinitionCompiler, INLINE_DEFINITION_FILE } from "../src/BlockCompiler/BlockDefinitionCompiler";
 
 import { BEMProcessor } from "./util/BEMProcessor";
 import { setupImporting } from "./util/setupImporting";
@@ -17,19 +17,30 @@ function clean(text: string): string {
   return lines(text).join(" ").replace(/\s+/g, " ");
 }
 
-async function compileBlockWithDefinition(factory: BlockFactory, blockFilename: string): Promise<{block: Block; cssResult: postcss.Result; definitionResult: postcss.Result}> {
+async function compileBlockWithDefinition(factory: BlockFactory, blockFilename: string, definitionFilename?: string ): Promise<{block: Block; cssResult: postcss.Result; definitionResult: postcss.Result}>;
+async function compileBlockWithDefinition(factory: BlockFactory, blockFilename: string, definitionFilename: typeof INLINE_DEFINITION_FILE): Promise<{block: Block; cssResult: postcss.Result; definitionResult: undefined}>;
+async function compileBlockWithDefinition(factory: BlockFactory, blockFilename: string, definitionFilename?: string | typeof INLINE_DEFINITION_FILE): Promise<{block: Block; cssResult: postcss.Result; definitionResult: postcss.Result | undefined}> {
   let config = factory.configuration;
   let importer = config.importer;
   let block = await factory.getBlock(importer.identifier(null, blockFilename, config));
   let definitionCompiler = new BlockDefinitionCompiler(postcss, (_b, p) => p.replace(".block", ""), config);
   let compiler = new BlockCompiler(postcss, config);
   compiler.setDefinitionCompiler(definitionCompiler);
-  let definitionFilename = blockFilename.replace(".block", ".block.d");
-  let {css, definition} = compiler.compileWithDefinition(block, block.stylesheet!, new Set(), definitionFilename);
-  let cssFilename = blockFilename.replace(".block", "");
-  let cssResult = css.toResult({to: cssFilename});
-  let definitionResult = definition.toResult({to: definitionFilename});
-  return {block, cssResult, definitionResult};
+  if (typeof definitionFilename === "undefined") {
+    definitionFilename = blockFilename.replace(".block", ".block.d");
+  }
+  if (typeof definitionFilename === "symbol") {
+    let {css} = compiler.compileWithDefinition(block, block.stylesheet!, new Set(), definitionFilename);
+    let cssFilename = blockFilename.replace(".block", "");
+    let cssResult = css.toResult({to: cssFilename});
+    return {block, cssResult, definitionResult: undefined};
+  } else {
+    let {css, definition} = compiler.compileWithDefinition(block, block.stylesheet!, new Set(), definitionFilename);
+    let cssFilename = blockFilename.replace(".block", "");
+    let cssResult = css.toResult({to: cssFilename});
+    let definitionResult = definition.toResult({to: definitionFilename});
+    return {block, cssResult, definitionResult};
+  }
 }
 
 @suite("Block Factory")
@@ -68,6 +79,38 @@ export class BlockFactoryTests extends BEMProcessor {
     );
     assert.deepEqual(
       clean(definitionResult.css),
+      clean(`@block-syntax-version 1;
+       :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block; block-interface-index: 0 }
+       :scope[large] { block-class: test-block--large; block-interface-index: 2 }
+       .foo { block-class: test-block__foo; block-interface-index: 3; block-alias: foo another-foo }
+       .foo[size="small"] { block-class: test-block__foo--size-small; block-interface-index: 5 }
+      `));
+  }
+  @test async "can generate an inline definition"() {
+    let { imports, factory } = setupImporting();
+    let filename = "test-block.block.css";
+    imports.registerSource(
+      filename,
+      `:scope { color: purple; }
+       :scope[large] { font-size: 20px; }
+       .foo   { float: left; block-alias: foo "another-foo"; }
+       .foo[size=small] { font-size: 5px; }`,
+    );
+    let {block, cssResult} = await compileBlockWithDefinition(factory, filename, INLINE_DEFINITION_FILE);
+    let css = cssResult.css.replace(/data:text\/css;base64,(.*)==/, "SNIP");
+    let urlData = RegExp.$1;
+    assert.deepEqual(
+      clean(css),
+      clean(`/*#css-blocks ${block.guid}*/
+       .test-block { color: purple; }
+       .test-block--large { font-size: 20px; }
+       .test-block__foo   { float: left;   }
+       .test-block__foo--size-small { font-size: 5px; }
+       /*#blockDefinitionURL=SNIP*/
+       /*#css-blocks end*/`),
+    );
+    assert.deepEqual(
+      clean(Buffer.from(urlData, "base64").toString("utf8")),
       clean(`@block-syntax-version 1;
        :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block; block-interface-index: 0 }
        :scope[large] { block-class: test-block--large; block-interface-index: 2 }
