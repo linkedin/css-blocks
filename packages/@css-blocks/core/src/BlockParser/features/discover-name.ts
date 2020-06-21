@@ -4,6 +4,7 @@ import { BLOCK_NAME, CLASS_NAME_IDENT } from "../../BlockSyntax";
 import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
+import { stripQuotes } from "../utils";
 
 export async function discoverName(configuration: Configuration, root: postcss.Root, file: string, isDfnFile: boolean, defaultName: string): Promise<string> {
   let foundName: string | undefined;
@@ -13,14 +14,15 @@ export async function discoverName(configuration: Configuration, root: postcss.R
   root.walkRules(":scope", (rule) => {
     scopeRule = rule;
     rule.walkDecls(BLOCK_NAME, (decl) => {
-      if (!CLASS_NAME_IDENT.test(decl.value)) {
+      const unquotedVal = stripQuotes(decl.value.trim());
+      if (!CLASS_NAME_IDENT.test(unquotedVal)) {
         throw new errors.InvalidBlockSyntax(
           `Illegal block name. '${decl.value}' is not a legal CSS identifier.`,
           sourceRange(configuration, root, file, decl),
         );
       }
 
-      foundName = decl.value.trim();
+      foundName = unquotedVal;
 
     });
   });

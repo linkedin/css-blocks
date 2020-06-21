@@ -1,6 +1,7 @@
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 import { postcss } from "opticss";
+import { outdent } from "outdent";
 
 import { CascadingError } from "../../src/errors";
 import { assertMultipleErrorsRejection } from "../util/assertError";
@@ -13,36 +14,35 @@ const { InvalidBlockSyntax } = require("../util/postcss-helper");
 @suite("Block Names")
 export class BlockNames extends BEMProcessor {
 
-  @test "block names in double quotes fail parse with helpful error"(): Promise<postcss.Result | void> {
+  @test "block names in double quotes work"(): Promise<postcss.Result | void> {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/imported.css",
-      `:scope { block-name: "snow-flake"; }`,
+      outdent`
+        :scope { block-name: "snow-flake"; }
+      `,
     );
 
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block a-block from "./imported.css";
-                    @block-debug a-block to comment;`;
+    let inputCSS = outdent`
+                     @block a-block from "./imported.css";
+                     @block-debug a-block to comment;
+                   `;
 
-    return assertMultipleErrorsRejection(
-      [
-        {
-          type: CascadingError,
-          message: "Error in imported block. (foo/bar/test-block.css:1:1)",
-          cause: {
-            type: InvalidBlockSyntax,
-            message: "Illegal block name. '\"snow-flake\"' is not a legal CSS identifier. (foo/bar/imported.css:1:10)",
-          },
-        }
-        ,
-        {
-        type: InvalidBlockSyntax,
-        message: `Invalid block debug: No Block named "a-block" found in scope. (foo/bar/test-block.css:2:21)`,
-      }],
-      this.process(filename, inputCSS, {importer: imports.importer()}));
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        outdent`
+          /* Source: foo/bar/imported.css
+           * :scope (.snow-flake)
+           */
+
+        `,
+      );
+    });
   }
 
-  @test "block names in single quotes fail parse with helpful error"(): Promise<postcss.Result | void> {
+  @test "block names in single quotes work"(): Promise<postcss.Result | void> {
     let imports = new MockImportRegistry();
     imports.registerSource(
       "foo/bar/imported.css",
@@ -50,23 +50,22 @@ export class BlockNames extends BEMProcessor {
     );
 
     let filename = "foo/bar/test-block.css";
-    let inputCSS = `@block imported from "./imported.css";
-                    @block-debug snow-flake to comment;`;
+    let inputCSS = outdent`
+                     @block snow-flake from "./imported.css";
+                     @block-debug snow-flake to comment;
+                   `;
 
-    return assertMultipleErrorsRejection(
-      [{
-        type: CascadingError,
-        message: "Error in imported block. (foo/bar/test-block.css:1:1)",
-        cause: {
-          type: InvalidBlockSyntax,
-          message: `Illegal block name. \'\'snow-flake\'\' is not a legal CSS identifier. (foo/bar/imported.css:1:10)`,
-        },
-      },
-       {
-        type: InvalidBlockSyntax,
-        message: `Invalid block debug: No Block named "snow-flake" found in scope. (foo/bar/test-block.css:2:21)`,
-      }],
-      this.process(filename, inputCSS, {importer: imports.importer()}));
+    return this.process(filename, inputCSS, {importer: imports.importer()}).then((result) => {
+      assert.deepEqual(
+        result.css.toString(),
+        outdent`
+          /* Source: foo/bar/imported.css
+           * :scope (.snow-flake)
+           */
+
+        `,
+      );
+    });
   }
 
   @test "block-name property only works in the root ruleset"() {
