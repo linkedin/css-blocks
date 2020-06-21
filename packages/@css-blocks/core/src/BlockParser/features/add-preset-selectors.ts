@@ -30,7 +30,7 @@ export function addPresetSelectors(configuration: Configuration, root: postcss.R
 
     // Find the block-class declaration...
     rule.walkDecls("block-class", decl => {
-      const val = stripQuotes(decl.value);
+      const val = stripQuotes(decl.value.trim());
 
       // Test that this actually could be a class name.
       if (!CLASS_NAME_IDENT.test(val)) {
