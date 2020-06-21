@@ -14,7 +14,12 @@ const debug = debugGenerator("css-blocks:importer");
 
 const DEFAULT_MAIN = "blocks/index.block.css";
 
-const EMBEDDED_DEFINITION_TAG = "#blockDefinitionURL";
+/**
+ * A tag that's used to generate unique identifiers for embedded definition data.
+ * This is appended to the file identifier of the CSS file the embedded data was
+ * originally read from.
+ */
+export const EMBEDDED_DEFINITION_TAG = "#blockDefinitionURL";
 
 export interface CSSBlocksPackageMetadata {
   "css-blocks"?: {

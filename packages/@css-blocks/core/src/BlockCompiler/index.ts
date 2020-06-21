@@ -18,7 +18,7 @@ import {
 import { BlockDefinitionCompiler, INLINE_DEFINITION_FILE } from "./BlockDefinitionCompiler";
 import { ConflictResolver } from "./ConflictResolver";
 
-export { INLINE_DEFINITION_FILE } from "./BlockDefinitionCompiler";
+export { BlockDefinitionCompiler, INLINE_DEFINITION_FILE } from "./BlockDefinitionCompiler";
 
 export interface CompiledBlockAndDefinition {
   definitionPath: string;
