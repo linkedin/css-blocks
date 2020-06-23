@@ -93,7 +93,7 @@ describe("Template Rewriting", function() {
     let result = await analyzeAndRewrite(factory, projectDir, "templates/hello.hbs", "styles/hello.block.css");
     assert.deepEqual(
       result.rewrittenTemplate,
-      minify(`<div class={{-cssblocks- 0 1 "${result.block.guid}" null 1 0 0 1 1 0}}>Hello World!</div>`));
+      minify(`<div class={{-cssblocks- 0 1 "${result.block.guid}" null 1 0 ":scope" 1 1 0}}>Hello World!</div>`));
     assert.deepEqual(result.analysis.serialize(), {
       template: {
         type: TEMPLATE_NAME,
@@ -133,7 +133,7 @@ describe("Template Rewriting", function() {
     let result = await analyzeAndRewrite(factory, projectDir, "templates/hello.hbs", "styles/hello.block.css");
     assert.deepEqual(
       minify(result.rewrittenTemplate),
-      minify(`<div class={{-cssblocks- 0 1 "${result.block.guid}" null 1 0 0 1 1 0}}>Hello World!</div>`));
+      minify(`<div class={{-cssblocks- 0 1 "${result.block.guid}" null 1 0 ":scope" 1 1 0}}>Hello World!</div>`));
     let analysis = result.analysis.serialize();
     assert.deepEqual(Object.keys(analysis.blocks).length, 1);
     assert.deepEqual(analysis.stylesFound, [":scope"]);
@@ -187,13 +187,13 @@ describe("Template Rewriting", function() {
     assert.deepEqual(
       minify(result.rewrittenTemplate),
       minify(`
-        <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 0 1 1 0}}>
-          <h1 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 0 1 1 0}}>Hello,
-          <span class={{-cssblocks- 0 3 "${defaultBlock.guid}" null "${headerBlock.guid}" null "${typographyBlock.guid}" null 6 0 1 1 1 2 1 0 3 1 3 1 4 5 1 1 1 2 3 isWorld 1 0 0 2 (eq isThick 1) 1 3 4 1 textStyle "bold" 1 4 "italic" 1 5}}>World</span>!</h1>
-          <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 2 0 1 0 4 1 3 isWorld 1 0 1 1}}>World</div>
-          <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 2 0 4 0 1 1 3 isWorld 1 0 1 1}}>World</div>
-          <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 1 1 3 isWorld 0 1 0}}>World</div>
-          <h2 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 0 1 3 isWorld 1 0 0}}>Dynamic Scope</h2>
+        <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ":scope" 1 1 0}}>
+          <h1 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 ":scope" 1 1 0}}>Hello,
+          <span class={{-cssblocks- 0 3 "${defaultBlock.guid}" null "${headerBlock.guid}" null "${typographyBlock.guid}" null 6 0 ".world" 1 ".emphasis" 2 ".underline" 0 ".world[thick]" 1 ".emphasis[style=bold]" 1 ".emphasis[style=italic]" 5 1 1 1 2 3 isWorld 1 0 0 2 (eq isThick 1) 1 3 4 1 textStyle "bold" 1 4 "italic" 1 5}}>World</span>!</h1>
+          <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 2 0 ".world" 0 ".planet" 1 3 isWorld 1 0 1 1}}>World</div>
+          <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 2 0 ".planet" 0 ".world" 1 3 isWorld 1 0 1 1}}>World</div>
+          <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ".world" 1 3 isWorld 0 1 0}}>World</div>
+          <h2 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 ":scope" 1 3 isWorld 1 0 0}}>Dynamic Scope</h2>
         </div>
       `));
     let analysis = result.analysis.serialize();
@@ -275,9 +275,9 @@ describe("Template Rewriting", function() {
     assert.deepEqual(
       minify(result.rewrittenTemplate),
       minify(`
-        <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 0 1 1 0}}>
-          <h1 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 0 1 1 0}}>Hello,
-          <World cssClass={{-cssblocks- 0 2 "${defaultBlock.guid}" null "${headerBlock.guid}" null 5 0 1 1 1 0 3 1 3 1 4 4 1 0 1 1 1 2 4 1 (textStyle) "bold" 1 3 "italic" 1 4}} />!</h1>
+        <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ":scope" 1 1 0}}>
+          <h1 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 ":scope" 1 1 0}}>Hello,
+          <World cssClass={{-cssblocks- 0 2 "${defaultBlock.guid}" null "${headerBlock.guid}" null 5 0 ".world" 1 ".emphasis" 0 ".world[thick]" 1 ".emphasis[style=bold]" 1 ".emphasis[style=italic]" 4 1 0 1 1 1 2 4 1 (textStyle) "bold" 1 3 "italic" 1 4}} />!</h1>
         </div>
       `));
     let analysis = result.analysis.serialize();
@@ -339,11 +339,11 @@ describe("Template Rewriting", function() {
     assert.deepEqual(
       minify(result.rewrittenTemplate),
       minify(`
-      <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 0 1 1 0}}>
-        <h1 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 0 1 1 0}}>Hello,
+      <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ":scope" 1 1 0}}>
+        <h1 class={{-cssblocks- 0 1 "${headerBlock.guid}" null 1 0 ":scope" 1 1 0}}>Hello,
           {{yield (hash
             classnames=(hash
-              action=(-cssblocks- 0 2 "${defaultBlock.guid}" null "${headerBlock.guid}" null 5 0 1 1 1 0 3 1 3 1 4 4 1 0 1 1 2 isThick 1 2 4 1 (textStyle) "bold" 1 3 "italic" 1 4)))}}
+              action=(-cssblocks- 0 2 "${defaultBlock.guid}" null "${headerBlock.guid}" null 5 0 ".world" 1 ".emphasis" 0 ".world[thick]" 1 ".emphasis[style=bold]" 1 ".emphasis[style=italic]" 4 1 0 1 1 2 isThick 1 2 4 1 (textStyle) "bold" 1 3 "italic" 1 4)))}}
         </h1>
       </div>
       `));
@@ -450,24 +450,24 @@ describe("Template Rewriting", function() {
     assert.deepEqual(
       minify(result.rewrittenTemplate),
       minify(`
-        <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 0 1 1 0}}>
-          {{link-to "Inline Form" "inline-form" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 1 1 1 0)}}
-          {{#link-to "block-form" class=(-cssblocks- 0 2 "${defaultBlock.guid}" null "${utilBlock.guid}" null 2 0 1 1 1 2 1 0 1 1)}}Block Form{{/link-to}}
+        <div class={{-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ":scope" 1 1 0}}>
+          {{link-to "Inline Form" "inline-form" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ".link-1" 1 1 0)}}
+          {{#link-to "block-form" class=(-cssblocks- 0 2 "${defaultBlock.guid}" null "${utilBlock.guid}" null 2 0 ".link-1" 1 ".util" 2 1 0 1 1)}}Block Form{{/link-to}}
 
-          {{link-to "Inline Form" "inline-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 2 1 1 0)}}
-          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 2 1 1 0)}}Block Form{{/link-to}}
+          {{link-to "Inline Form" "inline-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 1 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 1 0)}}Block Form{{/link-to}}
 
-          {{link-to "Dynamic Inline Form" "inline-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 2 1 3 foo 1 0 0)}}
-          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 2 1 3 foo 1 0 0)}}Dynamic Block Form{{/link-to}}
+          {{link-to "Dynamic Inline Form" "inline-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 3 foo 1 0 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 3 foo 1 0 0)}}Dynamic Block Form{{/link-to}}
 
-          {{link-to "Inline Form, Inherited State" "inline-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 2 1 1 0)}}
-          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 2 1 1 0)}}Block Form, Inherited State{{/link-to}}
+          {{link-to "Inline Form, Inherited State" "inline-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0)}}Block Form, Inherited State{{/link-to}}
 
-          {{link-to "Inline Form, External State" "inline-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 2 1 1 0)}}
-          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 2 1 1 0)}}Block Form, External State{{/link-to}}
+          {{link-to "Inline Form, External State" "inline-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0)}}Block Form, External State{{/link-to}}
 
-          {{link-to "Inline Form, All States" "inline-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 5 1 1 0)}}
-          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 5 1 1 0)}}Block Form, All States{{/link-to}}
+          {{link-to "Inline Form, All States" "inline-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ".link-4" 1 1 0)}}
+          {{#link-to "block-form-active" class=(-cssblocks- 0 1 "${defaultBlock.guid}" null 1 0 ".link-4" 1 1 0)}}Block Form, All States{{/link-to}}
         </div>
       `));
     let analysis = result.analysis.serialize();

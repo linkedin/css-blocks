@@ -273,7 +273,7 @@ class HelperInvocationGenerator {
   }
 
   buildStyleParams(sourceAnalysis: ElementSourceAnalysis, blocks: Array<Block>): {styleIndices: Map<Style, number>; styleParams: Array<AST.Expression>} {
-    const { number: num } = this.builders;
+    const { number: num, string: str } = this.builders;
     let styles = [...sourceAnalysis.stylesFound];
     let styleParams = new Array<AST.Expression>();
     styleParams.push(num(styles.length));
@@ -282,7 +282,7 @@ class HelperInvocationGenerator {
     for (let style of styles) {
       styleIndices.set(style, i++);
       styleParams.push(num(this.indexOfBlock(blocks, style)));
-      styleParams.push(num(style.index));
+      styleParams.push(str(style.asSource()));
     }
     styleParams.push(num(sourceAnalysis.size()));
     return {
