@@ -71,12 +71,6 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
   }
 
   async build() {
-    if (!this.input) {
-      this.input = new FSMerger(this.inputPaths).fs;
-    }
-    if (!this.output) {
-      this.output = outputWrapper(this);
-    }
     let cssBlockEntries = this.input.entries(".", {globs: [BLOCK_GLOB]});
     let currentFSTree = FSTree.fromEntries(cssBlockEntries);
     let patch = this.previousSourceTree.calculatePatch(currentFSTree);
