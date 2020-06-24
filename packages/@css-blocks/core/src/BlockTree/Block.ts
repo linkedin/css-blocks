@@ -78,7 +78,6 @@ export class Block
    * primarily for error reporting, if present.
    */
   public stylesheet: postcss.Root | undefined;
-  private _nextIndex: number;
 
   /**
    * Creates a new Block.
@@ -94,9 +93,8 @@ export class Block
     super(name);
     this._identifier = identifier;
     this._dependencies = new Set<string>();
-    this.rootClass = new BlockClass(ROOT_CLASS, this, 0);
+    this.rootClass = new BlockClass(ROOT_CLASS, this);
     this.stylesheet = stylesheet;
-    this._nextIndex = 1;
     this.guid = guid;
 
     this.addClass(this.rootClass);
@@ -265,10 +263,6 @@ export class Block
 
   addImplementation(b: Block) {
     return this._implements.push(b);
-  }
-
-  nextIndex(): number {
-    return this._nextIndex++;
   }
 
   /**

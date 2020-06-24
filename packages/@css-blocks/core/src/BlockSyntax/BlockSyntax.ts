@@ -11,12 +11,11 @@ export const EXTENDS = "extends";
 export const IMPLEMENTS = "implements";
 export const BLOCK_NAME = "block-name";
 export const BLOCK_ID = "block-id";
-export const BLOCK_INTERFACE_INDEX = "block-interface-index";
 export const BLOCK_CLASS = "block-class";
 export const BLOCK_ALIAS = "block-alias";
 export const COMPOSES = "composes";
-export const BLOCK_PROP_NAMES = new Set([BLOCK_ID, BLOCK_NAME, BLOCK_CLASS, BLOCK_ALIAS, EXTENDS, IMPLEMENTS, COMPOSES, BLOCK_INTERFACE_INDEX]);
-export const BLOCK_PROP_NAMES_RE = /^(extends|implements|block-name|block-id|block-interface-index|block-class|composes|block-alias)$/;
+export const BLOCK_PROP_NAMES = new Set([BLOCK_ID, BLOCK_NAME, BLOCK_CLASS, BLOCK_ALIAS, EXTENDS, IMPLEMENTS, COMPOSES]);
+export const BLOCK_PROP_NAMES_RE = /^(extends|implements|block-name|block-id|block-class|composes|block-alias)$/;
 
 // At Rules
 export const BLOCK_DEBUG = "block-debug";

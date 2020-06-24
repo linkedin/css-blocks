@@ -6,7 +6,6 @@
 :scope {
   block-id: "7d97e";
   block-class: nav-7d97e;
-  block-interface-index: 0;
   block-alias: top-nav;
   block-name: nav;
   extends: list;
@@ -14,13 +13,11 @@
 }
 
 .entry {
-  block-interface-index: 7;
   block-alias: top-nav-entry;
   block-class: nav-7d97e__entry;
 }
 
 .entry[active] {
-  block-interface-index: 8;
   block-class: nav-7d97e__entry--active;
   font-weight: resolve("link");
   font-weight: resolve-self();

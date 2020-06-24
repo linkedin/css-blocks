@@ -82,7 +82,6 @@ export class BlockDefinitionCompiler {
       declarations.push(builders.declaration("composes", compositions.join(", ")));
     }
     declarations.push(builders.declaration("block-class", style.cssClass(this.config, reservedClassNames)));
-    declarations.push(builders.declaration("block-interface-index", style.index.toString()));
     let aliasValues = new Array(...style.getStyleAliases());
     if (aliasValues.length) {
       declarations.push(builders.declaration("block-alias", aliasValues.join(" ")));
@@ -107,7 +106,7 @@ export class BlockDefinitionCompiler {
       // we need against it.
       for (let composition of blockClass.composedStyles()) {
         if (composition.conditions.length > 1) {
-          let key = composition.conditions.map(c => c.index).sort().join(" ");
+          let key = composition.conditions.map(c => c.asSource()).sort().join(" ");
           if (!complexCompositions[key]) {
             complexCompositions[key] = {
               blockClass,

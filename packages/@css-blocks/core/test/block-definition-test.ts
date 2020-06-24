@@ -80,10 +80,10 @@ export class BlockFactoryTests extends BEMProcessor {
     assert.deepEqual(
       clean(definitionResult.css),
       clean(`@block-syntax-version 1;
-       :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block; block-interface-index: 0 }
-       :scope[large] { block-class: test-block--large; block-interface-index: 2 }
-       .foo { block-class: test-block__foo; block-interface-index: 3; block-alias: foo another-foo }
-       .foo[size="small"] { block-class: test-block__foo--size-small; block-interface-index: 5 }
+       :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block }
+       :scope[large] { block-class: test-block--large }
+       .foo { block-class: test-block__foo; block-alias: foo another-foo }
+       .foo[size="small"] { block-class: test-block__foo--size-small }
       `));
   }
   @test async "can generate an inline definition"() {
@@ -112,10 +112,10 @@ export class BlockFactoryTests extends BEMProcessor {
     assert.deepEqual(
       clean(Buffer.from(urlData, "base64").toString("utf8")),
       clean(`@block-syntax-version 1;
-       :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block; block-interface-index: 0 }
-       :scope[large] { block-class: test-block--large; block-interface-index: 2 }
-       .foo { block-class: test-block__foo; block-interface-index: 3; block-alias: foo another-foo }
-       .foo[size="small"] { block-class: test-block__foo--size-small; block-interface-index: 5 }
+       :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block }
+       :scope[large] { block-class: test-block--large }
+       .foo { block-class: test-block__foo; block-alias: foo another-foo }
+       .foo[size="small"] { block-class: test-block__foo--size-small }
       `));
   }
 
@@ -133,9 +133,9 @@ export class BlockFactoryTests extends BEMProcessor {
       clean(`@block-syntax-version 1;
        @block-global [large];
        @block-global [mode="active"];
-       :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block; block-interface-index: 0 }
-       :scope[large] { block-class: test-block--large; block-interface-index: 2 }
-       :scope[mode="active"] { block-class: test-block--mode-active; block-interface-index: 4 }
+       :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block }
+       :scope[large] { block-class: test-block--large }
+       :scope[mode="active"] { block-class: test-block--mode-active }
       `));
   }
 
@@ -179,7 +179,7 @@ export class BlockFactoryTests extends BEMProcessor {
       clean(`@block-syntax-version 1;
        @block foo from "./foo.css";
        @block bar, (bip, baz as zab) from "./bar.css";
-       :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block; block-interface-index: 0 }`));
+       :scope { block-id: "${block.guid}"; block-name: "test-block"; block-class: test-block }`));
   }
 
   @test async "can generate a definition with style composition"() {
@@ -235,10 +235,10 @@ export class BlockFactoryTests extends BEMProcessor {
       clean(`@block-syntax-version 1;
        @block foo from "./foo.css";
        @block bar, (bip, baz as zab) from "./bar.css";
-       :scope { block-id: "${block.guid}"; block-name: "test-block"; composes: foo[oceanic]; block-class: test-block; block-interface-index: 0 }
-       .nav { composes: foo, bip.orange; block-class: test-block__nav; block-interface-index: 1 }
-       .nav[open] { composes: bar.lemon; block-class: test-block__nav--open; block-interface-index: 3 }
-       .nav[position="top"] { composes: foo[forrest]; block-class: test-block__nav--position-top; block-interface-index: 5 }
+       :scope { block-id: "${block.guid}"; block-name: "test-block"; composes: foo[oceanic]; block-class: test-block }
+       .nav { composes: foo, bip.orange; block-class: test-block__nav }
+       .nav[open] { composes: bar.lemon; block-class: test-block__nav--open }
+       .nav[position="top"] { composes: foo[forrest]; block-class: test-block__nav--position-top }
        .nav[position="top"][open] { composes: foo[oceanic], foo[forrest] }
        `));
   }
