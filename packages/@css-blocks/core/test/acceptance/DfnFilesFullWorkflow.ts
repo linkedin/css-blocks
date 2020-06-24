@@ -67,28 +67,22 @@ export class AcceptanceTestDefinitionFilesFullWorkflow {
         :scope {
             block-id: "${originalBlock.guid}";
             block-name: "source";
-            block-class: source;
-            block-interface-index: 0
+            block-class: source
         }
         :scope[toggled] {
-            block-class: source--toggled;
-            block-interface-index: 2
+            block-class: source--toggled
         }
         :scope[foo="bar"] {
-            block-class: source--foo-bar;
-            block-interface-index: 4
+            block-class: source--foo-bar
         }
         .item {
-            block-class: source__item;
-            block-interface-index: 5
+            block-class: source__item
         }
         .item[toggled] {
-            block-class: source__item--toggled;
-            block-interface-index: 7
+            block-class: source__item--toggled
         }
         .item[foo="bar"] {
-            block-class: source__item--foo-bar;
-            block-interface-index: 9
+            block-class: source__item--foo-bar
         }
       `,
       "Compiled definition contents match expected output",
@@ -228,28 +222,22 @@ export class AcceptanceTestDefinitionFilesFullWorkflow {
         :scope {
             block-id: "${originalBlock.guid}";
             block-name: "source";
-            block-class: source;
-            block-interface-index: 0
+            block-class: source
         }
         :scope[toggled] {
-            block-class: source--toggled;
-            block-interface-index: 2
+            block-class: source--toggled
         }
         :scope[foo="bar"] {
-            block-class: source--foo-bar;
-            block-interface-index: 4
+            block-class: source--foo-bar
         }
         .item {
-            block-class: source__item;
-            block-interface-index: 5
+            block-class: source__item
         }
         .item[toggled] {
-            block-class: source__item--toggled;
-            block-interface-index: 7
+            block-class: source__item--toggled
         }
         .item[foo="bar"] {
-            block-class: source__item--foo-bar;
-            block-interface-index: 9
+            block-class: source__item--foo-bar
         }
       `,
       "Unencoded definition data matches expected output",
