@@ -7,7 +7,6 @@ import { CssBlockError } from "../errors";
 import { FileIdentifier } from "../importing";
 
 import { builders } from "./ast";
-import { addInterfaceIndexes } from "./features/add-interface-indexes";
 import { addPresetSelectors } from "./features/add-preset-selectors";
 import { assertForeignGlobalAttribute } from "./features/assert-foreign-global-attribute";
 import { composeBlock } from "./features/composes-block";
@@ -71,7 +70,7 @@ export class BlockParser {
    * @param name - Name of block
    * @param isDfnFile - Whether the block being parsed is a definition file. Definition files are incomplete blocks
    *                    that will need to merge in rules from its Compiled CSS later. They are also expected to declare
-   *                    additional properties that regular Blocks don't, such as `block-id` and `block-interface-index`.
+   *                    additional properties that regular Blocks don't, such as `block-id`.
    * @param expectedGuid - If a GUID is defined in the file, it's expected to match this value. This argument is only
    *                       relevant to definition files, where the definition file is linked to Compiled CSS and
    *                       both files may declare a GUID.
@@ -155,8 +154,6 @@ export class BlockParser {
       // Find any block-class rules and override the class name of the block with its value.
       debug(" - Process Preset Block Classes");
       await addPresetSelectors(configuration, root, block, debugIdent);
-      debug(" - Process Preset Interface Indexes");
-      await addInterfaceIndexes(configuration, root, block, debugIdent);
       // TODO: Process inherited-styles?
     }
 

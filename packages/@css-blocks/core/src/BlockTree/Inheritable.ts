@@ -15,19 +15,15 @@ import { ParsedSelector, SelectorFactory, parseSelector, postcss } from "opticss
 /* tslint:disable:prefer-unknown-to-any */
 export type AnyNode = Inheritable<any, any, any, any, any>;
 
-export interface IndexGenerator {
-  nextIndex(): number;
-}
-
 export abstract class Inheritable<
   Self extends Inheritable<Self, Root, Parent, Child, Token>,
-  Root extends Inheritable<any, Root, never, AnyNode, any> & IndexGenerator,
+  Root extends Inheritable<any, Root, never, AnyNode, any>,
   Parent extends Inheritable<any, Root, AnyNode | null, Self, any> | null,
   Child extends Inheritable<any, Root, Self, AnyNode | never, any> | never,
   Token extends any = string,
 > implements SelectorFactory {
 
-  protected abstract get ChildConstructor(): { new(token: any, parent: Self, index: number): Child } | never;
+  protected abstract get ChildConstructor(): { new(token: any, parent: Self): Child } | never;
 
 /* tslint:enable:prefer-unknown-to-any */
 
@@ -71,7 +67,7 @@ export abstract class Inheritable<
    * @returns The new child object created from `token`
    */
   protected newChild(token: Child["token"]): Child {
-    return new this.ChildConstructor(token, this.asSelf(), this._root.nextIndex());
+    return new this.ChildConstructor(token, this.asSelf());
   }
 
   /**

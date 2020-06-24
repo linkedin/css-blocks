@@ -2,7 +2,7 @@ import { Attr } from "@opticss/element-analysis";
 
 import { ResolvedConfiguration } from "../configuration";
 
-import { AnyNode, IndexGenerator, Inheritable } from "./Inheritable";
+import { AnyNode, Inheritable } from "./Inheritable";
 import { RulesetContainer } from "./RulesetContainer";
 export { RulesetContainer, Resolution, Ruleset } from "./RulesetContainer";
 
@@ -16,7 +16,7 @@ const NO_STYLE_ALIASES = new Set<string>();
 
 export abstract class Style<
   Self extends Style<Self, Root, Parent, Child, Token>,
-  Root extends Inheritable<any, Root, never, AnyNode, any> & IndexGenerator,
+  Root extends Inheritable<any, Root, never, AnyNode, any>,
   Parent extends Inheritable<any, Root, AnyNode | null, Self, any> | null,
   Child extends Inheritable<any, Root, Self, AnyNode | never, any> | never,
   Token extends any = string,
@@ -33,45 +33,6 @@ export abstract class Style<
   public abstract readonly rulesets: RulesetContainer<any>;
 
   /**
-   * The interface index for this style node. A default one is provided
-   * when the style node is constructed, but may be reset to a specific
-   * value later (such as when reading the block-interface-index decl
-   * in definition files).
-   */
-  private _index: number;
-
-  /**
-   * Whether the interface index for this style node was set to a specific
-   * value after it was created. Used for error detection when parsing
-   * definition files.
-   */
-  private _wasIndexReset = false;
-
-  /**
-   * The interface index for this style node.
-   */
-  get index() {
-    return this._index;
-  }
-
-  /**
-   * Sets the interface index for this style node to a specific value.
-   */
-  set index(val: number) {
-    this._index = val;
-    this._wasIndexReset = true;
-  }
-
-  /**
-   * Whether the interface index for this style node has been reset from
-   * its original value (usually from a declared block-interface-index in
-   * a definition file).
-   */
-  get wasIndexReset() {
-    return this._wasIndexReset;
-  }
-
-  /**
    * The preset selector for this particular class node.
    * This is set when definition files encounter the `block-class` declaration.
    */
@@ -80,9 +41,8 @@ export abstract class Style<
   /**
    * Save name, parent container, and create the PropertyContainer for this data object.
    */
-  constructor(name: string, parent: Parent, index: number) {
+  constructor(name: string, parent: Parent) {
     super(name, parent);
-    this._index = index;
   }
 
   /**
