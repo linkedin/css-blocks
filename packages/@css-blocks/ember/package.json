@@ -40,7 +40,6 @@
     "broccoli-node-api": "^1.7.0",
     "broccoli-test-helper": "^2.0.0",
     "chai-as-promised": "^7.1.1",
-    "ember-cli-htmlbars": "^4.3.1",
     "typescript": "~3.8.3",
     "watch": "^1.0.2"
   },
@@ -62,6 +61,7 @@
     "broccoli-plugin": "^4.0.0",
     "colors": "^1.2.1",
     "debug": "^4.1.1",
+    "ember-cli-htmlbars": "^5.2.0",
     "fs-extra": "^8.0.0",
     "fs-merger": "^3.0.2",
     "fs-tree-diff": "^2.0.0",

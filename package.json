@@ -15,7 +15,7 @@
     "test": "lerna run test",
     "test:all": "lerna run test:runner",
     "compile:clean": "rm -rf packages/@css-blocks/*/dist && yarn run compile",
-    "install:clean": "rm -rf node_modules packages/@css-blocks/*/node_modules && yarn"
+    "install:clean": "rm -rf node_modules packages/@css-blocks/*/node_modules private-packages/*/*/node_modules && yarn"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.0.0",
