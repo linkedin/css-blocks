@@ -1,9 +1,0 @@
-body {
-  margin: 0;
-  font-family: sans-serif;
-}
-
-#reset-stylesheet-selector {
-  --reset-stylesheet-selector: applied;
-  color: rgb(102, 51, 153);
-}

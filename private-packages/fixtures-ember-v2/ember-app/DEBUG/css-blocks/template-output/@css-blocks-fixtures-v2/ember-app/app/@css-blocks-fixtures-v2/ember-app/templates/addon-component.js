@@ -1,1 +1,0 @@
-export default Ember.HTMLBars.template({"id":"A27chKme","block":"{\"symbols\":[],\"statements\":[[1,[22,\"addon-component\"],false]],\"hasEval\":false}","meta":{"moduleName":"@css-blocks-fixtures-v2/ember-app/templates/addon-component.hbs"}});
