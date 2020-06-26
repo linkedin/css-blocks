@@ -180,7 +180,7 @@ interface CSSBlocksAddon {
   _options?: CSSBlocksEmberOptions;
 }
 interface HTMLBarsAddon {
-  getTemplateCompiler(inputTree: Tree, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions): TemplateCompilerPlugin;
+  transpileTree(inputTree: Tree, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions): TemplateCompilerPlugin;
 }
 
 function isAddon(parent: EmberAddon | EmberApp | Project): parent is EmberAddon {
@@ -211,10 +211,10 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
     if (!htmlBarsAddon) {
       throw new Error(`Using @css-blocks/ember on ${parentName} also requires ember-cli-htmlbars to be an addon for ${parentName} (ember-cli-htmlbars should be a dependency in package.json, not a devDependency)`);
     }
-    if (!htmlBarsAddon.getTemplateCompiler) {
-      throw new Error("This version of ember-cli-htmlbars is not compatible with @css-blocks/ember. Please upgrade.");
+    if (!htmlBarsAddon.transpileTree) {
+      throw new Error(`Version ${htmlBarsAddon.pkg.version} of ember-cli-htmlbars for ${parentName} is not compatible with @css-blocks/ember. Please upgrade to ^5.2.0.`);
     }
-    htmlBarsAddon.getTemplateCompiler = (inputTree: Tree, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions) => {
+    htmlBarsAddon.transpileTree = (inputTree: Tree, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions) => {
       this.templateCompiler = new CSSBlocksTemplateCompilerPlugin(inputTree, htmlbarsOptions, this._options!);
       return this.templateCompiler;
     };
@@ -246,7 +246,8 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
     registry.add("htmlbars-ast-plugin", {
       name: "css-blocks-htmlbars",
       plugin: this.astPluginBuilder.bind(this),
-      dependencyInvalidation: true,
+      // This is turned off to work around a bug in broccoli-persistent-filter.
+      dependencyInvalidation: false,
       cacheKey: () => this.optionsForCacheInvalidation(),
       baseDir: () => __dirname,
     });
