@@ -1,5 +1,5 @@
 import * as config from "@css-blocks/config";
-import { AnalysisOptions, Block, BlockCompiler, BlockFactory, Configuration, NodeJsImporter, Options as ParserOptions, OutputMode, resolveConfiguration } from "@css-blocks/core";
+import { AnalysisOptions, Block, BlockCompiler, BlockDefinitionCompiler, BlockFactory, Configuration, INLINE_DEFINITION_FILE, NodeJsImporter, Options as ParserOptions, OutputMode, resolveConfiguration } from "@css-blocks/core";
 import type { ASTPlugin, ASTPluginEnvironment } from "@glimmer/syntax";
 import { ObjectDictionary } from "@opticss/util";
 import BroccoliDebug = require("broccoli-debug");
@@ -112,17 +112,23 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
       }
     }
     let compiler = new BlockCompiler(postcss, this.parserOpts);
+    compiler.setDefinitionCompiler(new BlockDefinitionCompiler(postcss, (_b, p) => { return p.replace(".block.css", ".css"); }, this.parserOpts));
     for (let block of blocks) {
       let outputPath = getOutputPath(block);
+      // Skip processing if we don't get an output path. This happens for files that
+      // get referenced in @block from node_modules.
+      if (outputPath === null) {
+        continue;
+      }
       blockOutputPaths.set(block, outputPath);
       if (!block.stylesheet) {
         throw new Error("[internal error] block stylesheet expected.");
       }
-      // TODO generate definition file too1
-      let compiledAST = compiler.compile(block, block.stylesheet, this.analyzingRewriter.reservedClassNames());
+      // TODO - allow for inline definitions or files, by user option
+      let { css: compiledAST } = compiler.compileWithDefinition(block, block.stylesheet, this.analyzingRewriter.reservedClassNames(), INLINE_DEFINITION_FILE);
       // TODO disable source maps in production?
       let result = compiledAST.toResult({ to: outputPath, map: { inline: true } });
-      this.output.writeFileSync(outputPath, wrapCSSWithDelimiterComments(block.guid, result.css), "utf8");
+      this.output.writeFileSync(outputPath, result.css, "utf8");
     }
     for (let analysis of analyses) {
       let analysisOutputPath = analysisPath(analysis.template.relativePath);
@@ -136,11 +142,6 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
   }
 }
 
-// This is a placeholder, eventually the block compiler should add this.
-function wrapCSSWithDelimiterComments(guid: string, css: string) {
-  return `/*#css-blocks ${guid}*/\n${css}\n/*#css-blocks end*/\n`;
-}
-
 function analysisPath(templatePath: string): string {
   let analysisPath = path.parse(templatePath);
   delete analysisPath.base;
@@ -148,11 +149,11 @@ function analysisPath(templatePath: string): string {
   return path.format(analysisPath);
 }
 
-function getOutputPath(block: Block): string {
+function getOutputPath(block: Block): string | null {
   if (isBroccoliTreeIdentifier(block.identifier)) {
     return identToPath(block.identifier).replace(".block", "");
   } else {
-    throw new Error("Implement me!");
+    return null;
   }
 }
 

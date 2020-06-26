@@ -1,4 +1,7 @@
+@block bold from "../bold.block.css";
+
 :scope {
+  extends: bold;
   --addon-component-block-scope: applied;
   color: red;
 }
