@@ -1,0 +1,91 @@
+{
+  "name": "@css-blocks/ember-app",
+  "version": "0.1.0",
+  "description": "CSS Blocks Application Support for Ember.",
+  "main": "dist/src/index.js",
+  "author": "Chris Eppstein <ceppstein@linkedin.com>",
+  "license": "BSD-2-Clause",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember#readme",
+  "keywords": [
+    "css-blocks",
+    "ember-addon"
+  ],
+  "scripts": {
+    "test": "yarn run test:runner",
+    "test:runner": "mocha --opts test/mocha.opts dist/test",
+    "compile": "tsc --build",
+    "pretest": "yarn run compile",
+    "posttest": "yarn run lint",
+    "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
+    "lint": "tslint -t msbuild --project . -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
+    "coverage": "istanbul cover -i dist/src/**/*.js --dir ./build/coverage node_modules/mocha/bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "watch": "watch 'yarn run test' src test --wait=1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@css-blocks/code-style": "^1.0.0",
+    "@css-blocks/glimmer": "^1.0.0",
+    "@types/chai-as-promised": "^7.1.2",
+    "@types/console-ui": "^2.2.3",
+    "@types/core-object": "^3.0.1",
+    "@types/express": "^4.17.6",
+    "@types/fs-extra": "^8.0.0",
+    "@types/glob": "^7.1.1",
+    "broccoli-node-api": "^1.7.0",
+    "broccoli-test-helper": "^2.0.0",
+    "chai-as-promised": "^7.1.1",
+    "typescript": "~3.8.3",
+    "watch": "^1.0.2"
+  },
+  "peerDependencies": {
+    "ember-cli-htmlbars": "^4.3.1"
+  },
+  "dependencies": {
+    "@css-blocks/config": "^1.0.0",
+    "@css-blocks/core": "^1.0.0",
+    "@css-blocks/glimmer": "^1.0.0",
+    "@glimmer/compiler": "^0.43.0",
+    "@glimmer/syntax": "^0.43.0",
+    "@opticss/template-api": "^0.6.3",
+    "@opticss/util": "^0.7.0",
+    "broccoli-debug": "^0.6.5",
+    "broccoli-funnel": "^3.0.2",
+    "broccoli-merge-trees": "^4.0.0",
+    "broccoli-output-wrapper": "^3.2.1",
+    "broccoli-plugin": "^4.0.0",
+    "colors": "^1.2.1",
+    "debug": "^4.1.1",
+    "ember-cli-htmlbars": "^5.2.0",
+    "fs-extra": "^8.0.0",
+    "fs-merger": "^3.0.2",
+    "fs-tree-diff": "^2.0.0",
+    "glob": "^7.1.2",
+    "opticss": "^0.7.0",
+    "symlink-or-copy": "^1.2.0",
+    "walk-sync": "^2.0.0"
+  },
+  "volta": {
+    "node": "12.2.0",
+    "yarn": "1.21.0"
+  },
+  "engines": {
+    "node": "10.* || >= 12.*"
+  },
+  "ember-addon": {
+    "before": [
+      "ember-cli-babel",
+      "ember-cli-htmlbars",
+      "ember-cli-sass",
+      "ember-cli-eyeglass"
+    ],
+    "after": [
+      "@css-blocks/ember"
+    ]
+  }
+}
