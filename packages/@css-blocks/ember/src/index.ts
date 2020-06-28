@@ -34,7 +34,10 @@ interface EmberASTPluginEnvironment extends ASTPluginEnvironment {
 function withoutCssBlockFiles(tree: InputNode | undefined) {
   if (!tree) return tree;
   return funnel(tree, {
-    exclude: ["**/*.block.{css,scss,sass,less,styl}"],
+    exclude: [
+      "**/*.block.{css,scss,sass,less,styl}",
+      "**/*.compiledblock.css",
+    ],
   });
 }
 
@@ -112,7 +115,7 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
       }
     }
     let compiler = new BlockCompiler(postcss, this.parserOpts);
-    compiler.setDefinitionCompiler(new BlockDefinitionCompiler(postcss, (_b, p) => { return p.replace(".block.css", ".css"); }, this.parserOpts));
+    compiler.setDefinitionCompiler(new BlockDefinitionCompiler(postcss, (_b, p) => { return p.replace(".block.css", ".compiledblock.css"); }, this.parserOpts));
     for (let block of blocks) {
       let outputPath = getOutputPath(block);
       // Skip processing if we don't get an output path. This happens for files that
@@ -151,7 +154,7 @@ function analysisPath(templatePath: string): string {
 
 function getOutputPath(block: Block): string | null {
   if (isBroccoliTreeIdentifier(block.identifier)) {
-    return identToPath(block.identifier).replace(".block", "");
+    return identToPath(block.identifier).replace(".block", ".compiledblock");
   } else {
     return null;
   }
