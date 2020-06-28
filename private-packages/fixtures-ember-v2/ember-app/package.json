@@ -13,14 +13,16 @@
   "scripts": {
     "build": "ember build",
     "start": "ember serve",
-    "pretest": "cd ../../../packages/@css-blocks/ember && yarn compile",
-    "test": "ember test"
+    "pretest": "cd ../../../packages/@css-blocks/ember && yarn compile && cd ../ember-app && yarn compile",
+    "test": "ember test",
+    "clean:debug": "rm -rf DEBUG"
   },
   "dependencies": {
     "@css-blocks-fixtures-v2/ember-addon": "^1.0.0",
     "@css-blocks-fixtures-v2/ember-engine": "^1.0.0",
     "@css-blocks-fixtures-v2/ember-lazy-engine": "^1.0.0",
     "@css-blocks/ember": "^0.1.0",
+    "@css-blocks/ember-app": "^0.1.0",
     "ember-cli-babel": "^7.7.3",
     "ember-cli-htmlbars": "^5.2.0",
     "ember-engines": "^0.8.5"
