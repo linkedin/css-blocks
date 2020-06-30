@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Command line interface to css-blocks.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -58,8 +58,8 @@
   },
   "dependencies": {
     "@css-blocks/bem-to-blocks": "^1.0.0",
-    "@css-blocks/config": "^1.1.0",
-    "@css-blocks/core": "^1.0.0",
+    "@css-blocks/config": "^1.1.1",
+    "@css-blocks/core": "^1.1.1",
     "chalk": "^2.4.2",
     "debug": "^4.1.1",
     "fs-extra": "^8.0.0",

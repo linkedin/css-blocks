@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/jsx/compare/v1.1.0...v1.1.1) (2020-06-30)
+
+**Note:** Version bump only for package @css-blocks/jsx
+
+
+
+
+
 # [1.0.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/jsx/compare/v1.0.0-alpha.7...v1.0.0) (2020-04-04)
 
 
