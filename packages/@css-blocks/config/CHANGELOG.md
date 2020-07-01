@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/linkedin/css-blocks/compare/v1.1.0...v1.1.1) (2020-06-30)
+
+**Note:** Version bump only for package @css-blocks/config
+
+
+
+
+
+# [1.1.0](https://github.com/linkedin/css-blocks/compare/v1.0.0...v1.1.0) (2020-05-23)
+
+
+### Bug Fixes
+
+* A css-blocks config file should take precendence over package.json. ([314a09e](https://github.com/linkedin/css-blocks/commit/314a09e67fbc531461e175e2b7890e6b00c1c0e9))
+* Use sync interface for config in ember-cli. ([b16d433](https://github.com/linkedin/css-blocks/commit/b16d4333ede5fd5872fd61674310a5af69dae880))
+
+
+### Features
+
+* Make configuration loading synchronous with async wrapper. ([5c88e24](https://github.com/linkedin/css-blocks/commit/5c88e24bfb0815df8a323ff0e076b5332bdde5b1)), closes [#365](https://github.com/linkedin/css-blocks/issues/365)
+
+
+
+
+
 # [1.0.0](https://github.com/linkedin/css-blocks/compare/v1.0.0-alpha.7...v1.0.0) (2020-04-04)
 
 

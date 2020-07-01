@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.1.0...v1.1.1) (2020-06-30)
+
+
+### Bug Fixes
+
+* Attribute intersections interpreted incorrectly during compilation. ([41f9816](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/41f9816f63fd7ce8a9284697987b8b31920f7f8f))
+
+
+
+
+
 # [1.0.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.0.0-alpha.7...v1.0.0) (2020-04-04)
 
 

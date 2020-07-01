@@ -309,7 +309,7 @@ module.exports = {
     options.optimization || (options.optimization = {});
 
     if (!options.parserOpts) {
-      options.parserOpts = config.search(rootDir) || {};
+      options.parserOpts = config.searchSync(rootDir) || {};
     }
 
     // Use the node importer by default.

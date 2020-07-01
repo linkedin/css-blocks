@@ -85,9 +85,9 @@ const transformFinal: TransformSync = (result) => {
 };
 
 const SEARCH_PLACES = [
-  "package.json",
   "css-blocks.config.json",
   "css-blocks.config.js",
+  "package.json",
 ];
 
 /**
