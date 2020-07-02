@@ -2,11 +2,7 @@ import type { AddonImplementation } from "ember-cli/lib/models/addon";
 
 /**
  * An ember-cli addon for Ember applications using CSS Blocks in its
- * application code. This addon should be a dependency in the
- * following Ember artifacts...
- *
- * - Ember applications.
- * - Lazy Ember Engines.
+ * application code. This addon should be a dependency in Ember applications.
  *
  * This addon is responsible for bundling together all CSS Blocks content
  * from the application, concatenating it into a final artifact, and
