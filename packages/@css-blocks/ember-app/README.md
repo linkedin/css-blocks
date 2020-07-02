@@ -4,17 +4,14 @@
 
 # @css-blocks/ember-app
 
-An ember-cli addon for Ember applications using CSS Blocks in its application code. This addon should be a dependency in the following Ember artifacts...
+An ember-cli addon for Ember applications using CSS Blocks in its application code. This addon should be a dependency in Ember applications.
 
-- Ember applications.
-- Lazy Ember Engines.
-
-This addon is only part of the Ember build pipeline for CSS Blocks! Your application, as well as any addons you rely on, will need the `@css-blocks/ember` addon as a dependency if they have any CSS Blocks files.
+This addon is only part of the Ember build pipeline for CSS Blocks! Your application, as well as any addons or engines you rely on, will need the `@css-blocks/ember` addon as a dependency if they have any CSS Blocks files.
 
 ## Basic Usage
 
-1. Add this addon as a dependency to your application or lazy Ember Engine.
-2. Also make sure you add `@css-blocks/ember` as a dependency.
+1. Add this addon as a dependency to your application.
+2. Also make sure you add `@css-blocks/ember` as a dependency if you are authoring css using CSS Blocks.
 3. Run `ember build`.
 
 That's it! For development builds, we'll generate CSS output with some developer-friendly BEM class names so you can better understand your application. For production builds, you'll get a CSS artifact that's been concatenated and minified.

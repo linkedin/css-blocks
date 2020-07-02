@@ -19,7 +19,6 @@
     "test"
   ],
   "exclude": [
-    "sanity",
     "dist",
     "node_modules"
   ]

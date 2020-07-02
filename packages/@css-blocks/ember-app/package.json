@@ -5,8 +5,8 @@
   "main": "dist/src/index.js",
   "author": "Chris Eppstein <ceppstein@linkedin.com>",
   "license": "BSD-2-Clause",
-  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember",
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember#readme",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app#readme",
   "keywords": [
     "css-blocks",
     "ember-addon"
@@ -43,9 +43,6 @@
     "typescript": "~3.8.3",
     "watch": "^1.0.2"
   },
-  "peerDependencies": {
-    "ember-cli-htmlbars": "^4.3.1"
-  },
   "dependencies": {
     "@css-blocks/config": "^1.0.0",
     "@css-blocks/core": "^1.0.0",
@@ -61,7 +58,6 @@
     "broccoli-plugin": "^4.0.0",
     "colors": "^1.2.1",
     "debug": "^4.1.1",
-    "ember-cli-htmlbars": "^5.2.0",
     "fs-extra": "^8.0.0",
     "fs-merger": "^3.0.2",
     "fs-tree-diff": "^2.0.0",
@@ -78,12 +74,6 @@
     "node": "10.* || >= 12.*"
   },
   "ember-addon": {
-    "before": [
-      "ember-cli-babel",
-      "ember-cli-htmlbars",
-      "ember-cli-sass",
-      "ember-cli-eyeglass"
-    ],
     "after": [
       "@css-blocks/ember"
     ]
