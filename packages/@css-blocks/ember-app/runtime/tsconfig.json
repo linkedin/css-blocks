@@ -1,0 +1,22 @@
+{
+  "extends": "../../../../tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "composite": true,
+    "outDir": "../dist/runtime",
+    "baseUrl": ".",
+    "strict": true,
+    "sourceMap": false,
+    "declarationMap": false,
+    "tsBuildInfoFile": "../runtime.tsbuildinfo",
+    "paths": {
+      "@css-blocks/ember/*": ["addon/*"]
+    },
+    "traceResolution": false
+  },
+  "include": [
+    "."
+  ],
+  "exclude": [
+  ]
+}

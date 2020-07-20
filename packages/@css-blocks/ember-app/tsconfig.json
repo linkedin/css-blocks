@@ -3,11 +3,13 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",
-    "baseUrl": "dist",
+    "baseUrl": ".",
     "noImplicitAny": false,
     "paths": {
+      "ember-cli/*": ["../ember/src/types/ember-cli"],
       "*": ["types/*"],
-    }
+    },
+    "traceResolution": false
   },
   "references": [
     {"path": "../config"},

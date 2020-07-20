@@ -5,9 +5,14 @@ import config from './config/environment';
 
 const { modulePrefix } = config;
 
+const dependencies = {
+  services: [ 'css-blocks' ],
+};
+
 const Eng = Engine.extend({
   modulePrefix,
-  Resolver
+  Resolver,
+  dependencies,
 });
 
 loadInitializers(Eng, modulePrefix);

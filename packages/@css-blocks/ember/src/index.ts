@@ -196,6 +196,8 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
 
   init(parent, project) {
     this._super.init.call(this, parent, project);
+    this.treePaths.app = "../runtime/app";
+    this.treePaths.addon = "../runtime/addon";
   },
 
   findSiblingAddon(name) {

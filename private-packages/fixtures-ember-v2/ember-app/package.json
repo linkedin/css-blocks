@@ -11,8 +11,8 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "ember build",
-    "start": "ember serve",
+    "build": "yarn pretest && ember build",
+    "start": "yarn pretest && ember serve",
     "pretest": "cd ../../../packages/@css-blocks/ember && yarn compile && cd ../ember-app && yarn compile",
     "test": "ember test",
     "clean:debug": "rm -rf DEBUG"
@@ -31,7 +31,6 @@
     "@ember/jquery": "^0.6.0",
     "@ember/optional-features": "^0.7.0",
     "broccoli-asset-rev": "^3.0.0",
-    "broccoli-plugin": "^4.0.0",
     "ember-ajax": "^5.0.0",
     "ember-cli": "~3.17.0",
     "ember-cli-app-version": "^3.2.0",

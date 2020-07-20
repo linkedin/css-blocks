@@ -1,4 +1,5 @@
 declare module 'ember-cli/lib/broccoli/ember-app' {
+  import { Node as BroccoliNode } from 'broccoli-node-api';
   import CoreObject from 'core-object';
   import Project from 'ember-cli/lib/models/project';
 
@@ -7,6 +8,7 @@ declare module 'ember-cli/lib/broccoli/ember-app' {
     name: string;
     project: Project;
     isProduction: boolean;
+    addonTree(): BroccoliNode;
   }
 }
 
@@ -340,6 +342,21 @@ declare module 'ember-cli/lib/models/addon' {
      * This method is called when the addon is included in a build. You would typically use this hook to perform additional imports.
      */
     included(includer: Project | Addon): void;
+    /**
+     * This structure represents the paths to use to use when `treeFor(TreeType)` is called, the paths are relative to the addon's own `this.root`.
+     */
+    treePaths: {
+      app: string;
+      styles: string;
+      templates: string;
+      addon: string;
+      'addon-styles': string;
+      'addon-templates': string;
+      vendor: string;
+      'test-support': string;
+      'addon-test-support': string;
+      public: string;
+    }
   }
 }
 

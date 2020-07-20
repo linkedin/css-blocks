@@ -221,7 +221,7 @@ export class TemplateAnalyzingRewriter implements ASTPluginWithDeps {
 }
 
 class HelperInvocationGenerator {
-  static CLASSNAMES_HELPER = "-cssblocks-";
+  static CLASSNAMES_HELPER = "-css-blocks";
   static HELPER_VERSION = 0;
 
   builders: Syntax["builders"];
