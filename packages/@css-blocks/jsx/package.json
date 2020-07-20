@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@css-blocks/jsx",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Statically analyzes JSX files for CSS Blocks use.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -53,7 +53,7 @@
     "@css-blocks/runtime": "^0.23.0"
   },
   "dependencies": {
-    "@css-blocks/core": "^1.1.1",
+    "@css-blocks/core": "^1.1.2",
     "@opticss/template-api": "^0.6.3",
     "@opticss/util": "^0.7.0",
     "babel-traverse": "7.0.0-beta.3",
