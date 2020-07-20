@@ -101,7 +101,7 @@ describe("Template Rewriting", function() {
       ".d { margin: 0.5em; } " + // parent[style=normal]
       ".e { padding: 2em; } " + // grandparent[style=open]
       ".f { padding: 0.5em; } " + // grandparent[style=condensed]
-      ".g { padding: 1em; }" // grandparent[style=normal]
+      ".g { padding: 1em; }", // grandparent[style=normal]
     ),
     );
   });
