@@ -241,8 +241,11 @@ function constructSwitch(builders: Builders, stateExpr: Switch<StringAST> & HasG
       }
     }
     else {
-      expr.push(builders.number(1));
-      expr.push(builders.number(unwrap(rewrite.indexOf(obj))));
+      let styles = obj.resolveStyles();
+      expr.push(builders.number(styles.size));
+      for (let s of styles) {
+        expr.push(builders.number(unwrap(rewrite.indexOf(s))));
+      }
     }
   }
   return expr;

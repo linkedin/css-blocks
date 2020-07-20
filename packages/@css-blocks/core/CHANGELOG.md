@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.1.1...v1.1.2) (2020-07-20)
+
+
+### Bug Fixes
+
+* Switches in the rewrite didn't work with inheritance. ([360a28f](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/360a28f3e00c3def95bd38c4e3d19a5404f12ec6))
+
+
+
+
+
 ## [1.1.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.1.0...v1.1.1) (2020-06-30)
 
 

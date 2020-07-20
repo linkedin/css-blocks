@@ -1,0 +1,13 @@
+@block grandparent from "./grandparent.css";
+
+:scope {
+  extends: grandparent;
+}
+
+:scope[style=open] {
+  margin: 1em;
+}
+
+:scope[style=normal] {
+  margin: 0.5em;
+}

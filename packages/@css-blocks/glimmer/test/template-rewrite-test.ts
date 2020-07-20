@@ -82,6 +82,30 @@ describe("Template Rewriting", function() {
     );
   });
 
+  it("rewrites styles from dynamic inherited attributes", async function() {
+    let projectDir = fixture("styled-app");
+    let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);
+    let templatePath = fixture("styled-app/src/ui/components/with-dynamic-inherited-states/template.hbs");
+    let result = await pipeline(projectDir, analyzer, "with-dynamic-inherited-states", templatePath);
+
+    // TODO why is `f` class both static and dynamic?
+    assert.deepEqual(minify(print(result.ast)), minify(`
+    <div class="grandparent parent stylesheet {{-css-blocks-classnames 1 7 4 4 1 @style "open" 3 2 4 5 "condensed" 1 0 "normal" 2 1 3 "spacious" 1 6 "f" 0 "g" 1 "e" 2 "d" 3 "c" 4 "a" 5 "b" 6}}">
+      Inheritance Test
+    </div>
+    `));
+    assert.deepEqual(minify(result.css.toString()), minify(
+      ".a { line-height: 2em; } " + // block[style=open]
+      ".b { line-height: 3em; } " + // block[style=spacious]
+      ".c { margin: 1em; } " + // parent[style=open]
+      ".d { margin: 0.5em; } " + // parent[style=normal]
+      ".e { padding: 2em; } " + // grandparent[style=open]
+      ".f { padding: 0.5em; } " + // grandparent[style=condensed]
+      ".g { padding: 1em; }", // grandparent[style=normal]
+    ),
+    );
+  });
+
   it("rewrites styles from dynamic classes", async function() {
     let projectDir = fixture("styled-app");
     let analyzer = new GlimmerAnalyzer(new BlockFactory({}), {}, moduleConfig);

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.1.1...v1.1.2) (2020-07-20)
+
+
+### Bug Fixes
+
+* Linter error. ([dfcb62e](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/dfcb62ef8ee900e43a01280f43752e1852f5a46b))
+* Switches in the rewrite didn't work with inheritance. ([360a28f](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/360a28f3e00c3def95bd38c4e3d19a5404f12ec6))
+
+
+
+
+
 ## [1.1.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.1.0...v1.1.1) (2020-06-30)
 
 **Note:** Version bump only for package @css-blocks/glimmer
