@@ -11,8 +11,8 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "ember build",
-    "start": "ember serve",
+    "build": "yarn pretest && ember build",
+    "start": "yarn pretest && ember serve",
     "pretest": "cd ../../../packages/@css-blocks/ember && yarn compile",
     "test": "ember test"
   },
