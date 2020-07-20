@@ -997,11 +997,12 @@ function mapClasses(
   let resolvedStyles = style.resolveStyles();
   for (let resolvedStyle of resolvedStyles) {
     // TODO: update with a non empty set here
-    let classNames = resolvedStyle.cssClassesWithAliases(configuration, reservedClassNames);
-    classNames.forEach(cls => {
+    let classNames = [resolvedStyle.cssClass(configuration, reservedClassNames)];
+    classNames.push(...resolvedStyle.getStyleAliases());
+    for (let cls of classNames) {
       map.set(cls, resolvedStyle);
       classes.push(cls);
-    });
+    }
   }
   if (classes.length === 1) {
     return attrValues.constant(classes[0]);

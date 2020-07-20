@@ -1,0 +1,12 @@
+:scope[style=open] {
+  padding: 2em;
+}
+
+:scope[style=condensed] {
+  padding: 0.5em;
+}
+
+:scope[style=normal] {
+  padding: 1em;
+}
+

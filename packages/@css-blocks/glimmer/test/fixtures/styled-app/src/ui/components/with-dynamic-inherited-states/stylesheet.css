@@ -1,0 +1,13 @@
+@block parent from "./parent.css";
+
+:scope {
+  extends: parent;
+}
+
+:scope[style=open] {
+  line-height: 2em;
+}
+
+:scope[style=spacious] {
+  line-height: 3em;
+}
