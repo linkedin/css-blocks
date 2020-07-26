@@ -3,11 +3,13 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",
-    "baseUrl": "dist",
+    "baseUrl": ".",
     "noImplicitAny": false,
     "paths": {
+      "ember-cli-htmlbars/lib/template-compiler-plugin": ["types/ember-cli-htmlbars/template-compiler-plugin"],
       "*": ["types/*"],
-    }
+    },
+    "traceResolution": false
   },
   "references": [
     {"path": "../config"},
