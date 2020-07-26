@@ -1,11 +1,14 @@
 import * as config from "@css-blocks/config";
 import { AnalysisOptions, Block, BlockCompiler, BlockDefinitionCompiler, BlockFactory, Configuration, INLINE_DEFINITION_FILE, NodeJsImporter, Options as ParserOptions, OutputMode, resolveConfiguration } from "@css-blocks/core";
 import type { ASTPlugin, ASTPluginEnvironment } from "@glimmer/syntax";
-import { ObjectDictionary } from "@opticss/util";
+import { MultiMap, ObjectDictionary } from "@opticss/util";
 import BroccoliDebug = require("broccoli-debug");
 import funnel = require("broccoli-funnel");
 import type { InputNode } from "broccoli-node-api";
 import outputWrapper = require("broccoli-output-wrapper");
+import md5Sum = require("broccoli-persistent-filter/lib/md5-hex");
+import persistentStrategy = require("broccoli-persistent-filter/lib/strategies/persistent");
+import debugGenerator from "debug";
 import TemplateCompilerPlugin = require("ember-cli-htmlbars/lib/template-compiler-plugin");
 import type EmberApp from "ember-cli/lib/broccoli/ember-app";
 import type EmberAddon from "ember-cli/lib/models/addon";
@@ -22,7 +25,14 @@ import { BroccoliTreeImporter, identToPath, isBroccoliTreeIdentifier } from "./B
 import { EmberAnalysis } from "./EmberAnalysis";
 import { ASTPluginWithDeps } from "./TemplateAnalyzingRewriter";
 
+const debug = debugGenerator("css-blocks:ember");
+type PersistentStrategy = typeof persistentStrategy;
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+
+interface AdditionalFile {
+  outputPath: string;
+  contents: string;
+}
 
 const BLOCK_GLOB = "**/*.block.{css,scss,sass,less,styl}";
 interface EmberASTPluginEnvironment extends ASTPluginEnvironment {
@@ -36,7 +46,6 @@ function withoutCssBlockFiles(tree: InputNode | undefined) {
   return funnel(tree, {
     exclude: [
       "**/*.block.{css,scss,sass,less,styl}",
-      "**/*.compiledblock.css",
     ],
   });
 }
@@ -48,20 +57,28 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
   analyzingRewriter: AnalyzingRewriteManager | undefined;
   input!: FSMerger.FS;
   output!: outputWrapper.FSOutput;
-  constructor(inputTree: InputNode, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions, cssBlocksOptions: CSSBlocksEmberOptions) {
+  persist: boolean;
+  treeName: string;
+  constructor(inputTree: InputNode, treeName: string, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions, cssBlocksOptions: CSSBlocksEmberOptions) {
     super(inputTree, htmlbarsOptions);
     this.cssBlocksOptions = cssBlocksOptions;
     this.parserOpts = resolveConfiguration(cssBlocksOptions.parserOpts);
     this.previousSourceTree = new FSTree();
+    this.treeName = treeName;
+    let persist = htmlbarsOptions.persist;
+    if (persist === undefined) persist = true;
+    this.persist = TemplateCompilerPlugin.shouldPersist(process.env, persist);
   }
   astPluginBuilder(env: EmberASTPluginEnvironment): ASTPluginWithDeps {
     let moduleName = env.meta?.["moduleName"];
     if (!moduleName) {
+      debug("No module name. Returning noop ast plugin");
       return {
         name: "css-blocks-noop",
         visitor: {},
       };
     }
+    debug(`Returning template analyzer and rewriter for ${moduleName}`);
     if (!this.analyzingRewriter) {
       throw new Error("[internal error] analyzing rewriter expected.");
     }
@@ -86,10 +103,12 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     let config = resolveConfiguration({importer}, this.parserOpts);
     let factory = new BlockFactory(config, postcss);
     let fileLocator = new BroccoliFileLocator(this.input);
+    debug(`Looking for templates using css blocks.`);
     this.analyzingRewriter = new AnalyzingRewriteManager(factory, fileLocator, this.cssBlocksOptions.analysisOpts || {}, this.parserOpts);
     // The astPluginBuilder interface isn't async so we have to first load all
     // the blocks and associate them to their corresponding templates.
     await this.analyzingRewriter.discoverTemplatesWithBlocks();
+    debug(`Discovered ${Object.keys(this.analyzingRewriter.templateBlocks).length} templates with corresponding block files.`);
     // Compiles the handlebars files, runs our plugin for each file
     // we have to wrap this RSVP Promise that's returned in a native promise or
     // else await won't work.
@@ -102,21 +121,30 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
       }
     });
     await builder;
+    debug(`Template rewriting complete.`);
     // output compiled block files and template analyses
     let blocks = new Set<Block>();
     let blockOutputPaths = new Map<Block, string>();
     let analyses = new Array<EmberAnalysis>();
+    let templateBlocks = new MultiMap<EmberAnalysis, Block>();
     for (let analyzedTemplate of this.analyzingRewriter.analyzedTemplates()) {
       let { block, analysis } = analyzedTemplate;
       analyses.push(analysis);
       blocks.add(block);
-      for (let depBlock of block.transitiveBlockDependencies()) {
+      templateBlocks.set(analysis, block);
+      let blockDependencies = block.transitiveBlockDependencies();
+      templateBlocks.set(analysis, ...blockDependencies);
+      for (let depBlock of blockDependencies) {
         blocks.add(depBlock);
       }
     }
+    debug(`Analyzed ${analyses.length} templates.`);
+    debug(`Discovered ${blocks.size} blocks in use.`);
+    let additionalFileCacheKeys = new MultiMap<EmberAnalysis, string>();
     let compiler = new BlockCompiler(postcss, this.parserOpts);
     compiler.setDefinitionCompiler(new BlockDefinitionCompiler(postcss, (_b, p) => { return p.replace(".block.css", ".compiledblock.css"); }, this.parserOpts));
     for (let block of blocks) {
+      debug(`compiling: ${config.importer.debugIdentifier(block.identifier, config)}`);
       let outputPath = getOutputPath(block);
       // Skip processing if we don't get an output path. This happens for files that
       // get referenced in @block from node_modules.
@@ -131,17 +159,90 @@ class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
       let { css: compiledAST } = compiler.compileWithDefinition(block, block.stylesheet, this.analyzingRewriter.reservedClassNames(), INLINE_DEFINITION_FILE);
       // TODO disable source maps in production?
       let result = compiledAST.toResult({ to: outputPath, map: { inline: true } });
-      this.output.writeFileSync(outputPath, result.css, "utf8");
+      let contents = result.css;
+      if (this.persist) {
+        // We only compile and output each block once, but a block might be consumed
+        // by several of the templates that we have processed. So we have to figure out
+        // which template(s) depend on the block we're writing.
+        for (let {analysis} of this.analyzingRewriter.analyzedTemplates()) {
+          if (templateBlocks.hasValue(analysis, block)) {
+            await this.cacheAdditionalFile(additionalFileCacheKeys, analysis, {outputPath, contents});
+          }
+        }
+      }
+      this.output.writeFileSync(outputPath, contents, "utf8");
+      debug(`compiled: ${outputPath}`);
     }
     for (let analysis of analyses) {
-      let analysisOutputPath = analysisPath(analysis.template.relativePath);
-      this.output.mkdirSync(path.dirname(analysisOutputPath), { recursive: true });
+      let outputPath = analysisPath(analysis.template.relativePath);
+      let contents = JSON.stringify(analysis.serialize(blockOutputPaths));
+      await this.cacheAdditionalFile(additionalFileCacheKeys, analysis, {outputPath, contents});
+      this.output.mkdirSync(path.dirname(outputPath), { recursive: true });
       this.output.writeFileSync(
-        analysisOutputPath,
-        JSON.stringify(analysis.serialize(blockOutputPaths)),
+        outputPath,
+        contents,
         "utf8",
       );
+      debug(`Analyzed ${analysis.template.relativePath} => ${outputPath}`);
     }
+    if (this.persist) {
+      for (let analysis of additionalFileCacheKeys.keys()) {
+        let cacheKey = this.additionalFilesCacheKey(this.inputFileCacheKey(analysis.template.relativePath));
+        let additionalCacheKeys = additionalFileCacheKeys.get(analysis);
+        await (<PersistentStrategy>this.processor.processor)._cache?.set(cacheKey, JSON.stringify(additionalCacheKeys));
+        debug(`Stored ${additionalCacheKeys.length} additional output files for ${analysis.template.relativePath} to cache.`);
+        debug(`Cache keys are: ${additionalCacheKeys.join(", ")}`);
+      }
+    }
+  }
+  inputFileCacheKey(relativePath): string {
+    // it would be nice if we could avoid this double read.
+    let contents = this.input.readFileSync(relativePath, this.inputEncoding || "utf8");
+    return this.cacheKeyProcessString(contents, relativePath);
+  }
+  additionalFilesCacheKey(mainFileCacheKey: string): string {
+    return `${mainFileCacheKey}-additional-files`;
+  }
+  async cacheAdditionalFile(additionalFileCacheKeys: MultiMap<EmberAnalysis, string>, analysis: EmberAnalysis, additionalFile: AdditionalFile) {
+    if (this.persist) {
+      let cacheKey = md5Sum([additionalFile.outputPath, additionalFile.contents]);
+      additionalFileCacheKeys.set(analysis, cacheKey);
+      await (<PersistentStrategy>this.processor.processor)._cache!.set(cacheKey, JSON.stringify(additionalFile));
+      debug(`Wrote cache key ${cacheKey} for ${additionalFile.outputPath}`);
+    }
+  }
+  // We override broccoli-persistent-filter's _handleFile implementation
+  // in order to extract the additional output files from cache when the file is cached.
+  async _handleFile(relativePath: string, srcDir: string, destDir: string, entry: Parameters<TemplateCompilerPlugin["_handleFile"]>[3], outputPath: string, forceInvalidation: boolean, isChange: boolean, stats: Parameters<TemplateCompilerPlugin["_handleFile"]>[7]) {
+    let cached = false;
+    let mainFileCacheKey: string | undefined;
+    if (this.persist) {
+      mainFileCacheKey = this.inputFileCacheKey(relativePath);
+      let result = await (<PersistentStrategy>this.processor.processor)._cache!.get(mainFileCacheKey);
+      cached = result.isCached;
+    }
+    let result = await super._handleFile(relativePath, srcDir, destDir, entry, outputPath, forceInvalidation, isChange, stats);
+    if (cached && !forceInvalidation) {
+      // first we read out the list of additional cache keys for other output files.
+      let additionalFilesCacheKey = this.additionalFilesCacheKey(mainFileCacheKey!);
+      let cacheKeysCacheResult = await (<PersistentStrategy>this.processor.processor)._cache!.get<string>(additionalFilesCacheKey);
+      if (cacheKeysCacheResult.isCached) {
+        let additionalCacheKeys: Array<string> = JSON.parse(cacheKeysCacheResult.value);
+        // for each cache key we read out the additional file metadata that is cached and write the additional file to the output tree.
+        for (let cacheKey of additionalCacheKeys) {
+          let additionalFileCacheResult = await (<PersistentStrategy>this.processor.processor)._cache!.get<string>(cacheKey);
+          if (!additionalFileCacheResult.isCached) throw new Error(`[css-blocks][${this.treeName}] Corrupt cache encountered while reading additional output files. Not found: ${cacheKey}`);
+          let additionalFile: AdditionalFile = JSON.parse(additionalFileCacheResult.value);
+          this.output.mkdirSync(path.dirname(additionalFile.outputPath), { recursive: true });
+          this.output.writeFileSync(additionalFile.outputPath, additionalFile.contents, this.outputEncoding || "utf8");
+        }
+        debug(`Wrote ${additionalCacheKeys.length} additional cached files for ${relativePath}`);
+      } else {
+        // this happens when the file isn't a css-blocks based template.
+        debug(`No additional cached files for ${relativePath}`);
+      }
+    }
+    return result;
   }
 }
 
@@ -212,6 +313,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
     this._super.included.apply(this, [parent]);
     this.app = this._findHost();
     let parentName = typeof parent.name === "string" ? parent.name : parent.name();
+    debug(`@css-blocks/ember included into ${parentName}`);
     this._options = this.getOptions();
     let htmlBarsAddon = this.findSiblingAddon<HTMLBarsAddon>("ember-cli-htmlbars");
     if (!htmlBarsAddon) {
@@ -221,7 +323,8 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
       throw new Error(`Version ${htmlBarsAddon.pkg.version} of ember-cli-htmlbars for ${parentName} is not compatible with @css-blocks/ember. Please upgrade to ^5.2.0.`);
     }
     htmlBarsAddon.transpileTree = (inputTree: Tree, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions) => {
-      this.templateCompiler = new CSSBlocksTemplateCompilerPlugin(inputTree, htmlbarsOptions, this._options!);
+      debug(`transpileTree for ${parentName} was called.`);
+      this.templateCompiler = new CSSBlocksTemplateCompilerPlugin(inputTree, parentName, htmlbarsOptions, this._options!);
       return this.templateCompiler;
     };
   },
@@ -251,6 +354,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
     // For Ember
     registry.add("htmlbars-ast-plugin", {
       name: "css-blocks-htmlbars",
+      // TODO: parallel babel stuff
       plugin: this.astPluginBuilder.bind(this),
       // This is turned off to work around a bug in broccoli-persistent-filter.
       dependencyInvalidation: false,
