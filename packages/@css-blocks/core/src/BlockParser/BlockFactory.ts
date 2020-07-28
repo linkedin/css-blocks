@@ -362,7 +362,7 @@ export class BlockFactory {
     }
 
     // Construct a Block out of the definition file.
-    const block = await this.parser.parseDefinitionSource(definitionAst, file.definitionIdentifier, file.blockId, file.defaultName);
+    const block = await this.parser.parseDefinitionSource(definitionAst, file.identifier, file.blockId, file.defaultName);
 
     // Merge the rules from the CSS contents into the Block.
     this._mergeCssRulesIntoDefinitionBlock(block, cssContentsAst, file);

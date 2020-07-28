@@ -69,6 +69,9 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
       // Validate our imported block name is a valid CSS identifier.
       const exportPromise = srcBlockPromise.then(
         (srcBlock) => {
+          if (typeguards.isBlockExport(exports)) {
+            block.blockReferencePaths.set(exports.fromPath, srcBlock);
+          }
           for (let {name: localName, asName: remoteName} of exports?.exports!) {
             remoteName = remoteName || localName;
             if (remoteNames.has(remoteName)) {

@@ -1,5 +1,6 @@
 import { NodeJsImporter } from "./NodeJsImporter";
 
+export { BaseImporter } from "./BaseImporter";
 export {
   ImporterData,
   FileIdentifier,

@@ -1,31 +1,36 @@
-import { Configuration, ImportedCompiledCssFile, ImportedFile, Importer, Syntax, syntaxFromExtension } from "@css-blocks/core";
+import { BaseImporter, Configuration, ImportedCompiledCssFile, ImportedFile, Importer, Syntax, syntaxFromExtension } from "@css-blocks/core";
+import * as debugGenerator from "debug";
 import type { FS as MergedFileSystem } from "fs-merger";
 import * as path from "path";
 
-const PREFIX = "broccoli-tree:";
-const PREFIX_LENGTH = PREFIX.length;
-const PREFIX_RE = new RegExp(`^${PREFIX}`);
+const debug = debugGenerator("css-blocks:broccoli-tree-importer");
+
+export const IDENTIFIER_PREFIX = "broccoli-tree:";
+const IDENTIFIER_PREFIX_LENGTH = IDENTIFIER_PREFIX.length;
+const IDENTIFIER_PREFIX_RE = new RegExp(`^${IDENTIFIER_PREFIX}`);
+export const EMBEDDED_DEFINITION_TAG = "#blockDefinitionURL";
 
 export function isBroccoliTreeIdentifier(identifier: string | null): identifier is string {
-  return !!(identifier && PREFIX_RE.test(identifier));
+  return !!(identifier && IDENTIFIER_PREFIX_RE.test(identifier));
 }
 
 export function identToPath(identifier: string): string {
-  return identifier.substring(PREFIX_LENGTH);
+  return identifier.substring(IDENTIFIER_PREFIX_LENGTH);
 }
 
 export function pathToIdent(relativePath: string): string {
-  return PREFIX + relativePath;
+  return IDENTIFIER_PREFIX + relativePath;
 }
 
 /**
  * Knows how to import blocks from a broccoli merged filesystem interface.
  */
-export class BroccoliTreeImporter implements Importer {
+export class BroccoliTreeImporter extends BaseImporter {
   fallbackImporter: Importer;
   input: MergedFileSystem;
 
   constructor(input: MergedFileSystem, fallbackImporter: Importer) {
+    super();
     this.input = input;
     this.fallbackImporter = fallbackImporter;
   }
@@ -55,12 +60,50 @@ export class BroccoliTreeImporter implements Importer {
       let syntax = syntaxFromExtension(path.extname(relativePath));
       let defaultName = path.parse(relativePath).name;
       defaultName = defaultName.replace(/.block$/, "");
-      return {
-        identifier,
-        defaultName,
-        syntax,
-        contents,
-      };
+      if (this.isCompiledBlockCSS(contents)) {
+        const segmentedContents = this.segmentizeCompiledBlockCSS(contents);
+        // Need to determine if the definition URL is an external URL we should
+        // follow, or embedded data.
+        const dfnUrl = segmentedContents.definitionUrl;
+        let dfnData: string | null = null;
+        let definitionIdentifier: string | null = null;
+        if (dfnUrl.startsWith("data:")) {
+          // Parse this as embedded data.
+          const [dfnHeader, dfnEncodedData] = dfnUrl.split(",");
+          definitionIdentifier = `${identifier}${EMBEDDED_DEFINITION_TAG}`;
+          if (dfnHeader === "data:text/css;base64") {
+            dfnData = Buffer.from(dfnEncodedData, "base64").toString("utf-8");
+          } else {
+            throw new Error(`Definition data is in unsupported encoding or format. Embedded data must be in text/css;base64 format.\nFile Identifier: ${identifier}\nFormat given: ${dfnHeader}`);
+          }
+        } else {
+          throw new Error(`Only embedded definition URLs are supported in ember at this time.`);
+        }
+
+        // Clean up definition data and location.
+        dfnData = dfnData.trim();
+        definitionIdentifier = definitionIdentifier.trim();
+        debug("Importing definition file %s:\n%s", definitionIdentifier, dfnData);
+
+        return {
+          type: "ImportedCompiledCssFile",
+          syntax: Syntax.css,
+          identifier,
+          cssContents: segmentedContents.blockCssContents,
+          blockId: segmentedContents.blockId,
+          definitionContents: dfnData,
+          definitionIdentifier,
+          defaultName: this.defaultName(identifier, config),
+        };
+      } else {
+        return {
+          type: "ImportedFile",
+          identifier,
+          defaultName,
+          syntax,
+          contents,
+        };
+      }
     } else {
       return this.fallbackImporter.import(identifier, config);
     }

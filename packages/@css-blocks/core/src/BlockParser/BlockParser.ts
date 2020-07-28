@@ -80,7 +80,7 @@ export class BlockParser {
     let debugIdent = importer.debugIdentifier(identifier, this.config);
     let sourceFile = importer.filesystemPath(identifier, this.config) || debugIdent;
     let configuration = this.factory.configuration;
-    debug(`Begin parse: "${debugIdent}"`);
+    debug(`Begin parse: "${debugIdent}" which ${isDfnFile ? "is" : "is not"} a definition file.`);
 
     // Discover the block's preferred name.
     let nameDiscoveryError: CssBlockError | undefined;

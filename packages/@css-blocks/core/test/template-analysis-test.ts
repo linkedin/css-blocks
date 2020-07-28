@@ -215,7 +215,7 @@ export class AnalysisTests {
       let expectedResult: SerializedAnalysis<TemplateType> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".asdf", ".asdf[larger]", "a.foo"],
+        stylesFound: [".asdf", ".asdf[larger]", ">a.foo"],
         elements: {
           a: {
             staticStyles: [0],
@@ -374,7 +374,7 @@ export class AnalysisTests {
       let expectedResult: SerializedAnalysis<TemplateType> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".asdf", ".asdf[larger]", ".fdsa", ".fdsa[larger]", "a.foo"],
+        stylesFound: [".asdf", ".asdf[larger]", ".fdsa", ".fdsa[larger]", ">a.foo"],
         elements: {
           a: {
             staticStyles: [ ],
@@ -427,7 +427,7 @@ export class AnalysisTests {
       let expectedResult: SerializedAnalysis<TemplateType> = {
         blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
         template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-        stylesFound: [".asdf", ".fdsa", "a.foo", "a.foo[bar]"],
+        stylesFound: [".asdf", ".fdsa", ">a.foo", ">a.foo[bar]"],
         elements: {
           a: {
             staticStyles: [ 2, 3 ],
@@ -889,7 +889,7 @@ export class AnalysisTests {
         let expectedResult: SerializedAnalysis<TemplateType> = {
           blocks: {"": "blocks/foo.block.css", "a": "blocks/a.css"},
           template: { type: "Opticss.Template", identifier: "templates/my-template.hbs"},
-          stylesFound: [":scope", "a.foo"],
+          stylesFound: [":scope", ">a.foo"],
           elements: {
             a: {
               dynamicClasses: [],

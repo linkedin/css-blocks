@@ -128,7 +128,7 @@ export class BlockFactoryCompiledCssFilesTests {
     await factory.getBlock(importer.identifier(null, navCssPath, config));
     return this.assertError(
       CssBlockError,
-      "[css-blocks] Error: Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs. (foo/bar/other.blockdef.css)",
+      "[css-blocks] Error: Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs. (foo/bar/other.css)",
       factory.getBlock(importer.identifier(null, otherCssPath, config)),
     );
   }
@@ -145,7 +145,7 @@ export class BlockFactoryCompiledCssFilesTests {
     await factory.getBlock(importer.identifier(null, navCssPath, config));
     return this.assertError(
       CssBlockError,
-      "[css-blocks] Error: Block uses a name that has already been used! Check dependencies for conflicting block names. (foo/bar/other.blockdef.css)",
+      "[css-blocks] Error: Block uses a name that has already been used! Check dependencies for conflicting block names. (foo/bar/other.css)",
       factory.getBlock(importer.identifier(null, otherCssPath, config)),
     );
   }

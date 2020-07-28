@@ -1,0 +1,4 @@
+--reporter spec
+--require source-map-support/register
+--inline-diffs
+dist/test/*.js

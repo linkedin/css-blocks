@@ -41,8 +41,15 @@ export interface HasAttrValue<T extends Style = Style> {
   value: Set<T>;
 }
 
-export function isBooleanAttr(o: object): o is HasAttrValue {
-  return !!(<HasAttrValue>o).value;
+export function isBooleanAttr(o: object): o is HasAttrValue | SerializedHasAttrValue {
+  return hasAttrValue(o);
+}
+
+export function hasAttrValue(o: object): o is HasAttrValue | SerializedHasAttrValue {
+  if (!("value" in o)) return false;
+  let value = (<HasAttrValue | SerializedHasAttrValue>o).value;
+  return (Array.isArray(value) && value.length > 0)
+         || (value instanceof Set && value.size > 0);
 }
 
 export interface HasGroup<GroupType extends BlockClass | AttrValue | number = AttrValue> {
@@ -61,7 +68,7 @@ export interface Conditional<BooleanExpression> {
 }
 
 export function isConditional<BooleanExpression>(o: object): o is Conditional<BooleanExpression> {
-  return o.hasOwnProperty("condition");
+  return "condition" in o;
 }
 
 /**
@@ -75,7 +82,7 @@ export interface Switch<StringExpression> {
 }
 
 export function isSwitch(o: object): o is Switch<unknown> {
-  return o.hasOwnProperty("stringExpression");
+  return "stringExpression" in o;
 }
 
 /**
@@ -86,8 +93,7 @@ export interface Dependency<Container extends BlockClass | number = BlockClass> 
 }
 
 export function hasDependency(o: object): o is Dependency<BlockClass | number> {
-  let container = (<Dependency<BlockClass | number>>o).container;
-  return container !== undefined;
+  return "container" in o;
 }
 
 /**
@@ -99,8 +105,7 @@ export interface TrueCondition<Container extends BlockClass | number = BlockClas
 }
 
 export function isTrueCondition(o: object): o is TrueCondition<BlockClass | number> {
-  let trueCondition = (<TrueCondition<BlockClass | number>>o).whenTrue;
-  return trueCondition !== undefined;
+  return Array.isArray((<TrueCondition<BlockClass | number>>o).whenTrue);
 }
 
 /**
@@ -112,15 +117,14 @@ export interface FalseCondition<Container extends BlockClass | number = BlockCla
 }
 
 export function isFalseCondition(o: object): o is FalseCondition<BlockClass | number> {
-  let falseCondition = (<FalseCondition<BlockClass | number>>o).whenFalse;
-  return falseCondition !== undefined;
+  return Array.isArray((<FalseCondition<BlockClass | number>>o).whenFalse);
 }
 
-interface StaticClass {
+export interface StaticClass {
   klass: BlockClass;
 }
-function isStaticClass(o: object): o is StaticClass {
-  return !!((<StaticClass>o).klass);
+export function isStaticClass(o: object): o is StaticClass | SerializedStaticClass {
+  return ("klass" in o);
 }
 
 /** An attribute value that is conditionally set */
@@ -150,6 +154,9 @@ export type DynamicClasses<TernaryExpression> = (Conditional<TernaryExpression> 
 export interface SerializedHasAttrValue {
   value: number[];
 }
+export interface SerializedStaticClass {
+  klass: number;
+}
 export type SerializedConditionalAttr = Conditional<true> & SerializedHasAttrValue;
 export type SerializedDependentAttr = Dependency<number> & SerializedHasAttrValue;
 export type SerializedConditionalDependentAttr = Conditional<true> & Dependency<number> & SerializedHasAttrValue;
@@ -160,6 +167,9 @@ export type SerializedConditionalDependentAttrGroup = Switch<true> & Dependency<
 export type SerializedDynamicAttrGroup = SerializedConditionalAttrGroup | SerializedDependentAttrGroup | SerializedConditionalDependentAttrGroup;
 export type SerializedDynamicContainer = Conditional<true> & (TrueCondition<number> | FalseCondition<number> | (TrueCondition<number> & FalseCondition<number>));
 export type SerializedDynamicAttrs = SerializedDynamicAttr | SerializedDynamicAttrGroup;
+export type SerializedDynamicClasses = (Conditional<true> & TrueCondition<number>)
+                                       | (Conditional<true> & FalseCondition<number>)
+                                       | (Conditional<true> & TrueCondition<number> & FalseCondition<number>);
 
 export interface SerializedElementAnalysis {
   id?: string | undefined;
@@ -170,6 +180,17 @@ export interface SerializedElementAnalysis {
   dynamicAttributes: Array<SerializedDynamicAttrs>;
 }
 
+/**
+ * This serialization is just the styles that were set explicitly
+ * by the source code.
+ */
+export interface SerializedElementSourceAnalysis {
+  id?: string | undefined;
+  tagName?: string | undefined;
+  sourceLocation?: SourceLocation;
+  analyzedStyles: Array<SerializedAnalyzedStyle>;
+}
+
 type AnalyzedStyle<BooleanExpression, StringExpression, TernaryExpression> =
   DependentAttr
   | ConditionalDependentAttr<BooleanExpression>
@@ -177,6 +198,12 @@ type AnalyzedStyle<BooleanExpression, StringExpression, TernaryExpression> =
   | StaticClass
   | DynamicClasses<TernaryExpression>;
 
+type SerializedAnalyzedStyle =
+  SerializedDependentAttr
+  | SerializedConditionalDependentAttr
+  | SerializedConditionalDependentAttrGroup
+  | SerializedStaticClass
+  | SerializedDynamicClasses;
 /**
  * This class is used to track the styles and dynamic expressions on an element
  * and produce a runtime class expression in conjunction with a style mapping.
@@ -715,6 +742,61 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       yield s;
     }
     return;
+  }
+
+  /**
+   * Only serializes the styles that were added during source analysis.
+   */
+  serializeSourceAnalysis(styleIndexes: Map<Style, number>): SerializedElementSourceAnalysis {
+    let indexOf = (style: Style) => {
+      if (styleIndexes.has(style)) {
+        return styleIndexes.get(style)!;
+      } else {
+        throw new Error("[internal error] Style missing");
+      }
+    };
+    let id = this.id;
+    let tagName = this.tagName;
+    let sourceLocation = this.sourceLocation;
+    let analyzedStyles = new Array<SerializedAnalyzedStyle>();
+    let addedStyles = this.sealed ? this.explicitlyAddedStyles : this.addedStyles;
+    for (let s of addedStyles) {
+      let serialized: Partial<SerializedAnalyzedStyle> = {};
+      if (isStaticClass(s)) {
+        (<SerializedStaticClass>serialized).klass = indexOf(s.klass);
+      }
+      if (isConditional(s)) {
+        (<Conditional<true>>serialized).condition = true;
+      }
+      if (isTrueCondition(s)) {
+        (<TrueCondition<number>>serialized).whenTrue = s.whenTrue.map(indexOf);
+      }
+      if (isFalseCondition(s)) {
+        (<FalseCondition<number>>serialized).whenFalse = s.whenFalse.map(indexOf);
+      }
+      if (hasDependency(s)) {
+        (<Dependency<number>>serialized).container = indexOf(s.container);
+      }
+      if (hasAttrValue(s)) {
+        (<SerializedHasAttrValue>serialized).value = [...s.value].map(indexOf);
+      }
+      if (isAttrGroup(s)) {
+        let group: ObjectDictionary<number> = {};
+        for (let name of Object.keys(s.group)) {
+          group[name] = indexOf(s.group[name]);
+        }
+        (<HasGroup<number>>serialized).group = group;
+        (<Switch<true>>serialized).stringExpression = true;
+        (<Switch<true>>serialized).disallowFalsy = s.disallowFalsy;
+      }
+      analyzedStyles.push(<Required<SerializedAnalyzedStyle>>serialized);
+    }
+    return {
+      id,
+      tagName,
+      sourceLocation,
+      analyzedStyles,
+    };
   }
 
   /**

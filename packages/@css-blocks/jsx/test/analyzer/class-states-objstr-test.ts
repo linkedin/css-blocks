@@ -110,7 +110,7 @@ export class Test {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=green]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar>foo.pretty[color=green]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, []);
       assert.deepEqual(elementAnalysis.staticStyles, [0, 1]);
@@ -192,7 +192,7 @@ export class Test {
       let result = analyzer.serialize();
       let analysis = result.analyses[0];
       let elementAnalysis = analysis.elements.a;
-      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=black]", "bar.pretty[color=green]", "bar.pretty[color=yellow]"]);
+      assert.deepEqual(analysis.stylesFound, ["bar.pretty", "bar.pretty[color=black]", "bar>foo.pretty[color=green]", "bar>foo.pretty[color=yellow]"]);
       assert.deepEqual(elementAnalysis.dynamicClasses, []);
       assert.deepEqual(elementAnalysis.dynamicAttributes, [{ stringExpression: true, group: {black: 1, green: 2, yellow: 3}, value: [] }]);
       assert.deepEqual(elementAnalysis.staticStyles, [0]);

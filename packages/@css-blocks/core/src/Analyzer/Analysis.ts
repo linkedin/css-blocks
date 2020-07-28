@@ -11,17 +11,16 @@ import {
   TemplateInfoFactory,
   TemplateTypes,
 } from "@opticss/template-api";
-import { ObjectDictionary, objectValues } from "@opticss/util";
+import { ObjectDictionary, assertNever, objectValues } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
 import { BlockFactory } from "../BlockParser";
-import { DEFAULT_EXPORT } from "../BlockSyntax";
-import { Block, Style } from "../BlockTree";
+import { AttrValue, Attribute, Block, BlockClass, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 import { allDone } from "../util";
 
 import { Analyzer } from "./Analyzer";
-import { ElementAnalysis, SerializedElementAnalysis } from "./ElementAnalysis";
+import { DynamicClasses, ElementAnalysis, FalseCondition, SerializedElementAnalysis, SerializedElementSourceAnalysis, TrueCondition, hasAttrValue, hasDependency, isAttrGroup, isConditional, isFalseCondition, isStaticClass, isSwitch, isTrueCondition } from "./ElementAnalysis";
 import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 
 /**
@@ -34,6 +33,18 @@ export interface SerializedAnalysis<K extends keyof TemplateTypes> {
   stylesFound: string[];
   // The numbers stored in each element are an index into a stylesFound;
   elements: ObjectDictionary<SerializedElementAnalysis>;
+}
+
+/**
+ * This interface defines a JSON friendly serialization
+ * of an {Analysis}.
+ */
+export interface SerializedSourceAnalysis<K extends keyof TemplateTypes> {
+  template: SerializedTemplateInfo<K>;
+  blocks: ObjectDictionary<string>;
+  stylesFound: string[];
+  // The numbers stored in each element are an index into a stylesFound;
+  elements: ObjectDictionary<SerializedElementSourceAnalysis>;
 }
 
 // tslint:disable-next-line:prefer-unknown-to-any
@@ -161,19 +172,35 @@ export class Analysis<K extends keyof TemplateTypes> {
    * @return The local name of the given block.
    */
   getBlockName(block: Block): string | null {
-    let names = Object.keys(this.blocks);
-    for (let name of names) {
-      if (this.blocks[name] === block) {
-        return name === DEFAULT_EXPORT ? "" : name;
+    for (let name of Object.keys(this.blocks)) {
+      let searchBlock = this.blocks[name];
+      let blockName = this._searchForBlock(block, searchBlock, name);
+      if (blockName !== null) {
+        return blockName;
       }
     }
-    for (let name of names) {
-      let superBlock = this.blocks[name].base;
-      while (superBlock) {
-        if (superBlock === block) return name === DEFAULT_EXPORT ? "" : name;
-        superBlock = superBlock.base;
+    return null;
+  }
+
+  _searchForBlock(blockToFind: Block, block: Block, parentPath: string): string | null {
+    if (block === blockToFind || block.isAncestorOf(blockToFind)) {
+      return parentPath;
+    }
+
+    // we collect these name/block pairs first, so we can early exit the next loop.
+    let blockRefs = new Array<[string, Block]>();
+    block.eachBlockReference((name, refBlock) => {
+      blockRefs.push([name, refBlock]);
+    });
+
+    for (let [name, refBlock] of blockRefs) {
+      let currentSearchPath = `${parentPath}>${name}`;
+      let rv = this._searchForBlock(blockToFind, refBlock, currentSearchPath);
+      if (rv !== null) {
+        return rv;
       }
     }
+
     return null;
   }
 
@@ -236,7 +263,11 @@ export class Analysis<K extends keyof TemplateTypes> {
    * @return The local name for the block object using the local prefix for the block.
    */
   serializedName(o: Style): string {
-    return `${this.getBlockName(o.block) || ""}${o.asSource()}`;
+    let blockName = this.getBlockName(o.block);
+    if (blockName === null) {
+      throw new Error(`Block ${o.block.identifier} is not registered in the dependency graph for this analysis.`);
+    }
+    return `${blockName}${o.asSource()}`;
   }
 
   /**
@@ -297,13 +328,38 @@ export class Analysis<K extends keyof TemplateTypes> {
     }
   }
 
+  serializeSource(blockPaths?: Map<Block, string>): SerializedSourceAnalysis<K> {
+    let elements: ObjectDictionary<SerializedElementSourceAnalysis> = {};
+    let { template, blocks, stylesFound, styleIndexes } = this._serializeSetup(blockPaths);
+
+    // Serialize all discovered Elements.
+    this.elements.forEach((el, key) => {
+      elements[key] = el.serializeSourceAnalysis(styleIndexes);
+    });
+
+    // Return serialized Analysis object.
+    return { template, blocks, stylesFound, elements };
+  }
+
   /**
    * Generates a [[SerializedTemplateAnalysis]] for this analysis.
    */
   serialize(blockPaths?: Map<Block, string>): SerializedAnalysis<K> {
+    let elements: ObjectDictionary<SerializedElementAnalysis> = {};
+    let { template, blocks, stylesFound, styleIndexes } = this._serializeSetup(blockPaths);
+
+    // Serialize all discovered Elements.
+    this.elements.forEach((el, key) => {
+      elements[key] = el.serialize(styleIndexes);
+    });
+
+    // Return serialized Analysis object.
+    return { template, blocks, stylesFound, elements };
+  }
+
+  _serializeSetup(blockPaths?: Map<Block, string>) {
     let blocks = {};
     let stylesFound: string[] = [];
-    let elements: ObjectDictionary<SerializedElementAnalysis> = {};
     let template = this.template.serialize() as SerializedTemplateInfo<K>;
     let styleNameMap = new Map<Style, string>();
     let styleIndexes = new Map<Style, number>();
@@ -329,14 +385,122 @@ export class Analysis<K extends keyof TemplateTypes> {
       let block = this.blocks[localName];
       blocks[localName] = blockPaths && blockPaths.get(block) || block.identifier;
     });
+    return { template, blocks, stylesFound, styleIndexes };
+  }
 
-    // Serialize all discovered Elements.
-    this.elements.forEach((el, key) => {
-      elements[key] = el.serialize(styleIndexes);
+  /**
+   * Creates a TemplateAnalysis from its serialized form.
+   * @param serializedAnalysis The analysis to be recreated.
+   * @param options The plugin options that are used to parse the blocks.
+   * @param postcssImpl The instance of postcss that should be used to parse the block's css.
+   */
+  static async deserializeSource (
+    serializedAnalysis: SerializedSourceAnalysis<keyof TemplateTypes>,
+    blockFactory: BlockFactory,
+    parent: Analyzer<keyof TemplateTypes>,
+  ): Promise<Analysis<keyof TemplateTypes>> {
+    let blockNames = Object.keys(serializedAnalysis.blocks);
+    let info = TemplateInfoFactory.deserialize<keyof TemplateTypes>(serializedAnalysis.template);
+    let analysis = parent.newAnalysis(info);
+    let blockPromises = new Array<Promise<{name: string; block: Block}>>();
+    blockNames.forEach(n => {
+      let blockIdentifier = serializedAnalysis.blocks[n];
+      let promise = blockFactory.getBlock(blockIdentifier).then(block => {
+        return {name: n, block: block};
+      });
+      blockPromises.push(promise);
+    });
+    let values = await allDone(blockPromises);
+
+    // Create a temporary block so we can take advantage of `Block.lookup`
+    // to easily resolve all BlockPaths referenced in the serialized analysis.
+    // TODO: We may want to abstract this so we're not making a temporary block.
+    let localScope = new Block("analysis-block", "tmp", "analysis-block");
+    values.forEach(o => {
+      analysis.blocks[o.name] = o.block;
+      localScope.addBlockReference(o.name, o.block);
+    });
+    let objects = new Array<Style>();
+    serializedAnalysis.stylesFound.forEach(s => {
+      let style = localScope.find(s);
+      if (style) {
+        objects.push(style);
+      } else {
+        throw new Error(`Cannot resolve ${s} to a block style.`);
+      }
     });
 
-    // Return serialized Analysis object.
-    return { template, blocks, stylesFound, elements };
+    let styleRef = (index: number) => {
+      let s = objects[index];
+      if (!s) {
+        throw new Error("[internal error] Style index out of bounds!");
+      }
+      return s;
+    };
+    let classRef = (index: number) => {
+      let s = styleRef(index);
+      if (!(s instanceof BlockClass)) {
+        throw new Error("[internal error] Block class expected.");
+      }
+      return s;
+    };
+    let attrValueRef = (index: number) => {
+      let s = styleRef(index);
+      if (!(s instanceof AttrValue)) {
+        throw new Error("[internal error] attribute value expected.");
+      }
+      return s;
+    };
+
+    let elementNames = Object.keys(serializedAnalysis.elements);
+    elementNames.forEach((elID) => {
+      let data = serializedAnalysis.elements[elID];
+      let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, parent.reservedClassNames(), data.tagName, elID);
+      for (let analyzedStyle of data.analyzedStyles) {
+        if (isStaticClass(analyzedStyle)) {
+          element.addStaticClass(<BlockClass>styleRef(analyzedStyle.klass));
+        } else if (isConditional(analyzedStyle) && (isTrueCondition(analyzedStyle) || isFalseCondition(analyzedStyle))) {
+          let dynClasses: Partial<DynamicClasses<null>> = { condition: null };
+          if (isTrueCondition(analyzedStyle)) {
+            (<TrueCondition<BlockClass>>dynClasses).whenTrue = analyzedStyle.whenTrue.map(c => classRef(c));
+          }
+          if (isFalseCondition(analyzedStyle)) {
+            (<FalseCondition<BlockClass>>dynClasses).whenFalse = analyzedStyle.whenFalse.map(c => classRef(c));
+          }
+          element.addDynamicClasses(<Required<DynamicClasses<null>>>dynClasses);
+        } else if (hasDependency(analyzedStyle) && hasAttrValue(analyzedStyle)) {
+          let value = attrValueRef(analyzedStyle.value[0]);
+          let container = classRef(analyzedStyle.container);
+          if (isConditional(analyzedStyle)) {
+            element.addDynamicAttr(container, value, null);
+          } else {
+            element.addStaticAttr(container, value);
+          }
+        } else if (hasDependency(analyzedStyle) && isAttrGroup(analyzedStyle) && isSwitch(analyzedStyle)) {
+          let container = classRef(analyzedStyle.container);
+          let group: Attribute | undefined;
+          // Because the attribute is resolved into styles for serialization
+          // we have to find the attribute that is in the most specific sub-block
+          // of this attribute group.
+          for (let attrValueIdx of Object.values(analyzedStyle.group)) {
+            let attrValue = attrValueRef(attrValueIdx);
+            if (!group) {
+              group = attrValue.attribute;
+            } else if (group.block.isAncestorOf(attrValue.block)) {
+              group = attrValue.attribute;
+            }
+          }
+          element.addDynamicGroup(container, group!, null, analyzedStyle.disallowFalsy);
+        } else {
+          assertNever(analyzedStyle);
+        }
+      }
+      element.seal();
+      analysis.elements.set(elID, element);
+    });
+
+    // tslint:disable-next-line:prefer-unknown-to-any
+    return analysis;
   }
 
   /**
@@ -373,7 +537,7 @@ export class Analysis<K extends keyof TemplateTypes> {
     });
     let objects = new Array<Style>();
     serializedAnalysis.stylesFound.forEach(s => {
-      let style = localScope.lookup(s);
+      let style = localScope.find(s);
       if (style) {
         objects.push(style);
       } else {
@@ -384,7 +548,8 @@ export class Analysis<K extends keyof TemplateTypes> {
     let elementNames = Object.keys(serializedAnalysis.elements);
     elementNames.forEach((elID) => {
       let data = serializedAnalysis.elements[elID];
-      let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, parent.reservedClassNames(), undefined, elID);
+      let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, parent.reservedClassNames(), data.tagName, elID);
+      element.seal();
       analysis.elements.set(elID, element);
     });
 

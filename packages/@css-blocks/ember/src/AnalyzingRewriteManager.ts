@@ -9,12 +9,11 @@ import {
   TemplateValidatorOptions,
   resolveConfiguration,
 } from "@css-blocks/core";
+import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_TYPE } from "@css-blocks/ember-support";
 import { Syntax } from "@glimmer/syntax";
 import { ObjectDictionary, unionInto } from "@opticss/util";
 
-import { EmberAnalysis } from "./EmberAnalysis";
 import { FileLocator } from "./FileLocator";
-import { HandlebarsTemplate, TEMPLATE_TYPE } from "./HandlebarsTemplate";
 import { TemplateAnalyzingRewriter } from "./TemplateAnalyzingRewriter";
 
 export type GlimmerStyleMapping = StyleMapping<TEMPLATE_TYPE>;

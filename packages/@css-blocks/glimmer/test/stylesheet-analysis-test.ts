@@ -18,7 +18,7 @@ describe("Stylesheet analysis", function () {
       assert.deepEqual(serializedAnalysis.blocks, {
         "default": fixture("styled-app/src/ui/components/my-app/stylesheet.css"),
       });
-      assert.deepEqual(serializedAnalysis.stylesFound, [".editor", ".editor[disabled]", ":scope", ":scope[is-loading]"]);
+      assert.deepEqual(serializedAnalysis.stylesFound, ["default.editor", "default.editor[disabled]", "default:scope", "default:scope[is-loading]"]);
       let expected: ElementsAnalysis = {
         a: { tagName: "div", staticStyles: [2, 3], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, column: 0, "filename": "template:/styled-app/components/my-app" }, end: { line: 4, column: 6, "filename": "template:/styled-app/components/my-app" } } },
         b: { tagName: "page-banner", staticStyles: [], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/my-app" }, end: { line: 2, column: 17, "filename": "template:/styled-app/components/my-app" } } },
@@ -48,7 +48,7 @@ describe("Stylesheet analysis", function () {
         "default": fixture("styled-app/src/ui/components/with-multiple-blocks/stylesheet.css"),
         "h": fixture("styled-app/src/ui/components/with-multiple-blocks/header.css"),
       });
-      assert.deepEqual(analysis.stylesFound, [".world", ".world[thick]", ":scope", "h.emphasis", "h.emphasis[extra]", "h:scope"]);
+      assert.deepEqual(analysis.stylesFound, ["default.world", "default.world[thick]", "default:scope", "default>h.emphasis", "default>h.emphasis[extra]", "default>h:scope"]);
       assert.deepEqual(analysis.elements, {
         a: { tagName: "div", staticStyles: [2], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 1, column: 0, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 3, column: 6, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
         b: { tagName: "h1", staticStyles: [5], dynamicClasses: [], dynamicAttributes: [], sourceLocation: { start: { line: 2, column: 2, "filename": "template:/styled-app/components/with-multiple-blocks" }, end: { line: 2, column: 104, "filename": "template:/styled-app/components/with-multiple-blocks" } } },
@@ -72,16 +72,16 @@ describe("Stylesheet analysis", function () {
         "util": fixture("styled-app/src/ui/components/with-link-to/util.css"),
       });
       assert.deepEqual(analysis.stylesFound, [
-        ".link-1",
-        ".link-2",
-        ".link-2[active]",
-        ".link-4",
-        ".link-4[active]",
-        ".link-4[disabled]",
-        ".link-4[loading]",
-        ":scope",
-        "external.link-3",
-        "external.link-3[active]",
+        "default.link-1",
+        "default.link-2",
+        "default.link-2[active]",
+        "default.link-4",
+        "default.link-4[active]",
+        "default.link-4[disabled]",
+        "default.link-4[loading]",
+        "default:scope",
+        "default>external.link-3",
+        "default>external.link-3[active]",
         "util.util",
       ]);
       assert.deepEqual(analysis.elements, {
@@ -668,9 +668,9 @@ describe("Stylesheet analysis", function () {
         "h": fixture("styled-app/src/ui/components/with-dynamic-states/header.css"),
       });
       assert.deepEqual(analysis.stylesFound, [
-        ".world",
-        ".world[thick]",
-        ":scope",
+        "default.world",
+        "default.world[thick]",
+        "default:scope",
         "h.emphasis",
         "h.emphasis[style=bold]",
         "h.emphasis[style=italic]",
@@ -721,15 +721,15 @@ describe("Stylesheet analysis", function () {
         "t": fixture("styled-app/src/ui/components/with-dynamic-classes/typography.css"),
       });
       assert.deepEqual(analysis.stylesFound, [
-        ".planet",
-        ".world",
-        ".world[thick]",
-        ":scope",
-        "h.emphasis",
-        "h.emphasis[style=bold]",
-        "h.emphasis[style=italic]",
-        "h:scope",
-        "t.underline",
+        "default.planet",
+        "default.world",
+        "default.world[thick]",
+        "default:scope",
+        "default>h.emphasis",
+        "default>h.emphasis[style=bold]",
+        "default>h.emphasis[style=italic]",
+        "default>h:scope",
+        "default>t.underline",
       ]);
       assert.deepEqual(analysis.elements, {
         a: {

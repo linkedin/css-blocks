@@ -1,6 +1,10 @@
 {
 	"folders": [
 		{
+			"path": "../../packages/@css-blocks/ember-support",
+			"name": "Addon: Ember Support"
+		},
+		{
 			"path": "../../packages/@css-blocks/ember",
 			"name": "Addon: Ember"
 		},

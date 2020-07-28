@@ -5,6 +5,7 @@ import {
   isFalseCondition,
   isTrueCondition,
 } from "@css-blocks/core";
+import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_TYPE } from "@css-blocks/ember-support";
 import {
   ElementAnalyzer,
 } from "@css-blocks/glimmer";
@@ -21,9 +22,6 @@ import {
 } from "@glimmer/syntax";
 import { assertNever } from "@opticss/util";
 import * as debugGenerator from "debug";
-
-import { EmberAnalysis } from "./EmberAnalysis";
-import { HandlebarsTemplate, TEMPLATE_TYPE } from "./HandlebarsTemplate";
 
 const enum StyleCondition {
   STATIC = 1,

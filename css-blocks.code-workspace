@@ -60,6 +60,9 @@
 		},
 		{
 			"path": "packages/@css-blocks/ember-app"
+		},
+		{
+			"path": "packages/@css-blocks/ember-support"
 		}
 	],
 	"settings": {

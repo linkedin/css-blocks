@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "test": "yarn run test:runner",
-    "test:runner": "mocha --opts test/mocha.opts dist/test",
+    "test:runner": "echo TODO",
     "compile": "tsc --build && tsc --build runtime",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
@@ -46,6 +46,7 @@
   "dependencies": {
     "@css-blocks/config": "^1.0.0",
     "@css-blocks/core": "^1.0.0",
+    "@css-blocks/ember-support": "^0.1.0",
     "@css-blocks/glimmer": "^1.0.0",
     "@glimmer/compiler": "^0.43.0",
     "@glimmer/syntax": "^0.43.0",

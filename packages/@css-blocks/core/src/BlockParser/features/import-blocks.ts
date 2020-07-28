@@ -89,6 +89,7 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
     // Import the main block file referenced by the import path.
     try {
       referencedBlock = await factory.getBlockRelative(block.identifier, parsedImport.blockPath);
+      block.blockReferencePaths.set(parsedImport.blockPath, referencedBlock);
     } catch (err) {
       block.addError(new errors.CascadingError(
         "Error in imported block.",

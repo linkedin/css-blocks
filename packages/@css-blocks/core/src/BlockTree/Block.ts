@@ -78,6 +78,7 @@ export class Block
    * primarily for error reporting, if present.
    */
   public stylesheet: postcss.Root | undefined;
+  public blockReferencePaths: Map<string, Block>;
 
   /**
    * Creates a new Block.
@@ -98,6 +99,7 @@ export class Block
     this.guid = guid;
 
     this.addClass(this.rootClass);
+    this.blockReferencePaths = new Map();
   }
 
   protected get ChildConstructor(): typeof BlockClass { return BlockClass; }
@@ -297,7 +299,8 @@ export class Block
   // This is a really dumb impl
   find(sourceName: string): Styles | undefined {
     let blockRefName: string | undefined;
-    let md = sourceName.match(CLASS_NAME_IDENT);
+    let blockName = sourceName.split(/\>|\.|\:|\[/)[0];
+    let md = blockName.match(CLASS_NAME_IDENT);
     if (md && md.index === 0) {
       blockRefName = md[0];
       let blockRef: Block | undefined;
@@ -310,7 +313,11 @@ export class Block
         if (md[0].length === sourceName.length) {
           return blockRef.rootClass;
         }
-        return blockRef.find(sourceName.slice(md[0].length));
+        let rest = sourceName.slice(md[0].length);
+        if (rest.startsWith(">")) {
+          rest = rest.slice(1);
+        }
+        return blockRef.find(rest);
       } else {
         return undefined;
       }

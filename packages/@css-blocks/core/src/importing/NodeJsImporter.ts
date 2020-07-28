@@ -186,9 +186,7 @@ export class NodeJsImporter extends BaseImporter {
       dfnData = dfnData.trim();
       definitionIdentifier = definitionIdentifier.trim();
 
-      if (!dfnData) {
-        throw new Error("Could not parse or read definition data.");
-      }
+      debug("Importing definition file %s:\n%s", definitionIdentifier, dfnData);
 
       return {
         type: "ImportedCompiledCssFile",

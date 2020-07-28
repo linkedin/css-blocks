@@ -125,10 +125,11 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
    * @returns - A tree that's ready to process.
    */
   preprocessTree(type, tree) {
+    // tslint:disable-next-line:prefer-unknown-to-any
     let env = this.env!;
     if (type === "js") {
       if (env.isApp) {
-        let appAndAddonTree = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree]);
+        let appAndAddonTree = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree], {});
         return funnel(appAndAddonTree, {srcDir: env.modulePrefix, destDir: env.modulePrefix});
       } else {
         return tree;

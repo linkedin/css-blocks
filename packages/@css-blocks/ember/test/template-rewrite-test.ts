@@ -1,4 +1,5 @@
 import { BlockFactory, Options } from "@css-blocks/core";
+import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_NAME } from "@css-blocks/ember-support";
 import { ASTPluginEnvironment, Syntax, Walker, builders, preprocess as parse, print, traverse } from "@glimmer/syntax";
 import { TempDir, createTempDir } from "broccoli-test-helper";
 import chai = require("chai");
@@ -6,8 +7,6 @@ import chaiAsPromised = require("chai-as-promised");
 import * as fs from "fs";
 import * as path from "path";
 
-import { EmberAnalysis } from "../src/EmberAnalysis";
-import { HandlebarsTemplate, TEMPLATE_NAME } from "../src/HandlebarsTemplate";
 import { TemplateAnalyzingRewriter } from "../src/TemplateAnalyzingRewriter";
 
 chai.use(chaiAsPromised);
@@ -105,7 +104,7 @@ describe("Template Rewriting", function() {
       blocks: {
         default: fixtures.path("styles/hello.block.css"),
       },
-      stylesFound: [":scope"],
+      stylesFound: ["default:scope"],
       elements: {
         a: {
           tagName: "div",
@@ -136,7 +135,7 @@ describe("Template Rewriting", function() {
       minify(`<div class={{-css-blocks 0 1 "${result.block.guid}" null 1 0 ":scope" 1 1 0}}>Hello World!</div>`));
     let analysis = result.analysis.serialize();
     assert.deepEqual(Object.keys(analysis.blocks).length, 1);
-    assert.deepEqual(analysis.stylesFound, [":scope"]);
+    assert.deepEqual(analysis.stylesFound, ["default:scope"]);
     assert.deepEqual(Object.keys(analysis.elements).length, 1);
     assert.deepEqual(analysis.elements.a.staticStyles, [0]);
     assert.deepEqual(analysis.elements.a.dynamicClasses, []);
@@ -199,36 +198,36 @@ describe("Template Rewriting", function() {
     let analysis = result.analysis.serialize();
     assert.deepEqual(Object.keys(analysis.blocks).length, 3);
     assert.deepEqual(analysis.stylesFound, [
-      ".planet",
-      ".world",
-      ".world[thick]",
-      ":scope",
-      "h.emphasis",
-      "h.emphasis[style=bold]",
-      "h.emphasis[style=italic]",
-      "h:scope",
-      "t.underline",
+      "default.planet",
+      "default.world",
+      "default.world[thick]",
+      "default:scope",
+      "default>h.emphasis",
+      "default>h.emphasis[style=bold]",
+      "default>h.emphasis[style=italic]",
+      "default>h:scope",
+      "default>t.underline",
     ]);
     assert.deepEqual(Object.keys(analysis.elements).length, 7);
-    assert.deepEqual(analysis.elements.a.staticStyles, [analysis.stylesFound.indexOf(":scope")]);
+    assert.deepEqual(analysis.elements.a.staticStyles, [analysis.stylesFound.indexOf("default:scope")]);
     assert.deepEqual(analysis.elements.a.dynamicClasses, []);
     assert.deepEqual(analysis.elements.a.dynamicAttributes, []);
 
     assert.deepEqual(analysis.elements.c.tagName, "span");
-    assert.deepEqual(analysis.elements.c.staticStyles, [analysis.stylesFound.indexOf("h.emphasis"), analysis.stylesFound.indexOf("t.underline")]);
+    assert.deepEqual(analysis.elements.c.staticStyles, [analysis.stylesFound.indexOf("default>h.emphasis"), analysis.stylesFound.indexOf("default>t.underline")]);
     assert.deepEqual(analysis.elements.c.dynamicClasses, [{
-      condition: true, whenTrue: [analysis.stylesFound.indexOf(".world")],
+      condition: true, whenTrue: [analysis.stylesFound.indexOf("default.world")],
     }]);
     assert.deepEqual(analysis.elements.c.dynamicAttributes, [
       {
         condition: true,
-        container: analysis.stylesFound.indexOf(".world"),
-        value: [analysis.stylesFound.indexOf(".world[thick]")],
+        container: analysis.stylesFound.indexOf("default.world"),
+        value: [analysis.stylesFound.indexOf("default.world[thick]")],
       },
       {
         group: {
-          bold: analysis.stylesFound.indexOf("h.emphasis[style=bold]"),
-          italic: analysis.stylesFound.indexOf("h.emphasis[style=italic]"),
+          bold: analysis.stylesFound.indexOf("default>h.emphasis[style=bold]"),
+          italic: analysis.stylesFound.indexOf("default>h.emphasis[style=italic]"),
         },
         stringExpression: true,
         value: [],
@@ -283,13 +282,13 @@ describe("Template Rewriting", function() {
     let analysis = result.analysis.serialize();
     assert.deepEqual(Object.keys(analysis.blocks).length, 3);
     assert.deepEqual(analysis.stylesFound, [
-      ".world",
-      ".world[thick]",
-      ":scope",
-      "h.emphasis",
-      "h.emphasis[style=bold]",
-      "h.emphasis[style=italic]",
-      "h:scope",
+      "default.world",
+      "default.world[thick]",
+      "default:scope",
+      "default>h.emphasis",
+      "default>h.emphasis[style=bold]",
+      "default>h.emphasis[style=italic]",
+      "default>h:scope",
     ]);
     assert.deepEqual(Object.keys(analysis.elements).length, 4);
   });
@@ -350,13 +349,13 @@ describe("Template Rewriting", function() {
     let analysis = result.analysis.serialize();
     assert.deepEqual(Object.keys(analysis.blocks).length, 3);
     assert.deepEqual(analysis.stylesFound, [
-      ".world",
-      ".world[thick]",
-      ":scope",
-      "h.emphasis",
-      "h.emphasis[style=bold]",
-      "h.emphasis[style=italic]",
-      "h:scope",
+      "default.world",
+      "default.world[thick]",
+      "default:scope",
+      "default>h.emphasis",
+      "default>h.emphasis[style=bold]",
+      "default>h.emphasis[style=italic]",
+      "default>h:scope",
     ]);
     assert.deepEqual(Object.keys(analysis.elements).length, 3);
   });
@@ -473,16 +472,16 @@ describe("Template Rewriting", function() {
     let analysis = result.analysis.serialize();
     assert.deepEqual(Object.keys(analysis.blocks).length, 3);
     assert.deepEqual(analysis.stylesFound, [
-      ".link-1",
-      ".link-2",
-      ".link-2[active]",
-      ".link-4",
-      ".link-4[active]",
-      ".link-4[disabled]",
-      ".link-4[loading]",
-      ":scope",
-      "external.link-3",
-      "external.link-3[active]",
+      "default.link-1",
+      "default.link-2",
+      "default.link-2[active]",
+      "default.link-4",
+      "default.link-4[active]",
+      "default.link-4[disabled]",
+      "default.link-4[loading]",
+      "default:scope",
+      "default>external.link-3",
+      "default>external.link-3[active]",
       "util.util",
     ]);
     assert.deepEqual(Object.keys(analysis.elements).length, 27);

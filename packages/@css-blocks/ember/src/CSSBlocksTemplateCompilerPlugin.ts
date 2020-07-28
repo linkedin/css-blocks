@@ -1,4 +1,5 @@
 import { AnalysisOptions, Block, BlockCompiler, BlockDefinitionCompiler, BlockFactory, Configuration, INLINE_DEFINITION_FILE, Options as ParserOptions, resolveConfiguration } from "@css-blocks/core";
+import { BroccoliTreeImporter, EmberAnalysis, identToPath, isBroccoliTreeIdentifier } from "@css-blocks/ember-support";
 import type { ASTPluginEnvironment } from "@glimmer/syntax";
 import { MultiMap, ObjectDictionary } from "@opticss/util";
 import type { InputNode } from "broccoli-node-api";
@@ -14,8 +15,6 @@ import * as path from "path";
 
 import { AnalyzingRewriteManager } from "./AnalyzingRewriteManager";
 import { BroccoliFileLocator } from "./BroccoliFileLocator";
-import { BroccoliTreeImporter, identToPath, isBroccoliTreeIdentifier } from "./BroccoliTreeImporter";
-import { EmberAnalysis } from "./EmberAnalysis";
 import { ASTPluginWithDeps } from "./TemplateAnalyzingRewriter";
 
 type PersistentStrategy = typeof persistentStrategy;
@@ -157,6 +156,13 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     this.debug(`Analyzed ${analyses.length} templates.`);
     this.debug(`Discovered ${blocks.size} blocks in use.`);
 
+    // we have to pre-compute the paths of all the local blocks so that we can
+    // rewrite the path in the compiled output of the definition file.
+    for (let block of blocks) {
+      let outputPath = getOutputPath(block);
+      if (outputPath) blockOutputPaths.set(block, outputPath);
+    }
+
     await this.buildCompiledBlocks(blocks, config, blockOutputPaths, additionalFileCacheKeys, templateBlocks);
 
     await this.buildSerializedAnalyses(analyses, blockOutputPaths, additionalFileCacheKeys);
@@ -180,16 +186,29 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     templateBlocks: MultiMap<EmberAnalysis, Block>,
   ): Promise<void> {
     let compiler = new BlockCompiler(postcss, this.parserOpts);
-    compiler.setDefinitionCompiler(new BlockDefinitionCompiler(postcss, (_b, p) => { return p.replace(".block.css", ".compiledblock.css"); }, this.parserOpts));
+    compiler.setDefinitionCompiler(new BlockDefinitionCompiler(
+      postcss,
+      (b, p) => {
+        let basePath = blockOutputPaths.get(b)!;
+        let referencedBlock: Block = b.blockReferencePaths.get(p)!;
+        let toPath = blockOutputPaths.get(referencedBlock);
+        if (!toPath) return p; // block is not part of this tree, keep the import as-is.
+        let relativePath = path.relative(path.dirname(basePath), toPath);
+        if (!relativePath.startsWith(".")) {
+          relativePath = `./${relativePath}`;
+        }
+        debug("Constructing block import. %s => %s becomes %s", basePath, toPath, relativePath);
+        return relativePath;
+      },
+      this.parserOpts));
     for (let block of blocks) {
       this.debug(`compiling: ${config.importer.debugIdentifier(block.identifier, config)}`);
-      let outputPath = getOutputPath(block);
+      let outputPath = blockOutputPaths.get(block);
       // Skip processing if we don't get an output path. This happens for files that
       // get referenced in @block from node_modules.
-      if (outputPath === null) {
+      if (!outputPath) {
         continue;
       }
-      blockOutputPaths.set(block, outputPath);
       if (!block.stylesheet) {
         throw new Error("[internal error] block stylesheet expected.");
       }
@@ -220,7 +239,7 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
   ): Promise<void> {
     for (let analysis of analyses) {
       let outputPath = analysisPath(analysis.template.relativePath);
-      let contents = JSON.stringify(analysis.serialize(blockOutputPaths));
+      let contents = JSON.stringify(analysis.serializeSource(blockOutputPaths));
       await this.cacheAdditionalFile(additionalFileCacheKeys, analysis, {outputPath, contents});
       this.output.mkdirSync(path.dirname(outputPath), { recursive: true });
       this.output.writeFileSync(
