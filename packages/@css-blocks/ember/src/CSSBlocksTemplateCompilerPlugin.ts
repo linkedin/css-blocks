@@ -120,7 +120,8 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     if (removedFiles.length > 0) {
       console.warn(`[WARN] ${removedFiles[0][1]} was just removed and the output directory was not cleaned up.`);
     }
-    let importer = new BroccoliTreeImporter(this.input, this.parserOpts.importer);
+    let namespace = md5Sum(this.treeName).slice(0, 3);
+    let importer = new BroccoliTreeImporter(this.input, namespace, this.parserOpts.importer);
     let config = resolveConfiguration({importer}, this.parserOpts);
     let factory = new BlockFactory(config, postcss);
     let fileLocator = new BroccoliFileLocator(this.input);

@@ -52,11 +52,13 @@ export function pathToIdent(relativePath: string): string {
 export class BroccoliTreeImporter extends BaseImporter {
   fallbackImporter: Importer;
   input: MergedFileSystem;
+  namespace: string | null;
 
-  constructor(input: MergedFileSystem, fallbackImporter: Importer) {
+  constructor(input: MergedFileSystem, namespace: string | null, fallbackImporter: Importer) {
     super();
     this.input = input;
     this.fallbackImporter = fallbackImporter;
+    this.namespace = namespace;
   }
 
   identifier(fromIdentifier: string | null, importPath: string, config: Readonly<Configuration>): string {
@@ -82,8 +84,6 @@ export class BroccoliTreeImporter extends BaseImporter {
       let relativePath = identToPath(this.input, identifier);
       let contents = this.input.readFileSync(relativePath, "utf8");
       let syntax = syntaxFromExtension(path.extname(relativePath));
-      let defaultName = path.parse(relativePath).name;
-      defaultName = defaultName.replace(/.block$/, "");
       if (this.isCompiledBlockCSS(contents)) {
         const segmentedContents = this.segmentizeCompiledBlockCSS(contents);
         // Need to determine if the definition URL is an external URL we should
@@ -123,7 +123,7 @@ export class BroccoliTreeImporter extends BaseImporter {
         return {
           type: "ImportedFile",
           identifier,
-          defaultName,
+          defaultName: this.defaultName(identifier, config),
           syntax,
           contents,
         };
@@ -136,8 +136,11 @@ export class BroccoliTreeImporter extends BaseImporter {
   defaultName(identifier: string, configuration: Readonly<Configuration>): string {
     if (isBroccoliTreeIdentifier(identifier)) {
       let relativePath = identToPath(this.input, identifier);
-      let defaultName = path.basename(relativePath);
+      let defaultName = path.parse(relativePath).name;
       defaultName = defaultName.replace(/.block$/, "");
+      if (this.namespace) {
+        defaultName = `${defaultName}-${this.namespace}`;
+      }
       return defaultName;
     } else {
       return this.fallbackImporter.defaultName(identifier, configuration);
