@@ -1,6 +1,7 @@
-import { Analyzer, Block, BlockFactory, Options as CSSBlocksOptions, SerializedSourceAnalysis, resolveConfiguration, BlockCompiler } from "@css-blocks/core";
+import { Analyzer, Block, BlockCompiler, BlockFactory, Options as CSSBlocksOptions, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
 import { BroccoliTreeImporter, EmberAnalysis, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-support";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
+import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
 import Filter = require("broccoli-persistent-filter");
@@ -9,7 +10,6 @@ import debugGenerator from "debug";
 import * as FSTree from "fs-tree-diff";
 import { Optimizer, postcss } from "opticss";
 import * as path from "path";
-import { unionInto } from "@opticss/util";
 
 const debug = debugGenerator("css-blocks:ember-app");
 
@@ -58,7 +58,6 @@ export class CSSBlocksApplicationPlugin extends Filter {
     config = resolveConfiguration({importer}, config);
     let factory = new BlockFactory(config, postcss);
     let analyzer = new EmberAnalyzer(factory);
-    let blocks = new Array<Block>();
     // TODO: Make this configurable from the ember app.
     let optimizerOptions = {
       enabled: true,
