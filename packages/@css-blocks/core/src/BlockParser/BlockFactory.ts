@@ -365,6 +365,7 @@ export class BlockFactory {
     const block = await this.parser.parseDefinitionSource(definitionAst, file.identifier, file.blockId, file.defaultName);
 
     // Merge the rules from the CSS contents into the Block.
+    block.precompiledStylesheet = cssContentsAst;
     this._mergeCssRulesIntoDefinitionBlock(block, cssContentsAst, file);
 
     // And we're done!

@@ -145,7 +145,7 @@ export class BlockFactoryCompiledCssFilesTests {
     await factory.getBlock(importer.identifier(null, navCssPath, config));
     return this.assertError(
       CssBlockError,
-      "[css-blocks] Error: Block uses a name that has already been used! Check dependencies for conflicting block names. (foo/bar/other.css)",
+      "[css-blocks] Error: Block uses a name that has already been used by foo/bar/nav.css (foo/bar/other.css)",
       factory.getBlock(importer.identifier(null, otherCssPath, config)),
     );
   }

@@ -78,6 +78,11 @@ export class Block
    * primarily for error reporting, if present.
    */
   public stylesheet: postcss.Root | undefined;
+  /**
+   * The PostCSS AST of the compiled CSS this block was built from.
+   * If this is set, the stylesheet property is only the definition file contents.
+   */
+  public precompiledStylesheet: postcss.Root | undefined;
   public blockReferencePaths: Map<string, Block>;
 
   /**
@@ -90,12 +95,13 @@ export class Block
    *               responsible for enforcing uniqueness.)
    * @param stylesheet - The PostCSS AST of the stylesheet this block is built from.
    */
-  constructor(name: string, identifier: FileIdentifier, guid: string, stylesheet?: postcss.Root) {
+  constructor(name: string, identifier: FileIdentifier, guid: string, stylesheet?: postcss.Root, precompiledStylesheet?: postcss.Root) {
     super(name);
     this._identifier = identifier;
     this._dependencies = new Set<string>();
     this.rootClass = new BlockClass(ROOT_CLASS, this);
     this.stylesheet = stylesheet;
+    this.precompiledStylesheet = precompiledStylesheet;
     this.guid = guid;
 
     this.addClass(this.rootClass);

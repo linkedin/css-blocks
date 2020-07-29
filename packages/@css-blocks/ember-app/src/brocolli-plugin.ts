@@ -1,4 +1,4 @@
-import { Analyzer, Block, BlockFactory, Options as CSSBlocksOptions, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
+import { Analyzer, Block, BlockFactory, Options as CSSBlocksOptions, SerializedSourceAnalysis, resolveConfiguration, BlockCompiler } from "@css-blocks/core";
 import { BroccoliTreeImporter, EmberAnalysis, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-support";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import mergeTrees = require("broccoli-merge-trees");
@@ -8,6 +8,8 @@ import type { PluginOptions } from "broccoli-plugin/dist/interfaces";
 import debugGenerator from "debug";
 import * as FSTree from "fs-tree-diff";
 import { Optimizer, postcss } from "opticss";
+import * as path from "path";
+import { unionInto } from "@opticss/util";
 
 const debug = debugGenerator("css-blocks:ember-app");
 
@@ -71,19 +73,8 @@ export class CSSBlocksApplicationPlugin extends Filter {
       mergeDeclarations: false,
     };
     let optimizer = new Optimizer(optimizerOptions, analyzer.optimizationOptions);
+    let blocksUsed = new Set<Block>();
     for (let entry of entries) {
-      let ident = pathToIdent(entry.relativePath);
-      if (entry.relativePath.endsWith(".compiledblock.css")) {
-        debug(`Parsing precompiled block: ${entry.relativePath}`);
-        let block: Block;
-        block = await factory.getBlock(ident);
-        debug(`Got block: ${block.identifier}`);
-        optimizer.addSource({
-          filename: entry.relativePath,
-          content: block.stylesheet!.toResult({to: entry.relativePath}),
-        });
-        blocks.push(block);
-      }
       if (entry.relativePath.endsWith(".block-analysis.json")) {
         debug(`Processing analysis: ${entry.relativePath}`);
         let serializedAnalysis: SerializedSourceAnalysis<TEMPLATE_TYPE> = JSON.parse(this.input.readFileSync(entry.relativePath, "utf8"));
@@ -92,11 +83,39 @@ export class CSSBlocksApplicationPlugin extends Filter {
           serializedAnalysis.blocks[blockId] = pathToIdent(serializedAnalysis.blocks[blockId]);
         }
         let analysis = await EmberAnalysis.deserializeSource(serializedAnalysis, factory, analyzer);
+        unionInto(blocksUsed, analysis.transitiveBlockDependencies());
         optimizer.addAnalysis(analysis.forOptimizer(config));
       }
     }
+    let compiler = new BlockCompiler(postcss, config);
+    for (let block of blocksUsed) {
+      let content: postcss.Result;
+      let filename = importer.debugIdentifier(block.identifier, config);
+      if (block.precompiledStylesheet) {
+        debug(`Optimizing precompiled stylesheet for ${filename}`);
+        content = block.precompiledStylesheet.toResult();
+      } else {
+        debug(`Compiling stylesheet for optimization of ${filename}`);
+        // XXX Do we need to worry about reservedClassnames here?
+        content = compiler.compile(block, block.stylesheet!, new Set()).toResult();
+      }
+      optimizer.addSource({
+        content,
+        filename,
+      });
+    }
     debug(`Loaded ${blocks.length} blocks.`);
     debug(`Loaded ${optimizer.analyses.length} analyses.`);
+    let cssFileName = `${this.appName}/styles/css-blocks.css`;
+    let sourceMapFileName = `${this.appName}/styles/css-blocks.css.map`;
+    let optLogFileName = `${this.appName}/styles/css-blocks.optimization.log`;
+    let optimizationResult = await optimizer.optimize(cssFileName);
+    debug(`Optimized CSS. There were ${optimizationResult.actions.performed.length} optimizations performed.`);
+    this.output.mkdirSync(path.dirname(cssFileName), {recursive: true});
+    this.output.writeFileSync(cssFileName, optimizationResult.output.content.toString(), "utf8");
+    this.output.writeFileSync(sourceMapFileName, optimizationResult.output.sourceMap?.toString(), "utf8");
+    this.output.writeFileSync(optLogFileName, optimizationResult.actions.logStrings().join("\n"), "utf8");
+    debug("Wrote css, sourcemap, and optimization log.");
 
     this.output.writeFileSync(
       `${this.appName}/services/-css-blocks-data.js`,

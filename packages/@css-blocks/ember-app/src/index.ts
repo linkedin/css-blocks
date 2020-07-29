@@ -1,3 +1,4 @@
+import BroccoliDebug = require("broccoli-debug");
 import funnel = require("broccoli-funnel");
 import EmberApp from "ember-cli/lib/broccoli/ember-app";
 import type Addon from "ember-cli/lib/models/addon";
@@ -130,7 +131,8 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
     if (type === "js") {
       if (env.isApp) {
         let appAndAddonTree = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree], {});
-        return funnel(appAndAddonTree, {srcDir: env.modulePrefix, destDir: env.modulePrefix});
+        let debugTree = new BroccoliDebug(appAndAddonTree, `css-blocks:optimized`);
+        return funnel(debugTree, {srcDir: env.modulePrefix, destDir: env.modulePrefix});
       } else {
         return tree;
       }
