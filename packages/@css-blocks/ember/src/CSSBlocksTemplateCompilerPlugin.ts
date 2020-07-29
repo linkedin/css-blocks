@@ -9,6 +9,7 @@ import persistentStrategy = require("broccoli-persistent-filter/lib/strategies/p
 import debugGenerator from "debug";
 import TemplateCompilerPlugin = require("ember-cli-htmlbars/lib/template-compiler-plugin");
 import FSMerger = require("fs-merger");
+import type { FS as MergedFileSystem } from "fs-merger";
 import * as FSTree from "fs-tree-diff";
 import { OptiCSSOptions, postcss } from "opticss";
 import * as path from "path";
@@ -159,7 +160,7 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     // we have to pre-compute the paths of all the local blocks so that we can
     // rewrite the path in the compiled output of the definition file.
     for (let block of blocks) {
-      let outputPath = getOutputPath(block);
+      let outputPath = getOutputPath(this.input, block);
       if (outputPath) blockOutputPaths.set(block, outputPath);
     }
 
@@ -328,9 +329,9 @@ function analysisPath(templatePath: string): string {
   return path.format(analysisPath);
 }
 
-function getOutputPath(block: Block): string | null {
+function getOutputPath(input: MergedFileSystem, block: Block): string | null {
   if (isBroccoliTreeIdentifier(block.identifier)) {
-    return identToPath(block.identifier).replace(".block", ".compiledblock");
+    return identToPath(input, block.identifier).replace(".block", ".compiledblock");
   } else {
     return null;
   }

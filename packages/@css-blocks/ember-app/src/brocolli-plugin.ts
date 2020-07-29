@@ -1,5 +1,5 @@
 import { Analyzer, Block, BlockFactory, Options as CSSBlocksOptions, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, EmberAnalysis, IDENTIFIER_PREFIX as BROCCOLI_IMPORTER_IDENTIFIER_PREFIX, TEMPLATE_TYPE } from "@css-blocks/ember-support";
+import { BroccoliTreeImporter, EmberAnalysis, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-support";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
@@ -52,7 +52,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
       this.previousSourceTree = currentFSTree;
     }
     let config = resolveConfiguration(this.cssBlocksOptions);
-    let importer = new BroccoliTreeImporter(this.input, config.importer);
+    let importer = new BroccoliTreeImporter(this.input, null, config.importer);
     config = resolveConfiguration({importer}, config);
     let factory = new BlockFactory(config, postcss);
     let analyzer = new EmberAnalyzer(factory);
@@ -72,10 +72,11 @@ export class CSSBlocksApplicationPlugin extends Filter {
     };
     let optimizer = new Optimizer(optimizerOptions, analyzer.optimizationOptions);
     for (let entry of entries) {
+      let ident = pathToIdent(entry.relativePath);
       if (entry.relativePath.endsWith(".compiledblock.css")) {
         debug(`Parsing precompiled block: ${entry.relativePath}`);
         let block: Block;
-        block = await factory.getBlock(`${BROCCOLI_IMPORTER_IDENTIFIER_PREFIX}${entry.relativePath}`);
+        block = await factory.getBlock(ident);
         debug(`Got block: ${block.identifier}`);
         optimizer.addSource({
           filename: entry.relativePath,
@@ -88,7 +89,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
         let serializedAnalysis: SerializedSourceAnalysis<TEMPLATE_TYPE> = JSON.parse(this.input.readFileSync(entry.relativePath, "utf8"));
         debug("blocks", serializedAnalysis.stylesFound);
         for (let blockId of Object.keys(serializedAnalysis.blocks)) {
-          serializedAnalysis.blocks[blockId] = `${BROCCOLI_IMPORTER_IDENTIFIER_PREFIX}${serializedAnalysis.blocks[blockId]}`;
+          serializedAnalysis.blocks[blockId] = pathToIdent(serializedAnalysis.blocks[blockId]);
         }
         let analysis = await EmberAnalysis.deserializeSource(serializedAnalysis, factory, analyzer);
         optimizer.addAnalysis(analysis.forOptimizer(config));

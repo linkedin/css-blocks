@@ -10,15 +10,39 @@ const IDENTIFIER_PREFIX_LENGTH = IDENTIFIER_PREFIX.length;
 const IDENTIFIER_PREFIX_RE = new RegExp(`^${IDENTIFIER_PREFIX}`);
 export const EMBEDDED_DEFINITION_TAG = "#blockDefinitionURL";
 
-export function isBroccoliTreeIdentifier(identifier: string | null): identifier is string {
+export function isBroccoliTreeIdentifier(identifier: string | null): boolean {
   return !!(identifier && IDENTIFIER_PREFIX_RE.test(identifier));
 }
 
-export function identToPath(identifier: string): string {
-  return identifier.substring(IDENTIFIER_PREFIX_LENGTH);
+export function identToPath(input: MergedFileSystem, identifier: string): string {
+  if (!isBroccoliTreeIdentifier(identifier)) {
+    return identifier;
+  }
+  let relativePath = identifier.substring(IDENTIFIER_PREFIX_LENGTH);
+  if (!input.existsSync(relativePath)) {
+    debug(`Couldn't find ${relativePath}. Looking in addon-tree-output.`);
+    let addonRelativePath = `addon-tree-output/${relativePath}`;
+    if (input.existsSync(addonRelativePath)) {
+      relativePath = addonRelativePath;
+    } else {
+      let addonModulesRelativePath = `addon-tree-output/modules/${relativePath}`;
+      if (input.existsSync(addonModulesRelativePath)) {
+        relativePath = addonModulesRelativePath;
+      }
+    }
+  }
+  return relativePath;
 }
 
 export function pathToIdent(relativePath: string): string {
+  if (isBroccoliTreeIdentifier(relativePath)) {
+    return relativePath;
+  }
+  if (relativePath.startsWith("addon-tree-output/modules/")) {
+    relativePath = relativePath.substring(26);
+  } else if (relativePath.startsWith("addon-tree-output/")) {
+    relativePath = relativePath.substring(18);
+  }
   return IDENTIFIER_PREFIX + relativePath;
 }
 
@@ -38,7 +62,7 @@ export class BroccoliTreeImporter extends BaseImporter {
   identifier(fromIdentifier: string | null, importPath: string, config: Readonly<Configuration>): string {
     if (isBroccoliTreeIdentifier(fromIdentifier)) {
       if (importPath.startsWith("./") || importPath.startsWith("../")) {
-        let parsedPath = path.parse(identToPath(fromIdentifier));
+        let parsedPath = path.parse(identToPath(this.input, fromIdentifier!));
         // We have to make resolve think the path is absolute or else it will
         // prepend the current working directory.
         let dir = "/" + parsedPath.dir;
@@ -55,7 +79,7 @@ export class BroccoliTreeImporter extends BaseImporter {
 
   async import(identifier: string, config: Readonly<Configuration>): Promise<ImportedFile | ImportedCompiledCssFile> {
     if (isBroccoliTreeIdentifier(identifier)) {
-      let relativePath = identToPath(identifier);
+      let relativePath = identToPath(this.input, identifier);
       let contents = this.input.readFileSync(relativePath, "utf8");
       let syntax = syntaxFromExtension(path.extname(relativePath));
       let defaultName = path.parse(relativePath).name;
@@ -111,7 +135,7 @@ export class BroccoliTreeImporter extends BaseImporter {
 
   defaultName(identifier: string, configuration: Readonly<Configuration>): string {
     if (isBroccoliTreeIdentifier(identifier)) {
-      let relativePath = identToPath(identifier);
+      let relativePath = identToPath(this.input, identifier);
       let defaultName = path.basename(relativePath);
       defaultName = defaultName.replace(/.block$/, "");
       return defaultName;
@@ -122,7 +146,7 @@ export class BroccoliTreeImporter extends BaseImporter {
 
   filesystemPath(identifier: string, config: Readonly<Configuration>): string | null {
     if (isBroccoliTreeIdentifier(identifier)) {
-      let relativePath = identToPath(identifier);
+      let relativePath = identToPath(this.input, identifier);
       return relativePath;
     } else {
       return this.fallbackImporter.filesystemPath(identifier, config);
@@ -131,7 +155,7 @@ export class BroccoliTreeImporter extends BaseImporter {
 
   debugIdentifier(identifier: string, config: Readonly<Configuration>): string {
     if (isBroccoliTreeIdentifier(identifier)) {
-      let relativePath = identToPath(identifier);
+      let relativePath = identToPath(this.input, identifier);
       return relativePath;
     } else {
       return this.fallbackImporter.debugIdentifier(identifier, config);
@@ -140,7 +164,7 @@ export class BroccoliTreeImporter extends BaseImporter {
 
   syntax(identifier: string, config: Readonly<Configuration>): Syntax {
     if (isBroccoliTreeIdentifier(identifier)) {
-      let relativePath = identToPath(identifier);
+      let relativePath = identToPath(this.input, identifier);
       let syntax = syntaxFromExtension(path.extname(relativePath));
       return syntax;
     } else {
