@@ -22,6 +22,7 @@
     "@css-blocks-fixtures-v2/ember-addon": "^1.0.0",
     "@css-blocks-fixtures-v2/ember-engine": "^1.0.0",
     "@css-blocks-fixtures-v2/ember-lazy-engine": "^1.0.0",
+    "@css-blocks-fixtures-v2/npm-based-blocks": "^1.0.0",
     "@css-blocks/ember": "^0.1.0",
     "@css-blocks/ember-app": "^0.1.0",
     "ember-cli-babel": "^7.7.3",

@@ -1,4 +1,4 @@
-@block (bold) from "@css-blocks-fixtures-v2/npm-based-blocks";
+@block bold from "./bold.block.css";
 
 :scope {
   extends: bold;

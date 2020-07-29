@@ -27,6 +27,10 @@
 		{
 			"path": "ember-lazy-engine",
 			"name": "Fixture: Ember Lazy Engine"
+		},
+		{
+			"path": "npm-based-blocks",
+      "name": "Fixture: npm-based-blocks"
 		}
 	],
 	"settings": {

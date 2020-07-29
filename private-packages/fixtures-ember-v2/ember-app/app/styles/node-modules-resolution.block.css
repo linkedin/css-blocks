@@ -1,5 +1,5 @@
-@block other from "@css-blocks-fixtures-v2/ember-addon/addon/styles/components/addon-component.block.css";
+@block (enableable-component) from "@css-blocks-fixtures-v2/npm-based-blocks";
 
 :scope {
-  extends: other;
+  extends: enableable-component;
 }
