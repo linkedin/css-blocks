@@ -104,7 +104,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
         filename,
       });
     }
-    debug(`Loaded ${blocks.length} blocks.`);
+    debug(`Loaded ${blocksUsed.size} blocks.`);
     debug(`Loaded ${optimizer.analyses.length} analyses.`);
     let cssFileName = `${this.appName}/styles/css-blocks.css`;
     let sourceMapFileName = `${this.appName}/styles/css-blocks.css.map`;
