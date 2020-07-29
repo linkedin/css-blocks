@@ -39,7 +39,7 @@ export class BlockFactory {
   postcssImpl: typeof postcss;
   importer: Importer;
   configuration: ResolvedConfiguration;
-  blockNames: ObjectDictionary<number>;
+  blockNames: ObjectDictionary<string>;
   parser: BlockParser;
   preprocessors: Preprocessors;
   faultTolerant: boolean;
@@ -207,11 +207,11 @@ export class BlockFactory {
       }
 
       // Ensure this block name is unique.
-      const uniqueName = this.getUniqueBlockName(block.name, file.type === "ImportedCompiledCssFile");
+      const uniqueName = this.getUniqueBlockName(block.name, block.identifier, file.type === "ImportedCompiledCssFile");
       if (uniqueName === null) {
         // For ImportedCompiledCssFiles, leave the name alone and add an error.
         block.addError(
-          new CssBlockError("Block uses a name that has already been used! Check dependencies for conflicting block names.", {
+          new CssBlockError(`Block uses a name that has already been used by ${this.blockNames[block.name]}`, {
             filename: block.identifier,
           }),
         );
@@ -442,15 +442,21 @@ export class BlockFactory {
    * @return The unique block name that is now registered with the BlockFactory, or null if
    *         the name has already been registered and should not be overridden.
    */
-  getUniqueBlockName(name: string, doNotOverride = false): string | null {
+  getUniqueBlockName(name: string, identifier: string, doNotOverride = false): string | null {
     if (!this.blockNames[name]) {
-      this.blockNames[name] = 1;
+      this.blockNames[name] = identifier;
       return name;
     }
     if (doNotOverride) {
       return null;
     }
-    return `${name}-${++this.blockNames[name]}`;
+    let i = 2;
+    while (this.blockNames[`${name}-${i}`]) {
+      i++;
+    }
+    name = `${name}-${i}`;
+    this.blockNames[name] = identifier;
+    return name;
   }
 
   preprocessor(file: ImportedFile): Preprocessor {
