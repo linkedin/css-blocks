@@ -6,8 +6,8 @@ import { AttrValue, BlockClass, Ruleset, Style, isBlockClass } from "../../Block
 import { charInFile } from "../../errors";
 import {
   ElementAnalysis,
+  hasAttrValue,
   isAttrGroup,
-  isBooleanAttr,
   isFalseCondition,
   isTrueCondition,
 } from "../ElementAnalysis";
@@ -216,7 +216,7 @@ export const propertyConflictValidator: Validator = (elAnalysis, _templateAnalys
       allConditions.setAll(attrConditions);
     }
 
-    else if (isBooleanAttr(condition)) {
+    else if (hasAttrValue(condition)) {
       for (let val of condition.value) {
         evaluate(val as AttrValue, allConditions, conflicts);
         add(allConditions, val as AttrValue);

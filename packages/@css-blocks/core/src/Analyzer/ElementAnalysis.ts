@@ -41,10 +41,6 @@ export interface HasAttrValue<T extends Style = Style> {
   value: Set<T>;
 }
 
-export function isBooleanAttr(o: object): o is HasAttrValue | SerializedHasAttrValue {
-  return hasAttrValue(o);
-}
-
 export function hasAttrValue(o: object): o is HasAttrValue | SerializedHasAttrValue {
   if (!("value" in o)) return false;
   let value = (<HasAttrValue | SerializedHasAttrValue>o).value;
@@ -456,7 +452,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
           stringExpression: style.stringExpression,
         };
       }
-      else if (isBooleanAttr(style) && style.value.has(cond)) {
+      else if (hasAttrValue(style) && style.value.has(cond)) {
         return isConditional(style) ? { condition: style.condition } : true;
       }
     }
