@@ -33,6 +33,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
   protected analysisMap: Map<string, Analysis<K>>;
   protected staticStyles: MultiMap<Style, Analysis<K>>;
   protected dynamicStyles: MultiMap<Style, Analysis<K>>;
+  public stylesFound: Set<Style>;
 
   constructor (
     blockFactory: BlockFactory,
@@ -49,6 +50,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     this.analysisMap = new Map();
     this.staticStyles = new MultiMap();
     this.dynamicStyles = new MultiMap();
+    this.stylesFound = new Set();
 }
 
   abstract analyze(dir: string, entryPoints: string[]): Promise<Analyzer<K>>;
@@ -61,11 +63,15 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     this.analysisMap = new Map();
     this.staticStyles = new MultiMap();
     this.dynamicStyles = new MultiMap();
+    this.stylesFound = new Set();
     this.blockFactory.reset();
   }
 
   newAnalysis(info: TemplateTypes[K]): Analysis<K> {
     let analysis = new Analysis<K>(info, this.validatorOptions, (element) => {
+      for (let s of element.stylesFound()) {
+        this.stylesFound.add(s);
+      }
       for (let s of [...element.classesFound(false), ...element.attributesFound(false)]) {
         this.staticStyles.set(s, analysis);
       }
@@ -89,7 +95,7 @@ export abstract class Analyzer<K extends keyof TemplateTypes> {
     return analyses;
   }
 
-  styleCount(): number { return this.staticStyles.size; }
+  staticCount(): number { return this.staticStyles.size; }
 
   dynamicCount(): number { return this.dynamicStyles.size; }
 

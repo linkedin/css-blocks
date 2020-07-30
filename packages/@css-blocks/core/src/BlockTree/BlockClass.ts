@@ -280,11 +280,7 @@ export class BlockClass extends Style<BlockClass, Block, Block, Attribute> {
   }
 
   /**
-   * Adds a new Style for this Style to compose.
-   * TODO: Currently, conditions are grouped exclusively by the 'and' operator.
-   *       We can abstract boolean operators to keep an internal representation
-   *       of logic between css and template files and only resolve them to the
-   *       requested language interface at rewrite time.
+   * Checks whether this style composes another style.
    */
   composes(style: Styles, resolve = true): boolean {
     let compositions = resolve ? this.resolveComposedStyles() : new Set(this._composedStyles);

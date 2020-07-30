@@ -1,4 +1,4 @@
-import { MultiMap, ObjectDictionary } from "@opticss/util";
+import { MultiMap, ObjectDictionary, unionInto } from "@opticss/util";
 import {
   CompoundSelector,
   ParsedSelector,
@@ -84,6 +84,7 @@ export class Block
    */
   public precompiledStylesheet: postcss.Root | undefined;
   public blockReferencePaths: Map<string, Block>;
+  private _resolveImplementedBlocksResult: Set<Block> | undefined;
 
   /**
    * Creates a new Block.
@@ -449,6 +450,24 @@ export class Block
   }
 
   /**
+   * Outputs a dictionary of style source string to most specific style in the
+   * inheritance hierarchy.
+   */
+  resolvedStyleInterface(): ObjectDictionary<Styles> {
+    // starting with the base block and working up to the most specific sub-block
+    // we record the most specific style associated with the style name for the given block.
+    let blocks = [...this.resolveInheritance(), this];
+    let styleInterface: ObjectDictionary<Styles> = {};
+    for (let b of blocks) {
+      let styles = b.all(true);
+      for (let style of styles) {
+        styleInterface[style.asSource()] = style;
+      }
+    }
+    return styleInterface;
+  }
+
+  /**
    * Fetch a dictionary of styles associated with this block, using any preset
    * selector as the key. If a given style doesn't have a preset selector, it
    * will be excluded from this dictionary.
@@ -648,6 +667,35 @@ export class Block
       }
     }
     return false;
+  }
+
+  /**
+   * Gets all the blocks that are implemented by this block or by any ancestor.
+   * This includes:
+   *  - This block.
+   *  - The blocks this block inherits from.
+   *  - The blocks the above blocks explicitly declare that they implement.
+   *  - The blocks all the above blocks implement transitively.
+   * Such that `blockA.resolveImplementedBlocks().has(blockB)` is true iff
+   * `blockA` implements the interface of `blockB`.
+   */
+  resolveImplementedBlocks(): Set<Block> {
+    if (this._resolveImplementedBlocksResult) {
+      return this._resolveImplementedBlocksResult;
+    }
+    let implemented = new Set<Block>([this]);
+    if (this._base) {
+      unionInto(implemented, this._base.resolveImplementedBlocks());
+    }
+    for (let impl of this.getImplementedBlocks()) {
+      unionInto(implemented, impl.resolveImplementedBlocks());
+    }
+    this._resolveImplementedBlocksResult = implemented;
+    return implemented;
+  }
+
+  isImplementationOf(other: Block): boolean {
+    return this.resolveImplementedBlocks().has(other);
   }
 
   /**

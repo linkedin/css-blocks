@@ -15,7 +15,7 @@ export class Test {
       assert.equal(analyzer.analysisCount(), 2);
       assert.equal(analyzer.getAnalysis(0).blockCount(), 1);
       assert.equal(analyzer.getAnalysis(1).blockCount(), 1);
-      assert.equal(analyzer.styleCount(), 3);
+      assert.equal(analyzer.staticCount(), 3);
     });
   }
 
@@ -24,7 +24,7 @@ export class Test {
     return parseFile("index.tsx", { baseDir: base }).then((analyzer: Analyzer) => {
       assert.equal(analyzer.analysisCount(), 2);
       assert.equal(analyzer.blockPromises.size, 1);
-      assert.equal(analyzer.styleCount(), 2);
+      assert.equal(analyzer.staticCount(), 2);
     });
   }
 
@@ -33,7 +33,7 @@ export class Test {
     return parseFile("index.tsx", { baseDir: base, types: "typescript" }).then((analyzer: Analyzer) => {
       assert.equal(analyzer.analysisCount(), 3);
       assert.equal(analyzer.blockPromises.size, 3);
-      assert.equal(analyzer.styleCount(), 4);
+      assert.equal(analyzer.staticCount(), 4);
     });
   }
 
@@ -42,7 +42,7 @@ export class Test {
     return parseFile("index.tsx", { baseDir: base }).then((analyzer: Analyzer) => {
       assert.equal(analyzer.analysisCount(), 2);
       assert.equal(analyzer.blockPromises.size, 2);
-      assert.equal(analyzer.styleCount(), 3);
+      assert.equal(analyzer.staticCount(), 3);
     });
   }
 }

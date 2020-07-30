@@ -1,6 +1,5 @@
-import { Analyzer, Block, BlockCompiler, BlockFactory, Options as CSSBlocksOptions, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
+import { Block, BlockCompiler, BlockFactory, Options as CSSBlocksOptions, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
 import { BroccoliTreeImporter, EmberAnalysis, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-support";
-import { TemplateIntegrationOptions } from "@opticss/template-api";
 import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
@@ -11,23 +10,10 @@ import * as FSTree from "fs-tree-diff";
 import { Optimizer, postcss } from "opticss";
 import * as path from "path";
 
-const debug = debugGenerator("css-blocks:ember-app");
+import { EmberAnalyzer } from "./EmberAnalyzer";
+import { RuntimeDataGenerator } from "./RuntimeDataGenerator";
 
-class EmberAnalyzer extends Analyzer<TEMPLATE_TYPE> {
-  analyze(_dir: string, _entryPoints: string[]): Promise<Analyzer<"HandlebarsTemplate">> {
-    throw new Error("Method not implemented.");
-  }
-  get optimizationOptions(): TemplateIntegrationOptions {
-    return {
-      rewriteIdents: {
-        id: false,
-        class: true,
-      },
-      analyzedAttributes: ["class"],
-      analyzedTagnames: false,
-    };
-  }
-}
+const debug = debugGenerator("css-blocks:ember-app");
 
 export class CSSBlocksApplicationPlugin extends Filter {
   appName: string;
@@ -60,7 +46,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let analyzer = new EmberAnalyzer(factory);
     // TODO: Make this configurable from the ember app.
     let optimizerOptions = {
-      enabled: true,
+      enabled: false,
       rewriteIdents: {
         id: false,
         class: true,
@@ -87,6 +73,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
       }
     }
     let compiler = new BlockCompiler(postcss, config);
+    let reservedClassnames = analyzer.reservedClassNames();
     for (let block of blocksUsed) {
       let content: postcss.Result;
       let filename = importer.debugIdentifier(block.identifier, config);
@@ -96,7 +83,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
       } else {
         debug(`Compiling stylesheet for optimization of ${filename}`);
         // XXX Do we need to worry about reservedClassnames here?
-        content = compiler.compile(block, block.stylesheet!, new Set()).toResult();
+        content = compiler.compile(block, block.stylesheet!, reservedClassnames).toResult();
       }
       optimizer.addSource({
         content,
@@ -116,10 +103,15 @@ export class CSSBlocksApplicationPlugin extends Filter {
     this.output.writeFileSync(optLogFileName, optimizationResult.actions.logStrings().join("\n"), "utf8");
     debug("Wrote css, sourcemap, and optimization log.");
 
+    let dataGenerator = new RuntimeDataGenerator([...blocksUsed], optimizationResult.styleMapping, analyzer, config, reservedClassnames);
+    let data = dataGenerator.generate();
+    let serializedData = JSON.stringify(data, undefined, "  ");
+    debug("CSS Blocks Data is: \n%s", serializedData);
+
     this.output.writeFileSync(
       `${this.appName}/services/-css-blocks-data.js`,
       `// CSS Blocks Generated Data. DO NOT EDIT.
-       export const data = {className: "it-worked"};
+       export const data = ${serializedData};
       `);
   }
 }
