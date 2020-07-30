@@ -761,35 +761,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     let analyzedStyles = new Array<SerializedAnalyzedStyle>();
     let addedStyles = this.sealed ? this.explicitlyAddedStyles : this.addedStyles;
     for (let s of addedStyles) {
-      let serialized: Partial<SerializedAnalyzedStyle> = {};
-      if (isStaticClass(s)) {
-        (<SerializedStaticClass>serialized).klass = indexOf(s.klass);
-      }
-      if (isConditional(s)) {
-        (<Conditional<true>>serialized).condition = true;
-      }
-      if (isTrueCondition(s)) {
-        (<TrueCondition<number>>serialized).whenTrue = s.whenTrue.map(indexOf);
-      }
-      if (isFalseCondition(s)) {
-        (<FalseCondition<number>>serialized).whenFalse = s.whenFalse.map(indexOf);
-      }
-      if (hasDependency(s)) {
-        (<Dependency<number>>serialized).container = indexOf(s.container);
-      }
-      if (hasAttrValue(s)) {
-        (<SerializedHasAttrValue>serialized).value = [...s.value].map(indexOf);
-      }
-      if (isAttrGroup(s)) {
-        let group: ObjectDictionary<number> = {};
-        for (let name of Object.keys(s.group)) {
-          group[name] = indexOf(s.group[name]);
-        }
-        (<HasGroup<number>>serialized).group = group;
-        (<Switch<true>>serialized).stringExpression = true;
-        (<Switch<true>>serialized).disallowFalsy = s.disallowFalsy;
-      }
-      analyzedStyles.push(<Required<SerializedAnalyzedStyle>>serialized);
+      analyzedStyles.push(this.serializeAnalyzedStyle(s, indexOf));
     }
     return {
       id,
@@ -797,6 +769,89 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
       sourceLocation,
       analyzedStyles,
     };
+  }
+
+  serializeAnalyzedStyle(
+    s: AnalyzedStyle<BooleanExpression, StringExpression, TernaryExpression>,
+    indexOf: (s: Style) => number
+  ): SerializedAnalyzedStyle {
+    let serialized: Partial<SerializedAnalyzedStyle> = {};
+
+    if (isStaticClass(s)) {
+      (<SerializedStaticClass>serialized).klass = indexOf(s.klass);
+    }
+    if (isConditional(s)) {
+      (<Conditional<true>>serialized).condition = true;
+    }
+    if (isTrueCondition(s)) {
+      (<TrueCondition<number>>serialized).whenTrue = s.whenTrue.map(indexOf);
+    }
+    if (isFalseCondition(s)) {
+      (<FalseCondition<number>>serialized).whenFalse = s.whenFalse.map(indexOf);
+    }
+    if (hasDependency(s)) {
+      (<Dependency<number>>serialized).container = indexOf(s.container);
+    }
+    if (hasAttrValue(s)) {
+      (<SerializedHasAttrValue>serialized).value = [...s.value].map(indexOf);
+    }
+    if (isAttrGroup(s)) {
+      let group: ObjectDictionary<number> = {};
+      for (let name of Object.keys(s.group)) {
+        group[name] = indexOf(s.group[name]);
+      }
+      (<HasGroup<number>>serialized).group = group;
+      (<Switch<true>>serialized).stringExpression = true;
+      (<Switch<true>>serialized).disallowFalsy = s.disallowFalsy;
+    }
+
+    return <Required<SerializedAnalyzedStyle>>serialized;
+  }
+
+  static deserializeAnalyzedStyle(
+    element: ElementAnalysis<null, null, null>,
+    analyzedStyle: SerializedAnalyzedStyle,
+    styleRef: (n: number) => Style,
+    classRef: (n: number) => BlockClass,
+    attrValueRef: (n: number) => AttrValue
+  ): void {
+    if (isStaticClass(analyzedStyle)) {
+      element.addStaticClass(<BlockClass>styleRef(analyzedStyle.klass));
+    } else if (isConditional(analyzedStyle) && (isTrueCondition(analyzedStyle) || isFalseCondition(analyzedStyle))) {
+      let dynClasses: Partial<DynamicClasses<null>> = { condition: null };
+      if (isTrueCondition(analyzedStyle)) {
+        (<TrueCondition<BlockClass>>dynClasses).whenTrue = analyzedStyle.whenTrue.map(c => classRef(c));
+      }
+      if (isFalseCondition(analyzedStyle)) {
+        (<FalseCondition<BlockClass>>dynClasses).whenFalse = analyzedStyle.whenFalse.map(c => classRef(c));
+      }
+      element.addDynamicClasses(<Required<DynamicClasses<null>>>dynClasses);
+    } else if (hasDependency(analyzedStyle) && hasAttrValue(analyzedStyle)) {
+      let value = attrValueRef(analyzedStyle.value[0]);
+      let container = classRef(analyzedStyle.container);
+      if (isConditional(analyzedStyle)) {
+        element.addDynamicAttr(container, value, null);
+      } else {
+        element.addStaticAttr(container, value);
+      }
+    } else if (hasDependency(analyzedStyle) && isAttrGroup(analyzedStyle) && isSwitch(analyzedStyle)) {
+      let container = classRef(analyzedStyle.container);
+      let group: Attribute | undefined;
+      // Because the attribute is resolved into styles for serialization
+      // we have to find the attribute that is in the most specific sub-block
+      // of this attribute group.
+      for (let attrValueIdx of Object.values(analyzedStyle.group)) {
+        let attrValue = attrValueRef(attrValueIdx);
+        if (!group) {
+          group = attrValue.attribute;
+        } else if (group.block.isAncestorOf(attrValue.block)) {
+          group = attrValue.attribute;
+        }
+      }
+      element.addDynamicGroup(container, group!, null, analyzedStyle.disallowFalsy);
+    } else {
+      assertNever(analyzedStyle);
+    }
   }
 
   /**

@@ -11,16 +11,16 @@ import {
   TemplateInfoFactory,
   TemplateTypes,
 } from "@opticss/template-api";
-import { ObjectDictionary, assertNever, objectValues } from "@opticss/util";
+import { ObjectDictionary, objectValues } from "@opticss/util";
 import { IdentGenerator } from "opticss";
 
 import { BlockFactory } from "../BlockParser";
-import { AttrValue, Attribute, Block, BlockClass, Style } from "../BlockTree";
+import { AttrValue, Block, BlockClass, Style } from "../BlockTree";
 import { ResolvedConfiguration } from "../configuration";
 import { allDone } from "../util";
 
 import { Analyzer } from "./Analyzer";
-import { DynamicClasses, ElementAnalysis, FalseCondition, SerializedElementAnalysis, SerializedElementSourceAnalysis, TrueCondition, hasAttrValue, hasDependency, isAttrGroup, isConditional, isFalseCondition, isStaticClass, isSwitch, isTrueCondition } from "./ElementAnalysis";
+import { ElementAnalysis, SerializedElementAnalysis, SerializedElementSourceAnalysis } from "./ElementAnalysis";
 import { TemplateValidator, TemplateValidatorOptions } from "./validations";
 
 /**
@@ -183,7 +183,7 @@ export class Analysis<K extends keyof TemplateTypes> {
   }
 
   _searchForBlock(blockToFind: Block, block: Block, parentPath: string): string | null {
-    if (block === blockToFind || block.isAncestorOf(blockToFind)) {
+    if (block === blockToFind) {
       return parentPath;
     }
 
@@ -391,8 +391,8 @@ export class Analysis<K extends keyof TemplateTypes> {
   /**
    * Creates a TemplateAnalysis from its serialized form.
    * @param serializedAnalysis The analysis to be recreated.
-   * @param options The plugin options that are used to parse the blocks.
-   * @param postcssImpl The instance of postcss that should be used to parse the block's css.
+   * @param blockFactory for loading blocks referenced in the serialization.
+   * @param parent The analyzer this analysis will belong to.
    */
   static async deserializeSource (
     serializedAnalysis: SerializedSourceAnalysis<keyof TemplateTypes>,
@@ -420,23 +420,30 @@ export class Analysis<K extends keyof TemplateTypes> {
       analysis.blocks[o.name] = o.block;
       localScope.addBlockReference(o.name, o.block);
     });
-    let objects = new Array<Style>();
+
+    // We lookup each style by its serialized reference.
+    // The index into the array is used elsewhere in this
+    // serialized form to reference these styles.
+    let styles = new Array<Style>();
     serializedAnalysis.stylesFound.forEach(s => {
       let style = localScope.find(s);
       if (style) {
-        objects.push(style);
+        styles.push(style);
       } else {
         throw new Error(`Cannot resolve ${s} to a block style.`);
       }
     });
 
+    // These are convenience accessors into the styles array that perform
+    // bounds and type checking assertions.
     let styleRef = (index: number) => {
-      let s = objects[index];
+      let s = styles[index];
       if (!s) {
         throw new Error("[internal error] Style index out of bounds!");
       }
       return s;
     };
+
     let classRef = (index: number) => {
       let s = styleRef(index);
       if (!(s instanceof BlockClass)) {
@@ -444,6 +451,7 @@ export class Analysis<K extends keyof TemplateTypes> {
       }
       return s;
     };
+
     let attrValueRef = (index: number) => {
       let s = styleRef(index);
       if (!(s instanceof AttrValue)) {
@@ -457,57 +465,27 @@ export class Analysis<K extends keyof TemplateTypes> {
       let data = serializedAnalysis.elements[elID];
       let element = new ElementAnalysis<null, null, null>(data.sourceLocation || {start: POSITION_UNKNOWN}, parent.reservedClassNames(), data.tagName, elID);
       for (let analyzedStyle of data.analyzedStyles) {
-        if (isStaticClass(analyzedStyle)) {
-          element.addStaticClass(<BlockClass>styleRef(analyzedStyle.klass));
-        } else if (isConditional(analyzedStyle) && (isTrueCondition(analyzedStyle) || isFalseCondition(analyzedStyle))) {
-          let dynClasses: Partial<DynamicClasses<null>> = { condition: null };
-          if (isTrueCondition(analyzedStyle)) {
-            (<TrueCondition<BlockClass>>dynClasses).whenTrue = analyzedStyle.whenTrue.map(c => classRef(c));
-          }
-          if (isFalseCondition(analyzedStyle)) {
-            (<FalseCondition<BlockClass>>dynClasses).whenFalse = analyzedStyle.whenFalse.map(c => classRef(c));
-          }
-          element.addDynamicClasses(<Required<DynamicClasses<null>>>dynClasses);
-        } else if (hasDependency(analyzedStyle) && hasAttrValue(analyzedStyle)) {
-          let value = attrValueRef(analyzedStyle.value[0]);
-          let container = classRef(analyzedStyle.container);
-          if (isConditional(analyzedStyle)) {
-            element.addDynamicAttr(container, value, null);
-          } else {
-            element.addStaticAttr(container, value);
-          }
-        } else if (hasDependency(analyzedStyle) && isAttrGroup(analyzedStyle) && isSwitch(analyzedStyle)) {
-          let container = classRef(analyzedStyle.container);
-          let group: Attribute | undefined;
-          // Because the attribute is resolved into styles for serialization
-          // we have to find the attribute that is in the most specific sub-block
-          // of this attribute group.
-          for (let attrValueIdx of Object.values(analyzedStyle.group)) {
-            let attrValue = attrValueRef(attrValueIdx);
-            if (!group) {
-              group = attrValue.attribute;
-            } else if (group.block.isAncestorOf(attrValue.block)) {
-              group = attrValue.attribute;
-            }
-          }
-          element.addDynamicGroup(container, group!, null, analyzedStyle.disallowFalsy);
-        } else {
-          assertNever(analyzedStyle);
-        }
+        ElementAnalysis.deserializeAnalyzedStyle(element, analyzedStyle, styleRef, classRef, attrValueRef);
       }
       element.seal();
       analysis.elements.set(elID, element);
     });
 
-    // tslint:disable-next-line:prefer-unknown-to-any
     return analysis;
   }
 
+  // XXX `deserialize` doesn't actually deserialize the elements in the
+  // XXX serialized form. Thankfully, this method is never used.
+  // TODO: Get rid of this serialized form and use the "source serialization"
+  // TODO: as the only serialization because it's a better format for serializing
+  // TODO: this data.
   /**
    * Creates a TemplateAnalysis from its serialized form.
+   *
+   * **DO NOT USE THIS METHOD, ITS NOT FULLY IMPLEMENTED.**
    * @param serializedAnalysis The analysis to be recreated.
-   * @param options The plugin options that are used to parse the blocks.
-   * @param postcssImpl The instance of postcss that should be used to parse the block's css.
+   * @param blockFactory for loading blocks referenced in the serialization.
+   * @param parent The analyzer this analysis will belong to.
    */
   static async deserialize (
     serializedAnalysis: SerializedAnalysis<keyof TemplateTypes>,
@@ -553,7 +531,6 @@ export class Analysis<K extends keyof TemplateTypes> {
       analysis.elements.set(elID, element);
     });
 
-    // tslint:disable-next-line:prefer-unknown-to-any
     return analysis;
   }
 
