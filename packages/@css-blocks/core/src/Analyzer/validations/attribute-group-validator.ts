@@ -1,7 +1,7 @@
 import { unionInto } from "@opticss/util";
 
 import { Attribute, isAttrValue } from "../../BlockTree";
-import { isAttrGroup, isBooleanAttr } from "../ElementAnalysis";
+import { isAttrGroup, hasAttrValue } from "../ElementAnalysis";
 
 import { ErrorCallback, Validator } from "./Validator";
 
@@ -33,7 +33,7 @@ export const attributeGroupValidator: Validator = (analysis, _templateAnalysis, 
     }
   }
   for (let stat of analysis.dynamicAttributes) {
-    if (isBooleanAttr(stat)) {
+    if (hasAttrValue(stat)) {
       for (let val of stat.value) {
         if (isAttrValue(val) && !analysis.isFromComposition(val)) {
           ensureUniqueAttributeGroup(discovered, val.attribute, err, true);
