@@ -31,9 +31,9 @@ const enum StyleCondition {
 }
 
 const enum FalsySwitchBehavior {
-  error,
-  unset,
-  default,
+  error = 0,
+  unset = 1,
+  default = 2,
 }
 
 const NOOP_VISITOR = {};
@@ -362,6 +362,7 @@ class HelperInvocationGenerator {
         params.push(num(FalsySwitchBehavior.unset));
       }
       params.push(this.mustacheToStringExpression(this.builders, switchStyle.stringExpression!));
+      params.push(num(values.length));
       for (let value of values) {
         let obj = switchStyle.group[value];
         params.push(str(value));

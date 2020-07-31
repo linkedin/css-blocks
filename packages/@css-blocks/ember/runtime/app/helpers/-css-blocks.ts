@@ -12,7 +12,7 @@ export default class CSSBlocksHelper extends Helper {
   @service("css-blocks")
   cssBlocks!: CSSBlocksService;
 
-  compute(...args: Array<string | number | boolean | null>) {
-    return this.cssBlocks.classNamesFor(args);
+  compute(...args: [Array<string | number | boolean | null>, object]) {
+    return this.cssBlocks.classNamesFor(args[0]);
   }
 }
