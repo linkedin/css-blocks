@@ -7,3 +7,7 @@ body {
   --reset-stylesheet-selector: applied;
   color: rgb(102, 51, 153);
 }
+
+.public-addon-component-alias {
+  font-size: 22px;
+}
