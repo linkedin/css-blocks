@@ -6,7 +6,7 @@ import type { ObjectDictionary } from "@opticss/util";
 
 /// @ts-ignore
 import { data as _data } from "./-css-blocks-data";
-import type { AggregateRewriteData, ConditionalStyle, ImpliedStyles, StyleExpression } from "./AggregateRewriteData";
+import type { AggregateRewriteData, ConditionalStyle, ImpliedStyles, StyleExpression, StyleRequirements } from "./AggregateRewriteData";
 
 const data: AggregateRewriteData = _data;
 
@@ -215,6 +215,8 @@ export default class CSSBlocksService extends Service {
       }
     }
 
+    ensureRequirementsAreSatisfied(stylesApplied, data.styleRequirements);
+
     let aliasClassNames = applyImpliedStyles(stylesApplied, data.impliedStyles);
 
     let classNameIndices = new Set<number>();
@@ -253,8 +255,22 @@ function evaluateExpression(expr: StyleExpression, stylesApplied: Set<number>, s
   }
 }
 
+function ensureRequirementsAreSatisfied(stylesApplied: Set<number>, requirements: StyleRequirements): void {
+  let checkAgain = true;
+  while (checkAgain) {
+    checkAgain = false;
+    for (let s of stylesApplied) {
+      let expr = requirements[s];
+      if (expr && !evaluateExpression(expr, stylesApplied)) {
+        stylesApplied.delete(s);
+        checkAgain = true;
+        break;
+      }
+    }
+  }
+}
+
 function applyImpliedStyles(stylesApplied: Set<number>, impliedStyles: ImpliedStyles): Set<string> {
-  console.log({impliedStyles});
   let aliases = new Set<string>();
   let newStyles = new Set(stylesApplied);
   let failedConditions = new Set<ConditionalStyle>();
