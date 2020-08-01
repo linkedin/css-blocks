@@ -124,7 +124,11 @@ export class RuntimeDataGenerator {
       }
 
       // implied by aliasing
-      implied.push(...style.getStyleAliases());
+      let aliases = [...style.getStyleAliases()];
+      if (aliases.length > 0) {
+        console.dir({aliases});
+      }
+      implied.push(...aliases);
 
       // implied by composition
       if (isBlockClass(style)) {

@@ -2,14 +2,14 @@ import Controller from '@ember/controller';
 
 export default Controller.extend({
   enabled: false,
-  color: 'unset',
+  color: 'none',
 
   actions: {
     toggleEnabled() {
       this.toggleProperty("enabled");
     },
     toggleColor() {
-      this.set('color', this.get('color') === 'unset' ? 'yellow' : 'unset');
+      this.set('color', this.get('color') === 'none' ? 'yellow' : 'none');
     }
   }
 });

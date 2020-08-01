@@ -2,6 +2,7 @@
 
 :scope {
   extends: bold;
+  block-alias: public-addon-component-alias;
   --addon-component-block-scope: applied;
   color: red;
 }

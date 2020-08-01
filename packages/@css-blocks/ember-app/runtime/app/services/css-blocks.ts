@@ -6,7 +6,7 @@ import type { ObjectDictionary } from "@opticss/util";
 
 /// @ts-ignore
 import { data as _data } from "./-css-blocks-data";
-import type { AggregateRewriteData, StyleExpression } from "./AggregateRewriteData";
+import type { AggregateRewriteData, StyleExpression, ImpliedStyles, ConditionalStyle } from "./AggregateRewriteData";
 
 const data: AggregateRewriteData = _data;
 
@@ -99,10 +99,9 @@ const enum FalsySwitchBehavior {
 export default class CSSBlocksService extends Service {
   classNamesFor(argv: Array<string | number | boolean | null>): string {
     let args = argv.slice();
-    console.log(args);
     args.reverse(); // pop() is faster than shift()
     let rewriteVersion = num(args);
-    if (rewriteVersion > 1) throw new Error(`The rewrite is newer than expected. Please upgrade @css-blocks/ember-app.`);
+    if (rewriteVersion > 0) throw new Error(`The rewrite schema is newer than expected. Please upgrade @css-blocks/ember-app.`);
 
     let numBlocks = num(args);
     // the values in blockStyleIndices map style strings to an index into the array
@@ -119,6 +118,7 @@ export default class CSSBlocksService extends Service {
       let sourceGuid = str(args);
       let runtimeGuid = str(args, true); // this won't be non-null until we implement block passing.
       let blockIndex = data.blockIds[sourceGuid];
+      assert(blockIndex, `unknown block ${sourceGuid}`);
       let runtimeBlockIndex = runtimeGuid === null ? blockIndex : data.blockIds[runtimeGuid];
       let blockInfo = data.blocks[blockIndex];
       blockStyleIndices.push(blockInfo.blockInterfaceStyles);
@@ -182,7 +182,7 @@ export default class CSSBlocksService extends Service {
           let currentValue = str(args, true, true);
           let numValues = num(args);
           let found = false;
-          let legal = new Array<string>();
+          let legal: Array<String> = [];
           while (numValues--) {
             let v = str(args);
             legal.push(v);
@@ -214,38 +214,88 @@ export default class CSSBlocksService extends Service {
         stylesApplied.add(styles[i]!);
       }
     }
-    // TODO: style inference
+
+    let aliasClassNames = applyImpliedStyles(stylesApplied, data.impliedStyles);
+
     let classNameIndices = new Set<number>();
+    // TODO: Only iterate over the subset of optimizations that might match this
+    // element's styles.
     for (let [clsIdx, expr] of data.optimizations) {
       if (evaluateExpression(expr, stylesApplied)) {
         classNameIndices.add(clsIdx);
       }
     }
-    let classNames = new Array<string>();
+    let classNames = new Array<string>(...aliasClassNames);
     for (let idx of classNameIndices) {
       classNames.push(data.outputClassnames[idx]);
     }
     let result = classNames.join(" ");
-    console.log(result);
     return result;
   }
 }
 
-function evaluateExpression(expr: StyleExpression, stylesApplied: Set<number>): boolean {
-  if (typeof expr === "number") return stylesApplied.has(expr);
+function evaluateExpression(expr: StyleExpression, stylesApplied: Set<number>, stylesApplied2?: Set<number>): boolean {
+  if (typeof expr === "number") return (stylesApplied.has(expr) || (!!stylesApplied2 && stylesApplied2.has(expr)));
   if (expr[0] === Operator.AND) {
     for (let i = 1; i < expr.length; i++) {
-      if (!evaluateExpression(expr[i], stylesApplied)) return false;
+      if (!evaluateExpression(expr[i], stylesApplied, stylesApplied2)) return false;
     }
     return true;
   } else if (expr[0] === Operator.OR) {
     for (let i = 1; i < expr.length; i++) {
-      if (evaluateExpression(expr[i], stylesApplied)) return true;
+      if (evaluateExpression(expr[i], stylesApplied, stylesApplied2)) return true;
     }
     return false;
   } else if (expr[0] === Operator.NOT) {
-    return !evaluateExpression(expr[1], stylesApplied);
+    return !evaluateExpression(expr[1], stylesApplied, stylesApplied2);
   } else {
     return false;
   }
+}
+
+function applyImpliedStyles(stylesApplied: Set<number>, impliedStyles: ImpliedStyles): Set<string> {
+  console.log({impliedStyles});
+  let aliases = new Set<string>();
+  let newStyles = new Set(stylesApplied);
+  let failedConditions = new Set<ConditionalStyle>();
+  // for each new style we get the directly implied styles by each of them and
+  // add them to the next iteration of new styles. if a conditionally applied
+  // style doesn't match, it might be due to an implied style that isn't applied
+  // yet, so we keep the failures around and try adding them during each
+  // iteration once new styles are taken into account.
+  while (newStyles.size > 0) {
+    let nextStyles = new Set<number>();
+    let newFailedConditions = new Set<ConditionalStyle>();
+    for (let style of newStyles) {
+      let implied = impliedStyles[style];
+      if (!implied) continue;
+      for (let i of implied) {
+        if (typeof i === "number") {
+          nextStyles.add(i);
+        } else if (typeof i === "string") {
+          aliases.add(i);
+        } else {
+          if (evaluateExpression(i.conditions, stylesApplied, newStyles)) {
+            nextStyles.add(i.style);
+          } else {
+            newFailedConditions.add(i);
+          }
+        }
+      }
+    }
+    for (let s of newStyles) {
+      stylesApplied.add(s);
+    }
+    newStyles = nextStyles;
+    for (let c of failedConditions) {
+      if (evaluateExpression(c.conditions, stylesApplied, newStyles)) {
+        newStyles.add(c.style);
+        failedConditions.delete(c);
+      }
+    }
+    for (let c of newFailedConditions) {
+      failedConditions.add(c);
+    }
+  }
+  return aliases;
 }
