@@ -134,10 +134,16 @@ export class RuntimeDataGenerator {
       if (isBlockClass(style)) {
         for (let composition of style.composedStyles()) {
           if (composition.conditions.length > 0) {
-            let style = this.styleIndex(composition.style);
+            let styles = [this.styleIndex(composition.style)];
+            if (isAttrValue(composition.style)) {
+              styles.unshift(this.styleIndex(composition.style.blockClass));
+            }
             let conditions: ConditionalStyleExpression = [Operator.AND, ...composition.conditions.map(s => this.styleIndex(s))];
-            implied.push({style, conditions});
+            implied.push({styles, conditions});
           } else {
+            if (isAttrValue(composition.style)) {
+              implied.push(this.styleIndex(composition.style.blockClass));
+            }
             implied.push(this.styleIndex(composition.style));
           }
         }

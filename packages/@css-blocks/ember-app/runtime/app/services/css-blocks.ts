@@ -6,7 +6,7 @@ import type { ObjectDictionary } from "@opticss/util";
 
 /// @ts-ignore
 import { data as _data } from "./-css-blocks-data";
-import type { AggregateRewriteData, StyleExpression, ImpliedStyles, ConditionalStyle } from "./AggregateRewriteData";
+import type { AggregateRewriteData, ConditionalStyle, ImpliedStyles, StyleExpression } from "./AggregateRewriteData";
 
 const data: AggregateRewriteData = _data;
 
@@ -276,7 +276,7 @@ function applyImpliedStyles(stylesApplied: Set<number>, impliedStyles: ImpliedSt
           aliases.add(i);
         } else {
           if (evaluateExpression(i.conditions, stylesApplied, newStyles)) {
-            nextStyles.add(i.style);
+            for (let s of i.styles) nextStyles.add(s);
           } else {
             newFailedConditions.add(i);
           }
@@ -289,7 +289,7 @@ function applyImpliedStyles(stylesApplied: Set<number>, impliedStyles: ImpliedSt
     newStyles = nextStyles;
     for (let c of failedConditions) {
       if (evaluateExpression(c.conditions, stylesApplied, newStyles)) {
-        newStyles.add(c.style);
+        for (let s of c.styles) newStyles.add(s);
         failedConditions.delete(c);
       }
     }

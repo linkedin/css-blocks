@@ -29,7 +29,7 @@ export type OrStyleExpression = [Operator.OR, ...StyleExpression[]];
 export type NotStyleExpression = [Operator.NOT, StyleExpression];
 
 export interface ConditionalStyle {
-  style: GlobalBlockIndex;
+  styles: Array<GlobalBlockIndex>;
   conditions: ConditionalStyleExpression;
 }
 

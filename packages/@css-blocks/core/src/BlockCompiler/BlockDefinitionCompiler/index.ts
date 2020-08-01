@@ -67,7 +67,15 @@ export class BlockDefinitionCompiler {
     if (isBlockClass(style) && style.isRoot) {
       declarations.push(builders.declaration("block-id", `"${style.block.guid}"`));
       declarations.push(builders.declaration("block-name", `"${style.block.name}"`));
-      // TODO: inherited-styles
+      let baseName = style.block.getReferencedBlockLocalName(style.block.base);
+      if (baseName) {
+        declarations.push(builders.declaration("extends", baseName));
+      }
+      let implemented = style.block.getImplementedBlocks();
+      if (implemented.length > 0) {
+        let names = implemented.map(b => style.block.getReferencedBlockLocalName(b)!);
+        declarations.push(builders.declaration("implements", names.join(", ")));
+      }
     }
 
     let compositions = new Array<string>();
@@ -79,7 +87,7 @@ export class BlockDefinitionCompiler {
       }
     }
     if (compositions.length > 0) {
-      declarations.push(builders.declaration("composes", compositions.join(", ")));
+      declarations.push(builders.declaration("composes", '"' + compositions.join('", "') + '"'));
     }
     declarations.push(builders.declaration("block-class", style.cssClass(this.config, reservedClassNames)));
     let aliasValues = new Array(...style.getStyleAliases());
