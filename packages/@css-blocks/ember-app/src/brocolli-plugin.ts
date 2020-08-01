@@ -1,5 +1,5 @@
 import { Block, BlockCompiler, BlockFactory, Options as CSSBlocksOptions, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, EmberAnalysis, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-support";
+import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-support";
 import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
@@ -11,7 +11,6 @@ import * as FSTree from "fs-tree-diff";
 import { Optimizer, postcss } from "opticss";
 import * as path from "path";
 
-import { EmberAnalyzer } from "./EmberAnalyzer";
 import { RuntimeDataGenerator } from "./RuntimeDataGenerator";
 
 const debug = debugGenerator("css-blocks:ember-app");

@@ -1,6 +1,7 @@
 import { Analyzer } from "@css-blocks/core";
-import { TEMPLATE_TYPE } from "@css-blocks/ember-support";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
+
+import { TEMPLATE_TYPE } from "./HandlebarsTemplate";
 
 export class EmberAnalyzer extends Analyzer<TEMPLATE_TYPE> {
   analyze(_dir: string, _entryPoints: string[]): Promise<Analyzer<"HandlebarsTemplate">> {
