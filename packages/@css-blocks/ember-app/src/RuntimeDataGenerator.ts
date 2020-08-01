@@ -37,7 +37,7 @@ export class RuntimeDataGenerator {
   }
   sourceClassIndex(className: string): number {
     if (!this.sourceClassIndices.has(className)) {
-      this.sourceClassIndices.set(className, this.sourceClassIndices.size);
+      throw new Error("[internal error] unknown class");
     }
     return this.sourceClassIndices.get(className)!;
   }
@@ -78,6 +78,7 @@ export class RuntimeDataGenerator {
     debug(`There are ${stylesInUse.size} styles in use.`);
     let styleRequirements: StyleRequirements = {};
     for (let style of stylesInUse) {
+      this.sourceClassIndices.set(this.cssClass(style), this.styleIndex(style));
       if (isAttrValue(style)) {
         styleRequirements[this.styleIndex(style)] = [Operator.AND, this.styleIndex(style.blockClass)];
       }
@@ -105,9 +106,25 @@ export class RuntimeDataGenerator {
   getOptimizations(stylesInUse: Set<Style>): Array<OptimizationEntry> {
     let optimizations = new Array<OptimizationEntry>();
     for (let style of stylesInUse) {
-      if (this.styleMapping.isStyledAfterOptimization({name: "class", value: this.cssClass(style)})) {
+      let attr = {name: "class", value: this.cssClass(style)};
+      if (this.styleMapping.isStyledAfterOptimization(attr)) {
         optimizations.push([this.outputClassIndex(style), this.styleIndex(style)]);
         continue;
+      }
+
+      if (this.styleMapping.replacedAttributes.containsKey(attr)) {
+        let replacedWith = this.styleMapping.replacedAttributes.getValue(attr)!;
+        optimizations.push([this.outputClassIndex(replacedWith.value), this.styleIndex(style)]);
+        continue;
+      }
+
+      if (this.styleMapping.linkedAttributes.containsKey(attr)) {
+        let links = this.styleMapping.linkedAttributes.getValue(attr);
+        for (let link of links) {
+          let exceptions = link.unless.map(u => this.sourceClassIndex((<SimpleAttribute>u).value));
+          let expr: AndStyleExpression = [Operator.AND, this.styleIndex(style), [Operator.NOT, [Operator.OR, ...exceptions]]];
+          optimizations.push([this.outputClassIndex(link.to.value), expr]);
+        }
       }
     }
     return optimizations;

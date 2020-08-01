@@ -46,7 +46,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let analyzer = new EmberAnalyzer(factory);
     // TODO: Make this configurable from the ember app.
     let optimizerOptions = {
-      enabled: false,
+      enabled: true,
       rewriteIdents: {
         id: false,
         class: true,
@@ -54,7 +54,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
           class: [], // TODO: scan css files for other classes in use.
         },
       },
-      removeUnusedStyles: true,
+      removeUnusedStyles: false,
       mergeDeclarations: false,
     };
     let optimizer = new Optimizer(optimizerOptions, analyzer.optimizationOptions);
