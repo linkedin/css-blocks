@@ -5,6 +5,7 @@ import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
 import Filter = require("broccoli-persistent-filter");
+import Plugin = require("broccoli-plugin");
 import type { PluginOptions } from "broccoli-plugin/dist/interfaces";
 import debugGenerator from "debug";
 import * as FSTree from "fs-tree-diff";
@@ -121,5 +122,33 @@ export class CSSBlocksApplicationPlugin extends Filter {
       `// CSS Blocks Generated Data. DO NOT EDIT.
        export const data = {className: "it-worked"};
       `);
+  }
+}
+
+/**
+ * A plugin that is used during the CSS preprocess step to merge in the CSS Blocks optimized content
+ * with application styles and the existing css tree.
+ *
+ * This plugin expects two broccoli nodes, in the following order...
+ * 1) The result of the CSSBlocksApplicationPlugin.
+ * 2) The css tree, passed in to `preprocessTree()`.
+ *
+ * The result of this plugin will be a file in app/styles/app.css that includes existing content appended
+ * with the contents of css-blocks.css. This should be merged with the existing css tree to overwrite
+ * the app.css file with this one.
+ */
+export class CSSBlocksStylesProcessorPlugin extends Plugin {
+  async build() {
+    // Read the optimized CSS Blocks styles file, generated previously by the CSSBlocksApplicationPlugin.
+    // There should only be one css-blocks.css file.
+    const blocksFileEntry = this.input.at(0).entries(".", {globs: ["**/css-blocks.css"]})[0];
+
+    // And read the application CSS that was previously built by Ember and ignored by CSS Blocks.
+    const blocksFileContents = this.input.at(0).readFileSync(blocksFileEntry.relativePath, { encoding: "utf8" });
+    const appCssFileContents = this.input.at(1).readFileSync("app/styles/app.css", { encoding: "utf8" });
+
+    // Now, write out the combined result of the application CSS and CSS Blocks contents.
+    this.output.mkdirSync("app/styles", { recursive: true });
+    this.output.writeFileSync("app/styles/app.css", `${appCssFileContents}${blocksFileContents}`);
   }
 }
