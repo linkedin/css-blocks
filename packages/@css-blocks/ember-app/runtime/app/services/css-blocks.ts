@@ -6,7 +6,7 @@ import type { ObjectDictionary } from "@opticss/util";
 
 /// @ts-ignore
 import { data as _data } from "./-css-blocks-data";
-import type { AggregateRewriteData, ConditionalStyle, ImpliedStyles, StyleExpression, StyleRequirements } from "./AggregateRewriteData";
+import type { AggregateRewriteData, ConditionalStyle, GlobalBlockIndex, ImpliedStyles, OptimizationEntry, StyleExpression, StyleRequirements } from "./AggregateRewriteData";
 
 const data: AggregateRewriteData = _data;
 
@@ -95,8 +95,17 @@ const enum FalsySwitchBehavior {
   default = 2,
 }
 
+interface StyleIdToOptimizationsMap {
+  [styleId: number]: Array<number>;
+}
+
 // tslint:disable-next-line:no-default-export
 export default class CSSBlocksService extends Service {
+  possibleOptimizations!: StyleIdToOptimizationsMap;
+  constructor() {
+    super(...arguments);
+    this.possibleOptimizations = getOptimizationInverseMap(data.optimizations);
+  }
   classNamesFor(argv: Array<string | number | boolean | null>): string {
     let args = argv.slice();
     args.reverse(); // pop() is faster than shift()
@@ -222,7 +231,7 @@ export default class CSSBlocksService extends Service {
     let classNameIndices = new Set<number>();
     // TODO: Only iterate over the subset of optimizations that might match this
     // element's styles.
-    for (let [clsIdx, expr] of data.optimizations) {
+    for (let [clsIdx, expr] of this.getPossibleOptimizations(stylesApplied)) {
       if (evaluateExpression(expr, stylesApplied)) {
         classNameIndices.add(clsIdx);
       }
@@ -233,6 +242,17 @@ export default class CSSBlocksService extends Service {
     }
     let result = classNames.join(" ");
     return result;
+  }
+
+  getPossibleOptimizations(stylesApplied: Set<number>): Array<OptimizationEntry> {
+    let optimizations: Array<number> = [];
+    for (let style of stylesApplied) {
+      let possibleOpts = this.possibleOptimizations[style];
+      if (possibleOpts) {
+        optimizations.push(...possibleOpts);
+      }
+    }
+    return [...new Set(optimizations)].map(i => data.optimizations[i]);
   }
 }
 
@@ -314,4 +334,29 @@ function applyImpliedStyles(stylesApplied: Set<number>, impliedStyles: ImpliedSt
     }
   }
   return aliases;
+}
+
+function getOptimizationInverseMap(optimizations: Array<OptimizationEntry>): StyleIdToOptimizationsMap {
+  let inverseMap: StyleIdToOptimizationsMap = {};
+  for (let i = 0; i < optimizations.length; i++) {
+    for (let styleId of new Set(extractStyleIds(optimizations[i][1]))) {
+      if (inverseMap[styleId] === undefined) {
+        inverseMap[styleId] = [];
+      }
+      inverseMap[styleId].push(i);
+    }
+  }
+  return inverseMap;
+}
+
+function extractStyleIds(expr: StyleExpression): Array<GlobalBlockIndex> {
+  if (typeof expr === "number") {
+    return [expr];
+  } else {
+    let result = new Array<GlobalBlockIndex>();
+    for (let i = 1; i < expr.length; i++) {
+      result.push(...extractStyleIds(expr[i]));
+    }
+    return result;
+  }
 }
