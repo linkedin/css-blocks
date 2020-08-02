@@ -54,8 +54,8 @@ export class CSSBlocksApplicationPlugin extends Filter {
           class: [], // TODO: scan css files for other classes in use.
         },
       },
-      removeUnusedStyles: false,
-      mergeDeclarations: false,
+      removeUnusedStyles: true,
+      mergeDeclarations: true,
     };
     let optimizer = new Optimizer(optimizerOptions, analyzer.optimizationOptions);
     let blocksUsed = new Set<Block>();

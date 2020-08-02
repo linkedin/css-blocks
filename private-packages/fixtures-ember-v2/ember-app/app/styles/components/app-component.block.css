@@ -17,3 +17,25 @@
   --app-component-block-class-state: applied;
   color: blue;
 }
+
+.opt-1 {
+  color: red;
+  font-style: italic;
+  border: 1px solid gold;
+}
+
+.opt-2 {
+  color: red;
+  font-style: italic;
+  border: 1px solid gold;
+}
+
+.opt-3 {
+  color: red;
+  font-style: italic;
+  border: 1px solid gold;
+}
+
+.opt-1:hover {
+  background-color: orange;
+}

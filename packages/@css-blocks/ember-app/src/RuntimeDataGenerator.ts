@@ -109,13 +109,11 @@ export class RuntimeDataGenerator {
       let attr = {name: "class", value: this.cssClass(style)};
       if (this.styleMapping.isStyledAfterOptimization(attr)) {
         optimizations.push([this.outputClassIndex(style), this.styleIndex(style)]);
-        continue;
       }
 
       if (this.styleMapping.replacedAttributes.containsKey(attr)) {
         let replacedWith = this.styleMapping.replacedAttributes.getValue(attr)!;
         optimizations.push([this.outputClassIndex(replacedWith.value), this.styleIndex(style)]);
-        continue;
       }
 
       if (this.styleMapping.linkedAttributes.containsKey(attr)) {

@@ -3,5 +3,18 @@
   <div block:class="sub-class" id="sub-class" block:enabled={{enabled}}>
     App Component Sub-class Styles State: {{enabled}}
   </div>
+  <br>
+  <div block:class=opt-1>
+    This div should look the same as the next two divs.
+    But only this one should have an orange background when hovered.
+  </div>
+  <br>
+  <div block:class=opt-2>
+    This div should look the same as the previous and next divs.
+  </div>
+  <br>
+  <div block:class=opt-3>
+    This div should look the same as the previous two divs.
+  </div>
   <button {{action "toggleEnabled"}} id="toggle-enabled">Toggle Enabled States</button>
 </div>
