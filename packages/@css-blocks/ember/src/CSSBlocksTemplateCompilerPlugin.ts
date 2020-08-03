@@ -79,8 +79,10 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
   persist: boolean;
   treeName: string;
   debug: debugGenerator.Debugger;
+  isCssBlocksTemplateCompiler: true;
   constructor(inputTree: InputNode, treeName: string, htmlbarsOptions: TemplateCompilerPlugin.HtmlBarsOptions, cssBlocksOptions: CSSBlocksEmberOptions) {
     super(inputTree, htmlbarsOptions);
+    this.isCssBlocksTemplateCompiler = true;
     this.cssBlocksOptions = cssBlocksOptions;
     this.parserOpts = resolveConfiguration(cssBlocksOptions.parserOpts);
     this.previousSourceTree = new FSTree();

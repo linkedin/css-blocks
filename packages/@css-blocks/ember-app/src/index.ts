@@ -139,14 +139,19 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
 
     if (type === "js") {
       if (env.isApp) {
+        // we iterate over all the addons that are lazy engines and find all
+        // of those that have CSS Blocks in their build and then capture their
+        // template output into a special subdirectory for lazy addons so that
+        // our application build can include the lazy engine's template analysis
+        // and css output in the application build.
         let lazyAddons = this.project.addons.filter((a: any) => a.lazyLoading && a.lazyLoading.enabled === true);
         let jsOutputTrees = lazyAddons.map((a) => {
-          // this isn't tenable *at all*
+          // XXX I have no idea how engines will work with embroider.
+          // XXX This code assumes that lazy engines are always compiled
+          // XXX at the same time as the application (not precompiled).
           let publicTree = (<any>a).treeForPublic();
-          let jsTree = publicTree.inputNodes[publicTree.inputNodes.length - 1];
-          let blocksOutputTree = jsTree._inputNodes[0]._inputNodes[0]._inputNodes[0]._inputNodes[0]._inputNodes[0]._inputNodes[0];
-          return blocksOutputTree;
-        });
+          return findCssBlocksTemplateOutputTree(publicTree.inputNodes);
+        }).filter(Boolean);
         let lazyOutput = funnel(mergeTrees(jsOutputTrees), {destDir: "lazy-tree-output"});
         this.broccoliAppPluginInstance = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree, lazyOutput], {});
         let debugTree = new BroccoliDebug(this.broccoliAppPluginInstance, `css-blocks:optimized`);
@@ -196,6 +201,29 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
     // TODO: This hook may not be necessary in this addon.
   },
 };
+
+type MaybeCSSBlocksTree = MaybeCSSBlocksTreePlugin | string;
+interface MaybeCSSBlocksTreePlugin {
+  _inputNodes: Array<MaybeCSSBlocksTree> | undefined;
+  isCssBlocksTemplateCompiler: boolean | undefined;
+}
+
+function findCssBlocksTemplateOutputTree(trees: Array<MaybeCSSBlocksTree>): MaybeCSSBlocksTree | null {
+  for (let tree of trees) {
+    if (typeof tree === "object" && tree.isCssBlocksTemplateCompiler === true) {
+      return tree;
+    }
+  }
+  for (let tree of trees) {
+    if (typeof tree === "object" && tree._inputNodes) {
+      let found = findCssBlocksTemplateOutputTree(tree._inputNodes);
+      if (found !== null) {
+        return found;
+      }
+    }
+  }
+  return null;
+}
 
 // Aaaaand export the addon implementation!
 module.exports = EMBER_ADDON;
