@@ -14,7 +14,8 @@
   "references": [
     {"path": "../config"},
     {"path": "../core"},
-    {"path": "../glimmer"}
+    {"path": "../glimmer"},
+    {"path": "../ember-support"}
   ],
   "include": [
     "src",
