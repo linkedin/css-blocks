@@ -139,7 +139,16 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
 
     if (type === "js") {
       if (env.isApp) {
-        this.broccoliAppPluginInstance = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree], {});
+        let lazyAddons = this.project.addons.filter((a: any) => a.lazyLoading && a.lazyLoading.enabled === true);
+        let jsOutputTrees = lazyAddons.map((a) => {
+          // this isn't tenable *at all*
+          let publicTree = (<any>a).treeForPublic();
+          let jsTree = publicTree.inputNodes[publicTree.inputNodes.length - 1];
+          let blocksOutputTree = jsTree._inputNodes[0]._inputNodes[0]._inputNodes[0]._inputNodes[0]._inputNodes[0]._inputNodes[0];
+          return blocksOutputTree;
+        });
+        let lazyOutput = funnel(mergeTrees(jsOutputTrees), {destDir: "lazy-tree-output"});
+        this.broccoliAppPluginInstance = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree, lazyOutput], {});
         let debugTree = new BroccoliDebug(this.broccoliAppPluginInstance, `css-blocks:optimized`);
         return funnel(debugTree, {srcDir: env.modulePrefix, destDir: env.modulePrefix});
       } else {

@@ -28,6 +28,11 @@ export function identToPath(input: MergedFileSystem, identifier: string): string
       let addonModulesRelativePath = `addon-tree-output/modules/${relativePath}`;
       if (input.existsSync(addonModulesRelativePath)) {
         relativePath = addonModulesRelativePath;
+      } else {
+        let lazyRelativePath = `lazy-tree-output/${relativePath}`;
+        if (input.existsSync(lazyRelativePath)) {
+          relativePath = lazyRelativePath;
+        }
       }
     }
   }
@@ -38,7 +43,9 @@ export function pathToIdent(relativePath: string): string {
   if (isBroccoliTreeIdentifier(relativePath)) {
     return relativePath;
   }
-  if (relativePath.startsWith("addon-tree-output/modules/")) {
+  if (relativePath.startsWith("lazy-tree-output/")) {
+    relativePath = relativePath.substring(17);
+  } else if (relativePath.startsWith("addon-tree-output/modules/")) {
     relativePath = relativePath.substring(26);
   } else if (relativePath.startsWith("addon-tree-output/")) {
     relativePath = relativePath.substring(18);
