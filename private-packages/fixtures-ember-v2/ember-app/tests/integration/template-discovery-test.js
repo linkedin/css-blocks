@@ -30,7 +30,7 @@ module("Acceptance | Template Discovery", function(hooks) {
     assert.ok(varIsPresent("#reset-stylesheet-selector", "reset-stylesheet-selector"), "Vanilla CSS styles in app.css are preserved");
   });
 
-  skip("Ember Builtins Integration", async function(assert) {
+  test("Ember Builtins Integration", async function(assert) {
     await visit("/ember-builtins", "Navigated to test case");
     assert.equal(currentURL(), "/ember-builtins");
     assert.ok(varIsPresent("#link-to-helper", "link-to-helper"), "Link-to helpers receive classes");
@@ -87,7 +87,7 @@ module("Acceptance | Template Discovery", function(hooks) {
     assert.ok(varIsPresent("#addon-component-sub-class", "addon-component-block-class-state"), "Sub-class state applied when enabled");
   });
 
-  skip("Lazy Engine Block Integration", async function(assert) {
+  test("Lazy Engine Block Integration", async function(assert) {
     await visit("/@css-blocks-fixtures-v2/ember-lazy-engine");
     assert.equal(currentURL(), "/@css-blocks-fixtures-v2/ember-lazy-engine", "Navigated to test case");
     assert.ok(varIsPresent("#scope", "in-repo-lazy-engine-scope"), "Scope style applied to root element");

@@ -158,8 +158,8 @@ export class TemplateAnalyzingRewriter implements ASTPluginWithDeps {
     node.hash.pairs = node.hash.pairs.filter(a => this.elementAnalyzer.isAttributeAnalyzed(a.key)[0] === null).filter(a => !attrToStateMap[a.key]);
 
     for (let attr of Object.keys(attrMap)) {
-      if (attr === "class") {
-        let element = attrMap[attr];
+      let element = attrMap[attr];
+      if (element) {
         this.debug(element.forOptimizer(this.cssBlocksOpts)[0].toString());
         let attrValue = this.buildClassValue(true, element);
         let hash = this.syntax.builders.pair(attr, attrValue!);
