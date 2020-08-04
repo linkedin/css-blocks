@@ -171,17 +171,17 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         return tree;
       }
     } else if (type === "css") {
-      // We can't do much if we don't have the result from CSSBlocksApplicationPlugin.
-      // This should never happen because the JS tree is processed before the CSS tree,
-      // but just in case....
       if (!env.isApp) {
         return tree;
       }
       if (!this.broccoliAppPluginInstance) {
+        // We can't do much if we don't have the result from
+        // CSSBlocksApplicationPlugin. This should never happen because the JS
+        // tree is processed before the CSS tree, but just in case....
         throw new Error("[css-blocks/ember-app] The CSS tree ran before the JS tree, so the CSS tree doesn't have the contents for CSS Blocks files. This shouldn't ever happen, but if it does, please file an issue with us!");
       }
       // Get the combined CSS file
-      const cssBlocksContentsTree = new CSSBlocksStylesProcessorPlugin([this.broccoliAppPluginInstance, tree]);
+      const cssBlocksContentsTree = new CSSBlocksStylesProcessorPlugin(env.modulePrefix, env.config, [this.broccoliAppPluginInstance, tree]);
       return new BroccoliDebug(mergeTrees([tree, cssBlocksContentsTree], { overwrite: true }), "css-blocks:css-preprocess");
     } else {
       return tree;
