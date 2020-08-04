@@ -769,7 +769,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
 
   serializeAnalyzedStyle(
     s: AnalyzedStyle<BooleanExpression, StringExpression, TernaryExpression>,
-    indexOf: (s: Style) => number
+    indexOf: (s: Style) => number,
   ): SerializedAnalyzedStyle {
     let serialized: Partial<SerializedAnalyzedStyle> = {};
 
@@ -809,7 +809,7 @@ export class ElementAnalysis<BooleanExpression, StringExpression, TernaryExpress
     analyzedStyle: SerializedAnalyzedStyle,
     styleRef: (n: number) => Style,
     classRef: (n: number) => BlockClass,
-    attrValueRef: (n: number) => AttrValue
+    attrValueRef: (n: number) => AttrValue,
   ): void {
     if (isStaticClass(analyzedStyle)) {
       element.addStaticClass(<BlockClass>styleRef(analyzedStyle.klass));

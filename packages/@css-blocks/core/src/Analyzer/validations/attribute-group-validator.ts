@@ -1,7 +1,7 @@
 import { unionInto } from "@opticss/util";
 
 import { Attribute, isAttrValue } from "../../BlockTree";
-import { isAttrGroup, hasAttrValue } from "../ElementAnalysis";
+import { hasAttrValue, isAttrGroup } from "../ElementAnalysis";
 
 import { ErrorCallback, Validator } from "./Validator";
 

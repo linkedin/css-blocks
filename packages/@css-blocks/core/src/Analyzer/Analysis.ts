@@ -469,7 +469,7 @@ export class Analysis<K extends keyof TemplateTypes> {
       }
       element.seal();
       analysis.elements.set(elID, element);
-      if(analysis.onElementAnalyzed) analysis.onElementAnalyzed(element);
+      if (analysis.onElementAnalyzed) analysis.onElementAnalyzed(element);
     });
 
     return analysis;

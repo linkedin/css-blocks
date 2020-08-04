@@ -235,10 +235,10 @@ export class BlockFactoryTests extends BEMProcessor {
       clean(`@block-syntax-version 1;
        @block foo from "./foo.css";
        @block bar, (bip, baz as zab) from "./bar.css";
-       :scope { block-id: "${block.guid}"; block-name: "test-block"; composes: foo[oceanic]; block-class: test-block }
-       .nav { composes: foo, bip.orange; block-class: test-block__nav }
-       .nav[open] { composes: bar.lemon; block-class: test-block__nav--open }
-       .nav[position="top"] { composes: foo[forrest]; block-class: test-block__nav--position-top }
+       :scope { block-id: "${block.guid}"; block-name: "test-block"; composes: "foo[oceanic]"; block-class: test-block }
+       .nav { composes: "foo", "bip.orange"; block-class: test-block__nav }
+       .nav[open] { composes: "bar.lemon"; block-class: test-block__nav--open }
+       .nav[position="top"] { composes: "foo[forrest]"; block-class: test-block__nav--position-top }
        .nav[position="top"][open] { composes: foo[oceanic], foo[forrest] }
        `));
   }
