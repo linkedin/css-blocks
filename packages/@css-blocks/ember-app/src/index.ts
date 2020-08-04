@@ -139,6 +139,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
 
     if (type === "js") {
       if (env.isApp) {
+        // TODO: Get the css-blocks options in here.
         this.broccoliAppPluginInstance = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree], {});
         let debugTree = new BroccoliDebug(this.broccoliAppPluginInstance, `css-blocks:optimized`);
         return funnel(debugTree, {srcDir: env.modulePrefix, destDir: env.modulePrefix});
@@ -156,7 +157,8 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         throw new Error("[css-blocks/ember-app] The CSS tree ran before the JS tree, so the CSS tree doesn't have the contents for CSS Blocks files. This shouldn't ever happen, but if it does, please file an issue with us!");
       }
       // Get the combined CSS file
-      const cssBlocksContentsTree = new CSSBlocksStylesProcessorPlugin([this.broccoliAppPluginInstance, tree]);
+      // TODO: Get the css-blocks options in here.
+      const cssBlocksContentsTree = new CSSBlocksStylesProcessorPlugin(env.modulePrefix, {}, [this.broccoliAppPluginInstance, tree]);
       return new BroccoliDebug(mergeTrees([tree, cssBlocksContentsTree], { overwrite: true }), "css-blocks:css-preprocess");
     } else {
       return tree;
