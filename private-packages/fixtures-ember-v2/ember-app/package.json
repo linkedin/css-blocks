@@ -14,6 +14,7 @@
     "build": "yarn pretest && ember build",
     "build:debug": "yarn pretest && node --inspect-brk ./node_modules/.bin/ember build",
     "start": "yarn pretest && ember serve",
+    "start:debug": "yarn pretest && node --inspect-brk ./node_modules/.bin/ember serve",
     "pretest": "cd ../../../packages/@css-blocks/ember && yarn compile && cd ../ember-app && yarn compile",
     "test": "ember test",
     "clean:debug": "rm -rf DEBUG"

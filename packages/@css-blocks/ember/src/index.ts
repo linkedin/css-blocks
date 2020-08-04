@@ -112,8 +112,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
       name: "css-blocks-htmlbars",
       // TODO: parallel babel stuff
       plugin: this.astPluginBuilder.bind(this),
-      // This is turned off to work around a bug in broccoli-persistent-filter.
-      dependencyInvalidation: false,
+      dependencyInvalidation: true,
       cacheKey: () => this.optionsForCacheInvalidation(),
       baseDir: () => __dirname,
     });

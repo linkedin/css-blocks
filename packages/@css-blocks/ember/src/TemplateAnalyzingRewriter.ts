@@ -22,6 +22,7 @@ import {
 } from "@glimmer/syntax";
 import { assertNever } from "@opticss/util";
 import * as debugGenerator from "debug";
+import * as path from "path";
 
 const enum StyleCondition {
   STATIC = 1,
@@ -100,21 +101,30 @@ export class TemplateAnalyzingRewriter implements ASTPluginWithDeps {
   get name(): string { return this.block ? "css-blocks-glimmer-rewriter" : "css-blocks-noop"; }
 
   /**
-   * @param _relativePath Unused in this implementation.
+   * @param relativePath the relative path to the template starting at the root
+   * of the input tree.
    * @returns Files this template file depends on.
    */
-  dependencies(_relativePath: string): Array<string> {
-    this.debug("Getting dependencies for", _relativePath);
+  dependencies(relativePath: string): Array<string> {
+    this.debug("Getting dependencies for", relativePath);
     if (!this.block) return [];
 
     let deps: Set<string> = new Set();
-    // let importer = this.cssBlocksOpts.importer;
-    for (let block of this.block.transitiveBlockDependencies()) {
+    let importer = this.cssBlocksOpts.importer;
+    for (let block of [this.block, ...this.block.transitiveBlockDependencies()]) {
       // TODO: Figure out why the importer is returning null here.
-      // let blockFile = importer.filesystemPath(block.identifier, this.cssBlocksOpts);
-      let blockFile = block.identifier;
+      let blockFile = importer.filesystemPath(block.identifier, this.cssBlocksOpts);
+
       this.debug("block file path is", blockFile);
       if (blockFile) {
+        if (!path.isAbsolute(blockFile)) {
+          // this isn't actually relative to the rootDir but it doesn't matter
+          // because the shared root directory will be removed by the relative
+          // path calculation.
+          let templatePath = path.dirname(path.resolve(this.cssBlocksOpts.rootDir, relativePath));
+          let blockPath = path.resolve(this.cssBlocksOpts.rootDir, blockFile);
+          blockFile = path.relative(templatePath, blockPath);
+        }
         deps.add(blockFile);
       }
       // These dependencies happen when additional files get involved via preprocessors.

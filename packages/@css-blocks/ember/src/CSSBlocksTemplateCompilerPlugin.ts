@@ -128,7 +128,7 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     let factory = new BlockFactory(config, postcss);
     let fileLocator = new BroccoliFileLocator(this.input);
     this.debug(`Looking for templates using css blocks.`);
-    this.analyzingRewriter = new AnalyzingRewriteManager(factory, fileLocator, this.cssBlocksOptions.analysisOpts || {}, this.parserOpts);
+    this.analyzingRewriter = new AnalyzingRewriteManager(factory, fileLocator, this.cssBlocksOptions.analysisOpts || {}, config);
     // The astPluginBuilder interface isn't async so we have to first load all
     // the blocks and associate them to their corresponding templates.
     await this.analyzingRewriter.discoverTemplatesWithBlocks();
