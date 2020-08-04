@@ -30,7 +30,7 @@ module("Acceptance | Template Discovery", function(hooks) {
     assert.ok(varIsPresent("#reset-stylesheet-selector", "reset-stylesheet-selector"), "Vanilla CSS styles in app.css are preserved");
   });
 
-  test("Ember Builtins Integration", async function(assert) {
+  skip("Ember Builtins Integration", async function(assert) {
     await visit("/ember-builtins", "Navigated to test case");
     assert.equal(currentURL(), "/ember-builtins");
     assert.ok(varIsPresent("#link-to-helper", "link-to-helper"), "Link-to helpers receive classes");

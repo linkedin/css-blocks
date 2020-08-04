@@ -153,11 +153,13 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         // template output into a special subdirectory for lazy addons so that
         // our application build can include the lazy engine's template analysis
         // and css output in the application build.
+        // tslint:disable-next-line:prefer-unknown-to-any
         let lazyAddons = this.project.addons.filter((a: any) => a.lazyLoading && a.lazyLoading.enabled === true);
         let jsOutputTrees = lazyAddons.map((a) => {
           // XXX I have no idea how engines will work with embroider.
           // XXX This code assumes that lazy engines are always compiled
           // XXX at the same time as the application (not precompiled).
+          // tslint:disable-next-line:prefer-unknown-to-any
           let publicTree = (<any>a).treeForPublic();
           return findCssBlocksTemplateOutputTree(publicTree.inputNodes);
         }).filter(Boolean);
