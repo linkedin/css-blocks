@@ -32,7 +32,7 @@
     "@opticss/util": "^0.7.0",
     "@types/chai-as-promised": "^7.1.2",
     "chai-as-promised": "^7.1.1",
-    "opticss": "^0.7.0",
+    "opticss": "^0.8.0",
     "typescript": "~3.8.3",
     "watch": "^1.0.2"
   },
@@ -42,7 +42,7 @@
   "dependencies": {
     "@css-blocks/config": "^1.0.0",
     "@css-blocks/core": "^1.0.0",
-    "@opticss/template-api": "^0.6.3",
+    "@opticss/template-api": "^0.7.0",
     "fs-merger": "^3.0.2"
   },
   "volta": {

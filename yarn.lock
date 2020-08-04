@@ -2638,10 +2638,10 @@
   dependencies:
     "@opticss/util" "^0.7.0"
 
-"@opticss/template-api@^0.6.3":
-  version "0.6.3"
-  resolved "https://registry.npmjs.org/@opticss/template-api/-/template-api-0.6.3.tgz#fdacfd8371d65eb597813c8b92070ed8a366ad09"
-  integrity sha512-WJbykPO8Qk4HZbPW+5ikmML/7zTTMlecXNCfMxQF1qB8k1pKxdW0tV+Ab8YcQv8udoPXKTJxrNBDqiaYxXecWQ==
+"@opticss/template-api@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.npmjs.org/@opticss/template-api/-/template-api-0.7.0.tgz#900cac361c6194737df5540c8a9f0d6028684cd5"
+  integrity sha512-+t45xG/mxVjKVS9A1oG9FdmsYXWl/F0lWYmyCxeT9V56RLdY3ScImab4P6vpBOTel/ELEceQddm/IrEAnID5aA==
   dependencies:
     "@opticss/element-analysis" "^0.6.2"
     "@opticss/util" "^0.7.0"
@@ -14763,13 +14763,13 @@ opn@^5.1.0, opn@^5.5.0:
   dependencies:
     is-wsl "^1.1.0"
 
-opticss@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.npmjs.org/opticss/-/opticss-0.7.0.tgz#631f540444975457ef077145374d4afaf64fb7e6"
-  integrity sha512-HXo8b3DrLLCX2GWI8m1UAJtXCbl2Ny4ZWdRMFy+2SL2JnuTApFnjaQiiQXitfrnwjNPB8UO9M5547Mm0Yik8aA==
+opticss@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.npmjs.org/opticss/-/opticss-0.8.0.tgz#e0e426d435422b2594bd723d5f14213a8ee3f9da"
+  integrity sha512-SBYA7gveK42QXvIo4oie4iF/rUhaCJZi6pHgI7BwMoMPxkv8qRPOKhCH/fBFzIP1uGSm1PbYWMU5Tk00EaugUg==
   dependencies:
     "@opticss/element-analysis" "^0.6.2"
-    "@opticss/template-api" "^0.6.3"
+    "@opticss/template-api" "^0.7.0"
     "@opticss/util" "^0.7.0"
     "@types/debug" "4.1.4"
     concat-with-sourcemaps "^1.0.4"
