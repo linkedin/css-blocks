@@ -1,5 +1,5 @@
-import { Block, BlockCompiler, BlockFactory, Options as CSSBlocksOptions, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-support";
+import { Block, BlockCompiler, BlockFactory, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
+import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-support";
 import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
@@ -8,7 +8,7 @@ import Plugin = require("broccoli-plugin");
 import type { PluginOptions } from "broccoli-plugin/dist/interfaces";
 import debugGenerator from "debug";
 import * as FSTree from "fs-tree-diff";
-import { Optimizer, postcss } from "opticss";
+import { OptiCSSOptions, Optimizer, postcss } from "opticss";
 import * as path from "path";
 
 import { RuntimeDataGenerator } from "./RuntimeDataGenerator";
@@ -18,8 +18,8 @@ const debug = debugGenerator("css-blocks:ember-app");
 export class CSSBlocksApplicationPlugin extends Filter {
   appName: string;
   previousSourceTree: FSTree;
-  cssBlocksOptions: CSSBlocksOptions;
-  constructor(appName: string, inputNodes: InputNode[], cssBlocksOptions: CSSBlocksOptions, options?: PluginOptions) {
+  cssBlocksOptions: ResolvedCSSBlocksEmberOptions;
+  constructor(appName: string, inputNodes: InputNode[], cssBlocksOptions: ResolvedCSSBlocksEmberOptions, options?: PluginOptions) {
     super(mergeTrees(inputNodes), options || {});
     this.appName = appName;
     this.previousSourceTree = new FSTree();
@@ -39,24 +39,13 @@ export class CSSBlocksApplicationPlugin extends Filter {
     } else {
       this.previousSourceTree = currentFSTree;
     }
-    let config = resolveConfiguration(this.cssBlocksOptions);
+    let config = resolveConfiguration(this.cssBlocksOptions.parserOpts);
     let importer = new BroccoliTreeImporter(this.input, null, config.importer);
     config = resolveConfiguration({importer}, config);
     let factory = new BlockFactory(config, postcss);
-    let analyzer = new EmberAnalyzer(factory);
-    // TODO: Make this configurable from the ember app.
-    let optimizerOptions = {
-      enabled: true,
-      rewriteIdents: {
-        id: false,
-        class: true,
-        omitIdents: {
-          class: [], // TODO: scan css files for other classes in use.
-        },
-      },
-      removeUnusedStyles: true,
-      mergeDeclarations: true,
-    };
+    let analyzer = new EmberAnalyzer(factory, this.cssBlocksOptions.analysisOpts);
+    let optimizerOptions = this.cssBlocksOptions.optimization;
+    this.reserveClassnames(optimizerOptions);
     let optimizer = new Optimizer(optimizerOptions, analyzer.optimizationOptions);
     let blocksUsed = new Set<Block>();
     for (let entry of entries) {
@@ -113,6 +102,37 @@ export class CSSBlocksApplicationPlugin extends Filter {
       `// CSS Blocks Generated Data. DO NOT EDIT.
        export const data = ${serializedData};
       `);
+  }
+
+  /**
+   * Modifies the options passed in to supply the CSS classnames used in the
+   * application to the the list of identifiers that should be omitted by the
+   * classname generator.
+   */
+  reserveClassnames(optimizerOptions: Partial<OptiCSSOptions>): void {
+    let rewriteIdents = optimizerOptions.rewriteIdents;
+    let rewriteIdentsFlag: boolean;
+    let omitIdents: Array<string>;
+    if (typeof rewriteIdents === "boolean") {
+      rewriteIdentsFlag = rewriteIdents;
+      omitIdents = [];
+    } else if (typeof rewriteIdents === "undefined") {
+      rewriteIdentsFlag = true;
+      omitIdents = [];
+    } else {
+      rewriteIdentsFlag = rewriteIdents.class;
+      omitIdents = rewriteIdents.omitIdents && rewriteIdents.omitIdents.class || [];
+    }
+
+    // TODO: scan css files for other classes in use and add them to `omitIdents`.
+
+    optimizerOptions.rewriteIdents = {
+      id: false,
+      class: rewriteIdentsFlag,
+      omitIdents: {
+        class: omitIdents,
+      },
+    };
   }
 }
 

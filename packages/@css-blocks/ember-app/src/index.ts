@@ -1,3 +1,4 @@
+import { CSSBlocksEmberOptions, ResolvedCSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-support";
 import BroccoliDebug = require("broccoli-debug");
 import funnel = require("broccoli-funnel");
 import mergeTrees = require("broccoli-merge-trees");
@@ -14,6 +15,7 @@ interface AddonEnvironment {
   rootDir: string;
   isApp: boolean;
   modulePrefix: string;
+  config: ResolvedCSSBlocksEmberOptions;
 }
 
 interface CSSBlocksApplicationAddon {
@@ -107,12 +109,20 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
 
     let modulePrefix = this._modulePrefix();
 
+    let appOptions = app!.options;
+    if (!appOptions["css-blocks"]) {
+      appOptions["css-blocks"] = {};
+    }
+    // Get CSS Blocks options provided by the application, if present.
+    let config = getConfig(rootDir, app!.isProduction, <CSSBlocksEmberOptions>appOptions["css-blocks"]);
+
     return {
       parent,
       app: app!,
       rootDir,
       isApp,
       modulePrefix,
+      config,
     };
   },
 
@@ -134,7 +144,6 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
    * @returns - A tree that's ready to process.
    */
   preprocessTree(type, tree) {
-    // tslint:disable-next-line:prefer-unknown-to-any
     let env = this.env!;
 
     if (type === "js") {
@@ -153,7 +162,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
           return findCssBlocksTemplateOutputTree(publicTree.inputNodes);
         }).filter(Boolean);
         let lazyOutput = funnel(mergeTrees(jsOutputTrees), {destDir: "lazy-tree-output"});
-        this.broccoliAppPluginInstance = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree, lazyOutput], {});
+        this.broccoliAppPluginInstance = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree, lazyOutput], env.config);
         let debugTree = new BroccoliDebug(this.broccoliAppPluginInstance, `css-blocks:optimized`);
         return funnel(debugTree, {srcDir: env.modulePrefix, destDir: env.modulePrefix});
       } else {
@@ -175,30 +184,6 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
     } else {
       return tree;
     }
-  },
-
-  /**
-   * Post-process a tree. Runs after the files in this tree have been built.
-   * @param type - What kind of tree.
-   * @param tree  - The processed tree.
-   * @returns - The processed tree.
-   */
-  postprocessTree(type, tree) {
-    if (type !== "template") return tree;
-
-    // TODO: Do something in the template tree.
-    return tree;
-  },
-
-  /**
-   * Used to add preprocessors to the preprocessor registry. This is often used
-   * by addons like ember-cli-htmlbars and ember-cli-coffeescript to add a
-   * template or js preprocessor to the registry.
-   * @param _type - Either "self" or "parent".
-   * @param _registry - The registry to be set up.
-   */
-  setupPreprocessorRegistry(_type, _registry) {
-    // TODO: This hook may not be necessary in this addon.
   },
 };
 

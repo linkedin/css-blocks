@@ -1,5 +1,5 @@
-import * as config from "@css-blocks/config";
-import { NodeJsImporter, Options as ParserOptions, OutputMode } from "@css-blocks/core";
+import { Options as ParserOptions } from "@css-blocks/core";
+import { CSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-support";
 import type { ASTPlugin } from "@glimmer/syntax";
 import { ObjectDictionary } from "@opticss/util";
 import BroccoliDebug = require("broccoli-debug");
@@ -12,7 +12,7 @@ import type EmberAddon from "ember-cli/lib/models/addon";
 import type { AddonImplementation, ThisAddon, Tree } from "ember-cli/lib/models/addon";
 import type Project from "ember-cli/lib/models/project";
 
-import { BLOCK_GLOB, CSSBlocksEmberOptions, CSSBlocksTemplateCompilerPlugin, EmberASTPluginEnvironment } from "./CSSBlocksTemplateCompilerPlugin";
+import { BLOCK_GLOB, CSSBlocksTemplateCompilerPlugin, EmberASTPluginEnvironment } from "./CSSBlocksTemplateCompilerPlugin";
 
 const debug = debugGenerator("css-blocks:ember");
 
@@ -128,33 +128,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
     }
 
     // Get CSS Blocks options provided by the application, if present.
-    const options = <CSSBlocksEmberOptions>appOptions["css-blocks"]; // Do not clone! Contains non-json-safe data.
-    if (!options.aliases) options.aliases = {};
-    if (!options.analysisOpts) options.analysisOpts = {};
-    if (!options.optimization) options.optimization = {};
-
-    if (!options.parserOpts) {
-      options.parserOpts = config.searchSync(root) || {};
-    }
-
-    // Use the node importer by default.
-    options.parserOpts.importer = options.parserOpts.importer || new NodeJsImporter(options.aliases);
-
-    // Optimization is always disabled for now, until we get project-wide analysis working.
-    if (typeof options.optimization.enabled === "undefined") {
-      options.optimization.enabled = app.isProduction;
-    }
-
-    // Update parserOpts to include the absolute path to our application code directory.
-    if (!options.parserOpts.rootDir) {
-      options.parserOpts.rootDir = root;
-    }
-    options.parserOpts.outputMode = OutputMode.BEM_UNIQUE;
-
-    if (options.output !== undefined && typeof options.output !== "string") {
-      throw new Error(`Invalid css-blocks options in 'ember-cli-build.js': Output must be a string. Instead received ${options.output}.`);
-    }
-    return options;
+    return getConfig(root, app.isProduction, <CSSBlocksEmberOptions>appOptions["css-blocks"]);
   },
 
   optionsForCacheInvalidation() {

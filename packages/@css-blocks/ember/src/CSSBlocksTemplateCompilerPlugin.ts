@@ -1,7 +1,7 @@
-import { AnalysisOptions, Block, BlockCompiler, BlockDefinitionCompiler, BlockFactory, Configuration, INLINE_DEFINITION_FILE, Options as ParserOptions, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, EmberAnalysis, identToPath, isBroccoliTreeIdentifier } from "@css-blocks/ember-support";
+import { Block, BlockCompiler, BlockDefinitionCompiler, BlockFactory, Configuration, INLINE_DEFINITION_FILE, resolveConfiguration } from "@css-blocks/core";
+import { BroccoliTreeImporter, CSSBlocksEmberOptions, EmberAnalysis, identToPath, isBroccoliTreeIdentifier } from "@css-blocks/ember-support";
 import type { ASTPluginEnvironment } from "@glimmer/syntax";
-import { MultiMap, ObjectDictionary } from "@opticss/util";
+import { MultiMap } from "@opticss/util";
 import type { InputNode } from "broccoli-node-api";
 import outputWrapper = require("broccoli-output-wrapper");
 import md5Sum = require("broccoli-persistent-filter/lib/md5-hex");
@@ -11,7 +11,7 @@ import TemplateCompilerPlugin = require("ember-cli-htmlbars/lib/template-compile
 import FSMerger = require("fs-merger");
 import type { FS as MergedFileSystem } from "fs-merger";
 import * as FSTree from "fs-tree-diff";
-import { OptiCSSOptions, postcss } from "opticss";
+import { postcss } from "opticss";
 import * as path from "path";
 
 import { AnalyzingRewriteManager } from "./AnalyzingRewriteManager";
@@ -26,22 +26,12 @@ interface AdditionalFile {
 }
 export const BLOCK_GLOB = "**/*.block.{css,scss,sass,less,styl}";
 
-type Writeable<T> = { -readonly [P in keyof T]: T[P] };
-
 const debug = debugGenerator("css-blocks:ember");
 
 export interface EmberASTPluginEnvironment extends ASTPluginEnvironment {
   meta?: {
     moduleName?: string;
   };
-}
-
-export interface CSSBlocksEmberOptions {
-  output?: string;
-  aliases?: ObjectDictionary<string>;
-  analysisOpts?: AnalysisOptions;
-  parserOpts?: Writeable<ParserOptions>;
-  optimization?: Partial<OptiCSSOptions>;
 }
 
 /**
