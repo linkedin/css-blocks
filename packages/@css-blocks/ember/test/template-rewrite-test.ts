@@ -511,20 +511,20 @@ describe("Template Rewriting", function() {
           {{link-to "Inline Form" "inline-form" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-1" 1 1 0)}}
           {{#link-to "block-form" class=(-css-blocks 0 2 "${defaultBlock.guid}" null "${utilBlock.guid}" null 2 0 ".link-1" 1 ".util" 2 1 0 1 1)}}Block Form{{/link-to}}
 
-          {{link-to "Inline Form" "inline-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 1 0)}}
-          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 1 0)}}Block Form{{/link-to}}
+          {{link-to "Inline Form" "inline-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 1 0) activeClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-2" 0 ".link-2[active]" 2 1 0 1 1)}}
+          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 1 0) activeClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-2" 0 ".link-2[active]" 2 1 0 1 1)}}Block Form{{/link-to}}
 
-          {{link-to "Dynamic Inline Form" "inline-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 3 foo 1 0 0)}}
-          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 3 foo 1 0 0)}}Dynamic Block Form{{/link-to}}
+          {{link-to "Dynamic Inline Form" "inline-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 3 foo 1 0 0) activeClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-2" 0 ".link-2[active]" 2 1 0 1 1)}}
+          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-2" 1 3 foo 1 0 0) activeClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-2" 0 ".link-2[active]" 2 1 0 1 1)}}Dynamic Block Form{{/link-to}}
 
-          {{link-to "Inline Form, Inherited State" "inline-form-active" class=(-css-blocks 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0)}}
-          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0)}}Block Form, Inherited State{{/link-to}}
+          {{link-to "Inline Form, Inherited State" "inline-form-active" class=(-css-blocks 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0) activeClass=(-css-blocks 0 1 "${externalBlock.guid}" null 2 0 ".link-3" 0 ".link-3[active]" 2 1 0 1 1)}}
+          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0) activeClass=(-css-blocks 0 1 "${externalBlock.guid}" null 2 0 ".link-3" 0 ".link-3[active]" 2 1 0 1 1)}}Block Form, Inherited State{{/link-to}}
 
-          {{link-to "Inline Form, External State" "inline-form-active" class=(-css-blocks 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0)}}
-          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0)}}Block Form, External State{{/link-to}}
+          {{link-to "Inline Form, External State" "inline-form-active" class=(-css-blocks 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0) activeClass=(-css-blocks 0 1 "${externalBlock.guid}" null 2 0 ".link-3" 0 ".link-3[active]" 2 1 0 1 1)}}
+          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${externalBlock.guid}" null 1 0 ".link-3" 1 1 0) activeClass=(-css-blocks 0 1 "${externalBlock.guid}" null 2 0 ".link-3" 0 ".link-3[active]" 2 1 0 1 1)}}Block Form, External State{{/link-to}}
 
-          {{link-to "Inline Form, All States" "inline-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-4" 1 1 0)}}
-          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-4" 1 1 0)}}Block Form, All States{{/link-to}}
+          {{link-to "Inline Form, All States" "inline-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-4" 1 1 0) activeClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-4" 0 ".link-4[active]" 2 1 0 1 1) loadingClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-4" 0 ".link-4[loading]" 2 1 0 1 1) disabledClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-4" 0 ".link-4[disabled]" 2 1 0 1 1)}}
+          {{#link-to "block-form-active" class=(-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".link-4" 1 1 0) activeClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-4" 0 ".link-4[active]" 2 1 0 1 1) loadingClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-4" 0 ".link-4[loading]" 2 1 0 1 1) disabledClass=(-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".link-4" 0 ".link-4[disabled]" 2 1 0 1 1)}}Block Form, All States{{/link-to}}
         </div>
       `));
     let analysis = result.analysis.serialize();
