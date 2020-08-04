@@ -140,9 +140,6 @@ export class RuntimeDataGenerator {
 
       // implied by aliasing
       let aliases = [...style.getStyleAliases()];
-      if (aliases.length > 0) {
-        console.dir({aliases});
-      }
       implied.push(...aliases);
 
       // implied by composition
