@@ -156,12 +156,13 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         // tslint:disable-next-line:prefer-unknown-to-any
         let lazyAddons = this.project.addons.filter((a: any) => a.lazyLoading && a.lazyLoading.enabled === true);
         let jsOutputTrees = lazyAddons.map((a) => {
-          // XXX I have no idea how engines will work with embroider.
-          // XXX This code assumes that lazy engines are always compiled
-          // XXX at the same time as the application (not precompiled).
+          // This won't work with embroider in (at least) the case of
+          // precompiled ember engines. We need the intermediate build structure
+          // of the addon to include the files I output from template
+          // compilation.
+          let addon = a.addons.find((child) => child.name === "@css-blocks/ember");
           // tslint:disable-next-line:prefer-unknown-to-any
-          let publicTree = (<any>a).treeForPublic();
-          return findCssBlocksTemplateOutputTree(publicTree.inputNodes);
+          return addon && (<any>addon).templateCompiler;
         }).filter(Boolean);
         let lazyOutput = funnel(mergeTrees(jsOutputTrees), {destDir: "lazy-tree-output"});
         this.broccoliAppPluginInstance = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree, lazyOutput], env.config);
@@ -195,22 +196,4 @@ interface MaybeCSSBlocksTreePlugin {
   isCssBlocksTemplateCompiler: boolean | undefined;
 }
 
-function findCssBlocksTemplateOutputTree(trees: Array<MaybeCSSBlocksTree>): MaybeCSSBlocksTree | null {
-  for (let tree of trees) {
-    if (typeof tree === "object" && tree.isCssBlocksTemplateCompiler === true) {
-      return tree;
-    }
-  }
-  for (let tree of trees) {
-    if (typeof tree === "object" && tree._inputNodes) {
-      let found = findCssBlocksTemplateOutputTree(tree._inputNodes);
-      if (found !== null) {
-        return found;
-      }
-    }
-  }
-  return null;
-}
-
-// Aaaaand export the addon implementation!
 module.exports = EMBER_ADDON;
