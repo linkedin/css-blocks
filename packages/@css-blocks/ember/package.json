@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/ember",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "CSS Blocks Support for Ember. Apps should also install @css-blocks/ember-app.",
   "main": "dist/src/index.js",
   "author": "Chris Eppstein <ceppstein@linkedin.com>",
