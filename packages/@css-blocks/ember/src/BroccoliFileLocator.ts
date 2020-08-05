@@ -1,3 +1,4 @@
+import { pathToIdent } from "@css-blocks/ember-support";
 import type { FS as MergedFS } from "fs-merger";
 
 import { FileLocator } from "./FileLocator";
@@ -14,7 +15,7 @@ export class BroccoliFileLocator implements FileLocator {
     return possibleStylesheets.find((s) => this.fs.existsSync(s)) || null;
   }
   blockIdentifier(relativePathToStylesheet: string): string {
-    return `broccoli-tree:${relativePathToStylesheet}`;
+    return pathToIdent(relativePathToStylesheet);
   }
   possibleTemplatePaths(): Array<string> {
     return this.fs.entries(".", {globs: ["**/*.hbs"]}).map(e => e.relativePath);

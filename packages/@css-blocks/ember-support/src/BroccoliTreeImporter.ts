@@ -50,7 +50,11 @@ export function pathToIdent(relativePath: string): string {
   } else if (relativePath.startsWith("addon-tree-output/")) {
     relativePath = relativePath.substring(18);
   }
-  return IDENTIFIER_PREFIX + relativePath;
+  if (path.isAbsolute(relativePath)) {
+    return relativePath;
+  } else {
+    return IDENTIFIER_PREFIX + relativePath;
+  }
 }
 
 /**

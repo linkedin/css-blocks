@@ -137,14 +137,11 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     let additionalFileCacheKeys = new MultiMap<EmberAnalysis, string>(); // tracks the cache keys we create for each additional output file.
     // first pass discovers the set of all blocks & associate them to their corresponding analyses.
     for (let analyzedTemplate of this.analyzingRewriter.analyzedTemplates()) {
-      let { block, analysis } = analyzedTemplate;
+      let { analysis } = analyzedTemplate;
       analyses.push(analysis);
-      blocks.add(block);
-      templateBlocks.set(analysis, block);
-      let blockDependencies = block.transitiveBlockDependencies();
-      templateBlocks.set(analysis, ...blockDependencies);
-      for (let depBlock of blockDependencies) {
-        blocks.add(depBlock);
+      for (let block of analysis.transitiveBlockDependencies()) {
+        blocks.add(block);
+        templateBlocks.set(analysis, block);
       }
     }
     this.debug(`Analyzed ${analyses.length} templates.`);
@@ -324,7 +321,12 @@ function analysisPath(templatePath: string): string {
 
 function getOutputPath(input: MergedFileSystem, block: Block): string | null {
   if (isBroccoliTreeIdentifier(block.identifier)) {
-    return identToPath(input, block.identifier).replace(".block", ".compiledblock");
+    let blockPath = identToPath(input, block.identifier);
+    let parsed = path.parse(blockPath);
+    delete parsed.base;
+    parsed.ext = ".css";
+    parsed.name = parsed.name.replace(".block", ".compiledblock");
+    return path.format(parsed);
   } else {
     return null;
   }

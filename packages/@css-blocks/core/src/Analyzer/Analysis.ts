@@ -364,9 +364,11 @@ export class Analysis<K extends keyof TemplateTypes> {
     let styleNameMap = new Map<Style, string>();
     let styleIndexes = new Map<Style, number>();
 
+    let blocksUsed = new Set<Block>();
     let styles = [...this.stylesFound()];
 
     for (let found of styles) {
+      blocksUsed.add(found.block);
       styleNameMap.set(found, this.serializedName(found));
     }
 
@@ -383,7 +385,9 @@ export class Analysis<K extends keyof TemplateTypes> {
     // Serialize our blocks to a map of their local names.
     Object.keys(this.blocks).forEach((localName) => {
       let block = this.blocks[localName];
-      blocks[localName] = blockPaths && blockPaths.get(block) || block.identifier;
+      if (blocksUsed.has(block)) {
+        blocks[localName] = blockPaths && blockPaths.get(block) || block.identifier;
+      }
     });
     return { template, blocks, stylesFound, styleIndexes };
   }
