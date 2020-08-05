@@ -9,7 +9,7 @@ import {
   TemplateValidatorOptions,
   resolveConfiguration,
 } from "@css-blocks/core";
-import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_TYPE } from "@css-blocks/ember-support";
+import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_TYPE } from "@css-blocks/ember-utils";
 import { Syntax } from "@glimmer/syntax";
 import { ObjectDictionary, unionInto } from "@opticss/util";
 

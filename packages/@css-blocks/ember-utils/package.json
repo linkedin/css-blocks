@@ -1,12 +1,12 @@
 {
-  "name": "@css-blocks/ember-support",
+  "name": "@css-blocks/ember-utils",
   "version": "0.1.0",
   "description": "Shared code for CSS Blocks Support for Ember.",
   "main": "dist/src/index.js",
   "author": "Chris Eppstein <ceppstein@linkedin.com>",
   "license": "BSD-2-Clause",
-  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-support",
-  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-support#readme",
+  "repository": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-utils",
+  "homepage": "https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-utils#readme",
   "keywords": [
     "css-blocks"
   ],

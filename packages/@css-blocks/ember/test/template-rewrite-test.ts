@@ -1,5 +1,5 @@
 import { BlockFactory, Options } from "@css-blocks/core";
-import { EmberAnalysis, EmberAnalyzer, HandlebarsTemplate, TEMPLATE_NAME } from "@css-blocks/ember-support";
+import { EmberAnalysis, EmberAnalyzer, HandlebarsTemplate, TEMPLATE_NAME } from "@css-blocks/ember-utils";
 import { ASTPluginEnvironment, Syntax, Walker, builders, preprocess as parse, print, traverse } from "@glimmer/syntax";
 import { TempDir, createTempDir } from "broccoli-test-helper";
 import chai = require("chai");

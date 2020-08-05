@@ -5,7 +5,7 @@ import {
   isFalseCondition,
   isTrueCondition,
 } from "@css-blocks/core";
-import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_TYPE } from "@css-blocks/ember-support";
+import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_TYPE } from "@css-blocks/ember-utils";
 import {
   ElementAnalyzer,
 } from "@css-blocks/glimmer";

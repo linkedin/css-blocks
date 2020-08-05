@@ -1,4 +1,4 @@
-import { CSSBlocksEmberOptions, ResolvedCSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-support";
+import { CSSBlocksEmberOptions, ResolvedCSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-utils";
 import BroccoliDebug = require("broccoli-debug");
 import funnel = require("broccoli-funnel");
 import mergeTrees = require("broccoli-merge-trees");

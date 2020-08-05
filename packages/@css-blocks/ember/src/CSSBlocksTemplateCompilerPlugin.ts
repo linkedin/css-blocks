@@ -1,5 +1,5 @@
 import { Block, BlockCompiler, BlockDefinitionCompiler, BlockFactory, Configuration, INLINE_DEFINITION_FILE, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, CSSBlocksEmberOptions, EmberAnalysis, identToPath, isBroccoliTreeIdentifier } from "@css-blocks/ember-support";
+import { BroccoliTreeImporter, CSSBlocksEmberOptions, EmberAnalysis, identToPath, isBroccoliTreeIdentifier } from "@css-blocks/ember-utils";
 import type { ASTPluginEnvironment } from "@glimmer/syntax";
 import { MultiMap } from "@opticss/util";
 import type { InputNode } from "broccoli-node-api";

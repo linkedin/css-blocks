@@ -1,5 +1,5 @@
 import { Block, Configuration, Style, isAttrValue, isBlockClass, isStyle } from "@css-blocks/core";
-import { EmberAnalyzer } from "@css-blocks/ember-support";
+import { EmberAnalyzer } from "@css-blocks/ember-utils";
 import { SimpleAttribute, StyleMapping } from "@opticss/template-api";
 import { ObjectDictionary } from "@opticss/util";
 import * as debugGenerator from "debug";

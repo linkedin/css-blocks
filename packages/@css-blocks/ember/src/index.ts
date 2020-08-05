@@ -1,5 +1,5 @@
 import { Options as ParserOptions } from "@css-blocks/core";
-import { CSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-support";
+import { CSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-utils";
 import type { ASTPlugin } from "@glimmer/syntax";
 import { ObjectDictionary } from "@opticss/util";
 import BroccoliDebug = require("broccoli-debug");

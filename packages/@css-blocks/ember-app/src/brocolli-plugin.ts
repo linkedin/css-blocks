@@ -1,5 +1,5 @@
 import { Block, BlockCompiler, BlockFactory, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-support";
+import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-utils";
 import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";

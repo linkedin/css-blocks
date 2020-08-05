@@ -1,4 +1,4 @@
-import { pathToIdent } from "@css-blocks/ember-support";
+import { pathToIdent } from "@css-blocks/ember-utils";
 import type { FS as MergedFS } from "fs-merger";
 
 import { FileLocator } from "./FileLocator";
