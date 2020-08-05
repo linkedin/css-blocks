@@ -20,6 +20,7 @@
     "test": "yarn run test:runner",
     "test:runner": "echo TODO",
     "compile": "tsc --build && tsc --build runtime",
+    "prepare": "yarn run compile",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
     "prepublish": "rm -rf dist && yarn run compile && yarn run lintall",
