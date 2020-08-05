@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/ember-utils",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Shared code for CSS Blocks Support for Ember.",
   "main": "dist/src/index.js",
   "author": "Chris Eppstein <ceppstein@linkedin.com>",
