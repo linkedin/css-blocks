@@ -14,7 +14,7 @@ import { StringExpression as StringAST, TemplateElement, isStyleOfHelper } from 
 import { getEmberBuiltInStates, isEmberBuiltIn, isEmberBuiltInNode } from "@css-blocks/glimmer/dist/cjs/src/EmberBuiltins";
 import { CONCAT_HELPER_NAME } from "@css-blocks/glimmer/dist/cjs/src/helpers";
 import { cssBlockError, isConcatStatement, isMustacheStatement, isPathExpression, isStringLiteral, isSubExpression, isTextNode, pathString } from "@css-blocks/glimmer/dist/cjs/src/utils";
-import {
+import type {
   AST,
   ASTPlugin,
   NodeVisitor,

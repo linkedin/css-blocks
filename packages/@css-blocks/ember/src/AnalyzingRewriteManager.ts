@@ -10,7 +10,7 @@ import {
   resolveConfiguration,
 } from "@css-blocks/core";
 import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_TYPE } from "@css-blocks/ember-utils";
-import { Syntax } from "@glimmer/syntax";
+import type { Syntax } from "@glimmer/syntax";
 import { ObjectDictionary, unionInto } from "@opticss/util";
 
 import { FileLocator } from "./FileLocator";

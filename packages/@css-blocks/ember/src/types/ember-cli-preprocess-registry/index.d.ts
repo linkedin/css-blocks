@@ -1,4 +1,4 @@
-import { ASTPluginBuilder } from '@glimmer/syntax';
+import type { ASTPluginBuilder } from '@glimmer/syntax';
 
 // from https://github.com/typed-ember/ember-cli-typescript/blob/master/ts/types/ember-cli-preprocess-registry/index.d.ts
 declare module 'ember-cli-preprocess-registry' {

@@ -1,4 +1,4 @@
-import { AST } from "@glimmer/syntax";
+import type { AST } from "@glimmer/syntax";
 
 import { isBlockStatement, isMustacheStatement, isPathExpression, isStringLiteral } from "./utils";
 

@@ -8,7 +8,7 @@ import {
   BlockFactory,
 } from "@css-blocks/core";
 import { ResolverConfiguration } from "@glimmer/resolver";
-import {  AST, preprocess, traverse } from "@glimmer/syntax";
+import { AST, preprocess, traverse } from "@glimmer/syntax";
 import { TemplateIntegrationOptions } from "@opticss/template-api";
 import * as debugGenerator from "debug";
 import * as fs from "fs";

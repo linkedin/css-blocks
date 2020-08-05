@@ -58,10 +58,10 @@
   "dependencies": {
     "@amiller-gh/glimmer-analyzer": "^0.4.0",
     "@css-blocks/core": "^1.2.0",
-    "@glimmer/compiler": "^0.43.0",
+    "@glimmer/compiler": "^0.51.1",
     "@glimmer/resolution-map-builder": "0.5.1",
     "@glimmer/resolver": "^0.4.3",
-    "@glimmer/syntax": "^0.43.0",
+    "@glimmer/syntax": "^0.51.1",
     "@opticss/element-analysis": "^0.6.2",
     "@opticss/template-api": "^0.7.0",
     "@opticss/util": "^0.7.0",

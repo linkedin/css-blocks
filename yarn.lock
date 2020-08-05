@@ -1493,6 +1493,17 @@
     "@glimmer/util" "^0.43.0"
     "@glimmer/wire-format" "^0.43.0"
 
+"@glimmer/compiler@^0.51.1":
+  version "0.51.1"
+  resolved "https://registry.npmjs.org/@glimmer/compiler/-/compiler-0.51.1.tgz#2de0ab1a6a7d335e3b3a726b6e209c7f4c578033"
+  integrity sha512-Z+Kon7apLazd4y9AQzFs3O/JtbEg9Xo4lYB7njzosUUxc644Ix6tz14hPwu89MJ2hF16rJQpvLAvD+6Jq6ZKSw==
+  dependencies:
+    "@glimmer/interfaces" "^0.51.1"
+    "@glimmer/syntax" "^0.51.1"
+    "@glimmer/util" "^0.51.1"
+    "@glimmer/wire-format" "^0.51.1"
+    "@simple-dom/interface" "^1.4.0"
+
 "@glimmer/component@^0.13.0":
   version "0.13.0"
   resolved "https://registry.npmjs.org/@glimmer/component/-/component-0.13.0.tgz#17992f4f2c7330b3f26d2999f4deed4f7c9f80f7"
@@ -1535,7 +1546,7 @@
   resolved "https://registry.npmjs.org/@glimmer/encoder/-/encoder-0.34.8.tgz#e3548dab4fc639800fcc9267c236781c848f3ddd"
   integrity sha512-E6HGSu1XDXk8fWUQPiN6DarYUUV43PqQV+xUICuIlrBKH6WZSx9NeZaxi6q8nqmSnoAyhcPjHIrg3l0sypNs8w==
 
-"@glimmer/env@^0.1.7":
+"@glimmer/env@0.1.7", "@glimmer/env@^0.1.7":
   version "0.1.7"
   resolved "https://registry.npmjs.org/@glimmer/env/-/env-0.1.7.tgz#fd2d2b55a9029c6b37a6c935e8c8871ae70dfa07"
   integrity sha1-/S0rVakCnGs3psk16MiHGucN+gc=
@@ -1565,6 +1576,13 @@
   version "0.43.0"
   resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.43.0.tgz#a7a38c2476f87d68d6dc894840df17bc8b92de33"
   integrity sha512-rWu6WHVo6tuFFOKOSJWAWsFfXZgkdnKDnvhl3tAb20njW/0uBZ2nx7GZ3lImvBeG0HoxyzYA7pD299ps03TemA==
+
+"@glimmer/interfaces@^0.51.1":
+  version "0.51.1"
+  resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.51.1.tgz#c5637669ff83c630d91c700598b9963225d656f2"
+  integrity sha512-ImwkFNj92RaeANQPlnSQ5kTtK18JzkY2FPE7N7Ktn3AvdXgM4P3puQzPuXhTn4UCBl6NZtN8YqCAy7kQ6eRC0w==
+  dependencies:
+    "@simple-dom/interface" "^1.4.0"
 
 "@glimmer/low-level@^0.31.0":
   version "0.31.0"
@@ -1745,6 +1763,16 @@
     handlebars "^4.0.13"
     simple-html-tokenizer "^0.5.8"
 
+"@glimmer/syntax@^0.51.1":
+  version "0.51.1"
+  resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.51.1.tgz#24cb4f01693bd934075d03087bdc76ab6bff0524"
+  integrity sha512-z5XSbLgMKGU8tgSm9Ju4mimSAJ6/SZrY2Xw2znEAmUJOIPte+tmkdpggpgj7lAjD5u2YVBVHDbz6RaZDhYASsw==
+  dependencies:
+    "@glimmer/interfaces" "^0.51.1"
+    "@glimmer/util" "^0.51.1"
+    handlebars "^4.7.4"
+    simple-html-tokenizer "^0.5.9"
+
 "@glimmer/test-helpers@^0.31.2":
   version "0.31.2"
   resolved "https://registry.npmjs.org/@glimmer/test-helpers/-/test-helpers-0.31.2.tgz#3614cca5e1714ce08c41175ba2505e3329dca732"
@@ -1764,6 +1792,15 @@
   version "0.43.0"
   resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.43.0.tgz#dd28cd1a233c25427032437b9050c6fa6d098e2c"
   integrity sha512-RtjHU8/rhysOugu+Q0j6dQ3G67J4h45tQgKPEwVPxu8P+hqijqnz/lBLxTdVg/1zKmlqUkyngTr8H4Jpg2yF/g==
+
+"@glimmer/util@^0.51.1":
+  version "0.51.1"
+  resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.51.1.tgz#db27afd2ee7191e8e399c272b9f7fbe05cc26691"
+  integrity sha512-MCwUvV3z4pqLpeXcv5Mbchdgw0GeEPH8jUEkUTG837b5XlC2M/NO893E5A8AZbGNSP7CDsYibDExz7mjaLqq/A==
+  dependencies:
+    "@glimmer/env" "0.1.7"
+    "@glimmer/interfaces" "^0.51.1"
+    "@simple-dom/interface" "^1.4.0"
 
 "@glimmer/vm@^0.31.0":
   version "0.31.0"
@@ -1804,6 +1841,14 @@
   dependencies:
     "@glimmer/interfaces" "^0.43.0"
     "@glimmer/util" "^0.43.0"
+
+"@glimmer/wire-format@^0.51.1":
+  version "0.51.1"
+  resolved "https://registry.npmjs.org/@glimmer/wire-format/-/wire-format-0.51.1.tgz#3b6b9c7f108eeeb84297961cade16bc3b980c2f4"
+  integrity sha512-EcgSfF4jAq9Q90okQIoSu+P2Ss/ZZkbjo4ZtFEPqTr8U3qqb01pR4qHJF5lAU8uFebHasiB8OBGdBBB6jwFLDA==
+  dependencies:
+    "@glimmer/interfaces" "^0.51.1"
+    "@glimmer/util" "^0.51.1"
 
 "@lerna/add@3.20.0":
   version "3.20.0"
@@ -2654,6 +2699,11 @@
   integrity sha512-gw9VJfwyrshMBdzWaKrtbU1+ot2KX3LuQYFUR9DawCe8HQWUH+kWiVctugZwb2SmW4SBNFdNmcQdceziXKh6Uw==
   dependencies:
     typescript-collections "^1.2.5"
+
+"@simple-dom/interface@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.npmjs.org/@simple-dom/interface/-/interface-1.4.0.tgz#e8feea579232017f89b0138e2726facda6fbb71f"
+  integrity sha512-l5qumKFWU0S+4ZzMaLXFU8tQZsicHEMEyAxI5kDFGhJsRqDwe0a7/iPA/GdxlGyDKseQQAgIz5kzU7eXTrlSpA==
 
 "@sindresorhus/is@^0.7.0":
   version "0.7.0"
@@ -11030,6 +11080,18 @@ handlebars@*, handlebars@^4.0.1, handlebars@^4.0.11, handlebars@^4.0.13, handleb
   optionalDependencies:
     uglify-js "^3.1.4"
 
+handlebars@^4.7.4:
+  version "4.7.6"
+  resolved "https://registry.npmjs.org/handlebars/-/handlebars-4.7.6.tgz#d4c05c1baf90e9945f77aa68a7a219aa4a7df74e"
+  integrity sha512-1f2BACcBfiwAfStCKZNrUCgqNZkGsAT7UM3kkYtXuLo0KnaVfjKOyf7PRzB6++aK9STyT1Pd2ZCPe3EGOXleXA==
+  dependencies:
+    minimist "^1.2.5"
+    neo-async "^2.6.0"
+    source-map "^0.6.1"
+    wordwrap "^1.0.0"
+  optionalDependencies:
+    uglify-js "^3.1.4"
+
 har-schema@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/har-schema/-/har-schema-2.0.0.tgz#a94c2224ebcac04782a0d9035521f24735b7ec92"
@@ -13902,6 +13964,11 @@ minimist@^1.1.1, minimist@^1.1.3, minimist@^1.2.0:
   version "1.2.0"
   resolved "https://registry.npmjs.org/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"
   integrity sha1-o1AIsg9BOD7sH7kU9M1d95omQoQ=
+
+minimist@^1.2.5:
+  version "1.2.5"
+  resolved "https://registry.npmjs.org/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
+  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
 
 minimist@~0.0.1:
   version "0.0.10"
@@ -17505,7 +17572,7 @@ simple-html-tokenizer@^0.4.1:
   resolved "https://registry.npmjs.org/simple-html-tokenizer/-/simple-html-tokenizer-0.4.3.tgz#9b00b766e30058b4bb377c0d4f97566a13ab1be1"
   integrity sha512-OpUzgR+P/Qsu6ztZehr4PxvTbV4sDW91hAqc2tnz4fjuFTqErWIUdUMbnzX+19F4IEpSSfa0vCAz5xJSs0LpPw==
 
-simple-html-tokenizer@^0.5.1, simple-html-tokenizer@^0.5.3, simple-html-tokenizer@^0.5.8:
+simple-html-tokenizer@^0.5.1, simple-html-tokenizer@^0.5.3, simple-html-tokenizer@^0.5.8, simple-html-tokenizer@^0.5.9:
   version "0.5.9"
   resolved "https://registry.npmjs.org/simple-html-tokenizer/-/simple-html-tokenizer-0.5.9.tgz#1a83fe97f5a3e39b335fddf71cfe9b0263b581c2"
   integrity sha512-w/3FEDN94r4JQ9WoYrIr8RqDIPZdyNkdpbK9glFady1CAEyD97XWCv8HFetQO21w81e7h7Nh59iYTyG1mUJftg==

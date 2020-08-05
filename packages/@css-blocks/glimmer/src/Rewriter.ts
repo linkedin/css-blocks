@@ -6,7 +6,7 @@ import {
   resolveConfiguration,
 } from "@css-blocks/core";
 import { DEFAULT_EXPORT } from "@css-blocks/core/dist/src/BlockSyntax";
-import {
+import type {
   AST,
   ASTPlugin,
   NodeVisitor,

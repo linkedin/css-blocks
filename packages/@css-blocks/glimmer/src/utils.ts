@@ -1,5 +1,5 @@
 import { CssBlockError } from "@css-blocks/core";
-import { AST } from "@glimmer/syntax";
+import type { AST } from "@glimmer/syntax";
 import { ClassifiedParsedSelectors } from "opticss";
 
 export type AnalyzableNode = AST.ElementNode | AST.BlockStatement | AST.MustacheStatement | AST.SubExpression;
