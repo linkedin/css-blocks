@@ -97,6 +97,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let serializedData = JSON.stringify(data, undefined, "  ");
     debug("CSS Blocks Data is: \n%s", serializedData);
 
+    this.output.mkdirSync(`${this.appName}/services`, {recursive: true});
     this.output.writeFileSync(
       `${this.appName}/services/-css-blocks-data.js`,
       `// CSS Blocks Generated Data. DO NOT EDIT.
