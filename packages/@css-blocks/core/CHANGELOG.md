@@ -3,6 +3,70 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.1.2...v1.2.0) (2020-08-05)
+
+
+### Bug Fixes
+
+* Addl. block-interface-index error case. ([dc5ba19](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/dc5ba19693accfbcd4295358f78db458d913f386))
+* Address PR feedback. ([6f04b6a](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/6f04b6a2d5879f8180e0f6339f78cdf94212d71b))
+* Address PR feedback. ([68271ad](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/68271ad94fdb1ee1df295433aee273d03649339c))
+* Allow quotes surrounding block-name. ([9617fc5](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/9617fc5e0cecc4c9b14048ff0e8d99dc11abc699))
+* Allow the term classname as a single word. ([5201155](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/5201155de2660cf8cd62e92c07372492aa1bebb3))
+* Analysis serialization had incorrect source locations. ([9969614](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/99696142b622f7bf4898e5d6b9fa26e6b9972e42))
+* Apply CR suggestions ([b1068f3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/b1068f3914f3de3c4d99731e7e8708a68f6a0b4c))
+* Attribute intersections interpreted incorrectly during compilation. ([63b06e8](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/63b06e8349bad58de9623bdfef94ecde5a5fd046))
+* Clarify error message. ([b16f3dc](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/b16f3dcbe30fcd58996871e13137f21655906c3c))
+* Cleanup the deserialization code for analysis. ([2615eb9](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/2615eb9c05849ed567bc3064fa1e889ea4edf841))
+* Comment should say Style not BlockClass. ([006cc0f](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/006cc0f77a34b52b3c8f5727ebda17a462a58452))
+* Create a 'Source Analysis' for the new rewrite strategy. ([deefcdd](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/deefcddaaa4d3a0474a2ab0172c12a46314d3414))
+* Don't hard error on name/guid issues. ([18f7364](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/18f7364db184ac09d2b8cdfdec2987a780a172c7))
+* Emit block style composition declarations in a def file. ([d1185db](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/d1185dbf1d10f0c8b3533c41cbd1205aa475b33c))
+* Failing tests and linting issues for core. ([afc157b](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/afc157be099dc285c244eb4edef0c1fbb84f26b1))
+* Implement inline definitions in compiled blocks. ([e8541a0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/e8541a09a681ab8c9834244e0b34ab68bb44783f))
+* Lint error. ([436d09a](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/436d09a4a1eef61808691da14c0e1a5dba5098a2))
+* Lint errors. ([6eda525](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/6eda52517baf58b356730c8271767b755f93e31f))
+* PR feedback regarding errors. ([a7384c8](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/a7384c85238d2dc6a234b138097522c2ea7a4ac9))
+* Re-use precomiled css if available. Give compiled css to optimizer. ([5027298](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/502729859c7768daecceaab276d4cdfa80b24e63))
+* Remove superflous property check. ([31bcb9e](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/31bcb9eeb0e479f55618ef669685760450e68783))
+* Remove unnecessary try/catch. ([492c1e7](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/492c1e79049d7b5ab2b8b6f8ad564f91e821cdaf))
+* Remove unnecessary type guard named isBooleanAttr. ([ebcb555](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/ebcb5556b931d2bd1a3f80670541b3c7d888aa16))
+* Removed stray reference to obsolete isBooleanAttr function. ([a825a16](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/a825a16a014846c96076ad6518f7e9aee6c97aab))
+* Revert last commit. ([69494a4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/69494a49e3123a18c950b3cff158d8410a95274c))
+* Serialized analysis block paths were missing/wrong. ([e680ef6](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/e680ef60512848b08c26101ebbe692bdc395b868))
+* Several inheritance and composition bugs. ([4f23cc3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/4f23cc30774f954938af23821174f112bc9475a6))
+* Throw in BlockFactory if compiled css file. ([3d901e6](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/3d901e65cd90382869bb3245513b0676821a5d7d))
+* Trim newlines from end of compiled comments. ([62eb34e](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/62eb34ee321069fdd2381d2600d0ce8aad3ded5a))
+* Update comment per CR. ([7e3fe64](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/7e3fe64ddbce94b1538c54b0a38bd876da7973c3))
+* Updates per CR feedback. ([717a205](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/717a20565c1f64b54ce521cd04bca74bd83248a2))
+* Use debug idents for errors in BlockFactory. ([294f0be](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/294f0bee600876ea9ded23b692f12882b9f93e06))
+* Use null in getUniqueBlockName. ([8118d49](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/8118d49f544883566e423442f1b90ae17e2c37a9))
+
+
+### Features
+
+* Add BlockCompiler method for compiling a definition file. ([183dc2f](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/183dc2fa457c1fa18c8b20f65e8e41919237fd2d))
+* Basic block definition generation. ([8a3cade](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/8a3cadef0b40c1b2ba0fc809c71411cfd8d14962))
+* Basic runtime data generation with optimizer disabled. ([cabd495](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/cabd4957881662c1b7d383c8e173c168c4887f0c))
+* Compiled CSS importing in NodeJSImporter. ([983e7c6](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/983e7c6fbb49885169c9d6b83fbcb1567365d2fb))
+* Data schema for Aggregate Rewriting. ([ca10a16](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/ca10a16f1b5b5395414a227d7b1e028d4fa117f7))
+* Definition ingestion and parsing into block. ([0d6e76a](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/0d6e76a0147a10747cfcc63736235e6c7d92da80))
+* Deserializing block definition files & analysis in the ember-app. ([ec338bf](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/ec338bf95ff214fcdaa52b619005d6cf36451801))
+* Generate an index for each style in a block. ([94d1ded](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/94d1deda900164ea70e6a0575d4557178d9b60f1))
+* Infrastructure for single pass analyzer & rewriter. ([466b933](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/466b9336f28c19afb45ba51e39121fed409c3986))
+* Merge rulesets from Compiled CSS into block. ([e6c1ca7](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/e6c1ca7519e60d7784e931913de34ad09778f530))
+* Parse and set block-interface-index ([7a0150d](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/7a0150dfe7d1e8fd588db9306c35b2e20467c931))
+* Process block-class declarations. ([fa35c3d](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/fa35c3d0d567eea0e258e571814216f69b663fbf))
+* Show the identifier of the other block if a name collision occurs. ([140d3cd](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/140d3cd56f47310c01282b20b5cd0c39d5c4838c))
+* Use incoming GUIDs. Ensure uniqueness. ([3912811](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/39128110e47a5828f83a6d07e22a4b92fead12ac))
+* Utilities for compiled CSS parsing. ([bec10d2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/bec10d2a9ea844b9d7072acb415b492804dc801e))
+* Validate block-syntax-version. ([179d3db](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/179d3db3992d874653c4f8e28ee2f944ff5de8c0))
+* Validate each interface-index is unique. ([92a5b25](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/92a5b253c5ec1145412fb22a7ef88425ece3408c))
+
+
+
+
+
 ## [1.1.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.1.1...v1.1.2) (2020-07-20)
 
 

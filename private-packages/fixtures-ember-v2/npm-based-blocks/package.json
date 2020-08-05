@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@css-blocks-fixtures-v2/npm-based-blocks",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "css-blocks": {
     "main": "blocks/index.block.css"
   }

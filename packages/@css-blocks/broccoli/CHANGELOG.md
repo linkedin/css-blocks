@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.1.2...v1.2.0) (2020-08-05)
+
+
+### Features
+
+* Infrastructure for single pass analyzer & rewriter. ([466b933](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/commit/466b9336f28c19afb45ba51e39121fed409c3986))
+
+
+
+
+
 ## [1.1.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/broccoli/compare/v1.1.1...v1.1.2) (2020-07-20)
 
 **Note:** Version bump only for package @css-blocks/broccoli

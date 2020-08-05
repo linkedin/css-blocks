@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.1.2...v1.2.0) (2020-08-05)
+
+
+### Bug Fixes
+
+* Allow null in typeguards. ([f69c457](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/f69c45789e2f5e9b9f0eb8879b39193fc3654c48))
+* Analysis serialization had incorrect source locations. ([9969614](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/99696142b622f7bf4898e5d6b9fa26e6b9972e42))
+* Only add an analysis for block:scope if it's not explicitly there. ([8ee7d51](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/8ee7d51949040d1198b0b5306f1556e85b911570))
+
+
+### Features
+
+* Deserializing block definition files & analysis in the ember-app. ([ec338bf](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/ec338bf95ff214fcdaa52b619005d6cf36451801))
+* Infrastructure for single pass analyzer & rewriter. ([466b933](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/commit/466b9336f28c19afb45ba51e39121fed409c3986))
+
+
+
+
+
 ## [1.1.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/glimmer/compare/v1.1.1...v1.1.2) (2020-07-20)
 
 
