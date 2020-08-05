@@ -338,7 +338,7 @@ describe("Template Rewriting", function() {
         </div>
       `));
     let analysis = result.analysis.serialize();
-    assert.deepEqual(Object.keys(analysis.blocks).length, 3);
+    assert.deepEqual(Object.keys(analysis.blocks).length, 2);
     assert.deepEqual(analysis.stylesFound, [
       "default.world",
       "default.world[thick]",
@@ -405,7 +405,7 @@ describe("Template Rewriting", function() {
       </div>
       `));
     let analysis = result.analysis.serialize();
-    assert.deepEqual(Object.keys(analysis.blocks).length, 3);
+    assert.deepEqual(Object.keys(analysis.blocks).length, 2);
     assert.deepEqual(analysis.stylesFound, [
       "default.world",
       "default.world[thick]",
