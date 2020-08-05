@@ -81,7 +81,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
     }
     debug(`Loaded ${blocksUsed.size} blocks.`);
     debug(`Loaded ${optimizer.analyses.length} analyses.`);
-    let cssFileName = cssBlocksOutputFilename(this.appName, this.cssBlocksOptions);
+    let cssFileName = cssBlocksOutputFilename(this.cssBlocksOptions);
     let sourceMapFileName = `${cssFileName}.map`;
     let optLogFileName = `${cssFileName}.optimization.log`;
     let optimizationResult = await optimizer.optimize(cssFileName);
@@ -153,20 +153,32 @@ export class CSSBlocksStylesProcessorPlugin extends Plugin {
   previousSourceTree: FSTree;
   cssBlocksOptions: ResolvedCSSBlocksEmberOptions;
   constructor(appName: string, cssBlocksOptions: ResolvedCSSBlocksEmberOptions, inputNodes: InputNode[]) {
-    super(inputNodes);
+    super(inputNodes, {persistentOutput: true});
     this.appName = appName;
     this.previousSourceTree = new FSTree();
     this.cssBlocksOptions = cssBlocksOptions;
   }
   async build() {
+    let mergeIntoAppStyles = true;
     if (this.cssBlocksOptions.output) {
       // if the output filename is explicitly declared, we don't merge it with
       // the application styles.
-      return;
+      mergeIntoAppStyles = false;
     }
     // Read the optimized CSS Blocks styles file, generated previously by the CSSBlocksApplicationPlugin.
-    let stylesheetPath = cssBlocksOutputFilename(this.appName, this.cssBlocksOptions);
-    let entries = this.input.entries(".", {globs: [stylesheetPath]});
+    let stylesheetPath = cssBlocksOutputFilename(this.cssBlocksOptions);
+    let applicationStylesheetPath = `app/styles/app.css`;
+    if (!this.input.existsSync(applicationStylesheetPath)) {
+      mergeIntoAppStyles = false;
+      debug(`No app/styles/app.css file found. Blocks content is in ${stylesheetPath}. The application should handle it.`);
+    }
+    let globs: Array<string>;
+    if (mergeIntoAppStyles) {
+      globs = [stylesheetPath, applicationStylesheetPath];
+    } else {
+      globs = [stylesheetPath];
+    }
+    let entries = this.input.entries(".", {globs});
     let currentFSTree = FSTree.fromEntries(entries);
     let patch = this.previousSourceTree.calculatePatch(currentFSTree);
     if (patch.length === 0) {
@@ -175,19 +187,26 @@ export class CSSBlocksStylesProcessorPlugin extends Plugin {
       this.previousSourceTree = currentFSTree;
     }
 
-    const blocksFileEntry = entries[0];
-
     // And read the application CSS that was previously built by Ember and ignored by CSS Blocks.
-    const blocksFileContents = this.input.readFileSync(blocksFileEntry.relativePath, { encoding: "utf8" });
-    const appCssFileContents = this.input.readFileSync("app/styles/app.css", { encoding: "utf8" });
+    const blocksFileContents = this.input.readFileSync(stylesheetPath, { encoding: "utf8" });
+    let outputContents: string;
+    let outputPath: string;
+    if (mergeIntoAppStyles) {
+      const appCssFileContents = this.input.readFileSync(applicationStylesheetPath, { encoding: "utf8" });
+      outputContents = `${appCssFileContents}\n${blocksFileContents}`;
+      outputPath = applicationStylesheetPath;
+    } else {
+      outputContents = blocksFileContents;
+      outputPath = stylesheetPath;
+    }
 
     // Now, write out the combined result of the application CSS and CSS Blocks contents.
-    this.output.mkdirSync("app/styles", { recursive: true });
-    this.output.writeFileSync("app/styles/app.css", `${appCssFileContents}\n${blocksFileContents}`);
+    this.output.mkdirSync(path.dirname(outputPath), { recursive: true });
+    this.output.writeFileSync(outputPath, outputContents);
   }
 }
 
-function cssBlocksOutputFilename(appName, options: ResolvedCSSBlocksEmberOptions) {
+function cssBlocksOutputFilename(options: ResolvedCSSBlocksEmberOptions) {
   let outputName = options.output || "css-blocks.css";
-  return `${appName}/styles/${outputName}`;
+  return `app/styles/${outputName}`;
 }
