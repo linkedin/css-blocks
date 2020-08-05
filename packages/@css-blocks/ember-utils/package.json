@@ -10,6 +10,11 @@
   "keywords": [
     "css-blocks"
   ],
+  "files": [
+    "dist",
+    "*.md",
+    "test/mocha.opts"
+  ],
   "scripts": {
     "test": "yarn run test:runner",
     "test:runner": "echo 'tested by the ember addons'",

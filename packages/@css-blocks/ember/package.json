@@ -11,6 +11,12 @@
     "css-blocks",
     "ember-addon"
   ],
+  "files": [
+    "dist",
+    "types",
+    "*.md",
+    "test/mocha.opts"
+  ],
   "scripts": {
     "test": "yarn run test:runner",
     "test:runner": "mocha --opts test/mocha.opts dist/test",

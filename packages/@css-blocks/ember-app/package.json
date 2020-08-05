@@ -11,6 +11,11 @@
     "css-blocks",
     "ember-addon"
   ],
+  "files": [
+    "dist",
+    "*.md",
+    "test/mocha.opts"
+  ],
   "scripts": {
     "test": "yarn run test:runner",
     "test:runner": "echo TODO",

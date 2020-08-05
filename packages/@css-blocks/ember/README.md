@@ -2,23 +2,17 @@
   <img alt="CSS Blocks" width="480px" src="http://css-blocks.com/static/media/wordmark-animated.012177e4.svg" />
 </p>
 
-# @css-blocks/ember-app
+# @css-blocks/ember
 
-An ember-cli addon for Ember applications using CSS Blocks in its application code. This addon should be a dependency in Ember applications.
+An ember-cli addon for Ember applications using CSS Blocks applications, addons, and engines that author stylesheets using CSS Blocks.
 
-This addon is only part of the Ember build pipeline for CSS Blocks! Your application, as well as any addons or engines you rely on, will need the `@css-blocks/ember` addon as a dependency if they have any CSS Blocks files.
+This addon is only part of the Ember build pipeline for CSS Blocks! Any application that consumes CSS Blocks from itself, an addon, or an engine will need the `@css-blocks/ember-app` addon as a dependency.
 
 ## Basic Usage
 
-1. Add this addon as a dependency to your application.
-2. Also make sure you add `@css-blocks/ember` as a dependency if you are authoring css using CSS Blocks.
-3. Run `ember build`.
-
-If your application has a `app/styles/app.css` file, the build output of CSS Blocks will be automatically added to end of that file. If your project uses some other filename (E.g. due to preprocessing) then a file named `app/styles/css-blocks.css` is added to your application styles directory during the build and it can be included/imported by your preprocessor or concatenated with other files to produce your application's css file.
-
-If your application uses engines, the `css-blocks` service must be added as a dependency to each engine that uses `@css-blocks/ember`.
-
-That's it! For development builds, we'll generate CSS output with some developer-friendly BEM class names so you can better understand your application. For production builds, you'll get a CSS artifact that's been concatenated, optimized, and minified.
+1. Add this addon as a dependency to your application, addon, or engine.
+2. Also make sure you the application adds `@css-blocks/ember-app` as a dependency.
+3. Run `ember build`. See the [README for `@css-blocks/ember-app](../ember-app/README.md) for more instructions.
 
 ## Options
 
