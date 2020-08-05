@@ -1,14 +1,14 @@
 {
   "private": true,
-  "version": "1.2.1",
+  "version": "1.2.2",
   "name": "@css-blocks-fixtures-v2/ember-engine",
   "keywords": [
     "ember-addon",
     "ember-engine"
   ],
   "dependencies": {
-    "@css-blocks-fixtures-v2/ember-addon": "^1.2.1",
-    "@css-blocks/ember": "^1.2.1",
+    "@css-blocks-fixtures-v2/ember-addon": "^1.2.2",
+    "@css-blocks/ember": "^1.2.2",
     "ember-cli-babel": "^7.7.3",
     "ember-cli-htmlbars": "^5.2.0"
   },

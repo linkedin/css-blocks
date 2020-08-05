@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/compare/v1.2.1...v1.2.2) (2020-08-05)
+
+
+### Bug Fixes
+
+* Clean up the dependencies on [@glimmer](https://github.com/glimmer) packages. ([0bc7964](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/commit/0bc796470412f32bf6afd9cc5b889557b45364bd))
+
+
+
+
+
 ## [1.2.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/compare/v1.2.0...v1.2.1) (2020-08-05)
 
 

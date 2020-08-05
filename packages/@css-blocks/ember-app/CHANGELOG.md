@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/compare/v1.2.1...v1.2.2) (2020-08-05)
+
+
+### Bug Fixes
+
+* Create the application services directory if it's not there. ([85c3560](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/commit/85c3560d843fc3e58160a03be5e592aaf9fb5ee4))
+
+
+
+
+
 ## [1.2.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/compare/v1.2.0...v1.2.1) (2020-08-05)
 
 

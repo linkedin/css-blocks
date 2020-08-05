@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/ember",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "CSS Blocks Support for Ember. Apps should also install @css-blocks/ember-app.",
   "main": "dist/src/index.js",
   "author": "Chris Eppstein <ceppstein@linkedin.com>",
@@ -57,7 +57,7 @@
     "@css-blocks/config": "^1.2.0",
     "@css-blocks/core": "^1.2.0",
     "@css-blocks/ember-utils": "^1.2.1",
-    "@css-blocks/glimmer": "^1.2.0",
+    "@css-blocks/glimmer": "^1.2.2",
     "@opticss/template-api": "^0.7.0",
     "@opticss/util": "^0.7.0",
     "broccoli-debug": "^0.6.5",

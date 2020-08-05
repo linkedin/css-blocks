@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@css-blocks-fixtures/ember-app",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "description": "Simple app with CSS Blocks templates and stylesheets that consumes addons and engines that use CSS Blocks.",
   "repository": "",
   "license": "BSD-2-Clause",
@@ -17,10 +17,10 @@
     "test": "ember test"
   },
   "dependencies": {
-    "@css-blocks-fixtures/ember-addon": "^1.2.0",
-    "@css-blocks-fixtures/ember-engine": "^1.2.0",
-    "@css-blocks-fixtures/ember-lazy-engine": "^1.2.0",
-    "@css-blocks/ember-cli": "^1.2.0",
+    "@css-blocks-fixtures/ember-addon": "^1.2.2",
+    "@css-blocks-fixtures/ember-engine": "^1.2.2",
+    "@css-blocks-fixtures/ember-lazy-engine": "^1.2.2",
+    "@css-blocks/ember-cli": "^1.2.2",
     "ember-cli-babel": "^7.7.3",
     "ember-engines": "^0.8.5"
   },
