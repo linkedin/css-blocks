@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.3](https://github.com/linkedin/css-blocks/compare/v1.2.2...v1.2.3) (2020-08-05)
+
+
+### Bug Fixes
+
+* Build the runtimes when building all packages. ([748f77e](https://github.com/linkedin/css-blocks/commit/748f77edcbe316f9ce83e2a2118a0c35544854db))
+* Prepare the new ember packages before publishing them. ([c5dc8bc](https://github.com/linkedin/css-blocks/commit/c5dc8bc1e2fc5be413fcdf3fcfff67919a2620f6))
+
+
+
+
+
 ## [1.2.2](https://github.com/linkedin/css-blocks/compare/v1.2.1...v1.2.2) (2020-08-05)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/compare/v1.2.2...v1.2.3) (2020-08-05)
+
+
+### Bug Fixes
+
+* Prepare the new ember packages before publishing them. ([c5dc8bc](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/commit/c5dc8bc1e2fc5be413fcdf3fcfff67919a2620f6))
+
+
+
+
+
 ## [1.2.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/compare/v1.2.1...v1.2.2) (2020-08-05)
 
 
