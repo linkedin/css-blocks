@@ -187,14 +187,24 @@ export class CSSBlocksStylesProcessorPlugin extends Plugin {
     } else {
       this.previousSourceTree = currentFSTree;
     }
-
+    let blocksFileContents: string;
     // And read the application CSS that was previously built by Ember and ignored by CSS Blocks.
-    const blocksFileContents = this.input.readFileSync(stylesheetPath, { encoding: "utf8" });
+    if (this.input.existsSync(stylesheetPath)) {
+      blocksFileContents = this.input.readFileSync(stylesheetPath, { encoding: "utf8" });
+    } else {
+      // We always write the output file if this addon is installed, even if
+      // there's no css-blocks files.
+      blocksFileContents = "";
+    }
     let outputContents: string;
     let outputPath: string;
     if (mergeIntoAppStyles) {
       const appCssFileContents = this.input.readFileSync(applicationStylesheetPath, { encoding: "utf8" });
-      outputContents = `${appCssFileContents}\n${blocksFileContents}`;
+      if (blocksFileContents) {
+        outputContents = `${appCssFileContents}\n${blocksFileContents}`;
+      } else {
+        outputContents = appCssFileContents;
+      }
       outputPath = applicationStylesheetPath;
     } else {
       outputContents = blocksFileContents;
