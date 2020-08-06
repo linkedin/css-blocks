@@ -36,7 +36,6 @@
   },
   "devDependencies": {
     "@css-blocks/code-style": "^1.2.0",
-    "@css-blocks/glimmer": "^1.0.0",
     "@types/chai-as-promised": "^7.1.2",
     "@types/console-ui": "^2.2.3",
     "@types/core-object": "^3.0.1",
@@ -53,7 +52,6 @@
     "@css-blocks/config": "^1.2.0",
     "@css-blocks/core": "^1.2.0",
     "@css-blocks/ember-utils": "^1.2.1",
-    "@css-blocks/glimmer": "^1.2.2",
     "@glimmer/compiler": "^0.43.0",
     "@glimmer/syntax": "^0.43.0",
     "@opticss/template-api": "^0.7.0",
