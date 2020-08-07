@@ -8,6 +8,7 @@
     "strict": true,
     "sourceMap": false,
     "declarationMap": false,
+    "preserveConstEnums": false,
     "tsBuildInfoFile": "../runtime.tsbuildinfo",
     "paths": {
       "@css-blocks/ember/*": ["addon/*"]
