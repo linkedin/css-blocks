@@ -9,7 +9,6 @@
         "packages/@css-blocks/ember-cli/package.json",
         "packages/@css-blocks/glimmer/package.json",
         "packages/@css-blocks/jsx/package.json",
-        "packages/@css-blocks/playground/package.json",
         "packages/@css-blocks/runtime/package.json",
         "packages/@css-blocks/test-utils/package.json",
         "packages/@css-blocks/webpack/examples/jsx/package.json",

@@ -293,9 +293,6 @@ Provides the build system integration for [Ember CLI][EMBER_CLI_WEBSITE].
 ### [@css-blocks/website][WEBSITE]
 The public-facing website and hosted Typedoc API documentation hosted at [www.css-blocks.com][CSS_BLOCKS_WEBSITE]. Built as a React app and dog-foods our JSX/Webpack integrations.
 
-### [@css-blocks/playground][PLAYGROUND]
-The demo application that allows users to play with CSS Blocks syntax and OptiCSS in-browser. Built as a Glimmer application and dog-foods our Glimmer, Ember CLI and Broccoli integrations.
-
 [README]: ./README.md
 [CORE]: ./packages/@css-blocks/css-blocks
 [RUNTIME]: ./packages/@css-blocks/runtime
@@ -305,7 +302,6 @@ The demo application that allows users to play with CSS Blocks syntax and OptiCS
 [WEBPACK]: ./packages/@css-blocks/webpack
 [BROCCOLI]: ./packages/@css-blocks/broccoli
 [WEBSITE]: ./packages/@css-blocks/website
-[PLAYGROUND]: ./packages/@css-blocks/playground
 
 [OPTICSS]: https://github.com/linkedin/opticss
 [EMBER_CLI_WEBSITE]: https://ember-cli.com/

@@ -745,4 +745,3 @@ This is most useful for global application states – like during initial applic
 [WEBPACK]: ./packages/@css-blocks/webpack
 [BROCCOLI]: ./packages/@css-blocks/broccoli
 [WEBSITE]: ./packages/@css-blocks/website
-[PLAYGROUND]: ./packages/@css-blocks/playground

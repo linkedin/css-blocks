@@ -5,7 +5,7 @@ As a contributor, you represent that the code you submit is your
 original work or that of your employer (in which case you represent you
 have the right to bind your employer).  By submitting code, you (and, if
 applicable, your employer) are licensing the submitted code to LinkedIn
-and the open source community subject to the BSD 2-Clause license. 
+and the open source community subject to the BSD 2-Clause license.
 
 Getting Started
 ===============
@@ -62,9 +62,6 @@ The monorepo includes two projects that dog-food the Glimmer/Broccoli and JSX/We
 ### [@css-blocks/website][WEBSITE] (JSX/Webpack)
 The public-facing website and hosted Typedoc API documentation hosted at [www.css-blocks.com][CSS_BLOCKS_WEBSITE]. Built as a React app and dog-foods our JSX/Webpack integrations. For instruction on how to start the developer server, please check out the [@css-blocks/website README][WEBSITE]. For details on the [JSX][JSX] and [Webpack][WEBPACK] integrations, please read their respective package READMEs.
 
-### [@css-blocks/playground][PLAYGROUND] (Glimmer/Broccoli/Ember-CLI)
-This demo application will allow users to play with CSS Blocks syntax and OptiCSS in-browser. Built as a Glimmer application and dog-foods our Glimmer, Ember CLI and Broccoli integrations. For instruction on how to start the developer server, please check out the [@css-blocks/playground README][PLAYGROUND]. For details on the [Glimmer][GLIMMER], [Broccoli][BROCCOLI] and [Ember-CLI][EMBER-CLI] integrations, please read their respective package READMEs.
-
 Responsible Disclosure of Security Vulnerabilities
 ==================================================
 
@@ -87,7 +84,6 @@ Tips for Getting Your Pull Request Accepted
 [pubkey]: https://www.linkedin.com/help/linkedin/answer/79676
 [disclosure_email]: mailto:security@linkedin.com?subject=Vulnerability%20in%20Github%20LinkedIn/css-blocks%20-%20%3Csummary%3E
 [WEBSITE]: ./packages/@css-blocks/website
-[PLAYGROUND]: ./packages/@css-blocks/playground
 [JSX]: ./packages/@css-blocks/jsx
 [GLIMMER]: ./packages/@css-blocks/glimmer
 [EMBER_CLI]: ./packages/@css-blocks/ember-cli
