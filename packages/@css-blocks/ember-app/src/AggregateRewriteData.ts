@@ -77,6 +77,19 @@ export interface AggregateRewriteData {
 }
 
 export interface BlockInfo {
+  // Maps the source name of the attribute (E.g. `.button[color]`) to a
+  // a map that maps the value of the attribute to the source name of that
+  // attribute value. Example:
+  // {
+  //   ":scope[mode]": {
+  //      "collapsed": ":scope[mode=collapsed]",
+  //      "open": ":scope[mode=open]",
+  //      "minimal": ":scope[mode=minimal]",
+  //   }
+  // }
+  // The value returned from this mapping is suitable for being passed as a key
+  // to `blockInterfaceStyles`.
+  groups: ObjectDictionary<ObjectDictionary<string>>;
   // The styles of this block
   // Note: this includes all the styles that are inherited but not overridden
   //       but does not include the styles that are inherited but then overridden.

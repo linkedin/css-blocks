@@ -1,4 +1,4 @@
-import { Block, Configuration, Style, isAttrValue, isBlockClass, isStyle } from "@css-blocks/core";
+import { AttrValue, Block, Configuration, Style, isAttrValue, isBlockClass, isStyle } from "@css-blocks/core";
 import { EmberAnalyzer } from "@css-blocks/ember-utils";
 import { SimpleAttribute, StyleMapping } from "@opticss/template-api";
 import { ObjectDictionary } from "@opticss/util";
@@ -184,6 +184,21 @@ export class RuntimeDataGenerator {
   generateBlockInfo(block: Block): BlockInfo {
     let blockInterfaceStyles: ObjectDictionary<LocalStyleIndex> = {};
     let resolvedInterface = block.resolvedStyleInterface();
+    let resolvedStyles = Object.values(resolvedInterface);
+    let attributes: Array<[string, ObjectDictionary<string>]> = resolvedStyles.filter(s => isAttrValue(s)).map((s) => {
+      let attrValue = <AttrValue>s;
+      let groupName = attrValue.attribute.asSource();
+      let attrName = attrValue.asSource();
+      return [groupName, {[attrValue.value]: attrName}];
+    });
+    let groups: ObjectDictionary<ObjectDictionary<string>> = attributes.reduce(
+      (v, [groupName, valueMap]) => {
+        if (!v[groupName]) v[groupName] = {};
+        Object.assign(v[groupName], valueMap);
+        return v;
+      },
+      {} as ObjectDictionary<ObjectDictionary<string>>,
+    );
     let styleNames = Object.keys(resolvedInterface).sort();
     let i = 0;
     for (let styleName of styleNames) {
@@ -196,6 +211,7 @@ export class RuntimeDataGenerator {
       implementations[this.blockIndex(impl)] = styleNames.map(n => this.styleIndex(implInterface[n]));
     }
     return {
+      groups,
       blockInterfaceStyles,
       implementations,
     };
