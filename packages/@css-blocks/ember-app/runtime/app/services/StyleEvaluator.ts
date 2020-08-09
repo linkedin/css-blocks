@@ -1,3 +1,5 @@
+import type { ObjectDictionary } from "@opticss/util";
+
 import { AggregateRewriteData } from "./AggregateRewriteData";
 
 export type ClassNameExpression = Array<string | number | boolean | null>;
@@ -41,6 +43,7 @@ export class StyleEvaluator {
   // because the block it implements has changed since the implementing block
   // was precompiled and released.
   blockStyleIds: Array<Array<number | null>> = [];
+  blockGroups: Array<ObjectDictionary<ObjectDictionary<string>>> = [];
   styles: Array<number | null> = [];
   constructor(data: AggregateRewriteData, args: ClassNameExpression) {
     this.data = data;
@@ -60,6 +63,7 @@ export class StyleEvaluator {
       let styleIds = blockInfo.implementations[runtimeBlockIndex];
       assert(styleIds, "unknown implementation");
       this.blockStyleIds.push(styleIds);
+      this.blockGroups.push(blockInfo.groups);
     }
   }
 
@@ -99,6 +103,7 @@ export class StyleEvaluator {
     // to true.
     let numConditions = this.num();
     let styleStates = new Array<boolean>(this.styles.length);
+    let stylesApplied = new Set<number>();
     while (numConditions--) {
       let condition = this.num();
       switch (condition) {
@@ -113,14 +118,13 @@ export class StyleEvaluator {
           this.evaluateTernaryCondition(styleStates);
           break;
         case Condition.switch:
-          this.evaluateSwitchCondition(styleStates);
+          this.evaluateSwitchCondition(stylesApplied);
           break;
         default:
           throw new Error(`Unknown condition type ${condition}`);
       }
     }
 
-    let stylesApplied = new Set<number>();
     for (let i = 0; i < this.styles.length; i++) {
       if (styleStates[i] && this.styles[i] !== null) {
         stylesApplied.add(this.styles[i]!);
@@ -129,33 +133,30 @@ export class StyleEvaluator {
 
     return stylesApplied;
   }
-  evaluateSwitchCondition(styleStates: Array<boolean>) {
+
+  evaluateSwitchCondition(stylesApplied: Set<number>) {
     let falsyBehavior = this.num();
+    let blockIndex = this.num();
+    let attribute = this.str();
     let currentValue = this.str(true, true);
-    let numValues = this.num();
-    let found = false;
-    let legal: Array<String> = [];
-    while (numValues--) {
-      let v = this.str();
-      legal.push(v);
-      let match = (v === currentValue);
-      found = found || match;
-      let numStyles = this.num();
-      while (numStyles--) {
-        let s = this.num();
-        if (match) styleStates[s] = true;
+    if (!currentValue) {
+      if (currentValue === null || falsyBehavior === FalsySwitchBehavior.unset) {
+        return;
+      } else {
+        throw new Error(`A value is required for ${attribute}.`);
       }
     }
-    if (!found) {
-      if (!currentValue) {
-        if (falsyBehavior === FalsySwitchBehavior.error) {
-          throw new Error(`A value is required.`);
-        }
-      } else {
-        throw new Error(`"${currentValue} is not a known attribute value. Expected one of: ${legal.join(", ")}`);
-      }
+    let attrValue = this.blockGroups[blockIndex][attribute][currentValue];
+    if (attrValue === undefined) {
+      let legal = Object.keys(this.blockGroups[blockIndex][attribute]);
+      throw new Error(`"${currentValue} is not a known attribute value. Expected one of: ${legal.join(", ")}`);
+    }
+    let style = this.blockStyleIds[blockIndex][this.blockStyleIndices[blockIndex][attrValue]];
+    if (style) {
+      stylesApplied.add(style);
     }
   }
+
   evaluateTernaryCondition(styleStates: Array<boolean>) {
     // Ternary supports multiple styles being enabled when true
     // and multiple values being enabled when false.

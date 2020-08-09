@@ -1,4 +1,5 @@
 import {
+  Attribute,
   Block,
   Configuration as CSSBlocksConfiguration,
   Style,
@@ -248,68 +249,59 @@ class HelperInvocationGenerator {
     node.params = [];
     node.hash = hash();
     node.params.push(num(HelperInvocationGenerator.HELPER_VERSION));
-    let { blocks, blockParams } = this.buildBlockParams(sourceAnalysis);
+
+    let stylesUsed = new Array<Style>();
+    let blocksUsed = new Array<Block>();
+    let staticParams = this.buildStaticParams(sourceAnalysis, stylesUsed);
+    let ternaryParams = this.buildTernaryParams(sourceAnalysis, stylesUsed);
+    let booleanParams = this.buildBooleanParams(sourceAnalysis, stylesUsed);
+    let switchParams = this.buildSwitchParams(sourceAnalysis, blocksUsed);
+    let styleParams = this.buildStyleParams(sourceAnalysis, blocksUsed, stylesUsed);
+    let blockParams = this.buildBlockParams(blocksUsed);
+
     node.params.push(...blockParams);
-    let { styleIndices, styleParams } = this.buildStyleParams(sourceAnalysis, blocks);
     node.params.push(...styleParams);
-    node.params.push(...this.buildStaticParams(sourceAnalysis, styleIndices));
-    node.params.push(...this.buildTernaryParams(sourceAnalysis, styleIndices));
-    node.params.push(...this.buildBooleanParams(sourceAnalysis, styleIndices));
-    node.params.push(...this.buildSwitchParams(sourceAnalysis, styleIndices));
+    node.params.push(...staticParams );
+    node.params.push(...ternaryParams);
+    node.params.push(...booleanParams);
+    node.params.push(...switchParams);
     return node;
   }
 
-  indexOfBlock(blocks: Array<Block>, style: Style) {
-    for (let i = 0; i < blocks.length; i++) {
-      if (style.block === blocks[i] || style.block.isAncestorOf(blocks[i])) {
-        return i;
-      }
-    }
-    throw new Error("[internal error] Block not found.");
-  }
-
-  buildBlockParams(sourceAnalysis: ElementSourceAnalysis): {blocks: Array<Block>; blockParams: Array<AST.Expression>} {
+  buildBlockParams(blocksUsed: Array<Block>): Array<AST.Expression> {
     const { number: num, string: str, null: nullNode } = this.builders;
-    let blocks = [...sourceAnalysis.blocksFound];
     let blockParams = new Array<AST.Expression>();
-    blockParams.push(num(blocks.length));
-    for (let block of blocks) {
+    blockParams.push(num(blocksUsed.length));
+    for (let block of blocksUsed) {
       blockParams.push(str(block.guid));
       blockParams.push(nullNode()); // this could be a block when we implement block passing
     }
-    return {blocks, blockParams};
+    return blockParams;
   }
 
-  buildStyleParams(sourceAnalysis: ElementSourceAnalysis, blocks: Array<Block>): {styleIndices: Map<Style, number>; styleParams: Array<AST.Expression>} {
+  buildStyleParams(sourceAnalysis: ElementSourceAnalysis, blocks: Array<Block>, stylesUsed: Array<Style>): Array<AST.Expression> {
     const { number: num, string: str } = this.builders;
-    let styles = [...sourceAnalysis.stylesFound];
     let styleParams = new Array<AST.Expression>();
-    styleParams.push(num(styles.length));
-    let styleIndices = new Map<Style, number>();
-    let i = 0;
-    for (let style of styles) {
-      styleIndices.set(style, i++);
-      styleParams.push(num(this.indexOfBlock(blocks, style)));
+    styleParams.push(num(stylesUsed.length));
+    for (let style of stylesUsed) {
+      styleParams.push(num(blockIndex(blocks, style)));
       styleParams.push(str(style.asSource()));
     }
     styleParams.push(num(sourceAnalysis.size()));
-    return {
-      styleIndices,
-      styleParams,
-    };
+    return styleParams;
   }
 
-  buildStaticParams(sourceAnalysis: ElementSourceAnalysis, styleIndices: Map<Style, number>): Array<AST.Expression> {
+  buildStaticParams(sourceAnalysis: ElementSourceAnalysis, stylesUsed: Array<Style>): Array<AST.Expression> {
     const { number: num } = this.builders;
     let params = new Array<AST.Expression>();
     for (let style of sourceAnalysis.staticStyles) {
       params.push(num(StyleCondition.STATIC));
-      params.push(num(styleIndices.get(style)!));
+      params.push(num(styleIndex(stylesUsed, style)));
     }
     return params;
   }
 
-  buildTernaryParams(sourceAnalysis: ElementSourceAnalysis, styleIndices: Map<Style, number>): Array<AST.Expression> {
+  buildTernaryParams(sourceAnalysis: ElementSourceAnalysis, stylesUsed: Array<Style>): Array<AST.Expression> {
     const { number: num } = this.builders;
     let params = new Array<AST.Expression>();
     for (let ternaryClass of sourceAnalysis.ternaryStyles) {
@@ -322,7 +314,7 @@ class HelperInvocationGenerator {
       if (isTrueCondition(ternaryClass)) {
         params.push(num(ternaryClass.whenTrue.length));
         for (let cls of ternaryClass.whenTrue) {
-          params.push(num(styleIndices.get(cls)!));
+          params.push(num(styleIndex(stylesUsed, cls)));
         }
       } else {
         // there are no classes applied if true
@@ -331,7 +323,7 @@ class HelperInvocationGenerator {
       if (isFalseCondition(ternaryClass)) {
         params.push(num(ternaryClass.whenFalse.length));
         for (let cls of ternaryClass.whenFalse) {
-          params.push(num(styleIndices.get(cls)!));
+          params.push(num(styleIndex(stylesUsed, cls)));
         }
       } else {
         // there are no classes applied if false
@@ -341,7 +333,7 @@ class HelperInvocationGenerator {
     return params;
   }
 
-  buildBooleanParams(sourceAnalysis: ElementSourceAnalysis, styleIndices: Map<Style, number>): Array<AST.Expression> {
+  buildBooleanParams(sourceAnalysis: ElementSourceAnalysis, stylesUsed: Array<Style>): Array<AST.Expression> {
     const { number: num } = this.builders;
     let params = new Array<AST.Expression>();
     for (let dynamicAttr of sourceAnalysis.booleanStyles) {
@@ -353,13 +345,13 @@ class HelperInvocationGenerator {
       }
       params.push(num(dynamicAttr.value.size));
       for (let attr of dynamicAttr.value) {
-        params.push(num(styleIndices.get(attr)!));
+        params.push(num(styleIndex(stylesUsed, attr)));
       }
     }
     return params;
   }
 
-  buildSwitchParams(sourceAnalysis: ElementSourceAnalysis, styleIndices: Map<Style, number>): Array<AST.Expression> {
+  buildSwitchParams(sourceAnalysis: ElementSourceAnalysis, blocksUsed: Array<Block>): Array<AST.Expression> {
     const { number: num, string: str } = this.builders;
     let params = new Array<AST.Expression>();
 
@@ -371,24 +363,21 @@ class HelperInvocationGenerator {
       } else {
         params.push(num(FalsySwitchBehavior.unset));
       }
-      params.push(this.mustacheToStringExpression(this.builders, switchStyle.stringExpression!));
-      params.push(num(values.length));
+      // We have to find the attribute that belongs to the most specific sub-block.
+      let attr: Attribute | undefined;
       for (let value of values) {
-        let obj = switchStyle.group[value];
-        params.push(str(value));
-        // If there are values provided for this conditional, they are meant to be
-        // applied instead of the selected attribute group member.
-        if (switchStyle.value.size) {
-          params.push(num(switchStyle.value.size));
-          for (let val of switchStyle.value) {
-            params.push(num(styleIndices.get(val)!));
+        let attrValue = switchStyle.group[value];
+        if (!attr) {
+          attr = attrValue.attribute;
+        } else {
+          if (attr.block.isAncestorOf(attrValue.block)) {
+            attr = attrValue.attribute;
           }
         }
-        else {
-          params.push(num(1));
-          params.push(num(styleIndices.get(obj)!));
-        }
       }
+      params.push(num(blockIndex(blocksUsed, attr!)));
+      params.push(str(attr!.asSource()));
+      params.push(this.mustacheToStringExpression(this.builders, switchStyle.stringExpression!));
     }
     return params;
   }
@@ -431,4 +420,24 @@ class HelperInvocationGenerator {
       return assertNever(stringExpression);
     }
   }
+}
+
+function styleIndex(stylesUsed: Array<Style>, style: Style): number {
+  let index = stylesUsed.indexOf(style);
+  if (index >= 0) { return index; }
+  stylesUsed.push(style);
+  return stylesUsed.length - 1;
+}
+
+function blockIndex(blocks: Array<Block>, style: Style | Attribute) {
+  for (let i = 0; i < blocks.length; i++) {
+    if (style.block === blocks[i] || style.block.isAncestorOf(blocks[i])) {
+      return i;
+    } else if (blocks[i].isAncestorOf(style.block)) {
+      blocks[i] = style.block;
+      return i;
+    }
+  }
+  blocks.push(style.block);
+  return blocks.length - 1;
 }

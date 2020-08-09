@@ -188,7 +188,7 @@ describe("Template Rewriting", function() {
       minify(`
         <div class={{-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ":scope" 1 1 0}}>
           <h1 class={{-css-blocks 0 1 "${headerBlock.guid}" null 1 0 ":scope" 1 1 0}}>Hello,
-          <span class={{-css-blocks 0 3 "${defaultBlock.guid}" null "${headerBlock.guid}" null "${typographyBlock.guid}" null 6 0 ".world" 1 ".emphasis" 2 ".underline" 0 ".world[thick]" 1 ".emphasis[style=bold]" 1 ".emphasis[style=italic]" 5 1 1 1 2 3 isWorld 1 0 0 2 (eq isThick 1) 1 3 4 1 textStyle 2 "bold" 1 4 "italic" 1 5}}>World</span>!</h1>
+          <span class={{-css-blocks 0 3 "${headerBlock.guid}" null "${typographyBlock.guid}" null "${defaultBlock.guid}" null 4 0 ".emphasis" 1 ".underline" 2 ".world" 2 ".world[thick]" 5 1 0 1 1 3 isWorld 1 2 0 2 (eq isThick 1) 1 3 4 1 0 ".emphasis[style]" textStyle}}>World</span>!</h1>
           <div class={{-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".world" 0 ".planet" 1 3 isWorld 1 0 1 1}}>World</div>
           <div class={{-css-blocks 0 1 "${defaultBlock.guid}" null 2 0 ".planet" 0 ".world" 1 3 isWorld 1 0 1 1}}>World</div>
           <div class={{-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ".world" 1 3 isWorld 0 1 0}}>World</div>
@@ -334,7 +334,7 @@ describe("Template Rewriting", function() {
       minify(`
         <div class={{-css-blocks 0 1 "${defaultBlock.guid}" null 1 0 ":scope" 1 1 0}}>
           <h1 class={{-css-blocks 0 1 "${headerBlock.guid}" null 1 0 ":scope" 1 1 0}}>Hello,
-          <World cssClass={{-css-blocks 0 2 "${defaultBlock.guid}" null "${headerBlock.guid}" null 5 0 ".world" 1 ".emphasis" 0 ".world[thick]" 1 ".emphasis[style=bold]" 1 ".emphasis[style=italic]" 4 1 0 1 1 1 2 4 1 (textStyle) 2 "bold" 1 3 "italic" 1 4}} />!</h1>
+          <World cssClass={{-css-blocks 0 2 "${headerBlock.guid}" null "${defaultBlock.guid}" null 3 1 ".world" 0 ".emphasis" 1 ".world[thick]" 4 1 0 1 1 1 2 4 1 0 ".emphasis[style]" (textStyle)}} />!</h1>
         </div>
       `));
     let analysis = result.analysis.serialize();
@@ -400,7 +400,7 @@ describe("Template Rewriting", function() {
         <h1 class={{-css-blocks 0 1 "${headerBlock.guid}" null 1 0 ":scope" 1 1 0}}>Hello,
           {{yield (hash
             classnames=(hash
-              action=(-css-blocks 0 2 "${defaultBlock.guid}" null "${headerBlock.guid}" null 5 0 ".world" 1 ".emphasis" 0 ".world[thick]" 1 ".emphasis[style=bold]" 1 ".emphasis[style=italic]" 4 1 0 1 1 2 isThick 1 2 4 1 (textStyle) 2 "bold" 1 3 "italic" 1 4)))}}
+              action=(-css-blocks 0 2 "${headerBlock.guid}" null "${defaultBlock.guid}" null 3 1 ".world" 0 ".emphasis" 1 ".world[thick]" 4 1 0 1 1 2 isThick 1 2 4 1 0 ".emphasis[style]" (textStyle))))}}
         </h1>
       </div>
       `));
