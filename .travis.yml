@@ -22,7 +22,7 @@ before_install:
 install:
   - lerna bootstrap --registry=https://registry.npmjs.org/
 
-script: lerna run test
+script: lerna run --concurrency 1 test
 
 cache:
   yarn: true
