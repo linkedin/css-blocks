@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/compare/v1.2.4...v1.3.0) (2020-08-11)
+
+
+### Features
+
+* Simplify rewrite for dynamic attribute values. ([0717e93](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/commit/0717e9365095e49f34857aaa373e8bc0fb69a492))
+
+
+
+
+
 ## [1.2.4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/compare/v1.2.3...v1.2.4) (2020-08-05)
 
 **Note:** Version bump only for package @css-blocks/ember

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/linkedin/css-blocks/compare/v1.2.4...v1.3.0) (2020-08-11)
+
+
+### Bug Fixes
+
+* Don't use the css-blocks installation location for guid gen. ([f21e652](https://github.com/linkedin/css-blocks/commit/f21e652d4707f55b669ff222cf6028b17466b35a))
+* Extract StyleEvaluator, StyleResolver classes from runtime service. ([282f90d](https://github.com/linkedin/css-blocks/commit/282f90de9714b36e1b5fdbbdff422005d5ccd257))
+* Sometimes there's no css blocks output. ([1adbd1b](https://github.com/linkedin/css-blocks/commit/1adbd1b42c4bb916d6ea8a2c719acd7a99f2d9eb))
+
+
+### Features
+
+* Emit attribute groups in the runtime aggregate rewrite data. ([901032b](https://github.com/linkedin/css-blocks/commit/901032b940ce4c8ce9ec5af578359bf94e7ae616))
+* Simplify rewrite for dynamic attribute values. ([0717e93](https://github.com/linkedin/css-blocks/commit/0717e9365095e49f34857aaa373e8bc0fb69a492))
+
+
+
+
+
 ## [1.2.4](https://github.com/linkedin/css-blocks/compare/v1.2.3...v1.2.4) (2020-08-05)
 
 **Note:** Version bump only for package css-blocks-monorepo

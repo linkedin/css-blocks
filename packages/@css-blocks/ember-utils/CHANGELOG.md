@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-utils/compare/v1.2.4...v1.3.0) (2020-08-11)
+
+**Note:** Version bump only for package @css-blocks/ember-utils
+
+
+
+
+
 ## [1.2.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-utils/compare/v1.2.0...v1.2.1) (2020-08-05)
 
 

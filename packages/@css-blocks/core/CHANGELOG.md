@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.2.4...v1.3.0) (2020-08-11)
+
+
+### Bug Fixes
+
+* Don't use the css-blocks installation location for guid gen. ([f21e652](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/f21e652d4707f55b669ff222cf6028b17466b35a))
+
+
+
+
+
 # [1.2.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.1.2...v1.2.0) (2020-08-05)
 
 

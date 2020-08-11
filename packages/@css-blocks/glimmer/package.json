@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/glimmer",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Statically analyze & rewrite the css-block styles in Handlebars templates.",
   "main": "dist/cjs/src/index.js",
   "types": "dist/cjs/src/index.d.ts",
@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@amiller-gh/glimmer-analyzer": "^0.4.0",
-    "@css-blocks/core": "^1.2.0",
+    "@css-blocks/core": "^1.3.0",
     "@glimmer/compiler": "^0.51.1",
     "@glimmer/resolution-map-builder": "0.5.1",
     "@glimmer/resolver": "^0.4.3",
