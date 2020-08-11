@@ -74,6 +74,10 @@ export default class CSSBlocksService extends Service {
     return result;
   }
 
+  /**
+   * Returns the list of optimization outputs that mention
+   * any style applied to the element.
+   */
   getPossibleOptimizations(stylesApplied: Set<number>): Array<OptimizationEntry> {
     let optimizations: Array<number> = [];
     for (let style of stylesApplied) {
