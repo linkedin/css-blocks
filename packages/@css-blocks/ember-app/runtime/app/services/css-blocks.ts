@@ -5,7 +5,7 @@ import Service from "@ember/service";
 
 /// @ts-ignore
 import { data as _data } from "./-css-blocks-data";
-import type { AggregateRewriteData, ConditionalStyle, GlobalBlockIndex, ImpliedStyles, OptimizationEntry, StyleExpression, StyleRequirements } from "./AggregateRewriteData";
+import type { AggregateRewriteData, GlobalBlockIndex, OptimizationEntry, StyleExpression } from "./AggregateRewriteData";
 import { StyleEvaluator } from "./StyleEvaluator";
 import { StyleResolver } from "./StyleResolver";
 
@@ -85,6 +85,9 @@ export default class CSSBlocksService extends Service {
     return [...new Set(optimizations)].map(i => data.optimizations[i]);
   }
 
+  /**
+   * Reverse maps style ids to their style names for debugging.
+   */
   debugStyles(msg: string, stylesApplied: Set<number>): void {
     if (!DEBUGGING) return;
     let appliedStyleNames = new Array<string>();
@@ -110,24 +113,6 @@ export default class CSSBlocksService extends Service {
     return debugExpr;
   }
 
-  ensureRequirementsAreSatisfied(stylesApplied: Set<number>, requirements: StyleRequirements): void {
-    let checkAgain = true;
-    while (checkAgain) {
-      checkAgain = false;
-      for (let s of stylesApplied) {
-        let expr = requirements[s];
-        if (expr && !this.evaluateExpression(expr, stylesApplied)) {
-          if (DEBUGGING) {
-            console.log(`Removing ${this.styleNames[s]} because`, this.debugExpression(expr));
-          }
-          stylesApplied.delete(s);
-          checkAgain = true;
-          break;
-        }
-      }
-    }
-  }
-
   evaluateExpression(expr: StyleExpression, stylesApplied: Set<number>, stylesApplied2?: Set<number>): boolean {
     if (typeof expr === "number") return (stylesApplied.has(expr) || (!!stylesApplied2 && stylesApplied2.has(expr)));
     if (expr[0] === Operator.AND) {
@@ -145,52 +130,6 @@ export default class CSSBlocksService extends Service {
     } else {
       return false;
     }
-  }
-
-  applyImpliedStyles(stylesApplied: Set<number>, impliedStyles: ImpliedStyles): Set<string> {
-    let aliases = new Set<string>();
-    let newStyles = new Set(stylesApplied);
-    let failedConditions = new Set<ConditionalStyle>();
-    // for each new style we get the directly implied styles by each of them and
-    // add them to the next iteration of new styles. if a conditionally applied
-    // style doesn't match, it might be due to an implied style that isn't applied
-    // yet, so we keep the failures around and try adding them during each
-    // iteration once new styles are taken into account.
-    while (newStyles.size > 0) {
-      let nextStyles = new Set<number>();
-      let newFailedConditions = new Set<ConditionalStyle>();
-      for (let style of newStyles) {
-        let implied = impliedStyles[style];
-        if (!implied) continue;
-        for (let i of implied) {
-          if (typeof i === "number") {
-            nextStyles.add(i);
-          } else if (typeof i === "string") {
-            aliases.add(i);
-          } else {
-            if (this.evaluateExpression(i.conditions, stylesApplied, newStyles)) {
-              for (let s of i.styles) nextStyles.add(s);
-            } else {
-              newFailedConditions.add(i);
-            }
-          }
-        }
-      }
-      for (let s of newStyles) {
-        stylesApplied.add(s);
-      }
-      newStyles = nextStyles;
-      for (let c of failedConditions) {
-        if (this.evaluateExpression(c.conditions, stylesApplied, newStyles)) {
-          for (let s of c.styles) newStyles.add(s);
-          failedConditions.delete(c);
-        }
-      }
-      for (let c of newFailedConditions) {
-        failedConditions.add(c);
-      }
-    }
-    return aliases;
   }
 }
 
