@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/compare/v1.3.0...v1.3.1) (2020-08-12)
+
+
+### Bug Fixes
+
+* Add missing concat helper. ([aad0431](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/commit/aad043189dca8c7ca85bba6ee675a3fcf4a75c19))
+
+
+
+
+
 # [1.3.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/compare/v1.2.4...v1.3.0) (2020-08-11)
 
 
