@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v1.3.1...v1.3.2) (2020-08-20)
+
+**Note:** Version bump only for package @css-blocks/cli
+
+
+
+
+
 # [1.3.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v1.2.4...v1.3.0) (2020-08-11)
 
 **Note:** Version bump only for package @css-blocks/cli

@@ -1,11 +1,11 @@
 {
   "name": "@css-blocks/website",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "private": true,
   "dependencies": {
-    "@css-blocks/jsx": "^1.3.0",
+    "@css-blocks/jsx": "^1.3.2",
     "@css-blocks/runtime": "^1.2.0",
-    "@css-blocks/webpack": "^1.3.0",
+    "@css-blocks/webpack": "^1.3.2",
     "@types/jest": "^22.2.3",
     "@types/react-router-dom": "^4.2.3",
     "autoprefixer": "7.1.6",

@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@css-blocks-fixtures/ember-addon",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "description": "simple addon that uses css-blocks.",
   "keywords": [
     "ember-addon"
@@ -10,7 +10,7 @@
   "license": "BSD-2-Clause",
   "author": "",
   "dependencies": {
-    "@css-blocks/ember-cli": "^1.3.0",
+    "@css-blocks/ember-cli": "^1.3.2",
     "ember-cli-babel": "^7.17.2",
     "ember-cli-htmlbars": "^4.2.2"
   },

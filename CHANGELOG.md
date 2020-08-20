@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.2](https://github.com/linkedin/css-blocks/compare/v1.3.1...v1.3.2) (2020-08-20)
+
+
+### Bug Fixes
+
+* Make location writeable so ember-cli-htmlbars doesn't choke. ([8d513ba](https://github.com/linkedin/css-blocks/commit/8d513bae48eb5c4c061e99840e85faa389bf7e52))
+
+
+
+
+
 ## [1.3.1](https://github.com/linkedin/css-blocks/compare/v1.3.0...v1.3.1) (2020-08-12)
 
 

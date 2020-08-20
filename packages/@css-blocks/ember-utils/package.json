@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/ember-utils",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "description": "Shared code for CSS Blocks Support for Ember.",
   "main": "dist/src/index.js",
   "author": "Chris Eppstein <ceppstein@linkedin.com>",
@@ -45,8 +45,8 @@
     "ember-cli-htmlbars": "^4.3.1"
   },
   "dependencies": {
-    "@css-blocks/config": "^1.3.0",
-    "@css-blocks/core": "^1.3.0",
+    "@css-blocks/config": "^1.3.2",
+    "@css-blocks/core": "^1.3.2",
     "@opticss/template-api": "^0.7.0",
     "fs-merger": "^3.0.2"
   },

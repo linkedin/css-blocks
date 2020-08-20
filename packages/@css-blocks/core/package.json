@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/core",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "description": "Fast, maintainable, optimal, component-oriented CSS.",
   "main": "dist/src/index.js",
   "scripts": {
