@@ -7,7 +7,7 @@ import type Addon from "ember-cli/lib/models/addon";
 import type { AddonImplementation, ThisAddon } from "ember-cli/lib/models/addon";
 import Project from "ember-cli/lib/models/project";
 
-import { CSSBlocksApplicationPlugin, CSSBlocksStylesProcessorPlugin } from "./brocolli-plugin";
+import { CSSBlocksApplicationPlugin, CSSBlocksStylesProcessorPlugin } from "./broccoli-plugin";
 
 interface AddonEnvironment {
   parent: Addon | EmberApp;
