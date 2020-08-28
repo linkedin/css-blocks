@@ -25,6 +25,7 @@ interface AdditionalFile {
   contents: string;
 }
 export const BLOCK_GLOB = "**/*.block.{css,scss,sass,less,styl}";
+export const COMPILED_BLOCK_GLOB = "**/*.compiledblock.css";
 
 const debug = debugGenerator("css-blocks:ember");
 
