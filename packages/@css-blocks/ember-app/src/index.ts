@@ -1,4 +1,5 @@
 import { CSSBlocksEmberOptions, ResolvedCSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-utils";
+import broccoliConcat = require("broccoli-concat");
 import BroccoliDebug = require("broccoli-debug");
 import funnel = require("broccoli-funnel");
 import mergeTrees = require("broccoli-merge-trees");
@@ -7,7 +8,7 @@ import type Addon from "ember-cli/lib/models/addon";
 import type { AddonImplementation, ThisAddon } from "ember-cli/lib/models/addon";
 import Project from "ember-cli/lib/models/project";
 
-import { CSSBlocksApplicationPlugin, CSSBlocksStylesProcessorPlugin } from "./broccoli-plugin";
+import { CSSBlocksApplicationPlugin, CSSBlocksStylesPreprocessorPlugin } from "./broccoli-plugin";
 
 interface AddonEnvironment {
   parent: Addon | EmberApp;
@@ -172,6 +173,10 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         return tree;
       }
     } else if (type === "css") {
+      // TODO: We shouldn't need to use a custom plugin here anymore.
+      //       Refactor this to use simple broccoli filters and merges.
+      //       (This means the prev. plugin becomes reponsible for putting
+      //       the css file in the right directory.)
       if (!env.isApp) {
         return tree;
       }
@@ -182,11 +187,39 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         throw new Error("[css-blocks/ember-app] The CSS tree ran before the JS tree, so the CSS tree doesn't have the contents for CSS Blocks files. This shouldn't ever happen, but if it does, please file an issue with us!");
       }
       // Get the combined CSS file
-      const cssBlocksContentsTree = new CSSBlocksStylesProcessorPlugin(env.modulePrefix, env.config, [this.broccoliAppPluginInstance, tree]);
+      const cssBlocksContentsTree = new CSSBlocksStylesPreprocessorPlugin(env.modulePrefix, env.config, [this.broccoliAppPluginInstance, tree]);
       return new BroccoliDebug(mergeTrees([tree, cssBlocksContentsTree], { overwrite: true }), "css-blocks:css-preprocess");
     } else {
       return tree;
     }
+  },
+
+  postprocessTree(type, tree) {
+    let env = this.env!;
+
+    if (type === "css") {
+      if (!env.isApp) {
+        return tree;
+      }
+      // TODO: THIS IS WRONG - FIX THESE HARCODED PATHS THIS IS A BLOCKER AAAUGH
+      const concatTree = broccoliConcat(
+        tree,
+        {
+          inputFiles: ["assets/css-blocks.css", "assets/@css-blocks-fixtures-v2/ember-app.css"],
+          outputFile: "assets/@css-blocks-fixtures-v2/ember-app.css",
+          sourceMapConfig: {
+            enabled: true,
+            extensions: ["css"],
+            inline: true,
+            mapCommentType: "block",
+          },
+        },
+      );
+      const mergedTree = mergeTrees([tree, concatTree], { overwrite: true });
+      return new BroccoliDebug(mergedTree, "css-blocks:css-postprocess");
+    }
+
+    return tree;
   },
 };
 

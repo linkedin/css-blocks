@@ -1389,23 +1389,6 @@
     silent-error "^1.1.0"
     walk-sync "^0.3.1"
 
-"@glimmer/application@^0.13.0":
-  version "0.13.0"
-  resolved "https://registry.npmjs.org/@glimmer/application/-/application-0.13.0.tgz#1268daee149beba1eb7f48155adcc572029d4598"
-  integrity sha512-DmQUY8fU8sdKnxzNAFUaKqPORSUJozSKHr1oV+lwdkn3RDRHLhG/R+Zcy5m5xJgqw/mAbAhZMMAPIe3RHIw8aw==
-  dependencies:
-    "@glimmer/compiler" "^0.34.7"
-    "@glimmer/component" "^0.13.0"
-    "@glimmer/di" "^0.1.9"
-    "@glimmer/env" "^0.1.7"
-    "@glimmer/interfaces" "^0.34.7"
-    "@glimmer/object-reference" "^0.34.7"
-    "@glimmer/opcode-compiler" "^0.34.7"
-    "@glimmer/reference" "^0.34.7"
-    "@glimmer/resolver" "^0.3.0"
-    "@glimmer/runtime" "^0.34.7"
-    "@glimmer/util" "^0.34.7"
-
 "@glimmer/application@^0.9.1":
   version "0.9.1"
   resolved "https://registry.npmjs.org/@glimmer/application/-/application-0.9.1.tgz#2f60ea013ab7e7ecda01a48988834e66716ac04c"
@@ -1422,13 +1405,6 @@
     "@glimmer/resolver" "^0.3.0"
     "@glimmer/runtime" "^0.31.0"
     "@glimmer/util" "^0.31.0"
-
-"@glimmer/blueprint@~0.13.0":
-  version "0.13.0"
-  resolved "https://registry.npmjs.org/@glimmer/blueprint/-/blueprint-0.13.0.tgz#235247666dd8a031c6c20e6d484643c2d3e9b32b"
-  integrity sha512-VIvPVf+16Plf9tugkXxsAplf2oUju5hkUTIsl/5i8GR7Rx4/BXCPK5vy6F1qvPh76ZlWIn8XG0lp+UYOrY1O1w==
-  dependencies:
-    ember-cli-string-utils "^1.1.0"
 
 "@glimmer/bundle-compiler@^0.31.0":
   version "0.31.0"
@@ -1473,16 +1449,6 @@
     "@glimmer/wire-format" "^0.31.0"
     simple-html-tokenizer "^0.4.1"
 
-"@glimmer/compiler@^0.34.7":
-  version "0.34.8"
-  resolved "https://registry.npmjs.org/@glimmer/compiler/-/compiler-0.34.8.tgz#bd61d598224bb2332282c27c690b075f20f0646e"
-  integrity sha512-0w2co35LPybdx9WPNmcZ+ZHajqeNPwzLTeXa/K/sJw9Z3o7aHL1uHVcdd1BVZS6UMf/tqtLt0Yr2uHbYYXgoQA==
-  dependencies:
-    "@glimmer/interfaces" "^0.34.8"
-    "@glimmer/syntax" "^0.34.8"
-    "@glimmer/util" "^0.34.8"
-    "@glimmer/wire-format" "^0.34.8"
-
 "@glimmer/compiler@^0.43.0":
   version "0.43.0"
   resolved "https://registry.npmjs.org/@glimmer/compiler/-/compiler-0.43.0.tgz#86ee3ece2c5e6a5c2802b9a41eec951dfc981e80"
@@ -1503,17 +1469,6 @@
     "@glimmer/util" "^0.51.1"
     "@glimmer/wire-format" "^0.51.1"
     "@simple-dom/interface" "^1.4.0"
-
-"@glimmer/component@^0.13.0":
-  version "0.13.0"
-  resolved "https://registry.npmjs.org/@glimmer/component/-/component-0.13.0.tgz#17992f4f2c7330b3f26d2999f4deed4f7c9f80f7"
-  integrity sha512-oNyS/6QwV3ZFKVCmJworTb4D8apwDZJEV5h5yw1dJcZTSChME2iTEPeZoxkPLvOk6YC/onxsQiZ7fUcNVm9O3A==
-  dependencies:
-    "@glimmer/di" "^0.1.9"
-    "@glimmer/env" "^0.1.7"
-    "@glimmer/reference" "^0.34.7"
-    "@glimmer/runtime" "^0.34.7"
-    "@glimmer/util" "^0.34.7"
 
 "@glimmer/component@^0.9.1":
   version "0.9.1"
@@ -1541,22 +1496,10 @@
   resolved "https://registry.npmjs.org/@glimmer/encoder/-/encoder-0.31.0.tgz#a4daf4aea35aaec1373007169aea2f50e155e993"
   integrity sha512-wyM9xDhmRjjczaYS0Jnb96jKm3qG3bsED0y5s1uIbkw1o0wB3ohA21K2WAJRzhQc1KtZBwh9VyLS+wO1sA0+6w==
 
-"@glimmer/encoder@^0.34.8":
-  version "0.34.8"
-  resolved "https://registry.npmjs.org/@glimmer/encoder/-/encoder-0.34.8.tgz#e3548dab4fc639800fcc9267c236781c848f3ddd"
-  integrity sha512-E6HGSu1XDXk8fWUQPiN6DarYUUV43PqQV+xUICuIlrBKH6WZSx9NeZaxi6q8nqmSnoAyhcPjHIrg3l0sypNs8w==
-
 "@glimmer/env@0.1.7", "@glimmer/env@^0.1.7":
   version "0.1.7"
   resolved "https://registry.npmjs.org/@glimmer/env/-/env-0.1.7.tgz#fd2d2b55a9029c6b37a6c935e8c8871ae70dfa07"
   integrity sha1-/S0rVakCnGs3psk16MiHGucN+gc=
-
-"@glimmer/inline-precompile@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/@glimmer/inline-precompile/-/inline-precompile-1.0.1.tgz#4201119a358002d4bb2b5d8fa633327239fb9336"
-  integrity sha512-mKDkrbxdOhJy9onjFWEN/zgmnsl+U7y3aapKyHUENcdNi2GqSF3o4UZM6No7dVXZ53JrNiTPw/BGI/K5DKp0Nw==
-  dependencies:
-    babel-plugin-glimmer-inline-precompile "^1.2.0"
 
 "@glimmer/interfaces@^0.31.0":
   version "0.31.0"
@@ -1565,7 +1508,7 @@
   dependencies:
     "@glimmer/wire-format" "^0.31.0"
 
-"@glimmer/interfaces@^0.34.7", "@glimmer/interfaces@^0.34.8":
+"@glimmer/interfaces@^0.34.8":
   version "0.34.8"
   resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.34.8.tgz#421ff213a69120d42ffacf6edc184f8e78e558f5"
   integrity sha512-ZKrrk/mqZTzGQtr7YA6fc+F2PuglPScgdZFPnSlcJobdEZh2LX4cBKAoUeafuDUMqJqUq7gvm+dQx71l8fEz6Q==
@@ -1589,11 +1532,6 @@
   resolved "https://registry.npmjs.org/@glimmer/low-level/-/low-level-0.31.0.tgz#c5ed9c825fa67498f5285e8fe8003ec54d58d826"
   integrity sha512-2FkXIFVq27XFdaXOtuGsDDAU8rTdNL5GmB9pxiW4pnnvGuMajajxqNYsXMSCscWqwNsJdHtSK0gS/gj60KWypw==
 
-"@glimmer/low-level@^0.34.8":
-  version "0.34.8"
-  resolved "https://registry.npmjs.org/@glimmer/low-level/-/low-level-0.34.8.tgz#ac82953d68171ed5640a8d58045afd57d35ed0ac"
-  integrity sha512-lGL/YFxk9K8a4vBSidCUFN2qq+qjBK37qTgoiHJBVtxYiKHeNjlR6vhwY6u2F4xNWwQc6+O7Q/reLHQVKLHdaw==
-
 "@glimmer/object-reference@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/object-reference/-/object-reference-0.31.0.tgz#c1152ef0d9ce86a8fb7fa21107e3f99943c66ded"
@@ -1601,14 +1539,6 @@
   dependencies:
     "@glimmer/reference" "^0.31.0"
     "@glimmer/util" "^0.31.0"
-
-"@glimmer/object-reference@^0.34.7":
-  version "0.34.8"
-  resolved "https://registry.npmjs.org/@glimmer/object-reference/-/object-reference-0.34.8.tgz#fe28ad045aa073aa0bed60f92b0884b087b76050"
-  integrity sha512-UFRIFxh1DIeAvboibkIs1Mym+pwJQwwqpmZZ2pbHkVTgDDt/VQOHYdO5qo/aq1EBsrJgF/sRkTITNA8zCSl+5Q==
-  dependencies:
-    "@glimmer/reference" "^0.34.8"
-    "@glimmer/util" "^0.34.8"
 
 "@glimmer/opcode-compiler@^0.31.0":
   version "0.31.0"
@@ -1622,19 +1552,6 @@
     "@glimmer/vm" "^0.31.0"
     "@glimmer/wire-format" "^0.31.0"
 
-"@glimmer/opcode-compiler@^0.34.7":
-  version "0.34.8"
-  resolved "https://registry.npmjs.org/@glimmer/opcode-compiler/-/opcode-compiler-0.34.8.tgz#9851f94162dd1c691b4db4d37b84d817a0a717c4"
-  integrity sha512-6J9S2gQ+nQFThZzLL96kw/c2JbQfFMTOQkWsita42KG5kD31PwfW6yWV37UwVAoMrIQG9ngwetvz9ZpXbe+P1g==
-  dependencies:
-    "@glimmer/encoder" "^0.34.8"
-    "@glimmer/interfaces" "^0.34.8"
-    "@glimmer/program" "^0.34.8"
-    "@glimmer/reference" "^0.34.8"
-    "@glimmer/util" "^0.34.8"
-    "@glimmer/vm" "^0.34.8"
-    "@glimmer/wire-format" "^0.34.8"
-
 "@glimmer/program@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/program/-/program-0.31.0.tgz#0a535154d52ca14f821f70880ec8eb12dc1830de"
@@ -1644,28 +1561,12 @@
     "@glimmer/interfaces" "^0.31.0"
     "@glimmer/util" "^0.31.0"
 
-"@glimmer/program@^0.34.8":
-  version "0.34.8"
-  resolved "https://registry.npmjs.org/@glimmer/program/-/program-0.34.8.tgz#6d0867f6c1bbfbad5835946717e26fb8fb842a7c"
-  integrity sha512-3uKq6DPnbBibWFurJW/GFYww0XUSrN2VhKDNRyf9lMTduCSvSU6ZWF1fTDhGKy50ts+v+u+/e1Wn7fhi5WpiuA==
-  dependencies:
-    "@glimmer/encoder" "^0.34.8"
-    "@glimmer/interfaces" "^0.34.8"
-    "@glimmer/util" "^0.34.8"
-
 "@glimmer/reference@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/reference/-/reference-0.31.0.tgz#b4908e4549f54fec69d2a4b515c4e75c78b7a363"
   integrity sha512-MvlsVVv7tbF2uiGYMMp4X36aArlzR/T8ZW3kPAkV5Q7nyYflD3T13GXQ1WFY9PXbjnd3IkyuREjz9OvPs4nHag==
   dependencies:
     "@glimmer/util" "^0.31.0"
-
-"@glimmer/reference@^0.34.7", "@glimmer/reference@^0.34.8":
-  version "0.34.8"
-  resolved "https://registry.npmjs.org/@glimmer/reference/-/reference-0.34.8.tgz#441933512355afc7da131c5908d818eff07bf15c"
-  integrity sha512-WQOhGFf5fMa94NqWiuxtnBi42YwBBsnMgEpBKdH+Q+AkYYkac2GBOINXIv+YFnfnb6SaaB5cdpfaj7+64uLOHQ==
-  dependencies:
-    "@glimmer/util" "^0.34.8"
 
 "@glimmer/resolution-map-builder@0.5.1", "@glimmer/resolution-map-builder@^0.5.1":
   version "0.5.1"
@@ -1720,19 +1621,6 @@
     "@glimmer/vm" "^0.31.0"
     "@glimmer/wire-format" "^0.31.0"
 
-"@glimmer/runtime@^0.34.7":
-  version "0.34.8"
-  resolved "https://registry.npmjs.org/@glimmer/runtime/-/runtime-0.34.8.tgz#85831f857e3a67c6de5a7531b6d570586a3f70b4"
-  integrity sha512-pPD8/fnaJciqaQh0a9HuIR21EbxtQUcTC0Y1KNcBS56d38qRomJ8yVu3EdybWzoW+xeUj1bNsCavK1nIqmQQPg==
-  dependencies:
-    "@glimmer/interfaces" "^0.34.8"
-    "@glimmer/low-level" "^0.34.8"
-    "@glimmer/program" "^0.34.8"
-    "@glimmer/reference" "^0.34.8"
-    "@glimmer/util" "^0.34.8"
-    "@glimmer/vm" "^0.34.8"
-    "@glimmer/wire-format" "^0.34.8"
-
 "@glimmer/syntax@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.31.0.tgz#5e4f2732c39b07060a716a95e55e7a67c7d1a213"
@@ -1743,7 +1631,7 @@
     handlebars "^4.0.6"
     simple-html-tokenizer "^0.4.1"
 
-"@glimmer/syntax@^0.34.2", "@glimmer/syntax@^0.34.8":
+"@glimmer/syntax@^0.34.2":
   version "0.34.8"
   resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.34.8.tgz#fc7c54faa450111a4c97200100f7510294217156"
   integrity sha512-/RL994WYz/UwlkqgEtHizJ71kde99bDCxsqXENcKu7dY1DxqHQ82brya9vLgw2avwn9YXndE5ZVSVr0ontaGcw==
@@ -1773,17 +1661,12 @@
     handlebars "^4.7.4"
     simple-html-tokenizer "^0.5.9"
 
-"@glimmer/test-helpers@^0.31.2":
-  version "0.31.2"
-  resolved "https://registry.npmjs.org/@glimmer/test-helpers/-/test-helpers-0.31.2.tgz#3614cca5e1714ce08c41175ba2505e3329dca732"
-  integrity sha512-Ft36aWOkpW84YgIlf8hNySKJaQALPCySJwNY6g2CgU07sxahnxt4HCSZSi6wrJo+JMR0cXGU4Q8yU8GyNpLnBA==
-
 "@glimmer/util@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.31.0.tgz#45e353a7dcaffe6df00cc3d729153ae6121cf0e4"
   integrity sha512-sfM4krn5cMZiX/mqorp4/5NGdv0YprVx1BUdW3dtBjNAdprJDPwICSxIp3+PsirJ7u3wgKpINTR8aDFA29xpjA==
 
-"@glimmer/util@^0.34.7", "@glimmer/util@^0.34.8":
+"@glimmer/util@^0.34.8":
   version "0.34.8"
   resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.34.8.tgz#0f1349b3134bb55d4887da73919863401647525b"
   integrity sha512-a5RpA/dAHAf1GAsFuxmmDMzzPt8Yukyfi4sNkjVgBJ18OCq4AT2kGct32r3LZftEmJ1UmTzUPdSNnbRuyujI+A==
@@ -1810,15 +1693,6 @@
     "@glimmer/interfaces" "^0.31.0"
     "@glimmer/program" "^0.31.0"
     "@glimmer/util" "^0.31.0"
-
-"@glimmer/vm@^0.34.8":
-  version "0.34.8"
-  resolved "https://registry.npmjs.org/@glimmer/vm/-/vm-0.34.8.tgz#4485dcf41f1caa4bf05449c4dfb440bb88afc039"
-  integrity sha512-eZ1VCxkC9ZLN4yZvb7vpKC/5BYY70O8y+tffCyDWoxfhZGCHaCv/Bi8yFlodQfISqHKaW5e9pLKfg8IqAybBKw==
-  dependencies:
-    "@glimmer/interfaces" "^0.34.8"
-    "@glimmer/program" "^0.34.8"
-    "@glimmer/util" "^0.34.8"
 
 "@glimmer/wire-format@^0.31.0":
   version "0.31.0"
@@ -3201,11 +3075,6 @@
   resolved "https://registry.npmjs.org/@types/qs/-/qs-6.9.1.tgz#937fab3194766256ee09fcd40b781740758617e7"
   integrity sha512-lhbQXx9HKZAPgBkISrBcmAcMpZsmpe/Cd/hY7LGZS5OfkySUBItnPZHgQPssWYUET8elF+yCFBbP1Q0RZPTdaw==
 
-"@types/qunit@^2.0.31":
-  version "2.9.0"
-  resolved "https://registry.npmjs.org/@types/qunit/-/qunit-2.9.0.tgz#0b3fcbe2b92f067856adac82ba3afbc66d8835ac"
-  integrity sha512-Hx34HZmTJKRay+x3sFdEK62I8Z8YSWYg+rAlNr4M+AbwvNUJYxTTmWEH4a8B9ZN+Fl61awFrw+oRicWLFVugvQ==
-
 "@types/range-parser@*":
   version "1.2.3"
   resolved "https://registry.npmjs.org/@types/range-parser/-/range-parser-1.2.3.tgz#7ee330ba7caafb98090bece86a5ee44115904c2c"
@@ -3714,13 +3583,6 @@ anymatch@~3.1.1:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-aot-test-generators@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.npmjs.org/aot-test-generators/-/aot-test-generators-0.1.0.tgz#43f0f615f97cb298d7919c1b0b4e6b7310b03cd0"
-  integrity sha1-Q/D2Ffl8spjXkZwbC05rcxCwPNA=
-  dependencies:
-    jsesc "^2.5.0"
-
 append-transform@^0.4.0:
   version "0.4.0"
   resolved "https://registry.npmjs.org/append-transform/-/append-transform-0.4.0.tgz#d76ebf8ca94d276e247a36bad44a4b74ab611991"
@@ -3996,7 +3858,7 @@ async-limiter@~1.0.0:
   resolved "https://registry.npmjs.org/async-limiter/-/async-limiter-1.0.1.tgz#dd379e94f0db8310b08291f9d64c3209766617fd"
   integrity sha512-csOlWGAcRFJaI6m+F2WKdnMKr4HhdhFVBk0H/QbJFMCr+uO2kwohwXQPxw/9OCxp05r5ghVBFSyioixx3gfkNQ==
 
-async-promise-queue@^1.0.3, async-promise-queue@^1.0.4, async-promise-queue@^1.0.5:
+async-promise-queue@^1.0.3, async-promise-queue@^1.0.4:
   version "1.0.5"
   resolved "https://registry.npmjs.org/async-promise-queue/-/async-promise-queue-1.0.5.tgz#cb23bce9fce903a133946a700cc85f27f09ea49d"
   integrity sha512-xi0aQ1rrjPWYmqbwr18rrSKbSaXIeIwSd1J4KAgVfkq8utNbdZoht7GfvfY6swFUAMJ9obkc4WPJmtGwl+B8dw==
@@ -4429,11 +4291,6 @@ babel-plugin-filter-imports@^4.0.0:
   dependencies:
     "@babel/types" "^7.7.2"
     lodash "^4.17.15"
-
-babel-plugin-glimmer-inline-precompile@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/babel-plugin-glimmer-inline-precompile/-/babel-plugin-glimmer-inline-precompile-1.2.0.tgz#02794b17aac6351da09596b54d9ec675428bba3e"
-  integrity sha512-Omp3RyJyN2An2htKiwo45eQvoqVZaOR5tSbN6PjBHaYfLxEXeOM6m8/3udvAQD/2XcjdLipemVKt+Xez3XwoZg==
 
 babel-plugin-htmlbars-inline-precompile@^1.0.0:
   version "1.0.0"
@@ -5448,6 +5305,23 @@ broccoli-concat@^3.2.2, broccoli-concat@^3.7.3, broccoli-concat@^3.7.4:
     lodash.uniq "^4.2.0"
     walk-sync "^0.3.2"
 
+broccoli-concat@^4.2.4:
+  version "4.2.4"
+  resolved "https://registry.npmjs.org/broccoli-concat/-/broccoli-concat-4.2.4.tgz#78e359ddc540b999d815355163bf3cfb6bd67322"
+  integrity sha512-NgdBIE57r+U/AslBohQr0mCS7PopIWL8dihMI1CzqffQkisAgqWMuddjYmizqRBQlml7crBFaBeUnPDHhf4/RQ==
+  dependencies:
+    broccoli-debug "^0.6.5"
+    broccoli-kitchen-sink-helpers "^0.3.1"
+    broccoli-plugin "^4.0.2"
+    ensure-posix-path "^1.0.2"
+    fast-sourcemap-concat "^2.1.0"
+    find-index "^1.1.0"
+    fs-extra "^8.1.0"
+    fs-tree-diff "^2.0.1"
+    lodash.merge "^4.6.2"
+    lodash.omit "^4.1.0"
+    lodash.uniq "^4.2.0"
+
 broccoli-config-loader@^1.0.0, broccoli-config-loader@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/broccoli-config-loader/-/broccoli-config-loader-1.0.1.tgz#d10aaf8ebc0cb45c1da5baa82720e1d88d28c80a"
@@ -5721,7 +5595,7 @@ broccoli-output-wrapper@^3.1.1, broccoli-output-wrapper@^3.2.1:
     heimdalljs-logger "^0.1.10"
     symlink-or-copy "^1.2.0"
 
-broccoli-persistent-filter@^1.1.5, broccoli-persistent-filter@^1.1.6, broccoli-persistent-filter@^1.2.0, broccoli-persistent-filter@^1.2.13, broccoli-persistent-filter@^1.3.1, broccoli-persistent-filter@^1.4.3:
+broccoli-persistent-filter@^1.1.5, broccoli-persistent-filter@^1.1.6, broccoli-persistent-filter@^1.2.13, broccoli-persistent-filter@^1.3.1, broccoli-persistent-filter@^1.4.3:
   version "1.4.6"
   resolved "https://registry.npmjs.org/broccoli-persistent-filter/-/broccoli-persistent-filter-1.4.6.tgz#80762d19000880a77da33c34373299c0f6a3e615"
   integrity sha512-0RejLwoC95kv4kta8KAa+FmECJCK78Qgm8SRDEK7YyU0N9Cx6KpY3UCDy9WELl3mCXLN8TokNxc7/hp3lL4lfw==
@@ -5983,16 +5857,6 @@ broccoli-test-helper@^2.0.0:
     tmp "^0.0.33"
     walk-sync "^0.3.3"
 
-broccoli-tslinter@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.npmjs.org/broccoli-tslinter/-/broccoli-tslinter-3.0.1.tgz#f30b167356cd2b96c604e8a56f1557de1e2048ed"
-  integrity sha512-M7xgEOPEbNJmUO34GYGwOS/uhjQu1J4rHqHtVih4L4Lk3+Y7MpWYq49PSJZ+tWkjYbHfXlw9NTdpOgbmvwKSug==
-  dependencies:
-    aot-test-generators "^0.1.0"
-    broccoli-persistent-filter "^1.2.0"
-    chalk "^2.0.1"
-    exists-sync "0.0.4"
-
 broccoli-typescript-compiler@^4.1.0:
   version "4.2.0"
   resolved "https://registry.npmjs.org/broccoli-typescript-compiler/-/broccoli-typescript-compiler-4.2.0.tgz#b0c75898c75b897f40d3f627d548a64e0bb3d9f2"
@@ -6023,23 +5887,6 @@ broccoli-uglify-sourcemap@^2.1.1:
     terser "^3.7.5"
     walk-sync "^0.3.2"
     workerpool "^2.3.0"
-
-broccoli-uglify-sourcemap@^3.1.0:
-  version "3.2.0"
-  resolved "https://registry.npmjs.org/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-3.2.0.tgz#d96f1d41f6c18e9a5d49af1a5ab9489cdcac1c6c"
-  integrity sha512-kkkn8v7kXdWwnZNekq+3ILuTAGkZoaoEMUYCKoER5/uokuoyTjtdYLHaE7UxHkuPEuLfjvJYv21sCCePZ74/2g==
-  dependencies:
-    async-promise-queue "^1.0.5"
-    broccoli-plugin "^1.2.1"
-    debug "^4.1.0"
-    lodash.defaultsdeep "^4.6.1"
-    matcher-collection "^2.0.0"
-    mkdirp "^0.5.0"
-    source-map-url "^0.4.0"
-    symlink-or-copy "^1.0.1"
-    terser "^4.3.9"
-    walk-sync "^1.1.3"
-    workerpool "^5.0.1"
 
 broccoli@^1.1.0:
   version "1.1.4"
@@ -6651,22 +6498,6 @@ check-error@^1.0.2:
   resolved "https://registry.npmjs.org/check-error/-/check-error-1.0.2.tgz#574d312edd88bb5dd8912e9286dd6c0aed4aac82"
   integrity sha1-V00xLt2Iu13YkS6Sht1sCu1KrII=
 
-chokidar@1.6.1:
-  version "1.6.1"
-  resolved "https://registry.npmjs.org/chokidar/-/chokidar-1.6.1.tgz#2f4447ab5e96e50fb3d789fd90d4c72e0e4c70c2"
-  integrity sha1-L0RHq16W5Q+z14n9kNTHLg5McMI=
-  dependencies:
-    anymatch "^1.3.0"
-    async-each "^1.0.0"
-    glob-parent "^2.0.0"
-    inherits "^2.0.1"
-    is-binary-path "^1.0.0"
-    is-glob "^2.0.0"
-    path-is-absolute "^1.0.0"
-    readdirp "^2.0.0"
-  optionalDependencies:
-    fsevents "^1.0.0"
-
 chokidar@3.3.0:
   version "3.3.0"
   resolved "https://registry.npmjs.org/chokidar/-/chokidar-3.3.0.tgz#12c0714668c55800f659e262d4962a97faf554a6"
@@ -7040,14 +6871,7 @@ commander@2.8.x:
   dependencies:
     graceful-readlink ">= 1.0.0"
 
-commander@2.9.0:
-  version "2.9.0"
-  resolved "https://registry.npmjs.org/commander/-/commander-2.9.0.tgz#9c99094176e12240cb22d6c5146098400fe0f7d4"
-  integrity sha1-nJkJQXbhIkDLItbFFGCYQA/g99Q=
-  dependencies:
-    graceful-readlink ">= 1.0.0"
-
-commander@^2.11.0, commander@^2.12.1, commander@^2.15.1, commander@^2.19.0, commander@^2.20.0, commander@^2.5.0, commander@^2.6.0, commander@~2.20.3:
+commander@^2.11.0, commander@^2.12.1, commander@^2.15.1, commander@^2.19.0, commander@^2.5.0, commander@^2.6.0, commander@~2.20.3:
   version "2.20.3"
   resolved "https://registry.npmjs.org/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
   integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
@@ -8548,14 +8372,6 @@ ember-cli-inject-live-reload@^1.4.1, ember-cli-inject-live-reload@^1.8.2:
     clean-base-url "^1.0.0"
     ember-cli-version-checker "^2.1.2"
 
-ember-cli-inject-live-reload@^2.0.1:
-  version "2.0.2"
-  resolved "https://registry.npmjs.org/ember-cli-inject-live-reload/-/ember-cli-inject-live-reload-2.0.2.tgz#95edb543b386239d35959e5ea9579f5382976ac7"
-  integrity sha512-HDD6o/kBHT/kUtazklU0OW23q2jigIN42QmcpFdXUSvJ2/2SYA6yIqSUxWfJgISmtn5gTNZ2KPq1p3dLkhJxSQ==
-  dependencies:
-    clean-base-url "^1.0.0"
-    ember-cli-version-checker "^3.1.3"
-
 ember-cli-is-package-missing@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/ember-cli-is-package-missing/-/ember-cli-is-package-missing-1.0.0.tgz#6e6184cafb92635dd93ca6c946b104292d4e3390"
@@ -8624,17 +8440,6 @@ ember-cli-test-loader@^2.2.0:
   dependencies:
     ember-cli-babel "^6.8.1"
 
-ember-cli-tslint@^0.1.3:
-  version "0.1.4"
-  resolved "https://registry.npmjs.org/ember-cli-tslint/-/ember-cli-tslint-0.1.4.tgz#704980595e90caf8c080845737bc97663cdbe729"
-  integrity sha512-YVAz76VSKJ8IQqaJ7rFDLQWBc1okkWPtO1qMtNxgUkkaNViMAsYZp+1ddV6+IW2XnzZMBV/5WqXkpuTH0P3KGA==
-  dependencies:
-    broccoli-funnel "^2.0.1"
-    broccoli-tslinter "^3.0.1"
-    rsvp "^4.7.0"
-    tslint "^5.5.0"
-    walk-sync "^0.3.2"
-
 ember-cli-typescript@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/ember-cli-typescript/-/ember-cli-typescript-2.0.2.tgz#464984131fbdc05655eb61d1c3cdd911d3137f0d"
@@ -8681,14 +8486,6 @@ ember-cli-uglify@^2.1.0:
     broccoli-uglify-sourcemap "^2.1.1"
     lodash.defaultsdeep "^4.6.0"
 
-ember-cli-uglify@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.npmjs.org/ember-cli-uglify/-/ember-cli-uglify-3.0.0.tgz#8819665b2cc5fe70e3ba9fe7a94645209bc42fd6"
-  integrity sha512-n3QxdBfAgBdb2Cnso82Kt/nxm3ppIjnYWM8uhOEhF1aYxNXfM7AJrc+yiqTCDUR61Db8aCpHfAMvChz3kyme7g==
-  dependencies:
-    broccoli-uglify-sourcemap "^3.1.0"
-    lodash.defaultsdeep "^4.6.0"
-
 ember-cli-version-checker@^2.0.0, ember-cli-version-checker@^2.1.0, ember-cli-version-checker@^2.1.1, ember-cli-version-checker@^2.1.2:
   version "2.2.0"
   resolved "https://registry.npmjs.org/ember-cli-version-checker/-/ember-cli-version-checker-2.2.0.tgz#47771b731fe0962705e27c8199a9e3825709f3b3"
@@ -8714,7 +8511,7 @@ ember-cli-version-checker@^4.1.0:
     semver "^6.3.0"
     silent-error "^1.1.1"
 
-ember-cli@~3.16, ember-cli@~3.16.0:
+ember-cli@~3.16.0:
   version "3.16.0"
   resolved "https://registry.npmjs.org/ember-cli/-/ember-cli-3.16.0.tgz#5e96795c80166ab35d094584c216475a081a0123"
   integrity sha512-he5uLPapZT3kZpItseUlAoe05qurFx46e3AcS1jLqzsZW0a5tQosX3yhsEAWQaNZaJr1izMpmdPx4kF5/UN6pw==
@@ -9697,11 +9494,6 @@ execa@^3.0.0:
     signal-exit "^3.0.2"
     strip-final-newline "^2.0.0"
 
-exists-stat@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/exists-stat/-/exists-stat-1.0.0.tgz#0660e3525a2e89d9e446129440c272edfa24b529"
-  integrity sha1-BmDjUlouidnkRhKUQMJy7foktSk=
-
 exists-sync@0.0.4, exists-sync@^0.0.4:
   version "0.0.4"
   resolved "https://registry.npmjs.org/exists-sync/-/exists-sync-0.0.4.tgz#9744c2c428cc03b01060db454d4b12f0ef3c8879"
@@ -9970,6 +9762,20 @@ fast-sourcemap-concat@^1.4.0:
     source-map-url "^0.3.0"
     sourcemap-validator "^1.1.0"
 
+fast-sourcemap-concat@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/fast-sourcemap-concat/-/fast-sourcemap-concat-2.1.0.tgz#12dd36bfc38c804093e4bd1de61dd6216f574211"
+  integrity sha512-L9uADEnnHOeF4U5Kc3gzEs3oFpNCFkiTJXvT+nKmR0zcFqHZJJbszWT7dv4t9558FJRGpCj8UxUpTgz2zwiIZA==
+  dependencies:
+    chalk "^2.0.0"
+    fs-extra "^5.0.0"
+    heimdalljs-logger "^0.1.9"
+    memory-streams "^0.1.3"
+    mkdirp "^0.5.0"
+    source-map "^0.4.2"
+    source-map-url "^0.3.0"
+    sourcemap-validator "^1.1.0"
+
 fastparse@^1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/fastparse/-/fastparse-1.1.2.tgz#91728c5a5942eced8531283c79441ee4122c35a9"
@@ -10188,16 +9994,6 @@ find-yarn-workspace-root@^1.1.0, find-yarn-workspace-root@^1.2.1:
   dependencies:
     fs-extra "^4.0.3"
     micromatch "^3.1.4"
-
-findup-sync@0.4.3:
-  version "0.4.3"
-  resolved "https://registry.npmjs.org/findup-sync/-/findup-sync-0.4.3.tgz#40043929e7bc60adf0b7f4827c4c6e75a0deca12"
-  integrity sha1-QAQ5Kee8YK3wt/SCfExudaDeyhI=
-  dependencies:
-    detect-file "^0.1.0"
-    is-glob "^2.0.1"
-    micromatch "^2.3.7"
-    resolve-dir "^0.1.0"
 
 findup-sync@^1.0.0:
   version "1.0.0"
@@ -12665,11 +12461,6 @@ js-base64@^2.1.8, js-base64@^2.1.9:
   resolved "https://registry.npmjs.org/js-base64/-/js-base64-2.5.2.tgz#313b6274dda718f714d00b3330bbae6e38e90209"
   integrity sha512-Vg8czh0Q7sFBSUMWWArX/miJeBWYBPpdU/3M/DKSaekLMqrqVPaedp+5mZhie/r0lgrcaYBfwXatEew6gwgiQQ==
 
-js-reporters@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/js-reporters/-/js-reporters-1.2.0.tgz#7cf2cb698196684790350d0c4ca07f4aed9ec17e"
-  integrity sha1-fPLLaYGWaEeQNQ0MTKB/Su2ewX4=
-
 js-reporters@1.2.1:
   version "1.2.1"
   resolved "https://registry.npmjs.org/js-reporters/-/js-reporters-1.2.1.tgz#f88c608e324a3373a95bcc45ad305e5c979c459b"
@@ -12736,7 +12527,7 @@ jsesc@^1.3.0:
   resolved "https://registry.npmjs.org/jsesc/-/jsesc-1.3.0.tgz#46c3fec8c1892b12b0833db9bc7622176dbab34b"
   integrity sha1-RsP+yMGJKxKwgz25vHYiF226s0s=
 
-jsesc@^2.5.0, jsesc@^2.5.1:
+jsesc@^2.5.1:
   version "2.5.2"
   resolved "https://registry.npmjs.org/jsesc/-/jsesc-2.5.2.tgz#80564d2e483dacf6e8ef209650a67df3f0c283a4"
   integrity sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==
@@ -13272,7 +13063,7 @@ lodash.defaults@^4.2.0:
   resolved "https://registry.npmjs.org/lodash.defaults/-/lodash.defaults-4.2.0.tgz#d09178716ffea4dde9e5fb7b37f6f0802274580c"
   integrity sha1-0JF4cW/+pN3p5ft7N/bwgCJ0WAw=
 
-lodash.defaultsdeep@^4.6.0, lodash.defaultsdeep@^4.6.1:
+lodash.defaultsdeep@^4.6.0:
   version "4.6.1"
   resolved "https://registry.npmjs.org/lodash.defaultsdeep/-/lodash.defaultsdeep-4.6.1.tgz#512e9bd721d272d94e3d3a63653fa17516741ca6"
   integrity sha512-3j8wdDzYuWO3lM3Reg03MuQR957t287Rpcxp1njpEa8oDrikb+FwGdW3n+FELh/A6qib6yPit0j/pv9G/yeAqA==
@@ -16211,19 +16002,6 @@ qunit@^2.9.3:
     node-watch "0.6.1"
     resolve "1.9.0"
 
-qunitjs@^2.3.3:
-  version "2.4.1"
-  resolved "https://registry.npmjs.org/qunitjs/-/qunitjs-2.4.1.tgz#88aba055a9e2ec3dbebfaad02471b2cb002c530b"
-  integrity sha512-by/2zYvsNdS6Q6Ev6UJ3qJK+OYVlTzWlQ4afaeYMhVh1dd2K3N1ZZKCrCm3WSWPnz5ELMT8WyJRcVy5PXT2y+Q==
-  dependencies:
-    chokidar "1.6.1"
-    commander "2.9.0"
-    exists-stat "1.0.0"
-    findup-sync "0.4.3"
-    js-reporters "1.2.0"
-    resolve "1.3.2"
-    walk-sync "0.3.1"
-
 raf@^3.4.1:
   version "3.4.1"
   resolved "https://registry.npmjs.org/raf/-/raf-3.4.1.tgz#0742e99a4a6552f445d73e3ee0328af0ff1ede39"
@@ -17011,13 +16789,6 @@ resolve@1.1.7, resolve@1.1.x:
   version "1.1.7"
   resolved "https://registry.npmjs.org/resolve/-/resolve-1.1.7.tgz#203114d82ad2c5ed9e8e0411b3932875e889e97b"
   integrity sha1-IDEU2CrSxe2ejgQRs5ModeiJ6Xs=
-
-resolve@1.3.2:
-  version "1.3.2"
-  resolved "https://registry.npmjs.org/resolve/-/resolve-1.3.2.tgz#1f0442c9e0cbb8136e87b9305f932f46c7f28235"
-  integrity sha1-HwRCyeDLuBNuh7kwX5MvRsfygjU=
-  dependencies:
-    path-parse "^1.0.5"
 
 resolve@1.9.0:
   version "1.9.0"
@@ -18047,7 +17818,7 @@ source-map-support@^0.4.0, source-map-support@^0.4.15:
   dependencies:
     source-map "^0.5.6"
 
-source-map-support@^0.5.0, source-map-support@^0.5.11, source-map-support@^0.5.12, source-map-support@^0.5.3, source-map-support@^0.5.7, source-map-support@~0.5.10, source-map-support@~0.5.12:
+source-map-support@^0.5.0, source-map-support@^0.5.11, source-map-support@^0.5.12, source-map-support@^0.5.3, source-map-support@^0.5.7, source-map-support@~0.5.10:
   version "0.5.16"
   resolved "https://registry.npmjs.org/source-map-support/-/source-map-support-0.5.16.tgz#0ae069e7fe3ba7538c64c98515e35339eac5a042"
   integrity sha512-efyLRJDr68D9hBBNIPWFjhpFzURh+KJykQwvMyW5UiZzYwoF6l4YMMDIJJEyFWxWCqfyxLzz6tSfUFR+kXXsVQ==
@@ -18737,15 +18508,6 @@ terser@^3.7.5:
     source-map "~0.6.1"
     source-map-support "~0.5.10"
 
-terser@^4.3.9:
-  version "4.6.6"
-  resolved "https://registry.npmjs.org/terser/-/terser-4.6.6.tgz#da2382e6cafbdf86205e82fb9a115bd664d54863"
-  integrity sha512-4lYPyeNmstjIIESr/ysHg2vUPRGf2tzF9z2yYwnowXVuVzLEamPN1Gfrz7f8I9uEPuHcbFlW4PLIAsJoxXyJ1g==
-  dependencies:
-    commander "^2.20.0"
-    source-map "~0.6.1"
-    source-map-support "~0.5.12"
-
 test-console@^1.1.0:
   version "1.1.0"
   resolved "https://registry.npmjs.org/test-console/-/test-console-1.1.0.tgz#34466d421f1b049e1be80d1734bdb5a512889c7f"
@@ -19120,7 +18882,7 @@ tslib@^1, tslib@^1.10.0, tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.0, tslib@^1.9.3:
   resolved "https://registry.npmjs.org/tslib/-/tslib-1.11.1.tgz#eb15d128827fbee2841549e171f45ed338ac7e35"
   integrity sha512-aZW88SY8kQbU7gpV19lN24LtXh/yD4ZZg6qieAJDDg+YBsJcSmLGK9QpnUjAKVG/xefmvJGd1WUmfpT/g6AJGA==
 
-tslint@^5.5.0, tslint@^5.9.1:
+tslint@^5.9.1:
   version "5.20.1"
   resolved "https://registry.npmjs.org/tslint/-/tslint-5.20.1.tgz#e401e8aeda0152bc44dd07e614034f3f80c67b7d"
   integrity sha512-EcMxhzCFt8k+/UP5r8waCf/lzmeSyVlqxqMEDQE7rWYiQky8KpIBz1JAoYXfROHrPZ1XXd43q8yQnULOLiBRQg==
@@ -19737,14 +19499,6 @@ vscode@^1.1.35:
     url-parse "^1.4.4"
     vscode-test "^0.4.1"
 
-walk-sync@0.3.1:
-  version "0.3.1"
-  resolved "https://registry.npmjs.org/walk-sync/-/walk-sync-0.3.1.tgz#558a16aeac8c0db59c028b73c66f397684ece465"
-  integrity sha1-VYoWrqyMDbWcAotzxm85doTs5GU=
-  dependencies:
-    ensure-posix-path "^1.0.0"
-    matcher-collection "^1.0.0"
-
 walk-sync@^0.2.5:
   version "0.2.7"
   resolved "https://registry.npmjs.org/walk-sync/-/walk-sync-0.2.7.tgz#b49be4ee6867657aeb736978b56a29d10fa39969"
@@ -20143,11 +19897,6 @@ workerpool@^3.1.1:
     "@babel/core" "^7.3.4"
     object-assign "4.1.1"
     rsvp "^4.8.4"
-
-workerpool@^5.0.1:
-  version "5.0.4"
-  resolved "https://registry.npmjs.org/workerpool/-/workerpool-5.0.4.tgz#4f67cb70ff7550a27ab94de25b0b843cd92059a2"
-  integrity sha512-Sywova24Ow2NQ24JPB68bI89EdqMDjUXo4OpofK/QMD7C2ZVMloYBgQ5J3PChcBJHj2vspsmGx1/3nBKXtUkXQ==
 
 wrap-ansi@^2.0.0:
   version "2.1.0"

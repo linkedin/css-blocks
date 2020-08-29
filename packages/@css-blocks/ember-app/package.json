@@ -56,6 +56,7 @@
     "@glimmer/syntax": "^0.43.0",
     "@opticss/template-api": "^0.7.0",
     "@opticss/util": "^0.7.0",
+    "broccoli-concat": "^4.2.4",
     "broccoli-debug": "^0.6.5",
     "broccoli-funnel": "^3.0.3",
     "broccoli-merge-trees": "^4.2.0",
