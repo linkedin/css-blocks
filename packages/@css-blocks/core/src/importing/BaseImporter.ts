@@ -1,6 +1,6 @@
 import { Syntax } from "../BlockParser";
 import { ResolvedConfiguration } from "../configuration";
-import { REGEXP_COMMENT_DEFINITION_REF, REGEXP_COMMENT_FOOTER, REGEXP_COMMENT_HEADER } from "../PrecompiledDefinitions/compiled-comments";
+import { REGEXP_COMMENT_DEFINITION_REF, REGEXP_COMMENT_FOOTER, REGEXP_COMMENT_HEADER, REGEXP_SOURCEMAP_COMMENT } from "../PrecompiledDefinitions/compiled-comments";
 
 import { FileIdentifier, ImportedCompiledCssFile, ImportedCompiledCssFileContents, ImportedFile, Importer } from "./Importer";
 
@@ -103,13 +103,32 @@ export abstract class BaseImporter implements Importer {
     }
     const [definitionFullMatch, definitionUrl] = definitionRegexpResult;
     const blockCssContents = fullBlockContents.replace(definitionFullMatch, "");
+    const blockContentsWithSourcemap = this.mergeSourcemapIntoCompiledCssContents(blockCssContents, post);
 
     return {
       pre,
       blockId,
-      blockCssContents,
+      blockCssContents: blockContentsWithSourcemap,
       definitionUrl,
       post,
     };
+  }
+
+  /**
+   * Look for sourcemap data in given post-blocks content. If found, append it to the given CSS contents.
+   * @param cssContents - The CSS contents of the Compiled CSS file (what appears between the CSS Blocks comments).
+   * @param postContent - Content that appears in the content after the closing CSS Blocks comment.
+   * @returns The CSS Contents with sourcemap appended, if found. Returns CSS contents alone if not found.
+   */
+  private mergeSourcemapIntoCompiledCssContents(cssContents: string, postContent: string) {
+    const sourcemapRegexpResult = postContent.match(REGEXP_SOURCEMAP_COMMENT);
+
+    // No sourcemap? Just return the CSS contents.
+    if (sourcemapRegexpResult === null) {
+      return cssContents;
+    }
+
+    // Otherwise, append the sourcemap to the end of the CSS contents.
+    return `${cssContents}\n${sourcemapRegexpResult[0]}`;
   }
 }

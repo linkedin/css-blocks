@@ -346,8 +346,6 @@ export class BlockFactory {
     const cssContentsAst = this.postcssImpl.parse(file.cssContents);
     const cssDebugIdentifier = this.importer.debugIdentifier(file.identifier, this.configuration);
 
-    // TODO: Sourcemaps?
-
     // Sanity check! Did we actually get contents for both ASTs?
     if (!definitionAst || !definitionAst.nodes) {
       throw new CssBlockError(`Unable to parse definition file into AST!`, {

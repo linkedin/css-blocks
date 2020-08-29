@@ -82,13 +82,15 @@ export class CSSBlocksApplicationPlugin extends Filter {
     debug(`Loaded ${blocksUsed.size} blocks.`);
     debug(`Loaded ${optimizer.analyses.length} analyses.`);
     let cssFileName = cssBlocksOutputFilename(this.cssBlocksOptions);
-    let sourceMapFileName = `${cssFileName}.map`;
     let optLogFileName = `${cssFileName}.optimization.log`;
     let optimizationResult = await optimizer.optimize(cssFileName);
     debug(`Optimized CSS. There were ${optimizationResult.actions.performed.length} optimizations performed.`);
+
+    // Embed the sourcemap into the final css output
+    const finalizedCss = addSourcemapInfoToOptimizedCss(optimizationResult.output.content.toString(), optimizationResult.output.sourceMap?.toString());
+
     this.output.mkdirSync(path.dirname(cssFileName), {recursive: true});
-    this.output.writeFileSync(cssFileName, optimizationResult.output.content.toString(), "utf8");
-    this.output.writeFileSync(sourceMapFileName, optimizationResult.output.sourceMap?.toString(), "utf8");
+    this.output.writeFileSync(cssFileName, finalizedCss, "utf8");
     this.output.writeFileSync(optLogFileName, optimizationResult.actions.logStrings().join("\n"), "utf8");
     debug("Wrote css, sourcemap, and optimization log.");
 
@@ -145,11 +147,10 @@ export class CSSBlocksApplicationPlugin extends Filter {
  * 1) The result of the CSSBlocksApplicationPlugin.
  * 2) The css tree, passed in to `preprocessTree()`.
  *
- * The result of this plugin will be a file in app/styles/app.css that includes existing content appended
- * with the contents of css-blocks.css. This should be merged with the existing css tree to overwrite
- * the app.css file with this one.
+ * This plugin will add the compiled CSS content created by the CSSBlocksApplicationPlugin and place
+ * it into the CSS tree at the preferred location.
  */
-export class CSSBlocksStylesProcessorPlugin extends Plugin {
+export class CSSBlocksStylesPreprocessorPlugin extends Plugin {
   appName: string;
   previousSourceTree: FSTree;
   cssBlocksOptions: ResolvedCSSBlocksEmberOptions;
@@ -160,26 +161,9 @@ export class CSSBlocksStylesProcessorPlugin extends Plugin {
     this.cssBlocksOptions = cssBlocksOptions;
   }
   async build() {
-    let mergeIntoAppStyles = true;
-    if (this.cssBlocksOptions.output) {
-      // if the output filename is explicitly declared, we don't merge it with
-      // the application styles.
-      mergeIntoAppStyles = false;
-    }
-    // Read the optimized CSS Blocks styles file, generated previously by the CSSBlocksApplicationPlugin.
+    // Are there any changes to make? If not, bail out early.
     let stylesheetPath = cssBlocksOutputFilename(this.cssBlocksOptions);
-    let applicationStylesheetPath = `app/styles/app.css`;
-    if (!this.input.existsSync(applicationStylesheetPath)) {
-      mergeIntoAppStyles = false;
-      debug(`No app/styles/app.css file found. Blocks content is in ${stylesheetPath}. The application should handle it.`);
-    }
-    let globs: Array<string>;
-    if (mergeIntoAppStyles) {
-      globs = [stylesheetPath, applicationStylesheetPath];
-    } else {
-      globs = [stylesheetPath];
-    }
-    let entries = this.input.entries(".", {globs});
+    let entries = this.input.entries(".", {globs: [stylesheetPath]});
     let currentFSTree = FSTree.fromEntries(entries);
     let patch = this.previousSourceTree.calculatePatch(currentFSTree);
     if (patch.length === 0) {
@@ -187,8 +171,8 @@ export class CSSBlocksStylesProcessorPlugin extends Plugin {
     } else {
       this.previousSourceTree = currentFSTree;
     }
+    // Read in the CSS Blocks compiled content that was created previously.
     let blocksFileContents: string;
-    // And read the application CSS that was previously built by Ember and ignored by CSS Blocks.
     if (this.input.existsSync(stylesheetPath)) {
       blocksFileContents = this.input.readFileSync(stylesheetPath, { encoding: "utf8" });
     } else {
@@ -196,27 +180,37 @@ export class CSSBlocksStylesProcessorPlugin extends Plugin {
       // there's no css-blocks files.
       blocksFileContents = "";
     }
-    let outputContents: string;
-    let outputPath: string;
-    if (mergeIntoAppStyles) {
-      const appCssFileContents = this.input.readFileSync(applicationStylesheetPath, { encoding: "utf8" });
-      if (blocksFileContents) {
-        outputContents = `${appCssFileContents}\n${blocksFileContents}`;
-      } else {
-        outputContents = appCssFileContents;
-      }
-      outputPath = applicationStylesheetPath;
-    } else {
-      outputContents = blocksFileContents;
-      outputPath = stylesheetPath;
-    }
 
-    // Now, write out the combined result of the application CSS and CSS Blocks contents.
-    this.output.mkdirSync(path.dirname(outputPath), { recursive: true });
-    this.output.writeFileSync(outputPath, outputContents);
+    // Now, write out compiled content to its expected location.
+    // By default, this is app/styles/css-blocks.css.
+    this.output.mkdirSync(path.dirname(stylesheetPath), { recursive: true });
+    this.output.writeFileSync(stylesheetPath, blocksFileContents);
   }
 }
 
+/**
+ * Given CSS and a sourcemap, append an embedded sourcemap (base64 encoded)
+ * to the end of the css.
+ * @param css - The CSS content to be added to.
+ * @param sourcemap - The sourcemap data to add.
+ * @returns - The CSS with embedded sourcemap, or just the CSS if no sourcemap was given.
+ */
+function addSourcemapInfoToOptimizedCss(css: string, sourcemap?: string) {
+  if (!sourcemap) {
+    return css;
+  }
+
+  const encodedSourcemap = Buffer.from(sourcemap).toString("base64");
+  return `${css}\n/*# sourceMappingURL=data:application/json;base64,${encodedSourcemap} */`;
+}
+
+/**
+ * Generate the output path for the compiled CSS Blocks content, using the
+ * preferred filename given by the user. If none is given, the default
+ * path is "app/styles/css-blocks.css".
+ * @param options - The options passed to the Ember plugin.
+ * @returns - The path for the CSS Blocks compiled content.
+ */
 function cssBlocksOutputFilename(options: ResolvedCSSBlocksEmberOptions) {
   let outputName = options.output || "css-blocks.css";
   return `app/styles/${outputName}`;
