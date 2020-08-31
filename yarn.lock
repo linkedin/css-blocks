@@ -1527,6 +1527,13 @@
   dependencies:
     "@simple-dom/interface" "^1.4.0"
 
+"@glimmer/interfaces@^0.60.0":
+  version "0.60.0"
+  resolved "https://registry.npmjs.org/@glimmer/interfaces/-/interfaces-0.60.0.tgz#cb2d28bb0441743b5b7b0b23b64e754fd4ca06ed"
+  integrity sha512-gEraOjACkSlgNr3GeH9GU370DLW+uwaxCStq6BGk0ShxkQI9BuhwWYC6gqsPkbiRI24L+UrpPo8qajFew/2Nrg==
+  dependencies:
+    "@simple-dom/interface" "^1.4.0"
+
 "@glimmer/low-level@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/low-level/-/low-level-0.31.0.tgz#c5ed9c825fa67498f5285e8fe8003ec54d58d826"
@@ -1661,6 +1668,16 @@
     handlebars "^4.7.4"
     simple-html-tokenizer "^0.5.9"
 
+"@glimmer/syntax@^0.60.0":
+  version "0.60.0"
+  resolved "https://registry.npmjs.org/@glimmer/syntax/-/syntax-0.60.0.tgz#309a683efb41c171ea82dbf8e3845bea591686eb"
+  integrity sha512-Q4W1Ly8bjjAe8DY0cj23PC2Q//+XEFdrBXhOqNVjtAjJHBd3Vm/sIokKhuUCrqHEppsn2/xYZFRf1qEUAib1lA==
+  dependencies:
+    "@glimmer/interfaces" "^0.60.0"
+    "@glimmer/util" "^0.60.0"
+    handlebars "^4.7.4"
+    simple-html-tokenizer "^0.5.9"
+
 "@glimmer/util@^0.31.0":
   version "0.31.0"
   resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.31.0.tgz#45e353a7dcaffe6df00cc3d729153ae6121cf0e4"
@@ -1683,6 +1700,15 @@
   dependencies:
     "@glimmer/env" "0.1.7"
     "@glimmer/interfaces" "^0.51.1"
+    "@simple-dom/interface" "^1.4.0"
+
+"@glimmer/util@^0.60.0":
+  version "0.60.0"
+  resolved "https://registry.npmjs.org/@glimmer/util/-/util-0.60.0.tgz#dc9cffd7b327430ecd8fdb1570e01fe727e0583c"
+  integrity sha512-qJp+X9x1E7WZRAND1SxyrkQuXE/ptutHDpoZJB2uqhaeFPe6FupBkFHjF/leF7H6Zzg/i4uo+vLmM6S50Hc1Zg==
+  dependencies:
+    "@glimmer/env" "0.1.7"
+    "@glimmer/interfaces" "^0.60.0"
     "@simple-dom/interface" "^1.4.0"
 
 "@glimmer/vm@^0.31.0":
@@ -5647,6 +5673,23 @@ broccoli-persistent-filter@^3.1.0:
     heimdalljs "^0.2.1"
     heimdalljs-logger "^0.1.7"
     mkdirp "^0.5.1"
+    promise-map-series "^0.2.1"
+    rimraf "^3.0.0"
+    symlink-or-copy "^1.0.1"
+    sync-disk-cache "^2.0.0"
+
+broccoli-persistent-filter@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.npmjs.org/broccoli-persistent-filter/-/broccoli-persistent-filter-3.1.1.tgz#318c68a82d5759582bb60e7e2c0f3ca008176224"
+  integrity sha512-gP797MF87JjkcwhGBkE0fhF3aIbGnOF3K3A0iZpQSxtpmSNt+rbNzuqDOmgiKwWpx6v0+APkM5HUA0NiIZpgsQ==
+  dependencies:
+    async-disk-cache "^2.0.0"
+    async-promise-queue "^1.0.3"
+    broccoli-plugin "^4.0.3"
+    fs-tree-diff "^2.0.0"
+    hash-for-dep "^1.5.0"
+    heimdalljs "^0.2.1"
+    heimdalljs-logger "^0.1.7"
     promise-map-series "^0.2.1"
     rimraf "^3.0.0"
     symlink-or-copy "^1.0.1"
