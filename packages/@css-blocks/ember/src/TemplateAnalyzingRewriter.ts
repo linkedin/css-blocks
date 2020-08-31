@@ -7,14 +7,6 @@ import {
   isTrueCondition,
 } from "@css-blocks/core";
 import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_TYPE } from "@css-blocks/ember-utils";
-import {
-  ElementAnalyzer,
-} from "@css-blocks/glimmer";
-// TODO: Remove these runtime dependencies on @css-blocks/glimmer
-import { StringExpression as StringAST, TemplateElement, isStyleOfHelper } from "@css-blocks/glimmer/dist/cjs/src/ElementAnalyzer";
-import { getEmberBuiltInStates, isEmberBuiltIn, isEmberBuiltInNode } from "@css-blocks/glimmer/dist/cjs/src/EmberBuiltins";
-import { CONCAT_HELPER_NAME } from "@css-blocks/glimmer/dist/cjs/src/helpers";
-import { cssBlockError, isConcatStatement, isMustacheStatement, isPathExpression, isStringLiteral, isSubExpression, isTextNode, pathString } from "@css-blocks/glimmer/dist/cjs/src/utils";
 import type {
   AST,
   ASTPlugin,
@@ -24,6 +16,12 @@ import type {
 import { assertNever } from "@opticss/util";
 import * as debugGenerator from "debug";
 import * as path from "path";
+
+import { ElementAnalyzer, StringExpression as StringAST, TemplateElement, isStyleOfHelper } from "./ElementAnalyzer";
+import { getEmberBuiltInStates, isEmberBuiltIn, isEmberBuiltInNode } from "./EmberBuiltins";
+import { cssBlockError, isConcatStatement, isMustacheStatement, isPathExpression, isStringLiteral, isSubExpression, isTextNode, pathString } from "./utils";
+
+export const CONCAT_HELPER_NAME = "-css-blocks-concat";
 
 const enum StyleCondition {
   STATIC = 1,
