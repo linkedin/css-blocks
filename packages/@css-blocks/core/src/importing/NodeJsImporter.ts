@@ -197,6 +197,7 @@ export class NodeJsImporter extends BaseImporter {
         definitionContents: dfnData,
         definitionIdentifier,
         defaultName: this.defaultName(identifier, config),
+        rawCssContents: contents,
       };
     } else {
       return {

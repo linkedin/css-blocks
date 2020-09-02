@@ -61,6 +61,7 @@ export class MockImporter extends NodeJsImporter {
         definitionContents: source.dfnContents,
         blockId: blockId,
         defaultName: this.defaultName(resolvedPath, configuration),
+        rawCssContents: source.contents,
       };
     } else if (source.hasEmbeddedDfnData) {
       const parsedSourceContents = this.segmentizeCompiledBlockCSS(source.contents);
@@ -77,6 +78,7 @@ export class MockImporter extends NodeJsImporter {
         definitionContents,
         blockId: blockId,
         defaultName: this.defaultName(resolvedPath, configuration),
+        rawCssContents: source.contents,
       };
     } else {
       return {

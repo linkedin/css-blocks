@@ -64,11 +64,13 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let compiler = new BlockCompiler(postcss, config);
     let reservedClassnames = analyzer.reservedClassNames();
     for (let block of blocksUsed) {
-      let content: postcss.Result;
+      let content: postcss.Result | string;
       let filename = importer.debugIdentifier(block.identifier, config);
-      if (block.precompiledStylesheet) {
-        debug(`Optimizing precompiled stylesheet for ${filename}`);
-        content = block.precompiledStylesheet.toResult();
+      if (block.precompiledStylesheetUnedited) {
+        // We don't need to do any processing on the compiled css content, just
+        // add it to the output.
+        debug(`Looking up unedited Compiled CSS content for ${filename}`);
+        content = block.precompiledStylesheetUnedited;
       } else {
         debug(`Compiling stylesheet for optimization of ${filename}`);
         // XXX Do we need to worry about reservedClassnames here?

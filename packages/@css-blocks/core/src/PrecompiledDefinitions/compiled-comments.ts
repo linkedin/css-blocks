@@ -17,11 +17,6 @@ export const REGEXP_COMMENT_DEFINITION_REF = /^\/\*#blockDefinitionURL=([\S]+?)\
 export const REGEXP_COMMENT_FOOTER = /^\/\*#css-blocks end\*\/\r?\n?/m;
 
 /**
- * A regular expression that can be used to find the included sourcemap in the file.
- */
-export const REGEXP_SOURCEMAP_COMMENT = /(^\/\*#\s*sourceMappingURL=\S+\s*\*\/$|^\/\/#\s*sourceMappingURL=\S+\s*$)/m;
-
-/**
  * Determines if the given URL for a definition is valid.
  *
  * The following are valid:
