@@ -6,7 +6,7 @@ import Service from "@ember/service";
 /// @ts-ignore
 import { data as _data } from "./-css-blocks-data";
 import type { AggregateRewriteData, GlobalBlockIndex, OptimizationEntry, StyleExpression } from "./AggregateRewriteData";
-import { StyleEvaluator } from "./StyleEvaluator";
+import { JsonStyleEvaluator } from "./JsonStyleEvaluator";
 import { StyleResolver } from "./StyleResolver";
 
 const data: AggregateRewriteData = _data;
@@ -38,7 +38,7 @@ export default class CSSBlocksService extends Service {
     if (DEBUGGING) {
       console.log(argv);
     }
-    let styleEvaluator = new StyleEvaluator(data, argv);
+    let styleEvaluator = new JsonStyleEvaluator(data, argv);
     let stylesApplied = styleEvaluator.evaluate();
     this.debugStyles("directly applied", stylesApplied);
 

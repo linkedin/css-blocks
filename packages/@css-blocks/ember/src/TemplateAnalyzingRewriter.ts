@@ -19,22 +19,10 @@ import * as path from "path";
 
 import { ElementAnalyzer, StringExpression as StringAST, TemplateElement, isStyleOfHelper } from "./ElementAnalyzer";
 import { getEmberBuiltInStates, isEmberBuiltIn, isEmberBuiltInNode } from "./EmberBuiltins";
+import { BlockRef, BooleanStyle, FalsySwitchBehavior, RuntimeStyles, StyleRef, SwitchStyle, TernaryStyle } from "./RuntimeStyle";
 import { cssBlockError, isConcatStatement, isMustacheStatement, isPathExpression, isStringLiteral, isSubExpression, isTextNode, pathString } from "./utils";
 
 export const CONCAT_HELPER_NAME = "-css-blocks-concat";
-
-const enum StyleCondition {
-  STATIC = 1,
-  BOOLEAN = 2,
-  TERNARY = 3,
-  SWITCH = 4,
-}
-
-const enum FalsySwitchBehavior {
-  error = 0,
-  unset = 1,
-  default = 2,
-}
 
 const NOOP_VISITOR = {};
 const DEBUG = debugGenerator("css-blocks:glimmer:analyzing-rewriter");
@@ -229,7 +217,7 @@ export class TemplateAnalyzingRewriter implements ASTPluginWithDeps {
 
 class HelperInvocationGenerator {
   static CLASSNAMES_HELPER = "-css-blocks";
-  static HELPER_VERSION = 0;
+  static HELPER_VERSION = 1;
 
   builders: Syntax["builders"];
   constructor(builders: Syntax["builders"]) {
@@ -250,117 +238,113 @@ class HelperInvocationGenerator {
 
     let stylesUsed = new Array<Style>();
     let blocksUsed = new Array<Block>();
-    let staticParams = this.buildStaticParams(sourceAnalysis, stylesUsed);
-    let ternaryParams = this.buildTernaryParams(sourceAnalysis, stylesUsed);
-    let booleanParams = this.buildBooleanParams(sourceAnalysis, stylesUsed);
-    let switchParams = this.buildSwitchParams(sourceAnalysis, blocksUsed);
-    let styleParams = this.buildStyleParams(sourceAnalysis, blocksUsed, stylesUsed);
-    let blockParams = this.buildBlockParams(blocksUsed);
+    let runtimeParams = new Array<AST.Expression>();
+    let staticStyles = this.buildStaticStyles(sourceAnalysis, stylesUsed);
+    let booleanStyles = this.buildBooleanStyles(sourceAnalysis, stylesUsed, runtimeParams);
+    let ternaryStyles = this.buildTernaryStyles(sourceAnalysis, stylesUsed, runtimeParams);
+    let switchStyles = this.buildSwitchStyles(sourceAnalysis, blocksUsed, runtimeParams);
+    let styleRefs = this.buildStyleRefs(blocksUsed, stylesUsed);
+    let blockRefs = this.buildBlockRefs(blocksUsed);
 
-    node.params.push(...blockParams);
-    node.params.push(...styleParams);
-    node.params.push(...staticParams );
-    node.params.push(...ternaryParams);
-    node.params.push(...booleanParams);
-    node.params.push(...switchParams);
+    let styles: RuntimeStyles = [
+      blockRefs,
+      styleRefs,
+      staticStyles,
+      booleanStyles,
+      ternaryStyles,
+      switchStyles,
+    ];
+
+    node.params.push(this.builders.string(JSON.stringify(styles, undefined, 0)));
+    node.params.push(...runtimeParams);
     return node;
   }
 
-  buildBlockParams(blocksUsed: Array<Block>): Array<AST.Expression> {
-    const { number: num, string: str, null: nullNode } = this.builders;
-    let blockParams = new Array<AST.Expression>();
-    blockParams.push(num(blocksUsed.length));
+  buildBlockRefs(blocksUsed: Array<Block>): Array<BlockRef> {
+    let blockRefs = new Array<BlockRef>();
     for (let block of blocksUsed) {
-      blockParams.push(str(block.guid));
-      blockParams.push(nullNode()); // this could be a block when we implement block passing
+      let guid = block.guid;
+      let runtimeBlock: number | null = null;
+      if (runtimeBlock === null) {
+        blockRefs.push([guid]);
+      } else {
+        blockRefs.push([guid, runtimeBlock]);
+      }
     }
-    return blockParams;
+    return blockRefs;
   }
 
-  buildStyleParams(sourceAnalysis: ElementSourceAnalysis, blocks: Array<Block>, stylesUsed: Array<Style>): Array<AST.Expression> {
-    const { number: num, string: str } = this.builders;
-    let styleParams = new Array<AST.Expression>();
-    styleParams.push(num(stylesUsed.length));
+  buildStyleRefs(blocks: Array<Block>, stylesUsed: Array<Style>): Array<StyleRef> {
+    let styleRefs = new Array<[number, string]>();
     for (let style of stylesUsed) {
-      styleParams.push(num(blockIndex(blocks, style)));
-      styleParams.push(str(style.asSource()));
+      styleRefs.push([blockIndex(blocks, style), style.asSource()]);
     }
-    styleParams.push(num(sourceAnalysis.size()));
-    return styleParams;
+    return styleRefs;
   }
 
-  buildStaticParams(sourceAnalysis: ElementSourceAnalysis, stylesUsed: Array<Style>): Array<AST.Expression> {
-    const { number: num } = this.builders;
-    let params = new Array<AST.Expression>();
+  buildStaticStyles(sourceAnalysis: ElementSourceAnalysis, stylesUsed: Array<Style>): Array<number> {
+    let staticStyles = new Array<number>();
     for (let style of sourceAnalysis.staticStyles) {
-      params.push(num(StyleCondition.STATIC));
-      params.push(num(styleIndex(stylesUsed, style)));
+      staticStyles.push(styleIndex(stylesUsed, style));
     }
-    return params;
+    return staticStyles;
   }
 
-  buildTernaryParams(sourceAnalysis: ElementSourceAnalysis, stylesUsed: Array<Style>): Array<AST.Expression> {
-    const { number: num } = this.builders;
-    let params = new Array<AST.Expression>();
+  buildTernaryStyles(sourceAnalysis: ElementSourceAnalysis, stylesUsed: Array<Style>, params: Array<AST.Expression>): Array<TernaryStyle> {
+    let ternaryStyles = new Array<TernaryStyle>();
     for (let ternaryClass of sourceAnalysis.ternaryStyles) {
-      params.push(num(StyleCondition.TERNARY));
       if (isMustacheStatement(ternaryClass.condition!)) {
         params.push(this.mustacheToExpression(this.builders, ternaryClass.condition));
       } else {
         params.push(ternaryClass.condition!);
       }
+      let c = params.length - 1;
+      let t: Array<number>;
       if (isTrueCondition(ternaryClass)) {
-        params.push(num(ternaryClass.whenTrue.length));
-        for (let cls of ternaryClass.whenTrue) {
-          params.push(num(styleIndex(stylesUsed, cls)));
-        }
+        t = ternaryClass.whenTrue.map(cls => styleIndex(stylesUsed, cls));
       } else {
-        // there are no classes applied if true
-        params.push(num(0));
+        t = [];
       }
+      let f: Array<number>;
       if (isFalseCondition(ternaryClass)) {
-        params.push(num(ternaryClass.whenFalse.length));
-        for (let cls of ternaryClass.whenFalse) {
-          params.push(num(styleIndex(stylesUsed, cls)));
-        }
+        f = ternaryClass.whenFalse.map(cls => styleIndex(stylesUsed, cls));
       } else {
-        // there are no classes applied if false
-        params.push(num(0));
+        f = [];
       }
+      ternaryStyles.push([c, t, f]);
     }
-    return params;
+    return ternaryStyles;
   }
 
-  buildBooleanParams(sourceAnalysis: ElementSourceAnalysis, stylesUsed: Array<Style>): Array<AST.Expression> {
-    const { number: num } = this.builders;
-    let params = new Array<AST.Expression>();
+  buildBooleanStyles(sourceAnalysis: ElementSourceAnalysis, stylesUsed: Array<Style>, params: Array<AST.Expression>): Array<BooleanStyle> {
+    let booleanStyles = new Array<BooleanStyle>();
     for (let dynamicAttr of sourceAnalysis.booleanStyles) {
-      params.push(num(StyleCondition.BOOLEAN));
       if (isMustacheStatement(dynamicAttr.condition)) {
         params.push(this.mustacheToExpression(this.builders, dynamicAttr.condition));
       } else {
         params.push(dynamicAttr.condition);
       }
-      params.push(num(dynamicAttr.value.size));
+      let c = params.length - 1;
+      let t = new Array<number>();
       for (let attr of dynamicAttr.value) {
-        params.push(num(styleIndex(stylesUsed, attr)));
+        t.push(styleIndex(stylesUsed, attr));
       }
+      booleanStyles.push([c, t]);
     }
-    return params;
+    return booleanStyles;
   }
 
-  buildSwitchParams(sourceAnalysis: ElementSourceAnalysis, blocksUsed: Array<Block>): Array<AST.Expression> {
-    const { number: num, string: str } = this.builders;
-    let params = new Array<AST.Expression>();
-
+  buildSwitchStyles(sourceAnalysis: ElementSourceAnalysis, blocksUsed: Array<Block>, params: Array<AST.Expression>): Array<SwitchStyle> {
+    let switchStyles = new Array<SwitchStyle>();
     for (let switchStyle of sourceAnalysis.switchStyles) {
-      let values = Object.keys(switchStyle.group);
-      params.push(num(StyleCondition.SWITCH));
+      params.push(this.mustacheToStringExpression(this.builders, switchStyle.stringExpression!));
+      let f: FalsySwitchBehavior;
       if (switchStyle.disallowFalsy) {
-        params.push(num(FalsySwitchBehavior.error));
+        f = FalsySwitchBehavior.error;
       } else {
-        params.push(num(FalsySwitchBehavior.unset));
+        f = FalsySwitchBehavior.unset;
       }
+      let values = Object.keys(switchStyle.group);
       // We have to find the attribute that belongs to the most specific sub-block.
       let attr: Attribute | undefined;
       for (let value of values) {
@@ -373,11 +357,12 @@ class HelperInvocationGenerator {
           }
         }
       }
-      params.push(num(blockIndex(blocksUsed, attr!)));
-      params.push(str(attr!.asSource()));
-      params.push(this.mustacheToStringExpression(this.builders, switchStyle.stringExpression!));
+      let b = blockIndex(blocksUsed, attr!);
+      let a = attr!.asSource();
+      let v = params.length - 1;
+      switchStyles.push([v, f, b, a]);
     }
-    return params;
+    return switchStyles;
   }
 
   mustacheToExpression(builders: Syntax["builders"], expr: AST.MustacheStatement): AST.Expression {

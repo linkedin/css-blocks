@@ -16,7 +16,7 @@ function assert<T>(val: T, msg: string): asserts val is Defined<T> {
   if (val == undefined) throw new Error(msg);
 }
 
-const enum Condition {
+export const enum Condition {
   static = 1,
   toggle = 2,
   ternary = 3,
@@ -36,7 +36,6 @@ const enum FalsySwitchBehavior {
  * The result of evaluating a style expression is a set of global style ids
  * that are currently enabled on this element by the author.
  *
- * Note: The full set of style ids that are enabled on the element is not known
  * until after style resolution.
  *
  * The style expression is a list of values that consists of four sections:
@@ -156,6 +155,7 @@ const enum FalsySwitchBehavior {
  *           attributeName: string, value: string | null]`
  *
  * - `type`: `Condition.switch` or `4`
+ * - `falsyBehavior`: What to do if the value is falsy.
  * - `blockIndex`: An index that references a block from the block reference
  *   portion of the style expression.
  * - `attributeName`: A string that uniquely identifies the attribute in the
