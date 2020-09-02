@@ -1,4 +1,4 @@
-import { CSSBlocksEmberOptions, ResolvedCSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-utils";
+import { BroccoliConcatOptions, CSSBlocksEmberOptions, ResolvedCSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-utils";
 import broccoliConcat = require("broccoli-concat");
 import BroccoliDebug = require("broccoli-debug");
 import funnel = require("broccoli-funnel");
@@ -198,23 +198,29 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
     let env = this.env!;
 
     if (type === "css") {
-      if (!env.isApp) {
+      if (!env.isApp || env.config.broccoliConcat === "SKIP") {
         return tree;
       }
-      // TODO: THIS IS WRONG - FIX THESE HARCODED PATHS THIS IS A BLOCKER AAAUGH
+
+      // Merge default concat options with the options provided by the app.
+      let concatOptions: BroccoliConcatOptions;
+      if (env.config.broccoliConcat) {
+        concatOptions = Object.assign(
+          {},
+          buildDefaultBroccoliConcatOptions(env),
+          env.config.broccoliConcat,
+        );
+      } else {
+        concatOptions = buildDefaultBroccoliConcatOptions(env);
+      }
+
+      // Create the concatenated file...
       const concatTree = broccoliConcat(
         tree,
-        {
-          inputFiles: ["assets/css-blocks.css", "assets/@css-blocks-fixtures-v2/ember-app.css"],
-          outputFile: "assets/@css-blocks-fixtures-v2/ember-app.css",
-          sourceMapConfig: {
-            enabled: true,
-            extensions: ["css"],
-            inline: true,
-            mapCommentType: "block",
-          },
-        },
+        concatOptions,
       );
+
+      // Then overwrite the original file with our final build artifact.
       const mergedTree = mergeTrees([tree, concatTree], { overwrite: true });
       return new BroccoliDebug(mergedTree, "css-blocks:css-postprocess");
     }
@@ -222,6 +228,24 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
     return tree;
   },
 };
+
+/**
+ * Build a default broccoli-concat config, using given enviroment settings.
+ * @param env - The addon environment.
+ * @returns - Default broccoli-concat options, accounting for current env settings.
+ */
+function buildDefaultBroccoliConcatOptions(env: AddonEnvironment): BroccoliConcatOptions {
+  return {
+    inputFiles: ["assets/css-blocks.css", `assets/${env.modulePrefix}.css`],
+    outputFile: `assets/${env.modulePrefix}.css`,
+    sourceMapConfig: {
+      enabled: true,
+      extensions: ["css"],
+      inline: true,
+      mapCommentType: "block",
+    },
+  };
+}
 
 type MaybeCSSBlocksTree = MaybeCSSBlocksTreePlugin | string;
 interface MaybeCSSBlocksTreePlugin {
