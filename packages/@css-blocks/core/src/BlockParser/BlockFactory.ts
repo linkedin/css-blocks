@@ -364,6 +364,7 @@ export class BlockFactory {
 
     // Merge the rules from the CSS contents into the Block.
     block.precompiledStylesheet = cssContentsAst;
+    block.precompiledStylesheetUnedited = file.rawCssContents;
     this._mergeCssRulesIntoDefinitionBlock(block, cssContentsAst, file);
 
     // And we're done!

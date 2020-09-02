@@ -86,6 +86,13 @@ export interface ImportedCompiledCssFileContents {
    * File contents after the CSS Blocks footer comment.
    */
   post: string;
+
+  /**
+   * The unedited full file contents. This content will be added to the
+   * ImportedCompiledCssFile object so that it's accessible to build
+   * plugins later on.
+   */
+  raw: string;
 }
 
 /**
@@ -141,6 +148,14 @@ export interface ImportedCompiledCssFile {
    * an error.
    */
   defaultName: string;
+
+  /**
+   * The unedited file contents of the Compiled CSS file.
+   * In many cases when integrating blocks into a build pipeline,
+   * you can use this to build instead of rebuilding from the
+   * Block representation or the cssContents property.
+   */
+  rawCssContents: string;
 }
 
 /**
