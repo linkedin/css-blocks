@@ -203,16 +203,11 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
       }
 
       // Merge default concat options with the options provided by the app.
-      let concatOptions: BroccoliConcatOptions;
-      if (env.config.broccoliConcat) {
-        concatOptions = Object.assign(
-          {},
-          buildDefaultBroccoliConcatOptions(env),
-          env.config.broccoliConcat,
-        );
-      } else {
-        concatOptions = buildDefaultBroccoliConcatOptions(env);
-      }
+      let concatOptions: BroccoliConcatOptions = Object.assign(
+        {},
+        buildDefaultBroccoliConcatOptions(env),
+        env.config.broccoliConcat || {},
+      );
 
       // Create the concatenated file...
       const concatTree = broccoliConcat(
