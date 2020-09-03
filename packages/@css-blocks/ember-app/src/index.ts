@@ -259,9 +259,8 @@ function buildBroccoliConcatOptions(env: AddonEnvironment): BroccoliConcatOption
  * @returns - Default broccoli-concat options, accounting for current env settings.
  */
 function buildDefaultBroccoliConcatOptions(env: AddonEnvironment): BroccoliConcatOptions {
-  const cssBlocksOutputFilename = env.config.output || "css-blocks.css";
   return {
-    inputFiles: [`assets/${cssBlocksOutputFilename}`, `assets/${env.modulePrefix}.css`],
+    inputFiles: [`assets/${env.config.output}`, `assets/${env.modulePrefix}.css`],
     outputFile: `assets/${env.modulePrefix}.css`,
     sourceMapConfig: {
       enabled: true,
