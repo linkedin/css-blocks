@@ -34,11 +34,11 @@ export interface BroccoliConcatOptions {
    * tree for ember-app. You can use globs if preferred.
    *
    * Any top-level files that are processed by Ember CLI will likely be stored
-   * at "styles/<name-of-file>.css". You can use a plugin such as broccoli-debug
+   * at "assets/<name-of-file>.css". You can use a plugin such as broccoli-debug
    * to determine the structure of your styles after processing.
    *
    * Your CSS Blocks file will be available by default
-   * at "styles/css-blocks.css", but will vary if the "output" property is set
+   * at "assets/css-blocks.css", but will vary if the "output" property is set
    * in your CSS Blocks options.
    */
   inputFiles?: string[];
