@@ -220,15 +220,18 @@ export class BlockFactory {
         block.setName(uniqueName);
       }
 
-      // Ensure the GUID is unique.
-      const guidRegResult = this.registerGuid(block.guid);
-      if (!guidRegResult) {
-        block.addError(
-            new CssBlockError("Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs.", {
-              filename: block.identifier,
-            },
-          ),
-        );
+      // We only register guids from blocks that don't have errors because those will get re-parsed.
+      if (block.isValid()) {
+        // Ensure the GUID is unique.
+        const guidRegResult = this.registerGuid(block.guid);
+        if (!guidRegResult) {
+          block.addError(
+              new CssBlockError("Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs.", {
+                filename: block.identifier,
+              },
+            ),
+          );
+        }
       }
 
       // if the block has any errors, surface them here unless we're in fault tolerant mode.
