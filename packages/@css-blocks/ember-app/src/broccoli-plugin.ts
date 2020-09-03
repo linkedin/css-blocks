@@ -214,6 +214,5 @@ function addSourcemapInfoToOptimizedCss(css: string, sourcemap?: string) {
  * @returns - The path for the CSS Blocks compiled content.
  */
 function cssBlocksOutputFilename(options: ResolvedCSSBlocksEmberOptions) {
-  let outputName = options.output || "css-blocks.css";
-  return `app/styles/${outputName}`;
+  return `app/styles/${options.output}`;
 }

@@ -65,7 +65,7 @@ export interface CSSBlocksEmberOptions {
 }
 
 export interface ResolvedCSSBlocksEmberOptions {
-  output?: string;
+  output: string;
   aliases: ObjectDictionary<string>;
   analysisOpts: AnalysisOptions;
   parserOpts: ParserOptions;
@@ -99,5 +99,7 @@ export function getConfig(root: string, isProduction: boolean, options: CSSBlock
   if (options.output !== undefined && typeof options.output !== "string") {
     throw new Error(`Invalid css-blocks options in 'ember-cli-build.js': Output must be a string. Instead received ${options.output}.`);
   }
+  options.output = options.output || "css-blocks.css";
+
   return <ResolvedCSSBlocksEmberOptions>options;
 }
