@@ -213,15 +213,17 @@ export class CLI {
   }
 
   handleCssBlockError(blockFileRelative: string, error: CssBlockError): number {
+    let count = 0;
     if (error instanceof CascadingError) {
-      this.handleCssBlockError(this.fileForError(error.cause) || blockFileRelative, error.cause);
+      count = this.handleCssBlockError(this.fileForError(error.cause) || blockFileRelative, error.cause);
     } else if (error instanceof MultipleCssBlockErrors) {
-      let count = 0;
       for (let e of error.errors) {
         count += this.handleCssBlockError(this.fileForError(e) || blockFileRelative, e);
         this.println();
       }
       return count;
+    } else {
+      count = 1;
     }
     let loc = error.location;
     let message = `${this.chalk.red(error instanceof CascadingError ? "caused" : "error")}\t${this.chalk.whiteBright(this.fileForError(error) || blockFileRelative)}`;
@@ -231,7 +233,7 @@ export class CLI {
       this.println(message);
       this.displayError(blockFileRelative, error);
     }
-    return 1;
+    return count;
   }
 
   displayError(blockFileRelative: string, e: CssBlockError) {
