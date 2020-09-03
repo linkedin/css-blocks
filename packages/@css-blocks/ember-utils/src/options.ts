@@ -57,11 +57,11 @@ export interface CSSBlocksEmberOptions {
   /**
    * Options that control the behavior of broccoli-concat, which is used
    * to concatenate CSS files together by ember-app during postprocess.
-   * If this is set to "SKIP", broccoli-concat will *not* run.
+   * If this is set to false, broccoli-concat will *not* run.
    * You'll need to add additional processing to add the CSS Blocks
    * compiled content to your final CSS build artifact.
    */
-  broccoliConcat?: BroccoliConcatOptions | "SKIP";
+  broccoliConcat?: BroccoliConcatOptions | false;
 }
 
 export interface ResolvedCSSBlocksEmberOptions {
@@ -70,7 +70,7 @@ export interface ResolvedCSSBlocksEmberOptions {
   analysisOpts: AnalysisOptions;
   parserOpts: ParserOptions;
   optimization: Partial<OptiCSSOptions>;
-  broccoliConcat: BroccoliConcatOptions | "SKIP";
+  broccoliConcat: BroccoliConcatOptions | false;
 }
 
 export function getConfig(root: string, isProduction: boolean, options: CSSBlocksEmberOptions): ResolvedCSSBlocksEmberOptions {
