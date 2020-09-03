@@ -18,6 +18,7 @@ import {
 } from "@css-blocks/core";
 import chalk = require("chalk");
 import fse = require("fs-extra");
+import glob = require("glob");
 import path = require("path");
 import yargs = require("yargs");
 
@@ -179,7 +180,17 @@ export class CLI {
     }
     let factory = new BlockFactory(blockOptions);
     let errorCount = 0;
+    let resolvedBlockFiles = new Set<string>();
     for (let blockFile of blockFiles) {
+      if (fse.existsSync(blockFile) && fse.statSync(blockFile).isDirectory()) {
+        for (let discoveredFile of glob.sync("**/*.block.*", {cwd: blockFile})) {
+          resolvedBlockFiles.add(`${blockFile}/${discoveredFile}`);
+        }
+      } else {
+        resolvedBlockFiles.add(blockFile);
+      }
+    }
+    for (let blockFile of resolvedBlockFiles) {
       let blockFileRelative = path.relative(process.cwd(), path.resolve(blockFile));
       try {
         if (importer) {
@@ -199,7 +210,7 @@ export class CLI {
       }
     }
     if (errorCount) {
-      this.println(`Found ${this.chalk.redBright(`${errorCount} error${errorCount > 1 ? "s" : ""}`)} in ${blockFiles.length} file${blockFiles.length > 1 ? "s" : ""}.`);
+      this.println(`Found ${this.chalk.redBright(`${errorCount} error${errorCount > 1 ? "s" : ""}`)} in ${resolvedBlockFiles.size} file${resolvedBlockFiles.size > 1 ? "s" : ""}.`);
     }
     this.exit(errorCount);
   }
