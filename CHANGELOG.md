@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/linkedin/css-blocks/compare/v1.3.2...v1.4.0) (2020-09-04)
+
+
+### Bug Fixes
+
+* Correctly count the errors in block files. ([87b439d](https://github.com/linkedin/css-blocks/commit/87b439dcda78a512a2647d1775a1a5968f0ae465))
+* Exclude compiled blocks from vendor.css. ([98d0e76](https://github.com/linkedin/css-blocks/commit/98d0e76f1b0251655038fff660347efc86f8e6b7))
+* Only register guids from blocks that are valid. ([b234f1d](https://github.com/linkedin/css-blocks/commit/b234f1d72ed7aaefbaea7d7a530b08ab8b9dab4d))
+* Spelling - brocolli -> broccoli. ([a745147](https://github.com/linkedin/css-blocks/commit/a7451478b29f768276efe0bbc7b0bede2aedaab0))
+* Typo in concat options docs. ([20048cc](https://github.com/linkedin/css-blocks/commit/20048ccc262bc33be428c6609dc02d2094e4010b))
+* Update peerDependency version requirement on ember-cli-htmlbars. ([7d0c28d](https://github.com/linkedin/css-blocks/commit/7d0c28d50f0e39e94f8222242ee399be328be6b7))
+* Updates per PR feedback. ([e6a4d94](https://github.com/linkedin/css-blocks/commit/e6a4d94c1743516968e1063f43dd43938b87d272))
+
+
+### Features
+
+* End-to-end sourcemaps for ember v2 pipeline. ([fec42e4](https://github.com/linkedin/css-blocks/commit/fec42e4e5c019c7c9a0a88d12a07acaec0a24baa))
+* If a directory is passed to the validate cli, discover blocks. ([7ffeb0f](https://github.com/linkedin/css-blocks/commit/7ffeb0fdf41b1e5bf416f5da372340487aecc0c2))
+* Provide ability to override concat settings. ([04a9da2](https://github.com/linkedin/css-blocks/commit/04a9da2b18abd3c7f3d26b2e673b9d019b172151))
+* Update concatenation. WIP sourcemaps fix. ([da47ce6](https://github.com/linkedin/css-blocks/commit/da47ce6c3ea46056e5575d2a7cdfc001954e4a36))
+
+
+
+
+
 ## [1.3.2](https://github.com/linkedin/css-blocks/compare/v1.3.1...v1.3.2) (2020-08-20)
 
 

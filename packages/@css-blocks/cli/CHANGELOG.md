@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v1.3.2...v1.4.0) (2020-09-04)
+
+
+### Bug Fixes
+
+* Correctly count the errors in block files. ([87b439d](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/87b439dcda78a512a2647d1775a1a5968f0ae465))
+
+
+### Features
+
+* If a directory is passed to the validate cli, discover blocks. ([7ffeb0f](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/commit/7ffeb0fdf41b1e5bf416f5da372340487aecc0c2))
+
+
+
+
+
 ## [1.3.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/cli/compare/v1.3.1...v1.3.2) (2020-08-20)
 
 **Note:** Version bump only for package @css-blocks/cli

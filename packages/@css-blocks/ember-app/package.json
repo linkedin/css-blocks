@@ -1,6 +1,6 @@
 {
   "name": "@css-blocks/ember-app",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "CSS Blocks Application Support for Ember.",
   "main": "dist/src/index.js",
   "author": "Chris Eppstein <ceppstein@linkedin.com>",
@@ -49,9 +49,9 @@
     "watch": "^1.0.2"
   },
   "dependencies": {
-    "@css-blocks/config": "^1.3.2",
-    "@css-blocks/core": "^1.3.2",
-    "@css-blocks/ember-utils": "^1.3.2",
+    "@css-blocks/config": "^1.4.0",
+    "@css-blocks/core": "^1.4.0",
+    "@css-blocks/ember-utils": "^1.4.0",
     "@glimmer/compiler": "^0.43.0",
     "@glimmer/syntax": "^0.43.0",
     "@opticss/template-api": "^0.7.0",
