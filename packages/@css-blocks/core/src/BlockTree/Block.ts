@@ -233,6 +233,10 @@ export class Block
     this._blockErrors.push(error);
   }
 
+  isValid(): boolean {
+    return this._blockErrors.length === 0;
+  }
+
   /**
    * Checks for errors on the block
    * @returns true if the block is valid else throws the errors on the block
