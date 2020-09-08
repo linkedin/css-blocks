@@ -55,6 +55,11 @@ export class CSSBlocksApplicationPlugin extends Filter {
         debug("blocks", serializedAnalysis.stylesFound);
         for (let blockId of Object.keys(serializedAnalysis.blocks)) {
           serializedAnalysis.blocks[blockId] = pathToIdent(serializedAnalysis.blocks[blockId]);
+          console.log(`serializedAnalysis.blocks[blockId]: ${serializedAnalysis.blocks[blockId]}`);
+          console.log(`blockId: ${blockId}`);
+
+          console.log("output of pathToIdent");
+          console.log(serializedAnalysis.blocks[blockId]);
         }
         let analysis = await EmberAnalysis.deserializeSource(serializedAnalysis, factory, analyzer);
         unionInto(blocksUsed, analysis.transitiveBlockDependencies());
@@ -86,6 +91,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let optLogFileName = `${cssFileName}.optimization.log`;
     let optimizationResult = await optimizer.optimize(cssFileName);
     debug(`Optimized CSS. There were ${optimizationResult.actions.performed.length} optimizations performed.`);
+    console.log(optimizationResult.styleMapping);
     this.output.mkdirSync(path.dirname(cssFileName), {recursive: true});
     this.output.writeFileSync(cssFileName, optimizationResult.output.content.toString(), "utf8");
     this.output.writeFileSync(sourceMapFileName, optimizationResult.output.sourceMap?.toString(), "utf8");

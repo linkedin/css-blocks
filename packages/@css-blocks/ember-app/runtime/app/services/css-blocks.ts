@@ -11,8 +11,6 @@ import { StyleResolver } from "./StyleResolver";
 
 const data: AggregateRewriteData = _data;
 
-let DEBUGGING = false;
-
 type DebugExpression = string | Array<DebugExpression>;
 
 enum Operator {
@@ -29,13 +27,14 @@ interface StyleIdToOptimizationsMap {
 export default class CSSBlocksService extends Service {
   possibleOptimizations!: StyleIdToOptimizationsMap;
   styleNames: { [name: string]: string };
+  static enableDebugMode: Boolean = false;
   constructor() {
     super(...arguments);
     this.possibleOptimizations = getOptimizationInverseMap(data.optimizations);
     this.styleNames = getStyleNames();
   }
   classNamesFor(argv: Array<string | number | boolean | null>): string {
-    if (DEBUGGING) {
+    if (CSSBlocksService.enableDebugMode) {
       console.log(argv);
     }
     let styleEvaluator = new StyleEvaluator(data, argv);
@@ -47,7 +46,7 @@ export default class CSSBlocksService extends Service {
       resolver.addStyle(style);
     }
 
-    if (DEBUGGING) {
+    if (CSSBlocksService.enableDebugMode) {
       this.debugStyles("all possible implied styles", resolver.currentStyles());
     }
 
@@ -68,7 +67,7 @@ export default class CSSBlocksService extends Service {
       classNames.push(data.outputClassnames[idx]);
     }
     let result = classNames.join(" ");
-    if (DEBUGGING) {
+    if (CSSBlocksService.enableDebugMode) {
       console.log(classNames);
     }
     return result;
@@ -93,7 +92,7 @@ export default class CSSBlocksService extends Service {
    * Reverse maps style ids to their style names for debugging.
    */
   debugStyles(msg: string, stylesApplied: Set<number>): void {
-    if (!DEBUGGING) return;
+    if (!CSSBlocksService.enableDebugMode) return;
     let appliedStyleNames = new Array<string>();
     for (let s of stylesApplied) {
       appliedStyleNames.push(this.styleNames[s]);
