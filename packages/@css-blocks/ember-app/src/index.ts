@@ -209,7 +209,9 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
       );
 
       // Then overwrite the original file with our final build artifact.
-      const mergedTree = mergeTrees([tree, concatTree], { overwrite: true });
+      const mergedTree = funnel(mergeTrees([tree, concatTree], { overwrite: true }), {
+        exclude: [`assets/${env.config.output}`],
+      });
       return new BroccoliDebug(mergedTree, "css-blocks:css-postprocess");
     }
 
