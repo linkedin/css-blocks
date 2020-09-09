@@ -1,4 +1,4 @@
-import { BroccoliConcatOptions, CSSBlocksEmberOptions, ResolvedCSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-utils";
+import { BroccoliConcatOptions, CSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-utils";
 import broccoliConcat = require("broccoli-concat");
 import BroccoliDebug = require("broccoli-debug");
 import funnel = require("broccoli-funnel");
@@ -8,23 +8,9 @@ import type Addon from "ember-cli/lib/models/addon";
 import type { AddonImplementation, ThisAddon } from "ember-cli/lib/models/addon";
 import Project from "ember-cli/lib/models/project";
 
-import { CSSBlocksApplicationPlugin, CSSBlocksStylesPreprocessorPlugin } from "./broccoli-plugin";
-
-interface AddonEnvironment {
-  parent: Addon | EmberApp;
-  app: EmberApp;
-  rootDir: string;
-  isApp: boolean;
-  modulePrefix: string;
-  config: ResolvedCSSBlocksEmberOptions;
-}
-
-interface CSSBlocksApplicationAddon {
-  _modulePrefix(): string;
-  env: AddonEnvironment | undefined;
-  getEnv(parent): AddonEnvironment;
-  broccoliAppPluginInstance: CSSBlocksApplicationPlugin | undefined;
-}
+import { CSSBlocksApplicationPlugin, CSSBlocksStylesPostprocessorPlugin, CSSBlocksStylesPreprocessorPlugin } from "./broccoli-plugin";
+import { appStylesPostprocessFilename, cssBlocksPostprocessFilename } from "./utils/filepaths";
+import { AddonEnvironment, CSSBlocksApplicationAddon } from "./utils/interfaces";
 
 /**
  * An ember-cli addon for Ember applications using CSS Blocks in its
@@ -202,15 +188,27 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         return tree;
       }
 
+      // Verify there are no selector conflicts...
+      // (Only for builds with optimization enabled.)
+      let scannerTree;
+      if (env.config.optimization.enabled) {
+        scannerTree = new BroccoliDebug(
+          new CSSBlocksStylesPostprocessorPlugin(env, [tree]),
+          "css-blocks:css-postprocess-preconcat",
+        );
+      } else {
+        scannerTree = tree;
+      }
+
       // Create the concatenated file...
       const concatTree = broccoliConcat(
-        tree,
+        scannerTree,
         buildBroccoliConcatOptions(env),
       );
 
       // Then overwrite the original file with our final build artifact.
       const mergedTree = funnel(mergeTrees([tree, concatTree], { overwrite: true }), {
-        exclude: [`assets/${env.config.output}`],
+        exclude: [cssBlocksPostprocessFilename(env.config)],
       });
       return new BroccoliDebug(mergedTree, "css-blocks:css-postprocess");
     }
@@ -261,9 +259,11 @@ function buildBroccoliConcatOptions(env: AddonEnvironment): BroccoliConcatOption
  * @returns - Default broccoli-concat options, accounting for current env settings.
  */
 function buildDefaultBroccoliConcatOptions(env: AddonEnvironment): BroccoliConcatOptions {
+  const appCssPath = appStylesPostprocessFilename(env);
+  const blocksCssPath = cssBlocksPostprocessFilename(env.config);
   return {
-    inputFiles: [`assets/${env.config.output}`, `assets/${env.modulePrefix}.css`],
-    outputFile: `assets/${env.modulePrefix}.css`,
+    inputFiles: [blocksCssPath, appCssPath],
+    outputFile: appCssPath,
     sourceMapConfig: {
       enabled: true,
       extensions: ["css"],
