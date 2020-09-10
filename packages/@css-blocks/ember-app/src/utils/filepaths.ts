@@ -3,6 +3,16 @@ import { ResolvedCSSBlocksEmberOptions } from "@css-blocks/ember-utils";
 import { AddonEnvironment } from "./interfaces";
 
 /**
+ * Filepath for list of optimized styles in preprocess tree.
+ */
+export const optimizedStylesPreprocessFilepath = "app/styles/css-blocks-stylelist.json";
+
+/**
+ * Filepath for list of optimized styles in postprocess tree.
+ */
+export const optimizedStylesPostprocessFilepath = "assets/css-blocks-stylelist.json";
+
+/**
  * Generate the output path for the compiled CSS Blocks content, using the
  * preferred filename given by the user. If none is given, the default
  * path is "app/styles/css-blocks.css".

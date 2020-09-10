@@ -49,19 +49,42 @@ export interface BroccoliConcatOptions {
 }
 
 export interface CSSBlocksEmberOptions {
+  /**
+   * The name of the CSS file generated that contains the compiled
+   * result of CSS Blocks. By default, this is css-blocks.css.
+   */
   output?: string;
   aliases?: ObjectDictionary<string>;
   analysisOpts?: AnalysisOptions;
   parserOpts?: Writeable<ParserOptions>;
+  /**
+   * Options that control the behavior of OptiCSS, which is used to
+   * rewrite and optimize compiled CSS Blocks output. By default,
+   * optimization is enabled for production builds only.
+   *
+   * To disable optimization, set optimization.enabled to false.
+   */
   optimization?: Partial<OptiCSSOptions>;
   /**
    * Options that control the behavior of broccoli-concat, which is used
    * to concatenate CSS files together by ember-app during postprocess.
+   *
    * If this is set to false, broccoli-concat will *not* run.
    * You'll need to add additional processing to add the CSS Blocks
    * compiled content to your final CSS build artifact.
    */
   broccoliConcat?: BroccoliConcatOptions | false;
+  /**
+   * List of classes that are used by application CSS and might conflict
+   * with the optimizer. You should add any short class names (~5 characters)
+   * to this list so the optimizer doesn't use these when building the
+   * CSS Blocks compiled output.
+   *
+   * This is a convenience alias for
+   * optimization.rewriteIdents.omitIdents.class[]. It has no effect if
+   * optimization is disabled.
+   */
+  appClasses?: string[];
 }
 
 export interface ResolvedCSSBlocksEmberOptions {
@@ -71,6 +94,7 @@ export interface ResolvedCSSBlocksEmberOptions {
   parserOpts: ParserOptions;
   optimization: Partial<OptiCSSOptions>;
   broccoliConcat: BroccoliConcatOptions | false;
+  appClasses: string[];
 }
 
 export function getConfig(root: string, isProduction: boolean, options: CSSBlocksEmberOptions): ResolvedCSSBlocksEmberOptions {
@@ -78,6 +102,7 @@ export function getConfig(root: string, isProduction: boolean, options: CSSBlock
   if (!options.analysisOpts) options.analysisOpts = {};
   if (!options.optimization) options.optimization = {};
   if (!options.broccoliConcat) options.broccoliConcat = {};
+  if (!options.appClasses) options.appClasses = [];
 
   if (!options.parserOpts) {
     options.parserOpts = config.searchSync(root) || {};
