@@ -9,7 +9,7 @@ import type { AddonImplementation, ThisAddon } from "ember-cli/lib/models/addon"
 import Project from "ember-cli/lib/models/project";
 
 import { CSSBlocksApplicationPlugin, CSSBlocksStylesPostprocessorPlugin, CSSBlocksStylesPreprocessorPlugin } from "./broccoli-plugin";
-import { appStylesPostprocessFilename, cssBlocksPostprocessFilename } from "./utils/filepaths";
+import { appStylesPostprocessFilename, cssBlocksPostprocessFilename, optimizedStylesPostprocessFilepath } from "./utils/filepaths";
 import { AddonEnvironment, CSSBlocksApplicationAddon } from "./utils/interfaces";
 
 /**
@@ -172,7 +172,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         // tree is processed before the CSS tree, but just in case....
         throw new Error("[css-blocks/ember-app] The CSS tree ran before the JS tree, so the CSS tree doesn't have the contents for CSS Blocks files. This shouldn't ever happen, but if it does, please file an issue with us!");
       }
-      // Get the combined CSS file
+      // Copy over the CSS Blocks compiled output from the template tree to the CSS tree.
       const cssBlocksContentsTree = new CSSBlocksStylesPreprocessorPlugin(env.modulePrefix, env.config, [this.broccoliAppPluginInstance, tree]);
       return new BroccoliDebug(mergeTrees([tree, cssBlocksContentsTree], { overwrite: true }), "css-blocks:css-preprocess");
     } else {
@@ -180,6 +180,12 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
     }
   },
 
+  /**
+   * Post-process the tree.
+   * @param type - The type of tree.
+   * @param tree - The tree to process.
+   * @returns - A broccoli tree.
+   */
   postprocessTree(type, tree) {
     let env = this.env!;
 
@@ -208,7 +214,10 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
 
       // Then overwrite the original file with our final build artifact.
       const mergedTree = funnel(mergeTrees([tree, concatTree], { overwrite: true }), {
-        exclude: [cssBlocksPostprocessFilename(env.config)],
+        exclude: [
+          cssBlocksPostprocessFilename(env.config),
+          optimizedStylesPostprocessFilepath,
+        ],
       });
       return new BroccoliDebug(mergedTree, "css-blocks:css-postprocess");
     }

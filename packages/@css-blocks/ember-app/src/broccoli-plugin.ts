@@ -12,7 +12,7 @@ import { OptiCSSOptions, Optimizer, parseSelector, postcss } from "opticss";
 import * as path from "path";
 
 import { RuntimeDataGenerator } from "./RuntimeDataGenerator";
-import { cssBlocksPostprocessFilename, cssBlocksPreprocessFilename } from "./utils/filepaths";
+import { cssBlocksPostprocessFilename, cssBlocksPreprocessFilename, optimizedStylesPostprocessFilepath, optimizedStylesPreprocessFilepath } from "./utils/filepaths";
 import { AddonEnvironment } from "./utils/interfaces";
 
 const debug = debugGenerator("css-blocks:ember-app");
@@ -47,7 +47,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let factory = new BlockFactory(config, postcss);
     let analyzer = new EmberAnalyzer(factory, this.cssBlocksOptions.analysisOpts);
     let optimizerOptions = this.cssBlocksOptions.optimization;
-    this.reserveClassnames(optimizerOptions);
+    this.reserveClassnames(optimizerOptions, this.cssBlocksOptions.appClasses);
     let optimizer = new Optimizer(optimizerOptions, analyzer.optimizationOptions);
     let blocksUsed = new Set<Block>();
     for (let entry of entries) {
@@ -98,6 +98,22 @@ export class CSSBlocksApplicationPlugin extends Filter {
     this.output.writeFileSync(optLogFileName, optimizationResult.actions.logStrings().join("\n"), "utf8");
     debug("Wrote css, sourcemap, and optimization log.");
 
+    // Also, write out a list of generated classes that we can use later
+    // for conflict detection during postprocess.
+    const classesUsed: Set<string> = new Set();
+    optimizationResult.styleMapping.optimizedAttributes.forEach(attr => {
+      classesUsed.add(attr.value.valueOf());
+    });
+    this.output.writeFileSync(
+      optimizedStylesPreprocessFilepath,
+      JSON.stringify(
+        new Array(...classesUsed.values()),
+        undefined,
+        " ",
+      ),
+    );
+    debug("Wrote list of generated classes.");
+
     let dataGenerator = new RuntimeDataGenerator([...blocksUsed], optimizationResult.styleMapping, analyzer, config, reservedClassnames);
     let data = dataGenerator.generate();
     let serializedData = JSON.stringify(data, undefined, "  ");
@@ -116,7 +132,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
    * application to the the list of identifiers that should be omitted by the
    * classname generator.
    */
-  reserveClassnames(optimizerOptions: Partial<OptiCSSOptions>): void {
+  reserveClassnames(optimizerOptions: Partial<OptiCSSOptions>, appClassesAlias: string[]): void {
     let rewriteIdents = optimizerOptions.rewriteIdents;
     let rewriteIdentsFlag: boolean;
     let omitIdents: Array<string>;
@@ -131,7 +147,8 @@ export class CSSBlocksApplicationPlugin extends Filter {
       omitIdents = rewriteIdents.omitIdents && rewriteIdents.omitIdents.class || [];
     }
 
-    // TODO: scan css files for other classes in use and add them to `omitIdents`.
+    // Add in any additional classes that were passed in using the appClasses alias.
+    omitIdents.push(...appClassesAlias);
 
     optimizerOptions.rewriteIdents = {
       id: false,
@@ -165,9 +182,18 @@ export class CSSBlocksStylesPreprocessorPlugin extends Plugin {
     this.cssBlocksOptions = cssBlocksOptions;
   }
   async build() {
-    // Are there any changes to make? If not, bail out early.
     let stylesheetPath = cssBlocksPreprocessFilename(this.cssBlocksOptions);
-    let entries = this.input.entries(".", {globs: [stylesheetPath]});
+
+    // Are there any changes to make? If not, bail out early.
+    let entries = this.input.entries(
+      ".",
+      {
+        globs: [
+          stylesheetPath,
+          "app/styles/css-blocks-style-mapping.css",
+        ],
+      },
+    );
     let currentFSTree = FSTree.fromEntries(entries);
     let patch = this.previousSourceTree.calculatePatch(currentFSTree);
     if (patch.length === 0) {
@@ -175,7 +201,9 @@ export class CSSBlocksStylesPreprocessorPlugin extends Plugin {
     } else {
       this.previousSourceTree = currentFSTree;
     }
-    // Read in the CSS Blocks compiled content that was created previously.
+
+    // Read in the CSS Blocks compiled content that was created previously
+    // from the template tree.
     let blocksFileContents: string;
     if (this.input.existsSync(stylesheetPath)) {
       blocksFileContents = this.input.readFileSync(stylesheetPath, { encoding: "utf8" });
@@ -185,10 +213,16 @@ export class CSSBlocksStylesPreprocessorPlugin extends Plugin {
       blocksFileContents = "";
     }
 
-    // Now, write out compiled content to its expected location.
+    // Now, write out compiled content to its expected location in the CSS tree.
     // By default, this is app/styles/css-blocks.css.
     this.output.mkdirSync(path.dirname(stylesheetPath), { recursive: true });
     this.output.writeFileSync(stylesheetPath, blocksFileContents);
+
+    // Also, forward along the JSON list of optimizer-generated class names.
+    if (this.input.existsSync(optimizedStylesPreprocessFilepath)) {
+      const dataContent = this.input.readFileSync(optimizedStylesPreprocessFilepath).toString("utf8");
+      this.output.writeFileSync(optimizedStylesPreprocessFilepath, dataContent);
+    }
   }
 }
 
@@ -201,10 +235,12 @@ export class CSSBlocksStylesPreprocessorPlugin extends Plugin {
  */
 export class CSSBlocksStylesPostprocessorPlugin extends Filter {
   env: AddonEnvironment;
+  previousSourceTree: FSTree;
 
   constructor(env: AddonEnvironment, inputNodes: InputNode[]) {
     super(mergeTrees(inputNodes), {});
     this.env = env;
+    this.previousSourceTree = new FSTree();
   }
 
   processString(contents: string, _relativePath: string): string {
@@ -214,28 +250,57 @@ export class CSSBlocksStylesPostprocessorPlugin extends Filter {
   async build() {
     await super.build();
 
-    // Look up all the application style content that's already present.
     const blocksCssFile = cssBlocksPostprocessFilename(this.env.config);
-    const appStyles: string[] = [];
+    let optimizerClasses: string[] = [];
+    const appCss: string[] = [];
     const foundFiles: string[] = [];
+    const foundClasses: Set<string> = new Set<string>();
+    const errorLog: string[] = [];
 
+    // Are there any changes to make? If not, bail out early.
+    let entries = this.input.entries(
+      ".",
+      {
+        globs: [
+          "**/*.css",
+          optimizedStylesPostprocessFilepath,
+        ],
+      },
+    );
+    let currentFSTree = FSTree.fromEntries(entries);
+    let patch = this.previousSourceTree.calculatePatch(currentFSTree);
+    if (patch.length === 0) {
+      return;
+    } else {
+      this.previousSourceTree = currentFSTree;
+    }
+
+    // Read in the list of classes generated by the optimizer.
+    if (this.input.existsSync(optimizedStylesPostprocessFilepath)) {
+      optimizerClasses = JSON.parse(this.input.readFileSync(optimizedStylesPostprocessFilepath).toString("utf8"));
+    } else {
+      // Welp, nothing to do if we don't have optimizer data.
+      debug("Skipping conflict analysis because there is no optimizer data.");
+      return;
+    }
+
+    // Look up all the application style content that's already present.
     const walkEntries = this.input.entries(undefined, {
       globs: ["**/*.css"],
     });
     walkEntries.forEach(entry => {
       if (entry.relativePath === blocksCssFile) return;
       try {
-        appStyles.push(this.input.readFileSync(entry.relativePath).toString("utf8"));
+        appCss.push(this.input.readFileSync(entry.relativePath).toString("utf8"));
         foundFiles.push(entry.relativePath);
       } catch (e) {
         // broccoli-concat will complain about this later. let's move on.
       }
     });
+    debug("Done looking up app CSS.");
 
-    // Now, read in each of these sources and check there are no class name conflicts.
-    const foundClasses: Set<string> = new Set<string>();
-    const errorLog: string[] = [];
-    appStyles.forEach(content => {
+    // Now, read in each of these sources and note all classes found.
+    appCss.forEach(content => {
       try {
         const parsed = postcss.parse(content);
         parsed.walkRules(rule => {
@@ -249,19 +314,38 @@ export class CSSBlocksStylesPostprocessorPlugin extends Filter {
           });
         });
       } catch (e) {
-        // TODO: Can't parse CSS? Gracefully fail or crash and burn?
+        // Can't parse CSS? We'll skip it and add a warning to the log.
         errorLog.push(e.toString());
+        debug(`Ran into an error when parsing CSS content for conflict analysis! Review the error log for details.`);
       }
     });
+    debug("Done finding app classes.");
+
+    // Find collisions between the app styles and optimizer styles.
+    const collisions = optimizerClasses.filter(val => foundClasses.has(val));
+    debug("Done identifying collisions.");
 
     // Build a logfile for the output tree, for debugging.
-    let logfile = "FOUND CLASSES:\n";
+    let logfile = "COLLISIONS:\n";
+    collisions.forEach(cssClass => { logfile += `${cssClass}\n`; });
+    logfile += "\nFOUND APP CLASSES:\n";
     foundClasses.forEach(cssClass => { logfile += `${cssClass}\n`; });
     logfile += "\nFOUND FILES:\n";
     foundFiles.forEach(file => { logfile += `${file}\n`; });
     logfile += "\nERRORS:\n";
     errorLog.forEach(err => { logfile += `${err}\n`; });
     this.output.writeFileSync("assets/app-classes.log", logfile);
+    debug("Wrote log file to broccoli tree.");
+
+    if (collisions.length > 0) {
+      throw new Error(
+        "Your application CSS contains classes that are also generated by the CSS optimizer. This can cause style conflicts between your application's classes and those generated by CSS Blocks.\n" +
+        "To resolve this conflict, you should add any short class names in non-block CSS (~5 characters or less) to the list of disallowed classes in your build configuration.\n" +
+        "(You can do this by setting css-blocks.appClasses to an array of disallowed classes in ember-cli-build.js.)\n\n" +
+        "Conflicting classes:\n" +
+        collisions.reduce((prev, curr) => prev += `${curr}\n`, ""),
+      );
+    }
   }
 }
 
