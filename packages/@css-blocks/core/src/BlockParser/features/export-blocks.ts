@@ -58,78 +58,80 @@ export async function exportBlocks(block: Block, factory: BlockFactory, file: st
           `Malformed block export: \`@export ${atRule.params}\``,
           sourceRange(factory.configuration, block.stylesheet, file, atRule),
         ));
-      }
+      } else {
+        block.blockAST!.children.push(exports);
 
-      // Import file, then parse file, then save block reference.
-      let srcBlockPromise: Promise<Block> = Promise.resolve(block);
-      if (typeguards.isBlockExport(exports)) {
-        srcBlockPromise = factory.getBlockRelative(block.identifier, exports.fromPath);
-      }
+        // Import file, then parse file, then save block reference.
+        let srcBlockPromise: Promise<Block> = Promise.resolve(block);
+        if (typeguards.isBlockExport(exports)) {
+          srcBlockPromise = factory.getBlockRelative(block.identifier, exports.fromPath);
+        }
 
-      // Validate our imported block name is a valid CSS identifier.
-      const exportPromise = srcBlockPromise.then(
-        (srcBlock) => {
-          if (typeguards.isBlockExport(exports)) {
-            block.blockReferencePaths.set(exports.fromPath, srcBlock);
-          }
-          for (let {name: localName, asName: remoteName} of exports?.exports!) {
-            remoteName = remoteName || localName;
-            if (remoteNames.has(remoteName)) {
-              block.addError(new errors.InvalidBlockSyntax(
-                `Cannot have duplicate Block export of same name: "${remoteName}".`,
-                sourceRange(factory.configuration, block.stylesheet, file, atRule),
-              ));
-            } else {
-              remoteNames.add(remoteName);
-              if (!CLASS_NAME_IDENT.test(localName)) {
+        // Validate our imported block name is a valid CSS identifier.
+        const exportPromise = srcBlockPromise.then(
+          (srcBlock) => {
+            if (typeguards.isBlockExport(exports)) {
+              block.blockReferencePaths.set(exports.fromPath, srcBlock);
+            }
+            for (let {name: localName, asName: remoteName} of exports?.exports!) {
+              remoteName = remoteName || localName;
+              if (remoteNames.has(remoteName)) {
                 block.addError(new errors.InvalidBlockSyntax(
-                  `Illegal block name in export. "${localName}" is not a legal CSS identifier.`,
-                  sourceRange(factory.configuration, block.stylesheet, file, atRule),
-                ));
-              }
-              else if (!CLASS_NAME_IDENT.test(remoteName)) {
-                block.addError(new errors.InvalidBlockSyntax(
-                  `Illegal block name in import. "${remoteName}" is not a legal CSS identifier.`,
-                  sourceRange(factory.configuration, block.stylesheet, file, atRule),
-                ));
-              }
-              else if (localName === DEFAULT_EXPORT && remoteName === DEFAULT_EXPORT) {
-                block.addError(new errors.InvalidBlockSyntax(
-                  `Unnecessary re-export of default Block.`,
-                  sourceRange(factory.configuration, block.stylesheet, file, atRule),
-                ));
-              }
-
-              else if (RESERVED_BLOCK_NAMES.has(remoteName)) {
-                block.addError(new errors.InvalidBlockSyntax(
-                  `Cannot export "${localName}" as reserved word "${remoteName}"`,
-                  sourceRange(factory.configuration, block.stylesheet, file, atRule),
-                ));
-              }
-
-              let referencedBlock = srcBlock.getReferencedBlock(localName);
-              if (!referencedBlock) {
-                block.addError(new errors.InvalidBlockSyntax(
-                  `Cannot export Block "${localName}". No Block named "${localName}" in "${file}".`,
+                  `Cannot have duplicate Block export of same name: "${remoteName}".`,
                   sourceRange(factory.configuration, block.stylesheet, file, atRule),
                 ));
               } else {
-                // Save exported blocks
-                block.addBlockExport(remoteName, referencedBlock);
+                remoteNames.add(remoteName);
+                if (!CLASS_NAME_IDENT.test(localName)) {
+                  block.addError(new errors.InvalidBlockSyntax(
+                    `Illegal block name in export. "${localName}" is not a legal CSS identifier.`,
+                    sourceRange(factory.configuration, block.stylesheet, file, atRule),
+                  ));
+                }
+                else if (!CLASS_NAME_IDENT.test(remoteName)) {
+                  block.addError(new errors.InvalidBlockSyntax(
+                    `Illegal block name in import. "${remoteName}" is not a legal CSS identifier.`,
+                    sourceRange(factory.configuration, block.stylesheet, file, atRule),
+                  ));
+                }
+                else if (localName === DEFAULT_EXPORT && remoteName === DEFAULT_EXPORT) {
+                  block.addError(new errors.InvalidBlockSyntax(
+                    `Unnecessary re-export of default Block.`,
+                    sourceRange(factory.configuration, block.stylesheet, file, atRule),
+                  ));
+                }
+
+                else if (RESERVED_BLOCK_NAMES.has(remoteName)) {
+                  block.addError(new errors.InvalidBlockSyntax(
+                    `Cannot export "${localName}" as reserved word "${remoteName}"`,
+                    sourceRange(factory.configuration, block.stylesheet, file, atRule),
+                  ));
+                }
+
+                let referencedBlock = srcBlock.getReferencedBlock(localName);
+                if (!referencedBlock) {
+                  block.addError(new errors.InvalidBlockSyntax(
+                    `Cannot export Block "${localName}". No Block named "${localName}" in "${file}".`,
+                    sourceRange(factory.configuration, block.stylesheet, file, atRule),
+                  ));
+                } else {
+                  // Save exported blocks
+                  block.addBlockExport(remoteName, referencedBlock);
+                }
               }
             }
-          }
-        },
-        (error) => {
-          block.addError(new errors.CascadingError(
-            `Error in exported block "${(<BlockExport>exports).fromPath}"`,
-            error,
-            sourceRange(factory.configuration, block.stylesheet, file, atRule),
-          ));
-        },
-      );
+          },
+          (error) => {
+            block.addError(new errors.CascadingError(
+              `Error in exported block "${(<BlockExport>exports).fromPath}"`,
+              error,
+              sourceRange(factory.configuration, block.stylesheet, file, atRule),
+            ));
+          },
+        );
 
-      exportPromises.push(exportPromise);
+        exportPromises.push(exportPromise);
+      }
 
     });
   }
