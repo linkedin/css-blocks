@@ -2,18 +2,19 @@
 import { data as _data } from "./-css-blocks-data";
 /// @ts-ignore
 import { testSupportData as _testData } from "./-css-blocks-test-support-data";
-import { AggregateRewriteData } from "./AggregateRewriteData";
-import CSSBlocksService, { evaluateExpression } from "./css-blocks";
+import CSSBlocksService from "./css-blocks";
 import { TestSupportData } from "./TestSupportData";
 
-const data: AggregateRewriteData = _data;
 const testData: TestSupportData = _testData;
 
-// TODO: return this class object for getBlock() instead of the guid
 export class TestBlock {
   blockId: string;
   constructor(blockId: string) {
     this.blockId = blockId;
+  }
+  style(styleName: string) {
+    // we need to strip "" for styles like [size="large"]
+    return `${this.blockId}${styleName.replace('"', "")}`;
   }
 }
 
@@ -21,6 +22,17 @@ export class CSSBlocksTestService extends CSSBlocksService {
   constructor() {
     /// @ts-ignore
     super(...arguments); // need to pass in ...arguments since "@ember/service" extends from EmberObject
+    // set this to true so that classNamesFor will return a proxy to the actual
+    // runtime classes in addition to the actual runtime classes
+    CSSBlocksTestService.enableTestMode = true;
+  }
+
+  classNamesFor(argv: Array<string | number | boolean | null>): string {
+    let runtimeClassNames = super.classNamesFor(argv);
+    let directlyAppliedStyleIds = this.getDirectlyAppliedStyles(argv);
+    // convert the directly applied styleIds into a human readable form
+    let proxyClassNames = this.getStyleNames(directlyAppliedStyleIds).join(" ");
+    return `${proxyClassNames} ${runtimeClassNames}`;
   }
 
   /**
@@ -30,59 +42,42 @@ export class CSSBlocksTestService extends CSSBlocksService {
    * @param blockName name of the block to find within the moduleName
    */
   // tslint:disable-next-line: prefer-unknown-to-any
-  getBlock(fileName: string, blockName: string): string {
-    let runtimeBlockName = testData.runtimeBlockMapping[fileName];
+  getBlock(fileName: string, blockName: string): TestBlock {
+    let runtimeBlockName = testData[fileName];
 
     if (!runtimeBlockName) {
       throw new Error(`No block file named ${fileName} found in within this app's namespace`);
     } else {
-      let exportedBlocks = testData.exportedBlocks[runtimeBlockName];
-      if (!exportedBlocks) {
-        throw new Error(`No block named ${blockName} found within ${fileName}. Check the @export declarations within the block file ${fileName}`);
-      }
-      let runtimeGuid = exportedBlocks[blockName];
+      let runtimeGuid = runtimeBlockName[blockName];
 
       if (!runtimeGuid) {
         throw new Error(`No block named ${blockName} found within ${fileName}. Check the @export declarations within the block file ${fileName}`);
       }
-      return runtimeGuid;
+      return new TestBlock(runtimeGuid);
     }
-  }
-
-  getStyle(blockGuid: string, styleName: string) {
-    let stylesApplied = new Set([getStyleId(blockGuid, styleName)]);
-    //TODO: If we need styleResolver, do this instead
-    //    return this.cssBlocksService.getImpliedAndOptimizedStyles(new Set([styleId]));
-    // return `${blockGuid}${this.cssBlocksService.styleNames[styleId]}`;
-
-    // TODO: Only iterate over the subset of optimizations that might match this
-    // element's styles.
-    let classNameIndices = new Set<number>();
-    for (let [clsIdx, expr] of this.getPossibleOptimizations(stylesApplied)) {
-      if (evaluateExpression(expr, stylesApplied)) {
-        classNameIndices.add(clsIdx);
-      }
-    }
-
-    // TODO: will we need to check for implied classNames? if so classNames = new Array<string>(...resolver.impliedClassNames());
-    let classNames = new Array<string>();
-    for (let idx of classNameIndices) {
-      classNames.push(data.outputClassnames[idx]);
-    }
-    return classNames.join(" ");
   }
 }
+
 
 /**
- * Returns the styleId, given the blockGuid and name of the style
- */
-function getStyleId(blockGuid: string, name: string ) {
-  let blockIndex = data.blockIds[blockGuid];
-  let blockInfo = data.blocks[blockIndex];
-  let styleIndex = blockInfo.blockInterfaceStyles[name];
-  return blockInfo.implementations[blockIndex][styleIndex]!;
-}
+ * This is a utility function that sets up all the testing infra needed for CSS
+ * blocks. It essentially overrides the css-blocks service used by the app
+ * during tests and adds dummy classNames that is more human readable. It exposes
+ * the test API via this.cssBlocks that can be used within the test files themselves.
+ *
+ * Usage within a test
+    module('Acceptance | css blocks helper', function (hooks) {
+      setupApplicationTest(hooks);
+      setupCSSBlocksTest(hooks);
 
+      test('visiting /', async function (assert) {
+        await visit('/');
+        let defaultBlock = this.cssBlocks.getBlock("hue-web-component/styles/components/hue-web-component", "default");
+        let element = find('[data-test-large-hello]');
+        assert.ok(element.classList.contains(defaultBlock.style(':scope[size="large]')));
+      });
+    });
+ */
 // TODO: get qunit types
 /// @ts-ignore
 export function setupCSSBlocksTest(hooks) {

@@ -28,6 +28,7 @@ export default class CSSBlocksService extends Service {
   possibleOptimizations!: StyleIdToOptimizationsMap;
   styleNames: { [name: string]: string };
   static enableDebugMode: Boolean = false;
+  static enableTestMode: Boolean = false;
   constructor() {
     super(...arguments);
     this.possibleOptimizations = getOptimizationInverseMap(data.optimizations);
@@ -37,11 +38,20 @@ export default class CSSBlocksService extends Service {
     if (CSSBlocksService.enableDebugMode) {
       console.log(argv);
     }
+    let stylesApplied = this.getDirectlyAppliedStyles(argv);
+
+    return this.getImpliedAndOptimizedStyles(stylesApplied);
+  }
+
+  /**
+   * Uses the style evaluator to return the set of directly applied styleIds
+   * based on the arguemnts passed to the elements
+   */
+  getDirectlyAppliedStyles(argv: Array<string | number | boolean | null>): Set<number> {
     let styleEvaluator = new StyleEvaluator(data, argv);
     let stylesApplied = styleEvaluator.evaluate();
     this.debugStyles("directly applied", stylesApplied);
-
-    return this.getImpliedAndOptimizedStyles(stylesApplied);
+    return stylesApplied;
   }
 
   /**
@@ -61,7 +71,7 @@ export default class CSSBlocksService extends Service {
 
     stylesApplied = resolver.resolve();
 
-    console.log(`stylesApplied: ${stylesApplied.size}`)
+    console.log(`stylesApplied: ${stylesApplied.size}`);
 
     this.debugStyles("after requirements", stylesApplied);
 
@@ -99,16 +109,21 @@ export default class CSSBlocksService extends Service {
     return [...new Set(optimizations)].map(i => data.optimizations[i]);
   }
 
-  /**
-   * Reverse maps style ids to their style names for debugging.
-   */
   debugStyles(msg: string, stylesApplied: Set<number>): void {
     if (!CSSBlocksService.enableDebugMode) return;
+    console.log(msg, this.getStyleNames(stylesApplied));
+  }
+
+  /**
+   * Reverse maps style ids to their style names for debugging.
+   * We also use this in test mode to generate human readable styleNames
+   */
+  getStyleNames(stylesApplied: Set<number>): string[] {
     let appliedStyleNames = new Array<string>();
     for (let s of stylesApplied) {
       appliedStyleNames.push(this.styleNames[s]);
     }
-    console.log(msg, appliedStyleNames);
+    return appliedStyleNames;
   }
 
   debugExpression(expr: StyleExpression): DebugExpression {

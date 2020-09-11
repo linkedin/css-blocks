@@ -1,5 +1,5 @@
 import { Block, BlockCompiler, BlockFactory, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-utils";
+import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, IDENTIFIER_PREFIX, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-utils";
 import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
@@ -43,8 +43,6 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let config = resolveConfiguration(this.cssBlocksOptions.parserOpts);
     let importer = new BroccoliTreeImporter(this.input, null, config.importer);
     config = resolveConfiguration({importer}, config);
-    console.log("AVAILABLE CONFIG");
-    console.debug(config);
     let factory = new BlockFactory(config, postcss);
     let analyzer = new EmberAnalyzer(factory, this.cssBlocksOptions.analysisOpts);
     let optimizerOptions = this.cssBlocksOptions.optimization;
@@ -58,11 +56,6 @@ export class CSSBlocksApplicationPlugin extends Filter {
         debug("blocks", serializedAnalysis.stylesFound);
         for (let blockId of Object.keys(serializedAnalysis.blocks)) {
           serializedAnalysis.blocks[blockId] = pathToIdent(serializedAnalysis.blocks[blockId]);
-          console.log(`serializedAnalysis.blocks[blockId]: ${serializedAnalysis.blocks[blockId]}`);
-          console.log(`blockId: ${blockId}`);
-
-          console.log("output of pathToIdent");
-          console.log(serializedAnalysis.blocks[blockId]);
         }
         let analysis = await EmberAnalysis.deserializeSource(serializedAnalysis, factory, analyzer);
         unionInto(blocksUsed, analysis.transitiveBlockDependencies());
@@ -76,31 +69,19 @@ export class CSSBlocksApplicationPlugin extends Filter {
 
       let content: postcss.Result;
       let filename = importer.debugIdentifier(block.identifier, config);
-      console.log("BLOCKS USED");
-      console.log(`block identifier: ${block.identifier}`);
-      console.log(`block.name: ${block.name}`);
-      console.log(`filename: ${filename}`);
-      let defaultName = importer.defaultName(block.identifier, config);
 
-      console.log(`defaultName: ${defaultName}`);
-
+      // Generate the test data
       // Iterate over the blocks that belong to this app and its addons only for
       // generating the test support data
-      if (defaultName.endsWith(".compile")) {
-        defaultName = defaultName.replace(".compile", "");
+      if (block.identifier.startsWith(IDENTIFIER_PREFIX)) {
+        let filePath = pathToIdent(filename).split(".compiledblock.")[0].replace(IDENTIFIER_PREFIX, "");
         // locate the actual block corresponding to this compiled block to
         let factoryBlock = await factory.getBlock(block.identifier);
-        // this is a block from this addon and it's dummy app
-        console.log(`exported blocks of ${defaultName} from factory`);
-        testDataBuilder.addRuntimeBlock(defaultName, block.name);
         factoryBlock.eachBlockExport((name, exportedBlock) => {
-          testDataBuilder.addExportedBlockGuid(block.name, name, exportedBlock.guid);
-          console.log(`exported block name: ${name}`);
-          console.log(`defaultName of exported block ${importer.defaultName(exportedBlock.identifier, config)}`);
-          console.log(`guid of block ${exportedBlock.guid}`);
+          testDataBuilder.addExportedBlockGuid(filePath, name, exportedBlock.guid);
         });
       }
-      console.log(`importer namespace: ${importer.namespace}`);
+
       if (block.precompiledStylesheet) {
         debug(`Optimizing precompiled stylesheet for ${filename}`);
         content = block.precompiledStylesheet.toResult();
@@ -121,7 +102,6 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let optLogFileName = `${cssFileName}.optimization.log`;
     let optimizationResult = await optimizer.optimize(cssFileName);
     debug(`Optimized CSS. There were ${optimizationResult.actions.performed.length} optimizations performed.`);
-    console.log(optimizationResult.styleMapping);
     this.output.mkdirSync(path.dirname(cssFileName), {recursive: true});
     this.output.writeFileSync(cssFileName, optimizationResult.output.content.toString(), "utf8");
     this.output.writeFileSync(sourceMapFileName, optimizationResult.output.sourceMap?.toString(), "utf8");
@@ -140,6 +120,7 @@ export class CSSBlocksApplicationPlugin extends Filter {
        export const data = ${serializedData};
       `);
 
+    // Write the generated test data file
     this.output.writeFileSync(
       `${this.appName}/services/-css-blocks-test-support-data.js`,
       `// CSS Blocks Generated Data. DO NOT EDIT.
