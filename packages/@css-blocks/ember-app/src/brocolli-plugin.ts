@@ -12,6 +12,7 @@ import { OptiCSSOptions, Optimizer, postcss } from "opticss";
 import * as path from "path";
 
 import { RuntimeDataGenerator } from "./RuntimeDataGenerator";
+import { TestSupportDataGenerator } from "./TestSupportDataGenerator";
 
 const debug = debugGenerator("css-blocks:ember-app");
 
@@ -42,6 +43,8 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let config = resolveConfiguration(this.cssBlocksOptions.parserOpts);
     let importer = new BroccoliTreeImporter(this.input, null, config.importer);
     config = resolveConfiguration({importer}, config);
+    console.log("AVAILABLE CONFIG");
+    console.debug(config);
     let factory = new BlockFactory(config, postcss);
     let analyzer = new EmberAnalyzer(factory, this.cssBlocksOptions.analysisOpts);
     let optimizerOptions = this.cssBlocksOptions.optimization;
@@ -68,9 +71,36 @@ export class CSSBlocksApplicationPlugin extends Filter {
     }
     let compiler = new BlockCompiler(postcss, config);
     let reservedClassnames = analyzer.reservedClassNames();
+    let testDataBuilder = new TestSupportDataGenerator();
     for (let block of blocksUsed) {
+
       let content: postcss.Result;
       let filename = importer.debugIdentifier(block.identifier, config);
+      console.log("BLOCKS USED");
+      console.log(`block identifier: ${block.identifier}`);
+      console.log(`block.name: ${block.name}`);
+      console.log(`filename: ${filename}`);
+      let defaultName = importer.defaultName(block.identifier, config);
+
+      console.log(`defaultName: ${defaultName}`);
+
+      // Iterate over the blocks that belong to this app and its addons only for
+      // generating the test support data
+      if (defaultName.endsWith(".compile")) {
+        defaultName = defaultName.replace(".compile", "");
+        // locate the actual block corresponding to this compiled block to
+        let factoryBlock = await factory.getBlock(block.identifier);
+        // this is a block from this addon and it's dummy app
+        console.log(`exported blocks of ${defaultName} from factory`);
+        testDataBuilder.addRuntimeBlock(defaultName, block.name);
+        factoryBlock.eachBlockExport((name, exportedBlock) => {
+          testDataBuilder.addExportedBlockGuid(block.name, name, exportedBlock.guid);
+          console.log(`exported block name: ${name}`);
+          console.log(`defaultName of exported block ${importer.defaultName(exportedBlock.identifier, config)}`);
+          console.log(`guid of block ${exportedBlock.guid}`);
+        });
+      }
+      console.log(`importer namespace: ${importer.namespace}`);
       if (block.precompiledStylesheet) {
         debug(`Optimizing precompiled stylesheet for ${filename}`);
         content = block.precompiledStylesheet.toResult();
@@ -108,6 +138,12 @@ export class CSSBlocksApplicationPlugin extends Filter {
       `${this.appName}/services/-css-blocks-data.js`,
       `// CSS Blocks Generated Data. DO NOT EDIT.
        export const data = ${serializedData};
+      `);
+
+    this.output.writeFileSync(
+      `${this.appName}/services/-css-blocks-test-support-data.js`,
+      `// CSS Blocks Generated Data. DO NOT EDIT.
+        export const testSupportData = ${JSON.stringify(testDataBuilder.data, undefined, "  ")};
       `);
   }
 

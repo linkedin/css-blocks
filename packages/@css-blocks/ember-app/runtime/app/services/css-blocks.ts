@@ -41,6 +41,15 @@ export default class CSSBlocksService extends Service {
     let stylesApplied = styleEvaluator.evaluate();
     this.debugStyles("directly applied", stylesApplied);
 
+    return this.getImpliedAndOptimizedStyles(stylesApplied);
+  }
+
+  /**
+   * For a set of applied styleIds, returns a final set of classNames to be
+   * applied. This uses the styleResolver to get all the implied styles
+   * @param stylesApplied set of styleIds that are directly applied on the element
+   */
+  getImpliedAndOptimizedStyles(stylesApplied: Set<number>): string {
     let resolver = new StyleResolver(data);
     for (let style of stylesApplied) {
       resolver.addStyle(style);
@@ -52,13 +61,15 @@ export default class CSSBlocksService extends Service {
 
     stylesApplied = resolver.resolve();
 
+    console.log(`stylesApplied: ${stylesApplied.size}`)
+
     this.debugStyles("after requirements", stylesApplied);
 
     let classNameIndices = new Set<number>();
     // TODO: Only iterate over the subset of optimizations that might match this
     // element's styles.
     for (let [clsIdx, expr] of this.getPossibleOptimizations(stylesApplied)) {
-      if (this.evaluateExpression(expr, stylesApplied)) {
+      if (evaluateExpression(expr, stylesApplied)) {
         classNameIndices.add(clsIdx);
       }
     }
@@ -115,24 +126,24 @@ export default class CSSBlocksService extends Service {
     }
     return debugExpr;
   }
+}
 
-  evaluateExpression(expr: StyleExpression, stylesApplied: Set<number>, stylesApplied2?: Set<number>): boolean {
-    if (typeof expr === "number") return (stylesApplied.has(expr) || (!!stylesApplied2 && stylesApplied2.has(expr)));
-    if (expr[0] === Operator.AND) {
-      for (let i = 1; i < expr.length; i++) {
-        if (!this.evaluateExpression(expr[i], stylesApplied, stylesApplied2)) return false;
-      }
-      return true;
-    } else if (expr[0] === Operator.OR) {
-      for (let i = 1; i < expr.length; i++) {
-        if (this.evaluateExpression(expr[i], stylesApplied, stylesApplied2)) return true;
-      }
-      return false;
-    } else if (expr[0] === Operator.NOT) {
-      return !this.evaluateExpression(expr[1], stylesApplied, stylesApplied2);
-    } else {
-      return false;
+export function evaluateExpression(expr: StyleExpression, stylesApplied: Set<number>, stylesApplied2?: Set<number>): boolean {
+  if (typeof expr === "number") return (stylesApplied.has(expr) || (!!stylesApplied2 && stylesApplied2.has(expr)));
+  if (expr[0] === Operator.AND) {
+    for (let i = 1; i < expr.length; i++) {
+      if (!evaluateExpression(expr[i], stylesApplied, stylesApplied2)) return false;
     }
+    return true;
+  } else if (expr[0] === Operator.OR) {
+    for (let i = 1; i < expr.length; i++) {
+      if (evaluateExpression(expr[i], stylesApplied, stylesApplied2)) return true;
+    }
+    return false;
+  } else if (expr[0] === Operator.NOT) {
+    return !evaluateExpression(expr[1], stylesApplied, stylesApplied2);
+  } else {
+    return false;
   }
 }
 
