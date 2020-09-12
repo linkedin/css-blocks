@@ -19,5 +19,5 @@
 //   }
 // };
 export type BlockId = string;
-export type ExportedBlockGuid = {[exportedBlockName: string]: BlockId};
-export type TestSupportData = {[filePath: string]: ExportedBlockGuid};
+export type ExportedBlockGuids = {[exportedBlockName: string]: BlockId};
+export type TestSupportData = {[filePath: string]: ExportedBlockGuids};
