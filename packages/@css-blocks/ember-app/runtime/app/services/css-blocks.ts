@@ -27,8 +27,8 @@ interface StyleIdToOptimizationsMap {
 export default class CSSBlocksService extends Service {
   possibleOptimizations!: StyleIdToOptimizationsMap;
   styleNames: { [name: string]: string };
-  static enableDebugMode: Boolean = false;
-  static enableTestMode: Boolean = false;
+  static enableDebugMode: boolean = false;
+  static enableTestMode: boolean = false;
   constructor() {
     super(...arguments);
     this.possibleOptimizations = getOptimizationInverseMap(data.optimizations);
