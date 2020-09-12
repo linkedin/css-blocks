@@ -20,11 +20,13 @@ export class CSSBlocksApplicationPlugin extends Filter {
   appName: string;
   previousSourceTree: FSTree;
   cssBlocksOptions: ResolvedCSSBlocksEmberOptions;
-  constructor(appName: string, inputNodes: InputNode[], cssBlocksOptions: ResolvedCSSBlocksEmberOptions, options?: PluginOptions) {
+  isProdApp: boolean;
+  constructor(appName: string, isProdApp: boolean, inputNodes: InputNode[], cssBlocksOptions: ResolvedCSSBlocksEmberOptions, options?: PluginOptions) {
     super(mergeTrees(inputNodes), options || {});
     this.appName = appName;
     this.previousSourceTree = new FSTree();
     this.cssBlocksOptions = cssBlocksOptions;
+    this.isProdApp = isProdApp;
   }
   processString(contents: string, _relativePath: string): string {
     return contents;
@@ -70,16 +72,18 @@ export class CSSBlocksApplicationPlugin extends Filter {
       let content: postcss.Result;
       let filename = importer.debugIdentifier(block.identifier, config);
 
-      // Generate the test data
-      // Iterate over the blocks that belong to this app and its addons only for
-      // generating the test support data
-      if (block.identifier.startsWith(IDENTIFIER_PREFIX)) {
-        let filePath = pathToIdent(filename).split(".compiledblock.")[0].replace(IDENTIFIER_PREFIX, "");
-        // locate the actual block corresponding to this compiled block to
-        let factoryBlock = await factory.getBlock(block.identifier);
-        factoryBlock.eachBlockExport((name, exportedBlock) => {
-          testDataBuilder.addExportedBlockGuid(filePath, name, exportedBlock.guid);
-        });
+      if (!this.isProdApp) {
+        // Generate the test data
+        // Iterate over the blocks that belong to this app and its addons only for
+        // generating the test support data
+        if (block.identifier.startsWith(IDENTIFIER_PREFIX)) {
+          let filePath = pathToIdent(filename).split(".compiledblock.")[0].replace(IDENTIFIER_PREFIX, "");
+          // locate the actual block corresponding to this compiled block to
+          let factoryBlock = await factory.getBlock(block.identifier);
+          factoryBlock.eachBlockExport((name, exportedBlock) => {
+            testDataBuilder.addExportedBlockGuid(filePath, name, exportedBlock.guid);
+          });
+        }
       }
 
       if (block.precompiledStylesheet) {
@@ -120,12 +124,14 @@ export class CSSBlocksApplicationPlugin extends Filter {
        export const data = ${serializedData};
       `);
 
-    // Write the generated test data file
-    this.output.writeFileSync(
-      `${this.appName}/services/-css-blocks-test-support-data.js`,
-      `// CSS Blocks Generated Data. DO NOT EDIT.
-        export const testSupportData = ${JSON.stringify(testDataBuilder.data, undefined, "  ")};
-      `);
+    if (!this.isProdApp) {
+      // Write the generated test data file
+      this.output.writeFileSync(
+        `${this.appName}/services/-css-blocks-test-support-data.js`,
+        `// CSS Blocks Generated Data. DO NOT EDIT.
+          export const testSupportData = ${JSON.stringify(testDataBuilder.data, undefined, "  ")};
+        `);
+    }
   }
 
   /**

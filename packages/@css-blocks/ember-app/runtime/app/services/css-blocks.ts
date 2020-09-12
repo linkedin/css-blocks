@@ -71,8 +71,6 @@ export default class CSSBlocksService extends Service {
 
     stylesApplied = resolver.resolve();
 
-    console.log(`stylesApplied: ${stylesApplied.size}`);
-
     this.debugStyles("after requirements", stylesApplied);
 
     let classNameIndices = new Set<number>();
