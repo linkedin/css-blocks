@@ -141,7 +141,7 @@ export default class CSSBlocksService extends Service {
   }
 }
 
-export function evaluateExpression(expr: StyleExpression, stylesApplied: Set<number>, stylesApplied2?: Set<number>): boolean {
+function evaluateExpression(expr: StyleExpression, stylesApplied: Set<number>, stylesApplied2?: Set<number>): boolean {
   if (typeof expr === "number") return (stylesApplied.has(expr) || (!!stylesApplied2 && stylesApplied2.has(expr)));
   if (expr[0] === Operator.AND) {
     for (let i = 1; i < expr.length; i++) {
