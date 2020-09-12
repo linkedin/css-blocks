@@ -252,9 +252,8 @@ export class CSSBlocksStylesPostprocessorPlugin extends Filter {
 
     const blocksCssFile = cssBlocksPostprocessFilename(this.env.config);
     let optimizerClasses: string[] = [];
-    const appCss: string[] = [];
-    const foundFiles: string[] = [];
-    const foundClasses: Set<string> = new Set<string>();
+    const appCss: { relPath: string; content: string }[] = [];
+    const foundClasses: { relPath: string; className: string; loc?: postcss.NodeSource }[] = [];
     const errorLog: string[] = [];
 
     // Are there any changes to make? If not, bail out early.
@@ -291,8 +290,10 @@ export class CSSBlocksStylesPostprocessorPlugin extends Filter {
     walkEntries.forEach(entry => {
       if (entry.relativePath === blocksCssFile) return;
       try {
-        appCss.push(this.input.readFileSync(entry.relativePath).toString("utf8"));
-        foundFiles.push(entry.relativePath);
+        appCss.push({
+          relPath: entry.relativePath,
+          content: this.input.readFileSync(entry.relativePath).toString("utf8"),
+        });
       } catch (e) {
         // broccoli-concat will complain about this later. let's move on.
       }
@@ -300,15 +301,19 @@ export class CSSBlocksStylesPostprocessorPlugin extends Filter {
     debug("Done looking up app CSS.");
 
     // Now, read in each of these sources and note all classes found.
-    appCss.forEach(content => {
+    appCss.forEach(css => {
       try {
-        const parsed = postcss.parse(content);
+        const parsed = postcss.parse(css.content);
         parsed.walkRules(rule => {
           const selectors = parseSelector(rule.selector);
           selectors.forEach(sel => {
             sel.eachSelectorNode(node => {
               if (node.type === "class") {
-                foundClasses.add(node.value);
+                foundClasses.push({
+                  relPath: css.relPath,
+                  className: node.value,
+                  loc: rule.source,
+                });
               }
             });
           });
@@ -322,16 +327,12 @@ export class CSSBlocksStylesPostprocessorPlugin extends Filter {
     debug("Done finding app classes.");
 
     // Find collisions between the app styles and optimizer styles.
-    const collisions = optimizerClasses.filter(val => foundClasses.has(val));
+    const collisions = foundClasses.filter(val => optimizerClasses.includes(val.className));
     debug("Done identifying collisions.");
 
     // Build a logfile for the output tree, for debugging.
-    let logfile = "COLLISIONS:\n";
-    collisions.forEach(cssClass => { logfile += `${cssClass}\n`; });
-    logfile += "\nFOUND APP CLASSES:\n";
-    foundClasses.forEach(cssClass => { logfile += `${cssClass}\n`; });
-    logfile += "\nFOUND FILES:\n";
-    foundFiles.forEach(file => { logfile += `${file}\n`; });
+    let logfile = "FOUND APP CLASSES:\n";
+    foundClasses.forEach(curr => { logfile += `${curr.className} (in ${curr.relPath} - ${curr.loc?.start?.line}:${curr.loc?.start?.column})\n`; });
     logfile += "\nERRORS:\n";
     errorLog.forEach(err => { logfile += `${err}\n`; });
     this.output.writeFileSync("assets/app-classes.log", logfile);
@@ -343,7 +344,7 @@ export class CSSBlocksStylesPostprocessorPlugin extends Filter {
         "To resolve this conflict, you should add any short class names in non-block CSS (~5 characters or less) to the list of disallowed classes in your build configuration.\n" +
         "(You can do this by setting css-blocks.appClasses to an array of disallowed classes in ember-cli-build.js.)\n\n" +
         "Conflicting classes:\n" +
-        collisions.reduce((prev, curr) => prev += `${curr}\n`, ""),
+        collisions.reduce((prev, curr) => prev += `${curr.className} (in ${curr.relPath} - ${curr.loc?.start?.line}:${curr.loc?.start?.column})\n`, ""),
       );
     }
   }
