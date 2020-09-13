@@ -65,7 +65,7 @@
     "convert-source-map": "^1.5.0",
     "debug": "^4.1.1",
     "loader-utils": "^1.0.1",
-    "opticss": "^0.8.0",
+    "opticss": "^0.9.0",
     "source-map": "^0.7.3",
     "tapable": "^0.2.5",
     "webpack-sources": "^1.0.1"

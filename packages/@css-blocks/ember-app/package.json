@@ -68,7 +68,7 @@
     "fs-merger": "^3.0.2",
     "fs-tree-diff": "^2.0.0",
     "glob": "^7.1.2",
-    "opticss": "^0.8.0",
+    "opticss": "^0.9.0",
     "symlink-or-copy": "^1.2.0",
     "walk-sync": "^2.0.0"
   },
