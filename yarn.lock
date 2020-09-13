@@ -14685,6 +14685,27 @@ opticss@^0.8.0:
     typescript-collections "^1.2.5"
     typescript-memoize "^1.0.0-alpha.3"
 
+opticss@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.npmjs.org/opticss/-/opticss-0.9.0.tgz#61d2000bb3021950a910ee80bc2f0615dc0f16f5"
+  integrity sha512-IP194+Bos+myCjADDn14ZfpG05ud8HPz/epJgcbZGcZ/uzLtNZIQt5nMOY1VS2HYyOe4G8i5n1r9wTROW4T7Cw==
+  dependencies:
+    "@opticss/element-analysis" "^0.6.2"
+    "@opticss/template-api" "^0.7.0"
+    "@opticss/util" "^0.7.0"
+    "@types/debug" "4.1.4"
+    concat-with-sourcemaps "^1.0.4"
+    css-property-parser "^1.0.5"
+    debug "^4.1.1"
+    object.values "^1.0.4"
+    postcss "^7.0.14"
+    postcss-selector-parser "^6.0.2"
+    source-map "^0.7.3"
+    source-map-support "^0.5.3"
+    specificity "^0.4.1"
+    typescript-collections "^1.2.5"
+    typescript-memoize "^1.0.0-alpha.3"
+
 optimist@^0.6.1:
   version "0.6.1"
   resolved "https://registry.npmjs.org/optimist/-/optimist-0.6.1.tgz#da3ea74686fa21a19a111c326e90eb15a0196686"
