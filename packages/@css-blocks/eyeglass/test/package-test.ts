@@ -9,7 +9,7 @@ import SassImplementation = require("node-sass");
 import * as path from "path";
 import * as sinon from "sinon";
 
-import { DirectoryScopedPreprocessor, adaptAll, adaptor } from "../src/";
+import { DirectoryScopedPreprocessor, adaptAll, adaptAllSync, adaptor } from "../src/";
 
 const fakeSass = {
     render: sinon.spy(),
@@ -32,7 +32,7 @@ describe("@css-blocks/eyeglass", async () => {
     expect(adaptor(fakeSass, fakeEyeglass, {})).to.be.a("function");
   });
 
-  it("returned function returns a Promise when called", async () => {
+  it("returned function that returns a Promise when called", async () => {
     const injector = adaptor(fakeSass, fakeEyeglass, {});
     const result = injector("file", "data", resolveConfiguration({}));
 
@@ -134,6 +134,37 @@ describe("@css-blocks/eyeglass", async () => {
 
       /*# sourceMappingURL=one.block.css.map */`));
     let result2 = await processor(package2File, fs.readFileSync(package2File, "utf-8"), resolveConfiguration({}));
+    assert.equal(result2.content, dedent(`
+      :root {
+        name: "dos";
+      }
+
+      /*# sourceMappingURL=two.block.css.map */`));
+  });
+  it("can adapt from several optional adaptors - synchronous", () => {
+    let package1Dir = fixture("package-1");
+    let package1File = fixture("package-1/one.block.scss");
+    let package2Dir = fixture("package-2");
+    let package2File = fixture("package-2/two.block.scss");
+    class Adaptor1 extends DirectoryScopedPreprocessor {
+      setupOptions(options: EyeglassOptions): EyeglassOptions {
+        return Object.assign({}, options, {outputStyle: "compact"});
+      }
+    }
+    class Adaptor2 extends DirectoryScopedPreprocessor {
+      setupOptions(options: EyeglassOptions): EyeglassOptions {
+        return Object.assign({}, options, {outputStyle: "expanded"});
+      }
+    }
+    let adaptor1 = new Adaptor1(package1Dir);
+    let adaptor2 = new Adaptor2(package2Dir);
+    let processor = adaptAllSync([adaptor1, adaptor2], SassImplementation, Eyeglass, {});
+    let result1 = processor(package1File, fs.readFileSync(package1File, "utf-8"), resolveConfiguration({}));
+    assert.equal(result1.content, dedent(`
+      :root { name: "uno"; }
+
+      /*# sourceMappingURL=one.block.css.map */`));
+    let result2 = processor(package2File, fs.readFileSync(package2File, "utf-8"), resolveConfiguration({}));
     assert.equal(result2.content, dedent(`
       :root {
         name: "dos";
