@@ -136,8 +136,9 @@ export class BlockFactorySync extends BlockFactoryBase {
   }
 
   /**
-   * An async method that loads and parses a CSS Block data file. We load the data here, using
-   * the Importer, then defer to another method to actually parse the data file into a Block.
+   * Loads and parses a CSS Block data file. We load the data here, using the
+   * Importer, then defer to another method to actually parse the data file
+   * into a Block.
    *
    * @param identifier - An identifier that points at a data file or blob in persistent storage.
    * @returns The parsed block.
