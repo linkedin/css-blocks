@@ -12,7 +12,7 @@ import { BlockFactoryBase, sourceMapFromProcessedFile } from "./BlockFactoryBase
 import { BlockParser, ParsedSource } from "./BlockParser";
 import { PreprocessorSync, PreprocessorsSync, ProcessedFile, Syntax, annotateCssContentWithSourceMap, syntaxName } from "./preprocessing";
 
-const debug = debugGenerator("css-blocks:BlockFactory");
+const debug = debugGenerator("css-blocks:BlockFactorySync");
 
 interface ErrorWithErrNum {
   code?: string;
