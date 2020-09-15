@@ -14,7 +14,7 @@ import { isAttributeNode, toAttrToken } from "../block-intermediates";
  * @param rule The rule referencing the external block.
  * @param obj The parsed node making the external reference.
  */
-export async function assertForeignGlobalAttribute(configuration: Configuration, root: postcss.Root, block: Block, file: string) {
+export function assertForeignGlobalAttribute(configuration: Configuration, root: postcss.Root, block: Block, file: string): void {
 
   root.walkRules((rule) => {
     let parsedSelectors: ParsedSelector[];
@@ -77,5 +77,4 @@ export async function assertForeignGlobalAttribute(configuration: Configuration,
       });
     });
   });
-
 }

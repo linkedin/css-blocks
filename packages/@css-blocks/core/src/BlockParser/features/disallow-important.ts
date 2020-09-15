@@ -5,7 +5,7 @@ import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 
-export async function disallowImportant(configuration: Configuration, root: postcss.Root, block: Block, file: string): Promise<postcss.Root> {
+export function disallowImportant(configuration: Configuration, root: postcss.Root, block: Block, file: string): postcss.Root {
   root.walkDecls((decl) => {
 
     // `!important` is not allowed in Blocks. If contains `!important` declaration, throw.

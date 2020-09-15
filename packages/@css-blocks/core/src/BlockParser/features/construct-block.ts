@@ -51,7 +51,7 @@ function getParsedSelectors(configuration: Configuration, block: Block, rule: po
   return res || [];
 }
 
-export async function constructBlock(configuration: Configuration, root: postcss.Root, block: Block, file: string): Promise<Block> {
+export function constructBlock(configuration: Configuration, root: postcss.Root, block: Block, file: string): Block {
 
   let styleRuleTuples: Set<[Style, postcss.Rule]> = new Set();
 

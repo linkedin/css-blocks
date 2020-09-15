@@ -5,7 +5,7 @@ import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 
-export async function disallowDefinitionRules(block: Block, configuration: Configuration, root: postcss.Root, file: string): Promise<postcss.Root> {
+export function disallowDefinitionRules(block: Block, configuration: Configuration, root: postcss.Root, file: string): postcss.Root {
   root.walkRules((rule) => {
     rule.walkDecls((decl) => {
       if (decl.prop === "block-id") {

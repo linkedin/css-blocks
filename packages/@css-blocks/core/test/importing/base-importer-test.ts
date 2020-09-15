@@ -12,6 +12,9 @@ class FakeImporter extends BaseImporter {
   import(): Promise<ImportedFile> {
     throw new Error("Method not implemented.");
   }
+  importSync(): ImportedFile {
+    throw new Error("Method not implemented.");
+  }
   defaultName(): string {
     throw new Error("Method not implemented.");
   }

@@ -52,7 +52,9 @@ export interface ProcessedFile {
 
 // export type ContentPreprocessor = (content: string) => Promise<ProcessedFile>;
 export type Preprocessor<R extends ProcessedFile | null = ProcessedFile> = (fullPath: string, content: string, configuration: ResolvedConfiguration, sourceMap?: RawSourceMap | string) => Promise<R>;
+export type PreprocessorSync<R extends ProcessedFile | null = ProcessedFile> = (fullPath: string, content: string, configuration: ResolvedConfiguration, sourceMap?: RawSourceMap | string) => R;
 export type OptionalPreprocessor = Preprocessor<ProcessedFile | null>;
+export type OptionalPreprocessorSync = PreprocessorSync<ProcessedFile | null>;
 
 /**
  * A map of supported syntaxes to the preprocessor function for that syntax.
@@ -61,6 +63,9 @@ export type OptionalPreprocessor = Preprocessor<ProcessedFile | null>;
  */
 export type Preprocessors = {
   [S in Syntax]?: Preprocessor;
+};
+export type PreprocessorsSync = {
+  [S in Syntax]?: PreprocessorSync;
 };
 
 /**

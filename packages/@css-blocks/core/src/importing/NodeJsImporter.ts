@@ -153,52 +153,7 @@ export class NodeJsImporter extends BaseImporter {
     let contents = await readFile(identifier, "utf-8");
 
     if (this.isCompiledBlockCSS(contents)) {
-      const segmentedContents = this.segmentizeCompiledBlockCSS(contents);
-
-      // Need to determine if the definition URL is an external URL we should
-      // follow, or embedded data.
-      const dfnUrl = segmentedContents.definitionUrl;
-      let dfnData: string | null = null;
-      let definitionIdentifier: FileIdentifier  | null = null;
-      if (!isDefinitionUrlValid(dfnUrl)) {
-        throw new Error(`Definition URL in Compiled CSS file is invalid.\nFile Identifier: ${identifier}\nDefinition URL: ${dfnUrl}`);
-      }
-      if (dfnUrl.startsWith("data:")) {
-        // Parse this as embedded data.
-        const [dfnHeader, dfnEncodedData] = dfnUrl.split(",");
-        definitionIdentifier = `${identifier}${EMBEDDED_DEFINITION_TAG}`;
-        if (dfnHeader === "data:text/css;base64") {
-          dfnData = Buffer.from(dfnEncodedData, "base64").toString("utf-8");
-        } else {
-          throw new Error(`Definition data is in unsupported encoding or format. Embedded data must be in text/css;base64 format.\nFile Identifier: ${identifier}\nFormat given: ${dfnHeader}`);
-        }
-      } else {
-        // Read in the definition data from the given path.
-        definitionIdentifier = this.identifier(identifier, dfnUrl, config);
-        try {
-          dfnData = await readFile(definitionIdentifier, "utf-8");
-        } catch (e) {
-          throw new Error(`Definition URL in Compiled CSS file is invalid.\nFile Identifier: ${identifier}\nDefinition URL: ${dfnUrl}\nThrown error: ${e.message}`);
-        }
-      }
-
-      // Clean up definition data and location.
-      dfnData = dfnData.trim();
-      definitionIdentifier = definitionIdentifier.trim();
-
-      debug("Importing definition file %s:\n%s", definitionIdentifier, dfnData);
-
-      return {
-        type: "ImportedCompiledCssFile",
-        syntax: Syntax.css,
-        identifier,
-        cssContents: segmentedContents.blockCssContents,
-        blockId: segmentedContents.blockId,
-        definitionContents: dfnData,
-        definitionIdentifier,
-        defaultName: this.defaultName(identifier, config),
-        rawCssContents: contents,
-      };
+      return this.importCompiledBlockSync(contents, identifier, config);
     } else {
       return {
         type: "ImportedFile",
@@ -208,5 +163,69 @@ export class NodeJsImporter extends BaseImporter {
         contents,
       };
     }
+  }
+
+  importSync(identifier: FileIdentifier, config: ResolvedConfiguration): ImportedFile | ImportedCompiledCssFile {
+    let contents = readFileSync(identifier, "utf-8");
+    if (this.isCompiledBlockCSS(contents)) {
+      return this.importCompiledBlockSync(contents, identifier, config);
+    } else {
+      return {
+        type: "ImportedFile",
+        syntax: this.syntax(identifier, config),
+        identifier,
+        defaultName: this.defaultName(identifier, config),
+        contents,
+      };
+    }
+  }
+
+  private importCompiledBlockSync(contents: string, identifier: string, config: ResolvedConfiguration): ImportedCompiledCssFile {
+    const segmentedContents = this.segmentizeCompiledBlockCSS(contents);
+
+    // Need to determine if the definition URL is an external URL we should
+    // follow, or embedded data.
+    const dfnUrl = segmentedContents.definitionUrl;
+    let dfnData: string | null = null;
+    let definitionIdentifier: FileIdentifier | null = null;
+    if (!isDefinitionUrlValid(dfnUrl)) {
+      throw new Error(`Definition URL in Compiled CSS file is invalid.\nFile Identifier: ${identifier}\nDefinition URL: ${dfnUrl}`);
+    }
+    if (dfnUrl.startsWith("data:")) {
+      // Parse this as embedded data.
+      const [dfnHeader, dfnEncodedData] = dfnUrl.split(",");
+      definitionIdentifier = `${identifier}${EMBEDDED_DEFINITION_TAG}`;
+      if (dfnHeader === "data:text/css;base64") {
+        dfnData = Buffer.from(dfnEncodedData, "base64").toString("utf-8");
+      } else {
+        throw new Error(`Definition data is in unsupported encoding or format. Embedded data must be in text/css;base64 format.\nFile Identifier: ${identifier}\nFormat given: ${dfnHeader}`);
+      }
+    } else {
+      // Read in the definition data from the given path.
+      definitionIdentifier = this.identifier(identifier, dfnUrl, config);
+      try {
+        dfnData = readFileSync(definitionIdentifier, "utf-8");
+      } catch (e) {
+        throw new Error(`Definition URL in Compiled CSS file is invalid.\nFile Identifier: ${identifier}\nDefinition URL: ${dfnUrl}\nThrown error: ${e.message}`);
+      }
+    }
+
+    // Clean up definition data and location.
+    dfnData = dfnData.trim();
+    definitionIdentifier = definitionIdentifier.trim();
+
+    debug("Importing definition file %s:\n%s", definitionIdentifier, dfnData);
+
+    return {
+      type: "ImportedCompiledCssFile",
+      syntax: Syntax.css,
+      identifier,
+      cssContents: segmentedContents.blockCssContents,
+      blockId: segmentedContents.blockId,
+      definitionContents: dfnData,
+      definitionIdentifier,
+      defaultName: this.defaultName(identifier, config),
+      rawCssContents: contents,
+    };
   }
 }

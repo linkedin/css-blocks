@@ -7,19 +7,12 @@ import { Block } from "../BlockTree";
 import { Options, ResolvedConfiguration } from "../configuration";
 import { CssBlockError } from "../errors";
 import { FileIdentifier, ImportedCompiledCssFile, ImportedFile } from "../importing";
-import { PromiseQueue } from "../util/PromiseQueue";
 
 import { BlockFactoryBase, sourceMapFromProcessedFile } from "./BlockFactoryBase";
 import { BlockParser, ParsedSource } from "./BlockParser";
-import { Preprocessor, Preprocessors, ProcessedFile, Syntax, annotateCssContentWithSourceMap, syntaxName } from "./preprocessing";
+import { PreprocessorSync, PreprocessorsSync, ProcessedFile, Syntax, annotateCssContentWithSourceMap, syntaxName } from "./preprocessing";
 
 const debug = debugGenerator("css-blocks:BlockFactory");
-
-interface PreprocessJob {
-  preprocessor: Preprocessor;
-  filename: string;
-  contents: string;
-}
 
 interface ErrorWithErrNum {
   code?: string;
@@ -27,7 +20,7 @@ interface ErrorWithErrNum {
 }
 
 // DEVELOPER NOTE: There's currently a lot of duplication between this file ane
-// BlockFactorySync.ts. It's very likely that any change you're making here has to
+// BlockFactory.ts. It's very likely that any change you're making here has to
 // also be made over there. Please keep these files in sync.
 
 /**
@@ -37,29 +30,23 @@ interface ErrorWithErrNum {
  *
  * This also ensures that importers and preprocessors are correctly used when loading a block file.
  */
-export class BlockFactory extends BlockFactoryBase {
+export class BlockFactorySync extends BlockFactoryBase {
   parser: BlockParser;
-  preprocessors: Preprocessors;
+  preprocessors: PreprocessorsSync;
 
-  private promises: ObjectDictionary<Promise<Block>>;
   private blocks: ObjectDictionary<Block>;
   private paths: ObjectDictionary<string>;
-  private preprocessQueue: PromiseQueue<PreprocessJob, ProcessedFile>;
 
-  get isSync(): false {
-    return false;
+  get isSync(): true {
+    return true;
   }
 
   constructor(options: Options, postcssImpl = postcss, faultTolerant = false) {
     super(options, postcssImpl, faultTolerant);
-    this.preprocessors = this.configuration.preprocessors;
+    this.preprocessors = this.configuration.preprocessorsSync;
     this.parser = new BlockParser(options, this);
     this.blocks = {};
-    this.promises = {};
     this.paths = {};
-    this.preprocessQueue = new PromiseQueue(this.configuration.maxConcurrentCompiles, (item: PreprocessJob) => {
-      return item.preprocessor(item.filename, item.contents, this.configuration);
-    });
     this.faultTolerant = faultTolerant;
   }
 
@@ -71,7 +58,6 @@ export class BlockFactory extends BlockFactoryBase {
     super.reset();
     this.blocks = {};
     this.paths = {};
-    this.promises = {};
   }
 
   /**
@@ -85,8 +71,8 @@ export class BlockFactory extends BlockFactoryBase {
    * @param isDfnFile Whether to treat this as a definition file.
    * @returns The Block object promise.
    */
-  parseRootFaultTolerant(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Promise<Block> {
-    return this.promises[identifier] = this.parser.parse(root, identifier, name, isDfnFile, expectedGuid);
+  parseRootFaultTolerant(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Block {
+    return this.parser.parseSync(root, identifier, name, isDfnFile, expectedGuid);
   }
 
   /**
@@ -113,12 +99,7 @@ export class BlockFactory extends BlockFactoryBase {
    * work from being performed and returns a promise that resolves when it is
    * safe to exit.
    */
-  prepareForExit(): Promise<void> {
-    if (this.preprocessQueue.activeJobCount > 0) {
-      return this.preprocessQueue.drain();
-    } else {
-      return Promise.resolve();
-    }
+  prepareForExit(): void {
   }
 
   /**
@@ -127,9 +108,9 @@ export class BlockFactory extends BlockFactoryBase {
    *
    * @param filePath - The path to the file or data in persistent storage. The Importer that you've
    *                   configured to use will resolve this to a location in the storage system.
-   * @returns A promise that resolves to the parsed block.
+   * @returns The parsed block.
    */
-  getBlockFromPath(filePath: string): Promise<Block> {
+  getBlockFromPath(filePath: string): Block {
     if (!path.isAbsolute(filePath)) {
       throw new Error(`An absolute path is required. Got: ${filePath}.`);
     }
@@ -152,28 +133,11 @@ export class BlockFactory extends BlockFactoryBase {
    *                     to use.
    * @returns A promise that resolves to the parsed block.
    */
-  getBlock(identifier: FileIdentifier): Promise<Block> {
+  getBlock(identifier: FileIdentifier): Block {
     if (this.blocks[identifier]) {
-      return Promise.resolve(this.blocks[identifier]);
-    } else if (this.promises[identifier]) {
-      return this.promises[identifier].catch(() => {
-        // If we got an error last time, try again.
-        // Also this makes sure that the error object gives a correct import stack trace.
-        return this._getBlockPromise(identifier);
-      });
+      return this.blocks[identifier];
     }
-    return this._getBlockPromise(identifier);
-  }
-
-  /**
-   * Make a promise to load and parse a CSS Block data file, add it to the cache,
-   * and return it.
-   *
-   * @param identifier - An identifier that points at a data file or blob in persistent storage.
-   * @returns A promise that resolves to the parsed block.
-   */
-  private _getBlockPromise(identifier: FileIdentifier): Promise<Block> {
-    return this.promises[identifier] = this._getBlockPromiseAsync(identifier);
+    return this._getBlock(identifier);
   }
 
   /**
@@ -183,67 +147,55 @@ export class BlockFactory extends BlockFactoryBase {
    * @param identifier - An identifier that points at a data file or blob in persistent storage.
    * @returns A promise that resolves to the parsed block.
    */
-  private async _getBlockPromiseAsync(identifier: FileIdentifier): Promise<Block> {
-    try {
-      let file = await this.importer.import(identifier, this.configuration);
+  private _getBlock(identifier: FileIdentifier): Block {
+    let file = this.importer.importSync(identifier, this.configuration);
 
-      let block: Block;
-      if (file.type === "ImportedCompiledCssFile") {
-        block = await this._reconstituteCompiledCssSource(file);
-      } else {
-        block = await this._importAndPreprocessBlock(file);
-      }
+    let block: Block;
+    if (file.type === "ImportedCompiledCssFile") {
+      block = this._reconstituteCompiledCssSource(file);
+    } else {
+      block = this._importAndPreprocessBlock(file);
+    }
 
-      debug(`Finalizing Block object for "${block.identifier}"`);
+    debug(`Finalizing Block object for "${block.identifier}"`);
 
-      // last check to make sure we don't return a new instance
-      if (this.blocks[block.identifier]) {
-        return this.blocks[block.identifier];
-      }
+    // last check to make sure we don't return a new instance
+    if (this.blocks[block.identifier]) {
+      return this.blocks[block.identifier];
+    }
 
-      // Ensure this block name is unique.
-      const uniqueName = this.getUniqueBlockName(block.name, block.identifier, file.type === "ImportedCompiledCssFile");
-      if (uniqueName === null) {
-        // For ImportedCompiledCssFiles, leave the name alone and add an error.
+    // Ensure this block name is unique.
+    const uniqueName = this.getUniqueBlockName(block.name, block.identifier, file.type === "ImportedCompiledCssFile");
+    if (uniqueName === null) {
+      // For ImportedCompiledCssFiles, leave the name alone and add an error.
+      block.addError(
+        new CssBlockError(`Block uses a name that has already been used by ${this.blockNames[block.name]}`, {
+          filename: block.identifier,
+        }),
+      );
+      block.setName(block.name);
+    } else {
+      block.setName(uniqueName);
+    }
+
+    // We only register guids from blocks that don't have errors because those will get re-parsed.
+    if (block.isValid()) {
+      // Ensure the GUID is unique.
+      const guidRegResult = this.registerGuid(block.guid);
+      if (!guidRegResult) {
         block.addError(
-          new CssBlockError(`Block uses a name that has already been used by ${this.blockNames[block.name]}`, {
+          new CssBlockError("Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs.", {
             filename: block.identifier,
-          }),
+          },
+          ),
         );
-        block.setName(block.name);
-      } else {
-        block.setName(uniqueName);
-      }
-
-      // We only register guids from blocks that don't have errors because those will get re-parsed.
-      if (block.isValid()) {
-        // Ensure the GUID is unique.
-        const guidRegResult = this.registerGuid(block.guid);
-        if (!guidRegResult) {
-          block.addError(
-              new CssBlockError("Block uses a GUID that has already been used! Check dependencies for conflicting GUIDs and/or increase the number of significant characters used to generate GUIDs.", {
-                filename: block.identifier,
-              },
-            ),
-          );
-        }
-      }
-
-      // if the block has any errors, surface them here unless we're in fault tolerant mode.
-      this._surfaceBlockErrors(block);
-      this.blocks[block.identifier] = block;
-      return block;
-    } catch (error) {
-      if (this.preprocessQueue.activeJobCount > 0) {
-        debug(`Block error. Currently there are ${this.preprocessQueue.activeJobCount} preprocessing jobs. waiting.`);
-        await this.preprocessQueue.drain();
-        debug(`Drain complete. Raising error.`);
-        throw error;
-      } else {
-        debug(`Block error. There are no preprocessing jobs. raising.`);
-        throw error;
       }
     }
+
+    // if the block has any errors, surface them here unless we're in fault tolerant mode.
+    this._surfaceBlockErrors(block);
+    this.blocks[block.identifier] = block;
+    return block;
   }
 
   /**
@@ -257,9 +209,9 @@ export class BlockFactory extends BlockFactoryBase {
    *
    * @param file - The file information that has been previously imported by the Importer, for
    *               a single block identifier.
-   * @returns A promise that resolves to a parsed block.
+   * @returns A parsed block.
    **/
-  private async _importAndPreprocessBlock(file: ImportedFile): Promise<Block> {
+  private _importAndPreprocessBlock(file: ImportedFile): Block {
     // If the file identifier maps back to a real filename, ensure it is actually unique.
     let realFilename = this.importer.filesystemPath(file.identifier, this.configuration);
     if (realFilename) {
@@ -281,11 +233,7 @@ export class BlockFactory extends BlockFactoryBase {
     let preprocessor = this.preprocessor(file);
 
     debug(`Preprocessing "${filename}"`);
-    let preprocessResult = await this.preprocessQueue.enqueue({
-      preprocessor,
-      filename,
-      contents: file.contents,
-    });
+    let preprocessResult = preprocessor(filename, file.contents, this.configuration);
 
     debug(`Generating PostCSS AST for "${filename}"`);
     let sourceMap = sourceMapFromProcessedFile(preprocessResult);
@@ -293,7 +241,7 @@ export class BlockFactory extends BlockFactoryBase {
     if (sourceMap) {
       content = annotateCssContentWithSourceMap(this.configuration, filename, content, sourceMap);
     }
-    let root = await this.postcssImpl.parse(content, { from: filename });
+    let root = this.postcssImpl.parse(content, { from: filename });
 
     // Skip parsing if we can.
     if (this.blocks[file.identifier]) {
@@ -309,10 +257,10 @@ export class BlockFactory extends BlockFactoryBase {
       dependencies: preprocessResult.dependencies || [],
     };
 
-    return this.parser.parseSource(source);
+    return this.parser.parseSourceSync(source);
   }
 
-  private async _reconstituteCompiledCssSource(file: ImportedCompiledCssFile): Promise<Block> {
+  private _reconstituteCompiledCssSource(file: ImportedCompiledCssFile): Block {
     // Maybe we already have this block in cache?
     if (this.blocks[file.identifier]) {
       debug(`Using pre-compiled Block for "${file.identifier}"`);
@@ -322,7 +270,7 @@ export class BlockFactory extends BlockFactoryBase {
     const { definitionAst, cssContentsAst } = this._prepareDefinitionASTs(file);
 
     // Construct a Block out of the definition file.
-    const block = await this.parser.parseDefinitionSource(definitionAst, file.identifier, file.blockId, file.defaultName);
+    const block = this.parser.parseDefinitionSourceSync(definitionAst, file.identifier, file.blockId, file.defaultName);
 
     // Merge the rules from the CSS contents into the Block.
     block.precompiledStylesheet = cssContentsAst;
@@ -333,7 +281,7 @@ export class BlockFactory extends BlockFactoryBase {
     return block;
   }
 
-    /**
+  /**
    * Similar to getBlock(), this imports and parses a block data file. However, this
    * method parses a block relative to another block.
    *
@@ -342,36 +290,36 @@ export class BlockFactory extends BlockFactoryBase {
    * @param importPath - The relative import path for the file to import.
    * @returns A promise that resolves to a parsed block.
    */
-  getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Promise<Block> {
+  getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Block {
     let importer = this.importer;
     let fromPath = importer.debugIdentifier(fromIdentifier, this.configuration);
     let identifier = importer.identifier(fromIdentifier, importPath, this.configuration);
-    return this.getBlock(identifier).catch((err: ErrorWithErrNum) => {
-      if (err.code === "ENOENT") {
+    try {
+      return this.getBlock(identifier);
+    } catch (err) {
+      if ((<ErrorWithErrNum>err).code === "ENOENT") {
         err.message = `From ${fromPath}: ${err.message}`;
       }
       throw err;
-    });
+    }
   }
 
-  preprocessor(file: ImportedFile): Preprocessor {
+  preprocessor(file: ImportedFile): PreprocessorSync {
     let syntax = file.syntax;
-    let firstPreprocessor: Preprocessor | undefined = this.preprocessors[syntax];
-    let preprocessor: Preprocessor | null = null;
+    let firstPreprocessor: PreprocessorSync | undefined = this.preprocessors[syntax];
+    let preprocessor: PreprocessorSync | null = null;
     if (firstPreprocessor) {
       if (syntax !== Syntax.css && this.preprocessors.css && !this.configuration.disablePreprocessChaining) {
         let cssProcessor = this.preprocessors.css;
-        preprocessor = (fullPath: string, content: string, configuration: ResolvedConfiguration): Promise<ProcessedFile> => {
-          return firstPreprocessor!(fullPath, content, configuration).then(result => {
-            let content = result.content.toString();
-            return cssProcessor(fullPath, content, configuration, sourceMapFromProcessedFile(result)).then(result2 => {
-              return {
-                content: result2.content,
-                sourceMap: sourceMapFromProcessedFile(result2),
-                dependencies: (result.dependencies || []).concat(result2.dependencies || []),
-              };
-            });
-          });
+        preprocessor = (fullPath: string, content: string, configuration: ResolvedConfiguration): ProcessedFile => {
+          let result = firstPreprocessor!(fullPath, content, configuration);
+          let content2 = result.content.toString();
+          let result2 = cssProcessor(fullPath, content2, configuration, sourceMapFromProcessedFile(result));
+          return {
+            content: result2.content,
+            sourceMap: sourceMapFromProcessedFile(result2),
+            dependencies: (result.dependencies || []).concat(result2.dependencies || []),
+          };
         };
       } else {
         preprocessor = firstPreprocessor;
@@ -379,14 +327,12 @@ export class BlockFactory extends BlockFactoryBase {
     } else if (syntax !== Syntax.css) {
       throw new Error(`No preprocessor provided for ${syntaxName(syntax)}.`);
     } else {
-      preprocessor = (_fullPath: string, content: string, _options: ResolvedConfiguration): Promise<ProcessedFile> => {
-        return Promise.resolve({
-          content: content,
-        });
+      preprocessor = (_fullPath: string, content: string, _options: ResolvedConfiguration): ProcessedFile => {
+        return {
+          content,
+        };
       };
-
     }
     return preprocessor;
   }
-
 }

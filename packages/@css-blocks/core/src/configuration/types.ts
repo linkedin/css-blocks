@@ -1,4 +1,4 @@
-import { Preprocessors } from "../BlockParser";
+import { Preprocessors, PreprocessorsSync } from "../BlockParser";
 import { Importer, ImporterData } from "../importing";
 
 import { OutputMode } from "./OutputMode";
@@ -14,10 +14,16 @@ export interface Configuration {
    * Defaults to: 4
    */
   maxConcurrentCompiles: number;
+
   /**
    * A preprocessor function can be declared by syntax.
    */
   preprocessors: Preprocessors;
+
+  /**
+   * A synchronous preprocessor function can be declared by syntax.
+   */
+  preprocessorsSync: PreprocessorsSync;
 
   /**
    * An importer is an object that is in charge of finding the contents of a

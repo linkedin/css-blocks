@@ -177,6 +177,10 @@ export interface Importer {
    */
   import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | ImportedCompiledCssFile>;
   /**
+   * import the file with the given metadata and return a string and meta data for it.
+   */
+  importSync(identifier: FileIdentifier, config: ResolvedConfiguration): ImportedFile | ImportedCompiledCssFile;
+  /**
    * the default name of the block used unless the block specifies one itself.
    */
   defaultName(identifier: FileIdentifier, configuration: ResolvedConfiguration): string;

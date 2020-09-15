@@ -8,12 +8,16 @@ export {
 } from "./block-intermediates";
 
 export { BlockFactory } from "./BlockFactory";
+export { BlockFactorySync } from "./BlockFactorySync";
 
 export {
   Syntax,
   Preprocessor,
+  PreprocessorSync,
   OptionalPreprocessor,
+  OptionalPreprocessorSync,
   Preprocessors,
+  PreprocessorsSync,
   ProcessedFile,
   syntaxFromExtension,
 } from "./preprocessing";

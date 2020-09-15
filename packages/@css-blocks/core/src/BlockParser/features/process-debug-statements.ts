@@ -11,7 +11,7 @@ import { ResolvedConfiguration } from "../../configuration";
  * @param root PostCSS Root for block.
  * @param block Block to resolve references for
  */
-export async function processDebugStatements(root: postcss.Root, block: Block, file: string, config: ResolvedConfiguration) {
+export function processDebugStatements(root: postcss.Root, block: Block, file: string, config: ResolvedConfiguration): void {
   root.walkAtRules(BLOCK_DEBUG, (atRule) => {
     let { block: ref, channel } = parseBlockDebug(config, root, atRule, file, block);
     let debugStr = ref.debug(config);
