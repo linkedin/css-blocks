@@ -61,43 +61,39 @@ export class BlockFactorySync extends BlockFactoryBase {
   }
 
   /**
-   * Parse a `postcss.Root` into a Block object. Save the Block promise and
-   * return it. Use parseRoot if we need to catch errors.
+   * Parse a `postcss.Root` into a Block object. Use parseRoot if we need to
+   * catch errors.
    *
    * This function is referenced only in tests.
    * @param root The postcss.Root to parse.
    * @param identifier A unique identifier for this Block file.
    * @param name Default name for the block.
    * @param isDfnFile Whether to treat this as a definition file.
-   * @returns The Block object promise.
+   * @returns The Block object.
    */
   parseRootFaultTolerant(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Block {
     return this.parser.parseSync(root, identifier, name, isDfnFile, expectedGuid);
   }
 
   /**
-   * Parse a `postcss.Root` into a Block object. Save the Block promise and return it.
-   * Also assert that the block is valid so that we can catch any errors that
-   * the block contains.
+   * Parse a `postcss.Root` into a Block object. Also assert that the block is
+   * valid so that we can catch any errors that the block contains.
    *
    * This function is only used in tests
    * @param root The postcss.Root to parse.
    * @param identifier A unique identifier for this Block file.
    * @param name Default name for the block.
    * @param isDfnFile Whether to treat this as a definition file.
-   * @returns The Block object promise.
+   * @returns The Block object.
    */
-  async parseRoot(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Promise<Block> {
-    const block = await this.parseRootFaultTolerant(root, identifier, name, isDfnFile, expectedGuid);
+  parseRoot(root: postcss.Root, identifier: string, name: string, isDfnFile = false, expectedGuid?: string): Block {
+    const block = this.parseRootFaultTolerant(root, identifier, name, isDfnFile, expectedGuid);
     return this._surfaceBlockErrors(block);
   }
 
   /**
-   * In some cases (like when using preprocessors with native bindings), it may
-   * be necessary to wait until the block factory has completed current
-   * asynchronous work before exiting. Calling this method stops new pending
-   * work from being performed and returns a promise that resolves when it is
-   * safe to exit.
+   * This method doesn't do anything, but it's provided for parity with
+   * `BlockFactory`.
    */
   prepareForExit(): void {
   }
@@ -125,13 +121,12 @@ export class BlockFactorySync extends BlockFactoryBase {
    * into a CSS Block. In most cases, you'll likely want to use getBlockFromPath() instead.
    *
    * If the block for the given identifier has already been loaded and parsed,
-   * the cached data will be returned instead. If loading and parsing is already in progress,
-   * the existing promise for that identifier will be returned.
+   * the cached block will be returned instead.
    *
    * @param identifier - An identifier that points at a data file or blob in persistent storage.
    *                     These identifiers are created by the Importer that you've configured
    *                     to use.
-   * @returns A promise that resolves to the parsed block.
+   * @returns The parsed block.
    */
   getBlock(identifier: FileIdentifier): Block {
     if (this.blocks[identifier]) {
@@ -145,7 +140,7 @@ export class BlockFactorySync extends BlockFactoryBase {
    * the Importer, then defer to another method to actually parse the data file into a Block.
    *
    * @param identifier - An identifier that points at a data file or blob in persistent storage.
-   * @returns A promise that resolves to the parsed block.
+   * @returns The parsed block.
    */
   private _getBlock(identifier: FileIdentifier): Block {
     let file = this.importer.importSync(identifier, this.configuration);
@@ -288,7 +283,7 @@ export class BlockFactorySync extends BlockFactoryBase {
    * @param fromIdentifier - The FileIdentifier that references the base location that the
    *                         import path is relative to.
    * @param importPath - The relative import path for the file to import.
-   * @returns A promise that resolves to a parsed block.
+   * @returns The parsed block.
    */
   getBlockRelative(fromIdentifier: FileIdentifier, importPath: string): Block {
     let importer = this.importer;
