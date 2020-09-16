@@ -3,6 +3,7 @@ import type { EyeglassOptions, default as Eyeglass } from "eyeglass"; // works, 
 import type { Result, SassError } from "node-sass";
 import type SassImplementation from "node-sass";
 import { sep as PATH_SEPARATOR } from "path";
+import cloneDeep = require("lodash.clonedeep");
 
 export type Adaptor = (sass: typeof SassImplementation, eyeglass: typeof Eyeglass, options: EyeglassOptions) => Preprocessor;
 export type AdaptorSync = (sass: typeof SassImplementation, eyeglass: typeof Eyeglass, options: EyeglassOptions) => PreprocessorSync;
@@ -123,7 +124,10 @@ export class DirectoryScopedPreprocessor implements PreprocessorProvider {
      */
     init(sass: typeof SassImplementation, eyeglass: typeof Eyeglass, options: EyeglassOptions = {}) {
         let sassOptions = this.setupOptions(options);
-        let sassOptionsSync = this.setupOptionsSync ? this.setupOptionsSync(sassOptions) : sassOptions;
+
+        let sassOptionsSync = cloneDeep(sassOptions);
+        sassOptionsSync = this.setupOptionsSync ? this.setupOptionsSync(sassOptionsSync) : sassOptionsSync;
+
         this.scssProcessor = adaptor(sass, eyeglass, sassOptions);
         this.scssProcessorSync = adaptorSync(sass, eyeglass, sassOptionsSync);
     }
@@ -146,7 +150,7 @@ export class DirectoryScopedPreprocessor implements PreprocessorProvider {
      * provided from the application that will be used for compiling this
      * package's block files synchronously.
      *
-     * The options passed into this function are those returned by
+     * The options passed into this function are a copy of those returned by
      * setupOptions(), so this method only needs to update those options as
      * appropriate to support synchronous compilation.
      *
