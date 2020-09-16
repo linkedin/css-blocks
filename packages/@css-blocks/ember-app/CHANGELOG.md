@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/compare/v1.4.0...v1.5.0) (2020-09-16)
+
+
+### Bug Fixes
+
+* Pick up fix for opticss crash on unknown css declarations. ([55f2245](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/commit/55f2245d810506bdda78e69ea65d4bebcc2ed1c2))
+* Prune css-blocks.css from the output after concatenating it. ([a663364](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/commit/a6633648842049a2c01b8105347ede6548e5097d))
+
+
+### Features
+
+* Add file+loc to class name conflict error. ([82e4cfd](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/commit/82e4cfd2fbf43e0678eb412a99171fefae021afa))
+* Class name collision detection. ([31afe26](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/commit/31afe264e71fe07cc2abadf711c72e77095ba498))
+* Scan app CSS for classes. ([3ec0216](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/commit/3ec021656d4a5d2a9eabc1c6abdb880daccc75e7))
+
+
+
+
+
 # [1.4.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-app/compare/v1.3.2...v1.4.0) (2020-09-04)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/compare/v1.4.0...v1.5.0) (2020-09-16)
+
+
+### Bug Fixes
+
+* Missed one package that needed an opticss upgrade. ([6a2345e](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/commit/6a2345ed1740fc5fe64c232ab8bbe14230d96b9b))
+
+
+
+
+
 # [1.4.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember/compare/v1.3.2...v1.4.0) (2020-09-04)
 
 

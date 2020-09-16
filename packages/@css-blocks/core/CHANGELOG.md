@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.4.0...v1.5.0) (2020-09-16)
+
+
+### Bug Fixes
+
+* Pick up fix for opticss crash on unknown css declarations. ([55f2245](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/55f2245d810506bdda78e69ea65d4bebcc2ed1c2))
+* Remove some lingering traces of the async factory. ([23308e1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/23308e1608aa06d654a19344cfa3441bad4f2313))
+* Update the debug identifier for BlockFactorySync. ([17588e3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/17588e3f0f60a0fda8a1b586815cac1637a3f839))
+
+
+### Features
+
+* Synchronous Block Factory. ([0b31607](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/0b31607aca6718f8690c20d69bc33ba96f4402b2))
+
+
+
+
+
 # [1.4.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.3.2...v1.4.0) (2020-09-04)
 
 

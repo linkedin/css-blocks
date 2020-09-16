@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/linkedin/css-blocks/compare/v1.4.0...v1.5.0) (2020-09-16)
+
+
+### Bug Fixes
+
+* Missed one package that needed an opticss upgrade. ([6a2345e](https://github.com/linkedin/css-blocks/commit/6a2345ed1740fc5fe64c232ab8bbe14230d96b9b))
+* Pass a copy of sass options for sync setup. ([eaf06b6](https://github.com/linkedin/css-blocks/commit/eaf06b659ad581503162b10048d218f7d8c0979b))
+* Pick up fix for opticss crash on unknown css declarations. ([55f2245](https://github.com/linkedin/css-blocks/commit/55f2245d810506bdda78e69ea65d4bebcc2ed1c2))
+* Prune css-blocks.css from the output after concatenating it. ([a663364](https://github.com/linkedin/css-blocks/commit/a6633648842049a2c01b8105347ede6548e5097d))
+* Remove some lingering traces of the async factory. ([23308e1](https://github.com/linkedin/css-blocks/commit/23308e1608aa06d654a19344cfa3441bad4f2313))
+* Set eyeglass root within a directory-scoped processor. ([cb72810](https://github.com/linkedin/css-blocks/commit/cb728100188c2bba85a68c39f1e41e9335cb5a54))
+* Update the debug identifier for BlockFactorySync. ([17588e3](https://github.com/linkedin/css-blocks/commit/17588e3f0f60a0fda8a1b586815cac1637a3f839))
+
+
+### Features
+
+* Add file+loc to class name conflict error. ([82e4cfd](https://github.com/linkedin/css-blocks/commit/82e4cfd2fbf43e0678eb412a99171fefae021afa))
+* Class name collision detection. ([31afe26](https://github.com/linkedin/css-blocks/commit/31afe264e71fe07cc2abadf711c72e77095ba498))
+* Scan app CSS for classes. ([3ec0216](https://github.com/linkedin/css-blocks/commit/3ec021656d4a5d2a9eabc1c6abdb880daccc75e7))
+* Synchronous Block Factory. ([0b31607](https://github.com/linkedin/css-blocks/commit/0b31607aca6718f8690c20d69bc33ba96f4402b2))
+* Update eyeglass integration to support synchronous preprocessing. ([f3b11af](https://github.com/linkedin/css-blocks/commit/f3b11af3942767709b6a32f333bdbc779df7a5c2))
+
+
+
+
+
 # [1.4.0](https://github.com/linkedin/css-blocks/compare/v1.3.2...v1.4.0) (2020-09-04)
 
 

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-utils/compare/v1.4.0...v1.5.0) (2020-09-16)
+
+
+### Bug Fixes
+
+* Pick up fix for opticss crash on unknown css declarations. ([55f2245](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-utils/commit/55f2245d810506bdda78e69ea65d4bebcc2ed1c2))
+
+
+### Features
+
+* Class name collision detection. ([31afe26](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-utils/commit/31afe264e71fe07cc2abadf711c72e77095ba498))
+* Synchronous Block Factory. ([0b31607](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-utils/commit/0b31607aca6718f8690c20d69bc33ba96f4402b2))
+
+
+
+
+
 # [1.4.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/ember-utils/compare/v1.3.2...v1.4.0) (2020-09-04)
 
 

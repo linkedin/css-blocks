@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/linkedin/css-blocks/compare/v1.4.0...v1.5.0) (2020-09-16)
+
+**Note:** Version bump only for package @css-blocks-fixtures/ember-addon
+
+
+
+
+
 # [1.4.0](https://github.com/linkedin/css-blocks/compare/v1.3.2...v1.4.0) (2020-09-04)
 
 **Note:** Version bump only for package @css-blocks-fixtures/ember-addon
