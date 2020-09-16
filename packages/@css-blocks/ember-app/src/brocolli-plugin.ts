@@ -1,5 +1,5 @@
 import { Block, BlockCompiler, BlockFactory, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, IDENTIFIER_PREFIX, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-utils";
+import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, identToModulePath, isBroccoliTreeIdentifier, pathToIdent } from "@css-blocks/ember-utils";
 import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
@@ -68,23 +68,22 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let reservedClassnames = analyzer.reservedClassNames();
     let testDataBuilder = new TestSupportDataGenerator();
     for (let block of blocksUsed) {
-
-      let content: postcss.Result;
-      let filename = importer.debugIdentifier(block.identifier, config);
-
+      // Generate the test data
       if (!this.isProdApp) {
-        // Generate the test data
-        // Iterate over the blocks that belong to this app and its addons only for
-        // generating the test support data
-        if (block.identifier.startsWith(IDENTIFIER_PREFIX)) {
-          let filePath = pathToIdent(filename).split(".compiledblock.")[0].replace(IDENTIFIER_PREFIX, "");
+        // Filter only the blocks that belong to this repository; the app and
+        // all  all it's in-repo
+        // addons and all its in-repo engines for generating the test support data
+        if (isBroccoliTreeIdentifier(block.identifier)) {
+          let moduleName = identToModulePath(block.identifier).split(".compiled")[0];
           // locate the actual block corresponding to this compiled block to
-          let factoryBlock = await factory.getBlock(block.identifier);
-          factoryBlock.eachBlockExport((name, exportedBlock) => {
-            testDataBuilder.addExportedBlockGuid(filePath, name, exportedBlock.guid);
+          block.eachBlockExport((name, exportedBlock) => {
+            testDataBuilder.addExportedBlockGuid(moduleName, name, exportedBlock.guid);
           });
         }
       }
+
+      let content: postcss.Result;
+      let filename = importer.debugIdentifier(block.identifier, config);
 
       if (block.precompiledStylesheet) {
         debug(`Optimizing precompiled stylesheet for ${filename}`);

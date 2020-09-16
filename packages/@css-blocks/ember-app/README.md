@@ -30,6 +30,41 @@ The following options can be passed as options to the `css-blocks` property in y
 * `parserOpts` - Options passed to the CSS Blocks parser and compiler. If not set, these options are loaded automatically from a `css-blocks.config.js` file. Using a CSS Blocks configuration file will allow other tools like the CSS Blocks command line (`@css-blocks/cli`) to load the same options as your ember application.
 * `optimization` - Options passed to the Opticss optimizer. This can be used to selectively enable or disable specific optimizations or to explicitly disable all optimizations by setting the `enable` option to `false`.
 
+## Testing
+Once you have integrated this addon within an ember application, all your CSS classnames are going to look very different from what they did in the block files that you had originally written and the output CSS classnames will vary across builds and across different machines. This is done intentionally to ensure that you don't use any CSS classname selectors in any of the tests and that your tests remain robust across executions. Not to mention, even the number of classes on an element can be entirely different after all the CSS has been optimized using opticss.
+
+In order to faciliate testing in such an environment, this ember addon provides a utility method called `setupCSSBlocksTest()` that that exposes the CSS blocks service that can in turn be used to query the existence of certain classes on your elements.
+
+Note: `setupCSSBlocksTest()` has been written to work with `ember-qunit` and `ember-mocha`.
+
+### Test setup and usage
+- In your integration or acceptance tests, call `setupCSSBlocksTest()` declaring any tests. Ensure that `setupCSSBlocksTest()` is called *after* `setupTest|setupRenderingTest|setupApplicationTest` for the setup to work as desired.
+**Note: `setupCSSBlocksTest` is exposed within a service on the application's namespace and will have to be imported as such**
+    ```js
+    import { setupCSSBlocksTest} from '<appName>/services/css-blocks-test-support';
+    ```
+- After this, the css-blocks service is available to the test via `this.cssblocks`
+- The test service primarily exposes a single API function, `this.cssBlocks.getBlock(<pathToBlock>, <blockName>)` that takes in a path to the block file and the an optional blockName. If the blockName isn't specified, the default block for the block file is returned. The <blockPath> begin with either the appName, the addon name (if its from an in-repo addon) or by the engine's name(in the case of an in-repo engine) that it is a part of. `getBlock()` returns a reference to the runtime CSS block which can be queried for styles within the block using `.style(<styleName>)`.
+- The element can then assert whether a certain style is present on it or not using `element.classList.contains()`
+
+Putting it all together in an example,
+```js
+import { setupCSSBlocksTest } from 'my-very-fine-app/services/css-blocks-test-support';
+
+module('Acceptance | css blocks test', function (hooks) {
+  setupApplicationTest(hooks);
+
+  setupCSSBlocksTest(hooks);
+
+  test('visiting /', async function (assert) {
+    await visit('/');
+    let defaultBlock = this.cssBlocks.getBlock("my-very-fine-app/styles/components/application", "default");
+    let element = find('[data-test-large-hello]');
+    assert.ok(element.classList.contains(defaultBlock.style(':scope[size="large]')));
+  });
+});
+```
+
 ## Common Gotchas
 
 This section is devoted to common issues you might run into when working with this addon.

@@ -27,20 +27,38 @@ interface StyleIdToOptimizationsMap {
 export default class CSSBlocksService extends Service {
   possibleOptimizations!: StyleIdToOptimizationsMap;
   styleNames: { [name: string]: string };
-  static enableDebugMode: boolean = false;
-  static enableTestMode: boolean = false;
+  enableDebugMode = false;
+  static enableTestMode = false;
   constructor() {
     super(...arguments);
     this.possibleOptimizations = getOptimizationInverseMap(data.optimizations);
     this.styleNames = getStyleNames();
   }
+
+  /**
+   * Returns the set of classNames to be applied to a given element, based on
+   * the runtime conditions that are present on the element. This method is
+   * invoked as helper to render classNames in the template files rewritten by
+   * css blocks
+   */
   classNamesFor(argv: Array<string | number | boolean | null>): string {
-    if (CSSBlocksService.enableDebugMode) {
+    if (this.enableDebugMode) {
       console.log(argv);
     }
+    // get all the directly applied styles
     let stylesApplied = this.getDirectlyAppliedStyles(argv);
-
-    return this.getImpliedAndOptimizedStyles(stylesApplied);
+    // get all the implied styles
+    let resolverOutput = this.getImpliedStyles(stylesApplied);
+    // update the set of stylesApplied after the resolver has run
+    stylesApplied = resolverOutput.stylesApplied;
+    // get all the optimized styles
+    let classNames = resolverOutput.classNames.concat(this.getOptimizedStyles(stylesApplied));
+    // now join them all together
+    let result = classNames.join(" ");
+    if (this.enableDebugMode) {
+      console.log(classNames);
+    }
+    return result;
   }
 
   /**
@@ -55,41 +73,42 @@ export default class CSSBlocksService extends Service {
   }
 
   /**
-   * For a set of applied styleIds, returns a final set of classNames to be
-   * applied. This uses the styleResolver to get all the implied styles
+   * For a set of applied styleIds, users the styleResolver to get all the implied styles
    * @param stylesApplied set of styleIds that are directly applied on the element
    */
-  getImpliedAndOptimizedStyles(stylesApplied: Set<number>): string {
+  getImpliedStyles(stylesApplied: Set<number>): {stylesApplied: Set<number>; classNames: string[]} {
     let resolver = new StyleResolver(data);
     for (let style of stylesApplied) {
       resolver.addStyle(style);
     }
-
-    if (CSSBlocksService.enableDebugMode) {
+    if (this.enableDebugMode) {
       this.debugStyles("all possible implied styles", resolver.currentStyles());
     }
-
     stylesApplied = resolver.resolve();
-
     this.debugStyles("after requirements", stylesApplied);
+    return {
+      stylesApplied,
+      classNames: new Array<string>(...resolver.impliedClassNames()),
+    };
+  }
 
+  /**
+   * Returns the set of styles by applying any and all optimizations
+   * @param stylesApplied  set of styleIds that are directly applied and are
+   * implied by the resolver
+   */
+  getOptimizedStyles(stylesApplied: Set<number>): string[] {
     let classNameIndices = new Set<number>();
-    // TODO: Only iterate over the subset of optimizations that might match this
-    // element's styles.
+    let classNames = new Array<string>();
     for (let [clsIdx, expr] of this.getPossibleOptimizations(stylesApplied)) {
       if (evaluateExpression(expr, stylesApplied)) {
         classNameIndices.add(clsIdx);
       }
     }
-    let classNames = new Array<string>(...resolver.impliedClassNames());
     for (let idx of classNameIndices) {
       classNames.push(data.outputClassnames[idx]);
     }
-    let result = classNames.join(" ");
-    if (CSSBlocksService.enableDebugMode) {
-      console.log(classNames);
-    }
-    return result;
+    return classNames;
   }
 
   /**
@@ -108,7 +127,7 @@ export default class CSSBlocksService extends Service {
   }
 
   debugStyles(msg: string, stylesApplied: Set<number>): void {
-    if (!CSSBlocksService.enableDebugMode) return;
+    if (!this.enableDebugMode) return;
     console.log(msg, this.getStyleNames(stylesApplied));
   }
 
@@ -185,7 +204,7 @@ function extractStyleIds(expr: StyleExpression): Array<GlobalBlockIndex> {
   }
 }
 
-function getStyleNames(): Record<number, string> {
+export function getStyleNames(): Record<number, string> {
   let styleNames: Record<number, string> = {};
   for (let blockGuid of Object.keys(data.blockIds)) {
     let blockIndex = data.blockIds[blockGuid];
