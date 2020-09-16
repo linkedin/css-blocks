@@ -141,6 +141,7 @@ describe("@css-blocks/eyeglass", async () => {
 
       /*# sourceMappingURL=two.block.css.map */`));
   });
+
   it("can adapt from several optional adaptors - synchronous", () => {
     let package1Dir = fixture("package-1");
     let package1File = fixture("package-1/one.block.scss");
@@ -171,6 +172,55 @@ describe("@css-blocks/eyeglass", async () => {
       }
 
       /*# sourceMappingURL=two.block.css.map */`));
+  });
+
+  it("sets the eyeglass root", async () => {
+    let package1Dir = fixture("package-1");
+    let package1File = fixture("package-1/one.block.scss");
+    let optionsPassedToSetup: EyeglassOptions | undefined;
+    class Adaptor1 extends DirectoryScopedPreprocessor {
+      setupOptions(options: EyeglassOptions): EyeglassOptions {
+        optionsPassedToSetup = options;
+        return Object.assign({}, options, {outputStyle: "compact"});
+      }
+    }
+    let adaptor1 = new Adaptor1(package1Dir);
+    let originalOptions = {
+      eyeglass: {
+        root: process.cwd(),
+      },
+    };
+    let processor = adaptAll([adaptor1], SassImplementation, Eyeglass, originalOptions);
+    await processor(package1File, fs.readFileSync(package1File, "utf-8"), resolveConfiguration({}));
+    assert.equal(optionsPassedToSetup?.eyeglass?.root, package1Dir + "/");
+    assert.equal(originalOptions.eyeglass.root, process.cwd());
+  });
+
+  it("can mutate options without changing the original value", async () => {
+    let package1Dir = fixture("package-1");
+    let package1File = fixture("package-1/one.block.scss");
+    let optionsPassedToSetup: EyeglassOptions | undefined;
+    class Adaptor1 extends DirectoryScopedPreprocessor {
+      setupOptions(options: EyeglassOptions): EyeglassOptions {
+        optionsPassedToSetup = options;
+        options.outputStyle = "compact";
+        return options;
+      }
+      setupOptionsSync(options: EyeglassOptions): EyeglassOptions {
+        options.outputStyle = "expanded";
+        return options;
+      }
+    }
+    let adaptor1 = new Adaptor1(package1Dir);
+    let originalOptions: EyeglassOptions = {
+      eyeglass: {
+        root: process.cwd(),
+      },
+    };
+    let processor = adaptAll([adaptor1], SassImplementation, Eyeglass, originalOptions);
+    await processor(package1File, fs.readFileSync(package1File, "utf-8"), resolveConfiguration({}));
+    assert.isUndefined(originalOptions.outputStyle);
+    assert.equal(optionsPassedToSetup?.outputStyle, "compact");
   });
 });
 

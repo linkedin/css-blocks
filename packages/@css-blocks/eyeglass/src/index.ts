@@ -1,9 +1,9 @@
 import type { OptionalPreprocessor, OptionalPreprocessorSync, Preprocessor, PreprocessorSync, ProcessedFile, ResolvedConfiguration } from "@css-blocks/core";
 import type { EyeglassOptions, default as Eyeglass } from "eyeglass"; // works, even tho a cjs export. huh.
+import cloneDeep = require("lodash.clonedeep");
 import type { Result, SassError } from "node-sass";
 import type SassImplementation from "node-sass";
 import { sep as PATH_SEPARATOR } from "path";
-import cloneDeep = require("lodash.clonedeep");
 
 export type Adaptor = (sass: typeof SassImplementation, eyeglass: typeof Eyeglass, options: EyeglassOptions) => Preprocessor;
 export type AdaptorSync = (sass: typeof SassImplementation, eyeglass: typeof Eyeglass, options: EyeglassOptions) => PreprocessorSync;
@@ -123,6 +123,8 @@ export class DirectoryScopedPreprocessor implements PreprocessorProvider {
      * eyeglass.VERSION.
      */
     init(sass: typeof SassImplementation, eyeglass: typeof Eyeglass, options: EyeglassOptions = {}) {
+        options = cloneDeep(options);
+        setEyeglassRoot(options, this.filePrefix);
         let sassOptions = this.setupOptions(options);
 
         let sassOptionsSync = cloneDeep(sassOptions);
@@ -199,6 +201,14 @@ export class DirectoryScopedPreprocessor implements PreprocessorProvider {
             }
         };
     }
+}
+
+function setEyeglassRoot(options: EyeglassOptions, root: string): EyeglassOptions {
+    if (!options.eyeglass) {
+        options.eyeglass = {};
+    }
+    options.eyeglass.root = root;
+    return options;
 }
 
 /**
