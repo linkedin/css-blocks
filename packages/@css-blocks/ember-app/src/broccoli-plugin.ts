@@ -14,6 +14,7 @@ import * as path from "path";
 import { RuntimeDataGenerator } from "./RuntimeDataGenerator";
 import { cssBlocksPostprocessFilename, cssBlocksPreprocessFilename, optimizedStylesPostprocessFilepath, optimizedStylesPreprocessFilepath } from "./utils/filepaths";
 import { AddonEnvironment } from "./utils/interfaces";
+import { AggregateRewriteData } from "./AggregateRewriteData";
 
 const debug = debugGenerator("css-blocks:ember-app");
 
@@ -21,11 +22,13 @@ export class CSSBlocksApplicationPlugin extends Filter {
   appName: string;
   previousSourceTree: FSTree;
   cssBlocksOptions: ResolvedCSSBlocksEmberOptions;
+  firstBuild: boolean;
   constructor(appName: string, inputNodes: InputNode[], cssBlocksOptions: ResolvedCSSBlocksEmberOptions, options?: PluginOptions) {
     super(mergeTrees(inputNodes), options || {});
     this.appName = appName;
     this.previousSourceTree = new FSTree();
     this.cssBlocksOptions = cssBlocksOptions;
+    this.firstBuild = true;
   }
   processString(contents: string, _relativePath: string): string {
     return contents;
@@ -36,11 +39,32 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let currentFSTree = FSTree.fromEntries(entries);
     let patch = this.previousSourceTree.calculatePatch(currentFSTree);
     if (patch.length === 0) {
-      // nothing changed from the last build.
+      if (this.firstBuild) {
+        this.firstBuild = false;
+        // There's no blocks yet.
+        // We need to produce an empty file to avoid causing errors at runtime.
+        let data: AggregateRewriteData = {
+          blockIds: {},
+          blocks: [],
+          outputClassnames: [],
+          styleRequirements: {},
+          impliedStyles: {},
+          optimizations: [],
+        };
+        let serializedData = JSON.stringify(data, undefined, "  ");
+        this.output.writeFileSync(
+          `${this.appName}/services/-css-blocks-data.js`,
+          "// CSS Blocks Generated Data. DO NOT EDIT\n" +
+          `export const data = ${serializedData};\n`,
+        );
+      } else {
+        // nothing changed from the last build.
+      }
       return;
     } else {
       this.previousSourceTree = currentFSTree;
     }
+    this.firstBuild = false;
     let config = resolveConfiguration(this.cssBlocksOptions.parserOpts);
     let importer = new BroccoliTreeImporter(this.input, null, config.importer);
     config = resolveConfiguration({importer}, config);
