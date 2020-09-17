@@ -11,10 +11,10 @@ import * as FSTree from "fs-tree-diff";
 import { OptiCSSOptions, Optimizer, parseSelector, postcss } from "opticss";
 import * as path from "path";
 
+import { AggregateRewriteData } from "./AggregateRewriteData";
 import { RuntimeDataGenerator } from "./RuntimeDataGenerator";
 import { cssBlocksPostprocessFilename, cssBlocksPreprocessFilename, optimizedStylesPostprocessFilepath, optimizedStylesPreprocessFilepath } from "./utils/filepaths";
 import { AddonEnvironment } from "./utils/interfaces";
-import { AggregateRewriteData } from "./AggregateRewriteData";
 
 const debug = debugGenerator("css-blocks:ember-app");
 
