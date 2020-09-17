@@ -1,4 +1,4 @@
-import { Block, BlockCompiler, BlockDefinitionCompiler, BlockFactory, Configuration, INLINE_DEFINITION_FILE, resolveConfiguration } from "@css-blocks/core";
+import { Block, BlockCompiler, BlockDefinitionCompiler, BlockFactorySync, Configuration, INLINE_DEFINITION_FILE, resolveConfiguration } from "@css-blocks/core";
 import { BroccoliTreeImporter, CSSBlocksEmberOptions, EmberAnalysis, identToPath, isBroccoliTreeIdentifier } from "@css-blocks/ember-utils";
 import type { ASTPluginEnvironment } from "@glimmer/syntax";
 import { MultiMap } from "@opticss/util";
@@ -64,7 +64,7 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
   previousSourceTree: FSTree;
   cssBlocksOptions: CSSBlocksEmberOptions;
   parserOpts: Readonly<Configuration>;
-  analyzingRewriter: AnalyzingRewriteManager | undefined;
+  rewriteManager: AnalyzingRewriteManager | undefined;
   input!: FSMerger.FS;
   output!: outputWrapper.FSOutput;
   persist: boolean;
@@ -93,7 +93,7 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
       };
     }
     this.debug(`Returning template analyzer and rewriter for ${moduleName}`);
-    if (!this.analyzingRewriter) {
+    if (!this.rewriteManager) {
       throw new Error("[internal error] analyzing rewriter expected.");
     }
     // The analyzing rewriter gets swapped out at the beginning of build() with
@@ -101,7 +101,7 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     // for each ast plugin that is created for each template once super.build()
     // is done, the analyses for all of the templates is complete and we can
     // write additional output files to the output tree.
-    return this.analyzingRewriter.templateAnalyzerAndRewriter(moduleName, env.syntax);
+    return this.rewriteManager.templateAnalyzerAndRewriter(moduleName, env.syntax);
   }
 
   async build() {
@@ -116,14 +116,9 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     let namespace = md5Sum(this.treeName).slice(0, 3);
     let importer = new BroccoliTreeImporter(this.input, namespace, this.parserOpts.importer);
     let config = resolveConfiguration({importer}, this.parserOpts);
-    let factory = new BlockFactory(config, postcss);
+    let factory = new BlockFactorySync(config, postcss);
     let fileLocator = new BroccoliFileLocator(this.input);
-    this.debug(`Looking for templates using css blocks.`);
-    this.analyzingRewriter = new AnalyzingRewriteManager(factory, fileLocator, this.cssBlocksOptions.analysisOpts || {}, config);
-    // The astPluginBuilder interface isn't async so we have to first load all
-    // the blocks and associate them to their corresponding templates.
-    await this.analyzingRewriter.discoverTemplatesWithBlocks();
-    this.debug(`Discovered ${Object.keys(this.analyzingRewriter.templateBlocks).length} templates with corresponding block files.`);
+    this.rewriteManager = new AnalyzingRewriteManager(factory, fileLocator, this.cssBlocksOptions.analysisOpts || {}, config);
 
     // Compiles the handlebars files, runs our plugin for each file
     // we have to wrap this RSVP Promise that's returned in a native promise or
@@ -137,7 +132,7 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
     let templateBlocks = new MultiMap<EmberAnalysis, Block>(); // Tracks the blocks associated with each template (there's a 1-1 relationship beteen analyses and templates).
     let additionalFileCacheKeys = new MultiMap<EmberAnalysis, string>(); // tracks the cache keys we create for each additional output file.
     // first pass discovers the set of all blocks & associate them to their corresponding analyses.
-    for (let analyzedTemplate of this.analyzingRewriter.analyzedTemplates()) {
+    for (let analyzedTemplate of this.rewriteManager.analyzedTemplates()) {
       let { analysis } = analyzedTemplate;
       analyses.push(analysis);
       for (let block of analysis.transitiveBlockDependencies()) {
@@ -205,7 +200,7 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
         throw new Error("[internal error] block stylesheet expected.");
       }
       // TODO - allow for inline definitions or files, by user option
-      let { css: compiledAST } = compiler.compileWithDefinition(block, block.stylesheet, this.analyzingRewriter!.reservedClassNames(), INLINE_DEFINITION_FILE);
+      let { css: compiledAST } = compiler.compileWithDefinition(block, block.stylesheet, this.rewriteManager!.reservedClassNames(), INLINE_DEFINITION_FILE);
       // TODO disable source maps in production?
       let result = compiledAST.toResult({ to: outputPath, map: { inline: true } });
       let contents = result.css;
@@ -213,7 +208,7 @@ export class CSSBlocksTemplateCompilerPlugin extends TemplateCompilerPlugin {
         // We only compile and output each block once, but a block might be consumed
         // by several of the templates that we have processed. So we have to figure out
         // which template(s) depend on the block we're writing.
-        for (let {analysis} of this.analyzingRewriter!.analyzedTemplates()) {
+        for (let {analysis} of this.rewriteManager!.analyzedTemplates()) {
           if (templateBlocks.hasValue(analysis, block)) {
             await this.cacheAdditionalFile(additionalFileCacheKeys, analysis, {outputPath, contents});
           }
