@@ -59,28 +59,29 @@ export async function exportBlocks(block: Block, factory: BlockFactory | BlockFa
           `Malformed block export: \`@export ${atRule.params}\``,
           sourceRange(factory.configuration, block.stylesheet, file, atRule),
         ));
-      }
+      } else {
+        block.blockAST!.children.push(exports);
+        // Import file, then parse file, then save block reference.
+        let srcBlockPromise: Promise<Block> = Promise.resolve(block);
+        if (typeguards.isBlockExport(exports)) {
+          srcBlockPromise = Promise.resolve(factory.getBlockRelative(block.identifier, exports.fromPath));
+        }
 
-      // Import file, then parse file, then save block reference.
-      let srcBlockPromise: Promise<Block> = Promise.resolve(block);
-      if (typeguards.isBlockExport(exports)) {
-        srcBlockPromise = Promise.resolve(factory.getBlockRelative(block.identifier, exports.fromPath));
+        // Validate our imported block name is a valid CSS identifier.
+        const exportPromise = srcBlockPromise.then(
+          (srcBlock) => {
+            validateAndAddBlockExport(block, factory.configuration, srcBlock, remoteNames, exports, file, atRule);
+          },
+          (error) => {
+            block.addError(new errors.CascadingError(
+              `Error in exported block "${(<BlockExport>exports).fromPath}"`,
+              error,
+              sourceRange(factory.configuration, block.stylesheet, file, atRule),
+            ));
+          },
+        );
+        exportPromises.push(exportPromise);
       }
-
-      // Validate our imported block name is a valid CSS identifier.
-      const exportPromise = srcBlockPromise.then(
-        (srcBlock) => {
-          validateAndAddBlockExport(block, factory.configuration, srcBlock, remoteNames, exports, file, atRule);
-        },
-        (error) => {
-          block.addError(new errors.CascadingError(
-            `Error in exported block "${(<BlockExport>exports).fromPath}"`,
-            error,
-            sourceRange(factory.configuration, block.stylesheet, file, atRule),
-          ));
-        },
-      );
-      exportPromises.push(exportPromise);
     });
   }
 
@@ -113,20 +114,22 @@ export function exportBlocksSync(block: Block, factory: BlockFactorySync, file: 
           `Malformed block export: \`@export ${atRule.params}\``,
           sourceRange(factory.configuration, block.stylesheet, file, atRule),
         ));
-      }
+      } else {
+        block.blockAST!.children.push(exports);
 
-      // Import file, then parse file, then save block reference.
-      let srcBlock: Block;
-      if (typeguards.isBlockExport(exports)) {
-        try {
-          srcBlock = factory.getBlockRelative(block.identifier, exports.fromPath);
-          validateAndAddBlockExport(block, factory.configuration, srcBlock, remoteNames, exports, file, atRule);
-        } catch (error) {
-          block.addError(new errors.CascadingError(
-            `Error in exported block "${exports.fromPath}"`,
-            error,
-            sourceRange(factory.configuration, block.stylesheet, file, atRule),
-          ));
+        // Import file, then parse file, then save block reference.
+        let srcBlock: Block;
+        if (typeguards.isBlockExport(exports)) {
+          try {
+            srcBlock = factory.getBlockRelative(block.identifier, exports.fromPath);
+            validateAndAddBlockExport(block, factory.configuration, srcBlock, remoteNames, exports, file, atRule);
+          } catch (error) {
+            block.addError(new errors.CascadingError(
+              `Error in exported block "${exports.fromPath}"`,
+              error,
+              sourceRange(factory.configuration, block.stylesheet, file, atRule),
+            ));
+          }
         }
       }
     });

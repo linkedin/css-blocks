@@ -152,7 +152,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
           return addon && (<any>addon).templateCompiler;
         }).filter(Boolean);
         let lazyOutput = funnel(mergeTrees(jsOutputTrees), {destDir: "lazy-tree-output"});
-        this.broccoliAppPluginInstance = new CSSBlocksApplicationPlugin(env.modulePrefix, [env.app.addonTree(), tree, lazyOutput], env.config);
+        this.broccoliAppPluginInstance = new CSSBlocksApplicationPlugin(env.modulePrefix, env.app.isProduction, [env.app.addonTree(), tree, lazyOutput], env.config);
         let debugTree = new BroccoliDebug(this.broccoliAppPluginInstance, `css-blocks:optimized`);
         return funnel(debugTree, {srcDir: env.modulePrefix, destDir: env.modulePrefix});
       } else {

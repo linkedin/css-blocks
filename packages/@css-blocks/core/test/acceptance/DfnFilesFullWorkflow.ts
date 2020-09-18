@@ -16,10 +16,18 @@ export class AcceptanceTestDefinitionFilesFullWorkflow {
     const compiler = new BlockCompiler(postcss, config);
     compiler.setDefinitionCompiler(blockDfnCompiler);
 
+    imports.registerSource(
+      "/foo/bar/other.block.css",
+      `:scope { color: red; }`,
+    );
+
     // Part 1: Given a basic CSS Blocks source file, generate a definition file.
     imports.registerSource(
       "/foo/bar/source.block.css",
       outdent`
+        @block (default as other) from './other.block.css';
+        @export (other);
+
         :scope { background-color: #FFF; }
         :scope[toggled] { color: #000; }
         :scope[foo="bar"] { border-top-color: #F00; }
@@ -32,7 +40,6 @@ export class AcceptanceTestDefinitionFilesFullWorkflow {
       `,
     );
     const originalBlock = await factory.getBlockFromPath("/foo/bar/source.block.css");
-
     const { css: cssTree, definition: definitionTree } = compiler.compileWithDefinition(originalBlock, originalBlock.stylesheet!, new Set(), "/foo/bar/source.block.d.css");
     const compiledCss = cssTree.toString();
     const definition = definitionTree.toString();
@@ -64,6 +71,8 @@ export class AcceptanceTestDefinitionFilesFullWorkflow {
       `,
       outdent`
         @block-syntax-version 1;
+        @block other from "./other.css";
+        @export (other);
         :scope {
             block-id: "${originalBlock.guid}";
             block-name: "source";
@@ -93,12 +102,19 @@ export class AcceptanceTestDefinitionFilesFullWorkflow {
     imports.reset();
     factory.reset();
 
+    imports.registerSource(
+      "/foo/bar/other.css",
+      `:scope { color: red; }`,
+    );
+
     imports.registerCompiledCssSource(
       "/foo/bar/source.css",
       compiledCss,
       "/foo/bar/source.block.d.css",
       definition,
     );
+
+    await factory.getBlockFromPath("/foo/bar/other.css");
     const reconstitutedBlock = await factory.getBlockFromPath("/foo/bar/source.css");
 
     // And now some checks to validate that we were able to reconstitute accurately.

@@ -5,13 +5,17 @@ import * as path from "path";
 
 const debug = debugGenerator("css-blocks:broccoli-tree-importer");
 
-export const IDENTIFIER_PREFIX = "broccoli-tree:";
+const IDENTIFIER_PREFIX = "broccoli-tree:";
 const IDENTIFIER_PREFIX_LENGTH = IDENTIFIER_PREFIX.length;
 const IDENTIFIER_PREFIX_RE = new RegExp(`^${IDENTIFIER_PREFIX}`);
 export const EMBEDDED_DEFINITION_TAG = "#blockDefinitionURL";
 
 export function isBroccoliTreeIdentifier(identifier: string | null): boolean {
   return !!(identifier && IDENTIFIER_PREFIX_RE.test(identifier));
+}
+
+export function identToModulePath(identifier: string): string {
+  return identifier.replace(IDENTIFIER_PREFIX, "");
 }
 
 export function identToPath(input: MergedFileSystem, identifier: string): string {

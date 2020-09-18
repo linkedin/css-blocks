@@ -1,5 +1,5 @@
 import { Block, BlockCompiler, BlockFactory, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, pathToIdent } from "@css-blocks/ember-utils";
+import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, pathToIdent, isBroccoliTreeIdentifier, identToModulePath } from "@css-blocks/ember-utils";
 import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
@@ -14,6 +14,7 @@ import * as path from "path";
 import { RuntimeDataGenerator } from "./RuntimeDataGenerator";
 import { cssBlocksPostprocessFilename, cssBlocksPreprocessFilename, optimizedStylesPostprocessFilepath, optimizedStylesPreprocessFilepath } from "./utils/filepaths";
 import { AddonEnvironment } from "./utils/interfaces";
+import { TestSupportDataGenerator } from "./TestSupportDataGenerator";
 
 const debug = debugGenerator("css-blocks:ember-app");
 
@@ -21,11 +22,13 @@ export class CSSBlocksApplicationPlugin extends Filter {
   appName: string;
   previousSourceTree: FSTree;
   cssBlocksOptions: ResolvedCSSBlocksEmberOptions;
-  constructor(appName: string, inputNodes: InputNode[], cssBlocksOptions: ResolvedCSSBlocksEmberOptions, options?: PluginOptions) {
+  isProdApp: boolean;
+  constructor(appName: string, isProdApp: boolean, inputNodes: InputNode[], cssBlocksOptions: ResolvedCSSBlocksEmberOptions, options?: PluginOptions) {
     super(mergeTrees(inputNodes), options || {});
     this.appName = appName;
     this.previousSourceTree = new FSTree();
     this.cssBlocksOptions = cssBlocksOptions;
+    this.isProdApp = isProdApp;
   }
   processString(contents: string, _relativePath: string): string {
     return contents;
@@ -65,7 +68,21 @@ export class CSSBlocksApplicationPlugin extends Filter {
     }
     let compiler = new BlockCompiler(postcss, config);
     let reservedClassnames = analyzer.reservedClassNames();
+    let testDataBuilder = new TestSupportDataGenerator();
     for (let block of blocksUsed) {
+      // Generate the test data
+      if (!this.isProdApp) {
+        // Filter only the blocks that belong to this repository; the app and
+        // all  all it's in-repo
+        // addons and all its in-repo engines for generating the test support data
+        if (isBroccoliTreeIdentifier(block.identifier)) {
+          let moduleName = identToModulePath(block.identifier).split(".compiled")[0];
+          // locate the actual block corresponding to this compiled block to
+          block.eachBlockExport((name, exportedBlock) => {
+            testDataBuilder.addExportedBlockGuid(moduleName, name, exportedBlock.guid);
+          });
+        }
+      }
       let content: postcss.Result | string;
       let filename = importer.debugIdentifier(block.identifier, config);
       if (block.precompiledStylesheetUnedited) {
@@ -125,6 +142,15 @@ export class CSSBlocksApplicationPlugin extends Filter {
       `// CSS Blocks Generated Data. DO NOT EDIT.
        export const data = ${serializedData};
       `);
+
+    // Write the generated test data file
+    if (!this.isProdApp) {
+      this.output.writeFileSync(
+        `${this.appName}/services/-css-blocks-test-support-data.js`,
+        `// CSS Blocks Generated Data. DO NOT EDIT.
+          export const testSupportData = ${JSON.stringify(testDataBuilder.data, undefined, "  ")};
+        `);
+    }
   }
 
   /**
