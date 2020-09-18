@@ -3,10 +3,11 @@ import { postcss } from "opticss";
 
 import { BLOCK_IMPORT, CLASS_NAME_IDENT, DEFAULT_EXPORT, isBlockNameReserved } from "../../BlockSyntax";
 import { Block } from "../../BlockTree";
+import { Configuration } from "../../configuration";
 import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 import { BlockReference, builders } from "../ast";
-import { BlockFactory } from "../index";
+import { BlockFactory, BlockFactorySync } from "../index";
 import { parseBlockNamesAST, stripQuotes } from "../utils";
 
 const FROM_EXPR = /\s+from\s+/;
@@ -38,7 +39,7 @@ function parseBlockReference(atRule: postcss.AtRule): BlockReference | null {
  * @param block Block to resolve references for
  * @return Promise that resolves when all references have been loaded.
  */
-export async function importBlocks(block: Block, factory: BlockFactory, file: string): Promise<Block> {
+export async function importBlocks(block: Block, factory: BlockFactory | BlockFactorySync, file: string): Promise<Block> {
 
   let root: postcss.Root | undefined = block.stylesheet;
 
@@ -47,6 +48,64 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
     return block;
   }
 
+  let parsedImports = parseImports(block, factory, file, root);
+
+  let localNames: ObjectDictionary<string> = {};
+  for (let parsedImport of parsedImports) {
+    let {atRule} = parsedImport;
+    let referencedBlock: Block | null = null;
+
+    // Import the main block file referenced by the import path.
+    try {
+      referencedBlock = await factory.getBlockRelative(block.identifier, parsedImport.blockPath);
+      block.blockReferencePaths.set(parsedImport.blockPath, referencedBlock);
+    } catch (err) {
+      block.addError(new errors.CascadingError(
+        "Error in imported block.",
+        err,
+        sourceRange(factory.configuration, block.stylesheet, file, atRule),
+      ));
+    }
+
+    processReferencedBlock(block, factory.configuration, file, referencedBlock, parsedImport, localNames);
+  }
+  return block;
+}
+
+export function importBlocksSync(block: Block, factory: BlockFactorySync, file: string): Block {
+
+  let root: postcss.Root | undefined = block.stylesheet;
+
+  if (!root) {
+    block.addError(new errors.InvalidBlockSyntax(`Internal Error: Cannot find PostCSS root for block ${block.name}`));
+    return block;
+  }
+
+  let parsedImports = parseImports(block, factory, file, root);
+
+  let localNames: ObjectDictionary<string> = {};
+  for (let parsedImport of parsedImports) {
+    let {atRule} = parsedImport;
+    let referencedBlock: Block | null = null;
+
+    // Import the main block file referenced by the import path.
+    try {
+      referencedBlock = factory.getBlockRelative(block.identifier, parsedImport.blockPath);
+      block.blockReferencePaths.set(parsedImport.blockPath, referencedBlock);
+    } catch (err) {
+      block.addError(new errors.CascadingError(
+        "Error in imported block.",
+        err,
+        sourceRange(factory.configuration, block.stylesheet, file, atRule),
+      ));
+    }
+
+    processReferencedBlock(block, factory.configuration, file, referencedBlock, parsedImport, localNames);
+  }
+  return block;
+}
+
+function parseImports(block: Block, factory: BlockFactory | BlockFactorySync, file: string, root: postcss.Root): Array<ParsedImport> {
   let parsedImports = new Array<ParsedImport>();
   // For each `@block` expression, read in the block file, parse and
   // push to block references Promise array.
@@ -80,30 +139,18 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
       parsedImports.push({ blockPath: blockReference?.fromPath, atRule, names });
     }
   });
+  return parsedImports;
+}
 
-  let localNames: ObjectDictionary<string> = {};
-  for (let parsedImport of parsedImports) {
+function processReferencedBlock(block: Block, configuration: Readonly<Configuration>, file: string, referencedBlock: Block | null, parsedImport: ParsedImport, localNames: ObjectDictionary<string>) {
+
     let {blockPath, atRule, names} = parsedImport;
-    let referencedBlock: Block | null = null;
-
-    // Import the main block file referenced by the import path.
-    try {
-      referencedBlock = await factory.getBlockRelative(block.identifier, parsedImport.blockPath);
-      block.blockReferencePaths.set(parsedImport.blockPath, referencedBlock);
-    } catch (err) {
-      block.addError(new errors.CascadingError(
-        "Error in imported block.",
-        err,
-        sourceRange(factory.configuration, block.stylesheet, file, atRule),
-      ));
-    }
-
     for (let {localName, remoteName} of names) {
       // check for duplicate local names
       if (localNames[localName]) {
         block.addError(new errors.InvalidBlockSyntax(
           `Blocks ${localNames[localName]} and ${blockPath} cannot both have the name ${localName} in this scope.`,
-          sourceRange(factory.configuration, block.stylesheet, file, atRule),
+          sourceRange(configuration, block.stylesheet, file, atRule),
         ));
         continue;
       } else {
@@ -118,13 +165,11 @@ export async function importBlocks(block: Block, factory: BlockFactory, file: st
         } else {
           block.addError(new errors.InvalidBlockSyntax(
             `Cannot import Block "${remoteName}". No Block named "${remoteName}" exported by "${blockPath}".`,
-            sourceRange(factory.configuration, block.stylesheet, file, atRule),
+            sourceRange(configuration, block.stylesheet, file, atRule),
           ));
         }
       }
     }
-  }
-  return block;
 }
 
 function validateBlockNames(

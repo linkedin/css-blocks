@@ -95,6 +95,10 @@ export class BroccoliTreeImporter extends BaseImporter {
   }
 
   async import(identifier: string, config: Readonly<Configuration>): Promise<ImportedFile | ImportedCompiledCssFile> {
+    return this.importSync(identifier, config);
+  }
+
+  importSync(identifier: string, config: Readonly<Configuration>): ImportedFile | ImportedCompiledCssFile {
     if (isBroccoliTreeIdentifier(identifier)) {
       let relativePath = identToPath(this.input, identifier);
       let contents = this.input.readFileSync(relativePath, "utf8");
@@ -133,6 +137,7 @@ export class BroccoliTreeImporter extends BaseImporter {
           definitionContents: dfnData,
           definitionIdentifier,
           defaultName: this.defaultName(identifier, config),
+          rawCssContents: contents,
         };
       } else {
         return {
@@ -144,7 +149,7 @@ export class BroccoliTreeImporter extends BaseImporter {
         };
       }
     } else {
-      return this.fallbackImporter.import(identifier, config);
+      return this.fallbackImporter.importSync(identifier, config);
     }
   }
 

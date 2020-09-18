@@ -12,16 +12,18 @@ Here's an example `css-blocks.config.js` file using this package.
 ```js
 import sass from "node-sass";
 import eyeglass from "eyeglass";
-import { adaptor } from "@css-blocks/eyeglass";
+import { adaptor, adaptorSync } from "@css-blocks/eyeglass";
 
 const sassOptions = {
   outputStyle: "expanded"
 };
 
 const scss = adaptor(sass, eyeglass, sassOptions);
+const scssSync = adaptorSync(sass, eyeglass, sassOptions);
 
 module.exports = {
   preprocessors: { scss }
+  preprocessorsSync: { scss: scssSync }
 };
 ```
 
@@ -67,7 +69,7 @@ eyeglass adaptors from other libraries that use this integration.
 
 const sass = require("node-sass");
 const Eyeglass = require("eyeglass");
-import { adaptAll } from "@css-blocks/eyeglass";
+import { adaptAll, adaptAllSync } from "@css-blocks/eyeglass";
 
 // See the documentation for your module to know how to import
 // its adaptors.
@@ -79,6 +81,10 @@ const sassOptions = {
   // Where important, these options might be overridden by the module itself.
 };
 
+const sassOptionsSync = Object.assign({}, sassOptions, {
+  // if necessary use different options for synchronous compilation (e.g. synchronous versions of JS functions)
+});
+
 // While it's probably irrelevant, the order of the adaptors here
 // does matter, the first one that wants to process a file will win.
 const eyeglassAdaptors = [
@@ -89,6 +95,9 @@ const eyeglassAdaptors = [
 export default {
   preprocesors: {
     scss: adaptAll(eyeglassAdaptors, sass, eyeglass, sassOptions),
+  }
+  preprocesorsSync: {
+    scss: adaptAllSync(eyeglassAdaptors, sass, eyeglass, sassOptionsSync),
   }
 };
 ```

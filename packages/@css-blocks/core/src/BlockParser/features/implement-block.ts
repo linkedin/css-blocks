@@ -13,7 +13,7 @@ import { sourceRange } from "../../SourceLocation";
  * @param sourceFile  Source file name, used for error output.
  * @param rule Ruleset to crawl
  */
-export async function implementBlock(configuration: Configuration, rule: postcss.Root, block: Block, sourceFile: string) {
+export function implementBlock(configuration: Configuration, rule: postcss.Root, block: Block, sourceFile: string): void {
   rule.walkDecls(IMPLEMENTS, (decl) => {
     let refNames = decl.value.split(/,\s*/);
     refNames.forEach((refName) => {

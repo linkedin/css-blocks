@@ -1,4 +1,4 @@
-import { Preprocessors } from "../BlockParser";
+import { Preprocessors, PreprocessorsSync } from "../BlockParser";
 import {
   Importer,
   ImporterData,
@@ -31,6 +31,7 @@ const DEFAULTS: ResolvedConfiguration = {
   rootDir: "",
   importerData: {},
   preprocessors: {},
+  preprocessorsSync: {},
   disablePreprocessChaining: false,
   maxConcurrentCompiles: 4,
   guidAutogenCharacters: 5,
@@ -80,6 +81,9 @@ class Resolver implements ResolvedConfiguration {
   }
   get preprocessors(): Preprocessors {
     return this._opts.preprocessors;
+  }
+  get preprocessorsSync(): PreprocessorsSync {
+    return this._opts.preprocessorsSync;
   }
   get disablePreprocessChaining(): boolean {
     return this._opts.disablePreprocessChaining;

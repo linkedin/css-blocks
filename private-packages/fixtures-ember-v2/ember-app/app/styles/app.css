@@ -11,3 +11,22 @@ body {
 .public-addon-component-alias {
   font-size: 22px;
 }
+
+/*
+ * This class is a smoke test for the class duplication check run by
+ * the @css-blocks/ember-app css postprocess step. When optimization is
+ * enabled, this class conflicts with the default classes that are generated
+ * by OptiCSS.
+ *
+ * You can force a build failure by commenting out css-blocks.appStyles in
+ * ember-cli-build.js and building using the --prod flag (or turning on
+ * optimization via config).
+ *
+ * (Note: This info is accurate as of the time of this comment's creation.
+ * Other changes may make it so .i no longer conflicts with optimization. In
+ * this case, review the generated css-blocks output for a class name that
+ * conflicts and change this to use that class name.)
+ */
+.i {
+  font-style: italic;
+}

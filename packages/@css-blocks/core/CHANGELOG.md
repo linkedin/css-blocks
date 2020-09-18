@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.4.0...v1.5.0) (2020-09-16)
+
+
+### Bug Fixes
+
+* Pick up fix for opticss crash on unknown css declarations. ([55f2245](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/55f2245d810506bdda78e69ea65d4bebcc2ed1c2))
+* Remove some lingering traces of the async factory. ([23308e1](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/23308e1608aa06d654a19344cfa3441bad4f2313))
+* Update the debug identifier for BlockFactorySync. ([17588e3](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/17588e3f0f60a0fda8a1b586815cac1637a3f839))
+
+
+### Features
+
+* Synchronous Block Factory. ([0b31607](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/0b31607aca6718f8690c20d69bc33ba96f4402b2))
+
+
+
+
+
+# [1.4.0](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.3.2...v1.4.0) (2020-09-04)
+
+
+### Bug Fixes
+
+* Only register guids from blocks that are valid. ([b234f1d](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/b234f1d72ed7aaefbaea7d7a530b08ab8b9dab4d))
+
+
+### Features
+
+* End-to-end sourcemaps for ember v2 pipeline. ([fec42e4](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/fec42e4e5c019c7c9a0a88d12a07acaec0a24baa))
+* Update concatenation. WIP sourcemaps fix. ([da47ce6](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/commit/da47ce6c3ea46056e5575d2a7cdfc001954e4a36))
+
+
+
+
+
 ## [1.3.2](https://github.com/linkedin/css-blocks/tree/master/packages/%40css-blocks/core/compare/v1.3.1...v1.3.2) (2020-08-20)
 
 

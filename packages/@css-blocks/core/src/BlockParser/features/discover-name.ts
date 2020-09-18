@@ -6,7 +6,7 @@ import * as errors from "../../errors";
 import { sourceRange } from "../../SourceLocation";
 import { stripQuotes } from "../utils";
 
-export async function discoverName(configuration: Configuration, root: postcss.Root, file: string, isDfnFile: boolean, defaultName: string): Promise<string> {
+export function discoverName(configuration: Configuration, root: postcss.Root, file: string, isDfnFile: boolean, defaultName: string): string {
   let foundName: string | undefined;
   let scopeRule: postcss.Rule | undefined;
 

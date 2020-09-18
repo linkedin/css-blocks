@@ -7,7 +7,7 @@ import * as errors from "../../errors";
 import { sourceRange as range } from "../../SourceLocation";
 import { toAttrToken } from "../block-intermediates";
 
-export async function globalAttributes(configuration: Configuration, root: postcss.Root, block: Block, file: string): Promise<Block> {
+export function globalAttributes(configuration: Configuration, root: postcss.Root, block: Block, file: string): Block {
   root.walkAtRules(BLOCK_GLOBAL, (atRule) => {
 
     let selectors = parseSelector(atRule.params.trim());

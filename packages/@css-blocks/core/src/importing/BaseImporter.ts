@@ -21,6 +21,10 @@ export abstract class BaseImporter implements Importer {
    */
   abstract import(identifier: FileIdentifier, config: ResolvedConfiguration): Promise<ImportedFile | ImportedCompiledCssFile>;
   /**
+   * import the file with the given metadata and return a string and meta data for it.
+   */
+  abstract importSync(identifier: FileIdentifier, config: ResolvedConfiguration): ImportedFile | ImportedCompiledCssFile;
+  /**
    * The default name of the block used unless the block specifies one itself.
    */
   abstract defaultName(identifier: FileIdentifier, configuration: ResolvedConfiguration): string;
@@ -110,6 +114,7 @@ export abstract class BaseImporter implements Importer {
       blockCssContents,
       definitionUrl,
       post,
+      raw: contents,
     };
   }
 }

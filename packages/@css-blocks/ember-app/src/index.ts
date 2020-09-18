@@ -1,4 +1,5 @@
-import { CSSBlocksEmberOptions, ResolvedCSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-utils";
+import { BroccoliConcatOptions, CSSBlocksEmberOptions, getConfig } from "@css-blocks/ember-utils";
+import broccoliConcat = require("broccoli-concat");
 import BroccoliDebug = require("broccoli-debug");
 import funnel = require("broccoli-funnel");
 import mergeTrees = require("broccoli-merge-trees");
@@ -7,23 +8,9 @@ import type Addon from "ember-cli/lib/models/addon";
 import type { AddonImplementation, ThisAddon } from "ember-cli/lib/models/addon";
 import Project from "ember-cli/lib/models/project";
 
-import { CSSBlocksApplicationPlugin, CSSBlocksStylesProcessorPlugin } from "./brocolli-plugin";
-
-interface AddonEnvironment {
-  parent: Addon | EmberApp;
-  app: EmberApp;
-  rootDir: string;
-  isApp: boolean;
-  modulePrefix: string;
-  config: ResolvedCSSBlocksEmberOptions;
-}
-
-interface CSSBlocksApplicationAddon {
-  _modulePrefix(): string;
-  env: AddonEnvironment | undefined;
-  getEnv(parent): AddonEnvironment;
-  broccoliAppPluginInstance: CSSBlocksApplicationPlugin | undefined;
-}
+import { CSSBlocksApplicationPlugin, CSSBlocksStylesPostprocessorPlugin, CSSBlocksStylesPreprocessorPlugin } from "./broccoli-plugin";
+import { appStylesPostprocessFilename, cssBlocksPostprocessFilename, optimizedStylesPostprocessFilepath } from "./utils/filepaths";
+import { AddonEnvironment, CSSBlocksApplicationAddon } from "./utils/interfaces";
 
 /**
  * An ember-cli addon for Ember applications using CSS Blocks in its
@@ -172,6 +159,10 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         return tree;
       }
     } else if (type === "css") {
+      // TODO: We shouldn't need to use a custom plugin here anymore.
+      //       Refactor this to use simple broccoli filters and merges.
+      //       (This means the prev. plugin becomes reponsible for putting
+      //       the css file in the right directory.)
       if (!env.isApp) {
         return tree;
       }
@@ -181,14 +172,114 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksApplicationAddon> = {
         // tree is processed before the CSS tree, but just in case....
         throw new Error("[css-blocks/ember-app] The CSS tree ran before the JS tree, so the CSS tree doesn't have the contents for CSS Blocks files. This shouldn't ever happen, but if it does, please file an issue with us!");
       }
-      // Get the combined CSS file
-      const cssBlocksContentsTree = new CSSBlocksStylesProcessorPlugin(env.modulePrefix, env.config, [this.broccoliAppPluginInstance, tree]);
+      // Copy over the CSS Blocks compiled output from the template tree to the CSS tree.
+      const cssBlocksContentsTree = new CSSBlocksStylesPreprocessorPlugin(env.modulePrefix, env.config, [this.broccoliAppPluginInstance, tree]);
       return new BroccoliDebug(mergeTrees([tree, cssBlocksContentsTree], { overwrite: true }), "css-blocks:css-preprocess");
     } else {
       return tree;
     }
   },
+
+  /**
+   * Post-process the tree.
+   * @param type - The type of tree.
+   * @param tree - The tree to process.
+   * @returns - A broccoli tree.
+   */
+  postprocessTree(type, tree) {
+    let env = this.env!;
+
+    if (type === "css") {
+      if (!env.isApp || env.config.broccoliConcat === false) {
+        return tree;
+      }
+
+      // Verify there are no selector conflicts...
+      // (Only for builds with optimization enabled.)
+      let scannerTree;
+      if (env.config.optimization.enabled) {
+        scannerTree = new BroccoliDebug(
+          new CSSBlocksStylesPostprocessorPlugin(env, [tree]),
+          "css-blocks:css-postprocess-preconcat",
+        );
+      } else {
+        scannerTree = tree;
+      }
+
+      // Create the concatenated file...
+      const concatTree = broccoliConcat(
+        scannerTree,
+        buildBroccoliConcatOptions(env),
+      );
+
+      // Then overwrite the original file with our final build artifact.
+      const mergedTree = funnel(mergeTrees([tree, concatTree], { overwrite: true }), {
+        exclude: [
+          cssBlocksPostprocessFilename(env.config),
+          optimizedStylesPostprocessFilepath,
+        ],
+      });
+      return new BroccoliDebug(mergedTree, "css-blocks:css-postprocess");
+    }
+
+    return tree;
+  },
 };
+
+/**
+ * Merge together default and user-provided config options to build the
+ * configuration for broccoli-concat.
+ * @param env - The current addon environment. Includes override configs.
+ * @returns - Merged broccoli concat settings.
+ */
+function buildBroccoliConcatOptions(env: AddonEnvironment): BroccoliConcatOptions {
+  const overrides = env.config.broccoliConcat || {};
+  // The sourcemap config requires special handling because
+  // things break if extensions or mapCommentType is incorrect.
+  // We force these to use specific values, but defer to the
+  // provided options for all other properties.
+  let sourceMapConfig;
+  sourceMapConfig = Object.assign(
+    {},
+    {
+      enabled: true,
+    },
+    overrides.sourceMapConfig,
+    {
+      extensions: ["css"],
+      mapCommentType: "block",
+    },
+  );
+  // Merge, preferring the user provided options, except for
+  // the sourceMapConfig, which we merged above.
+  return Object.assign(
+    {},
+    buildDefaultBroccoliConcatOptions(env),
+    env.config.broccoliConcat,
+    {
+      sourceMapConfig,
+    },
+  );
+}
+
+/**
+ * Build a default broccoli-concat config, using given enviroment settings.
+ * @param env - The addon environment.
+ * @returns - Default broccoli-concat options, accounting for current env settings.
+ */
+function buildDefaultBroccoliConcatOptions(env: AddonEnvironment): BroccoliConcatOptions {
+  const appCssPath = appStylesPostprocessFilename(env);
+  const blocksCssPath = cssBlocksPostprocessFilename(env.config);
+  return {
+    inputFiles: [blocksCssPath, appCssPath],
+    outputFile: appCssPath,
+    sourceMapConfig: {
+      enabled: true,
+      extensions: ["css"],
+      mapCommentType: "block",
+    },
+  };
+}
 
 type MaybeCSSBlocksTree = MaybeCSSBlocksTreePlugin | string;
 interface MaybeCSSBlocksTreePlugin {

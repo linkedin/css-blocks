@@ -12,6 +12,7 @@ module.exports = function(defaults) {
         mergeDeclarations: true,
         removeUnusedStyles: true,
       },
+      appClasses: ['i'],
     }
   });
 

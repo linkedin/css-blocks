@@ -26,6 +26,12 @@ describe("validate", () => {
     assert.equal(cli.output, `ok\t${relFixture("basic/simple.block.css")}\n`);
     assert.equal(cli.exitCode, 0);
   });
+  it("can check syntax for all block files in a directory", async () => {
+    let cli = new CLI();
+    chdir(fixture());
+    await cli.run(["validate", fixture("basic")]);
+    assert.equal(cli.exitCode, 6);
+  });
   it("can check syntax for a bad block file", async () => {
     let cli = new CLI();
     await cli.run(["validate", fixture("basic/error.block.css")]);

@@ -83,6 +83,12 @@ export class Block
    * If this is set, the stylesheet property is only the definition file contents.
    */
   public precompiledStylesheet: postcss.Root | undefined;
+  /**
+   * The full contents of the compiled CSS this block was built from, if available.
+   * This content is copied verbatim from the file system and has not been transformed
+   * or processed by PostCSS in any way.
+   */
+  public precompiledStylesheetUnedited: string | undefined;
   public blockReferencePaths: Map<string, Block>;
   private _resolveImplementedBlocksResult: Set<Block> | undefined;
 
@@ -225,6 +231,10 @@ export class Block
    */
   addError(error: CssBlockError) {
     this._blockErrors.push(error);
+  }
+
+  isValid(): boolean {
+    return this._blockErrors.length === 0;
   }
 
   /**

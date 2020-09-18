@@ -24,7 +24,7 @@ import { stripQuotes } from "../utils";
  * @param block - The block that's being generated.
  * @param file - The definition file this block was generated from.
  */
-export function addPresetSelectors(configuration: Configuration, root: postcss.Root, block: Block, file: string) {
+export function addPresetSelectors(configuration: Configuration, root: postcss.Root, block: Block, file: string): void {
   // For each rule declared in the file...
   root.walkRules(rule => {
 

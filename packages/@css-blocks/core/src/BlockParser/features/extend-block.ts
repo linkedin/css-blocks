@@ -13,7 +13,7 @@ import { sourceRange } from "../../SourceLocation";
  * @param sourceFile  Source file name, used for error output.
  * @param root Ruleset to crawl.
  */
-export async function extendBlock(configuration: Configuration, root: postcss.Root, block: Block, sourceFile: string) {
+export function extendBlock(configuration: Configuration, root: postcss.Root, block: Block, sourceFile: string): void {
   root.walkDecls(EXTENDS, (decl) => {
     if (block.base) {
       block.addError(new errors.InvalidBlockSyntax(`A block can only be extended once.`, sourceRange(configuration, root, sourceFile, decl)));

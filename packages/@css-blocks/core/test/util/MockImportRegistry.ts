@@ -41,7 +41,12 @@ export class MockImporter extends NodeJsImporter {
       return importPath;
     }
   }
+
   async import(resolvedPath: string, configuration: ResolvedConfiguration): Promise<ImportedFile | ImportedCompiledCssFile> {
+    return this.importSync(resolvedPath, configuration);
+  }
+
+  importSync(resolvedPath: string, configuration: ResolvedConfiguration): ImportedFile | ImportedCompiledCssFile {
     let source = this.registry.sources[resolvedPath];
     if (!source) {
       let importedFiles = Object.keys(this.registry.sources).join(", ");
@@ -61,6 +66,7 @@ export class MockImporter extends NodeJsImporter {
         definitionContents: source.dfnContents,
         blockId: blockId,
         defaultName: this.defaultName(resolvedPath, configuration),
+        rawCssContents: source.contents,
       };
     } else if (source.hasEmbeddedDfnData) {
       const parsedSourceContents = this.segmentizeCompiledBlockCSS(source.contents);
@@ -77,6 +83,7 @@ export class MockImporter extends NodeJsImporter {
         definitionContents,
         blockId: blockId,
         defaultName: this.defaultName(resolvedPath, configuration),
+        rawCssContents: source.contents,
       };
     } else {
       return {

@@ -12,16 +12,22 @@ import type EmberAddon from "ember-cli/lib/models/addon";
 import type { AddonImplementation, ThisAddon, Tree } from "ember-cli/lib/models/addon";
 import type Project from "ember-cli/lib/models/project";
 
-import { BLOCK_GLOB, CSSBlocksTemplateCompilerPlugin, EmberASTPluginEnvironment } from "./CSSBlocksTemplateCompilerPlugin";
+import { BLOCK_GLOB, COMPILED_BLOCK_GLOB, CSSBlocksTemplateCompilerPlugin, EmberASTPluginEnvironment } from "./CSSBlocksTemplateCompilerPlugin";
 
 const debug = debugGenerator("css-blocks:ember");
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
-function withoutCssBlockFiles(tree: InputNode | undefined) {
+function withoutCssBlockFiles(tree: InputNode | undefined, excludeCompiledBlocks = false) {
   if (!tree) return tree;
+
+  const exclude = [ BLOCK_GLOB ];
+  if (excludeCompiledBlocks) {
+    exclude.push(COMPILED_BLOCK_GLOB);
+  }
+
   return funnel(tree, {
-    exclude: [ BLOCK_GLOB ],
+    exclude,
   });
 }
 
@@ -94,7 +100,7 @@ const EMBER_ADDON: AddonImplementation<CSSBlocksAddon> = {
     // We compile CSS Block files in the template tree, so in the CSS Tree all
     // we need to do is prune them out of the build before the tree gets
     // built.
-    return withoutCssBlockFiles(tree);
+    return withoutCssBlockFiles(tree, true);
   },
 
   postprocessTree(type, tree) {

@@ -16,7 +16,7 @@ import { stripQuotes } from "../utils";
  * @param sourceFile  Source file name, used for error output.
  * @param rule Ruleset to crawl
  */
-export async function composeBlock(configuration: Configuration, root: postcss.Root, block: Block, sourceFile: string) {
+export function composeBlock(configuration: Configuration, root: postcss.Root, block: Block, sourceFile: string): void {
   root.walkDecls(COMPOSES, (decl) => {
     if (!isRule(decl.parent)) { block.addError(new errors.InvalidBlockSyntax(`The "composes" property may only be used in a rule set.`, sourceRange(configuration, root, sourceFile, decl))); }
     let rule = decl.parent;

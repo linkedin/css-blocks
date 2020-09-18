@@ -16,6 +16,10 @@ export class LSImporter implements Importer {
   }
 
   async import(identifier: string, config: Configuration): Promise<ImportedFile | ImportedCompiledCssFile> {
+    return this.importSync(identifier, config);
+  }
+
+  importSync(identifier: string, config: Configuration): ImportedFile | ImportedCompiledCssFile {
     // the uri expected is that of a file
     let path = this.filesystemPath(identifier, config);
     let clientDocument = path && this.documents.get(URI.file(path).toString());
@@ -30,7 +34,7 @@ export class LSImporter implements Importer {
       };
     }
     // else import from the baseImporter
-    return this.baseImporter.import(identifier, config);
+    return this.baseImporter.importSync(identifier, config);
   }
   identifier(fromIdentifier: string | null, importPath: string, config: Readonly<Configuration>): string {
     return this.baseImporter.identifier(fromIdentifier, importPath, config);
