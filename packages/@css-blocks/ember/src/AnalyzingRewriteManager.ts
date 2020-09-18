@@ -1,7 +1,7 @@
 import {
   AnalysisOptions,
   Block,
-  BlockFactory,
+  BlockFactorySync,
   CssBlockError,
   Options as CSSBlocksOptions,
   ResolvedConfiguration as CSSBlocksConfiguration,
@@ -11,7 +11,8 @@ import {
 } from "@css-blocks/core";
 import { EmberAnalysis, HandlebarsTemplate, TEMPLATE_TYPE } from "@css-blocks/ember-utils";
 import type { Syntax } from "@glimmer/syntax";
-import { ObjectDictionary, unionInto } from "@opticss/util";
+import { unionInto } from "@opticss/util";
+import debugGenerator = require("debug");
 
 import { FileLocator } from "./FileLocator";
 import { TemplateAnalyzingRewriter } from "./TemplateAnalyzingRewriter";
@@ -29,15 +30,16 @@ export class AnalyzingRewriteManager {
   cssBlocksOpts: CSSBlocksConfiguration;
   validationOptions: TemplateValidatorOptions;
   analysisOptions: AnalysisOptions;
-  templateBlocks: ObjectDictionary<Block | undefined>;
   analyses: Map<string, EmberAnalysis>;
   fileLocator: FileLocator;
-  blockFactory: BlockFactory;
+  blockFactory: BlockFactorySync;
   possibleStylesheetExtensions: Array<string>;
   templates: Map<string, HandlebarsTemplate>;
+  templateBlocks: Map<string, Block | null>;
+  debug: debugGenerator.Debugger;
 
   constructor(
-    blockFactory: BlockFactory,
+    blockFactory: BlockFactorySync,
     fileLocator: FileLocator,
     analysisOptions: AnalysisOptions,
     cssBlocksOpts: CSSBlocksOptions,
@@ -47,30 +49,20 @@ export class AnalyzingRewriteManager {
     this.fileLocator = fileLocator;
     this.analysisOptions = analysisOptions;
     this.cssBlocksOpts = resolveConfiguration(cssBlocksOpts);
-    let extensions = new Set(Object.keys(this.cssBlocksOpts.preprocessors));
+    let extensions = new Set(Object.keys(this.cssBlocksOpts.preprocessorsSync));
     extensions.add("css");
     this.possibleStylesheetExtensions = [...extensions];
     this.elementCount  = 0;
-    this.templateBlocks = {};
     this.analyses = new Map();
     this.templates = new Map();
+    this.templateBlocks = new Map();
+    this.debug = debugGenerator("css-blocks:AnalyzingRewriteManager");
   }
 
-  async discoverTemplatesWithBlocks(): Promise<number> {
-    let count = 0;
-    for (let templatePath of this.fileLocator.possibleTemplatePaths()) {
-      let stylesheet = this.fileLocator.findStylesheetForTemplate(templatePath, this.possibleStylesheetExtensions);
-      if (stylesheet) {
-        let block = await this.blockFactory.getBlock(this.fileLocator.blockIdentifier(stylesheet));
-        this.registerTemplate(templatePath, block);
-        count++;
-      }
-    }
-    return count;
-  }
-
-  registerTemplate(template: string, block: Block) {
-    this.templateBlocks[template] = block;
+  discoverBlockForTemplate(templatePath: string): Block | null {
+    let stylesheet = this.fileLocator.findStylesheetForTemplate(templatePath, this.possibleStylesheetExtensions);
+    if (stylesheet === null) return null;
+    return this.blockFactory.getBlock(this.fileLocator.blockIdentifier(stylesheet));
   }
 
   /**
@@ -80,7 +72,14 @@ export class AnalyzingRewriteManager {
     if (this.analyses.get(templatePath)) {
       throw new CssBlockError(`Internal Error: Template at ${templatePath} was already analyzed.`);
     }
-    let block = this.templateBlocks[templatePath];
+    this.debug(`Rewriter for ${templatePath}`);
+    let block = this.discoverBlockForTemplate(templatePath);
+    if (block) {
+      this.debug(`Rewriter for ${templatePath}: Found block.`);
+    } else {
+      this.debug(`Rewriter for ${templatePath}: Didn't find block.`);
+    }
+    this.templateBlocks.set(templatePath, block);
     let template = new HandlebarsTemplate(templatePath, templatePath);
     this.templates.set(templatePath, template);
     let analysis = new EmberAnalysis(template, block, this.validationOptions);
@@ -103,13 +102,16 @@ export class AnalyzingRewriteManager {
   }
 
   *analyzedTemplates(): Generator<AnalyzedTemplate, void> {
-    let templatePaths = Object.keys(this.templateBlocks);
+    let templatePaths = this.templates.keys();
     for (let templatePath of templatePaths) {
-      let block = this.templateBlocks[templatePath]!;
+      let block = this.templateBlocks.get(templatePath);
       let template = this.templates.get(templatePath);
       let analysis = this.analyses.get(templatePath);
-      if (!template || !analysis) {
+      if (!block || !template || !analysis) {
+        this.debug(`Skipping template ${templatePath}`);
         continue; // this template didn't change so it didn't get compiled.
+      } else {
+        this.debug(`Yielding template ${templatePath}`);
       }
       yield {
         template,

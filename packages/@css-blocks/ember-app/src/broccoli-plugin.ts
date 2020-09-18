@@ -1,5 +1,5 @@
 import { Block, BlockCompiler, BlockFactory, SerializedSourceAnalysis, resolveConfiguration } from "@css-blocks/core";
-import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, pathToIdent, isBroccoliTreeIdentifier, identToModulePath } from "@css-blocks/ember-utils";
+import { BroccoliTreeImporter, EmberAnalysis, EmberAnalyzer, ResolvedCSSBlocksEmberOptions, TEMPLATE_TYPE, identToModulePath, isBroccoliTreeIdentifier, pathToIdent } from "@css-blocks/ember-utils";
 import { unionInto } from "@opticss/util";
 import mergeTrees = require("broccoli-merge-trees");
 import type { InputNode } from "broccoli-node-api";
@@ -11,10 +11,11 @@ import * as FSTree from "fs-tree-diff";
 import { OptiCSSOptions, Optimizer, parseSelector, postcss } from "opticss";
 import * as path from "path";
 
+import { AggregateRewriteData } from "./AggregateRewriteData";
 import { RuntimeDataGenerator } from "./RuntimeDataGenerator";
+import { TestSupportDataGenerator } from "./TestSupportDataGenerator";
 import { cssBlocksPostprocessFilename, cssBlocksPreprocessFilename, optimizedStylesPostprocessFilepath, optimizedStylesPreprocessFilepath } from "./utils/filepaths";
 import { AddonEnvironment } from "./utils/interfaces";
-import { TestSupportDataGenerator } from "./TestSupportDataGenerator";
 
 const debug = debugGenerator("css-blocks:ember-app");
 
@@ -23,12 +24,14 @@ export class CSSBlocksApplicationPlugin extends Filter {
   previousSourceTree: FSTree;
   cssBlocksOptions: ResolvedCSSBlocksEmberOptions;
   isProdApp: boolean;
+  firstBuild: boolean;
   constructor(appName: string, isProdApp: boolean, inputNodes: InputNode[], cssBlocksOptions: ResolvedCSSBlocksEmberOptions, options?: PluginOptions) {
     super(mergeTrees(inputNodes), options || {});
     this.appName = appName;
     this.previousSourceTree = new FSTree();
     this.cssBlocksOptions = cssBlocksOptions;
     this.isProdApp = isProdApp;
+    this.firstBuild = true;
   }
   processString(contents: string, _relativePath: string): string {
     return contents;
@@ -39,11 +42,32 @@ export class CSSBlocksApplicationPlugin extends Filter {
     let currentFSTree = FSTree.fromEntries(entries);
     let patch = this.previousSourceTree.calculatePatch(currentFSTree);
     if (patch.length === 0) {
-      // nothing changed from the last build.
+      if (this.firstBuild) {
+        this.firstBuild = false;
+        // There's no blocks yet.
+        // We need to produce an empty file to avoid causing errors at runtime.
+        let data: AggregateRewriteData = {
+          blockIds: {},
+          blocks: [],
+          outputClassnames: [],
+          styleRequirements: {},
+          impliedStyles: {},
+          optimizations: [],
+        };
+        let serializedData = JSON.stringify(data, undefined, "  ");
+        this.output.writeFileSync(
+          `${this.appName}/services/-css-blocks-data.js`,
+          "// CSS Blocks Generated Data. DO NOT EDIT\n" +
+          `export const data = ${serializedData};\n`,
+        );
+      } else {
+        // nothing changed from the last build.
+      }
       return;
     } else {
       this.previousSourceTree = currentFSTree;
     }
+    this.firstBuild = false;
     let config = resolveConfiguration(this.cssBlocksOptions.parserOpts);
     let importer = new BroccoliTreeImporter(this.input, null, config.importer);
     config = resolveConfiguration({importer}, config);
