@@ -324,7 +324,7 @@ module.exports = {
     if (!options.parserOpts.rootDir) {
       options.parserOpts.rootDir = rootDir;
     }
-    options.parserOpts.outputMode = "BEM_UNIQUE";
+    options.parserOpts.outputMode = options.parserOpts.outputMode ||"BEM_UNIQUE";
 
 
     if (options.output !== undefined && typeof options.output !== "string") {
