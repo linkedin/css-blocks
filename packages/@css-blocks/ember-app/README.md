@@ -35,7 +35,7 @@ The following options can be passed as options to the `css-blocks` property in y
 ## Testing
 Once you have integrated this addon within an ember application, all your CSS classnames are going to look very different from what they did in the block files that you had originally written and the output CSS classnames will vary across builds and across different machines. This is done intentionally to ensure that you don't use any CSS classname selectors in any of the tests and that your tests remain robust across executions. Not to mention, even the number of classes on an element can be entirely different after all the CSS has been optimized using opticss.
 
-In order to faciliate testing in such an environment, this ember addon provides a utility method called `setupCSSBlocksTest()` that that exposes the CSS blocks service that can in turn be used to query the existence of certain classes on your elements.
+In order to facilitate testing in such an environment, this ember addon provides a utility method called `setupCSSBlocksTest()` that that exposes the CSS blocks service that can in turn be used to query the existence of certain classes on your elements.
 
 Note: `setupCSSBlocksTest()` has been written to work with `ember-qunit` and `ember-mocha`.
 
