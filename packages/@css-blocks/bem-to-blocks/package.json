@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "inquirer": "^7.0.3",
-    "postcss": "^7.0.14",
+    "postcss": "^8.2.10",
     "postcss-selector-parser": "^6.0.2",
     "postcss-simple-vars": "^5.0.2"
   },
