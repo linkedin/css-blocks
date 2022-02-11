@@ -52,7 +52,7 @@
     "@types/node-sass": "^4.11.0",
     "@types/yargs": "^13.0.0",
     "broccoli-test-helper": "^2.0.0",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "typescript": "~3.8",
     "watch": "^1.0.2"
   },
